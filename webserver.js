@@ -1527,8 +1527,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
-                var webstate = (states.length == 1) ? states[0].state : '';
-                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null)?'null':parent.pluginHandler.prepExports() });
+                var webstate = (states.length == 1) ? obj.filterUserWebState(states[0].state) : '';
+                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() });
             });
         } else {
             // Send back the login application
@@ -3755,6 +3755,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete r.amt.password; // Remove the Intel AMT password from the policy
         }
         return r;
+    }
+
+    // Filter the user web site and only output state that we need to keep
+    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode'];
+    const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling']
+    obj.filterUserWebState = function (state) {
+        if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
+        var out = {};
+        for (var i in acceptableUserWebStateStrings) {
+            var n = acceptableUserWebStateStrings[i];
+            if ((state[n] != null) && ((typeof state[n] == 'number') || (typeof state[n] == 'boolean') || ((typeof state[n] == 'string') && (state[n].length < 32)))) { out[n] = state[n]; }
+        }
+        if (typeof state.desktopsettings == 'string') { try { state.desktopsettings = JSON.parse(state.desktopsettings); } catch (ex) { delete state.desktopsettings; } }
+        if (state.desktopsettings != null) {
+            out.desktopsettings = {};
+            for (var i in acceptableUserWebStateDesktopStrings) {
+                var n = acceptableUserWebStateDesktopStrings[i];
+                if ((state.desktopsettings[n] != null) && ((typeof state.desktopsettings[n] == 'number') || (typeof state.desktopsettings[n] == 'boolean') || ((typeof state.desktopsettings[n] == 'string') && (state.desktopsettings[n].length < 32)))) { out.desktopsettings[n] = state.desktopsettings[n]; }
+            }
+            out.desktopsettings = JSON.stringify(out.desktopsettings);
+        }
+        return JSON.stringify(out);
     }
 
     // Return the correct render page given mobile, minify and override path.
