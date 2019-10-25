@@ -24,6 +24,7 @@ limitations under the License.
 
 const exeJavaScriptGuid = 'B996015880544A19B7F7E9BE44914C18';
 const exeMeshPolicyGuid = 'B996015880544A19B7F7E9BE44914C19';
+const exeNullPolicyGuid = 'B996015880544A19B7F7E9BE44914C20';
 
 
 // Changes a Windows Executable to add JavaScript inside of it.
@@ -76,6 +77,7 @@ module.exports.streamExeWithJavaScript = function (options) {
 //   sourceFileName: 'pathToBinary',
 //   destinationStream: 'outputStream'
 //   msh: 'mshContent',
+//   randomPolicy: true, // Set is the MSH contains random data
 //   peinfo {} // Optional, if PE header already parsed place it here.
 // }
 //
@@ -100,7 +102,7 @@ module.exports.streamExeWithMeshPolicy = function (options) {
             var sz = Buffer.alloc(4);
             sz.writeUInt32BE(this.options.msh.length, 0);
             this.options.destinationStream.write(sz); // Length in small endian
-            this.options.destinationStream.end(Buffer.from(exeMeshPolicyGuid, 'hex'));  // Guid
+            this.options.destinationStream.end(Buffer.from((this.options.randomPolicy === true) ? exeNullPolicyGuid : exeMeshPolicyGuid, 'hex'));  // Guid
         });
         // Pipe the entire source binary without ending the stream.
         options.destinationStream.sourceStream.pipe(options.destinationStream, { end: false });
@@ -140,7 +142,7 @@ module.exports.streamExeWithMeshPolicy = function (options) {
                     var sz = Buffer.alloc(4);
                     sz.writeUInt32BE(this.options.msh.length, 0);
                     this.options.destinationStream.write(sz); // MSH Length, small-endian
-                    this.options.destinationStream.end(Buffer.from(exeMeshPolicyGuid, 'hex')); // MSH GUID
+                    this.options.destinationStream.end(Buffer.from((this.options.randomPolicy === true) ? exeNullPolicyGuid : exeMeshPolicyGuid, 'hex')); // Guid
                 });
                 source3.pipe(this.options.destinationStream, { end: false });
                 this.options.sourceStream = source3;

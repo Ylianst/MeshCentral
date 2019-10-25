@@ -1626,10 +1626,36 @@ function CreateMeshCentralServer(config, args) {
                 obj.meshAgentBinaries[archid].path = agentpath;
                 obj.meshAgentBinaries[archid].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
-                if (obj.args.agentsinram) { obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath); }
+
                 // If this is a windows binary, pull binary information
                 if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
                     try { obj.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (e) { }
+                }
+
+                // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
+                if ((obj.args.agentsinram) || (archid == 3) || (archid == 4)) {
+                    if ((archid == 3) || (archid == 4)) {
+                        // Load the agent with a random msh added to it.
+                        var outStream = new require('stream').Duplex();
+                        outStream.meshAgentBinary = obj.meshAgentBinaries[archid];
+                        outStream.meshAgentBinary.randomMsh = Buffer.from(obj.crypto.randomBytes(64), 'binary').toString('base64');
+                        outStream.bufferList = [];
+                        outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
+                        outStream._read = function (size) { }; // Do nothing, this is not going to be called.
+                        outStream.on('finish', function () { this.meshAgentBinary.data = Buffer.concat(this.bufferList); this.meshAgentBinary.size = this.meshAgentBinary.data.length; delete this.bufferList; }) // Merge all chunks
+                        obj.exeHandler.streamExeWithMeshPolicy(
+                            {
+                                platform: 'win32',
+                                sourceFileName: agentpath,
+                                destinationStream: outStream,
+                                randomPolicy: true, // Indicates that the msh policy is random data.
+                                msh: outStream.meshAgentBinary.randomMsh,
+                                peinfo: obj.meshAgentBinaries[archid].pe
+                            });
+                    } else {
+                        // Load the agent as-is
+                        obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+                    }
                 }
 
                 // Hash the binary

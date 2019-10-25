@@ -141,6 +141,7 @@ function run(argv) {
     if ((typeof args.serverid) == 'string') { settings.serverid = args.serverid; }
     if ((typeof args.serverhttpshash) == 'string') { settings.serverhttpshash = args.serverhttpshash; }
     if ((typeof args.remoteport) == 'string') { settings.remoteport = parseInt(args.remoteport); }
+    if ((typeof args.remotetarget) == 'string') { settings.remotetarget = args.remotetarget; }
     if ((typeof args.out) == 'string') { settings.output = args.out; }
     if ((typeof args.output) == 'string') { settings.output = args.output; }
     if ((typeof args.debug) == 'string') { settings.debuglevel = parseInt(args.debug); }
@@ -2049,10 +2050,10 @@ function startRouter() {
     tcpserver.on('error', function (e) { console.log('ERROR: ' + JSON.stringify(e)); exit(0); return; });
     tcpserver.listen(settings.localport, function () {
         // We started listening.
-        if (settings.remotename == null) {
+        if (settings.remotetarget == null) {
             console.log('Redirecting local port ' + settings.localport + ' to remote port ' + settings.remoteport + '.');
         } else {
-            console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotename + ':' + settings.remoteport + '.');
+            console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotetarget + ':' + settings.remoteport + '.');
         }
         console.log('Press ctrl-c to exit.');
 
@@ -2069,7 +2070,7 @@ function OnTcpClientConnected(c) {
         c.on('end', function () { disconnectTunnel(this, this.websocket, 'Client closed'); });
         c.pause();
         try {
-            options = http.parseUri(settings.serverurl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport);
+            options = http.parseUri(settings.serverurl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport + (settings.remotetarget == null ? '' : '&tcpaddr=' + settings.remotetarget));
         } catch (e) { console.log('Unable to parse \"serverUrl\".'); process.exit(1); return; }
         options.checkServerIdentity = onVerifyServer;
         options.rejectUnauthorized = false;
@@ -2564,46 +2565,53 @@ function removeItemFromArray(array, element) {
 }
 
 // Run MeshCmd, but before we do, we need to see if what type of service we are going to be
-var serviceName = null;
-var serviceOpSpecified = 0;
-var serviceInstall = 0;
-
+var serviceName = null, serviceDisplayName = null, serviceDesc = null;
 for (var i in process.argv) {
-    if (process.argv[i].toLowerCase() == 'install') { serviceInstall = 1 } else if (process.argv[i].toLowerCase() == 'uninstall') { serviceInstall = -1 }
-    if ((process.argv[i].toLowerCase() == 'microlms') || (process.argv[i].toLowerCase() == 'amtlms') || (process.argv[i].toLowerCase() == 'lms')) { serviceName = 'MicroLMS'; break; }
-    if ((process.argv[i].toLowerCase() == 'meshcommander') || (process.argv[i].toLowerCase() == 'commander')) { serviceName = 'MeshCommander'; break; }
+    if (process.argv[i].toLowerCase() == 'install') { process.argv[i] = '-install'; }
+    if (process.argv[i].toLowerCase() == 'uninstall') { process.argv[i] = '-uninstall'; }
+    if ((process.argv[i].toLowerCase() == 'microlms') || (process.argv[i].toLowerCase() == 'amtlms') || (process.argv[i].toLowerCase() == 'lms')) {
+        serviceName = 'MicroLMS';
+        serviceDisplayName = 'MicroLMS Service for Intel(R) AMT';
+        serviceDesc = 'Intel AMT Micro Local Manageability Service (MicroLMS)';
+    } else if ((process.argv[i].toLowerCase() == 'intellms')) {
+        serviceName = 'LMS';
+        serviceDisplayName = 'Intel(R) Management and Security Application Local Management Service';
+        serviceDesc = 'Intel(R) Management and Security Application Local Management Service - Provides OS-related Intel(R) ME functionality.';
+    } else if ((process.argv[i].toLowerCase() == 'meshcommander') || (process.argv[i].toLowerCase() == 'commander')) {
+        serviceName = 'MeshCommander';
+        serviceDisplayName = 'MeshCommander, Intel AMT Management console';
+        serviceDesc = 'MeshCommander is a Intel AMT management console.';
+    }
 }
 
 if (serviceName == null) {
-    for (var i in process.argv) {
-        if ((process.argv[i].toLowerCase() == 'install') || (process.argv[i].toLowerCase() == 'uninstall')) {
-            console.log('In order to install/uninstall, a service type must be specified.');
-            process.exit();
-        }
-    }
     if (process.execPath.includes('MicroLMS')) { serviceName = 'MicroLMS'; }
+    else if (process.execPath.includes('LMS')) { serviceName = 'LMS'; }
     else if (process.execPath.includes('MeshCommander')) { serviceName = 'MeshCommander'; }
-    else { serviceName = 'not_a_service'; }
+    if (serviceName == null) { for (var i in process.argv) { if ((process.argv[i].toLowerCase() == '-install') || (process.argv[i].toLowerCase() == '-uninstall')) { console.log('In order to install/uninstall, a service type must be specified.'); process.exit(); } } }
+    if (serviceName == null) { try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); } process.exit(); }
 }
 
-if (serviceInstall == 0) {
-    run(process.argv);
-} else {
-    var serviceHost = require('service-host');
-    var meshcmdService = new serviceHost({ name: serviceName, startType: 'AUTO_START' });
+var serviceHost = require('service-host');
+var meshcmdService = new serviceHost({ name: serviceName, displayName: serviceDisplayName, startType: 'AUTO_START', description: serviceDesc });
 
-    // Called when the background service is started.
-    meshcmdService.on('serviceStart', function onStart() {
-        console.setDestination(console.Destinations.DISABLED); // Disable console.log().
-        if (process.execPath.includes('MicroLMS')) { run([process.execPath, 'microlms']); } //
-        else if (process.execPath.includes('MeshCommander')) { run([process.execPath, 'meshcommander']); }
-        else { console.log('Aborting Service Start, because unknown binary: ' + process.execPath); process.exit(1); }
-    });
+// Called when the background service is started.
+meshcmdService.on('serviceStart', function onStart() {
+    //process.coreDumpLocation = 'C:\\tmp\\meshcommander.dmp';
+    //process.on('exit', function () { console.log('exit3'); _debugCrash(); });
+    console.setDestination(console.Destinations.DISABLED); // Disable console.log().
+    //console.setDestination(console.Destinations.LOGFILE);
+    //attachDebuger({ webport: 0, wait: 1 }).then(console.log, console.log);
 
-    // Called when the background service is stopping
-    meshcmdService.on('serviceStop', function onStop() { console.log('Stopping service'); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
+    if (process.execPath.includes('MicroLMS')) { run([process.execPath, 'microlms']); } // Start MicroLMS
+    else if (process.execPath.includes('LMS')) { run([process.execPath, 'microlms']); } // Start MicroLMS
+    else if (process.execPath.includes('MeshCommander')) { run([process.execPath, 'meshcommander']); } // Start MeshCommander
+    else { console.log('Aborting Service Start, because unknown binary: ' + process.execPath); process.exit(1); }
+});
 
-    // Called when the executable is not running as a service, run normally.
-    meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); } });
-    meshcmdService.run();
-}
+// Called when the background service is stopping
+meshcmdService.on('serviceStop', function onStop() { console.log('Stopping service'); process.exit(); }); // The console.log() is for debugging, will be ignored unless "console.setDestination()" is set.
+
+// Called when the executable is not running as a service, run normally.
+meshcmdService.on('normalStart', function onNormalStart() { try { run(process.argv); } catch (e) { console.log('ERROR: ' + e); } });
+meshcmdService.run();

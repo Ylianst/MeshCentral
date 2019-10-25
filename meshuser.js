@@ -35,6 +35,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_DESKLIMITEDINPUT = 4096;
     const MESHRIGHT_LIMITEVENTS = 8192;
     const MESHRIGHT_CHATNOTIFY = 16384;
+    const MESHRIGHT_UNINSTALL = 32768;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;
@@ -49,6 +50,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     var obj = {};
     obj.user = user;
     obj.domain = domain;
+    obj.ws = ws;
 
     // Server side Intel AMT stack
     const WsmanComm = require('./amt/amt-wsman-comm.js');
@@ -609,7 +611,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 try { fs.mkdirSync(path); } catch (e) { }
                                 try { fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { }
                             }
-                        } 
+                        }
                         else if (command.fileop == 'delete') {
                             // Delete a file
                             if (common.validateArray(command.delfiles, 1) == false) return;
@@ -667,7 +669,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r =  'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
+                            r = 'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
                             r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
                             r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable.';
                             break;
@@ -733,7 +735,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         case 'info': {
                             var info = process.memoryUsage();
-                            info.dbType = ['None','NeDB','MongoJS','MongoDB'][parent.db.databaseType];
+                            info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
                             if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
                             try { info.platform = process.platform; } catch (ex) { }
                             try { info.arch = process.arch; } catch (ex) { }
@@ -811,7 +813,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (config.domains[i].yubikey && config.domains[i].yubikey.secret) { config.domains[i].yubikey.secret = '(present)'; }
                                 }
                             }
-                            
+
                             r = JSON.stringify(removeAllUnderScore(config), null, 4);
                             break;
                         }
@@ -1333,7 +1335,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
-                            
+
                             parent.users[newuserid] = newuser;
 
                             // Create a user, generate a salt and hash the password
@@ -1860,7 +1862,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if (unknownUsers.length > 0) {
                         // Send error back, user not found.
-                        displayNotificationMessage('User' + ((unknownUsers.length > 1)?'s':'') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
+                        displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
                     }
 
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: 'ok', removed: removedCount, failed: failCount })); } catch (ex) { } }
@@ -2190,6 +2192,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'uninstallagent':
+                {
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    for (i in command.nodeids) {
+                        nodeid = command.nodeids[i];
+                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
+                        if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
+                            // Get the device
+                            db.Get(nodeid, function (err, nodes) {
+                                if ((nodes == null) || (nodes.length != 1)) return;
+                                var node = nodes[0];
+
+                                // Get the mesh for this device
+                                mesh = parent.meshes[node.meshid];
+                                if (mesh) {
+                                    // Check if this user has rights to do this
+                                    if (mesh.links[user._id] != null && ((mesh.links[user._id].rights & MESHRIGHT_UNINSTALL) != 0)) {
+                                        // Send uninstall command to connected agent
+                                        var agent = parent.wsagents[node._id];
+                                        if (agent != null) {
+                                            //console.log('Asking agent ' + agent.dbNodeKey + ' to uninstall.');
+                                            try { agent.send(JSON.stringify({ action: 'uninstallagent' })); } catch (ex) { }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    break;
+                }
             case 'poweraction':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
@@ -2450,8 +2483,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'inviteAgent':
                 {
                     var err = null, mesh = null;
-                    try
-                    {
+                    try {
                         if ((parent.parent.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
                         else if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) { err = 'Unsupported feature'; } // Server name must be configured
                         else if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check meshid
@@ -3001,7 +3033,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     db.Get(nodeid, function (err, nodes) {
                         if ((nodes == null) || (nodes.length != 1)) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } return; } }
                         var node = nodes[0];
-                        
+
                         // Get the device group for this node
                         var mesh = parent.meshes[node.meshid];
                         if (mesh) {
@@ -3038,11 +3070,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                 if (common.validateInt(command.mode, 0, 3) == false) break; // Check connection mode
                 // Validate if communication mode is possible                
-                if (command.mode == null || command.mode==0)  {
+                if (command.mode == null || command.mode == 0) {
                     break; //unsupported
                 } else if (command.mode == 1) {
                     var state = parent.parent.GetConnectivityState(command.nodeid);
-                    if ( (state == null) || (state.connectivity & 4)==0 ) break;
+                    if ((state == null) || (state.connectivity & 4) == 0) break;
                 } else if (command.mode == 2) {
                     if (parent.parent.mpsserver.ciraConnections[command.nodeid] == null) break;
                 } else if (command.mode == 3) {
@@ -3068,15 +3100,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'plugin': {
+                if (parent.parent.pluginHandler == null) break; // If the plugin's are not supported, reject this command.
                 command.userid = user._id;
-                
                 if (command.routeToNode === true) {
-                  routeCommandToNode(command);
+                    routeCommandToNode(command);
                 } else {
-                  // TODO
+                    try {
+                        var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
+                        pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
+                    } catch (e) { console.log('Error loading plugin handler (' + e + ')'); }
                 }
-                
-              break;
+                break;
             }
             default: {
                 // Unknown user action

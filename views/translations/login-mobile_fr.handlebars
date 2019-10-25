@@ -265,6 +265,8 @@
     </div>
     <script>
         'use strict';
+        var loginMode = '{{{loginmode}}}';
+        var newAccount = '{{{newAccount}}}';
         var passhint = '{{{passhint}}}';
         var newAccountPass = parseInt('{{{newAccountPass}}}');
         var emailCheck = ('{{{emailcheck}}}' == 'true');
@@ -307,14 +309,14 @@
             center();
             validateLogin();
             validateCreate();
-            if ('{{loginmode}}' != '') { go(parseInt('{{loginmode}}')); } else { go(1); }
-            QV('newAccountDiv', ('{{{newAccount}}}' === '1') || ('{{{newAccount}}}' === 'true')); // If new accounts are not allowed, don't display the new account link.
+            if (loginMode.length != 0) { go(parseInt(loginMode)); } else { go(1); }
+            QV('newAccountDiv', (newAccount === '1') || (newAccount === 'true')); // If new accounts are not allowed, don't display the new account link.
             if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV('showPassHintLink', true); }
             QV('newAccountPass', (newAccountPass == 1));
             QV('resetAccountDiv', (emailCheck == true));
             QV('hrAccountDiv', (emailCheck == true) || (newAccountPass == 1));
 
-            if ('{{loginmode}}' == '4') {
+            if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                     hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
@@ -345,7 +347,7 @@
                 }
             }
 
-            if ('{{loginmode}}' == '5') {
+            if (loginMode == '5') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                     hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
