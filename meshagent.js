@@ -1334,7 +1334,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
                 if (command.av) {
                     if (!device.av) { device.av = []; }
-                    if ((command.av != null) && (JSON.stringify(device.av) != JSON.stringify(command.av))) { changes.push('AV status'); device.av = command.av; change = 1; log = 1; }
+                    if ((command.av != null) && (JSON.stringify(device.av) != JSON.stringify(command.av))) { /*changes.push('AV status');*/ device.av = command.av; change = 1; log = 1; }
                 }
 
                 if ((command.users != null) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
