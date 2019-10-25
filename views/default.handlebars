@@ -9315,7 +9315,22 @@
 
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
-        function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
+        function putstore(name, val) {
+            try {
+                if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return;
+                if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { }
+                if (name[0] != '_') {
+                    var s = {};
+                    for (var i = 0, len = localStorage.length; i < len; ++i) {
+                        var k = localStorage.key(i);
+                        if (k[0] != '_') {
+                            s[k] = localStorage.getItem(k);
+                            if ((k != 'desktopsettings') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
+                        }
+                    }
+                    meshserver.send({ action: 'userWebState', state: JSON.stringify(s) });
+                }
+            }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress=\"if (event.key==\'Enter\') {' + f + '} \">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
