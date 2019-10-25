@@ -32,16 +32,10 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     // Perform an HTTP to HTTPS redirection
     function performRedirection(req, res) {
         var host = req.headers.host;
-        if (obj.certificates != null) {
-            host = obj.certificates.CommonName;
-            if (obj.certificates.CommonName.indexOf('.') == -1) { host = req.headers.host; }
-        }
+        if (typeof host == 'string') { host = host.split(":")[0]; }
+        if ((host == null) && (obj.certificates != null)) { host = obj.certificates.CommonName; if (obj.certificates.CommonName.indexOf('.') == -1) { host = req.headers.host; } }
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (req.headers && req.headers.host && (req.headers.host.split(":")[0].toLowerCase() == "localhost")) {
-            res.redirect("https://localhost:" + httpsPort + req.url);
-        } else {
-            res.redirect("https://" + host + ":" + httpsPort + req.url);
-        }
+        res.redirect("https://" + host + ":" + httpsPort + req.url);
     }
 
     /*
