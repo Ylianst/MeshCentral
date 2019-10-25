@@ -2955,6 +2955,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         localPort: 1234,
                         remoteName: node.name,
                         remoteNodeId: node._id,
+                        remoteTarget: '',
                         remotePort: 3389,
                         username: '',
                         password: '',

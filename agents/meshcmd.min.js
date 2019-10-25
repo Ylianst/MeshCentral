@@ -141,6 +141,7 @@ function run(argv) {
     if ((typeof args.serverid) == 'string') { settings.serverid = args.serverid; }
     if ((typeof args.serverhttpshash) == 'string') { settings.serverhttpshash = args.serverhttpshash; }
     if ((typeof args.remoteport) == 'string') { settings.remoteport = parseInt(args.remoteport); }
+    if ((typeof args.remotetarget) == 'string') { settings.remotetarget = args.remotetarget; }
     if ((typeof args.out) == 'string') { settings.output = args.out; }
     if ((typeof args.output) == 'string') { settings.output = args.output; }
     if ((typeof args.debug) == 'string') { settings.debuglevel = parseInt(args.debug); }
@@ -2049,10 +2050,10 @@ function startRouter() {
     tcpserver.on('error', function (e) { console.log('ERROR: ' + JSON.stringify(e)); exit(0); return; });
     tcpserver.listen(settings.localport, function () {
         // We started listening.
-        if (settings.remotename == null) {
+        if (settings.remotetarget == null) {
             console.log('Redirecting local port ' + settings.localport + ' to remote port ' + settings.remoteport + '.');
         } else {
-            console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotename + ':' + settings.remoteport + '.');
+            console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotetarget + ':' + settings.remoteport + '.');
         }
         console.log('Press ctrl-c to exit.');
 
@@ -2069,7 +2070,7 @@ function OnTcpClientConnected(c) {
         c.on('end', function () { disconnectTunnel(this, this.websocket, 'Client closed'); });
         c.pause();
         try {
-            options = http.parseUri(settings.serverurl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport);
+            options = http.parseUri(settings.serverurl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport + (settings.remotetarget == null ? '' : '&tcpaddr=' + settings.remotetarget));
         } catch (e) { console.log('Unable to parse \"serverUrl\".'); process.exit(1); return; }
         options.checkServerIdentity = onVerifyServer;
         options.rejectUnauthorized = false;
