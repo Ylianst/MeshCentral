@@ -141,7 +141,7 @@ function start() {
             if (minifyLib = 2) {
                 var minifiedOut = minify(fs.readFileSync(outname).toString(), {
                     collapseBooleanAttributes: true,
-                    collapseInlineTagWhitespace: true,
+                    collapseInlineTagWhitespace: false, // This is not good.
                     collapseWhitespace: true,
                     minifyCSS: true,
                     minifyJS: true,
@@ -333,7 +333,7 @@ function translateFromHtml(lang, file, createSubDir) {
     if (minifyLib = 2) {
         var minifiedOut = minify(out, {
             collapseBooleanAttributes: true,
-            collapseInlineTagWhitespace: true,
+            collapseInlineTagWhitespace: false, // This is not good.
             collapseWhitespace: true,
             minifyCSS: true,
             minifyJS: true,
