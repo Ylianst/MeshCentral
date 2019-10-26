@@ -2349,11 +2349,10 @@
         }
 
         function groupActionFunction() {
-            var addedOptions = '';
+            var addedOptions = '', nodeids = getCheckedDevices();
 
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
-                var nodeids = getCheckedDevices();
                 for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions += '<option value=103>' + "Send MQTT Message" + '</option>'; break; } }
             }
 

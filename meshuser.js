@@ -1838,6 +1838,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     for (var i in command.usernames) {
                         // Check if the user exists
                         var newuserid = 'user/' + domain.id + '/' + command.usernames[i].toLowerCase(), newuser = parent.users[newuserid];
+                        if (newuserid == obj.user._id) { continue; } // Can't add or modify self
                         if (newuser != null) {
                             // Add mesh to user
                             if (newuser.links == null) newuser.links = {};
@@ -1872,18 +1873,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     var err = null;
                     try {
-                        if (common.validateString(command.userid, 1, 1024) == false) { err = 'Invalid userid'; } // Check userid
-                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check meshid
+                        if (common.validateString(command.userid, 1, 1024) == false) { err = "Invalid userid"; } // Check userid
+                        if (common.validateString(command.meshid, 1, 1024) == false) { err = "Invalid groupid"; } // Check meshid
                         if (command.userid.indexOf('/') == -1) { command.userid = 'user/' + domain.id + '/' + command.userid; }
-                        if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) { err = 'Invalid userid'; } // Invalid domain, operation only valid for current domain
+                        if (command.userid == obj.user._id) { err = "Can't remove self"; } // Can't add of modify self
+                        if ((command.userid.split('/').length != 3) || (command.userid.split('/')[1] != domain.id)) { err = "Invalid userid"; } // Invalid domain, operation only valid for current domain
                         else {
                             if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                             mesh = parent.meshes[command.meshid];
-                            if (mesh == null) { err = 'Unknown device group'; }
-                            else if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) { err = 'Permission denied'; }
-                            else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                            if (mesh == null) { err = "Unknown device group"; }
+                            else if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 2) == 0)) { err = "Permission denied"; }
+                            else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = "Invalid domain"; } // Invalid domain, operation only valid for current domain
                         }
-                    } catch (ex) { err = 'Validation exception: ' + ex; }
+                    } catch (ex) { err = "Validation exception: " + ex; }
 
                     // Handle any errors
                     if (err != null) {
