@@ -185,9 +185,9 @@
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<span id="kvmMultiConnectButtonSpan"><input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;</span>
+                            &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                            <span id="kvmAutoConnectButtonSpan"><label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label></span>
+                            <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                         </td>
                         <td id=devMapToolbar class=style14 style="display:none">
@@ -2672,10 +2672,9 @@
                     if (typeof deviceHeaderCount[node.state] == 'undefined') { deviceHeaderCount[node.state] = 1; } else { deviceHeaderCount[node.state]++; }
                 }
 
-                // Display "connect all" and "auto"
-                QV('kvmMultiConnectButtonSpan', (kvmDivs.length < 128));
-                QV('kvmAutoConnectButtonSpan', (kvmDivs.length < 128));
-                if (kvmDivs.length >= 64) { Q('autoConnectDesktopCheckbox').checked = false; }
+                // Above 32 devices, gray out the auto connect feature.
+                if (kvmDivs.length >= 32) { Q('autoConnectDesktopCheckbox').checked = false; }
+                QE('autoConnectDesktopCheckbox', kvmDivs.length < 32);
 
                 // If displaying devices by groups, sort the group names and display the devices.
                 if (sort == 3) {
@@ -2825,8 +2824,9 @@
             oldviewmode = view;
         }
 
-        function toggleKvmDevice(nodeid) {
-            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid], meshrights = mesh.links[userinfo._id].rights;
+        function toggleKvmDevice(node) {
+            if (typeof node == 'string') { node = getNodeFromId(node); } // Convert nodeid to node if needed
+            var mesh = meshes[node.meshid], meshrights = mesh.links[userinfo._id].rights;
             if ((meshrights & 8) || (meshrights & 256)) { // Requires remote control rights or desktop view only rights
                 //var conn = 0;
                 //if ((node.conn & 1) != 0) { conn = 1; } else if ((node.conn & 6) != 0) { conn = 2; } // Check what type of connect we can do (Agent vs AMT)
@@ -2845,8 +2845,28 @@
         }
 
         function autoConnectDesktops() { if (Q('autoConnectDesktopCheckbox').checked == true) { connectAllKvmFunction(); } }
-        function connectAllKvmFunction() { for (var i in nodes) { if (multiDesktop[nodes[i]._id] == null) { toggleKvmDevice(nodes[i]._id); } } }
-        function disconnectAllKvmFunction() { for (var nodeid in multiDesktop) { multiDesktop[nodeid].Stop(); } multiDesktop = {}; }
+        function connectAllKvmFunction(force) {
+            if (xxdialogMode) return false;
+            if (force !== true) { // We need to count how many devices will need to be connected, if it's a lot, prompt first.
+                var count = 0;
+                for (var i in nodes) {
+                    var node = nodes[i], nodeid = nodes[i]._id;
+                    if (multiDesktop[nodeid] == null) {
+                        var mesh = meshes[node.meshid], meshrights = mesh.links[userinfo._id].rights;
+                        if ((meshrights & 8) || (meshrights & 256)) { // Requires remote control rights or desktop view only rights
+                            //var conn = 0;
+                            //if ((node.conn & 1) != 0) { conn = 1; } else if ((node.conn & 6) != 0) { conn = 2; } // Check what type of connect we can do (Agent vs AMT)
+                            if (node.conn & 1) { count++; }
+                        }
+                    }
+                }
+                if (count > 8) { setDialogMode(2, "Connect All", 3, function() { connectAllKvmFunction(true); }, format("Are you sure you want to connect to {0} devices?", count)); return; }
+            }
+
+            // Perform connect all
+            for (var i in nodes) { if (multiDesktop[nodes[i]._id] == null) { toggleKvmDevice(nodes[i]._id); } }
+        }
+        function disconnectAllKvmFunction() { if (xxdialogMode) return false; for (var nodeid in multiDesktop) { multiDesktop[nodeid].Stop(); } multiDesktop = {}; }
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) {} }
 
         function showMultiDesktopSettings() {
