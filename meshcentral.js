@@ -1633,7 +1633,7 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
-                if ((obj.args.agentsinram) || (archid == 3) || (archid == 4)) {
+                if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4)) && (obj.args.agentsinram !== false))) {
                     if ((archid == 3) || (archid == 4)) {
                         // Load the agent with a random msh added to it.
                         var outStream = new require('stream').Duplex();
