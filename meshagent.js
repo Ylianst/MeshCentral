@@ -980,6 +980,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             });
         }
+        if (parent.parent.pluginHandler != null) {
+            parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent);
+        }
     }
 
     // Get the web certificate private key hash for the specified domain
@@ -1297,6 +1300,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
                     break;
                 }
+            }
+            if (parent.parent.pluginHandler != null) {
+                parent.parent.pluginHandler.callHook('hook_processAgentData', command, obj, parent);
             }
         }
     }
