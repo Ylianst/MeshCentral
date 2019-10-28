@@ -2572,8 +2572,6 @@ function createMeshCore(agent) {
             //if (process.platform == 'win32') { try { pr = require('win-info').pendingReboot(); } catch (ex) { pr = null; } } // Pending reboot
             if ((meshCoreObj.av == null) || (JSON.stringify(meshCoreObj.av) != JSON.stringify(av))) { meshCoreObj.av = av; mesh.SendCommand(meshCoreObj); }
         }
-
-        mesh.SendCommand({ action: "plugin", plugin: "__all", hook: "sendPeriodicServerUpdate"});
     }
 
 
