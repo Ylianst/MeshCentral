@@ -67,6 +67,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverSelfWriteAllowed = true;
     obj.serverStatsCounter = Math.floor(Math.random() * 1000);
     obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
+    obj.agentUpdateBlockSize = 65531; // MeshAgent update block size
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -367,6 +368,7 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.agentallowedip == 'string') { if (obj.args.agentallowedip == '') { obj.args.agentallowedip = null; } else { obj.args.agentallowedip = obj.args.agentallowedip.split(','); } }
         if (typeof obj.args.agentblockedip == 'string') { if (obj.args.agentblockedip == '') { obj.args.agentblockedip = null; } else { obj.args.agentblockedip = obj.args.agentblockedip.split(','); } }
         if (typeof obj.args.swarmallowedip == 'string') { if (obj.args.swarmallowedip == '') { obj.args.swarmallowedip = null; } else { obj.args.swarmallowedip = obj.args.swarmallowedip.split(','); } }
+        if ((typeof obj.args.agentupdateblocksize == 'number') && (obj.args.agentupdateblocksize >= 1024) && (obj.args.agentupdateblocksize <= 65531)) { obj.agentUpdateBlockSize = obj.args.agentupdateblocksize; }
 
         // Local console tracing
         if (typeof obj.args.debug == 'string') { obj.debugSources = obj.args.debug.toLowerCase().split(','); }
