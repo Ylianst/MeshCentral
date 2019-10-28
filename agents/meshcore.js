@@ -2573,7 +2573,7 @@ function createMeshCore(agent) {
             if ((meshCoreObj.av == null) || (JSON.stringify(meshCoreObj.av) != JSON.stringify(av))) { meshCoreObj.av = av; mesh.SendCommand(meshCoreObj); }
         }
 
-        // TODO: add plugin hook here
+        mesh.SendCommand({ action: "plugin", plugin: "__all", hook: "sendPeriodicServerUpdate"});
     }
 
 
