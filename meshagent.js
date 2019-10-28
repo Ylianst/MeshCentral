@@ -1275,7 +1275,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'plugin': {
-                    if (typeof command.plugin != 'string') break;
+                    if ((parent.parent.pluginHandler == null) || (typeof command.plugin != 'string')) break;
                     try { 
                         var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
                         if (command.plugin == '__all') {
