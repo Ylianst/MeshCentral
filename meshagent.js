@@ -1278,11 +1278,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (typeof command.plugin != 'string') break;
                     try { 
                         var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
-                        if (command.plugin == '__all') {
-                            pluginHandler.callHook(command.hook, command, obj, parent);
-                        } else {
-                            pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-                        }
+                        pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
                     } catch (e) {
                         console.log('Error loading plugin handler (' + e + ')');
                     }
