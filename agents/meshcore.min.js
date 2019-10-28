@@ -2574,7 +2574,6 @@ function createMeshCore(agent) {
         }
     }
 
-
     // Starting function
     obj.start = function () {
         // Setup the mesh agent event handlers
