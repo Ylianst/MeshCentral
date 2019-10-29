@@ -53,6 +53,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1);
         }
 
+        // Remove this agent from the list of agents with bad web certificates
+        if (obj.badWebCert) { delete parent.wsagentsWithBadWebCerts[obj.badWebCert]; }
+
         // Get the current mesh
         const mesh = parent.meshes[obj.dbMeshKey];
 
@@ -381,6 +384,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
                     if ((getWebCertHash(domain) != msg.substring(2, 50)) && (getWebCertFullHash(domain) != msg.substring(2, 50))) {
+                        if (parent.parent.supportsProxyCertificatesRequest !== false) {
+                            obj.badWebCert = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64');
+                            parent.wsagentsWithBadWebCerts[obj.badWebCert] = obj; // Add this agent to the list of of agents with bad web certificates.
+                            parent.parent.updateProxyCertificates();
+                        }
                         parent.agentStats.agentBadWebCertHashCount++;
                         console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').');
                         console.log('Agent reported web cert hash:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex')) + '.');

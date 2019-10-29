@@ -156,20 +156,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Main lists
-    obj.wsagents = {};              // NodeId --> Agent
+    obj.wsagents = {};                // NodeId --> Agent
+    obj.wsagentsWithBadWebCerts = {}; // NodeId --> Agent
     obj.wsagentsDisconnections = {};
     obj.wsagentsDisconnectionsTimer = null;
     obj.duplicateAgentsLog = {};
-    obj.wssessions = {};            // UserId --> Array Of Sessions
-    obj.wssessions2 = {};           // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
-    obj.wsPeerSessions = {};        // ServerId --> Array Of "UserId + SessionRnd"
-    obj.wsPeerSessions2 = {};       // "UserId + SessionRnd" --> ServerId
-    obj.wsPeerSessions3 = {};       // ServerId --> UserId --> [ SessionId ]
-    obj.sessionsCount = {};         // Merged session counters, used when doing server peering. UserId --> SessionCount
-    obj.wsrelays = {};              // Id -> Relay
-    obj.wsPeerRelays = {};          // Id -> { ServerId, Time }
-    var tlsSessionStore = {};       // Store TLS session information for quick resume.
-    var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
+    obj.wssessions = {};              // UserId --> Array Of Sessions
+    obj.wssessions2 = {};             // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
+    obj.wsPeerSessions = {};          // ServerId --> Array Of "UserId + SessionRnd"
+    obj.wsPeerSessions2 = {};         // "UserId + SessionRnd" --> ServerId
+    obj.wsPeerSessions3 = {};         // ServerId --> UserId --> [ SessionId ]
+    obj.sessionsCount = {};           // Merged session counters, used when doing server peering. UserId --> SessionCount
+    obj.wsrelays = {};                // Id -> Relay
+    obj.wsPeerRelays = {};            // Id -> { ServerId, Time }
+    var tlsSessionStore = {};         // Store TLS session information for quick resume.
+    var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
