@@ -863,7 +863,7 @@ function CreateMeshCentralServer(config, args) {
                 // Load web certs
                 webCertLoadCount++;
                 var dnsname = obj.config.domains[i].dns;
-                if ((dnsname == null) && (i == '') && (obj.config.settings.cert != null)) { dnsname = obj.config.settings.cert; }
+                if ((dnsname == null) && (obj.config.settings.cert != null)) { dnsname = obj.config.settings.cert; }
                 obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, dnsname, obj.config.domains[i], function (url, cert, xhostname, xdomain) {
                     if (cert != null) {
                         // Hash the entire cert
