@@ -862,7 +862,7 @@ function CreateMeshCentralServer(config, args) {
             }
         }
 
-        if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(); }
+        if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
         obj.StartEx4(); // Keep going
     }
 
@@ -1022,14 +1022,15 @@ function CreateMeshCentralServer(config, args) {
     obj.pendingProxyCertificatesRequests = 0;
     obj.lastProxyCertificatesRequest = null;
     obj.supportsProxyCertificatesRequest = false;
-    obj.updateProxyCertificates = function () {
-        var i;
-        if ((obj.pendingProxyCertificatesRequests > 0) || (obj.supportsProxyCertificatesRequest == false)) { return; }
-        if ((obj.lastProxyCertificatesRequest != null) && ((Date.now() - obj.lastProxyCertificatesRequest) < 120000)) { return; } // Don't allow this call more than every 2 minutes.
-        obj.lastProxyCertificatesRequest = Date.now();
+    obj.updateProxyCertificates = function (force) {
+        if (force !== true) {
+            if ((obj.pendingProxyCertificatesRequests > 0) || (obj.supportsProxyCertificatesRequest == false)) return;
+            if ((obj.lastProxyCertificatesRequest != null) && ((Date.now() - obj.lastProxyCertificatesRequest) < 120000)) return; // Don't allow this call more than every 2 minutes.
+            obj.lastProxyCertificatesRequest = Date.now();
+        }
 
         // Load any domain web certificates
-        for (i in obj.config.domains) {
+        for (var i in obj.config.domains) {
             if (obj.config.domains[i].certurl != null) {
                 // Load web certs
                 obj.pendingProxyCertificatesRequests++;

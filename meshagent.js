@@ -387,7 +387,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (parent.parent.supportsProxyCertificatesRequest !== false) {
                             obj.badWebCert = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64');
                             parent.wsagentsWithBadWebCerts[obj.badWebCert] = obj; // Add this agent to the list of of agents with bad web certificates.
-                            parent.parent.updateProxyCertificates();
+                            parent.parent.updateProxyCertificates(false);
                         }
                         parent.agentStats.agentBadWebCertHashCount++;
                         console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (new Buffer(getWebCertFullHash(domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').');
