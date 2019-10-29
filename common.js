@@ -35,6 +35,9 @@ module.exports.makeFilename = function (v) { return v.split('\\').join('').split
 // Move an element from one position in an array to a new position
 module.exports.ArrayElementMove = function(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)[0]); };
 
+// Format a string with arguments, "replaces {0} and {1}..."
+module.exports.format = function (format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
 // Print object for HTML
 module.exports.ObjectToStringEx = function (x, c) {
     var r = "", i;

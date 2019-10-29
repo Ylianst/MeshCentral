@@ -196,7 +196,6 @@ module.exports.CertificateOperations = function (parent) {
 
     // Return the certificate of the remote HTTPS server
     obj.loadCertificate = function (url, hostname, tag, func) {
-        console.log('loadCertificate', url, hostname);
         const u = require('url').parse(url);
         if (u.protocol == 'https:') {
             // Read the certificate from HTTPS
@@ -218,7 +217,7 @@ module.exports.CertificateOperations = function (parent) {
                     func(url, data, hostname, tag);
                 }
             });
-        } else { func(url, null, tag); }
+        } else { func(url, null, hostname, tag); }
     };
 
     // Check if a configuration file exists
