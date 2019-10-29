@@ -1815,6 +1815,19 @@ function createMeshCore(agent) {
                                     break;
                                 case 'STATUS':
                                     var nextboot = require('win-bcd').getKey('safeboot');
+                                    if (nextboot)
+                                    {
+                                        switch(nextboot)
+                                        {
+                                            case 'Network':
+                                            case 'network':
+                                                nextboot = 'SAFE_MODE_NETWORK';
+                                                break;
+                                            default:
+                                                nextboot = 'SAFE_MODE';
+                                                break;
+                                        }
+                                    }
                                     response = 'Current: ' + require('win-bcd').bootMode + ' , NextBoot: ' + (nextboot ? nextboot : 'NORMAL');
                                     break;
                             }
