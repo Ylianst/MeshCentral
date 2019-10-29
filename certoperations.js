@@ -497,13 +497,12 @@ module.exports.CertificateOperations = function (parent) {
             r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField("CN").value;
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.WebIssuer = webCertificate.issuer.getField("CN").value;
-            r.CommonName = webCertificate.subject.getField("CN").value;
-            if (r.CommonName.startsWith('*.')) {
-                if (commonName.indexOf('.') == -1) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
-                if (commonName.startsWith('*.')) { console.log("ERROR: Server can't use a wildcard name: " + commonName); process.exit(0); return; }
-                r.CommonName = commonName;
+            if (commonName == "un-configured") { // If the "cert" name is not set, try to use the certificate CN instead (ok if the certificate is not wildcard).
+                commonName = webCertificate.subject.getField("CN").value;
+                if (commonName.startsWith('*.')) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
             }
-            r.CommonNames = [ r.CommonName.toLowerCase() ];
+            r.CommonName = commonName;
+            r.CommonNames = [commonName.toLowerCase()];
             var altNames = webCertificate.getExtension("subjectAltName");
             if (altNames) {
                 for (i = 0; i < altNames.altNames.length; i++) {
