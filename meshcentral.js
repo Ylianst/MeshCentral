@@ -862,7 +862,9 @@ function CreateMeshCentralServer(config, args) {
 
                 // Load web certs
                 webCertLoadCount++;
-                obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, obj.config.domains[i], function (url, cert, xdomain) {
+                var dnsname = obj.config.domains[i].dns;
+                if ((dnsname == null) && (i == '') && (obj.config.settings.cert != null)) { dnsname = obj.config.settings.cert; }
+                obj.certificateOperations.loadCertificate(obj.config.domains[i].certurl, dnsname, obj.config.domains[i], function (url, cert, xhostname, xdomain) {
                     if (cert != null) {
                         // Hash the entire cert
                         var hash = obj.crypto.createHash('sha384').update(Buffer.from(cert, 'binary')).digest('hex');
@@ -875,11 +877,11 @@ function CreateMeshCentralServer(config, args) {
                             //console.log('V1: ' + xdomain.certkeyhash);
                         } catch (ex) { }
 
-                        console.log('Loaded web certificate from ' + url);
+                        console.log('Loaded web certificate from \"' + url + '\", host: \"' + xhostname + '\"');
                         console.log('  SHA384 cert hash: ' + xdomain.certhash);
                         if (xdomain.certhash != xdomain.certkeyhash) { console.log('  SHA384 key hash:  ' + xdomain.certkeyhash); }
                     } else {
-                        console.log('Failed to load web certificate at: ' + url);
+                        console.log('Failed to load web certificate at: \"' + url + '\", host: \"' + xhostname + '\"');
                     }
                     webCertLoadCount--;
                     if (webCertLoadCount == 0) { obj.StartEx4(); } // Done loading all certificates
