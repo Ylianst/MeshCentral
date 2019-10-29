@@ -94,8 +94,8 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Look to see if data and/or file path is specified
-    if (obj.args.datapath) { obj.datapath = obj.args.datapath; }
-    if (obj.args.filespath) { obj.filespath = obj.args.filespath; }
+    if (obj.config.settings && (typeof obj.config.settings.datapath == 'string')) { obj.datapath = obj.config.settings.datapath; }
+    if (obj.config.settings && (typeof obj.config.settings.filespath == 'string')) { obj.filespath = obj.config.settings.filespath; }
 
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (e) { }
