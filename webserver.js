@@ -2691,11 +2691,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Delete a folder and all sub items.  (TODO: try to make all async version)
     function deleteFolderRec(path) {
         if (obj.fs.existsSync(path) == false) return;
-        obj.fs.readdirSync(path).forEach(function (file, index) {
-            var pathx = path + "/" + file;
-            if (obj.fs.lstatSync(pathx).isDirectory()) { deleteFolderRec(pathx); } else { obj.fs.unlinkSync(pathx); }
-        });
-        obj.fs.rmdirSync(path);
+        try {
+            obj.fs.readdirSync(path).forEach(function (file, index) {
+                var pathx = path + '/' + file;
+                if (obj.fs.lstatSync(pathx).isDirectory()) { deleteFolderRec(pathx); } else { obj.fs.unlinkSync(pathx); }
+            });
+            obj.fs.rmdirSync(path);
+        } catch (ex) { }
     }
 
     // Handle Intel AMT events

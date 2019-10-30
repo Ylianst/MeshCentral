@@ -4506,7 +4506,7 @@
             if (xxdialogMode) return;
             var url = '/messenger?id=meshmessenger/' + encodeURIComponent(currentNode._id) + '/' + encodeURIComponent(userinfo._id) + '&title=' + currentNode.name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
-            window.open(url, 'meshmessenger:' + currentNode._id);
+            window.open(url, 'meshmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
             meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
         }
 
@@ -7722,12 +7722,12 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right title=\"' + title + '\">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")></div><a href=# style=cursor:pointer onclick=\'return p5folderset(\"' + encodeURIComponent(f.nx) + '\")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + name + '">&nbsp;<span style=float:right title=\"' + title + '\">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")></div><a href=# style=cursor:pointer onclick=\'return p5folderset(\"' + encodeURIComponent(f.nx) + '\")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title=\"Display public link\" onclick=\'return p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "Link" + '</a>)'; }
-                    if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" download href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title="Display public link" onclick=\'return p5showPublicLink("' + publicPath + '/' + f.nx + '")\'>' + "Link" + '</a>)'; }
+                    if (f.s > 0) { link = '<a rel="noreferrer noopener" target="_blank" download href="downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '">' + shortname + '</a>' + publiclink; }
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -7865,7 +7865,16 @@
         */
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
-        function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
+        function p5copyFile(cut) {
+            var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation);
+            for (var i = 0; i < checkboxes.length; i++) {
+                if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) {
+                    console.log('yy', checkboxes[i].value);
+                    p5clipboard.push(checkboxes[i].value);
+                }
+            }
+            p5updateClipview();
+        }
         function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confim {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0?'copy':'move'), p5clipboard.length, ((p5clipboard.length > 1)?'s':'')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
         function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1)?'s':''), (p5clipboardCut == 0?"copy":"move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
