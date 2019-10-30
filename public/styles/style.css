@@ -2564,3 +2564,50 @@ a {
     border-radius: 3px;
     background-color: #DDD;
 }
+
+#p7tbl {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#p7tbl th, #p7tbl td {
+    text-align: left;
+    padding: 12px;
+}
+
+#p7tbl tr:nth-child(n+2):nth-child(odd) {
+      background-color: #cfeeff;
+}
+
+#p7tbl .chName {
+    width: 20%;
+}
+
+#p7tbl .chDescription {
+    width: 40%;
+}
+
+#p7tbl .chSite {
+    width: 10%;
+}
+
+#p7tbl .chVersion {
+    width: 10%;
+}
+
+#p7tbl .chStatus {
+    width: 10%;
+}
+
+#p7tbl .chAction {
+    width: 10%;
+}
+
+#addPlugin {
+    background-image: url(../images/plus32.png);
+    width: 32px;
+    height: 32px;
+    float: right;
+    cursor: pointer;
+    margin-right: 12px;
+}
