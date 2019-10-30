@@ -3,10 +3,10 @@
     border: none;
     margin: 2px;
     margin-top: 3px;
-    float: right;
     border-radius: 3px;
     height: 32px;
     width: 32px;
+    float: right;
 }
 
     .topButton:hover {
