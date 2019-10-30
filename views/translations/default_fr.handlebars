@@ -500,7 +500,7 @@
                             <span id="DeskTimer" title="Session time"></span>&nbsp;
                             <select id="termdisplays" style="display:none" onchange="deskSetDisplay(event)" onkeypress="return false" onkeydown="return false"></select>&nbsp;
                             <input id="DeskToolsButton" type="button" value="Outils" title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
-                            <span id="DeskChatButton" class="deskarea" title="Ouvrir la fenêtre de discussion sur cet ordinateur"><img src="images/icon-chat.png" onclick="deviceChat()" height="16" width="16" style="padding-top:2px"></span>
+                            <span id="DeskChatButton" class="deskarea" title="Ouvrir la fenêtre de discussion sur cet ordinateur"><img src="images/icon-chat.png" onclick="deviceChat(event)" height="16" width="16" style="padding-top:2px"></span>
                             <span id="DeskNotifyButton" title="Display a notification on the remote computer"><img src="images/icon-notify.png" onclick="deviceToastFunction()" height="16" width="16" style="padding-top:2px"></span>
                             <span id="DeskOpenWebButton" title="Open a web address on remote computer"><img src="images/icon-url2.png" onclick="deviceUrlFunction()" height="16" width="16" style="padding-top:2px"></span>
                         </div>
@@ -4500,11 +4500,15 @@
 
         function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponent(Q('d2devNotes').value) }); }
 
-        function deviceChat() {
+        function deviceChat(e) {
             if (xxdialogMode) return;
             var url = '/messenger?id=meshmessenger/' + encodeURIComponent(currentNode._id) + '/' + encodeURIComponent(userinfo._id) + '&title=' + currentNode.name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
-            window.open(url, 'meshmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
+            if (e && (e.shiftKey == true)) {
+                window.open(url, 'meshmessenger:' + currentNode._id);
+            } else {
+                window.open(url, 'meshmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
+            }
             meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
         }
 
