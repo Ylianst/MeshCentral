@@ -6143,6 +6143,7 @@
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
+        function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q('p13uploadinput').files.length > 0); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
         function p13viewfile() {
             var checkboxes = document.getElementsByName('fd');
@@ -7820,9 +7821,35 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
-        function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
+        function p5updateUploadDialogOk() {
+            // Check if these are files we can upload, remove all folders.
+            var xallfiles = Q('p5uploadinput').files, files = [];
+            for (var i in xallfiles) { if ((xallfiles[i].size != null) && (xallfiles[i].size != 0)) { files.push(xallfiles[i]); } }
+
+            // Check if these files are duplicates of existing files.
+            var filetreex = filetree, allfiles = [], overWriteCount = 0;
+            for (var i in filetreelocation) {
+                if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) { filetreex = filetreex.f[filetreelocation[i]]; }
+            }
+            QE('idx_dlgOkButton', xallfiles.length > 0);
+            if (xallfiles.length > 0) {
+                if (filetreex.f != null) {
+                    for (var i in filetreex.f) { allfiles.push(i); }
+                    for (var i = 0; i < xallfiles.length; i++) {
+                        if (allfiles.indexOf(xallfiles[i].name) >= 0) { overWriteCount++; } // TODO: If the server is Windows, we need to lowercase both names.
+                    }
+                }
+                QV('p5confirmOverwriteSpan', overWriteCount > 0);
+                if (overWriteCount > 0) {
+                    QE('idx_dlgOkButton', Q('p5confirmOverwrite').checked);
+                } else {
+                    Q('p5confirmOverwrite').checked = false;
+                    QE('idx_dlgOkButton', true);
+                }
+            }
+        }
         /*
         function p5viewfile() {
             var checkboxes = document.getElementsByName('fc');
@@ -8292,8 +8319,9 @@
         }
 
         function showCreateNewAccountDialogValidate(x) {
-            var ve = validateEmail(Q('p4email').value);
+            var ve = true;
             if (serverinfo.emailcheck) {
+                ve = validateEmail(Q('p4email').value);
                 QE('p4verifiedEmail', ve);
                 QE('p4invitationEmail', ve && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
                 if (ve == false) { Q('p4verifiedEmail').checked = false; }
@@ -8560,8 +8588,8 @@
         function p30showUserChangePassDialog(multiFactor) {
             if (xxdialogMode) return;
             var x = '';
-            x += addHtmlValue("Mot de passe", '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
-            x += addHtmlValue("Mot de passe", '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=showCreateNewAccountDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
+            x += addHtmlValue("Mot de passe", '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
+            x += addHtmlValue("Mot de passe", '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
             if (features & 0x00010000) { x += addHtmlValue("Password hint", '<input id=p4hint type=text style=width:230px maxlength=256></input>'); }
 
             if (passRequirements) {
