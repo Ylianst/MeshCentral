@@ -3102,6 +3102,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'plugins': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.db.getPlugins(function(err, docs) {
+                    try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                });
+                break;
+            }
+            case 'addplugin': {
+                // @Ylianst - Do we need a new permission here?
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.addPlugin(command.url);
+                break;
+            }
+            case 'removeplugin': {
+                // @Ylianst - Do we need a new permission here?
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.removePlugin(command.id);
+                break;
+            }
             case 'plugin': {
                 if (parent.parent.pluginHandler == null) break; // If the plugin's are not supported, reject this command.
                 command.userid = user._id;

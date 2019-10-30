@@ -71,6 +71,13 @@ module.exports.pluginHandler = function (parent) {
             for (const i of pages) { i.style.display = 'none'; }
             QV(id, true);
         };
+        obj.addPluginEx = function() {
+            meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
+        };
+        obj.addPluginDlg = function() {
+            setDialogMode(2, "Plugin URL", 3, obj.addPluginEx, '<input type=text id=pluginurlinput style=width:100% />'); 
+            focusTextBox('pluginurlinput');
+        };
         return obj; };`;
         return str;
     }
@@ -152,7 +159,88 @@ module.exports.pluginHandler = function (parent) {
             }
         }
         return panel;
-    }
+    };
+    
+    obj.isValidConfig = function(conf, url) { // check for the required attributes
+        var isValid = true;
+        if (!(
+            typeof conf.name == 'string'
+            && typeof conf.version == 'string'
+            && typeof conf.author == 'string'
+            && typeof conf.description == 'string'
+            && typeof conf.hasAdminPanel == 'boolean'
+            && typeof conf.homepage == 'string'
+            && typeof conf.changelogUrl == 'string'
+            && typeof conf.configUrl == 'string'
+            && typeof conf.repository == 'object'
+            && typeof conf.repository.type == 'string'
+            && typeof conf.repository.url == 'string'
+            && typeof conf.meshCentralCompat == 'string'
+        //    && conf.configUrl == url  // make sure we're loading a plugin from its desired config
+        )) isValid = false;
+        // more checks here?
+        return isValid;
+    };
+    
+    obj.addPlugin = function(url) {
+      var https = require('https');
+      //var pit = obj.path.join(obj.pluginPath, )
 
+      https.get(url, function(res) {
+        var configStr = '';
+        res.on('data', function(chunk){
+            configStr += chunk;
+        });
+        res.on('end', function(){
+            if (configStr[0] == '{') {
+                try {
+                    var pluginConfig = JSON.parse(configStr);
+                    if (obj.isValidConfig(pluginConfig, url)) {
+                        // add to database
+                        // we met the requirements of a valid config, but in case there's extra, let's rebuild for what we need
+                        parent.db.addPlugin({
+                          "name": pluginConfig.name,
+                          "version": pluginConfig.version,
+                          "description": pluginConfig.description,
+                          "hasAdminPanel": pluginConfig.hasAdminPanel,
+                          "homepage": pluginConfig.homepage,
+                          "changelogUrl": pluginConfig.changelogUrl,
+                          "configUrl": pluginConfig.configUrl,
+                          "repository": {
+                              "type": pluginConfig.repository.type,
+                              "url": pluginConfig.repository.url
+                          },
+                          "meshCentralCompat": pluginConfig.meshCentralCompat,
+                          "status": 0  // 0: disabled, 1: enabled
+                        });
+                        parent.db.getPlugins(function(err, docs){
+                            var targets = ['*', 'server-users'];
+                            parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
+                        
+                        })
+                    } else {
+                        // @TODO return error to user
+                    }
+                    
+                } catch (e) { console.log('Error processing addPlugin request. Check that you have valid JSON.'); }
+            }
+        });
+
+      }).on('error', function(e) {
+        console.log("Got error: " + e.message);
+      }); 
+      /* const file = fs.createWriteStream("file.jpg");
+      const request = http.get("http://i3.ytimg.com/vi/J---aiyznGQ/mqdefault.jpg", function(response) {
+          response.pipe(file);
+      }); */
+    };
+    
+    obj.getPlugins = function() {
+        var p = parent.db.getPlugins();
+        if (typeof p == 'undefined' || p.length == 0) {
+            return null;
+        }
+        return p;
+    }
     return obj;
 };

@@ -442,6 +442,9 @@ module.exports.CreateDB = function (parent, func) {
                     });
                 }
             });
+            
+            // Setup plugin info collection
+            obj.pluginsfile = db.collection('plugins');
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -543,6 +546,9 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
         });
+        
+        // Setup plugin info collection
+        obj.pluginsfile = db.collection('plugins');
 
         setupFunctions(func); // Completed setup of MongoJS
     } else {
@@ -604,6 +610,10 @@ module.exports.CreateDB = function (parent, func) {
         obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 30 }); // Limit the server stats log to 30 days (Seconds * Minutes * Hours * Days)
         obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
 
+        // Setup plugin info collection
+        obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
+        obj.pluginsfile.persistence.setAutocompactionInterval(36000);
+        
         setupFunctions(func); // Completed setup of NeDB
     }
 
@@ -741,6 +751,19 @@ module.exports.CreateDB = function (parent, func) {
                     func(r);
                 });
             }
+            
+            // Add a plugin
+            obj.addPlugin = function (plugin) { obj.pluginsfile.insertOne(plugin); };
+            
+            // Get all plugins
+            obj.getPlugins = function (func) { obj.pluginsfile.find().sort({ name: 1 }).toArray(func); };
+            
+            // Get plugin
+            obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); };
+            
+            // Delete plugin
+            obj.deletePlugin = function (id) { obj.pluginsfile.deleteOne({ _id: id }); };
+            
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
             obj.Set = function (data, func) {

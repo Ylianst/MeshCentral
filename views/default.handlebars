@@ -88,6 +88,9 @@
             <div id=LeftMenuMyServer tabindex=0 class="lbbutton" style="display:none" title="My Server" onclick=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }">
                 <div class="lb6"></div>
             </div>
+            <div id=LeftMenuMyPlugins tabindex=0 class="lbbutton" style="display:none" title="My Plugins" onclick=go(7,event) onkeypress="if (event.key=='Enter') { go(7); }">
+                <div class="lb7"></div>
+            </div>
         </div>
         <div id=topbar class=noselect>
             <div>
@@ -109,6 +112,7 @@
                             <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5,event) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
                             <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
                             <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
+                            <td tabindex=0 id=MainMenuMyPlugins class="topbar_td style3x" onclick=go(7,event) onkeypress="if (event.key == 'Enter') go(7)">My Plugins</td>
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
                     </table>
@@ -404,6 +408,13 @@
                     </div><br /><br />
                     <div id="serverStatsTable"></div>
                 </div>
+            </div>
+            <div id=p7 style="display:none">
+                <h1>My Plugins</h1>
+                <div id="addPlugin" onclick="return pluginHandler.addPluginDlg();"></div>
+                <table id="p7tbl">
+                    <tr><th class="chName">Name</th><th class="chDescription">Description</th><th class="chSite">Link</th><th class="chVersion">Version</th><th class="chStatus">Status</th><th class="chAction">Action</th></tr>
+                </table>
             </div>
             <div id=p10 style="display:none">
                 <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -1042,6 +1053,7 @@
         var pluginHandlerBuilder = {{{pluginHandler}}};
         var pluginHandler = null;
         if (pluginHandlerBuilder != null) { pluginHandler = new pluginHandlerBuilder(); }
+        var installedPluginList = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1295,6 +1307,7 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
+                meshserver.send({ action: 'plugins' });
                 if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
                 if ('{{viewmode}}' == '') { go(1); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
@@ -1337,6 +1350,7 @@
             QV('p2ServerActionsVersion', siteRights & 16);
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
+            QV('MainMenuMyPlugins', (pluginHandler != null));
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
@@ -2284,6 +2298,12 @@
                             //console.log(message.msg);
                             break;
                         }
+                        case 'updatePluginList': {
+                            // @Ylianst - Do we need a rights check here?
+                            installedPluginList = message.event.list;
+                            updatePluginList();
+                            break;
+                        }
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
@@ -2335,6 +2355,11 @@
                     // Disconnect
                     autoReconnect = false;
                     QH('p0span', message.msg);
+                    break;
+                }
+                case 'updatePluginList': {
+                    installedPluginList = message.list;
+                    updatePluginList();
                     break;
                 }
                 case 'plugin': {
@@ -9250,6 +9275,9 @@
 
             // Remove top bar selection
             var mainBarItems = ['MainMenuMyDevices', 'MainMenuMyAccount', 'MainMenuMyEvents', 'MainMenuMyFiles', 'MainMenuMyUsers', 'MainMenuMyServer'];
+            if (pluginHandler != null) {
+                mainBarItems.push('MainMenuMyPlugins');
+            }
             for (var i in mainBarItems) {
                 QC(mainBarItems[i]).remove('fullselect');
                 QC(mainBarItems[i]).remove('semiselect');
@@ -9257,6 +9285,9 @@
 
             // Remove left bar selection
             var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers', 'LeftMenuMyServer'];
+            if (pluginHandler != null) {
+                leftBarItems.push('LeftMenuMyPlugins');
+            }
             for (var i in leftBarItems) {
                 QC(leftBarItems[i]).remove('lbbuttonsel');
                 QC(leftBarItems[i]).remove('lbbuttonsel2');
@@ -9289,7 +9320,11 @@
             // My Server
             if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
             if ((x == 6) || (x == 115) || (x == 40)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
-
+            
+            // My Plugins
+            if (x == 7) QC('MainMenuMyPlugins').add(mainMenuActiveClass);
+            if (x == 7) QC('LeftMenuMyPlugins').add(leftMenuActiveClass);
+            
             // column_l max-height
             if (webPageStackMenu && (x >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
 
@@ -9333,7 +9368,34 @@
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
         }
-
+        
+        function updatePluginList() {
+            if (installedPluginList.length) {
+                var tr = Q('p7tbl').querySelectorAll(".p7tblRow");
+                if (tr.length) {
+                    for (const i in Object.values(tr)) {
+                        tr[i].parentNode.removeChild(tr[i]);
+                    }
+                }
+                var statusMap = {
+                  0: 'Disabled',
+                  1: 'Installed'
+                }
+                var tbl = Q('p7tbl');
+                installedPluginList.forEach(function(p){
+                    if (p.hasAdminPanel == true) {
+                        p.name = `<a onclick="return goPlugin('${p._id}');">${p.name}</a>`;
+                    }
+                    p.status = statusMap[p.status];
+                    p.actions = 'TODO'; // Install / Upgrade / Disable / Delete
+                    let tpl = `<td>${p.name}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td>${p.status}</td><td>${p.actions}</td>`;
+                    let tr = tbl.insertRow(-1);
+                    tr.innerHTML = tpl;
+                    tr.classList.add('p7tblRow');
+                });
+            }
+            
+        }
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function putstore(name, val) {
