@@ -1308,7 +1308,7 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
-                meshserver.send({ action: 'plugins' });
+                if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
                 if ('{{viewmode}}' == '') { go(1); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
