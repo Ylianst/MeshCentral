@@ -120,19 +120,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
         if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
-        var path = parent.path.join(parent.filespath, domainx, rootfoldersplit[0] + "-" + rootfoldersplit[2]);
+        var path = parent.path.join(parent.filespath, domainx, rootfoldersplit[0] + '-' + rootfoldersplit[2]);
         for (var i = 1; i < meshpath.length; i++) { if (common.IsFilenameValid(meshpath[i]) == false) { path = null; break; } path += ("/" + meshpath[i]); }
         return path;
     }
 
-    // TODO: Replace this with something better?
+    // Copy a file using the best technique available
     function copyFile(src, dest, func, tag) {
-        var ss = fs.createReadStream(src), ds = fs.createWriteStream(dest);
-        ss.pipe(ds);
-        ds.ss = ss;
-        if (arguments.length == 3 && typeof arguments[2] === 'function') { ds.on('close', arguments[2]); }
-        else if (arguments.length == 4 && typeof arguments[3] === 'function') { ds.on('close', arguments[3]); }
-        ds.on('close', function () { func(tag); });
+        if (fs.copyFile) {
+            // NodeJS v8.5 and higher
+            fs.copyFile(src, dest, function (err) { func(tag); })
+        } else {
+            // Older NodeJS
+            try {
+                var ss = fs.createReadStream(src), ds = fs.createWriteStream(dest);
+                ss.on('error', function () { func(tag); });
+                ds.on('error', function () { func(tag); });
+                ss.pipe(ds);
+                ds.ss = ss;
+                if (arguments.length == 3 && typeof arguments[2] === 'function') { ds.on('close', arguments[2]); }
+                else if (arguments.length == 4 && typeof arguments[3] === 'function') { ds.on('close', arguments[3]); }
+                ds.on('close', function () { func(tag); });
+            } catch (ex) { }
+        }
     }
 
     // Route a command to a target node
@@ -607,9 +617,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         if ((command.fileop == 'createfolder') && (common.IsFilenameValid(command.newfolder) == true)) {
                             // Create a new folder
-                            try { fs.mkdirSync(path + "/" + command.newfolder); } catch (e) {
-                                try { fs.mkdirSync(path); } catch (e) { }
-                                try { fs.mkdirSync(path + "/" + command.newfolder); } catch (e) { }
+                            try { fs.mkdirSync(path + '/' + command.newfolder); } catch (ex) {
+                                try { fs.mkdirSync(path); } catch (ex) { }
+                                try { fs.mkdirSync(path + '/' + command.newfolder); } catch (ex) { }
                             }
                         }
                         else if (command.fileop == 'delete') {
@@ -619,9 +629,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (common.IsFilenameValid(command.delfiles[i]) == true) {
                                     var fullpath = parent.path.join(path, command.delfiles[i]);
                                     if (command.rec == true) {
-                                        deleteFolderRecursive(fullpath); // TODO, make this an async function
+                                        try { deleteFolderRecursive(fullpath); } catch (ex) { } // TODO, make this an async function
                                     } else {
-                                        try { fs.rmdirSync(fullpath); } catch (e) { try { fs.unlinkSync(fullpath); } catch (e) { } }
+                                        try { fs.rmdirSync(fullpath); } catch (ex) { try { fs.unlinkSync(fullpath); } catch (xe) { } }
                                     }
                                 }
                             }

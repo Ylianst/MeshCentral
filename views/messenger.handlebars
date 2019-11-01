@@ -12,13 +12,14 @@
     </head>
     <body style="font-family:Arial,Helvetica,sans-serif">
         <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
-            <div id="notifyButton" class="icon13 topButton" style="margin-right:4px;display:none" title="Enable browser notification" onclick="enableNotificationsButtonClick()"></div>
-            <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
-            <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
-            <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
-            <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
-            <div style="display:inline-block;width:2px"></div>
-            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b>MeshMessenger<span id="xtitle"></span></b></div>
+            <div style="position:absolute;background-color:#036;right:0;height:38px">
+                <div id="notifyButton" class="icon13 topButton" style="margin-right:4px;display:none" title="Enable browser notification" onclick="enableNotificationsButtonClick()"></div>
+                <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
+                <div id="camButton" class="icon2 topButton" title="Activate camera & microphone" style="display:none" onclick="camButtonClick()"></div>
+                <div id="micButton" class="icon6 topButton" title="Activate microphone" style="display:none" onclick="micButtonClick()"></div>
+                <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
+            </div>
+            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle">MeshMessenger</span></b></div>
         </div>
         <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:30px">
             <div style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
@@ -65,7 +66,7 @@
             var currentFileDownload = null;
 
             // Set the title
-            if (args.title) { QH('xtitle', ' - ' + args.title); document.title = document.title + ' - ' + args.title; }
+            if (args.title) { QH('xtitle', args.title.split(' ').join('&nbsp')); document.title = document.title + ' - ' + args.title; }
             
             // Setup web notifications
             if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }

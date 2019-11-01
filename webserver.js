@@ -156,20 +156,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Main lists
-    obj.wsagents = {};              // NodeId --> Agent
+    obj.wsagents = {};                // NodeId --> Agent
+    obj.wsagentsWithBadWebCerts = {}; // NodeId --> Agent
     obj.wsagentsDisconnections = {};
     obj.wsagentsDisconnectionsTimer = null;
     obj.duplicateAgentsLog = {};
-    obj.wssessions = {};            // UserId --> Array Of Sessions
-    obj.wssessions2 = {};           // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
-    obj.wsPeerSessions = {};        // ServerId --> Array Of "UserId + SessionRnd"
-    obj.wsPeerSessions2 = {};       // "UserId + SessionRnd" --> ServerId
-    obj.wsPeerSessions3 = {};       // ServerId --> UserId --> [ SessionId ]
-    obj.sessionsCount = {};         // Merged session counters, used when doing server peering. UserId --> SessionCount
-    obj.wsrelays = {};              // Id -> Relay
-    obj.wsPeerRelays = {};          // Id -> { ServerId, Time }
-    var tlsSessionStore = {};       // Store TLS session information for quick resume.
-    var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
+    obj.wssessions = {};              // UserId --> Array Of Sessions
+    obj.wssessions2 = {};             // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
+    obj.wsPeerSessions = {};          // ServerId --> Array Of "UserId + SessionRnd"
+    obj.wsPeerSessions2 = {};         // "UserId + SessionRnd" --> ServerId
+    obj.wsPeerSessions3 = {};         // ServerId --> UserId --> [ SessionId ]
+    obj.sessionsCount = {};           // Merged session counters, used when doing server peering. UserId --> SessionCount
+    obj.wsrelays = {};                // Id -> Relay
+    obj.wsPeerRelays = {};            // Id -> { ServerId, Time }
+    var tlsSessionStore = {};         // Store TLS session information for quick resume.
+    var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -2690,11 +2691,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Delete a folder and all sub items.  (TODO: try to make all async version)
     function deleteFolderRec(path) {
         if (obj.fs.existsSync(path) == false) return;
-        obj.fs.readdirSync(path).forEach(function (file, index) {
-            var pathx = path + "/" + file;
-            if (obj.fs.lstatSync(pathx).isDirectory()) { deleteFolderRec(pathx); } else { obj.fs.unlinkSync(pathx); }
-        });
-        obj.fs.rmdirSync(path);
+        try {
+            obj.fs.readdirSync(path).forEach(function (file, index) {
+                var pathx = path + '/' + file;
+                if (obj.fs.lstatSync(pathx).isDirectory()) { deleteFolderRec(pathx); } else { obj.fs.unlinkSync(pathx); }
+            });
+            obj.fs.rmdirSync(path);
+        } catch (ex) { }
     }
 
     // Handle Intel AMT events
