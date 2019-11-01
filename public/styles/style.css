@@ -2584,14 +2584,18 @@ a {
 }
 
 #p7tbl .chDescription {
-    width: 40%;
+    width: 38%;
 }
 
 #p7tbl .chSite {
-    width: 10%;
+    width: 7%;
 }
 
 #p7tbl .chVersion {
+    width: 5%;
+}
+
+#p7tbl .chUpgradeAvail {
     width: 10%;
 }
 
@@ -2603,6 +2607,10 @@ a {
     width: 10%;
 }
 
+.pActDisable, .pActDelete, .pActInstall, .pActUpgrade {
+    cursor: pointer;
+}
+
 #addPlugin {
     background-image: url(../images/plus32.png);
     width: 32px;
@@ -2610,4 +2618,13 @@ a {
     float: right;
     cursor: pointer;
     margin-right: 12px;
+}
+
+#pluginRestartNotice {
+    width: 40em;
+    font-weight: bold;
+    border: 1px solid red;
+    text-align: center;
+    padding: 14px;
+    margin: 50px auto;
 }

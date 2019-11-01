@@ -411,10 +411,11 @@
             </div>
             <div id=p7 style="display:none">
                 <h1>My Plugins</h1>
-                <div id="addPlugin" onclick="return pluginHandler.addPluginDlg();"></div>
+                <div id="addPlugin" title="Add New Plugin" onclick="return pluginHandler.addPluginDlg();"></div>
                 <table id="p7tbl">
-                    <tr><th class="chName">Name</th><th class="chDescription">Description</th><th class="chSite">Link</th><th class="chVersion">Version</th><th class="chStatus">Status</th><th class="chAction">Action</th></tr>
+                    <tr><th class="chName">Name</th><th class="chDescription">Description</th><th class="chSite">Link</th><th class="chVersion">Version</th><th class="chUpgradeAvail">Latest Available</th><th class="chStatus">Status</th><th class="chAction">Action</th></tr>
                 </table>
+                <div id="pluginRestartNotice" style="display:none;"><div>Notice:</div> MeshCentral restart required to complete plugin changes.</div>
             </div>
             <div id=p10 style="display:none">
                 <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -2360,6 +2361,27 @@
                 case 'updatePluginList': {
                     installedPluginList = message.list;
                     updatePluginList();
+                    break;
+                }
+                case 'pluginVersionsAvailable': {
+                    if (pluginHandler == null) break;
+                    try {
+                        var td = Q('pluginRow-'+message.list.id).querySelectorAll(".pluginUpgradeAvailable");
+                        var sel = Q('pluginRow-'+message.list.id).querySelectorAll(".pluginAction > select");
+                        td = td[0];
+                        sel = sel[0];
+                        if (message.list.hasUpdate && message.list.status) {
+                            td.innerHTML = '<a title="View Changelog" target="_blank" href="' + message.list.changelogUrl + '">' + message.list.version + '</a>';
+                            if (sel.innerHTML.indexOf('Upgrade') === -1) {
+                                var option = document.createElement("option");
+                                option.value = "install"
+                                option.text = "Upgrade";
+                                sel.add(option);
+                            }
+                        } else {
+                            td.innerHTML = "Up to date";
+                        }
+                    } catch (e) { }
                     break;
                 }
                 case 'plugin': {
@@ -9361,6 +9383,8 @@
             // Fetch the server timeline stats if needed
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
+            if (x == 7) refreshPluginLatest();
+            
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
                 document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + ' - ' + meshes[currentNode.meshid].name;
@@ -9378,24 +9402,82 @@
                     }
                 }
                 var statusMap = {
-                  0: 'Disabled',
-                  1: 'Installed'
-                }
+                  0: {
+                      "text": 'Disabled',
+                      "color": '858483'
+                  },
+                  1: {
+                      "text": 'Installed',
+                      "color": '00ff00'
+                  }
+                };
+                var statusAvailability = {
+                  0: {
+                      'install': 'Install',
+                      'delete': 'Delete'
+                  },
+                  1: {
+                      'disable': 'Disable'
+                  }
+                };
                 var tbl = Q('p7tbl');
                 installedPluginList.forEach(function(p){
                     if (p.hasAdminPanel == true) {
                         p.name = `<a onclick="return goPlugin('${p._id}');">${p.name}</a>`;
                     }
-                    p.status = statusMap[p.status];
-                    p.actions = 'TODO'; // Install / Upgrade / Disable / Delete
-                    let tpl = `<td>${p.name}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td>${p.status}</td><td>${p.actions}</td>`;
+                    p.statusText = statusMap[p.status].text;
+                    p.statusColor = statusMap[p.status].color;
+
+                    p.actions = '<select onchange="return pluginAction(this, \'' + p._id + '\');"><option value=""> --</option>';
+                    for (const [k, v] of Object.entries(statusAvailability[p.status])) {
+                        p.actions += '<option value="' + k + '">' + v + '</option>';
+                    }
+                    p.action += '</select>'
+                    
+                    let tpl = `<td>${p.name}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td class="pluginUpgradeAvailable">Checking...</td><td style="color: #${p.statusColor}">${p.statusText}</td><td class="pluginAction">${p.actions}</td>`;
                     let tr = tbl.insertRow(-1);
                     tr.innerHTML = tpl;
                     tr.classList.add('p7tblRow');
+                    tr.setAttribute('data-id', p._id);
+                    tr.setAttribute('id', 'pluginRow-'+p._id);
                 });
+            } else {
+                var tr = Q('p7tbl').querySelectorAll(".p7tblRow");
+                for (const i in Object.values(tr)) {
+                    tr[i].parentNode.removeChild(tr[i]);
+                }
             }
-            
+            refreshPluginLatest();
         }
+        
+        function refreshPluginLatest() {
+            meshserver.send({ action: 'pluginLatestCheck' });
+        }
+        
+        function pluginActionEx() {
+            var act = Q('lastPluginAct').value, id = Q('lastPluginId').value;
+            switch(act) {
+                case 'install': {
+                    meshserver.send({ "action": "installplugin", "id": id });
+                    break;
+                }
+                case 'delete': {
+                    meshserver.send({ "action": "removeplugin", "id": id });
+                    break;
+                }
+                case 'disable': {
+                    meshserver.send({ "action": "disableplugin", "id": id });
+                    break;
+                }
+            }
+            QS('pluginRestartNotice').display = '';
+        }
+        
+        function pluginAction(elem, id) {
+            setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Are you sure you want to ' + elem.value + ' the plugin: ' + elem.parentNode.parentNode.firstChild.innerText+'<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + elem.parentNode.parentNode.getAttribute('data-id') + '" />'); 
+            elem.value = '';
+        }
+        
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function putstore(name, val) {
