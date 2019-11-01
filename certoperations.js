@@ -195,28 +195,29 @@ module.exports.CertificateOperations = function (parent) {
     }
 
     // Return the certificate of the remote HTTPS server
-    obj.loadCertificate = function (url, tag, func) {
+    obj.loadCertificate = function (url, hostname, tag, func) {
         const u = require('url').parse(url);
         if (u.protocol == 'https:') {
             // Read the certificate from HTTPS
-            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: u.hostname, rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
+            if (hostname == null) { hostname = u.hostname; }
+            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: hostname, rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
             tlssocket.xxurl = url;
             tlssocket.xxfunc = func;
             tlssocket.xxtag = tag;
-            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert.raw.toString('binary'), this.xxtag); });
-            tlssocket.on('error', function () { this.xxfunc(this.xxurl, null, this.xxtag); });
+            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert.raw.toString('binary'), hostname, this.xxtag); });
+            tlssocket.on('error', function () { this.xxfunc(this.xxurl, null, hostname, this.xxtag); });
         } else if (u.protocol == 'file:') {
             // Read the certificate from a file
             obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
                 if (err) { func(url, null, tag); return; }
                 var x1 = data.indexOf('-----BEGIN CERTIFICATE-----'), x2 = data.indexOf('-----END CERTIFICATE-----');
                 if ((x1 >= 0) && (x2 > x1)) {
-                    func(url, Buffer.from(data.substring(x1 + 27, x2), 'base64').toString('binary'), tag);
+                    func(url, Buffer.from(data.substring(x1 + 27, x2), 'base64').toString('binary'), hostname, tag);
                 } else {
-                    func(url, data, tag);
+                    func(url, data, hostname, tag);
                 }
             });
-        } else { func(url, null, tag); }
+        } else { func(url, null, hostname, tag); }
     };
 
     // Check if a configuration file exists
@@ -495,13 +496,12 @@ module.exports.CertificateOperations = function (parent) {
             r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField("CN").value;
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.WebIssuer = webCertificate.issuer.getField("CN").value;
-            r.CommonName = webCertificate.subject.getField("CN").value;
-            if (r.CommonName.startsWith('*.')) {
-                if (commonName.indexOf('.') == -1) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
-                if (commonName.startsWith('*.')) { console.log("ERROR: Server can't use a wildcard name: " + commonName); process.exit(0); return; }
-                r.CommonName = commonName;
+            if (commonName == "un-configured") { // If the "cert" name is not set, try to use the certificate CN instead (ok if the certificate is not wildcard).
+                commonName = webCertificate.subject.getField("CN").value;
+                if (commonName.startsWith('*.')) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
             }
-            r.CommonNames = [ r.CommonName.toLowerCase() ];
+            r.CommonName = commonName;
+            r.CommonNames = [commonName.toLowerCase()];
             var altNames = webCertificate.getExtension("subjectAltName");
             if (altNames) {
                 for (i = 0; i < altNames.altNames.length; i++) {
