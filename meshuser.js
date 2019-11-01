@@ -3103,22 +3103,51 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'plugins': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                // @Ylianst - Do we need a new permission set here?
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
                 parent.db.getPlugins(function(err, docs) {
                     try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
                 });
                 break;
             }
+            case 'pluginLatestCheck': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                parent.parent.pluginHandler.getPluginLatest(function(latest) {
+                    try { ws.send(JSON.stringify({ action: 'pluginVersionsAvailable', list: latest })); } catch (ex) { } 
+                });
+                break;
+            }
             case 'addplugin': {
-                // @Ylianst - Do we need a new permission here?
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
                 parent.parent.pluginHandler.addPlugin(command.url);
                 break;
             }
-            case 'removeplugin': {
-                // @Ylianst - Do we need a new permission here?
+            case 'installplugin': {
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
-                parent.parent.pluginHandler.removePlugin(command.id);
+                parent.parent.pluginHandler.installPlugin(command.id, function(){
+                    parent.parent.updateMeshCore();
+                    parent.db.getPlugins(function(err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                    });
+                });
+                break;
+            }
+            case 'disableplugin': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.disablePlugin(command.id, function(){
+                    parent.db.getPlugins(function(err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                    });
+                });
+                break;
+            }
+            case 'removeplugin': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.removePlugin(command.id, function(){
+                    parent.db.getPlugins(function(err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                    });
+                });
                 break;
             }
             case 'plugin': {
@@ -3128,8 +3157,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     routeCommandToNode(command);
                 } else {
                     try {
-                        var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
-                        pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
+                        parent.parent.pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
                     } catch (e) { console.log('Error loading plugin handler (' + e + ')'); }
                 }
                 break;

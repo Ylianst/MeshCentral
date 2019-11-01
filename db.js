@@ -753,16 +753,18 @@ module.exports.CreateDB = function (parent, func) {
             }
             
             // Add a plugin
-            obj.addPlugin = function (plugin) { obj.pluginsfile.insertOne(plugin); };
+            obj.addPlugin = function (plugin, func) { obj.pluginsfile.insertOne(plugin, func); };
             
             // Get all plugins
             obj.getPlugins = function (func) { obj.pluginsfile.find().sort({ name: 1 }).toArray(func); };
             
             // Get plugin
-            obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); };
+            obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); };
             
             // Delete plugin
-            obj.deletePlugin = function (id) { obj.pluginsfile.deleteOne({ _id: id }); };
+            obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.deleteOne({ _id: id }, func); };
+            
+            obj.setPluginStatus = function(id, status, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: {status: status } }, func); };
             
         } else {
             // Database actions on the main collection (NeDB and MongoJS)

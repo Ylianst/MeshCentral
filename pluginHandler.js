@@ -23,34 +23,52 @@ module.exports.pluginHandler = function (parent) {
     obj.pluginPath = obj.parent.path.join(obj.parent.datapath, 'plugins');
     obj.plugins = {};
     obj.exports = {};
-    obj.loadList = obj.parent.config.settings.plugins.list;
-
+    obj.loadList = obj.parent.config.settings.plugins.list; // For local development / manual install, not from DB
+    
     if (typeof obj.loadList != 'object') {
         obj.loadList = {};
-        console.log('Plugin list not specified, please fix configuration file.');
-        return null;
-    }
-
-    obj.loadList.forEach(function (plugin, index) {
-        if (obj.fs.existsSync(obj.pluginPath + '/' + plugin)) {
-            try {
-                obj.plugins[plugin] = require(obj.pluginPath + '/' + plugin + '/' + plugin + '.js')[plugin](obj);
-                obj.exports[plugin] = obj.plugins[plugin].exports;
-            } catch (e) {
-                console.log("Error loading plugin: " + plugin + " (" + e + "). It has been disabled.", e.stack);
+        parent.db.getPlugins(function(err, plugins){
+          plugins.forEach(function(plugin){
+              if (plugin.status != 1) return;
+              if (obj.fs.existsSync(obj.pluginPath + '/' + plugin.shortName)) {
+                  try {
+                      obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
+                      obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
+                  } catch (e) {
+                      console.log("Error loading plugin: " + plugin.shortName + " (" + e + "). It has been disabled.", e.stack);
+                  }
+              }
+              obj.parent.updateMeshCore(); // db calls are delayed, lets inject here once we're ready
+          });
+        });
+    } else {
+        obj.loadList.forEach(function (plugin, index) {
+            if (obj.fs.existsSync(obj.pluginPath + '/' + plugin)) {
+                try {
+                    obj.plugins[plugin] = require(obj.pluginPath + '/' + plugin + '/' + plugin + '.js')[plugin](obj);
+                    obj.exports[plugin] = obj.plugins[plugin].exports;
+                } catch (e) {
+                    console.log("Error loading plugin: " + plugin + " (" + e + "). It has been disabled.", e.stack);
+                }
             }
+        });
+    }
+    
+    obj.prepExportsForPlugin = function(plugin) {
+        var str = '';
+        str += '    obj.' + plugin + ' = {};\r\n';
+        for (const l of Object.values(obj.exports[plugin])) {
+            str += '        obj.' + plugin + '.' + l + ' = ' + obj.plugins[plugin][l].toString() + '\r\n';
         }
-    });
-
+        return str;
+    };
+    
     obj.prepExports = function () {
         var str = 'function() {\r\n';
         str += '    var obj = {};\r\n';
 
         for (const p of Object.keys(obj.plugins)) {
-            str += '    obj.' + p + ' = {};\r\n';
-            for (const l of Object.values(obj.exports[p])) {
-                str += '        obj.' + p + '.' + l + ' = ' + obj.plugins[p][l].toString() + '\r\n';
-            }
+            str += obj.prepExportsForPlugin(p);
         }
 
         str += `obj.onDeviceRefeshEnd = function(nodeid, panel, refresh, event) {
@@ -75,7 +93,7 @@ module.exports.pluginHandler = function (parent) {
             meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
         };
         obj.addPluginDlg = function() {
-            setDialogMode(2, "Plugin URL", 3, obj.addPluginEx, '<input type=text id=pluginurlinput style=width:100% />'); 
+            setDialogMode(2, "Plugin Config URL", 3, obj.addPluginEx, '<input type=text id=pluginurlinput style=width:100% />'); 
             focusTextBox('pluginurlinput');
         };
         return obj; };`;
@@ -165,6 +183,7 @@ module.exports.pluginHandler = function (parent) {
         var isValid = true;
         if (!(
             typeof conf.name == 'string'
+            && typeof conf.shortName == 'string'
             && typeof conf.version == 'string'
             && typeof conf.author == 'string'
             && typeof conf.description == 'string'
@@ -179,68 +198,178 @@ module.exports.pluginHandler = function (parent) {
         //    && conf.configUrl == url  // make sure we're loading a plugin from its desired config
         )) isValid = false;
         // more checks here?
+        if (conf.repository.type == 'git') {
+            if (typeof conf.downloadUrl != 'string') isValid = false;
+        }
         return isValid;
     };
     
-    obj.addPlugin = function(url) {
-      var https = require('https');
-      //var pit = obj.path.join(obj.pluginPath, )
-
-      https.get(url, function(res) {
-        var configStr = '';
-        res.on('data', function(chunk){
-            configStr += chunk;
-        });
-        res.on('end', function(){
-            if (configStr[0] == '{') {
-                try {
-                    var pluginConfig = JSON.parse(configStr);
-                    if (obj.isValidConfig(pluginConfig, url)) {
-                        // add to database
-                        // we met the requirements of a valid config, but in case there's extra, let's rebuild for what we need
-                        parent.db.addPlugin({
-                          "name": pluginConfig.name,
-                          "version": pluginConfig.version,
-                          "description": pluginConfig.description,
-                          "hasAdminPanel": pluginConfig.hasAdminPanel,
-                          "homepage": pluginConfig.homepage,
-                          "changelogUrl": pluginConfig.changelogUrl,
-                          "configUrl": pluginConfig.configUrl,
-                          "repository": {
-                              "type": pluginConfig.repository.type,
-                              "url": pluginConfig.repository.url
-                          },
-                          "meshCentralCompat": pluginConfig.meshCentralCompat,
-                          "status": 0  // 0: disabled, 1: enabled
-                        });
-                        parent.db.getPlugins(function(err, docs){
-                            var targets = ['*', 'server-users'];
-                            parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
-                        
-                        })
-                    } else {
-                        // @TODO return error to user
-                    }
-                    
-                } catch (e) { console.log('Error processing addPlugin request. Check that you have valid JSON.'); }
-            }
-        });
-
-      }).on('error', function(e) {
-        console.log("Got error: " + e.message);
-      }); 
-      /* const file = fs.createWriteStream("file.jpg");
-      const request = http.get("http://i3.ytimg.com/vi/J---aiyznGQ/mqdefault.jpg", function(response) {
-          response.pipe(file);
-      }); */
-    };
-    
-    obj.getPlugins = function() {
-        var p = parent.db.getPlugins();
-        if (typeof p == 'undefined' || p.length == 0) {
+    obj.getPlugins = function(func) {
+        var plugins = parent.db.getPlugins();
+        if (typeof plugins == 'undefined' || plugins.length == 0) {
             return null;
         }
-        return p;
+        
+        plugins.forEach(function(p, x){
+            // check semantic version
+            console.log('FOREACH PLUGIN', p, x);
+            // callbacks to new versions
+            
+        });
+        
+        return plugins;
     }
+    
+    obj.getPluginConfig = function(configUrl, func) {
+        var https = require('https');
+        if (configUrl.indexOf('://') === -1) return; // @TODO error here 
+        https.get(configUrl, function(res) {
+          var configStr = '';
+          res.on('data', function(chunk){
+              configStr += chunk;
+          });
+          res.on('end', function(){
+              if (configStr[0] == '{') { // let's be sure we're JSON
+                  try {
+                      var pluginConfig = JSON.parse(configStr);
+                      if (Array.isArray(pluginConfig) && pluginConfig.length == 1) pluginConfig = pluginConfig[0];
+                      if (obj.isValidConfig(pluginConfig, configUrl)) {
+                          func(pluginConfig);
+                      }
+                      
+                  } catch (e) { console.log('Error getting plugin config. Check that you have valid JSON.', e.stack); }
+              }
+          });
+  
+        }).on('error', function(e) {
+          console.log("Error getting plugin config. Check that the URL is correct.: " + e.message);
+        }); 
+    };
+    
+    obj.getPluginLatest = function(func) {
+        parent.db.getPlugins(function(err, plugins){
+          plugins.forEach(function(curconf){
+              obj.getPluginConfig(curconf.configUrl, function(newconf){
+                  var s = require('semver');
+                  func({
+                    "id": curconf._id,
+                    "installedVersion": curconf.version,
+                    "version": newconf.version,
+                    "hasUpdate": s.gt(newconf.version, curconf.version),
+                    "meshCentralCompat": s.satisfies(s.coerce(parent.currentVer), newconf.meshCentralCompat),
+                    "changelogUrl": curconf.changelogUrl,
+                    "status": curconf.status
+                  });
+              });
+          });
+        });
+        
+    };
+    
+    obj.addPlugin = function(url) {
+      obj.getPluginConfig(url, function(pluginConfig){
+          parent.db.addPlugin({
+              "name": pluginConfig.name,
+              "shortName": pluginConfig.shortName,
+              "version": pluginConfig.version,
+              "description": pluginConfig.description,
+              "hasAdminPanel": pluginConfig.hasAdminPanel,
+              "homepage": pluginConfig.homepage,
+              "changelogUrl": pluginConfig.changelogUrl,
+              "configUrl": pluginConfig.configUrl,
+              "downloadUrl": pluginConfig.downloadUrl,
+              "repository": {
+                  "type": pluginConfig.repository.type,
+                  "url": pluginConfig.repository.url
+              },
+              "meshCentralCompat": pluginConfig.meshCentralCompat,
+              "status": 0  // 0: disabled, 1: enabled
+          }, function() {
+              parent.db.getPlugins(function(err, docs){
+                  var targets = ['*', 'server-users'];
+                  parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
+              
+              });
+          });
+      });  
+    };
+    
+    obj.installPlugin = function(id, func) {
+        parent.db.getPlugin(id, function(err, docs){
+            var http = require('https');
+            // the "id" would probably suffice, but is probably an sanitary issue, generate a random instead
+            var randId = Math.random().toString(32).replace('0.', '');
+            var fileName = obj.parent.path.join(require('os').tmpdir(), 'Plugin_'+randId+'.zip');
+            var plugin = docs[0];
+            if (plugin.repository.type ==  'git') {
+                const file = obj.fs.createWriteStream(fileName);
+                var request = http.get(plugin.downloadUrl, function(response) {
+                    response.pipe(file);
+                    file.on('finish', function() {
+                        file.close(function(){
+                            var yauzl = require("yauzl");
+                            if (!obj.fs.existsSync(obj.pluginPath)) {
+                                obj.fs.mkdirSync(obj.pluginPath);
+                            }
+                            if (!obj.fs.existsSync(obj.parent.path.join(obj.pluginPath, plugin.shortName))) {
+                                obj.fs.mkdirSync(obj.parent.path.join(obj.pluginPath, plugin.shortName));
+                            }
+                            yauzl.open(fileName, { lazyEntries: true }, function (err, zipfile) {
+                                if (err) throw err;
+                                zipfile.readEntry();
+                                zipfile.on("entry", function (entry) {
+                                    let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
+                                    let pathReg = new RegExp(/(.*?\/)/);
+                                    if (process.platform == 'win32') pathReg = new RegExp(/(.*?\\/);
+                                    let filePath = obj.parent.path.join(pluginPath, entry.fileName.replace(pathReg, '')); // remove top level dir
+                                    
+                                    if (/\/$/.test(entry.fileName)) { // dir
+                                        if (!obj.fs.existsSync(filePath))
+                                            obj.fs.mkdirSync(filePath);
+                                        zipfile.readEntry();
+                                    } else { // file
+                                        zipfile.openReadStream(entry, function (err, readStream) {
+                                            if (err) throw err;
+                                            readStream.on("end", function () { zipfile.readEntry(); });
+                                            readStream.pipe(obj.fs.createWriteStream(filePath));
+                                        });
+                                    }
+                                });
+                                zipfile.on("end", function () { setTimeout(function () { 
+                                    obj.fs.unlinkSync(fileName); 
+                                    parent.db.setPluginStatus(id, 1, func); 
+                                    obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
+                                    obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
+                                }); });
+                            });
+                        });
+                    });
+                });
+            } else if (plugin.repository.type ==  'npm') {
+                // @TODO npm install and symlink dirs (need a test plugin)
+            }
+          
+            
+        });
+        
+        
+    };
+    
+    obj.disablePlugin = function(id, func) {
+        parent.db.setPluginStatus(id, 0, func);
+    };
+    
+    obj.removePlugin = function(id, func) {
+        parent.db.getPlugin(id, function(err, docs){
+            var plugin = docs[0];
+            var rimraf = require("rimraf");
+            let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
+            rimraf.sync(pluginPath);
+            parent.db.deletePlugin(id, func);
+            delete obj.plugins[plugin.shortName];
+            obj.parent.updateMeshCore();
+        });
+    };
+    
     return obj;
 };
