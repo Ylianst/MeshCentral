@@ -2628,3 +2628,44 @@ a {
     padding: 14px;
     margin: 50px auto;
 }
+
+.pluginOverlayBg {
+    width: 95%; /* Full width (cover the whole page) */
+    height: 95%; /* Full height (cover the whole page) */
+    margin: 10px;
+    background-color: rgba(0,0,0,0.8); /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    position: absolute;
+    cursor: pointer; /* Add a pointer on hover */
+    filter:blur(4px);
+      -o-filter:blur(4px);
+      -ms-filter:blur(4px);
+      -moz-filter:blur(4px);
+      -webkit-filter:blur(4px);
+}
+
+.pluginOverlay {
+    width: 95%; /* Full width (cover the whole page) */
+    height: 95%; /* Full height (cover the whole page) */
+    margin: 10px;
+    background-color: #FFFFFF; /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    position: absolute;
+    cursor: pointer; /* Add a pointer on hover */
+}
+
+.pluginTitleBar {
+    padding: 4px;
+    height: 25px;
+    border-bottom: double;
+    font-size: 20px;
+}
+
+.pluginCloseBtn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    float: right;
+    position: relative;
+    padding: 0;
+}
