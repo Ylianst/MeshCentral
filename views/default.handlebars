@@ -2365,23 +2365,7 @@
                 }
                 case 'pluginVersionsAvailable': {
                     if (pluginHandler == null) break;
-                    try {
-                        var td = Q('pluginRow-'+message.list.id).querySelectorAll(".pluginUpgradeAvailable");
-                        var sel = Q('pluginRow-'+message.list.id).querySelectorAll(".pluginAction > select");
-                        td = td[0];
-                        sel = sel[0];
-                        if (message.list.hasUpdate && message.list.status) {
-                            td.innerHTML = '<a title="View Changelog" target="_blank" href="' + message.list.changelogUrl + '">' + message.list.version + '</a>';
-                            if (sel.innerHTML.indexOf('Upgrade') === -1) {
-                                var option = document.createElement("option");
-                                option.value = "install"
-                                option.text = "Upgrade";
-                                sel.add(option);
-                            }
-                        } else {
-                            td.innerHTML = "Up to date";
-                        }
-                    } catch (e) { }
+                    updatePluginList(message.list);
                     break;
                 }
                 case 'plugin': {
@@ -9434,8 +9418,12 @@
             }
         }
         
-        function updatePluginList() {
+        function updatePluginList(versInfo) {
             if (installedPluginList.length) {
+                if (versInfo != null) {
+                    if (installedPluginList['version_info'] == null) installedPluginList['version_info'] = [];
+                    installedPluginList['version_info'][versInfo.id] = versInfo;
+                }
                 var tr = Q('p7tbl').querySelectorAll(".p7tblRow");
                 if (tr.length) {
                     for (const i in Object.values(tr)) {
@@ -9458,24 +9446,51 @@
                       'delete': 'Delete'
                   },
                   1: {
-                      'disable': 'Disable'
+                      'disable': 'Disable',
+                      'upgrade': 'Upgrade'
                   }
                 };
+                var vers_not_compat = ` [ <span onclick="return setDialogMode(2, 'Compatibility Issue', 1, null, 'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.');" title="Version incompatible, please upgrade your MeshCentral installation first" style="cursor: pointer; color:red;"> ! </span> ]`;
+                
                 var tbl = Q('p7tbl');
                 installedPluginList.forEach(function(p){
+                    var cant_action = [];
                     if (p.hasAdminPanel == true) {
                         p.name = `<a onclick="return goPlugin('${p._id}');">${p.name}</a>`;
                     }
                     p.statusText = statusMap[p.status].text;
                     p.statusColor = statusMap[p.status].color;
 
+                    
+                    
+                    if (!p.status) { // It isn't technically installed, so no version number
+                        p.version = ' - ';
+                    }
+                    p.upgradeAvail = 'Checking...';
+                    if (installedPluginList['version_info'] != null && installedPluginList['version_info'][p._id] != null) {
+                        var vin = installedPluginList['version_info'][p._id];
+                        if (vin.hasUpdate) {
+                            p.upgradeAvail = '<a title="View Changelog" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                        } else {
+                            cant_action.push('upgrade');
+                            if (p.status) p.upgradeAvail = 'Up to date'; 
+                            else p.upgradeAvail = '<a title="View Changelog" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                        }
+                        if (!vin.meshCentralCompat) {
+                            p.upgradeAvail += vers_not_compat;
+                            cant_action.push('install');
+                        }
+                    }
+
                     p.actions = '<select onchange="return pluginAction(this, \'' + p._id + '\');"><option value=""> --</option>';
                     for (const [k, v] of Object.entries(statusAvailability[p.status])) {
-                        p.actions += '<option value="' + k + '">' + v + '</option>';
+                        if (cant_action.indexOf(k) === -1) {
+                            p.actions += '<option value="' + k + '">' + v + '</option>';
+                        }
                     }
-                    p.action += '</select>'
+                    p.actions += '</select>';
                     
-                    let tpl = `<td>${p.name}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td class="pluginUpgradeAvailable">Checking...</td><td style="color: #${p.statusColor}">${p.statusText}</td><td class="pluginAction">${p.actions}</td>`;
+                    let tpl = `<td>${p.name}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td class="pluginUpgradeAvailable">${p.upgradeAvail}</td><td style="color: #${p.statusColor}">${p.statusText}</td><td class="pluginAction">${p.actions}</td>`;
                     let tr = tbl.insertRow(-1);
                     tr.innerHTML = tpl;
                     tr.classList.add('p7tblRow');
@@ -9488,7 +9503,7 @@
                     tr[i].parentNode.removeChild(tr[i]);
                 }
             }
-            refreshPluginLatest();
+            if (versInfo == null) refreshPluginLatest();
         }
         
         function refreshPluginLatest() {
@@ -9498,18 +9513,16 @@
         function pluginActionEx() {
             var act = Q('lastPluginAct').value, id = Q('lastPluginId').value;
             switch(act) {
-                case 'install': {
+                case 'upgrade':
+                case 'install': 
                     meshserver.send({ "action": "installplugin", "id": id });
                     break;
-                }
-                case 'delete': {
+                case 'delete':
                     meshserver.send({ "action": "removeplugin", "id": id });
                     break;
-                }
-                case 'disable': {
+                case 'disable':
                     meshserver.send({ "action": "disableplugin", "id": id });
                     break;
-                }
             }
             QS('pluginRestartNotice').display = '';
         }
