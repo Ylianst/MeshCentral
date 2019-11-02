@@ -54,21 +54,15 @@ module.exports.pluginHandler = function (parent) {
         });
     }
     
-    obj.prepExportsForPlugin = function(plugin) {
-        var str = '';
-        str += '    obj.' + plugin + ' = {};\r\n';
-        for (const l of Object.values(obj.exports[plugin])) {
-            str += '        obj.' + plugin + '.' + l + ' = ' + obj.plugins[plugin][l].toString() + '\r\n';
-        }
-        return str;
-    };
-    
     obj.prepExports = function () {
         var str = 'function() {\r\n';
         str += '    var obj = {};\r\n';
 
         for (const p of Object.keys(obj.plugins)) {
-            str += obj.prepExportsForPlugin(p);
+            str += '    obj.' + p + ' = {};\r\n';
+            for (const l of Object.values(obj.exports[p])) {
+                str += '        obj.' + p + '.' + l + ' = ' + obj.plugins[p][l].toString() + '\r\n';
+            }
         }
 
         str += `obj.onDeviceRefeshEnd = function(nodeid, panel, refresh, event) {
@@ -371,5 +365,26 @@ module.exports.pluginHandler = function (parent) {
         });
     };
     
+    obj.handleAdminReq = function (req, res, serv) {
+        var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
+        serv.app.set('views', path);
+        if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminReq == 'function') {
+            obj.plugins[req.query.pin].handleAdminReq(req, res);
+        }
+        else {
+            res.sendStatus(401);
+        }
+    }
+    
+    obj.handleAdminPostReq = function(req, res, serv) {
+        var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
+        serv.app.set('views', path);
+        if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminPostReq == 'function') {
+            obj.plugins[req.query.pin].handleAdminPostReq(req, res);
+        }
+        else {
+            res.sendStatus(401);
+        }
+    }
     return obj;
 };

@@ -9408,7 +9408,7 @@
             // Fetch the server timeline stats if needed
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
-            if (x == 7) refreshPluginLatest();
+            if (x == 7) refreshPluginLatest(); else noGoPlugin();
             
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
@@ -9456,7 +9456,7 @@
                 installedPluginList.forEach(function(p){
                     var cant_action = [];
                     if (p.hasAdminPanel == true) {
-                        p.name = `<a onclick="return goPlugin('${p._id}');">${p.name}</a>`;
+                        p.nameHtml = `<a onclick="return goPlugin('${p.shortName}', '${p.name}');">${p.name}</a>`;
                     }
                     p.statusText = statusMap[p.status].text;
                     p.statusColor = statusMap[p.status].color;
@@ -9490,7 +9490,7 @@
                     }
                     p.actions += '</select>';
                     
-                    let tpl = `<td>${p.name}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td class="pluginUpgradeAvailable">${p.upgradeAvail}</td><td style="color: #${p.statusColor}">${p.statusText}</td><td class="pluginAction">${p.actions}</td>`;
+                    let tpl = `<td>${p.nameHtml}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td class="pluginUpgradeAvailable">${p.upgradeAvail}</td><td style="color: #${p.statusColor}">${p.statusText}</td><td class="pluginAction">${p.actions}</td>`;
                     let tr = tbl.insertRow(-1);
                     tr.innerHTML = tpl;
                     tr.classList.add('p7tblRow');
@@ -9530,6 +9530,38 @@
         function pluginAction(elem, id) {
             setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Are you sure you want to ' + elem.value + ' the plugin: ' + elem.parentNode.parentNode.firstChild.innerText+'<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + elem.parentNode.parentNode.getAttribute('data-id') + '" />'); 
             elem.value = '';
+        }
+        
+        function goPlugin(pname, title) {
+            let xwin = `<div class="pluginTitleBar"><span>${title}</span><span class="pluginCloseBtn"><button onclick="return noGoPlugin(this);">X</button></span></div>`
+            let dif = document.createElement('div');
+            dif.classList.add('pluginOverlay');
+            dif.innerHTML = xwin;
+            let pif = document.createElement('iframe');
+            pif.src = '/pluginadmin.ashx?pin='+pname;
+            pif.setAttribute('frameBorder', '0');
+            pif.style.width = '100%';
+            pif.style.height = '100%';
+            pif.setAttribute('frameBorder', '0');
+
+            dif.append(pif);
+            let x = Q('p7');
+            x.parentNode.insertBefore(dif, x.nextSibling);
+            Q('p7').classList.add('pluginOverlayBg');
+        }
+        
+        function noGoPlugin(el) {
+            if (el == null) {
+                var boxes = document.querySelectorAll('.pluginOverlay');
+                for (const b in Object.values(boxes)) {
+                    boxes[b].parentNode.removeChild(boxes[b]);
+                }
+                Q('p7').classList.remove('pluginOverlayBg');
+                return;
+            }
+            var box = document.querySelector('.pluginOverlay').closest(".pluginOverlay");
+            box.parentNode.removeChild(box);
+            Q('p7').classList.remove('pluginOverlayBg');
         }
         
         // Generic methods
