@@ -3196,7 +3196,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 0xFFFFFFFF) == 0)) { res.sendStatus(401); return; }
         
-        parent.pluginHandler.handleAdminReq(req, res, obj);
+        parent.pluginHandler.handleAdminReq(req, res, user, obj);
     }
     
     obj.handlePluginAdminPostReq = function(req, res) {
@@ -3206,7 +3206,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 0xFFFFFFFF) == 0)) { res.sendStatus(401); return; }
         
-        parent.pluginHandler.handleAdminPostReq(req, res, obj);
+        parent.pluginHandler.handleAdminPostReq(req, res, user, obj);
     }
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
