@@ -383,22 +383,22 @@ module.exports.pluginHandler = function (parent) {
         });
     };
     
-    obj.handleAdminReq = function (req, res, serv) {
+    obj.handleAdminReq = function (req, res, user, serv) {
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
         serv.app.set('views', path);
         if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminReq == 'function') {
-            obj.plugins[req.query.pin].handleAdminReq(req, res);
+            obj.plugins[req.query.pin].handleAdminReq(req, res, user);
         }
         else {
             res.sendStatus(401);
         }
     }
     
-    obj.handleAdminPostReq = function(req, res, serv) {
+    obj.handleAdminPostReq = function(req, res, user, serv) {
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
         serv.app.set('views', path);
         if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminPostReq == 'function') {
-            obj.plugins[req.query.pin].handleAdminPostReq(req, res);
+            obj.plugins[req.query.pin].handleAdminPostReq(req, res, user);
         }
         else {
             res.sendStatus(401);
