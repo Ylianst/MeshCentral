@@ -13,6 +13,7 @@
 /*jshint strict: false */
 /*jshint esversion: 6 */
 "use strict";
+require('promise');
 
 module.exports.pluginHandler = function (parent) {
     var obj = {};
@@ -214,54 +215,72 @@ module.exports.pluginHandler = function (parent) {
         return plugins;
     }
     
-    obj.getPluginConfig = function(configUrl, func) {
-        var https = require('https');
-        if (configUrl.indexOf('://') === -1) return; // @TODO error here 
-        https.get(configUrl, function(res) {
-          var configStr = '';
-          res.on('data', function(chunk){
-              configStr += chunk;
-          });
-          res.on('end', function(){
-              if (configStr[0] == '{') { // let's be sure we're JSON
-                  try {
-                      var pluginConfig = JSON.parse(configStr);
-                      if (Array.isArray(pluginConfig) && pluginConfig.length == 1) pluginConfig = pluginConfig[0];
-                      if (obj.isValidConfig(pluginConfig, configUrl)) {
-                          func(pluginConfig);
-                      }
-                      
-                  } catch (e) { console.log('Error getting plugin config. Check that you have valid JSON.', e.stack); }
-              }
-          });
-  
-        }).on('error', function(e) {
-          console.log("Error getting plugin config. Check that the URL is correct.: " + e.message);
-        }); 
-    };
-    
-    obj.getPluginLatest = function(func) {
-        parent.db.getPlugins(function(err, plugins){
-          plugins.forEach(function(curconf){
-              obj.getPluginConfig(curconf.configUrl, function(newconf){
-                  var s = require('semver');
-                  func({
-                    "id": curconf._id,
-                    "installedVersion": curconf.version,
-                    "version": newconf.version,
-                    "hasUpdate": s.gt(newconf.version, curconf.version),
-                    "meshCentralCompat": s.satisfies(s.coerce(parent.currentVer), newconf.meshCentralCompat),
-                    "changelogUrl": curconf.changelogUrl,
-                    "status": curconf.status
-                  });
+    obj.getPluginConfig = function(configUrl) {
+        return new Promise(function(resolve, reject) {
+            var https = require('https');
+            if (configUrl.indexOf('://') === -1) reject('Unable to fetch the config: Bad URL (' + configUrl + ')');
+            https.get(configUrl, function(res) {
+              var configStr = '';
+              res.on('data', function(chunk){
+                  configStr += chunk;
               });
-          });
-        });
-        
+              res.on('end', function(){
+                  if (configStr[0] == '{') { // let's be sure we're JSON
+                      try {
+                          var pluginConfig = JSON.parse(configStr);
+                          if (Array.isArray(pluginConfig) && pluginConfig.length == 1) pluginConfig = pluginConfig[0];
+                          if (obj.isValidConfig(pluginConfig, configUrl)) {
+                              resolve(pluginConfig);
+                          } else {
+                              reject("This does not appear to be a valid plugin configuration.");
+                          }
+                          
+                      } catch (e) { reject('Error getting plugin config. Check that you have valid JSON.'); }
+                  } else {
+                    reject('Error getting plugin config. Check that you have valid JSON.');
+                  }
+              });
+      
+            }).on('error', function(e) {
+                reject("Error getting plugin config: " + e.message);
+            }); 
+        })
     };
     
-    obj.addPlugin = function(url) {
-      obj.getPluginConfig(url, function(pluginConfig){
+    obj.getPluginLatest = function() {
+        return new Promise(function(resolve, reject) {
+            parent.db.getPlugins(function(err, plugins) {
+                var proms = [];
+                plugins.forEach(function(curconf) {
+                    proms.push(obj.getPluginConfig(curconf.configUrl));
+                });
+                var latestRet = [];
+                Promise.all(proms).then(function(newconfs) {
+                    newconfs.forEach(function(newconf) {
+                        var curconf = null;
+                        plugins.forEach(function(conf) {
+                            if (conf.configUrl == newconf.configUrl) curconf = conf;
+                        });
+                        if (curconf == null) reject('Some plugin configs could not be parsed');
+                        var s = require('semver');
+                        latestRet.push({
+                            "id": curconf._id,
+                            "installedVersion": curconf.version,
+                            "version": newconf.version,
+                            "hasUpdate": s.gt(newconf.version, curconf.version),
+                            "meshCentralCompat": s.satisfies(s.coerce(parent.currentVer), newconf.meshCentralCompat),
+                            "changelogUrl": curconf.changelogUrl,
+                            "status": curconf.status
+                        });
+                        resolve(latestRet);
+                    });
+                }).catch((e) => { console.log('Error reaching plugins, update call aborted. ', e)});
+            });
+        });
+    };
+    
+    obj.addPlugin = function(pluginConfig) {
+      return new Promise(function(resolve, reject) {
           parent.db.addPlugin({
               "name": pluginConfig.name,
               "shortName": pluginConfig.shortName,
@@ -279,13 +298,12 @@ module.exports.pluginHandler = function (parent) {
               "meshCentralCompat": pluginConfig.meshCentralCompat,
               "status": 0  // 0: disabled, 1: enabled
           }, function() {
-              parent.db.getPlugins(function(err, docs){
-                  var targets = ['*', 'server-users'];
-                  parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
-              
-              });
-          });
-      });  
+                parent.db.getPlugins(function(err, docs){
+                  if (err) reject(err);
+                  else resolve(docs);
+                });
+            });
+        });
     };
     
     obj.installPlugin = function(id, func) {
