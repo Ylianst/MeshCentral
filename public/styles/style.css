@@ -2653,6 +2653,13 @@ a {
     position: absolute;
     cursor: pointer; /* Add a pointer on hover */
 }
+.pluginOverlayContent {
+    width: 100%; /* Full width (cover the whole page) */
+    height: 100%; /* Full height (cover the whole page) */
+    background-color: #FFFFFF; /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    position: relative;
+}
 
 .pluginTitleBar {
     padding: 4px;

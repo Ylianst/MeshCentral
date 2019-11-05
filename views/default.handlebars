@@ -2368,6 +2368,10 @@
                     updatePluginList(message.list);
                     break;
                 }
+                case 'pluginError': {
+                    setDialogMode(2, 'Oops!', 1, null, message.msg);
+                    break;
+                }
                 case 'plugin': {
                     if ((pluginHandler == null) || (typeof message.plugin != 'string')) break;
                     try { pluginHandler[message.plugin][message.method](server, message); } catch (e) { console.log('Error loading plugin handler ('+ e + ')'); }
@@ -9419,6 +9423,9 @@
         }
         
         function updatePluginList(versInfo) {
+            if (Array.isArray(versInfo)) {
+                versInfo.forEach(function(v) { updatePluginList(v); });
+            }
             if (installedPluginList.length) {
                 if (versInfo != null) {
                     if (installedPluginList['version_info'] == null) installedPluginList['version_info'] = [];
@@ -9479,6 +9486,7 @@
                         if (!vin.meshCentralCompat) {
                             p.upgradeAvail += vers_not_compat;
                             cant_action.push('install');
+                            cant_action.push('upgrade');
                         }
                     }
 
@@ -9533,8 +9541,9 @@
         }
         
         function goPlugin(pname, title) {
-            let xwin = `<div class="pluginTitleBar"><span>${title}</span><span class="pluginCloseBtn"><button onclick="return noGoPlugin(this);">X</button></span></div>`
+            let xwin = `<div class="pluginTitleBar"><span>${title}</span><span class="pluginCloseBtn"><button onclick="return noGoPlugin(this);">X</button></span></div>`;
             let dif = document.createElement('div');
+            let cdif = document.createElement('div');
             dif.classList.add('pluginOverlay');
             dif.innerHTML = xwin;
             let pif = document.createElement('iframe');
@@ -9543,8 +9552,9 @@
             pif.style.width = '100%';
             pif.style.height = '100%';
             pif.setAttribute('frameBorder', '0');
-
-            dif.append(pif);
+            cdif.classList.add('pluginOverlayContent');
+            cdif.append(pif);
+            dif.append(cdif);
             let x = Q('p7');
             x.parentNode.insertBefore(dif, x.nextSibling);
             Q('p7').classList.add('pluginOverlayBg');

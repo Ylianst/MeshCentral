@@ -3122,14 +3122,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'pluginLatestCheck': {
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
-                parent.parent.pluginHandler.getPluginLatest(function(latest) {
+                parent.parent.pluginHandler.getPluginLatest()
+                .then(function(latest) {
                     try { ws.send(JSON.stringify({ action: 'pluginVersionsAvailable', list: latest })); } catch (ex) { } 
                 });
                 break;
             }
             case 'addplugin': {
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
-                parent.parent.pluginHandler.addPlugin(command.url);
+                try { 
+                    //parent.parent.pluginHandler.addPlugin(command.url)
+                    parent.parent.pluginHandler.getPluginConfig(command.url)
+                    .then(parent.parent.pluginHandler.addPlugin)
+                    .then(function(docs){ console.log('landed');
+                        var targets = ['*', 'server-users'];
+                        parent.parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
+                    })
+                    .catch(function(err) {
+                        if (typeof err == 'object') err = err.message;
+                        try {  ws.send(JSON.stringify({ action: 'pluginError', msg: err })); } catch (er) { }
+                    }); 
+                    
+                } catch(e) { console.log('Cannot add plugin: ' + e); }
                 break;
             }
             case 'installplugin': {
