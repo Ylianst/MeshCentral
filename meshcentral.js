@@ -1932,8 +1932,10 @@ function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
         for (var i in modules) {
+            // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
+            var moduleName = modules[i].split("@", 1)[0];
             try {
-                var xxmodule = require(modules[i]);
+                require(moduleName);
             } catch (e) {
                 if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
             }
@@ -1943,7 +1945,6 @@ function InstallModules(modules, func) {
 }
 
 // Check if a module is present and install it if missing
-var InstallModuleChildProcess = null;
 function InstallModule(modulename, func, tag1, tag2) {
     console.log('Installing ' + modulename + '...');
     var child_process = require('child_process');
@@ -1952,9 +1953,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    // Looks like we need to keep a global reference to the child process object for this to work correctly.
-    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
-        InstallModuleChildProcess = null;
+    child_process.exec(`npm install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
