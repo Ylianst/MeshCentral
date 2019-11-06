@@ -1949,9 +1949,6 @@ function InstallModule(modulename, func, tag1, tag2) {
     var child_process = require('child_process');
     var parentpath = __dirname;
 
-    // Add module exact version number if needed
-    if (modulename == 'greenlock') { modulename = 'greenlock@2.8.8'; }
-
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
@@ -2009,7 +2006,7 @@ function mainStart() {
         var modules = ['ws', 'cbor', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
-        if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+        if (config.letsencrypt != null) { modules.push('greenlock@2.8.8'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
