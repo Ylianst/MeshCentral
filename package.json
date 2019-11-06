@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.4.3-v",
+  "version": "0.4.3-w",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -37,8 +37,10 @@
     "express": "^4.17.0",
     "express-handlebars": "^3.1.0",
     "express-ws": "^4.0.0",
+    "greenlock": "^2.8.8",
     "html-minifier": "^4.0.0",
     "ipcheck": "^0.1.0",
+    "le-acme-core": "^2.1.4",
     "meshcentral": "*",
     "minify-js": "0.0.4",
     "minimist": "^1.2.0",
