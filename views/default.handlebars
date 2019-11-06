@@ -9464,6 +9464,8 @@
                     var cant_action = [];
                     if (p.hasAdminPanel == true) {
                         p.nameHtml = `<a onclick="return goPlugin('${p.shortName}', '${p.name}');">${p.name}</a>`;
+                    } else {
+                        p.nameHtml = p.name;
                     }
                     p.statusText = statusMap[p.status].text;
                     p.statusColor = statusMap[p.status].color;

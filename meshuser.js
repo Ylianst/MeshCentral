@@ -3134,7 +3134,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     //parent.parent.pluginHandler.addPlugin(command.url)
                     parent.parent.pluginHandler.getPluginConfig(command.url)
                     .then(parent.parent.pluginHandler.addPlugin)
-                    .then(function(docs){ console.log('landed');
+                    .then(function(docs){
                         var targets = ['*', 'server-users'];
                         parent.parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
                     })
