@@ -3130,8 +3130,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'addplugin': {
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
-                try { 
-                    //parent.parent.pluginHandler.addPlugin(command.url)
+                try {
                     parent.parent.pluginHandler.getPluginConfig(command.url)
                     .then(parent.parent.pluginHandler.addPlugin)
                     .then(function(docs){
