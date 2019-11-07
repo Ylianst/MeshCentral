@@ -263,12 +263,16 @@ module.exports.pluginHandler = function (parent) {
                         });
                         if (curconf == null) reject('Some plugin configs could not be parsed');
                         var s = require('semver');
+                        // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
+                        // Convert the letter to ASCII for a "true" version number comparison
+                        var mcCurVer = parent.currentVer.replace(/-(.)$/, (m, p1) => { return p1.charCodeAt(0); });
+                        var piCompatVer = newconf.meshCentralCompat.replace(/-(.)$/, (m, p1) => { return p1.charCodeAt(0); });
                         latestRet.push({
                             "id": curconf._id,
                             "installedVersion": curconf.version,
                             "version": newconf.version,
                             "hasUpdate": s.gt(newconf.version, curconf.version),
-                            "meshCentralCompat": s.satisfies(s.coerce(parent.currentVer), newconf.meshCentralCompat),
+                            "meshCentralCompat": s.satisfies(mcCurVer, piCompatVer),
                             "changelogUrl": curconf.changelogUrl,
                             "status": curconf.status
                         });
