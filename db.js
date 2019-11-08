@@ -895,6 +895,21 @@ module.exports.CreateDB = function (parent, func) {
                     func(r);
                 });
             }
+            
+            // Add a plugin
+            obj.addPlugin = function (plugin, func) { obj.pluginsfile.insert(plugin, func); };
+            
+            // Get all plugins
+            obj.getPlugins = function (func) { obj.pluginsfile.find().sort({ name: 1 }).exec(func); };
+            
+            // Get plugin
+            obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).exec(func); };
+            
+            // Delete plugin
+            obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); };
+            
+            obj.setPluginStatus = function(id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: {status: status } }, func); };
+            
         }
 
         func(obj); // Completed function setup
