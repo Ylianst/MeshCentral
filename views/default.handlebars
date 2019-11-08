@@ -57,6 +57,9 @@
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)">Normal Connect</div>
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(2,event)">PowerShell Connect</div>
     </div>
+    <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxclose" class="cmtext" onclick="pluginTabClose(event)">Close Tab</div>
+    </div>
     <!-- main page -->
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
@@ -158,6 +161,11 @@
                                 <td tabindex=0 id=ServerTrace class="topbar_td style3x" onclick=go(41,event) onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
+                        </table>
+                    </div>
+                    <div id=PluginSubMenuSpan>
+                        <table id=PluginSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr><td onclick="goPlugin(-1)" onkeypress="if (event.key == 'Enter') goPlugin(-1)" class="topbar_td style3x">Home</td></tr>
                         </table>
                     </div>
                     <div id=UserDummyMenuSpan>
@@ -2300,7 +2308,6 @@
                             break;
                         }
                         case 'updatePluginList': {
-                            // @Ylianst - Do we need a rights check here?
                             installedPluginList = message.event.list;
                             updatePluginList();
                             break;
@@ -3519,6 +3526,12 @@
                 contextmenudiv.style.left = event.pageX + 'px';
                 contextmenudiv.style.top = event.pageY + 'px';
                 contextmenudiv.style.display = 'block';
+            } else if (elem && elem != null && elem.classList.contains('pluginTab')) {
+                contextelement = elem;
+                var contextmenudiv = document.getElementById('pluginTabContextMenu');
+                contextmenudiv.style.left = event.pageX + 'px';
+                contextmenudiv.style.top = event.pageY + 'px';
+                contextmenudiv.style.display = 'block';
             } else {
                 while (elem && elem != null && elem.id != 'devs') { elem = elem.parentElement; }
                 if (!elem || elem == null) return true;
@@ -3590,10 +3603,21 @@
             connectTerminal(null, 1, { powershell: (action == 2) });
         }
 
+        function pluginTabClose() {
+            var pluginTab = contextelement;
+            var pname = pluginTab.getAttribute('x-data-plugin-sname');
+            var pdiv = Q('plugin-'+pname);
+            pdiv.parentNode.removeChild(pdiv);
+            pluginTab.parentNode.removeChild(pluginTab);
+            QV('p7', true);
+            goPlugin(-1);
+        }
+        
         function hideContextMenu() {
             QV('contextMenu', false);
             QV('meshContextMenu', false);
             QV('termShellContextMenu', false);
+            QV('pluginTabContextMenu', false);
             contextelement = null;
         }
 
@@ -9412,7 +9436,7 @@
             // Fetch the server timeline stats if needed
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
-            if (x == 7) refreshPluginLatest(); else noGoPlugin();
+            if (x == 7) { refreshPluginLatest(); QV('PluginSubMenuSpan', true); goPlugin(-1); } else { noGoPlugin(); }
             
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
@@ -9543,37 +9567,66 @@
         }
         
         function goPlugin(pname, title) {
-            let xwin = `<div class="pluginTitleBar"><span>${title}</span><span class="pluginCloseBtn"><button onclick="return noGoPlugin(this);">X</button></span></div>`;
+            let holder = Q('PluginSubMenu').querySelectorAll('tr')[0];
+            let loadedPluginsTDs = holder.querySelectorAll('td');
+            var found = false;
+            loadedPluginsTDs.forEach((p) => {
+                p.classList.remove('style3sel');
+                p.classList.add('style3x');
+                var tname = p.getAttribute('x-data-plugin-sname');
+                if (tname != null) { Q('plugin-'+tname).style.display = 'none'; }
+                if (tname == pname) {
+                    // show existing tab / content
+                    p.classList.remove('style3x');
+                    p.classList.add('style3sel');
+                    QS('p7').display = 'none';
+                    Q('plugin-'+tname).style.display = '';
+                    found = true;
+                }
+            });
+            if (pname == -1) { // go gome
+                QV('p7', true);
+                let homeTab = loadedPluginsTDs[0];
+                homeTab.classList.add('style3sel');
+                homeTab.classList.remove('style3x');
+                found = true;
+            }
+            if (found) return;
+            
+            Q('PluginSubMenu').style.display = 'block';
+            let sif = document.createElement('td');
+            sif.setAttribute('x-data-plugin-sname', pname);
+            sif.classList.add('topbar_td');
+            sif.classList.add('style3sel');
+            sif.classList.add('pluginTab');
+            sif.setAttribute('onclick', 'goPlugin("' + pname + '", "' + title + '")');
+            sif.setAttribute('onkeypress', 'if (event.key == "Enter") goPlugin("' + pname + '", "' + title + '")');
+            sif.innerHTML = title;
+            holder.append(sif);
+            
             let dif = document.createElement('div');
-            let cdif = document.createElement('div');
-            dif.classList.add('pluginOverlay');
-            dif.innerHTML = xwin;
+            dif.setAttribute('id', 'plugin-'+pname);
+            dif.classList.add('pluginContent');
             let pif = document.createElement('iframe');
             pif.src = '/pluginadmin.ashx?pin='+pname;
             pif.setAttribute('frameBorder', '0');
             pif.style.width = '100%';
             pif.style.height = '100%';
             pif.setAttribute('frameBorder', '0');
-            cdif.classList.add('pluginOverlayContent');
-            cdif.append(pif);
-            dif.append(cdif);
-            let x = Q('p7');
-            x.parentNode.insertBefore(dif, x.nextSibling);
-            Q('p7').classList.add('pluginOverlayBg');
+            dif.append(pif);
+            let x = Q('column_l_bottomgap');
+            x.parentNode.insertBefore(dif, x.previousSibling);
+            QS('p7').display = 'none';
+            
         }
         
         function noGoPlugin(el) {
-            if (el == null) {
-                var boxes = document.querySelectorAll('.pluginOverlay');
-                for (const b in Object.values(boxes)) {
-                    boxes[b].parentNode.removeChild(boxes[b]);
-                }
-                Q('p7').classList.remove('pluginOverlayBg');
-                return;
-            }
-            var box = document.querySelector('.pluginOverlay').closest(".pluginOverlay");
-            box.parentNode.removeChild(box);
-            Q('p7').classList.remove('pluginOverlayBg');
+            QV('PluginSubMenuSpan', false);
+            let loadedPluginsTDs =  Q('PluginSubMenu').querySelectorAll('td');
+            loadedPluginsTDs.forEach((p) => {
+                var tname = p.getAttribute('x-data-plugin-sname');
+                if (tname != null) Q('plugin-'+tname).style.display = 'none';
+            });
         }
         
         // Generic methods

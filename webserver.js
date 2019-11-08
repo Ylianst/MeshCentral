@@ -3194,7 +3194,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { res.sendStatus(404); return; }
         if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
-        if ((user == null) || ((user.siteadmin & 0xFFFFFFFF) == 0)) { res.sendStatus(401); return; }
+        if (user == null) { res.sendStatus(401); return; }
         
         parent.pluginHandler.handleAdminReq(req, res, user, obj);
     }
@@ -3204,7 +3204,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { res.sendStatus(404); return; }
         if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
-        if ((user == null) || ((user.siteadmin & 0xFFFFFFFF) == 0)) { res.sendStatus(401); return; }
+        if (user == null) { res.sendStatus(401); return; }
         
         parent.pluginHandler.handleAdminPostReq(req, res, user, obj);
     }
