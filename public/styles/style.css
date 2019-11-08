@@ -233,7 +233,7 @@ body {
 }
 
 /* #UserDummyMenuSpan,  */
-#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
+#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
     color: white;
@@ -241,6 +241,10 @@ body {
 }
 
 .menu_stack #UserDummyMenu {
+    display: none;
+}
+
+.menu_stack #PluginSubMenu {
     display: none;
 }
 
@@ -2629,50 +2633,7 @@ a {
     margin: 50px auto;
 }
 
-.pluginOverlayBg {
-    width: 95%; /* Full width (cover the whole page) */
-    height: 95%; /* Full height (cover the whole page) */
-    margin: 10px;
-    background-color: rgba(0,0,0,0.8); /* Black background with opacity */
-    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-    position: absolute;
-    cursor: pointer; /* Add a pointer on hover */
-    filter:blur(4px);
-      -o-filter:blur(4px);
-      -ms-filter:blur(4px);
-      -moz-filter:blur(4px);
-      -webkit-filter:blur(4px);
-}
-
-.pluginOverlay {
-    width: 95%; /* Full width (cover the whole page) */
-    height: 95%; /* Full height (cover the whole page) */
-    margin: 10px;
-    background-color: #FFFFFF; /* Black background with opacity */
-    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-    position: absolute;
-    cursor: pointer; /* Add a pointer on hover */
-}
-.pluginOverlayContent {
-    width: 100%; /* Full width (cover the whole page) */
-    height: 100%; /* Full height (cover the whole page) */
-    background-color: #FFFFFF; /* Black background with opacity */
-    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-    position: relative;
-}
-
-.pluginTitleBar {
-    padding: 4px;
-    height: 25px;
-    border-bottom: double;
-    font-size: 20px;
-}
-
-.pluginCloseBtn {
-    border: none;
-    outline: none;
-    cursor: pointer;
-    float: right;
-    position: relative;
-    padding: 0;
+.pluginContent {
+    width: 100%;
+    height: 100%;
 }

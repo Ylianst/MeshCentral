@@ -199,22 +199,6 @@ module.exports.pluginHandler = function (parent) {
         return isValid;
     };
     
-    obj.getPlugins = function(func) {
-        var plugins = parent.db.getPlugins();
-        if (typeof plugins == 'undefined' || plugins.length == 0) {
-            return null;
-        }
-        
-        plugins.forEach(function(p, x){
-            // check semantic version
-            console.log('FOREACH PLUGIN', p, x);
-            // callbacks to new versions
-            
-        });
-        
-        return plugins;
-    }
-    
     obj.getPluginConfig = function(configUrl) {
         return new Promise(function(resolve, reject) {
             var https = require('https');
