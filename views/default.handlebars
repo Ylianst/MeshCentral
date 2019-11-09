@@ -1360,6 +1360,7 @@
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
             QV('MainMenuMyPlugins', (pluginHandler != null));
+            QV('LeftMenuMyPlugins', (pluginHandler != null));
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
