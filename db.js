@@ -897,10 +897,10 @@ module.exports.CreateDB = function (parent, func) {
             }
             
             // Add a plugin
-            obj.addPlugin = function (plugin, func) { obj.pluginsfile.insert(plugin, func); };
+            obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insert(plugin, func); };
             
             // Get all plugins
-            obj.getPlugins = function (func) { obj.pluginsfile.find().sort({ name: 1 }).exec(func); };
+            obj.getPlugins = function (func) { obj.pluginsfile.find({"type": "plugin"}, {"type": 0}).sort({ name: 1 }).exec(func); };
             
             // Get plugin
             obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).exec(func); };
