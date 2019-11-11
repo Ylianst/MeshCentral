@@ -201,9 +201,13 @@ module.exports.pluginHandler = function (parent) {
     
     obj.getPluginConfig = function(configUrl) {
         return new Promise(function(resolve, reject) {
-            var https = require('https');
+            if (configUrl.indexOf('https://') >= 0) {
+              var http = require('https');
+            } else {
+              var http = require('http');
+            }
             if (configUrl.indexOf('://') === -1) reject('Unable to fetch the config: Bad URL (' + configUrl + ')');
-            https.get(configUrl, function(res) {
+            http.get(configUrl, function(res) {
               var configStr = '';
               res.on('data', function(chunk){
                   configStr += chunk;
