@@ -3113,7 +3113,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'plugins': {
-                // @Ylianst - Do we need a new permission set here?
+                // Since plugin actions generally require a server restart, use the Full admin permission
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
                 parent.db.getPlugins(function(err, docs) {
                     try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 

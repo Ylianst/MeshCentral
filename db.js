@@ -753,10 +753,10 @@ module.exports.CreateDB = function (parent, func) {
             }
             
             // Add a plugin
-            obj.addPlugin = function (plugin, func) { obj.pluginsfile.insertOne(plugin, func); };
+            obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insertOne(plugin, func); };
             
             // Get all plugins
-            obj.getPlugins = function (func) { obj.pluginsfile.find().sort({ name: 1 }).toArray(func); };
+            obj.getPlugins = function (func) { obj.pluginsfile.find({"type": "plugin"}).project({"type": 0}).sort({ name: 1 }).toArray(func); };
             
             // Get plugin
             obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); };
