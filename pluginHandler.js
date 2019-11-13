@@ -70,7 +70,7 @@ module.exports.pluginHandler = function (parent) {
         obj.callHook = function(hookName, ...args) { 
             for (const p of Object.keys(obj)) {
                 if (typeof obj[p][hookName] == 'function') {
-                    obj[p][hookName](args);
+                    obj[p][hookName].apply(this, args);
                 }
             }
         };
