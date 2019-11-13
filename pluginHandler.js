@@ -66,13 +66,15 @@ module.exports.pluginHandler = function (parent) {
             }
         }
 
-        str += `obj.onDeviceRefeshEnd = function(nodeid, panel, refresh, event) {
-        for (const p of Object.keys(obj)) { 
-            if (typeof obj[p].onDeviceRefreshEnd == 'function') {
-                obj[p].onDeviceRefreshEnd(nodeid, panel, refresh, event);
+        str += `
+        obj.callHook = function(hookName, ...args) { 
+            for (const p of Object.keys(obj)) {
+                if (typeof obj[p][hookName] == 'function') {
+                    obj[p][hookName](args);
                 }
             }
         };
+        
         obj.registerPluginTab = function(pluginRegInfo) {
             var d = pluginRegInfo();
             if (!Q(d.tabId)) {
