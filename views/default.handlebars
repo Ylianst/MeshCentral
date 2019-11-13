@@ -4540,7 +4540,7 @@
                 p13clearConsoleMsg();
 
                 // Device refresh plugin handler
-                if (pluginHandler != null) { pluginHandler.onDeviceRefeshEnd(nodeid, panel, refresh, event); }
+                if (pluginHandler != null) { pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event); }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -5201,6 +5201,7 @@
                 desktop.Stop();
                 webRtcDesktopReset();
                 desktopNode = desktop = null;
+                if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
             }
         }
 
