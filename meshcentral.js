@@ -1935,7 +1935,14 @@ function InstallModules(modules, func) {
             // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
             var moduleName = modules[i].split("@", 1)[0];
             try {
-                require(moduleName);
+                if (moduleName == 'greenlock') {
+                    // Check if we have GreenLock v3
+                    delete require.cache[require.resolve('greenlock')]; // Clear the require cache
+                    if (typeof require('greenlock').challengeType == 'string') { missingModules.push(modules[i]); }
+                } else {
+                    // For all other modules, do the check here.
+                    require(moduleName);
+                }
             } catch (e) {
                 if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
             }
@@ -2001,19 +2008,20 @@ function mainStart() {
             if (config.domains[i].auth == 'ldap') { ldap = true; }
         }
 
+        // Get the current node version
+        var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+
         // Build the list of required modules
         var modules = ['ws', 'cbor', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
-        if (config.letsencrypt != null) { modules.push('greenlock@2.8.8'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+        //if (config.letsencrypt != null) { modules.push('greenlock@2.8.8'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+        if (config.letsencrypt != null) { if (nodeVersion < 8) { console.log("WARNING: Let's Encrypt support requires Node v8 or higher."); } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
-
-        // Get the current node version
-        var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
 
         // If running NodeJS < 8, install "util.promisify"
         if (nodeVersion < 8) { modules.push('util.promisify'); }
@@ -2027,7 +2035,7 @@ function mainStart() {
             if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
             if (allsspi == false) { modules.push('otplib'); } // Google Authenticator support
         }
-        
+
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
 
