@@ -313,7 +313,7 @@ module.exports.CertificateOperations = function (parent) {
         cert.setIssuer(attrs);
         // Create a root certificate
         //cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "nsCertType", sslCA: true, emailCA: true, objCA: true }, { name: "subjectKeyIdentifier" }]);
-        cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "subjectKeyIdentifier" }]);
+        cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "subjectKeyIdentifier" }, { name: "keyUsage", keyCertSign: true }]);
         cert.sign(keys.privateKey, obj.forge.md.sha384.create());
 
         return { cert: cert, key: keys.privateKey };
