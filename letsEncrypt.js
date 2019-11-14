@@ -40,7 +40,7 @@ module.exports.CreateLetsEncrypt = function(parent) {
         obj.performRestart = false;
 
         // Setup the certificate storage paths
-        obj.configPath = obj.path.join(obj.parent.datapath, 'letsencrypt');
+        obj.configPath = obj.path.join(obj.parent.datapath, 'letsencrypt3');
         try { obj.parent.fs.mkdirSync(obj.configPath); } catch (e) { }
 
         // Setup Let's Encrypt default configuration
