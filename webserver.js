@@ -3438,7 +3438,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
                         if (checkUserOneTimePasswordRequired(domain, user) == true) {
-                            if (req.query.token) {
+                            if (typeof req.query.token != 'string') {
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
