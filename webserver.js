@@ -1775,8 +1775,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
                 scriptFile.scriptText = runscript;
 
+                // Randomize the environement detection
+                var randomDnsName;
+                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
+                var text = JSON.stringify(scriptFile, null, ' ');
+                for (var i = 0; i < 5; i++) { text = text.replace('aabbccddeeffgg', randomDnsName); }
+
                 // Send the script
-                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
+                func(Buffer.from(text));
             });
         } else {
             // Server name is a hostname
@@ -1800,8 +1806,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
                 scriptFile.scriptText = runscript;
 
+                // Randomize the environement detection
+                var randomDnsName;
+                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
+                var text = JSON.stringify(scriptFile, null, ' ');
+                for (var i = 0; i < 5; i++) { text = text.replace('aabbccddeeffgg', randomDnsName); }
+
                 // Send the script
-                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
+                func(Buffer.from(text));
             });
         }
     }
@@ -3970,6 +3982,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
     function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
     function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
+    function getRandomLowerCase(len) { var r = '', random = obj.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }
