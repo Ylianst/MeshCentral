@@ -1833,6 +1833,21 @@ function CreateMeshCentralServer(config, args) {
         // Send event to console
         if ((obj.debugSources != null) && ((obj.debugSources == '*') || (obj.debugSources.indexOf(source) >= 0))) { console.log(source.toUpperCase() + ':', ...args); }
 
+        // Send event to log file
+        if (obj.config.settings && obj.config.settings.log) {
+            if (typeof obj.config.settings.log == 'string') { obj.config.settings.log = obj.config.settings.log.split(','); }
+            if (obj.config.settings.log.indexOf(source) >= 0) {
+                const d = new Date();
+                if (obj.xxLogFile == null) { try { obj.xxLogFile = obj.fs.openSync(obj.getConfigFilePath('log.txt'), 'a+', 666); } catch (ex) { } }
+                if (obj.xxLogFile != null) {
+                    try {
+                        if (obj.xxLogDateStr != d.toLocaleDateString()) { obj.xxLogDateStr = d.toLocaleDateString(); obj.fs.writeSync(obj.xxLogFile, '---- ' + d.toLocaleDateString() + ' ----\r\n'); }
+                        obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source + ': ' + Array.prototype.slice.call(...args).join('') + '\r\n');
+                    } catch (ex) { }
+                }
+            }
+        }
+
         // Send the event to logged in administrators
         if ((obj.debugRemoteSources != null) && ((obj.debugRemoteSources == '*') || (obj.debugRemoteSources.indexOf(source) >= 0))) {
             var sendcount = 0;
