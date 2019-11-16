@@ -37,21 +37,20 @@ module.exports.CreateLetsEncrypt = function (parent) {
         obj.redirWebServerHooked = false;
         obj.leDomains = null;
         obj.leResults = null;
-        obj.performRestart = false;
+        obj.leResultsStaging = null;
+        obj.performRestart = false; // Indicates we need to restart the server
+        obj.performMoveToProduction = false; // Indicates we just got a staging certificate and need to move to production
+        obj.runAsProduction = false; // This starts at false and moves to true if staging cert is ok.
 
         // Setup the certificate storage paths
         obj.configPath = obj.path.join(obj.parent.datapath, 'letsencrypt3');
         try { obj.parent.fs.mkdirSync(obj.configPath); } catch (e) { }
+        obj.configPathStaging = obj.path.join(obj.parent.datapath, 'letsencrypt3-staging');
+        try { obj.parent.fs.mkdirSync(obj.configPathStaging); } catch (e) { }
 
         // Setup Let's Encrypt default configuration
-        obj.leDefaults = {
-            agreeToTerms: true,
-            //serverKeyType: 'RSA-2048', // Seems like only "RSA-2048" or "P-256" is supported.
-            store: {
-                module: 'greenlock-store-fs',
-                basePath: obj.configPath
-            }
-        };
+        obj.leDefaults = { agreeToTerms: true, store: { module: 'greenlock-store-fs', basePath: obj.configPath } };
+        obj.leDefaultsStaging = { agreeToTerms: true, store: { module: 'greenlock-store-fs', basePath: obj.configPathStaging } };
 
         // Get package and maintainer email
         const pkg = require('./package.json');
@@ -68,7 +67,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
             maintainerEmail = pkg.author.email;
         }
 
-        // Create the main GreenLock code module.
+        // Create the main GreenLock code module for production.
         var greenlockargs = {
             parent: obj,
             packageRoot: __dirname,
@@ -76,25 +75,47 @@ module.exports.CreateLetsEncrypt = function (parent) {
             manager: obj.path.join(__dirname, 'letsencrypt.js'),
             maintainerEmail: maintainerEmail,
             notify: function (ev, args) { if (typeof args == 'string') { parent.debug('cert', ev + ': ' + args); } else { parent.debug('cert', ev + ': ' + JSON.stringify(args)); } },
-            staging: (obj.parent.config.letsencrypt.production !== true),
+            staging: false,
             debug: (obj.parent.args.debug > 0)
         };
-
         if (obj.parent.args.debug == null) { greenlockargs.log = function (debug) { }; } // If not in debug mode, ignore all console output from greenlock (makes things clean).
         obj.le = greenlock.create(greenlockargs);
+
+        // Create the main GreenLock code module for staging.
+        var greenlockargsstaging = {
+            parent: obj,
+            packageRoot: __dirname,
+            packageAgent: pkg.name + '/' + pkg.version,
+            manager: obj.path.join(__dirname, 'letsencrypt.js'),
+            maintainerEmail: maintainerEmail,
+            notify: function (ev, args) { if (typeof args == 'string') { parent.debug('cert', ev + ': ' + args); } else { parent.debug('cert', ev + ': ' + JSON.stringify(args)); } },
+            staging: true,
+            debug: (obj.parent.args.debug > 0)
+        };
+        if (obj.parent.args.debug == null) { greenlockargsstaging.log = function (debug) { }; } // If not in debug mode, ignore all console output from greenlock (makes things clean).
+        obj.leStaging = greenlock.create(greenlockargsstaging);
 
         // Hook up GreenLock to the redirection server
         if (obj.parent.redirserver.port == 80) { obj.redirWebServerHooked = true; }
 
         // Respond to a challenge
         obj.challenge = function (token, hostname, func) {
-            parent.debug('cert', "Challenge " + hostname + "/" + token);
-            obj.le.challenges.get({ type: 'http-01', servername: hostname, token: token })
-                .then(function (results) { func(results.keyAuthorization); })
-                .catch(function (e) { console.log('LE-ERROR', e); func(null); }); // unexpected error, not related to renewal
+            if (obj.runAsProduction === true) {
+                // Production
+                parent.debug('cert', "Challenge " + hostname + "/" + token);
+                obj.le.challenges.get({ type: 'http-01', servername: hostname, token: token })
+                    .then(function (results) { func(results.keyAuthorization); })
+                    .catch(function (e) { console.log('LE-ERROR', e); func(null); }); // unexpected error, not related to renewal
+            } else {
+                // Staging
+                parent.debug('cert', "Challenge " + hostname + "/" + token);
+                obj.leStaging.challenges.get({ type: 'http-01', servername: hostname, token: token })
+                    .then(function (results) { func(results.keyAuthorization); })
+                    .catch(function (e) { console.log('LE-ERROR', e); func(null); }); // unexpected error, not related to renewal
+            }
         }
 
-        obj.getCertificate = function (certs, func) {
+        obj.getCertificate = function(certs, func) {
             parent.debug('cert', "Getting certs from local store");
             if (certs.CommonName.indexOf('.') == -1) { console.log("ERROR: Use --cert to setup the default server name before using Let's Encrypt."); func(certs); return; }
             if (obj.parent.config.letsencrypt == null) { func(certs); return; }
@@ -112,10 +133,47 @@ module.exports.CreateLetsEncrypt = function (parent) {
                 obj.leDomains = obj.parent.config.letsencrypt.names;
             }
 
+            if (obj.parent.config.letsencrypt.production !== true) {
+                // We are in staging mode, just go ahead
+                obj.getCertificateEx(certs, func);
+            } else {
+                // We are really in production mode
+                if (obj.runAsProduction === true) {
+                    // Staging cert check must have been done already, move to production
+                    obj.getCertificateEx(certs, func);
+                } else {
+                    // Perform staging certificate check
+                    parent.debug('cert', "Checking staging certificate " + obj.leDomains[0] + "...");
+                    obj.leStaging.get({ servername: obj.leDomains[0] })
+                        .then(function (results) {
+                            if (results != null) {
+                                // We have a staging certificate, move to production for real
+                                parent.debug('cert', "Staging certificate is present, moving to production...");
+                                obj.runAsProduction = true;
+                                obj.getCertificateEx(certs, func);
+                            } else {
+                                // No staging certificate
+                                parent.debug('cert', "No staging certificate present");
+                                func(certs);
+                                setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
+                            }
+                        })
+                        .catch(function (e) {
+                            // No staging certificate
+                            parent.debug('cert', "No staging certificate present");
+                            func(certs);
+                            setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
+                        });
+                }
+            }
+        }
+
+        obj.getCertificateEx = function (certs, func) {
             // Get the Let's Encrypt certificate from our own storage
-            obj.le.get({ servername: obj.leDomains[0] })
+            const xle = (obj.runAsProduction === true)? obj.le : obj.leStaging;
+            xle.get({ servername: obj.leDomains[0] })
                 .then(function (results) {
-                    // If we already have real certificates, use them.
+                    // If we already have real certificates, use them
                     if (results) {
                         if (results.site.altnames.indexOf(certs.CommonName) >= 0) {
                             certs.web.cert = results.pems.cert;
@@ -130,7 +188,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
                             }
                         }
                     }
-                    parent.debug('cert', "Got certs from local store");
+                    parent.debug('cert', "Got certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
                     func(certs);
 
                     // Check if the Let's Encrypt certificate needs to be renewed.
@@ -139,7 +197,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
                     return;
                 })
                 .catch(function (e) {
-                    parent.debug('cert', "Unable to get certs from local store");
+                    parent.debug('cert', "Unable to get certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
                     setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
                     func(certs);
                 });
@@ -147,15 +205,23 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
         // Check if we need to renew the certificate, call this every day.
         obj.checkRenewCertificate = function () {
-            parent.debug('cert', "Checking certs");
+            parent.debug('cert', "Checking certs (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
 
             // Setup renew options
             var renewOptions = { servername: obj.leDomains[0] };
             if (obj.leDomains.length > 0) { renewOptions.altnames = obj.leDomains; }
-            obj.le.renew(renewOptions)
+            const xle = (obj.runAsProduction === true)? obj.le : obj.leStaging;
+            xle.renew(renewOptions)
                 .then(function (results) {
-                    parent.debug('cert', "Checks completed");
+                    parent.debug('cert', "Checks completed (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
                     if (obj.performRestart === true) { parent.debug('cert', "Certs changed, restarting..."); obj.parent.performServerCertUpdate(); } // Reset the server, TODO: Reset all peers
+                    else if (obj.performMoveToProduction == true) {
+                        parent.debug('cert', "Staging certificate received, moving to production...");
+                        obj.runAsProduction = true;
+                        obj.performMoveToProduction = false;
+                        obj.performRestart = true;
+                        setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
+                    }
                 })
                 .catch(function (e) { console.log(e); });
         }
@@ -175,25 +241,40 @@ module.exports.create = function (options) {
 
     manager.set = function (options) {
         manager.parent.parent.debug('cert', "Certificate has been set");
-        manager.parent.performRestart = true;
+        if (manager.parent.parent.config.letsencrypt.production == manager.parent.runAsProduction) { manager.parent.performRestart = true; }
+        else if ((manager.parent.parent.config.letsencrypt.production === true) && (manager.parent.runAsProduction === false)) { manager.parent.performMoveToProduction = true; }
         return null;
     };
 
     manager.remove = function (options) {
         manager.parent.parent.debug('cert', "Certificate has been removed");
-        manager.parent.performRestart = true;
+        if (manager.parent.parent.config.letsencrypt.production == manager.parent.runAsProduction) { manager.parent.performRestart = true; }
+        else if ((manager.parent.parent.config.letsencrypt.production === true) && (manager.parent.runAsProduction === false)) { manager.parent.performMoveToProduction = true; }
         return null;
     };
 
     // set the global config
     manager.defaults = async function (options) {
-        //console.log('LE-DEFAULTS', options);
-        if (options != null) { for (var i in options) { if (manager.parent.leDefaults[i] == null) { manager.parent.leDefaults[i] = options[i]; } } }
-        var r = manager.parent.leDefaults;
-        var mainsite = { subject: manager.parent.leDomains[0] };
-        if (manager.parent.leDomains.length > 0) { mainsite.altnames = manager.parent.leDomains; }
-        r.subscriberEmail = manager.parent.parent.config.letsencrypt.email;
-        r.sites = { mainsite: mainsite };
+        var r;
+        if (manager.parent.runAsProduction === true) {
+            // Production
+            //console.log('LE-DEFAULTS-Production', options);
+            if (options != null) { for (var i in options) { if (manager.parent.leDefaults[i] == null) { manager.parent.leDefaults[i] = options[i]; } } }
+            r = manager.parent.leDefaults;
+            var mainsite = { subject: manager.parent.leDomains[0] };
+            if (manager.parent.leDomains.length > 0) { mainsite.altnames = manager.parent.leDomains; }
+            r.subscriberEmail = manager.parent.parent.config.letsencrypt.email;
+            r.sites = { mainsite: mainsite };
+        } else {
+            // Staging
+            //console.log('LE-DEFAULTS-Staging', options);
+            if (options != null) { for (var i in options) { if (manager.parent.leDefaultsStaging[i] == null) { manager.parent.leDefaultsStaging[i] = options[i]; } } }
+            r = manager.parent.leDefaultsStaging;
+            var mainsite = { subject: manager.parent.leDefaultsStaging[0] };
+            if (manager.parent.leDefaultsStaging.length > 0) { mainsite.altnames = manager.parent.leDefaultsStaging; }
+            r.subscriberEmail = manager.parent.parent.config.letsencrypt.email;
+            r.sites = { mainsite: mainsite };
+        }
         return r;
     };
 
