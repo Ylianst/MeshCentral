@@ -830,7 +830,9 @@ function CreateMeshCentralServer(config, args) {
         // Load server certificates
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
-            if ((obj.config.letsencrypt == null) || (obj.redirserver == null)) {
+            // Get the current node version
+            const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+            if ((nodeVersion < 8) || (obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
                 var le = require('./letsencrypt.js');
