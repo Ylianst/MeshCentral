@@ -14,7 +14,7 @@
 /*jshint esversion: 6 */
 'use strict';
 
-module.exports.CreateLetsEncrypt = function(parent) {
+module.exports.CreateLetsEncrypt = function (parent) {
     try {
         parent.debug('cert', "Initializing Let's Encrypt support");
 
@@ -67,7 +67,7 @@ module.exports.CreateLetsEncrypt = function(parent) {
             // Latest NodeJS
             maintainerEmail = pkg.author.email;
         }
-                
+
         // Create the main GreenLock code module.
         var greenlockargs = {
             parent: obj,
@@ -110,16 +110,10 @@ module.exports.CreateLetsEncrypt = function(parent) {
                 obj.parent.config.letsencrypt.names.map(function (s) { return s.trim(); }); // Trim each name
                 if ((typeof obj.parent.config.letsencrypt.names != 'object') || (obj.parent.config.letsencrypt.names.length == null)) { console.log("ERROR: Let's Encrypt names must be an array in config.json."); func(certs); return; }
                 obj.leDomains = obj.parent.config.letsencrypt.names;
-                obj.leDomains.sort(); // Sort the array so it's always going to be in the same order.
             }
 
-            // Get altnames
-            obj.altnames = [];
-            obj.servername = certs.CommonName;
-            for (var i in obj.leDomains) { if (obj.leDomains[i] != certs.CommonName) { obj.altnames.push(obj.leDomains[i]); } }
-
             // Get the Let's Encrypt certificate from our own storage
-            obj.le.get({ servername: certs.CommonName })
+            obj.le.get({ servername: obj.leDomains[0] })
                 .then(function (results) {
                     // If we already have real certificates, use them.
                     if (results) {
@@ -156,14 +150,14 @@ module.exports.CreateLetsEncrypt = function(parent) {
             parent.debug('cert', "Checking certs");
 
             // Setup renew options
-            var renewOptions = { servername: obj.servername };
-            if (obj.altnames.length > 0) { renewOptions.altnames = obj.altnames; }
+            var renewOptions = { servername: obj.leDomains[0] };
+            if (obj.leDomains.length > 0) { renewOptions.altnames = obj.leDomains; }
             obj.le.renew(renewOptions)
                 .then(function (results) {
                     parent.debug('cert', "Checks completed");
                     if (obj.performRestart === true) { parent.debug('cert', "Certs changed, restarting..."); obj.parent.performServerCertUpdate(); } // Reset the server, TODO: Reset all peers
                 })
-                .catch(function (e) { console.log(e); func(certs); });
+                .catch(function (e) { console.log(e); });
         }
 
         return obj;
@@ -176,7 +170,7 @@ module.exports.create = function (options) {
     var manager = { parent: options.parent };
     manager.find = async function (options) {
         //console.log('LE-FIND', options);
-        return Promise.resolve([ { subject: options.servername, altnames: options.altnames } ]);
+        return Promise.resolve([{ subject: options.servername, altnames: options.altnames }]);
     };
 
     manager.set = function (options) {
@@ -196,8 +190,8 @@ module.exports.create = function (options) {
         //console.log('LE-DEFAULTS', options);
         if (options != null) { for (var i in options) { if (manager.parent.leDefaults[i] == null) { manager.parent.leDefaults[i] = options[i]; } } }
         var r = manager.parent.leDefaults;
-        var mainsite = { subject: manager.parent.servername };
-        if (manager.parent.altnames.length > 0) { mainsite.altnames = manager.parent.altnames; }
+        var mainsite = { subject: manager.parent.leDomains[0] };
+        if (manager.parent.leDomains.length > 0) { mainsite.altnames = manager.parent.leDomains; }
         r.subscriberEmail = manager.parent.parent.config.letsencrypt.email;
         r.sites = { mainsite: mainsite };
         return r;
