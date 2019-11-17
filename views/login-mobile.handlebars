@@ -46,9 +46,7 @@
                             <div id=loginpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;clear:both;display:none">
                                 <form method=post>
                                     <input type=hidden name=action value=login />
-                                    <div id=message1>
-                                        {{{message}}}
-                                    </div>
+                                    <div id=message1></div>
                                     <div>
                                         <b>Log In</b>
                                     </div>
@@ -80,9 +78,7 @@
                                 <div style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;clear:both;position:relative">
                                     <form method=post>
                                         <input type=hidden name=action value=createaccount />
-                                        <div id=message2>
-                                            {{{message}}}
-                                        </div>
+                                        <div id=message2></div>
                                         <div>
                                             <b>Account Creation</b>
                                         </div>
@@ -127,9 +123,7 @@
                             <div id=resetpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
                                 <form method=post>
                                     <input type=hidden name=action value=resetaccount />
-                                    <div id=message3>
-                                        {{{message}}}
-                                    </div>
+                                    <div id=message3></div>
                                     <div>
                                         <b>Account Reset</b>
                                     </div>
@@ -153,9 +147,7 @@
                                 <form method=post autocomplete=off>
                                     <input type=hidden name=action value=tokenlogin />
                                     <input type=hidden name=hwstate value="{{{hwstate}}}" />
-                                    <div id=message4>
-                                        {{{message}}}
-                                    </div>
+                                    <div id=message4></div>
                                     <table>
                                         <tr>
                                             <td align=right width=100>Login token:</td>
@@ -178,9 +170,7 @@
                             <div id=resettokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
                                 <form method=post autocomplete=off>
                                     <input type=hidden name=action value=resetaccount />
-                                    <div id=message5>
-                                        {{{message}}}
-                                    </div>
+                                    <div id=message5></div>
                                     <table>
                                         <tr>
                                             <td align=right width=100>Login token:</td>
@@ -203,9 +193,7 @@
                             <div id=resetpasswordpanel style="position:relative;background-color:#979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
                                 <form method=post>
                                     <input type=hidden name=action value=resetpassword />
-                                    <div id=message6>
-                                        {{{message}}}
-                                    </div>
+                                    <div id=message6></div>
                                     <div id="rpasswordPolicyCallout" style="left:-10px;width:100px;display:none;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
                                     <table>
                                         <tr>
@@ -278,6 +266,20 @@
         var passRequirementsEx = ((passRequirements.min != null) || (passRequirements.max != null) || (passRequirements.upper != null) || (passRequirements.lower != null) || (passRequirements.numeric != null) || (passRequirements.nonalpha != null));
         var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         var currentpanel = 0;
+
+        // Display the right server message
+        var messageid = parseInt('{{{messageid}}}');
+        var okmessages = ['', "Hold on, reset mail sent."];
+        var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested."];
+        if (messageid > 0) {
+            var msg = '';
+            if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
+            else if ((messageid >= 100) && ((messageid - 100) < failmessages.length)) { msg = failmessages[messageid - 100]; }
+            if (msg != '') {
+                if (messageid >= 100) { msg = ('<span class="msg error"><b style=color:#8C001A>' + msg + '<b></span><br /><br />'); } else { msg = ('<span class="msg success"><b>' + msg + '</b></span><br /><br />'); }
+                for (var i = 1; i < 7; i++) { QH('message' + i, msg); }
+            }
+        }
 
         // If URL arguments are provided, add them to form posts
         if (window.location.href.indexOf('?') > 0) {
