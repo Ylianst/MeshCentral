@@ -434,7 +434,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.session.userid) {
             next();
         } else {
-            req.session.error = 'Access denied!';
+            req.session.messageid = 111; // Access denied.
             res.redirect(domain.url + 'login');
         }
     };
@@ -657,7 +657,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // 2-step auth is required, but the token is not present or not valid.
                             if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
-                                req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>';
+                                req.session.messageid = 108; // Invalid token, try again.
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
@@ -688,10 +688,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // If the account is locked, display that.
                     if (err == 'locked') {
                         parent.debug('web', 'handleLoginRequest: login failed, locked account');
-                        req.session.error = '<b style=color:#8C001A>Account locked.</b>';
+                        req.session.messageid = 110; // Account locked.
                     } else {
                         parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
-                        req.session.error = '<b style=color:#8C001A>Login failed, check username and password.</b>';
+                        req.session.messageid = 112; // Login failed, check username and password.
                     }
 
                     // Clean up login mode and display password hint if present.
@@ -714,7 +714,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Request a password change
             parent.debug('web', 'handleLoginRequest: login ok, password change requested');
             req.session.loginmode = '6';
-            req.session.error = '<b style=color:#8C001A>Password change requested.</b>';
+            req.session.messageid = 113; // Password change requested.
             req.session.resettokenusername = xusername;
             req.session.resettokenpassword = xpassword;
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -733,13 +733,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
         // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
-        // req.session.success = 'Authenticated as ' + user.name + 'click to <a href="/logout">logout</a>. You may now access <a href="/restricted">/restricted</a>.';
         delete req.session.loginmode;
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
         delete req.session.tokenemail;
-        delete req.session.success;
-        delete req.session.error;
+        delete req.session.messageid;
         delete req.session.passhint;
         req.session.userid = userid;
         req.session.domainid = domain.id;
@@ -802,7 +800,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (i == -1) {
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (1)');
                 req.session.loginmode = '2';
-                req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
+                req.session.messageid = 100; // Unable to create account.
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
@@ -811,7 +809,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (emailok == false) {
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (2)');
                 req.session.loginmode = '2';
-                req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
+                req.session.messageid = 100; // Unable to create account.
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
@@ -822,13 +820,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (maxExceed) {
                 parent.debug('web', 'handleCreateAccountRequest: account limit reached');
                 req.session.loginmode = '2';
-                req.session.error = '<b style=color:#8C001A>Account limit reached.</b>';
+                req.session.messageid = 101; // Account limit reached.
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             } else {
                 if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
                     parent.debug('web', 'handleCreateAccountRequest: unable to create account (3)');
                     req.session.loginmode = '2';
-                    req.session.error = '<b style=color:#8C001A>Unable to create account.</b>';
+                    req.session.messageid = 100; // Unable to create account.
                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 } else {
                     // Check if this email was already verified
@@ -836,14 +834,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (docs.length > 0) {
                             parent.debug('web', 'handleCreateAccountRequest: Existing account with this email address');
                             req.session.loginmode = '2';
-                            req.session.error = '<b style=color:#8C001A>Existing account with this email address.</b>';
+                            req.session.messageid = 102; // Existing account with this email address.
                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         } else {
                             // Check if there is domain.newAccountToken, check if supplied token is valid
                             if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
                                 parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
                                 req.session.loginmode = '2';
-                                req.session.error = '<b style=color:#8C001A>Invalid account creation token.</b>';
+                                req.session.messageid = 103; // Invalid account creation token.
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 return;
                             }
@@ -851,7 +849,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
                                 parent.debug('web', 'handleCreateAccountRequest: Username already exists');
                                 req.session.loginmode = '2';
-                                req.session.error = '<b style=color:#8C001A>Username already exists.</b>';
+                                req.session.messageid = 104; // Username already exists.
                             } else {
                                 var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
@@ -897,8 +895,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete req.session.resettokenusername;
             delete req.session.resettokenpassword;
             delete req.session.tokenemail;
-            delete req.session.success;
-            delete req.session.error;
+            delete req.session.messageid;
             delete req.session.passhint;
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             return;
@@ -914,7 +911,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (!obj.common.checkPasswordRequirements(req.body.rpassword1, domain.passwordrequirements)) {
                     parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (1)');
                     req.session.loginmode = '6';
-                    req.session.error = '<b style=color:#8C001A>Password rejected, use a different one.</b>';
+                    req.session.messageid = 105; // Password rejected, use a different one.
                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     return;
                 }
@@ -925,7 +922,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         // This is the same password, request a password change again
                         parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (2)');
                         req.session.loginmode = '6';
-                        req.session.error = '<b style=color:#8C001A>Password rejected, use a different one.</b>';
+                        req.session.messageid = 105; // Password rejected, use a different one.
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     } else {
                         // Update the password, use a different salt.
@@ -959,8 +956,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.resettokenusername;
                 delete req.session.resettokenpassword;
                 delete req.session.tokenemail;
-                delete req.session.success;
-                delete req.session.error;
+                delete req.session.messageid;
                 delete req.session.passhint;
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
@@ -988,14 +984,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!email || checkEmail(email) == false) {
             parent.debug('web', 'handleResetAccountRequest: Invalid email');
             req.session.loginmode = '3';
-            req.session.error = '<b style=color:#8C001A>Invalid email.</b>';
+            req.session.messageid = 106; // Invalid email.
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
         } else {
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
                 if ((err != null) || (docs.length == 0)) {
                     parent.debug('web', 'handleResetAccountRequest: Account not found');
                     req.session.loginmode = '3';
-                    req.session.error = '<b style=color:#8C001A>Account not found.</b>';
+                    req.session.messageid = 107; // Account not found.
                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 } else {
                     // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
@@ -1009,7 +1005,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     if (i == 0) {
                                         // 2-step auth is required, but the token is not present or not valid.
                                         parent.debug('web', 'handleResetAccountRequest: Invalid 2FA token, try again');
-                                        if ((req.body.token != null) || (req.body.hwtoken != null)) { req.session.error = '<b style=color:#8C001A>Invalid token, try again.</b>'; }
+                                        if ((req.body.token != null) || (req.body.hwtoken != null)) {
+                                            req.session.messageid = 108; // Invalid token, try again.
+                                        }
                                         req.session.loginmode = '5';
                                         req.session.tokenemail = email;
                                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1022,14 +1020,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
-                                            req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
+                                            req.session.messageid = 1; // Hold on, reset mail sent.
                                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                         }
                                     } else {
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Unable to sent email.');
                                             req.session.loginmode = '3';
-                                            req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
+                                            req.session.messageid = 109; // Unable to sent email.
                                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                         }
                                     }
@@ -1042,14 +1040,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
-                                    req.session.error = '<b style=color:darkgreen>Hold on, reset mail sent.</b>';
+                                    req.session.messageid = 1; // Hold on, reset mail sent.
                                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 }
                             } else {
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Unable to sent email.');
                                     req.session.loginmode = '3';
-                                    req.session.error = '<b style=color:#8C001A>Unable to sent email.</b>';
+                                    req.session.messageid = 109; // Unable to sent email.
                                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 }
                             }
@@ -1466,7 +1464,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.domainid;
                 delete req.session.currentNode;
                 delete req.session.passhint;
-                req.session.error = '<b style=color:#8C001A>Account locked.</b>';
+                req.session.messageid = 110; // Account locked.
                 res.redirect(domain.url + getQueryPortion(req)); // BAD***
                 return;
             }
@@ -1578,18 +1576,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (req.session) { loginmode = req.session.loginmode; delete req.session.loginmode; } // Clear this state, if the user hits refresh, we want to go back to the login page.
 
         // Format an error message if needed
-        var err = null, msg = null, passhint = null;
+        var passhint = null, msgid = 0;
         if (req.session != null) {
-            err = req.session.error;
-            msg = req.session.success;
+            msgid = req.session.messageid;
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { passhint = EscapeHtml(req.session.passhint); }
-            delete req.session.error;
-            delete req.session.success;
+            delete req.session.messageid;
             delete req.session.passhint;
         }
-        var message = '';
-        if (err != null) message = '<p class="msg error">' + err + '</p>';
-        if (msg != null) message = '<p class="msg success">' + msg + '</p>';
         var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
         // Check if we are allowed to create new users using the login screen
@@ -1601,7 +1594,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
         // Render the login page
-        render(req, res, getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), message: message, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate });
+        render(req, res, getRenderPage('login', req), { loginmode: loginmode, rootCertLink: getRootCertLink(), domainurl: domain.url, title: domain.title, title2: domain.title2, newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate });
     }
 
     // Handle a post request on the root
