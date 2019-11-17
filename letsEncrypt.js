@@ -96,7 +96,8 @@ module.exports.CreateLetsEncrypt = function (parent) {
         obj.leStaging = greenlock.create(greenlockargsstaging);
 
         // Hook up GreenLock to the redirection server
-        if (obj.parent.redirserver.port == 80) { obj.redirWebServerHooked = true; }
+        if (obj.parent.config.settings.rediraliasport === 80) { obj.redirWebServerHooked = true; }
+        else if ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port == 80)) { obj.redirWebServerHooked = true; }
 
         // Respond to a challenge
         obj.challenge = function (token, hostname, func) {
@@ -120,7 +121,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
             if (certs.CommonName.indexOf('.') == -1) { console.log("ERROR: Use --cert to setup the default server name before using Let's Encrypt."); func(certs); return; }
             if (obj.parent.config.letsencrypt == null) { func(certs); return; }
             if (obj.parent.config.letsencrypt.email == null) { console.log("ERROR: Let's Encrypt email address not specified."); func(certs); return; }
-            if ((obj.parent.redirserver == null) || (obj.parent.redirserver.port !== 80)) { console.log("ERROR: Redirection web server must be active on port 80 for Let's Encrypt to work."); func(certs); return; }
+            if ((obj.parent.redirserver == null) || ((typeof obj.parent.config.settings.rediraliasport === 'number') && (obj.parent.config.settings.rediraliasport !== 80)) || ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port !== 80))) { console.log("ERROR: Redirection web server must be active on port 80 for Let's Encrypt to work."); func(certs); return; }
             if (obj.redirWebServerHooked !== true) { console.log("ERROR: Redirection web server not setup for Let's Encrypt to work."); func(certs); return; }
             if ((obj.parent.config.letsencrypt.rsakeysize != null) && (obj.parent.config.letsencrypt.rsakeysize !== 2048) && (obj.parent.config.letsencrypt.rsakeysize !== 3072)) { console.log("ERROR: Invalid Let's Encrypt certificate key size, must be 2048 or 3072."); func(certs); return; }
 
