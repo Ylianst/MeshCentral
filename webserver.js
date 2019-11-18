@@ -687,15 +687,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Login failed, wait a random delay
                 setTimeout(function () {
                     // If the account is locked, display that.
-                    var xuserid = 'user/' + domain.id + '/' + xusername.toLowerCase();
-                    if (err == 'locked') {
-                        parent.debug('web', 'handleLoginRequest: login failed, locked account');
-                        req.session.messageid = 110; // Account locked.
-                        obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + cleanRemoteAddr(req.ip) });
-                    } else {
-                        parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
-                        req.session.messageid = 112; // Login failed, check username and password.
-                        obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
+                    if (typeof xusername == 'string') {
+                        var xuserid = 'user/' + domain.id + '/' + xusername.toLowerCase();
+                        if (err == 'locked') {
+                            parent.debug('web', 'handleLoginRequest: login failed, locked account');
+                            req.session.messageid = 110; // Account locked.
+                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + cleanRemoteAddr(req.ip) });
+                        } else {
+                            parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
+                            req.session.messageid = 112; // Login failed, check username and password.
+                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
+                        }
                     }
 
                     // Clean up login mode and display password hint if present.
