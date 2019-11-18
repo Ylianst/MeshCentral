@@ -16,7 +16,14 @@
 
 module.exports.CreateLetsEncrypt = function (parent) {
     try {
-        parent.debug('cert', "Initializing Let's Encrypt support");
+        // Get the GreenLock version
+        var greenLockVersion = null;
+        try { greenLockVersion = require('greenlock/package.json').version; } catch (ex) { }
+        if (greenLockVersion == null) {
+            parent.debug('cert', "Initializing Let's Encrypt support");
+        } else {
+            parent.debug('cert', "Initializing Let's Encrypt support, using GreenLock v" + greenLockVersion);
+        }
 
         // Check the current node version
         if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { return null; }
@@ -206,7 +213,8 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
         // Check if we need to renew the certificate, call this every day.
         obj.checkRenewCertificate = function () {
-            parent.debug('cert', "Checking certs (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
+            parent.debug('cert', "Checking certs for " + obj.leDomains[0] + " (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
+            obj.certCheckStart = Date.now();
 
             // Setup renew options
             var renewOptions = { servername: obj.leDomains[0] };
@@ -214,17 +222,24 @@ module.exports.CreateLetsEncrypt = function (parent) {
             const xle = (obj.runAsProduction === true)? obj.le : obj.leStaging;
             xle.renew(renewOptions)
                 .then(function (results) {
-                    parent.debug('cert', "Checks completed (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
-                    if (obj.performRestart === true) { parent.debug('cert', "Certs changed, restarting..."); obj.parent.performServerCertUpdate(); } // Reset the server, TODO: Reset all peers
-                    else if (obj.performMoveToProduction == true) {
-                        parent.debug('cert', "Staging certificate received, moving to production...");
-                        obj.runAsProduction = true;
-                        obj.performMoveToProduction = false;
-                        obj.performRestart = true;
-                        setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
+                    if ((results == null) || (typeof results != 'object') || (results.length == 0) || (results[0].error != null)) {
+                        parent.debug('cert', "Unable to get a certificate (" + (obj.runAsProduction ? "Production" : "Staging") + ", " + (Date.now() - obj.certCheckStart) + "ms): " + JSON.stringify(results));
+                    } else {
+                        parent.debug('cert', "Checks completed (" + (obj.runAsProduction ? "Production" : "Staging") + ", " + (Date.now() - obj.certCheckStart) + "ms): " + JSON.stringify(results));
+                        if (obj.performRestart === true) { parent.debug('cert', "Certs changed, restarting..."); obj.parent.performServerCertUpdate(); } // Reset the server, TODO: Reset all peers
+                        else if (obj.performMoveToProduction == true) {
+                            parent.debug('cert', "Staging certificate received, moving to production...");
+                            obj.runAsProduction = true;
+                            obj.performMoveToProduction = false;
+                            obj.performRestart = true;
+                            setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
+                        }
                     }
                 })
-                .catch(function (e) { console.log(e); });
+                .catch(function (ex) {
+                    parent.debug('cert', "checkRenewCertificate exception: (" + JSON.stringify(ex) + ")");
+                    console.log(ex);
+                });
         }
 
         return obj;
