@@ -360,6 +360,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
             }
 
+            // See how many times bad login attempts where made since the last login
+            const lastLoginTime = parent.users[user._id].pastlogin;
+            if (lastLoginTime != null) {
+                db.GetFailedLoginCount(user.name, user.domain, new Date(lastLoginTime * 1000), function (count) {
+                    if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', value: "There has been " + count + " failed login attempts on this account since the last login." })); } catch (ex) { } delete user.pastlogin; }
+                });
+            }
+
             // We are all set, start receiving data
             ws._socket.resume();
         });

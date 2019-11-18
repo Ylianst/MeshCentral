@@ -659,6 +659,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
                                 req.session.messageid = 108; // Invalid token, try again.
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
+                                obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
                             }
@@ -686,12 +687,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Login failed, wait a random delay
                 setTimeout(function () {
                     // If the account is locked, display that.
+                    var xuserid = 'user/' + domain.id + '/' + xusername.toLowerCase();
                     if (err == 'locked') {
                         parent.debug('web', 'handleLoginRequest: login failed, locked account');
                         req.session.messageid = 110; // Account locked.
+                        obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + cleanRemoteAddr(req.ip) });
                     } else {
                         parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
                         req.session.messageid = 112; // Login failed, check username and password.
+                        obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
                     }
 
                     // Clean up login mode and display password hint if present.
@@ -722,6 +726,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Save login time
+        user.pastlogin = user.login;
         user.login = Math.floor(Date.now() / 1000);
         obj.db.SetUser(user);
 
@@ -1007,6 +1012,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         parent.debug('web', 'handleResetAccountRequest: Invalid 2FA token, try again');
                                         if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                             req.session.messageid = 108; // Invalid token, try again.
+                                            obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
                                         }
                                         req.session.loginmode = '5';
                                         req.session.tokenemail = email;
@@ -3467,6 +3473,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
+                            //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
                         }
                     }
