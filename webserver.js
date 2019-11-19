@@ -639,6 +639,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { parent.debug('web', 'handleLoginRequest: invalid domain'); res.sendStatus(404); return; }
 
+        // Check if this is a banned ip address
+        if (obj.checkAllowLogin(req) == false) {
+            // Wait and redirect the user
+            setTimeout(function () {
+                req.session.messageid = 114; // IP address blocked, try again later.
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
+        }
+
         // Normally, use the body username/password. If this is a token, use the username/password in the session.
         var xusername = req.body.username, xpassword = req.body.password;
         if ((xusername == null) && (xpassword == null) && (req.body.token != null)) { xusername = req.session.tokenusername; xpassword = req.session.tokenpassword; }
@@ -660,6 +670,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.messageid = 108; // Invalid token, try again.
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
                                 obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
+                                obj.setbadLogin(req);
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
                             }
@@ -693,10 +704,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleLoginRequest: login failed, locked account');
                             req.session.messageid = 110; // Account locked.
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + cleanRemoteAddr(req.ip) });
+                            obj.setbadLogin(req);
                         } else {
                             parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
                             req.session.messageid = 112; // Login failed, check username and password.
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
+                            obj.setbadLogin(req);
                         }
                     }
 
@@ -1015,6 +1028,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                             req.session.messageid = 108; // Invalid token, try again.
                                             obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
+                                            obj.setbadLogin(req);
                                         }
                                         req.session.loginmode = '5';
                                         req.session.tokenemail = email;
@@ -3434,6 +3448,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Authenticates a session and forwards
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
+        // Check if this is a banned ip address
+        if (obj.checkAllowLogin(req) == false) { try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
         try {
             // Hold this websocket until we are ready.
             ws._socket.pause();
@@ -3476,6 +3492,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
                             //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
+                            //obj.setbadLogin(req);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
                         }
                     }
@@ -4012,6 +4029,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
             }
         } catch (ex) { console.log(ex); func(fd, tag); }
+    }
+
+    // This is the invalid login throttling code
+    obj.badLoginTable = {};
+    obj.badLoginTableLastClean = 0;
+    if (parent.config.settings == null) { parent.config.settings = {}; }
+    if (parent.config.settings.maxinvalidlogin == null) { parent.config.settings.maxinvalidlogin = { time: 10, count: 10 }; }
+    if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
+    if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
+    obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
+        if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
+        if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
+        if (obj.badLoginTable[ip] == null) { obj.badLoginTable[ip] = [Date.now()]; } else { obj.badLoginTable[ip].push(Date.now()); }
+    }
+    obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
+        if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
+        var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
+        var ipTable = obj.badLoginTable[ip];
+        if (ipTable == null) return true;
+        while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
+        if (ipTable.length == 0) { delete obj.badLoginTable[ip]; return true; }
+        return (ipTable.length < parent.config.settings.maxinvalidlogin.count); // No more than x bad logins in x minutes
+    }
+    obj.cleanBadLoginTable = function () { // Clean up the IP address login blockage table, we do this occasionaly.
+        var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
+        for (var i in ipTable) {
+            var ipTable = obj.badLoginTable[ip];
+            while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
+            if (ipTable.length == 0) { delete obj.badLoginTable[ip]; }
+        }
+        obj.badLoginTableLastClean = 0;
     }
 
     return obj;

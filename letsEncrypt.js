@@ -223,7 +223,6 @@ module.exports.CreateLetsEncrypt = function (parent) {
             var somethingIsinFolder = false;
             try {
                 var filesinFolder = require('fs').readdirSync(obj.runAsProduction ? obj.configPath : obj.configPathStaging);
-                console.log('filesinFolder', filesinFolder);
                 somethingIsinFolder = (filesinFolder.indexOf(obj.runAsProduction ? 'live' : 'staging') != -1);
             } catch (ex) { console.log(ex); }
 

@@ -689,14 +689,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'help': {
                             r = 'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
                             r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
-                            r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable.';
+                            r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable, badlogins.';
+                            break;
+                        }
+                        case 'badlogins': {
+                            r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
+                            var badLoginCount = 0;
+                            parent.cleanBadLoginTable();
+                            for (var i in parent.badLoginTable) { badLoginCount++; r += (i + ' - ' + parent.badLoginTable[i].length + " entries\r\n"); }
+                            if (badLoginCount == 0) { r += 'No bad logins.'; }
                             break;
                         }
                         case 'dispatchtable': {
                             r = '';
-                            for (var i in parent.parent.eventsDispatch) {
-                                r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n');
-                            }
+                            for (var i in parent.parent.eventsDispatch) { r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); }
                             break;
                         }
                         case 'dupagents': {
