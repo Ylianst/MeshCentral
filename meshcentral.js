@@ -833,7 +833,7 @@ function CreateMeshCentralServer(config, args) {
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
             // Get the current node version
             const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if ((nodeVersion < 8) || (obj.config.letsencrypt == null) || (obj.redirserver == null)) {
+            if ((nodeVersion < 8) || (require('crypto').generateKeyPair == null) || (obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
                 var le = require('./letsencrypt.js');
@@ -2040,7 +2040,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         //if (config.letsencrypt != null) { modules.push('greenlock@2.8.8'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
-        if (config.letsencrypt != null) { if (nodeVersion < 8) { console.log("WARNING: Let's Encrypt support requires Node v8 or higher."); } else { modules.push('greenlock'); } } // Add Greenlock Module
+        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { console.log("WARNING: Let's Encrypt support requires Node v10.12.0 or higher."); } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.

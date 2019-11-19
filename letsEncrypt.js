@@ -25,8 +25,9 @@ module.exports.CreateLetsEncrypt = function (parent) {
             parent.debug('cert', "Initializing Let's Encrypt support, using GreenLock v" + greenLockVersion);
         }
 
-        // Check the current node version
-        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { return null; }
+        // Check the current node version and support for generateKeyPair
+        if (require('crypto').generateKeyPair == null) { return null; }
+        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 10) { return null; }
 
         // Try to delete the "./ursa-optional" or "./node_modules/ursa-optional" folder if present.
         // This is an optional module that GreenLock uses that causes issues.
@@ -217,59 +218,12 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
         // Check if we need to renew the certificate, call this every day.
         obj.checkRenewCertificate = function () {
-            obj.certCheckStart = Date.now();
-
-            // Check if there is anything in the let's encrypt folder
-            var somethingIsinFolder = false;
-            try {
-                var filesinFolder = require('fs').readdirSync(obj.runAsProduction ? obj.configPath : obj.configPathStaging);
-                somethingIsinFolder = (filesinFolder.indexOf(obj.runAsProduction ? 'live' : 'staging') != -1);
-            } catch (ex) { console.log(ex); }
+            parent.debug('cert', "Checking certificate for " + obj.leDomains[0] + " (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
 
             // Setup renew options
+            obj.certCheckStart = Date.now();
             const xle = (obj.runAsProduction === true) ? obj.le : obj.leStaging;
             var renewOptions = { servername: obj.leDomains[0], altnames: obj.leDomains };
-
-            // Add the domains
-            if (somethingIsinFolder == false) {
-                try {
-                    var addOptions = { subject: obj.leDomains[0], altnames: obj.leDomains };
-                    parent.debug('cert', "Adding domains: " + JSON.stringify(addOptions));
-                    xle.add(addOptions);
-                } catch (ex) {
-                    parent.debug('cert', "add certificate exception: (" + JSON.stringify(ex) + ")");
-                    console.log(ex);
-                }
-            }
-
-            /*
-            if (somethingIsinFolder == false) {
-                parent.debug('cert', "Getting certificate for " + obj.leDomains[0] + " (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
-                xle.get({ servername: obj.leDomains[0] })
-                    .then(function (results) {
-                        if ((results == null) || (typeof results != 'object') || (results.length == 0) || (results[0].error != null)) {
-                            parent.debug('cert', "Unable to get a certificate (" + (obj.runAsProduction ? "Production" : "Staging") + ", " + (Date.now() - obj.certCheckStart) + "ms): " + JSON.stringify(results));
-                        } else {
-                            parent.debug('cert', "Get certificate completed (" + (obj.runAsProduction ? "Production" : "Staging") + ", " + (Date.now() - obj.certCheckStart) + "ms): " + JSON.stringify(results));
-                            if (obj.performRestart === true) { parent.debug('cert', "Certs changed, restarting..."); obj.parent.performServerCertUpdate(); } // Reset the server, TODO: Reset all peers
-                            else if (obj.performMoveToProduction == true) {
-                                parent.debug('cert', "Staging certificate received, moving to production...");
-                                obj.runAsProduction = true;
-                                obj.performMoveToProduction = false;
-                                obj.performRestart = true;
-                                setTimeout(obj.checkRenewCertificate, 10000); // Check the certificate in 10 seconds.
-                            }
-                        }
-                    })
-                    .catch(function (ex) {
-                        parent.debug('cert', "getCertificate exception: (" + JSON.stringify(ex) + ")");
-                        console.log(ex);
-                    });
-                return;
-            }
-            */
-
-            parent.debug('cert', "Checking certificate for " + obj.leDomains[0] + " (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
             try {
                 xle.renew(renewOptions)
                     .then(function (results) {
@@ -332,19 +286,15 @@ module.exports.create = function (options) {
             //console.log('LE-DEFAULTS-Production', options);
             if (options != null) { for (var i in options) { if (manager.parent.leDefaults[i] == null) { manager.parent.leDefaults[i] = options[i]; } } }
             r = manager.parent.leDefaults;
-            var mainsite = { subject: manager.parent.leDomains[0] };
-            if (manager.parent.leDomains.length > 0) { mainsite.altnames = manager.parent.leDomains; }
             r.subscriberEmail = manager.parent.parent.config.letsencrypt.email;
-            r.sites = { mainsite: mainsite };
+            r.sites = { mainsite: { subject: manager.parent.leDomains[0], altnames: manager.parent.leDomains } };
         } else {
             // Staging
             //console.log('LE-DEFAULTS-Staging', options);
             if (options != null) { for (var i in options) { if (manager.parent.leDefaultsStaging[i] == null) { manager.parent.leDefaultsStaging[i] = options[i]; } } }
             r = manager.parent.leDefaultsStaging;
-            var mainsite = { subject: manager.parent.leDefaultsStaging[0] };
-            if (manager.parent.leDefaultsStaging.length > 0) { mainsite.altnames = manager.parent.leDefaultsStaging; }
             r.subscriberEmail = manager.parent.parent.config.letsencrypt.email;
-            r.sites = { mainsite: mainsite };
+            r.sites = { mainsite: { subject: manager.parent.leDomains[0], altnames: manager.parent.leDomains } };
         }
         return r;
     };
