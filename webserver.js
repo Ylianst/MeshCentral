@@ -4038,26 +4038,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     if (parent.config.settings.maxinvalidlogin == null) { parent.config.settings.maxinvalidlogin = { time: 10, count: 10 }; }
     if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
     if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
+    if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
     obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
         if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
         if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
+        if (typeof obj.badLoginTable[ip] == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return; } }  // Check cooloff period
         if (obj.badLoginTable[ip] == null) { obj.badLoginTable[ip] = [Date.now()]; } else { obj.badLoginTable[ip].push(Date.now()); }
+        if ((obj.badLoginTable[ip].length >= parent.config.settings.maxinvalidlogin.count) && (parent.config.settings.maxinvalidlogin.coolofftime != null)) {
+            obj.badLoginTable[ip] = Date.now() + (parent.config.settings.maxinvalidlogin.coolofftime * 60000); // Move to cooloff period
+        }
     }
     obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
         if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
         var ipTable = obj.badLoginTable[ip];
         if (ipTable == null) return true;
+        if (typeof ipTable == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return false; } } // Check cooloff period
         while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
         if (ipTable.length == 0) { delete obj.badLoginTable[ip]; return true; }
         return (ipTable.length < parent.config.settings.maxinvalidlogin.count); // No more than x bad logins in x minutes
     }
     obj.cleanBadLoginTable = function () { // Clean up the IP address login blockage table, we do this occasionaly.
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
-        for (var i in ipTable) {
+        for (var ip in obj.badLoginTable) {
             var ipTable = obj.badLoginTable[ip];
-            while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-            if (ipTable.length == 0) { delete obj.badLoginTable[ip]; }
+            if (typeof ipTable == 'number') {
+                if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } // Check cooloff period
+            } else {
+                while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
+                if (ipTable.length == 0) { delete obj.badLoginTable[ip]; }
+            }
         }
         obj.badLoginTableLastClean = 0;
     }
