@@ -23,11 +23,12 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     obj.db = db;
     obj.args = args;
     obj.certificates = null;
-    obj.express = require("express");
-    obj.net = require("net");
+    obj.express = require('express');
+    obj.net = require('net');
     obj.app = obj.express();
     obj.tcpServer = null;
     obj.port = null;
+    const leChallengePrefix = '/.well-known/acme-challenge/';
 
     // Perform an HTTP to HTTPS redirection
     function performRedirection(req, res) {
@@ -49,14 +50,14 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     */
 
     // Renter the terms of service.
-    obj.app.get("/MeshServerRootCert.cer", function (req, res) {
+    obj.app.get('/MeshServerRootCert.cer', function (req, res) {
         // The redirection server starts before certificates are loaded, make sure to handle the case where no certificate is loaded now.
         if (obj.certificates != null) {
-            res.set({ "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0", "Content-Type": "application/octet-stream", "Content-Disposition": "attachment; filename=\"" + obj.certificates.RootName + ".cer\"" });
+            res.set({ 'Cache-Control': "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0", "Content-Type": "application/octet-stream", "Content-Disposition": "attachment; filename=\"" + obj.certificates.RootName + ".cer\"" });
             var rootcert = obj.certificates.root.cert;
-            var i = rootcert.indexOf("-----BEGIN CERTIFICATE-----\r\n");
+            var i = rootcert.indexOf('-----BEGIN CERTIFICATE-----\r\n');
             if (i >= 0) { rootcert = rootcert.substring(i + 29); }
-            i = rootcert.indexOf("-----END CERTIFICATE-----");
+            i = rootcert.indexOf('-----END CERTIFICATE-----');
             if (i >= 0) { rootcert = rootcert.substring(i, 0); }
             res.send(Buffer.from(rootcert, "base64"));
         } else {
@@ -66,9 +67,17 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
 
     // Add HTTP security headers to all responses
     obj.app.use(function (req, res, next) {
-        res.removeHeader("X-Powered-By");
-        res.set({ "strict-transport-security": "max-age=60000; includeSubDomains", "Referrer-Policy": "no-referrer", "x-frame-options": "SAMEORIGIN", "X-XSS-Protection": "1; mode=block", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "default-src http: ws: \"self\" \"unsafe-inline\"" });
-        return next();
+        parent.debug('webrequest', req.url + ' (RedirServer)');
+        res.removeHeader('X-Powered-By');
+
+        if ((parent.letsencrypt != null) && (req.url.startsWith(leChallengePrefix))) {
+            // Let's Encrypt Support
+            parent.letsencrypt.challenge(req.url.slice(leChallengePrefix.length), getCleanHostname(req), function (response) { if (response == null) { res.sendStatus(404); } else { res.send(response); } });
+        } else {
+            // Everything else
+            res.set({ 'strict-transport-security': "max-age=60000; includeSubDomains", "Referrer-Policy": "no-referrer", "x-frame-options": "SAMEORIGIN", "X-XSS-Protection": "1; mode=block", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "default-src http: ws: \"self\" \"unsafe-inline\"" });
+            return next();
+        }
     });
 
     // Once the main web server is started, call this to hookup additional handlers
@@ -124,6 +133,17 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             if ((err.code == "EACCES") && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); func(obj.port); }
         });
     }
+
+    // Get the remote hostname correctly
+    const servernameRe = /^[a-z0-9\.\-]+$/i;
+    function getHostname(req) { return req.hostname || req.headers['x-forwarded-host'] || (req.headers.host || ''); };
+    function getCleanHostname(req) {
+        var servername = getHostname(req).toLowerCase().replace(/:.*/, '');
+        try { req.hostname = servername; } catch (e) { } // read-only express property
+        if (req.headers['x-forwarded-host']) { req.headers['x-forwarded-host'] = servername; }
+        try { req.headers.host = servername; } catch (e) { }
+        return (servernameRe.test(servername) && -1 === servername.indexOf('..') && servername) || '';
+    };
 
     CheckListenPort(args.redirport, StartRedirServer);
 

@@ -360,6 +360,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
             }
 
+            // See how many times bad login attempts where made since the last login
+            const lastLoginTime = parent.users[user._id].pastlogin;
+            if (lastLoginTime != null) {
+                db.GetFailedLoginCount(user.name, user.domain, new Date(lastLoginTime * 1000), function (count) {
+                    if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', value: "There has been " + count + " failed login attempts on this account since the last login." })); } catch (ex) { } delete user.pastlogin; }
+                });
+            }
+
             // We are all set, start receiving data
             ws._socket.resume();
         });
@@ -681,14 +689,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'help': {
                             r = 'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
                             r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
-                            r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable.';
+                            r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable, badlogins.';
+                            break;
+                        }
+                        case 'badlogins': {
+                            if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
+                                r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
+                            } else {
+                                r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
+                            }
+                            var badLoginCount = 0;
+                            parent.cleanBadLoginTable();
+                            for (var i in parent.badLoginTable) {
+                                badLoginCount++;
+                                if (typeof parent.badLoginTable[i] == 'number') {
+                                    r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
+                                } else {
+                                    r += (i + ' - ' + parent.badLoginTable[i].length + " entries\r\n");
+                                }
+                            }
+                            if (badLoginCount == 0) { r += 'No bad logins.'; }
                             break;
                         }
                         case 'dispatchtable': {
                             r = '';
-                            for (var i in parent.parent.eventsDispatch) {
-                                r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n');
-                            }
+                            for (var i in parent.parent.eventsDispatch) { r += (i + ', ' + parent.parent.eventsDispatch[i].length + '\r\n'); }
                             break;
                         }
                         case 'dupagents': {

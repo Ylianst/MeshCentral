@@ -7478,10 +7478,10 @@
                     if (meshrights & 8) {
                         Q('p20remotecontrol').checked = true;
                         if (meshrights & 256) { Q('p20remoteview').checked = true; }
-                        if (meshrights & 512) { Q('p20remotelimitedinput').checked = true; }
-                        if (meshrights & 1024) { Q('p20noterminal').checked = true; }
-                        if (meshrights & 2048) { Q('p20nofiles').checked = true; }
-                        if (meshrights & 4096) { Q('p20noamt').checked = true; }
+                        if (meshrights & 512) { Q('p20noterminal').checked = true; }
+                        if (meshrights & 1024) { Q('p20nofiles').checked = true; }
+                        if (meshrights & 2048) { Q('p20noamt').checked = true; }
+                        if (meshrights & 4096) { Q('p20remotelimitedinput').checked = true; }
                     }
                     if (meshrights & 16) { Q('p20meshagentconsole').checked = true; }
                     if (meshrights & 32) { Q('p20meshserverfiles').checked = true; }
@@ -9177,6 +9177,7 @@
             x += '<div><label><input type=checkbox id=p41c4 ' + ((serverTraceSources.indexOf('peer') >= 0) ? 'checked' : '') + '>' + "MeshCentral Server Peering" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c15 ' + ((serverTraceSources.indexOf('agent') >= 0) ? 'checked' : '') + '>' + "MeshAgent traffic" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c14 ' + ((serverTraceSources.indexOf('agentupdate') >= 0) ? 'checked' : '') + '>' + "MeshAgent update" + '</label></div>';
+            x += '<div><label><input type=checkbox id=p41c16 ' + ((serverTraceSources.indexOf('cert') >= 0) ? 'checked' : '') + '>' + "Server Certificate" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Serveur Web" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c5 ' + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + '>' + "Serveur Web" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Demandes de serveur Web" + '</label></div>';
@@ -9193,8 +9194,8 @@
         }
 
         function setServerTracingEx(b) {
-            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent'];
-            if (b == 1) { for (var i = 1; i < 16; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
+            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert'];
+            if (b == 1) { for (var i = 1; i < 17; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
             meshserver.send({ action: 'traceinfo', traceSources: sources });
         }
 

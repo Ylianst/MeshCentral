@@ -313,7 +313,7 @@ module.exports.CertificateOperations = function (parent) {
         cert.setIssuer(attrs);
         // Create a root certificate
         //cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "nsCertType", sslCA: true, emailCA: true, objCA: true }, { name: "subjectKeyIdentifier" }]);
-        cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "subjectKeyIdentifier" }]);
+        cert.setExtensions([{ name: "basicConstraints", cA: true }, { name: "subjectKeyIdentifier" }, { name: "keyUsage", keyCertSign: true }]);
         cert.sign(keys.privateKey, obj.forge.md.sha384.create());
 
         return { cert: cert, key: keys.privateKey };
@@ -418,6 +418,21 @@ module.exports.CertificateOperations = function (parent) {
             var rootPrivateKey = obj.fileLoad("root-cert-private.key", "utf8");
             r.root = { cert: rootCertificate, key: rootPrivateKey };
             rcount++;
+
+            // Check if the root certificate has the "Certificate Signing (04)" Key usage.
+            // This option is required for newer versions of Intel AMT for CIRA/WS-EVENTS.
+            var xroot = obj.pki.certificateFromPem(rootCertificate);
+            var xext = xroot.getExtension("keyUsage");
+            if ((xext == null) || (xext.keyCertSign !== true)) {
+                // We need to fix this certificate
+                console.log('Fixing root certificate to add signing key usage...');
+                obj.fs.writeFileSync(parent.getConfigFilePath("root-cert-public-backup.crt"), rootCertificate);
+                xroot.setExtensions([{ name: "basicConstraints", cA: true }, { name: "subjectKeyIdentifier" }, { name: "keyUsage", keyCertSign: true }]);
+                var xrootPrivateKey = obj.pki.privateKeyFromPem(rootPrivateKey);
+                xroot.sign(xrootPrivateKey, obj.forge.md.sha384.create());
+                r.root.cert = obj.pki.certificateToPem(xroot);
+                try { obj.fs.writeFileSync(parent.getConfigFilePath("root-cert-public.crt"), r.root.cert); } catch (ex) { }
+            }
         }
 
         if (args.tlsoffload) {
