@@ -1788,6 +1788,78 @@ function createMeshCore(agent) {
                     response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
+                case 'wallpaper':
+                    if (process.platform != 'win32' && !(process.platform == 'linux' && require('linux-gnome-helpers').available))
+                    {
+                        response = 'wallpaper command not supported on this platform'
+                    }
+                    else
+                    {
+                        if (args['_'].length != 1)
+                        {
+                            response = 'Proper usage: wallpaper (GET|TOGGLE)'; // Display usage
+                        }
+                        else
+                        {
+                            switch (args['_'][0].toUpperCase())
+                            {
+                                default:
+                                    response = 'Proper usage: wallpaper (GET|TOGGLE)'; // Display usage
+                                    break;
+                                case 'GET':
+                                case 'TOGGLE':
+                                    if (process.platform == 'win32')
+                                    {
+                                        var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : 0;
+                                        var child = require('child_process').execFile(process.execPath, [process.execPath.split('\\').pop(), '-b64exec', 'dmFyIFNQSV9HRVRERVNLV0FMTFBBUEVSID0gMHgwMDczOwp2YXIgU1BJX1NFVERFU0tXQUxMUEFQRVIgPSAweDAwMTQ7CnZhciBHTSA9IHJlcXVpcmUoJ19HZW5lcmljTWFyc2hhbCcpOwp2YXIgdXNlcjMyID0gR00uQ3JlYXRlTmF0aXZlUHJveHkoJ3VzZXIzMi5kbGwnKTsKdXNlcjMyLkNyZWF0ZU1ldGhvZCgnU3lzdGVtUGFyYW1ldGVyc0luZm9BJyk7CgppZiAocHJvY2Vzcy5hcmd2Lmxlbmd0aCA9PSAzKQp7CiAgICB2YXIgdiA9IEdNLkNyZWF0ZVZhcmlhYmxlKDEwMjQpOwogICAgdXNlcjMyLlN5c3RlbVBhcmFtZXRlcnNJbmZvQShTUElfR0VUREVTS1dBTExQQVBFUiwgdi5fc2l6ZSwgdiwgMCk7CiAgICBjb25zb2xlLmxvZyh2LlN0cmluZyk7CiAgICBwcm9jZXNzLmV4aXQoKTsKfQplbHNlCnsKICAgIHZhciBuYiA9IEdNLkNyZWF0ZVZhcmlhYmxlKHByb2Nlc3MuYXJndlszXSk7CiAgICB1c2VyMzIuU3lzdGVtUGFyYW1ldGVyc0luZm9BKFNQSV9TRVRERVNLV0FMTFBBUEVSLCBuYi5fc2l6ZSwgbmIsIDApOwogICAgcHJvY2Vzcy5leGl0KCk7Cn0='], { type: id });
+                                        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                                        child.stderr.on('data', function () { });
+                                        child.waitExit();
+                                        var current = child.stdout.str.trim();
+                                        if (args['_'][0].toUpperCase() == 'GET')
+                                        {
+                                            response = current;
+                                            break;
+                                        }
+                                        if (current != '')
+                                        {
+                                            require('MeshAgent')._wallpaper = current;
+                                            response = 'Wallpaper cleared';
+                                        }
+                                        else
+                                        {
+                                            response = 'Wallpaper restored';
+                                        }
+                                        child = require('child_process').execFile(process.execPath, [process.execPath.split('\\').pop(), '-b64exec', 'dmFyIFNQSV9HRVRERVNLV0FMTFBBUEVSID0gMHgwMDczOwp2YXIgU1BJX1NFVERFU0tXQUxMUEFQRVIgPSAweDAwMTQ7CnZhciBHTSA9IHJlcXVpcmUoJ19HZW5lcmljTWFyc2hhbCcpOwp2YXIgdXNlcjMyID0gR00uQ3JlYXRlTmF0aXZlUHJveHkoJ3VzZXIzMi5kbGwnKTsKdXNlcjMyLkNyZWF0ZU1ldGhvZCgnU3lzdGVtUGFyYW1ldGVyc0luZm9BJyk7CgppZiAocHJvY2Vzcy5hcmd2Lmxlbmd0aCA9PSAzKQp7CiAgICB2YXIgdiA9IEdNLkNyZWF0ZVZhcmlhYmxlKDEwMjQpOwogICAgdXNlcjMyLlN5c3RlbVBhcmFtZXRlcnNJbmZvQShTUElfR0VUREVTS1dBTExQQVBFUiwgdi5fc2l6ZSwgdiwgMCk7CiAgICBjb25zb2xlLmxvZyh2LlN0cmluZyk7CiAgICBwcm9jZXNzLmV4aXQoKTsKfQplbHNlCnsKICAgIHZhciBuYiA9IEdNLkNyZWF0ZVZhcmlhYmxlKHByb2Nlc3MuYXJndlszXSk7CiAgICB1c2VyMzIuU3lzdGVtUGFyYW1ldGVyc0luZm9BKFNQSV9TRVRERVNLV0FMTFBBUEVSLCBuYi5fc2l6ZSwgbmIsIDApOwogICAgcHJvY2Vzcy5leGl0KCk7Cn0=', current != '' ? '""' : require('MeshAgent')._wallpaper], { type: id });
+                                        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                                        child.stderr.on('data', function () { });
+                                        child.waitExit();
+                                    }
+                                    else
+                                    {
+                                        var id = require('user-sessions').consoleUid();
+                                        var current = require('linux-gnome-helpers').getDesktopWallpaper(id);
+                                        if (args['_'][0].toUpperCase() == 'GET')
+                                        {
+                                            response = current;
+                                            break;
+                                        }
+                                        if (current != '/dev/null')
+                                        {
+                                            require('MeshAgent')._wallpaper = current;
+                                            response = 'Wallpaper cleared';
+                                        }
+                                        else
+                                        {
+                                            response = 'Wallpaper restored';
+                                        }
+                                        require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                    break;
                 case 'safemode':
                     if (process.platform != 'win32')
                     {

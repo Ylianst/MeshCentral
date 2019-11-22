@@ -117,7 +117,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -144,23 +144,53 @@ function CreateMeshCentralServer(config, args) {
             return;
         }
 
-        // Check if we need to install, start, stop, remove ourself as a background service
-        if ((obj.service != null) && ((obj.args.install == true) || (obj.args.uninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
-            var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
-            for (i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
-            var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
-            svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
-            svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
-            svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
-            svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (obj.args.stop) { process.exit(); } if (obj.args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
-            svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
-            svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
+        if (obj.service != null) {
+            // Check if we need to install, start, stop, remove ourself as a background service
+            if (((obj.args.xinstall == true) || (obj.args.xuninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
+                var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'rediraliasport', 'debug'];
+                for (i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
+                var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
+                svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
+                svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
+                svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
+                svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (obj.args.stop) { process.exit(); } if (obj.args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
+                svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
+                svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
 
-            if (obj.args.install == true) { try { svc.install(); } catch (e) { logException(e); } }
-            if (obj.args.stop == true || obj.args.restart == true) { try { svc.stop(); } catch (e) { logException(e); } }
-            if (obj.args.start == true || obj.args.restart == true) { try { svc.start(); } catch (e) { logException(e); } }
-            if (obj.args.uninstall == true) { try { svc.uninstall(); } catch (e) { logException(e); } }
-            return;
+                if (obj.args.xinstall == true) { try { svc.install(); } catch (e) { logException(e); } }
+                if (obj.args.stop == true || obj.args.restart == true) { try { svc.stop(); } catch (e) { logException(e); } }
+                if (obj.args.start == true || obj.args.restart == true) { try { svc.start(); } catch (e) { logException(e); } }
+                if (obj.args.xuninstall == true) { try { svc.uninstall(); } catch (e) { logException(e); } }
+                return;
+            }
+
+            // Windows service install using the external winservice.js
+            if (obj.args.install == true) {
+                console.log('Installing MeshCentral as Windows Service...');
+                if (obj.fs.existsSync(obj.path.join(__dirname, '../WinService')) == false) { try { obj.fs.mkdirSync(obj.path.join(__dirname, '../WinService')); } catch (ex) { console.log('ERROR: Unable to create WinService folder: ' + ex); process.exit(); return; } }
+                try { obj.fs.createReadStream(obj.path.join(__dirname, 'winservice.js')).pipe(obj.fs.createWriteStream(obj.path.join(__dirname, '../WinService/winservice.js'))); } catch (ex) { console.log('ERROR: Unable to copy winservice.js: ' + ex); process.exit(); return; }
+                require('child_process').exec('node winservice.js --install', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, '../WinService') }, function (error, stdout, stderr) {
+                    if ((error != null) && (error != '')) { console.log('ERROR: Unable to install MeshCentral as a service: ' + error); process.exit(); return; }
+                    console.log(stdout);
+                });
+                return;
+            } else if (obj.args.uninstall == true) {
+                console.log('Uninstalling MeshCentral Windows Service...');
+                if (obj.fs.existsSync(obj.path.join(__dirname, '../WinService')) == true) {
+                    require('child_process').exec('node winservice.js --uninstall', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, '../WinService') }, function (error, stdout, stderr) {
+                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to uninstall MeshCentral service: ' + error); process.exit(); return; }
+                        console.log(stdout);
+                        try { obj.fs.unlinkSync(obj.path.join(__dirname, '../WinService/winservice.js')); } catch (ex) { }
+                        try { obj.fs.rmdirSync(obj.path.join(__dirname, '../WinService')); } catch (ex) { }
+                    });
+                } else {
+                    require('child_process').exec('node winservice.js --uninstall', { maxBuffer: 512000, timeout: 120000, cwd: __dirname }, function (error, stdout, stderr) {
+                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to uninstall MeshCentral service: ' + error); process.exit(); return; }
+                        console.log(stdout);
+                    });
+                }
+                return;
+            }
         }
 
         // If "--launch" is in the arguments, launch now
@@ -677,7 +707,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Read environment variables. For a subset of arguments, we allow them to be read from environment variables.
-        var xenv = ['user', 'port', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
+        var xenv = ['user', 'port', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'exactport', 'debug'];
         for (i in xenv) { if ((obj.args[xenv[i]] == null) && (process.env['mesh' + xenv[i]])) { obj.args[xenv[i]] = obj.common.toNumber(process.env['mesh' + xenv[i]]); } }
 
         // Validate the domains, this is used for multi-hosting
@@ -735,6 +765,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.aliasport != null && (typeof obj.args.aliasport != 'number')) obj.args.aliasport = null;
         if (obj.args.mpsport == null || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
         if (obj.args.mpsaliasport != null && (typeof obj.args.mpsaliasport != 'number')) obj.args.mpsaliasport = null;
+        if (obj.args.rediraliasport != null && (typeof obj.args.rediraliasport != 'number')) obj.args.rediraliasport = null;
         if (obj.args.notls == null && obj.args.redirport == null) obj.args.redirport = 80;
         if (obj.args.minifycore === 0) obj.args.minifycore = false;
         if (typeof args.agentidletimeout != 'number') { args.agentidletimeout = 150000; } else { args.agentidletimeout *= 1000 } // Default agent idle timeout is 2m, 30sec.
@@ -830,7 +861,9 @@ function CreateMeshCentralServer(config, args) {
         // Load server certificates
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
-            if ((obj.config.letsencrypt == null) || (obj.redirserver == null)) {
+            // Get the current node version
+            const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+            if ((nodeVersion < 8) || (require('crypto').generateKeyPair == null) || (obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
                 var le = require('./letsencrypt.js');
@@ -1831,6 +1864,27 @@ function CreateMeshCentralServer(config, args) {
         // Send event to console
         if ((obj.debugSources != null) && ((obj.debugSources == '*') || (obj.debugSources.indexOf(source) >= 0))) { console.log(source.toUpperCase() + ':', ...args); }
 
+        // Send event to log file
+        if (obj.config.settings && obj.config.settings.log) {
+            if (typeof obj.args.log == 'string') { obj.args.log = obj.args.log.split(','); }
+            if (obj.args.log.indexOf(source) >= 0) {
+                const d = new Date();
+                if (obj.xxLogFile == null) {
+                    try {
+                        obj.xxLogFile = obj.fs.openSync(obj.getConfigFilePath('log.txt'), 'a+', 666);
+                        obj.fs.writeSync(obj.xxLogFile, '---- Log start at ' + new Date().toLocaleString() + ' ----\r\n');
+                        obj.xxLogDateStr = d.toLocaleDateString();
+                    } catch (ex) { }
+                }
+                if (obj.xxLogFile != null) {
+                    try {
+                        if (obj.xxLogDateStr != d.toLocaleDateString()) { obj.xxLogDateStr = d.toLocaleDateString(); obj.fs.writeSync(obj.xxLogFile, '---- ' + d.toLocaleDateString() + ' ----\r\n'); }
+                        obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source + ': ' + Array.prototype.slice.call(...args).join('') + '\r\n');
+                    } catch (ex) { }
+                }
+            }
+        }
+
         // Send the event to logged in administrators
         if ((obj.debugRemoteSources != null) && ((obj.debugRemoteSources == '*') || (obj.debugRemoteSources.indexOf(source) >= 0))) {
             var sendcount = 0;
@@ -1932,8 +1986,17 @@ function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
         for (var i in modules) {
+            // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
+            var moduleName = modules[i].split("@", 1)[0];
             try {
-                var xxmodule = require(modules[i]);
+                if (moduleName == 'greenlock') {
+                    // Check if we have GreenLock v3
+                    delete require.cache[require.resolve('greenlock')]; // Clear the require cache
+                    if (typeof require('greenlock').challengeType == 'string') { missingModules.push(modules[i]); }
+                } else {
+                    // For all other modules, do the check here.
+                    require(moduleName);
+                }
             } catch (e) {
                 if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
             }
@@ -1943,7 +2006,6 @@ function InstallModules(modules, func) {
 }
 
 // Check if a module is present and install it if missing
-var InstallModuleChildProcess = null;
 function InstallModule(modulename, func, tag1, tag2) {
     console.log('Installing ' + modulename + '...');
     var child_process = require('child_process');
@@ -1952,9 +2014,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    // Looks like we need to keep a global reference to the child process object for this to work correctly.
-    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 10000, cwd: parentpath }, function (error, stdout, stderr) {
-        InstallModuleChildProcess = null;
+    child_process.exec(`npm install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
@@ -2002,19 +2062,19 @@ function mainStart() {
             if (config.domains[i].auth == 'ldap') { ldap = true; }
         }
 
+        // Get the current node version
+        var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+
         // Build the list of required modules
         var modules = ['ws', 'cbor', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
-        if (config.letsencrypt != null) { modules.push('greenlock'); modules.push('le-store-certbot'); modules.push('le-challenge-fs'); modules.push('le-acme-core'); } // Add Greenlock Modules
+        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { if (!args.launch) { console.log("WARNING: Let's Encrypt support requires Node v10.12.0 or higher."); } } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
-
-        // Get the current node version
-        var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
 
         // If running NodeJS < 8, install "util.promisify"
         if (nodeVersion < 8) { modules.push('util.promisify'); }
@@ -2028,7 +2088,7 @@ function mainStart() {
             if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
             if (allsspi == false) { modules.push('otplib'); } // Google Authenticator support
         }
-        
+
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
 
