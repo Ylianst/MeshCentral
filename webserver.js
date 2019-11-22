@@ -3208,6 +3208,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         
         parent.pluginHandler.handleAdminPostReq(req, res, user, obj);
     }
+    
+    obj.handlePluginJS = function(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { res.sendStatus(404); return; }
+        if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
+        var user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+        
+        parent.pluginHandler.refreshJS(req, res);
+    }
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
@@ -3334,6 +3344,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (parent.pluginHandler != null) {
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.handlePluginAdminPostReq);
+                obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
             }
 
             // Server redirects

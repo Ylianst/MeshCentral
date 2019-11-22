@@ -766,6 +766,8 @@ module.exports.CreateDB = function (parent, func) {
             
             obj.setPluginStatus = function(id, status, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: {status: status } }, func); };
             
+            obj.updatePlugin = function(id, args, func) { delete args._id; id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+            
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
             obj.Set = function (data, func) {
@@ -910,6 +912,8 @@ module.exports.CreateDB = function (parent, func) {
             
             obj.setPluginStatus = function(id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: {status: status } }, func); };
             
+            obj.updatePlugin = function(id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
+
         }
 
         func(obj); // Completed function setup
