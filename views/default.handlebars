@@ -423,7 +423,7 @@
                 <table id="p7tbl">
                     <tr><th class="chName">Name</th><th class="chDescription">Description</th><th class="chSite">Link</th><th class="chVersion">Version</th><th class="chUpgradeAvail">Latest Available</th><th class="chStatus">Status</th><th class="chAction">Action</th></tr>
                 </table>
-                <div id="pluginRestartNotice" style="display:none;"><div>Notice:</div> MeshCentral restart required to complete plugin changes.</div>
+                <div id="pluginRestartNotice" style="display:none;"><div>Notice:</div> MeshCentral plugins have been altered. Agent cores require may require an update before full features are available.</div>
             </div>
             <div id=p10 style="display:none">
                 <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -2313,6 +2313,11 @@
                             updatePluginList();
                             break;
                         }
+                        case 'pluginStateChange': {
+                            if (pluginHandler == null) break;
+                            pluginHandler.refreshPluginHandler();
+                            break;
+                        }
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
@@ -2374,6 +2379,15 @@
                 case 'pluginVersionsAvailable': {
                     if (pluginHandler == null) break;
                     updatePluginList(message.list);
+                    break;
+                }
+                case 'downgradePluginVersions': {
+                    var vSelect = '<select id="lastPluginVersion">';
+                    message.info.versionList.forEach(function(v){
+                      vSelect += '<option value="' + v.zipball_url + '">' + v.name + '</option>';
+                    });
+                    vSelect += '</select>';
+                    setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Select the version to downgrade the plugin: ' + message.info.name + '<hr />' + vSelect + '<hr />Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something.<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + message.info.id + '" />'); 
                     break;
                 }
                 case 'pluginError': {
@@ -9480,7 +9494,8 @@
                   },
                   1: {
                       'disable': 'Disable',
-                      'upgrade': 'Upgrade'
+                      'upgrade': 'Upgrade',
+                    //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                   }
                 };
                 var vers_not_compat = ` [ <span onclick="return setDialogMode(2, 'Compatibility Issue', 1, null, 'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.');" title="Version incompatible, please upgrade your MeshCentral installation first" style="cursor: pointer; color:red;"> ! </span> ]`;
@@ -9488,7 +9503,7 @@
                 var tbl = Q('p7tbl');
                 installedPluginList.forEach(function(p){
                     var cant_action = [];
-                    if (p.hasAdminPanel == true) {
+                    if (p.hasAdminPanel == true && p.status) {
                         p.nameHtml = `<a onclick="return goPlugin('${p.shortName}', '${p.name}');">${p.name}</a>`;
                     } else {
                         p.nameHtml = p.name;
@@ -9496,7 +9511,9 @@
                     p.statusText = statusMap[p.status].text;
                     p.statusColor = statusMap[p.status].color;
 
-                    
+                    if (p.versionHistoryUrl == null) {
+                      cant_action.push('downgrade');
+                    }
                     
                     if (!p.status) { // It isn't technically installed, so no version number
                         p.version = ' - ';
@@ -9547,11 +9564,18 @@
         }
         
         function pluginActionEx() {
-            var act = Q('lastPluginAct').value, id = Q('lastPluginId').value;
+            var act = Q('lastPluginAct').value, id = Q('lastPluginId').value, pVersUrl = Q('lastPluginVersion').value;
+            
             switch(act) {
                 case 'upgrade':
                 case 'install': 
-                    meshserver.send({ "action": "installplugin", "id": id });
+                    meshserver.send({ "action": "installplugin", "id": id, "version_only": false });
+                    break;
+                case 'downgrade':
+                    Q('lastPluginVersion').querySelectorAll('option').forEach(function(opt) {
+                        if (opt.value == pVersUrl) pVers = opt.text;
+                    });
+                    meshserver.send({ "action": "installplugin", "id": id, "version_only": { "name": pVers, "url": pVersUrl }});
                     break;
                 case 'delete':
                     meshserver.send({ "action": "removeplugin", "id": id });
@@ -9564,7 +9588,11 @@
         }
         
         function pluginAction(elem, id) {
-            setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Are you sure you want to ' + elem.value + ' the plugin: ' + elem.parentNode.parentNode.firstChild.innerText+'<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + elem.parentNode.parentNode.getAttribute('data-id') + '" />'); 
+            if (elem.value == 'downgrade') {
+                meshserver.send({ "action": "getpluginversions", "id": id });
+            } else {
+                setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Are you sure you want to ' + elem.value + ' the plugin: ' + elem.parentNode.parentNode.firstChild.innerText+'<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + elem.parentNode.parentNode.getAttribute('data-id') + '" /><input id="lastPluginVersion" type="hidden" value="" />'); 
+            }
             elem.value = '';
         }
         
