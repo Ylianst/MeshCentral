@@ -496,11 +496,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) {
-            parent.debug('web', 'handleLogoutRequest: failed checks.');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || (domain.auth == 'sspi')) { parent.debug('web', 'handleLogoutRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         // Destroy the user's session to log them out will be re-created next request
@@ -509,7 +506,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id }); }
         }
         req.session = null;
-        res.redirect(domain.url);
+        if (req.query.key != null) { res.redirect(domain.url + "?key=" + req.query.key); } else { res.redirect(domain.url); }
         parent.debug('web', 'handleLogoutRequest: success.');
     }
 
@@ -638,6 +635,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleLoginRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { parent.debug('web', 'handleLoginRequest: invalid domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check if this is a banned ip address
         if (obj.checkAllowLogin(req) == false) {
@@ -790,11 +788,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
-            parent.debug('web', 'handleCreateAccountRequest: failed checks.');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCreateAccountRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
@@ -905,6 +900,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account password reset
     function handleResetPasswordRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check everything is ok
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
@@ -987,11 +983,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) {
-            parent.debug('web', 'handleResetAccountRequest: check failed');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
@@ -1083,11 +1076,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
-            parent.debug('web', 'handleCheckMailRequest: failed checks.');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
@@ -1188,11 +1178,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an agent invite request
     function handleAgentInviteRequest(req, res) {
         const domain = getDomain(req);
-        if ((domain == null) || ((req.query.m == null) && (req.query.c == null))) {
-            parent.debug('web', 'handleAgentInviteRequest: failed checks.');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || ((req.query.m == null) && (req.query.c == null))) { parent.debug('web', 'handleAgentInviteRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
+
         if (req.query.c != null) {
             // A cookie is specified in the query string, use that
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey);
@@ -1218,11 +1206,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleDeleteAccountRequest(req, res, direct) {
         parent.debug('web', 'handleDeleteAccountRequest()');
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
-            parent.debug('web', 'handleDeleteAccountRequest: failed checks.');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleDeleteAccountRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         var user = null;
         if (req.body.authcookie) {
@@ -1308,11 +1293,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) {
-            parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).');
-            res.sendStatus(404);
-            return;
-        }
+        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check if the user is logged and we have all required parameters
         if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.domainid != domain.id)) {
@@ -1353,6 +1335,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRootRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
 
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
@@ -1539,7 +1522,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
 
             // Send the master web application
-            if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+            var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+            if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
             // Clean up the U2F challenge if needed
@@ -1621,7 +1605,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a post request on the root
     function handleRootPostRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
         parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
+       
         switch (req.body.action) {
             case 'login': { handleLoginRequest(req, res, true); break; }
             case 'tokenlogin': {
@@ -1662,11 +1650,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) {
-            parent.debug('web', 'handleTermsRequest: Bad domain');
-            res.sendStatus(404);
-            return;
-        }
+        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // See if term.txt was loaded from the database
         if ((parent.configurationFiles != null) && (parent.configurationFiles['terms.txt'] != null)) {
@@ -1676,7 +1661,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
                 var user = obj.users[req.session.userid];
                 var logoutcontrol = 'Welcome ' + user.name + '.';
-                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+                var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
                 render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: logoutcontrol });
             } else {
                 render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()) });
@@ -1694,7 +1680,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
                         var user = obj.users[req.session.userid];
                         var logoutcontrol = 'Welcome ' + user.name + '.';
-                        if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+                        var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                        if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
                         render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data), logoutControl: logoutcontrol });
                     } else {
                         render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data) });
@@ -1708,7 +1695,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
                     var user = obj.users[req.session.userid];
                     var logoutcontrol = 'Welcome ' + user.name + '.';
-                    if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+                    var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                    if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
                     render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, logoutControl: logoutcontrol });
                 } else {
                     render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url });
@@ -1741,6 +1729,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Returns the mesh server root certificate
     function handleRootCertRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleRootCertRequest: no domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleRootCertRequest: invalid ip'); return; } // Check server-wide IP filter only.
         parent.debug('web', 'handleRootCertRequest()');
         try {
@@ -1835,6 +1826,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Returns an mescript for Intel AMT configuration
     function handleMeScriptRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleMeScriptRequest: no domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
+
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
         if (req.query.type == 1) {
             obj.getCiraConfigurationScript(req.query.meshid, function (script) {
@@ -1862,6 +1857,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleDownloadUserFiles(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
+
         if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
         var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
         if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
@@ -2815,6 +2812,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
@@ -2847,6 +2845,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleRestoreRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey != req.query.key)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (obj.parent.args.noserverbackup == 1) { res.sendStatus(401); return; }
         var authUserid = null;
         if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
