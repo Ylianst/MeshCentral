@@ -1361,8 +1361,8 @@
             QV('p2ServerActionsVersion', siteRights & 16);
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
-            QV('MainMenuMyPlugins', (pluginHandler != null));
-            QV('LeftMenuMyPlugins', (pluginHandler != null));
+            QV('MainMenuMyPlugins', ((pluginHandler != null) && (siteRights & 0xFFFFFFFF)));
+            QV('LeftMenuMyPlugins', ((pluginHandler != null) && (siteRights & 0xFFFFFFFF)));
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
