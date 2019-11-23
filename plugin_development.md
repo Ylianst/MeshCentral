@@ -80,9 +80,6 @@ Much of MeshCentral revolves around returning objects for your structures, and p
 
 ## Versioning
 Versioning your plugin correctly and consistently is essential to ensure users of your plugin are prompted to upgrade when it is available. Semantic versioning is recommended.
-> Wait, but MeshCentral uses a trailing `-<alpha_char>` for it's versions!
-
-True, but we've made sure that we made special consideration for this in the `meshCentralCompat` check, so you can specify the exact version that you're compatible with. 
 
 ## Changelog
 A changelog is highly recommended so that your users know what's changed since their last version.
