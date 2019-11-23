@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail', 'generateinvitelink'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail', 'generateinvitelink', 'config'];
 //console.log(args);
 
 if (args['_'].length == 0) {
@@ -18,6 +18,7 @@ if (args['_'].length == 0) {
     console.log("  ListDevices               - List devices.");
     console.log("  ListDeviceGroups          - List device groups.");
     console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
+    console.log("  Config                    - Perform operation on config.json file.");
     console.log("  AddUser                   - Create a new user account.");
     console.log("  RemoveUser                - Delete a user account.");
     console.log("  AddDeviceGroup            - Create a new device group.");
@@ -43,6 +44,7 @@ if (args['_'].length == 0) {
 
     var ok = false;
     switch (settings.cmd) {
+        case 'config': { performConfigOperations(args); return; }
         case 'serverinfo': { ok = true; break; }
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
@@ -108,6 +110,21 @@ if (args['_'].length == 0) {
                 console.log("Get help on an action. Type:\r\n\r\n  help [action]\r\n\r\nPossible actions are: " + possibleCommands.join(', ') + '.');
             } else {
                 switch (args['_'][1].toLowerCase()) {
+                    case 'config': {
+                        console.log("Perform operations on the config.json file. Example usage:\r\n");
+                        console.log("  MeshCtrl config --show");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --show                        - Display the config.json file.");
+                        console.log("  --adddomain [domain]          - Add a domain.");
+                        console.log("  --removedomain [domain]       - Remove a domain.");
+                        console.log("  --settodomain [domain]        - Set values to the domain.");
+                        console.log("  --removefromdomain [domain]   - Remove values from the domain.");
+                        console.log("\r\nWith adddomain, removedomain, settodomain and removefromdomain you can add the key and value pair. For example:\r\n");
+                        console.log("  --adddomain \"MyDomain\" --title \"My Server Name\" --newAccounts false");
+                        console.log("  --settodomain \"MyDomain\" --title \"My Server Name\"");
+                        console.log("  --removefromdomain \"MyDomain\" --title");
+                        break;
+                    }
                     case 'sendinviteemail': {
                         console.log("Send invitation email with instructions on how to install the mesh agent for a specific device group. Example usage:\r\n");
                         console.log("  MeshCtrl SendInviteEmail --id devicegroupid --email user@sample.com");
@@ -276,6 +293,65 @@ if (args['_'].length == 0) {
     }
 
     if (ok) { serverConnect(); }
+}
+
+function performConfigOperations(args) {
+    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapoptions', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording'];
+    var configChange = false;
+    var fs = require('fs');
+    var path = require('path');
+    var configFile = path.join(__dirname, 'config.json');
+    if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'meshcentral-data', 'config.json'); }
+    if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, '..', 'meshcentral-data', 'config.json'); }
+    if (fs.existsSync(configFile) == false) { console.log("Unable to find config.json."); return; }
+    var config = null;
+    try { config = fs.readFileSync(configFile); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
+    try { config = JSON.parse(config); } catch (ex) { console.log("Error: Unable to parse config.json"); return; }
+    if (args.adddomain != null) {
+        if (config.domains == null) { config.domains = {}; }
+        if (config.domains[args.adddomain] != null) { console.log("Error: Domain \"" + args.adddomain + "\" already exists"); }
+        else {
+            configChange = true;
+            config.domains[args.adddomain] = {};
+            for (var i in args) {
+                if (domainValues.indexOf(i.toLowerCase()) >= 0) {
+                    if (args[i] == 'true') { args[i] = true; } else if (args[i] == 'false') { args[i] = false; } else if (parseInt(args[i]) == args[i]) { args[i] = parseInt(args[i]); }
+                    config.domains[args.adddomain][i] = args[i];
+                    configChange = true;
+                }
+            }
+        }
+    }
+    if (args.removedomain != null) {
+        if (config.domains == null) { config.domains = {}; }
+        if (config.domains[args.removedomain] == null) { console.log("Error: Domain \"" + args.removedomain + "\" does not exist"); }
+        else { delete config.domains[args.removedomain]; configChange = true; }
+    }
+    if (args.settodomain != null) {
+        if (config.domains == null) { config.domains = {}; }
+        if (config.domains[args.settodomain] == null) { console.log("Error: Domain \"" + args.settodomain + "\" does not exist"); }
+        else {
+            for (var i in args) {
+                if (domainValues.indexOf(i.toLowerCase()) >= 0) {
+                    if (args[i] == '') { delete config.domains[args.settodomain][i]; configChange = true; } else {
+                        if (args[i] == 'true') { args[i] = true; } else if (args[i] == 'false') { args[i] = false; } else if (parseInt(args[i]) == args[i]) { args[i] = parseInt(args[i]); }
+                        config.domains[args.settodomain][i] = args[i];
+                        configChange = true;
+                    }
+                }
+            }
+        }
+    }
+    if (args.removefromdomain != null) {
+        if (config.domains == null) { config.domains = {}; }
+        if (config.domains[args.removefromdomain] == null) { console.log("Error: Domain \"" + args.removefromdomain + "\" does not exist"); }
+        else { for (var i in args) { if (domainValues.indexOf(i.toLowerCase()) >= 0) { delete config.domains[args.removefromdomain][i]; configChange = true; } } }
+    }
+    if (args.show == 1) { console.log(JSON.stringify(config, null, 2)); } else { console.log("Done."); }
+    if (configChange) {
+        try { fs.writeFileSync(configFile, JSON.stringify(config, null, 2)); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
+    }
+    //console.log(configFile);
 }
 
 function onVerifyServer(clientName, certs) { return null; }
