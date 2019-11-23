@@ -1103,7 +1103,7 @@ function createMeshCore(agent) {
                             this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM });
                             if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
                         } else {
-                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
+                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM }); // , uid: require('user-sessions').consoleUid()
                             if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
                         }
                         this.httprequest.process.tunnel = this;
