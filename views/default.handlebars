@@ -423,7 +423,9 @@
                 <table id="p7tbl">
                     <tr><th class="chName">Name</th><th class="chDescription">Description</th><th class="chSite">Link</th><th class="chVersion">Version</th><th class="chUpgradeAvail">Latest Available</th><th class="chStatus">Status</th><th class="chAction">Action</th></tr>
                 </table>
-                <div id="pluginRestartNotice" style="display:none;"><div>Notice:</div> MeshCentral plugins have been altered. Agent cores require may require an update before full features are available.</div>
+                <div id="pluginRestartNotice" style="display:none;"><div>Notice:</div> MeshCentral plugins have been altered. Agent cores require may require an update before full features are available.<br />
+                Click <a href="#" onclick="distributeCore(); return false;">here</a> to update all Mesh Agent cores.
+                </div>
             </div>
             <div id=p10 style="display:none">
                 <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -9562,6 +9564,11 @@
         
         function refreshPluginLatest() {
             meshserver.send({ action: 'pluginLatestCheck' });
+        }
+        
+        function distributeCore() {
+            meshserver.send({ action: 'distributeCore', nodes: nodes }); // all nodes the user has access to
+            QV('pluginRestartNotice', false);
         }
         
         function pluginActionEx() {

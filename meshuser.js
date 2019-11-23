@@ -3137,6 +3137,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'distributeCore': {
+                for (var i in command.nodes) {
+                    parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
+                }
+                break;
+            }
             case 'plugins': {
                 // Since plugin actions generally require a server restart, use the Full admin permission
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
@@ -3172,7 +3178,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'installplugin': {
                 if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
-                parent.parent.pluginHandler.installPlugin(command.id, command.version_only, function(){
+                parent.parent.pluginHandler.installPlugin(command.id, command.version_only, null, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
                     });

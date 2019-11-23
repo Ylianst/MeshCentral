@@ -317,7 +317,7 @@ module.exports.pluginHandler = function (parent) {
         });
     };
     
-    obj.installPlugin = function(id, version_only, func) {
+    obj.installPlugin = function(id, version_only, force_url, func) {
         parent.db.getPlugin(id, function(err, docs){
             // the "id" would probably suffice, but is probably an sanitary issue, generate a random instead
             var randId = Math.random().toString(32).replace('0.', '');
@@ -327,6 +327,7 @@ module.exports.pluginHandler = function (parent) {
                 const file = obj.fs.createWriteStream(fileName);
                 var dl_url = plugin.downloadUrl;
                 if (version_only != null && version_only != false) dl_url = version_only.url;
+                if (force_url != null) dl_url = force_url;
                 var url = require('url');
                 var q = url.parse(dl_url, true);
                 var http = (q.protocol == "http") ? require('http') : require('https');
@@ -342,7 +343,7 @@ module.exports.pluginHandler = function (parent) {
                 };
                 var request = http.get(opts, function(response) {
                     // handle redirections with grace
-                    if (response.headers.location) return obj.installPlugin(id, { name: version_only.name, url: response.headers.location }, func);
+                    if (response.headers.location) return obj.installPlugin(id, version_only, response.headers.location, func);
                     response.pipe(file);
                     file.on('finish', function() {
                         file.close(function(){
@@ -377,13 +378,16 @@ module.exports.pluginHandler = function (parent) {
                                 zipfile.on("end", function () { setTimeout(function () {
                                     obj.fs.unlinkSync(fileName); 
                                     if (version_only == null || version_only === false) {
-                                        parent.db.setPluginStatus(id, 1, func); 
+                                        parent.db.setPluginStatus(id, 1, func);
                                     } else {
-                                        parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func);
+                                        parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func); 
                                     }
                                     obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
                                     obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
                                     if (typeof obj.plugins[plugin.shortName].server_startup == 'function') obj.plugins[plugin.shortName].server_startup();
+                                    var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
+                                    plugin_config = JSON.parse(plugin_config);
+                                    parent.db.updatePlugin(plugin._id, plugin_config);
                                     parent.updateMeshCore();
                                 }); });
                             });
