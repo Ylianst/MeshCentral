@@ -66,8 +66,10 @@ module.exports.pluginHandler = function (parent) {
 
         for (const p of Object.keys(obj.plugins)) {
             str += '    obj.' + p + ' = {};\r\n';
-            for (const l of Object.values(obj.exports[p])) {
-                str += '        obj.' + p + '.' + l + ' = ' + obj.plugins[p][l].toString() + '\r\n';
+            if (Array.isArray(obj.exports[p])) {
+                for (const l of Object.values(obj.exports[p])) {
+                    str += '        obj.' + p + '.' + l + ' = ' + obj.plugins[p][l].toString() + '\r\n';
+                }
             }
         }
 
