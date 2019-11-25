@@ -52,8 +52,12 @@
         -->
     </div>
     <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)">Normal Connect</div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(2,event)">PowerShell Connect</div>
+        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Normal Connect</b></div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(6,event)">PowerShell Connect</div>
+    </div>
+    <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(7,event)">User Shell</div>
     </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -112,7 +116,6 @@
                             <td tabindex="0" id="MainMenuMyFiles" class="topbar_td style3x" onclick="go(5,event)" onkeypress="if (event.key == 'Enter') go(5)">Mes Dossiers</td>
                             <td tabindex="0" id="MainMenuMyUsers" class="topbar_td style3x" onclick="go(4,event)" onkeypress="if (event.key == 'Enter') go(4)">Mes Utilisateurs</td>
                             <td tabindex="0" id="MainMenuMyServer" class="topbar_td style3x" onclick="go(6,event)" onkeypress="if (event.key == 'Enter') go(6)">Mon Serveur</td>
-                            <!-- <td tabindex=0 id=MainMenuMyPlugins class="topbar_td style3x" onclick=go(7,event) onkeypress="if (event.key == 'Enter') go(7)">My Plugins</td> -->
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
                     </tbody></table>
@@ -161,15 +164,6 @@
                             </tr>
                         </tbody></table>
                     </div>
-                    <!--
-                    <div id=PluginSubMenuSpan>
-                        <table id=PluginSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td onclick="goPlugin(-1)" onkeypress="if (event.key == 'Enter') goPlugin(-1)" class="topbar_td style3x">Home</td>
-                            </tr>
-                        </table>
-                    </div>
-                    -->
                     <div id="UserDummyMenuSpan">
                         <table id="UserDummyMenu" cellpadding="0" cellspacing="0" class="style1">
                             <tbody><tr><td class="style3" style="">&nbsp;</td></tr>
@@ -3547,18 +3541,24 @@
                 contextmenudiv.style.left = event.pageX + 'px';
                 contextmenudiv.style.top = event.pageY + 'px';
                 contextmenudiv.style.display = 'block';
+            } else if (elem && elem != null && elem.id == 'connectbutton2' && currentNode && currentNode.agent && (currentNode.agent.id > 4)) {
+                contextelement = elem;
+                var contextmenudiv = document.getElementById('termShellContextMenuLinux');
+                contextmenudiv.style.left = event.pageX + 'px';
+                contextmenudiv.style.top = event.pageY + 'px';
+                contextmenudiv.style.display = 'block';
             } else if (elem && elem != null && elem.id == 'MxMESH') {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('meshContextMenu');
                 contextmenudiv.style.left = event.pageX + 'px';
                 contextmenudiv.style.top = event.pageY + 'px';
                 contextmenudiv.style.display = 'block';
-            /*} else if (elem && elem != null && elem.classList.contains('pluginTab')) {
-                contextelement = elem;
-                var contextmenudiv = document.getElementById('pluginTabContextMenu');
-                contextmenudiv.style.left = event.pageX + 'px';
-                contextmenudiv.style.top = event.pageY + 'px';
-                contextmenudiv.style.display = 'block';*/
+                /*} else if (elem && elem != null && elem.classList.contains('pluginTab')) {
+                    contextelement = elem;
+                    var contextmenudiv = document.getElementById('pluginTabContextMenu');
+                    contextmenudiv.style.left = event.pageX + 'px';
+                    contextmenudiv.style.top = event.pageY + 'px';
+                    contextmenudiv.style.display = 'block';*/
             } else {
                 while (elem && elem != null && elem.id != 'devs') { elem = elem.parentElement; }
                 if (!elem || elem == null) return true;
@@ -3627,7 +3627,7 @@
         }
 
         function cmtermaction(action) {
-            connectTerminal(null, 1, { powershell: (action == 2) });
+            connectTerminal(null, 1, { protocol: action });
         }
 
         /*
@@ -3646,6 +3646,7 @@
             QV('contextMenu', false);
             QV('meshContextMenu', false);
             QV('termShellContextMenu', false);
+            QV('termShellContextMenuLinux', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
         }
@@ -4046,7 +4047,7 @@
         // Called When Place a node option is clicked from context menu
         function placeNode(coords) {
             if (xxdialogMode) return;
-            var x = '<div style=margin-bottom:6px><label for=selectnode-search>Search</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "Aucun périphérique trouvé." + '</div>';
+            var x = '<div style=margin-bottom:6px><label for=selectnode-search>' + "Chercher" + '</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "Aucun périphérique trouvé." + '</div>';
             for (var i in nodes) {
                 x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline />';
                 x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
@@ -5910,7 +5911,7 @@
                     Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
                 } else {
                     // Setup a mesh agent terminal
-                    var termoptions = {};
+                    var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
                         if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; termoptions.xterm = true; }
                         if (Q('termSizeList').value == 3) {
@@ -5920,7 +5921,16 @@
                             termoptions.xterm = true;
                         }
                     }
-                    if ((e && (e.shiftKey == true)) || (options && (options.powershell))) { termoptions.protocol = 6; }
+
+                    // If shift is pressed
+                    if ((e && (e.shiftKey == true))) {
+                        if (currentNode.agent.id > 4) {
+                            if (termoptions.protocol == 1) { termoptions.protocol = 7; } // Switch to user shell
+                        } else {
+                            if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
+                        }
+                    }
+
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
@@ -9420,6 +9430,7 @@
             // My Server
             if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
             if ((x == 6) || (x == 115) || (x == 40) || (x == 41) || (x == 42)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            QV('ServerPlugins', pluginHandler != null);
 
             // column_l max-height
             if (webPageStackMenu && (x >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
@@ -9468,8 +9479,12 @@
             }
         }
 
-        // Plugin
+        //
+        // Plugin Management
+        //
+
         function updatePluginList(versInfo) {
+            if (pluginHandler == null) return;
             if (Array.isArray(versInfo)) { versInfo.forEach(function(v) { updatePluginList(v); }); }
             QV('pluginNoneNotice', installedPluginList.length == 0);
             if (installedPluginList.length) {
@@ -9560,15 +9575,18 @@
         }
 
         function refreshPluginLatest() {
+            if (pluginHandler == null) return;
             meshserver.send({ action: 'pluginLatestCheck' });
         }
 
         function distributeCore() {
+            if (pluginHandler == null) return;
             meshserver.send({ action: 'distributeCore', nodes: nodes }); // All nodes the user has access to
             QV('pluginRestartNotice', false);
         }
 
         function pluginActionEx() {
+            if (pluginHandler == null) return;
             var act = Q('lastPluginAct').value, id = Q('lastPluginId').value, pVersUrl = Q('lastPluginVersion').value;
 
             switch(act) {
@@ -9593,6 +9611,7 @@
         }
 
         function pluginAction(elem, id) {
+            if (pluginHandler == null) return;
             if (elem.value == 'downgrade') {
                 meshserver.send({ 'action': 'getpluginversions', 'id': id });
             } else {
@@ -9604,6 +9623,7 @@
         }
 
         function goPlugin(pname, title) {
+            if (pluginHandler == null) return;
             /*
             let holder = Q('PluginSubMenu').querySelectorAll('tr')[0];
             let loadedPluginsTDs = holder.querySelectorAll('td');
@@ -9659,6 +9679,7 @@
         }
 
         function noGoPlugin(el) {
+            if (pluginHandler == null) return;
             /*
             QV('PluginSubMenuSpan', false);
             let loadedPluginsTDs =  Q('PluginSubMenu').querySelectorAll('td');
