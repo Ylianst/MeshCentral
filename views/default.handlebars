@@ -54,8 +54,12 @@
         -->
     </div>
     <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)">Normal Connect</div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(2,event)">PowerShell Connect</div>
+        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Normal Connect</b></div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(6,event)">PowerShell Connect</div>
+    </div>
+    <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(7,event)">User Shell</div>
     </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -3539,18 +3543,24 @@
                 contextmenudiv.style.left = event.pageX + 'px';
                 contextmenudiv.style.top = event.pageY + 'px';
                 contextmenudiv.style.display = 'block';
+            } else if (elem && elem != null && elem.id == 'connectbutton2' && currentNode && currentNode.agent && (currentNode.agent.id > 4)) {
+                contextelement = elem;
+                var contextmenudiv = document.getElementById('termShellContextMenuLinux');
+                contextmenudiv.style.left = event.pageX + 'px';
+                contextmenudiv.style.top = event.pageY + 'px';
+                contextmenudiv.style.display = 'block';
             } else if (elem && elem != null && elem.id == 'MxMESH') {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('meshContextMenu');
                 contextmenudiv.style.left = event.pageX + 'px';
                 contextmenudiv.style.top = event.pageY + 'px';
                 contextmenudiv.style.display = 'block';
-            /*} else if (elem && elem != null && elem.classList.contains('pluginTab')) {
-                contextelement = elem;
-                var contextmenudiv = document.getElementById('pluginTabContextMenu');
-                contextmenudiv.style.left = event.pageX + 'px';
-                contextmenudiv.style.top = event.pageY + 'px';
-                contextmenudiv.style.display = 'block';*/
+                /*} else if (elem && elem != null && elem.classList.contains('pluginTab')) {
+                    contextelement = elem;
+                    var contextmenudiv = document.getElementById('pluginTabContextMenu');
+                    contextmenudiv.style.left = event.pageX + 'px';
+                    contextmenudiv.style.top = event.pageY + 'px';
+                    contextmenudiv.style.display = 'block';*/
             } else {
                 while (elem && elem != null && elem.id != 'devs') { elem = elem.parentElement; }
                 if (!elem || elem == null) return true;
@@ -3619,7 +3629,7 @@
         }
 
         function cmtermaction(action) {
-            connectTerminal(null, 1, { powershell: (action == 2) });
+            connectTerminal(null, 1, { protocol: action });
         }
 
         /*
@@ -3638,6 +3648,7 @@
             QV('contextMenu', false);
             QV('meshContextMenu', false);
             QV('termShellContextMenu', false);
+            QV('termShellContextMenuLinux', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
         }
@@ -4038,7 +4049,7 @@
         // Called When Place a node option is clicked from context menu
         function placeNode(coords) {
             if (xxdialogMode) return;
-            var x = '<div style=margin-bottom:6px><label for=selectnode-search>Search</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "No devices found." + '</div>';
+            var x = '<div style=margin-bottom:6px><label for=selectnode-search>' + "Search" + '</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "No devices found." + '</div>';
             for (var i in nodes) {
                 x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline />';
                 x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
@@ -5902,7 +5913,7 @@
                     Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
                 } else {
                     // Setup a mesh agent terminal
-                    var termoptions = {};
+                    var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
                         if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; termoptions.xterm = true; }
                         if (Q('termSizeList').value == 3) {
@@ -5912,7 +5923,16 @@
                             termoptions.xterm = true;
                         }
                     }
-                    if ((e && (e.shiftKey == true)) || (options && (options.powershell))) { termoptions.protocol = 6; }
+
+                    // If shift is pressed
+                    if ((e && (e.shiftKey == true))) {
+                        if (currentNode.agent.id > 4) {
+                            if (termoptions.protocol == 1) { termoptions.protocol = 7; } // Switch to user shell
+                        } else {
+                            if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
+                        }
+                    }
+
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
