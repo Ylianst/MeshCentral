@@ -114,7 +114,6 @@
                             <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5,event) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
                             <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
                             <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
-                            <!-- <td tabindex=0 id=MainMenuMyPlugins class="topbar_td style3x" onclick=go(7,event) onkeypress="if (event.key == 'Enter') go(7)">My Plugins</td> -->
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
                     </table>
@@ -163,15 +162,6 @@
                             </tr>
                         </table>
                     </div>
-                    <!--
-                    <div id=PluginSubMenuSpan>
-                        <table id=PluginSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td onclick="goPlugin(-1)" onkeypress="if (event.key == 'Enter') goPlugin(-1)" class="topbar_td style3x">Home</td>
-                            </tr>
-                        </table>
-                    </div>
-                    -->
                     <div id=UserDummyMenuSpan>
                         <table id=UserDummyMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr><td class=style3 style="">&nbsp;</td></tr>
@@ -9422,6 +9412,7 @@
             // My Server
             if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
             if ((x == 6) || (x == 115) || (x == 40) || (x == 41) || (x == 42)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            QV('ServerPlugins', pluginHandler != null);
 
             // column_l max-height
             if (webPageStackMenu && (x >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
@@ -9470,8 +9461,12 @@
             }
         }
 
-        // Plugin
+        //
+        // Plugin Management
+        //
+
         function updatePluginList(versInfo) {
+            if (pluginHandler == null) return;
             if (Array.isArray(versInfo)) { versInfo.forEach(function(v) { updatePluginList(v); }); }
             QV('pluginNoneNotice', installedPluginList.length == 0);
             if (installedPluginList.length) {
@@ -9562,15 +9557,18 @@
         }
 
         function refreshPluginLatest() {
+            if (pluginHandler == null) return;
             meshserver.send({ action: 'pluginLatestCheck' });
         }
 
         function distributeCore() {
+            if (pluginHandler == null) return;
             meshserver.send({ action: 'distributeCore', nodes: nodes }); // All nodes the user has access to
             QV('pluginRestartNotice', false);
         }
 
         function pluginActionEx() {
+            if (pluginHandler == null) return;
             var act = Q('lastPluginAct').value, id = Q('lastPluginId').value, pVersUrl = Q('lastPluginVersion').value;
 
             switch(act) {
@@ -9595,6 +9593,7 @@
         }
 
         function pluginAction(elem, id) {
+            if (pluginHandler == null) return;
             if (elem.value == 'downgrade') {
                 meshserver.send({ 'action': 'getpluginversions', 'id': id });
             } else {
@@ -9606,6 +9605,7 @@
         }
 
         function goPlugin(pname, title) {
+            if (pluginHandler == null) return;
             /*
             let holder = Q('PluginSubMenu').querySelectorAll('tr')[0];
             let loadedPluginsTDs = holder.querySelectorAll('td');
@@ -9661,6 +9661,7 @@
         }
 
         function noGoPlugin(el) {
+            if (pluginHandler == null) return;
             /*
             QV('PluginSubMenuSpan', false);
             let loadedPluginsTDs =  Q('PluginSubMenu').querySelectorAll('td');
