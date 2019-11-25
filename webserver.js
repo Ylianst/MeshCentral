@@ -3214,35 +3214,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         });
     }
-    
-    obj.handlePluginAdminReq = function(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
-        if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        var user = obj.users[req.session.userid];
-        if (user == null) { res.sendStatus(401); return; }
-        
-        parent.pluginHandler.handleAdminReq(req, res, user, obj);
-    }
-    
-    obj.handlePluginAdminPostReq = function(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
-        if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        var user = obj.users[req.session.userid];
-        if (user == null) { res.sendStatus(401); return; }
-        
-        parent.pluginHandler.handleAdminPostReq(req, res, user, obj);
-    }
-    
-    obj.handlePluginJS = function(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
-        if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        var user = obj.users[req.session.userid];
-        if (user == null) { res.sendStatus(401); return; }
-        
-        parent.pluginHandler.refreshJS(req, res);
+
+    if (parent.pluginHandler != null) {
+        // Handle a plugin admin request
+        obj.handlePluginAdminReq = function (req, res) {
+            const domain = checkUserIpAddress(req, res);
+            if (domain == null) { res.sendStatus(404); return; }
+            if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
+            var user = obj.users[req.session.userid];
+            if (user == null) { res.sendStatus(401); return; }
+
+            parent.pluginHandler.handleAdminReq(req, res, user, obj);
+        }
+
+        obj.handlePluginAdminPostReq = function (req, res) {
+            const domain = checkUserIpAddress(req, res);
+            if (domain == null) { res.sendStatus(404); return; }
+            if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
+            var user = obj.users[req.session.userid];
+            if (user == null) { res.sendStatus(401); return; }
+
+            parent.pluginHandler.handleAdminPostReq(req, res, user, obj);
+        }
+
+        obj.handlePluginJS = function (req, res) {
+            const domain = checkUserIpAddress(req, res);
+            if (domain == null) { res.sendStatus(404); return; }
+            if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
+            var user = obj.users[req.session.userid];
+            if (user == null) { res.sendStatus(401); return; }
+
+            parent.pluginHandler.refreshJS(req, res);
+        }
     }
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded

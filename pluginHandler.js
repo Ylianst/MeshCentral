@@ -25,27 +25,27 @@ module.exports.pluginHandler = function (parent) {
     obj.plugins = {};
     obj.exports = {};
     obj.loadList = obj.parent.config.settings.plugins.list; // For local development / manual install, not from DB
-    
+
     if (typeof obj.loadList != 'object') {
         obj.loadList = {};
-        parent.db.getPlugins(function(err, plugins){
-          plugins.forEach(function(plugin){
-              if (plugin.status != 1) return;
-              if (obj.fs.existsSync(obj.pluginPath + '/' + plugin.shortName)) {
-                  try {
-                      obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
-                      obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
-                  } catch (e) {
-                      console.log("Error loading plugin: " + plugin.shortName + " (" + e + "). It has been disabled.", e.stack);
-                  }
-                  try { // try loading local info about plugin to database (if it changed locally)
-                      var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
-                      plugin_config = JSON.parse(plugin_config);
-                      parent.db.updatePlugin(plugin._id, plugin_config);
-                  } catch (e) { console.log('Plugin config file for '+ plugin.name +' could not be parsed.'); }
-              }
-              obj.parent.updateMeshCore(); // db calls are delayed, lets inject here once we're ready
-          });
+        parent.db.getPlugins(function (err, plugins) {
+            plugins.forEach(function (plugin) {
+                if (plugin.status != 1) return;
+                if (obj.fs.existsSync(obj.pluginPath + '/' + plugin.shortName)) {
+                    try {
+                        obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
+                        obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
+                    } catch (e) {
+                        console.log("Error loading plugin: " + plugin.shortName + " (" + e + "). It has been disabled.", e.stack);
+                    }
+                    try { // try loading local info about plugin to database (if it changed locally)
+                        var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
+                        plugin_config = JSON.parse(plugin_config);
+                        parent.db.updatePlugin(plugin._id, plugin_config);
+                    } catch (e) { console.log("Plugin config file for " + plugin.name + " could not be parsed."); }
+                }
+                obj.parent.updateMeshCore(); // db calls are delayed, lets inject here once we're ready
+            });
         });
     } else {
         obj.loadList.forEach(function (plugin, index) {
@@ -59,15 +59,15 @@ module.exports.pluginHandler = function (parent) {
             }
         });
     }
-    
+
     obj.prepExports = function () {
         var str = 'function() {\r\n';
         str += '    var obj = {};\r\n';
 
-        for (const p of Object.keys(obj.plugins)) {
+        for (var p of Object.keys(obj.plugins)) {
             str += '    obj.' + p + ' = {};\r\n';
             if (Array.isArray(obj.exports[p])) {
-                for (const l of Object.values(obj.exports[p])) {
+                for (var l of Object.values(obj.exports[p])) {
                     str += '        obj.' + p + '.' + l + ' = ' + obj.plugins[p][l].toString() + '\r\n';
                 }
             }
@@ -97,7 +97,7 @@ module.exports.pluginHandler = function (parent) {
             meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
         };
         obj.addPluginDlg = function() {
-            setDialogMode(2, "Plugin Config URL", 3, obj.addPluginEx, '<input type=text id=pluginurlinput style=width:100% />'); 
+            setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />'); 
             focusTextBox('pluginurlinput');
         };
         obj.refreshPluginHandler = function() {
@@ -108,20 +108,20 @@ module.exports.pluginHandler = function (parent) {
         return obj; };`;
         return str;
     }
-    
-    obj.refreshJS = function(req, res) {
+
+    obj.refreshJS = function (req, res) {
         // to minimize server reboots when installing new plugins, we call the new data and overwrite the old pluginHandler on the front end
         res.set('Content-Type', 'text/javascript');
-        res.send('pluginHandlerBuilder = '+obj.prepExports() + ' pluginHandler = new pluginHandlerBuilder();');
+        res.send('pluginHandlerBuilder = ' + obj.prepExports() + ' pluginHandler = new pluginHandlerBuilder();');
     }
-    
+
     obj.callHook = function (hookName, ...args) {
         for (var p in obj.plugins) {
             if (typeof obj.plugins[p][hookName] == 'function') {
                 try {
                     obj.plugins[p][hookName](args);
                 } catch (e) {
-                    console.log('Error ocurred while running plugin hook' + p + ':' + hookName + ' (' + e + ')');
+                    console.log("Error ocurred while running plugin hook" + p + ':' + hookName + ' (' + e + ')');
                 }
             }
         }
@@ -187,20 +187,20 @@ module.exports.pluginHandler = function (parent) {
                     panel[p].header = obj.plugins[p].on_device_header();
                     panel[p].content = obj.plugins[p].on_device_page();
                 } catch (e) {
-                    console.log('Error ocurred while getting plugin views ' + p + ':' + ' (' + e + ')');
+                    console.log("Error ocurred while getting plugin views " + p + ':' + ' (' + e + ')');
                 }
             }
         }
         return panel;
     };
-    
-    obj.isValidConfig = function(conf, url) { // check for the required attributes
+
+    obj.isValidConfig = function (conf, url) { // check for the required attributes
         var isValid = true;
         if (!(
             typeof conf.name == 'string'
             && typeof conf.shortName == 'string'
             && typeof conf.version == 'string'
-          //  && typeof conf.author == 'string'
+            //  && typeof conf.author == 'string'
             && typeof conf.description == 'string'
             && typeof conf.hasAdminPanel == 'boolean'
             && typeof conf.homepage == 'string'
@@ -210,7 +210,7 @@ module.exports.pluginHandler = function (parent) {
             && typeof conf.repository.type == 'string'
             && typeof conf.repository.url == 'string'
             && typeof conf.meshCentralCompat == 'string'
-        //    && conf.configUrl == url  // make sure we're loading a plugin from its desired config
+            //    && conf.configUrl == url  // make sure we're loading a plugin from its desired config
         )) isValid = false;
         // more checks here?
         if (conf.repository.type == 'git') {
@@ -218,119 +218,120 @@ module.exports.pluginHandler = function (parent) {
         }
         return isValid;
     };
-    
-    obj.getPluginConfig = function(configUrl) {
-        return new Promise(function(resolve, reject) {
-            if (configUrl.indexOf('https://') >= 0) {
-              var http = require('https');
-            } else {
-              var http = require('http');
+
+    // https://raw.githubusercontent.com/ryanblenis/MeshCentral-Sample/master/config.json
+    obj.getPluginConfig = function (configUrl) {
+        return new Promise(function (resolve, reject) {
+            var http = (configUrl.indexOf('https://') >= 0) ? require('https') : require('http');
+            if (configUrl.indexOf('://') === -1) reject("Unable to fetch the config: Bad URL (" + configUrl + ")");
+            var options = require('url').parse(configUrl);
+            if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
+                const HttpsProxyAgent = require('https-proxy-agent');
+                options.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
             }
-            if (configUrl.indexOf('://') === -1) reject('Unable to fetch the config: Bad URL (' + configUrl + ')');
-            http.get(configUrl, function(res) {
-              var configStr = '';
-              res.on('data', function(chunk){
-                  configStr += chunk;
-              });
-              res.on('end', function(){
-                  if (configStr[0] == '{') { // let's be sure we're JSON
-                      try {
-                          var pluginConfig = JSON.parse(configStr);
-                          if (Array.isArray(pluginConfig) && pluginConfig.length == 1) pluginConfig = pluginConfig[0];
-                          if (obj.isValidConfig(pluginConfig, configUrl)) {
-                              resolve(pluginConfig);
-                          } else {
-                              reject("This does not appear to be a valid plugin configuration.");
-                          }
-                          
-                      } catch (e) { reject('Error getting plugin config. Check that you have valid JSON.'); }
-                  } else {
-                    reject('Error getting plugin config. Check that you have valid JSON.');
-                  }
-              });
-      
-            }).on('error', function(e) {
+            http.get(options, function (res) {
+                var configStr = '';
+                res.on('data', function (chunk) {
+                    configStr += chunk;
+                });
+                res.on('end', function () {
+                    if (configStr[0] == '{') { // Let's be sure we're JSON
+                        try {
+                            var pluginConfig = JSON.parse(configStr);
+                            if (Array.isArray(pluginConfig) && pluginConfig.length == 1) pluginConfig = pluginConfig[0];
+                            if (obj.isValidConfig(pluginConfig, configUrl)) {
+                                resolve(pluginConfig);
+                            } else {
+                                reject("This does not appear to be a valid plugin configuration.");
+                            }
+                        } catch (e) { reject("Error getting plugin config. Check that you have valid JSON."); }
+                    } else {
+                        reject("Error getting plugin config. Check that you have valid JSON.");
+                    }
+                });
+
+            }).on('error', function (e) {
                 reject("Error getting plugin config: " + e.message);
-            }); 
+            });
         })
     };
-    
-    obj.getPluginLatest = function() {
-        return new Promise(function(resolve, reject) {
-            parent.db.getPlugins(function(err, plugins) {
+
+    obj.getPluginLatest = function () {
+        return new Promise(function (resolve, reject) {
+            parent.db.getPlugins(function (err, plugins) {
                 var proms = [];
-                plugins.forEach(function(curconf) {
-                    proms.push(obj.getPluginConfig(curconf.configUrl).catch(e => { return null; } ));
+                plugins.forEach(function (curconf) {
+                    proms.push(obj.getPluginConfig(curconf.configUrl).catch(e => { return null; }));
                 });
                 var latestRet = [];
-                Promise.all(proms).then(function(newconfs) {
+                Promise.all(proms).then(function (newconfs) {
                     var nconfs = [];
-                    // filter out config download issues
-                    newconfs.forEach(function(nc) {
-                        if (nc !== null) nconfs.push(nc);
-                    });
-                    nconfs.forEach(function(newconf) {
-                        var curconf = null;
-                        plugins.forEach(function(conf) {
-                            if (conf.configUrl == newconf.configUrl) curconf = conf;
+                    // Filter out config download issues
+                    newconfs.forEach(function (nc) { if (nc !== null) nconfs.push(nc); });
+                    if (nconfs.length == 0) { resolve([]); } else {
+                        nconfs.forEach(function (newconf) {
+                            var curconf = null;
+                            plugins.forEach(function (conf) {
+                                if (conf.configUrl == newconf.configUrl) curconf = conf;
+                            });
+                            if (curconf == null) reject("Some plugin configs could not be parsed");
+                            var s = require('semver');
+                            // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
+                            // Convert the letter to ASCII for a "true" version number comparison
+                            var mcCurVer = parent.currentVer.replace(/-(.)$/, (m, p1) => { return p1.charCodeAt(0); });
+                            var piCompatVer = newconf.meshCentralCompat.replace(/-(.)\b/g, (m, p1) => { return p1.charCodeAt(0); });
+                            latestRet.push({
+                                'id': curconf._id,
+                                'installedVersion': curconf.version,
+                                'version': newconf.version,
+                                'hasUpdate': s.gt(newconf.version, curconf.version),
+                                'meshCentralCompat': s.satisfies(mcCurVer, piCompatVer),
+                                'changelogUrl': curconf.changelogUrl,
+                                'status': curconf.status
+                            });
+                            resolve(latestRet);
                         });
-                        if (curconf == null) reject('Some plugin configs could not be parsed');
-                        var s = require('semver');
-                        // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
-                        // Convert the letter to ASCII for a "true" version number comparison
-                        var mcCurVer = parent.currentVer.replace(/-(.)$/, (m, p1) => { return p1.charCodeAt(0); });
-                        var piCompatVer = newconf.meshCentralCompat.replace(/-(.)\b/g, (m, p1) => { return p1.charCodeAt(0); });
-                        latestRet.push({
-                            "id": curconf._id,
-                            "installedVersion": curconf.version,
-                            "version": newconf.version,
-                            "hasUpdate": s.gt(newconf.version, curconf.version),
-                            "meshCentralCompat": s.satisfies(mcCurVer, piCompatVer),
-                            "changelogUrl": curconf.changelogUrl,
-                            "status": curconf.status
-                        });
-                        resolve(latestRet);
-                    });
-                }).catch((e) => { console.log('Error reaching plugins, update call aborted. ', e)});
+                    }
+                }).catch((e) => { console.log("Error reaching plugins, update call aborted.", e) });
             });
         });
     };
-    
-    obj.addPlugin = function(pluginConfig) {
-      return new Promise(function(resolve, reject) {
-          parent.db.addPlugin({
-              "name": pluginConfig.name,
-              "shortName": pluginConfig.shortName,
-              "version": pluginConfig.version,
-              "description": pluginConfig.description,
-              "hasAdminPanel": pluginConfig.hasAdminPanel,
-              "homepage": pluginConfig.homepage,
-              "changelogUrl": pluginConfig.changelogUrl,
-              "configUrl": pluginConfig.configUrl,
-              "downloadUrl": pluginConfig.downloadUrl,
-              "repository": {
-                  "type": pluginConfig.repository.type,
-                  "url": pluginConfig.repository.url
-              },
-              "meshCentralCompat": pluginConfig.meshCentralCompat,
-              "versionHistoryUrl": pluginConfig.versionHistoryUrl,
-              "status": 0  // 0: disabled, 1: enabled
-          }, function() {
-                parent.db.getPlugins(function(err, docs){
-                  if (err) reject(err);
-                  else resolve(docs);
+
+    obj.addPlugin = function (pluginConfig) {
+        return new Promise(function (resolve, reject) {
+            parent.db.addPlugin({
+                'name': pluginConfig.name,
+                'shortName': pluginConfig.shortName,
+                'version': pluginConfig.version,
+                'description': pluginConfig.description,
+                'hasAdminPanel': pluginConfig.hasAdminPanel,
+                'homepage': pluginConfig.homepage,
+                'changelogUrl': pluginConfig.changelogUrl,
+                'configUrl': pluginConfig.configUrl,
+                'downloadUrl': pluginConfig.downloadUrl,
+                'repository': {
+                    'type': pluginConfig.repository.type,
+                    'url': pluginConfig.repository.url
+                },
+                'meshCentralCompat': pluginConfig.meshCentralCompat,
+                'versionHistoryUrl': pluginConfig.versionHistoryUrl,
+                'status': 0  // 0: disabled, 1: enabled
+            }, function () {
+                parent.db.getPlugins(function (err, docs) {
+                    if (err) reject(err);
+                    else resolve(docs);
                 });
             });
         });
     };
-    
-    obj.installPlugin = function(id, version_only, force_url, func) {
-        parent.db.getPlugin(id, function(err, docs){
+
+    obj.installPlugin = function (id, version_only, force_url, func) {
+        parent.db.getPlugin(id, function (err, docs) {
             // the "id" would probably suffice, but is probably an sanitary issue, generate a random instead
             var randId = Math.random().toString(32).replace('0.', '');
-            var fileName = obj.parent.path.join(require('os').tmpdir(), 'Plugin_'+randId+'.zip');
+            var fileName = obj.parent.path.join(require('os').tmpdir(), 'Plugin_' + randId + '.zip');
             var plugin = docs[0];
-            if (plugin.repository.type ==  'git') {
+            if (plugin.repository.type == 'git') {
                 const file = obj.fs.createWriteStream(fileName);
                 var dl_url = plugin.downloadUrl;
                 if (version_only != null && version_only != false) dl_url = version_only.url;
@@ -339,7 +340,7 @@ module.exports.pluginHandler = function (parent) {
                 var q = url.parse(dl_url, true);
                 var http = (q.protocol == "http") ? require('http') : require('https');
                 var opts = {
-                    path:  q.pathname,
+                    path: q.pathname,
                     host: q.hostname,
                     port: q.port,
                     headers: {
@@ -348,12 +349,16 @@ module.exports.pluginHandler = function (parent) {
                     followRedirects: true,
                     method: 'GET'
                 };
-                var request = http.get(opts, function(response) {
+                if (typeof parent.config.settings.plugins.proxy == 'string') {  // Proxy support
+                    const HttpsProxyAgent = require('https-proxy-agent');
+                    opts.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
+                }
+                var request = http.get(opts, function (response) {
                     // handle redirections with grace
                     if (response.headers.location) return obj.installPlugin(id, version_only, response.headers.location, func);
                     response.pipe(file);
-                    file.on('finish', function() {
-                        file.close(function(){
+                    file.on('finish', function () {
+                        file.close(function () {
                             var yauzl = require("yauzl");
                             if (!obj.fs.existsSync(obj.pluginPath)) {
                                 obj.fs.mkdirSync(obj.pluginPath);
@@ -364,12 +369,12 @@ module.exports.pluginHandler = function (parent) {
                             yauzl.open(fileName, { lazyEntries: true }, function (err, zipfile) {
                                 if (err) throw err;
                                 zipfile.readEntry();
-                                zipfile.on("entry", function (entry) {
+                                zipfile.on('entry', function (entry) {
                                     let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
                                     let pathReg = new RegExp(/(.*?\/)/);
-                                    if (process.platform == 'win32') pathReg = new RegExp(/(.*?\\/);
+                                    //if (process.platform == 'win32') { pathReg = new RegExp(/(.*?\\/); }
                                     let filePath = obj.parent.path.join(pluginPath, entry.fileName.replace(pathReg, '')); // remove top level dir
-                                    
+
                                     if (/\/$/.test(entry.fileName)) { // dir
                                         if (!obj.fs.existsSync(filePath))
                                             obj.fs.mkdirSync(filePath);
@@ -377,50 +382,48 @@ module.exports.pluginHandler = function (parent) {
                                     } else { // file
                                         zipfile.openReadStream(entry, function (err, readStream) {
                                             if (err) throw err;
-                                            readStream.on("end", function () { zipfile.readEntry(); });
+                                            readStream.on('end', function () { zipfile.readEntry(); });
                                             readStream.pipe(obj.fs.createWriteStream(filePath));
                                         });
                                     }
                                 });
-                                zipfile.on("end", function () { setTimeout(function () {
-                                    obj.fs.unlinkSync(fileName); 
-                                    if (version_only == null || version_only === false) {
-                                        parent.db.setPluginStatus(id, 1, func);
-                                    } else {
-                                        parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func); 
-                                    }
-                                    obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
-                                    obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
-                                    if (typeof obj.plugins[plugin.shortName].server_startup == 'function') obj.plugins[plugin.shortName].server_startup();
-                                    var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
-                                    plugin_config = JSON.parse(plugin_config);
-                                    parent.db.updatePlugin(plugin._id, plugin_config);
-                                    parent.updateMeshCore();
-                                }); });
+                                zipfile.on('end', function () {
+                                    setTimeout(function () {
+                                        obj.fs.unlinkSync(fileName);
+                                        if (version_only == null || version_only === false) {
+                                            parent.db.setPluginStatus(id, 1, func);
+                                        } else {
+                                            parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func);
+                                        }
+                                        obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
+                                        obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
+                                        if (typeof obj.plugins[plugin.shortName].server_startup == 'function') obj.plugins[plugin.shortName].server_startup();
+                                        var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
+                                        plugin_config = JSON.parse(plugin_config);
+                                        parent.db.updatePlugin(plugin._id, plugin_config);
+                                        parent.updateMeshCore();
+                                    });
+                                });
                             });
                         });
                     });
                 });
-            } else if (plugin.repository.type ==  'npm') {
+            } else if (plugin.repository.type == 'npm') {
                 // @TODO npm support? (need a test plugin)
             }
-          
-            
         });
-        
-        
     };
-    
-    obj.getPluginVersions = function(id) {
-        return new Promise(function(resolve, reject) {
-            parent.db.getPlugin(id, function(err, docs) {
+
+    obj.getPluginVersions = function (id) {
+        return new Promise(function (resolve, reject) {
+            parent.db.getPlugin(id, function (err, docs) {
                 var plugin = docs[0];
-                if (plugin.versionHistoryUrl == null) reject('No version history available for this plugin.');
+                if (plugin.versionHistoryUrl == null) reject("No version history available for this plugin.");
                 var url = require('url');
                 var q = url.parse(plugin.versionHistoryUrl, true);
-                var http = (q.protocol == "http") ? require('http') : require('https');
+                var http = (q.protocol == 'http') ? require('http') : require('https');
                 var opts = {
-                    path:  q.pathname,
+                    path: q.pathname,
                     host: q.hostname,
                     port: q.port,
                     headers: {
@@ -428,47 +431,51 @@ module.exports.pluginHandler = function (parent) {
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 };
-                http.get(opts, function(res) {
+                if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
+                    const HttpsProxyAgent = require('https-proxy-agent');
+                    options.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
+                }
+                http.get(opts, function (res) {
                     var versStr = '';
-                    res.on('data', function(chunk){
+                    res.on('data', function (chunk) {
                         versStr += chunk;
                     });
-                    res.on('end', function(){
+                    res.on('end', function () {
                         if (versStr[0] == '{' || versStr[0] == '[') { // let's be sure we're JSON
                             try {
                                 var vers = JSON.parse(versStr);
                                 var vList = [];
                                 var s = require('semver');
                                 vers.forEach((v) => {
-                                  if (s.lt(v.name, plugin.version)) vList.push(v);
+                                    if (s.lt(v.name, plugin.version)) vList.push(v);
                                 });
-                                if (vers.length == 0) reject('No previous versions available.');
+                                if (vers.length == 0) reject("No previous versions available.");
                                 resolve({ 'id': plugin._id, 'name': plugin.name, versionList: vList });
-                            } catch (e) { reject('Version history problem.'); }
+                            } catch (e) { reject("Version history problem."); }
                         } else {
-                            reject('Version history appears to be malformed.'+versStr);
+                            reject("Version history appears to be malformed." + versStr);
                         }
                     });
-                }).on('error', function(e) {
+                }).on('error', function (e) {
                     reject("Error getting plugin versions: " + e.message);
-                }); 
+                });
             });
         });
     };
-    
-    obj.disablePlugin = function(id, func) {
-        parent.db.getPlugin(id, function(err, docs){
+
+    obj.disablePlugin = function (id, func) {
+        parent.db.getPlugin(id, function (err, docs) {
             var plugin = docs[0];
             parent.db.setPluginStatus(id, 0, func);
             delete obj.plugins[plugin.shortName];
             delete obj.exports[plugin.shortName];
         });
     };
-    
-    obj.removePlugin = function(id, func) {
-        parent.db.getPlugin(id, function(err, docs){
+
+    obj.removePlugin = function (id, func) {
+        parent.db.getPlugin(id, function (err, docs) {
             var plugin = docs[0];
-            var rimraf = require("rimraf");
+            var rimraf = require('rimraf');
             let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
             rimraf.sync(pluginPath);
             parent.db.deletePlugin(id, func);
@@ -476,25 +483,23 @@ module.exports.pluginHandler = function (parent) {
             obj.parent.updateMeshCore();
         });
     };
-    
+
     obj.handleAdminReq = function (req, res, user, serv) {
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
         serv.app.set('views', path);
         if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminReq == 'function') {
             obj.plugins[req.query.pin].handleAdminReq(req, res, user);
-        }
-        else {
+        } else {
             res.sendStatus(401);
         }
     }
-    
-    obj.handleAdminPostReq = function(req, res, user, serv) {
+
+    obj.handleAdminPostReq = function (req, res, user, serv) {
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
         serv.app.set('views', path);
         if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminPostReq == 'function') {
             obj.plugins[req.query.pin].handleAdminPostReq(req, res, user);
-        }
-        else {
+        } else {
             res.sendStatus(401);
         }
     }

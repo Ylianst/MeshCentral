@@ -840,7 +840,13 @@ function CreateMeshCentralServer(config, args) {
 
             // Start plugin manager if configuration allows this.
             if ((obj.config) && (obj.config.settings) && (obj.config.settings.plugins != null)) {
-                obj.pluginHandler = require('./pluginHandler.js').pluginHandler(obj);
+                const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+                if (nodeVersion < 7) {
+                    console.log("WARNING: Plugin support requires Node 7 or higher.");
+                    delete obj.config.settings.plugins;
+                } else {
+                    obj.pluginHandler = require('./pluginHandler.js').pluginHandler(obj);
+                }
             }
 
             // Load the default meshcore and meshcmd
@@ -2073,6 +2079,7 @@ function mainStart() {
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
+        if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
 

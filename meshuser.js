@@ -3138,6 +3138,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'distributeCore': {
+                // This is only available when plugins are enabled since it could cause stress on the server
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
                 for (var i in command.nodes) {
                     parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
                 }
@@ -3170,7 +3172,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     })
                     .catch(function(err) {
                         if (typeof err == 'object') err = err.message;
-                        try {  ws.send(JSON.stringify({ action: 'pluginError', msg: err })); } catch (er) { }
+                        try { ws.send(JSON.stringify({ action: 'pluginError', msg: err })); } catch (er) { }
                     }); 
                     
                 } catch(e) { console.log('Cannot add plugin: ' + e); }

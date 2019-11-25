@@ -442,9 +442,9 @@ module.exports.CreateDB = function (parent, func) {
                     });
                 }
             });
-            
+
             // Setup plugin info collection
-            obj.pluginsfile = db.collection('plugins');
+            if (parent.config.settings != null) { obj.pluginsfile = db.collection('plugins'); }
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -548,7 +548,7 @@ module.exports.CreateDB = function (parent, func) {
         });
         
         // Setup plugin info collection
-        obj.pluginsfile = db.collection('plugins');
+        if (parent.config.settings != null) { obj.pluginsfile = db.collection('plugins'); }
 
         setupFunctions(func); // Completed setup of MongoJS
     } else {
@@ -611,8 +611,10 @@ module.exports.CreateDB = function (parent, func) {
         obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
 
         // Setup plugin info collection
-        obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
-        obj.pluginsfile.persistence.setAutocompactionInterval(36000);
+        if (parent.config.settings != null) {
+            obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
+            obj.pluginsfile.persistence.setAutocompactionInterval(36000);
+        }
         
         setupFunctions(func); // Completed setup of NeDB
     }
@@ -764,22 +766,16 @@ module.exports.CreateDB = function (parent, func) {
                     func(r);
                 });
             }
-            
-            // Add a plugin
-            obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insertOne(plugin, func); };
-            
-            // Get all plugins
-            obj.getPlugins = function (func) { obj.pluginsfile.find({"type": "plugin"}).project({"type": 0}).sort({ name: 1 }).toArray(func); };
-            
-            // Get plugin
-            obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); };
-            
-            // Delete plugin
-            obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.deleteOne({ _id: id }, func); };
-            
-            obj.setPluginStatus = function(id, status, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: {status: status } }, func); };
-            
-            obj.updatePlugin = function(id, args, func) { delete args._id; id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+
+            // Plugin operations
+            if (parent.config.settings.plugins != null) {
+                obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insertOne(plugin, func); }; // Add a plugin
+                obj.getPlugins = function (func) { obj.pluginsfile.find({ "type": "plugin" }).project({ "type": 0 }).sort({ name: 1 }).toArray(func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); }; // Get plugin
+                obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
+                obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+            }
             
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
@@ -911,22 +907,16 @@ module.exports.CreateDB = function (parent, func) {
                     func(r);
                 });
             }
-            
-            // Add a plugin
-            obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insert(plugin, func); };
-            
-            // Get all plugins
-            obj.getPlugins = function (func) { obj.pluginsfile.find({"type": "plugin"}, {"type": 0}).sort({ name: 1 }).exec(func); };
-            
-            // Get plugin
-            obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).exec(func); };
-            
-            // Delete plugin
-            obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); };
-            
-            obj.setPluginStatus = function(id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: {status: status } }, func); };
-            
-            obj.updatePlugin = function(id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
+
+            // Plugin operations
+            if (parent.config.settings.plugins != null) {
+                obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insert(plugin, func); }; // Add a plugin
+                obj.getPlugins = function (func) { obj.pluginsfile.find({ "type": "plugin" }, { "type": 0 }).sort({ name: 1 }).exec(func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).exec(func); }; // Get plugin
+                obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); }; // Delete plugin
+                obj.setPluginStatus = function (id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: { status: status } }, func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
+            }
 
         }
 

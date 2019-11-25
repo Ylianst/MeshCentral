@@ -1102,8 +1102,7 @@ function createMeshCore(agent) {
                         if (fs.existsSync("/usr/bin/python") && fs.existsSync("/bin/bash")) {
                             this.httprequest.process = childProcess.execFile("/usr/bin/python", [ "python", "-c", "import pty; pty.spawn([\"/bin/bash\"])" ]);
                             if (process.platform == 'linux') { this.httprequest.process.stdin.write("export TERM='xterm'\nalias ls='ls --color=auto'\nclear\n"); }
-                        }
-                        else if (fs.existsSync("/bin/bash")) {
+                        } else if (fs.existsSync("/bin/bash")) {
                             this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM });
                             if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
                         } else {
