@@ -260,11 +260,16 @@ module.exports.pluginHandler = function (parent) {
             parent.db.getPlugins(function(err, plugins) {
                 var proms = [];
                 plugins.forEach(function(curconf) {
-                    proms.push(obj.getPluginConfig(curconf.configUrl));
+                    proms.push(obj.getPluginConfig(curconf.configUrl).catch(e => { return null; } ));
                 });
                 var latestRet = [];
                 Promise.all(proms).then(function(newconfs) {
-                    newconfs.forEach(function(newconf) {
+                    var nconfs = [];
+                    // filter out config download issues
+                    newconfs.forEach(function(nc) {
+                        if (nc !== null) nconfs.push(nc);
+                    });
+                    nconfs.forEach(function(newconf) {
                         var curconf = null;
                         plugins.forEach(function(conf) {
                             if (conf.configUrl == newconf.configUrl) curconf = conf;
