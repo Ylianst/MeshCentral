@@ -233,7 +233,7 @@ body {
 }
 
 /* #UserDummyMenuSpan,  */
-#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
+#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
     color: white;
@@ -241,6 +241,10 @@ body {
 }
 
 .menu_stack #UserDummyMenu {
+    display: none;
+}
+
+.menu_stack #PluginSubMenu {
     display: none;
 }
 
@@ -1282,6 +1286,17 @@ a {
 
 .lb6 {
     background: url(../images/leftbar-64.png) -318px -2px;
+    height: 62px;
+    width: 62px;
+    cursor: pointer;
+    border: none;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+}
+
+.lb7 {
+    background: url(../images/leftbar-64.png) -382px -2px;
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -2563,4 +2578,73 @@ a {
     padding: 3px;
     border-radius: 3px;
     background-color: #DDD;
+}
+
+#p7tbl {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#p7tbl th, #p7tbl td {
+    text-align: left;
+    padding: 12px;
+}
+
+#p7tbl tr:nth-child(n+2):nth-child(odd) {
+      background-color: #cfeeff;
+}
+
+#p7tbl .chName {
+    width: 20%;
+}
+
+#p7tbl .chDescription {
+    width: 38%;
+}
+
+#p7tbl .chSite {
+    width: 7%;
+}
+
+#p7tbl .chVersion {
+    width: 5%;
+}
+
+#p7tbl .chUpgradeAvail {
+    width: 10%;
+}
+
+#p7tbl .chStatus {
+    width: 10%;
+}
+
+#p7tbl .chAction {
+    width: 10%;
+}
+
+.pActDisable, .pActDelete, .pActInstall, .pActUpgrade {
+    cursor: pointer;
+}
+
+#addPlugin {
+    background-image: url(../images/plus32.png);
+    width: 32px;
+    height: 32px;
+    float: right;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+#pluginRestartNotice {
+    width: 40em;
+    font-weight: bold;
+    border: 1px solid red;
+    text-align: center;
+    padding: 14px;
+    margin: 50px auto;
+}
+
+.pluginContent {
+    width: 100%;
+    height: 100%;
 }

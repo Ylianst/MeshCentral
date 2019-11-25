@@ -57,6 +57,9 @@
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)">Normal Connect</div>
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(2,event)">PowerShell Connect</div>
     </div>
+    <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxclose" class="cmtext" onclick="pluginTabClose(event)">Close Tab</div>
+    </div>
     <!-- main page -->
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
@@ -88,6 +91,9 @@
             <div id=LeftMenuMyServer tabindex=0 class="lbbutton" style="display:none" title="My Server" onclick=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }">
                 <div class="lb6"></div>
             </div>
+            <div id=LeftMenuMyPlugins tabindex=0 class="lbbutton" style="display:none" title="My Plugins" onclick=go(7,event) onkeypress="if (event.key=='Enter') { go(7); }">
+                <div class="lb7"></div>
+            </div>
         </div>
         <div id=topbar class=noselect>
             <div>
@@ -109,6 +115,7 @@
                             <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5,event) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
                             <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
                             <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
+                            <td tabindex=0 id=MainMenuMyPlugins class="topbar_td style3x" onclick=go(7,event) onkeypress="if (event.key == 'Enter') go(7)">My Plugins</td>
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
                     </table>
@@ -154,6 +161,11 @@
                                 <td tabindex=0 id=ServerTrace class="topbar_td style3x" onclick=go(41,event) onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
+                        </table>
+                    </div>
+                    <div id=PluginSubMenuSpan>
+                        <table id=PluginSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr><td onclick="goPlugin(-1)" onkeypress="if (event.key == 'Enter') goPlugin(-1)" class="topbar_td style3x">Home</td></tr>
                         </table>
                     </div>
                     <div id=UserDummyMenuSpan>
@@ -403,6 +415,16 @@
                         <div class="chartViewText" id="serverMemoryChartText"></div>
                     </div><br /><br />
                     <div id="serverStatsTable"></div>
+                </div>
+            </div>
+            <div id=p7 style="display:none">
+                <h1>My Plugins</h1>
+                <div id="addPlugin" title="Add New Plugin" onclick="return pluginHandler.addPluginDlg();"></div>
+                <table id="p7tbl">
+                    <tr><th class="chName">Name</th><th class="chDescription">Description</th><th class="chSite">Link</th><th class="chVersion">Version</th><th class="chUpgradeAvail">Latest Available</th><th class="chStatus">Status</th><th class="chAction">Action</th></tr>
+                </table>
+                <div id="pluginRestartNotice" style="display:none;"><div>Notice:</div> MeshCentral plugins have been altered. Agent cores require may require an update before full features are available.<br />
+                Click <a href="#" onclick="distributeCore(); return false;">here</a> to update all Mesh Agent cores.
                 </div>
             </div>
             <div id=p10 style="display:none">
@@ -1042,6 +1064,7 @@
         var pluginHandlerBuilder = {{{pluginHandler}}};
         var pluginHandler = null;
         if (pluginHandlerBuilder != null) { pluginHandler = new pluginHandlerBuilder(); }
+        var installedPluginList = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1295,6 +1318,7 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
+                if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
                 if ('{{viewmode}}' == '') { go(1); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
@@ -1337,6 +1361,8 @@
             QV('p2ServerActionsVersion', siteRights & 16);
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
+            QV('MainMenuMyPlugins', ((pluginHandler != null) && (siteRights & 0xFFFFFFFF)));
+            QV('LeftMenuMyPlugins', ((pluginHandler != null) && (siteRights & 0xFFFFFFFF)));
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
@@ -2284,6 +2310,16 @@
                             //console.log(message.msg);
                             break;
                         }
+                        case 'updatePluginList': {
+                            installedPluginList = message.event.list;
+                            updatePluginList();
+                            break;
+                        }
+                        case 'pluginStateChange': {
+                            if (pluginHandler == null) break;
+                            pluginHandler.refreshPluginHandler();
+                            break;
+                        }
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
@@ -2335,6 +2371,29 @@
                     // Disconnect
                     autoReconnect = false;
                     QH('p0span', message.msg);
+                    break;
+                }
+                case 'updatePluginList': {
+                    installedPluginList = message.list;
+                    updatePluginList();
+                    break;
+                }
+                case 'pluginVersionsAvailable': {
+                    if (pluginHandler == null) break;
+                    updatePluginList(message.list);
+                    break;
+                }
+                case 'downgradePluginVersions': {
+                    var vSelect = '<select id="lastPluginVersion">';
+                    message.info.versionList.forEach(function(v){
+                      vSelect += '<option value="' + v.zipball_url + '">' + v.name + '</option>';
+                    });
+                    vSelect += '</select>';
+                    setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Select the version to downgrade the plugin: ' + message.info.name + '<hr />' + vSelect + '<hr />Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something.<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + message.info.id + '" />'); 
+                    break;
+                }
+                case 'pluginError': {
+                    setDialogMode(2, 'Oops!', 1, null, message.msg);
                     break;
                 }
                 case 'plugin': {
@@ -3484,6 +3543,12 @@
                 contextmenudiv.style.left = event.pageX + 'px';
                 contextmenudiv.style.top = event.pageY + 'px';
                 contextmenudiv.style.display = 'block';
+            } else if (elem && elem != null && elem.classList.contains('pluginTab')) {
+                contextelement = elem;
+                var contextmenudiv = document.getElementById('pluginTabContextMenu');
+                contextmenudiv.style.left = event.pageX + 'px';
+                contextmenudiv.style.top = event.pageY + 'px';
+                contextmenudiv.style.display = 'block';
             } else {
                 while (elem && elem != null && elem.id != 'devs') { elem = elem.parentElement; }
                 if (!elem || elem == null) return true;
@@ -3555,10 +3620,21 @@
             connectTerminal(null, 1, { powershell: (action == 2) });
         }
 
+        function pluginTabClose() {
+            var pluginTab = contextelement;
+            var pname = pluginTab.getAttribute('x-data-plugin-sname');
+            var pdiv = Q('plugin-'+pname);
+            pdiv.parentNode.removeChild(pdiv);
+            pluginTab.parentNode.removeChild(pluginTab);
+            QV('p7', true);
+            goPlugin(-1);
+        }
+        
         function hideContextMenu() {
             QV('contextMenu', false);
             QV('meshContextMenu', false);
             QV('termShellContextMenu', false);
+            QV('pluginTabContextMenu', false);
             contextelement = null;
         }
 
@@ -4480,7 +4556,7 @@
                 p13clearConsoleMsg();
 
                 // Device refresh plugin handler
-                if (pluginHandler != null) { pluginHandler.onDeviceRefeshEnd(nodeid, panel, refresh, event); }
+                if (pluginHandler != null) { pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event); }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -5141,6 +5217,7 @@
                 desktop.Stop();
                 webRtcDesktopReset();
                 desktopNode = desktop = null;
+                if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
             }
         }
 
@@ -9292,6 +9369,9 @@
 
             // Remove top bar selection
             var mainBarItems = ['MainMenuMyDevices', 'MainMenuMyAccount', 'MainMenuMyEvents', 'MainMenuMyFiles', 'MainMenuMyUsers', 'MainMenuMyServer'];
+            if (pluginHandler != null) {
+                mainBarItems.push('MainMenuMyPlugins');
+            }
             for (var i in mainBarItems) {
                 QC(mainBarItems[i]).remove('fullselect');
                 QC(mainBarItems[i]).remove('semiselect');
@@ -9299,6 +9379,9 @@
 
             // Remove left bar selection
             var leftBarItems = ['LeftMenuMyDevices', 'LeftMenuMyAccount', 'LeftMenuMyEvents', 'LeftMenuMyFiles', 'LeftMenuMyUsers', 'LeftMenuMyServer'];
+            if (pluginHandler != null) {
+                leftBarItems.push('LeftMenuMyPlugins');
+            }
             for (var i in leftBarItems) {
                 QC(leftBarItems[i]).remove('lbbuttonsel');
                 QC(leftBarItems[i]).remove('lbbuttonsel2');
@@ -9331,7 +9414,11 @@
             // My Server
             if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
             if ((x == 6) || (x == 115) || (x == 40)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
-
+            
+            // My Plugins
+            if (x == 7) QC('MainMenuMyPlugins').add(mainMenuActiveClass);
+            if (x == 7) QC('LeftMenuMyPlugins').add(leftMenuActiveClass);
+            
             // column_l max-height
             if (webPageStackMenu && (x >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
 
@@ -9368,6 +9455,8 @@
             // Fetch the server timeline stats if needed
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
+            if (x == 7) { refreshPluginLatest(); QV('PluginSubMenuSpan', true); goPlugin(-1); } else { noGoPlugin(); }
+            
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
                 document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + ' - ' + meshes[currentNode.meshid].name;
@@ -9375,7 +9464,209 @@
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
         }
+        
+        function updatePluginList(versInfo) {
+            if (Array.isArray(versInfo)) {
+                versInfo.forEach(function(v) { updatePluginList(v); });
+            }
+            if (installedPluginList.length) {
+                if (versInfo != null) {
+                    if (installedPluginList['version_info'] == null) installedPluginList['version_info'] = [];
+                    installedPluginList['version_info'][versInfo.id] = versInfo;
+                }
+                var tr = Q('p7tbl').querySelectorAll(".p7tblRow");
+                if (tr.length) {
+                    for (const i in Object.values(tr)) {
+                        tr[i].parentNode.removeChild(tr[i]);
+                    }
+                }
+                var statusMap = {
+                  0: {
+                      "text": 'Disabled',
+                      "color": '858483'
+                  },
+                  1: {
+                      "text": 'Installed',
+                      "color": '00ff00'
+                  }
+                };
+                var statusAvailability = {
+                  0: {
+                      'install': 'Install',
+                      'delete': 'Delete'
+                  },
+                  1: {
+                      'disable': 'Disable',
+                      'upgrade': 'Upgrade',
+                    //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
+                  }
+                };
+                var vers_not_compat = ` [ <span onclick="return setDialogMode(2, 'Compatibility Issue', 1, null, 'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.');" title="Version incompatible, please upgrade your MeshCentral installation first" style="cursor: pointer; color:red;"> ! </span> ]`;
+                
+                var tbl = Q('p7tbl');
+                installedPluginList.forEach(function(p){
+                    var cant_action = [];
+                    if (p.hasAdminPanel == true && p.status) {
+                        p.nameHtml = `<a onclick="return goPlugin('${p.shortName}', '${p.name}');">${p.name}</a>`;
+                    } else {
+                        p.nameHtml = p.name;
+                    }
+                    p.statusText = statusMap[p.status].text;
+                    p.statusColor = statusMap[p.status].color;
 
+                    if (p.versionHistoryUrl == null) {
+                      cant_action.push('downgrade');
+                    }
+                    
+                    if (!p.status) { // It isn't technically installed, so no version number
+                        p.version = ' - ';
+                    }
+                    p.upgradeAvail = 'Checking...';
+                    if (installedPluginList['version_info'] != null && installedPluginList['version_info'][p._id] != null) {
+                        var vin = installedPluginList['version_info'][p._id];
+                        if (vin.hasUpdate) {
+                            p.upgradeAvail = '<a title="View Changelog" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                        } else {
+                            cant_action.push('upgrade');
+                            if (p.status) p.upgradeAvail = 'Up to date'; 
+                            else p.upgradeAvail = '<a title="View Changelog" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                        }
+                        if (!vin.meshCentralCompat) {
+                            p.upgradeAvail += vers_not_compat;
+                            cant_action.push('install');
+                            cant_action.push('upgrade');
+                        }
+                    }
+
+                    p.actions = '<select onchange="return pluginAction(this, \'' + p._id + '\');"><option value=""> --</option>';
+                    for (const [k, v] of Object.entries(statusAvailability[p.status])) {
+                        if (cant_action.indexOf(k) === -1) {
+                            p.actions += '<option value="' + k + '">' + v + '</option>';
+                        }
+                    }
+                    p.actions += '</select>';
+                    
+                    let tpl = `<td>${p.nameHtml}</td><td>${p.description}</td><td><a href="${p.homepage}" target="_blank">Homepage</a></td><td>${p.version}</td><td class="pluginUpgradeAvailable">${p.upgradeAvail}</td><td style="color: #${p.statusColor}">${p.statusText}</td><td class="pluginAction">${p.actions}</td>`;
+                    let tr = tbl.insertRow(-1);
+                    tr.innerHTML = tpl;
+                    tr.classList.add('p7tblRow');
+                    tr.setAttribute('data-id', p._id);
+                    tr.setAttribute('id', 'pluginRow-'+p._id);
+                });
+            } else {
+                var tr = Q('p7tbl').querySelectorAll(".p7tblRow");
+                for (const i in Object.values(tr)) {
+                    tr[i].parentNode.removeChild(tr[i]);
+                }
+            }
+            if (versInfo == null) refreshPluginLatest();
+        }
+        
+        function refreshPluginLatest() {
+            meshserver.send({ action: 'pluginLatestCheck' });
+        }
+        
+        function distributeCore() {
+            meshserver.send({ action: 'distributeCore', nodes: nodes }); // all nodes the user has access to
+            QV('pluginRestartNotice', false);
+        }
+        
+        function pluginActionEx() {
+            var act = Q('lastPluginAct').value, id = Q('lastPluginId').value, pVersUrl = Q('lastPluginVersion').value;
+            
+            switch(act) {
+                case 'upgrade':
+                case 'install': 
+                    meshserver.send({ "action": "installplugin", "id": id, "version_only": false });
+                    break;
+                case 'downgrade':
+                    Q('lastPluginVersion').querySelectorAll('option').forEach(function(opt) {
+                        if (opt.value == pVersUrl) pVers = opt.text;
+                    });
+                    meshserver.send({ "action": "installplugin", "id": id, "version_only": { "name": pVers, "url": pVersUrl }});
+                    break;
+                case 'delete':
+                    meshserver.send({ "action": "removeplugin", "id": id });
+                    break;
+                case 'disable':
+                    meshserver.send({ "action": "disableplugin", "id": id });
+                    break;
+            }
+            QS('pluginRestartNotice').display = '';
+        }
+        
+        function pluginAction(elem, id) {
+            if (elem.value == 'downgrade') {
+                meshserver.send({ "action": "getpluginversions", "id": id });
+            } else {
+                setDialogMode(2, 'Plugin Action', 3, pluginActionEx, 'Are you sure you want to ' + elem.value + ' the plugin: ' + elem.parentNode.parentNode.firstChild.innerText+'<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + elem.parentNode.parentNode.getAttribute('data-id') + '" /><input id="lastPluginVersion" type="hidden" value="" />'); 
+            }
+            elem.value = '';
+        }
+        
+        function goPlugin(pname, title) {
+            let holder = Q('PluginSubMenu').querySelectorAll('tr')[0];
+            let loadedPluginsTDs = holder.querySelectorAll('td');
+            var found = false;
+            loadedPluginsTDs.forEach((p) => {
+                p.classList.remove('style3sel');
+                p.classList.add('style3x');
+                var tname = p.getAttribute('x-data-plugin-sname');
+                if (tname != null) { Q('plugin-'+tname).style.display = 'none'; }
+                if (tname == pname) {
+                    // show existing tab / content
+                    p.classList.remove('style3x');
+                    p.classList.add('style3sel');
+                    QS('p7').display = 'none';
+                    Q('plugin-'+tname).style.display = '';
+                    found = true;
+                }
+            });
+            if (pname == -1) { // go gome
+                QV('p7', true);
+                let homeTab = loadedPluginsTDs[0];
+                homeTab.classList.add('style3sel');
+                homeTab.classList.remove('style3x');
+                found = true;
+            }
+            if (found) return;
+            
+            Q('PluginSubMenu').style.display = 'block';
+            let sif = document.createElement('td');
+            sif.setAttribute('x-data-plugin-sname', pname);
+            sif.classList.add('topbar_td');
+            sif.classList.add('style3sel');
+            sif.classList.add('pluginTab');
+            sif.setAttribute('onclick', 'goPlugin("' + pname + '", "' + title + '")');
+            sif.setAttribute('onkeypress', 'if (event.key == "Enter") goPlugin("' + pname + '", "' + title + '")');
+            sif.innerHTML = title;
+            holder.append(sif);
+            
+            let dif = document.createElement('div');
+            dif.setAttribute('id', 'plugin-'+pname);
+            dif.classList.add('pluginContent');
+            let pif = document.createElement('iframe');
+            pif.src = '/pluginadmin.ashx?pin='+pname;
+            pif.setAttribute('frameBorder', '0');
+            pif.style.width = '100%';
+            pif.style.height = '100%';
+            pif.setAttribute('frameBorder', '0');
+            dif.append(pif);
+            let x = Q('column_l_bottomgap');
+            x.parentNode.insertBefore(dif, x.previousSibling);
+            QS('p7').display = 'none';
+            
+        }
+        
+        function noGoPlugin(el) {
+            QV('PluginSubMenuSpan', false);
+            let loadedPluginsTDs =  Q('PluginSubMenu').querySelectorAll('td');
+            loadedPluginsTDs.forEach((p) => {
+                var tname = p.getAttribute('x-data-plugin-sname');
+                if (tname != null) Q('plugin-'+tname).style.display = 'none';
+            });
+        }
+        
         // Generic methods
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function putstore(name, val) {
