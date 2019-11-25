@@ -1295,17 +1295,6 @@ a {
     left: 6px;
 }
 
-.lb7 {
-    background: url(../images/leftbar-64.png) -382px -2px;
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
-}
-
 .m0 {
     background: url(../images/images16.png) -32px 0px;
     height: 16px;
@@ -1693,6 +1682,10 @@ a {
     font-size: large;
     background-color: #FFFFFF;
 }
+
+.gradTable1 { background-image: linear-gradient(to right, #fff 0%, #d3d9d6 100%); }
+.gradTable2 { background-color: #d3d9d6; }
+.gradTable3 { background-image: linear-gradient(to right, #d3d9d6 0%, #fff 100%); }
 
 .h1 {
     background-position: 0% 0%;
@@ -2580,45 +2573,47 @@ a {
     background-color: #DDD;
 }
 
-#p7tbl {
+.p42tblRow {
+    height: 36px;
+    max-height: 40px;
+}
+
+#p42tbl {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing:0 5px;
 }
 
-#p7tbl th, #p7tbl td {
+#p42tbl th, #p7tbl td {
     text-align: left;
-    padding: 12px;
+    padding: 4px;
 }
 
-#p7tbl tr:nth-child(n+2):nth-child(odd) {
-      background-color: #cfeeff;
-}
-
-#p7tbl .chName {
+#p42tbl .chName {
     width: 20%;
 }
 
-#p7tbl .chDescription {
+#p42tbl .chDescription {
     width: 38%;
 }
 
-#p7tbl .chSite {
+#p42tbl .chSite {
     width: 7%;
 }
 
-#p7tbl .chVersion {
+#p42tbl .chVersion {
     width: 5%;
 }
 
-#p7tbl .chUpgradeAvail {
+#p42tbl .chUpgradeAvail {
     width: 10%;
 }
 
-#p7tbl .chStatus {
+#p42tbl .chStatus {
     width: 10%;
 }
 
-#p7tbl .chAction {
+#p42tbl .chAction {
     width: 10%;
 }
 
@@ -2636,12 +2631,14 @@ a {
 }
 
 #pluginRestartNotice {
+    /*
     width: 40em;
     font-weight: bold;
     border: 1px solid red;
     text-align: center;
     padding: 14px;
     margin: 50px auto;
+        */
 }
 
 .pluginContent {
