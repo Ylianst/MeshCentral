@@ -1099,7 +1099,11 @@ function createMeshCore(agent) {
                         this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
                         this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
                     } else {
-                        if (fs.existsSync("/bin/bash")) {
+                        if (fs.existsSync("/usr/bin/python") && fs.existsSync("/bin/bash")) {
+                            this.httprequest.process = childProcess.execFile("/usr/bin/python", [ "python", "-c", "import pty; pty.spawn([\"/bin/bash\"])" ]);
+                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("export TERM='xterm'\nalias ls='ls --color=auto'\nclear\n"); }
+                        }
+                        else if (fs.existsSync("/bin/bash")) {
                             this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM });
                             if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
                         } else {
