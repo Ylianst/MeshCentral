@@ -57,7 +57,7 @@
     </div>
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(7,event)">User Shell</div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
     </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -9561,7 +9561,7 @@
                     p.actions = '<select onchange="return pluginAction(this,\'' + p._id + '\');"><option value=""> --</option>';
                     var entries = Object.entries(statusAvailability[p.status]);
                     for (var k in entries) {
-                        if (cant_action.indexOf(k) === -1) {
+                        if (cant_action.indexOf(entries[k][0]) === -1) {
                             p.actions += '<option value="' + entries[k][0] + '">' + entries[k][1] + '</option>';
                         }
                     }
