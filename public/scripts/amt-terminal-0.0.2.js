@@ -408,14 +408,14 @@ var CreateAmtRemoteTerminal = function (divid, options) {
                         for (var z = 0; z < obj.width; z++) { _tscreen[y][z] = ' '; _scratt[y][z] = (7 << 6); }
                     }
                     break;
-                case 'X': // Erase X characters, default 1 (untested)
-                    var x = 1;
+                case 'X': // Erase X characters, default 1
+                    var x = 1, xx = _termx, yy = _termy;
                     if (argslen == 1) { x = args[0] }
-                    while ((x > 0) && (_termx > 0)) { _tscreen[_termy][_termx] = ' '; _termx--; x--; }
+                    while ((x > 0) && (yy < obj.height)) { _tscreen[yy][xx] = ' '; xx++; x--; if (xx >= obj.width) { xx = 0; yy++; } }
                     break;
                 default:
                     //if (code != '@') alert(code);
-                    console.log('unknown terminal code', code, args, mode);
+                    console.log('Unknown terminal code', code, args, mode);
                     break;
             }
         }
