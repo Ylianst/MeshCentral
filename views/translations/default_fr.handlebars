@@ -879,6 +879,11 @@
                 </tbody></table>
                 <div id="pluginNoneNotice" style="width:100%;text-align:center;padding-top:10px;display:none"><i>No plugins on server.</i></div>
             </div>
+            <div id="p43" style="display:none">
+                <div id="p43BackButton"><div class="backButton" tabindex="0" onclick="go(42)" title="Retour" onkeypress="if (event.key == 'Enter') go(42)"><div class="backButtonEx"></div></div></div>
+                <h1>My Server Plugins - <span id="p43title"></span></h1>
+                <iframe id="p43iframe" frameborder="0" style="width:100%;height:calc(100vh - 245px);max-height:calc(100vh - 245px)"></iframe>
+            </div>
             <div id="p19" style="display:none">
                 <h1>Plugins - <span id="p19deviceName"></span></h1>
                 <style>
@@ -1138,6 +1143,8 @@
                 QS('p15agentConsole')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
                 QS('p15agentConsoleText')['height'] = 'calc(100vh - ' + (81 + xh) + 'px)';
                 QS('p15agentConsoleText')['max-height'] = 'calc(100vh - ' + (81 + xh) + 'px)';
+                QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+                QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             }
 
             // We are looking at a single device, remove all the back buttons
@@ -9386,7 +9393,7 @@
             if (xxcurrentView == x) return;
 
             // Edit this line when adding a new screen
-            for (var i = 0; i < 43; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 44; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Remove top bar selection
@@ -9429,7 +9436,7 @@
 
             // My Server
             if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
-            if ((x == 6) || (x == 115) || (x == 40) || (x == 41) || (x == 42)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            if ((x == 6) || (x == 115) || (x == 40) || (x == 41) || (x == 42) || (x == 43)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
             QV('ServerPlugins', pluginHandler != null);
 
             // column_l max-height
@@ -9443,7 +9450,7 @@
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
             QV('MeshSubMenuSpan', x >= 20 && x < 30);
             QV('UserSubMenuSpan', x >= 30 && x < 40);
-            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42);
+            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
             var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
@@ -9469,7 +9476,7 @@
             if ((x == 40) && (serverTimelineStats == null)) { refreshServerTimelineStats(); }
 
             // MyServer Plugins
-            if (x == 42) { refreshPluginLatest(); } // goPlugin(-1); QV('PluginSubMenuSpan', true); goPlugin(-1); } //else { noGoPlugin(); }
+            if (x == 42) { refreshPluginLatest(); }
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
@@ -9624,70 +9631,7 @@
 
         function goPlugin(pname, title) {
             if (pluginHandler == null) return;
-            /*
-            let holder = Q('PluginSubMenu').querySelectorAll('tr')[0];
-            let loadedPluginsTDs = holder.querySelectorAll('td');
-            var found = false;
-            loadedPluginsTDs.forEach((p) => {
-                p.classList.remove('style3sel');
-                p.classList.add('style3x');
-                var tname = p.getAttribute('x-data-plugin-sname');
-                if (tname != null) { Q('plugin-' + tname).style.display = 'none'; }
-                if (tname == pname) {
-                    // show existing tab / content
-                    p.classList.remove('style3x');
-                    p.classList.add('style3sel');
-                    QS('p42').display = 'none';
-                    Q('plugin-'+tname).style.display = '';
-                    found = true;
-                }
-            });
-            if (pname == -1) { // Go home
-                QV('p42', true);
-                let homeTab = loadedPluginsTDs[0];
-                homeTab.classList.add('style3sel');
-                homeTab.classList.remove('style3x');
-                found = true;
-            }
-            if (found) return;
-
-            Q('PluginSubMenu').style.display = 'block';
-            let sif = document.createElement('td');
-            sif.setAttribute('x-data-plugin-sname', pname);
-            sif.classList.add('topbar_td');
-            sif.classList.add('style3sel');
-            sif.classList.add('pluginTab');
-            sif.setAttribute('onclick', 'goPlugin("' + pname + '", "' + title + '")');
-            sif.setAttribute('onkeypress', 'if (event.key == "Enter") goPlugin("' + pname + '", "' + title + '")');
-            sif.innerHTML = title;
-            holder.append(sif);
-
-            let dif = document.createElement('div');
-            dif.setAttribute('id', 'plugin-'+pname);
-            dif.classList.add('pluginContent');
-            let pif = document.createElement('iframe');
-            pif.src = '/pluginadmin.ashx?pin='+pname;
-            pif.setAttribute('frameBorder', '0');
-            pif.style.width = '100%';
-            pif.style.height = '100%';
-            pif.setAttribute('frameBorder', '0');
-            dif.append(pif);
-            let x = Q('column_l_bottomgap');
-            x.parentNode.insertBefore(dif, x.previousSibling);
-            QS('p42').display = 'none';
-            */
-        }
-
-        function noGoPlugin(el) {
-            if (pluginHandler == null) return;
-            /*
-            QV('PluginSubMenuSpan', false);
-            let loadedPluginsTDs =  Q('PluginSubMenu').querySelectorAll('td');
-            loadedPluginsTDs.forEach((p) => {
-                var tname = p.getAttribute('x-data-plugin-sname');
-                if (tname != null) Q('plugin-'+tname).style.display = 'none';
-            });
-            */
+            if (pname == null) { Q('p43iframe').src = ''; } else { QH('p43title', title); Q('p43iframe').src = '/pluginadmin.ashx?pin=' + pname; go(43); }
         }
 
         // Generic methods

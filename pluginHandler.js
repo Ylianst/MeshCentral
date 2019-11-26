@@ -15,6 +15,13 @@
 "use strict";
 require('promise');
 
+/*
+Existing plugins:
+https://raw.githubusercontent.com/ryanblenis/MeshCentral-Sample/master/config.json
+https://raw.githubusercontent.com/ryanblenis/MeshCentral-DevTools/master/config.json
+*/
+
+
 module.exports.pluginHandler = function (parent) {
     var obj = {};
 
