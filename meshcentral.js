@@ -68,6 +68,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverStatsCounter = Math.floor(Math.random() * 1000);
     obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
     obj.agentUpdateBlockSize = 65531; // MeshAgent update block size
+    obj.serverWarnings = []; // List of warnings that should be shown to administrators
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -391,7 +392,7 @@ function CreateMeshCentralServer(config, args) {
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers'].indexOf(i) == -1)) { console.log('WARNING: unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers'].indexOf(i) == -1)) { addServerWarning('WARNING: unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { obj.args.userallowedip = null; } else { obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { obj.args.userblockedip = null; } else { obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -759,9 +760,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Look at passed in arguments
         if ((obj.args.user != null) && (typeof obj.args.user != 'string')) { delete obj.args.user; }
-        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { console.log("WARNING: CIRA local FQDN's ignored when server in LAN-only or WAN-only mode."); }
-        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { console.log("WARNING: Can't have more than 4 CIRA local FQDN's. Ignoring value."); obj.args.ciralocalfqdn = null; }
-        if (obj.args.ignoreagenthashcheck === true) { console.log("WARNING: Agent hash checking is being skipped, this is unsafe."); }
+        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { addServerWarning("CIRA local FQDN's ignored when server in LAN-only or WAN-only mode."); }
+        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { addServerWarning("Can't have more than 4 CIRA local FQDN's. Ignoring value."); obj.args.ciralocalfqdn = null; }
+        if (obj.args.ignoreagenthashcheck === true) { addServerWarning("Agent hash checking is being skipped, this is unsafe."); }
         if (obj.args.port == null || typeof obj.args.port != 'number') { if (obj.args.notls == null) { obj.args.port = 443; } else { obj.args.port = 80; } }
         if (obj.args.aliasport != null && (typeof obj.args.aliasport != 'number')) obj.args.aliasport = null;
         if (obj.args.mpsport == null || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
@@ -843,7 +844,7 @@ function CreateMeshCentralServer(config, args) {
             if ((obj.config) && (obj.config.settings) && (obj.config.settings.plugins != null)) {
                 const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
                 if (nodeVersion < 7) {
-                    console.log("WARNING: Plugin support requires Node 7 or higher.");
+                    addServerWarning("Plugin support requires Node v7.0 or higher.");
                     delete obj.config.settings.plugins;
                 } else {
                     obj.pluginHandler = require('./pluginHandler.js').pluginHandler(obj);
@@ -981,7 +982,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
-                    if (obj.args.lanonly == true) { console.log("WARNING: SMTP server has limited use in LAN mode."); }
+                    if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
                 }
 
                 // Start periodic maintenance
@@ -1931,6 +1932,7 @@ function CreateMeshCentralServer(config, args) {
     function logInfoEvent(msg) { if (obj.servicelog != null) { obj.servicelog.info(msg); } console.log(msg); }
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
+    obj.getServerWarnings = function() { return serverWarnings; }
 
     // Return the path of a file into the meshcentral-data path
     obj.getConfigFilePath = function (filename) {
@@ -2036,10 +2038,14 @@ function InstallModule(modulename, func, tag1, tag2) {
 // Detect CTRL-C on Linux and stop nicely
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
+// Add a server warning, warnings will be shown to the administrator on the web application
+var serverWarnings = [];
+function addServerWarning(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
+
 // Load the really basic modules
 var meshserver = null;
 var childProcess = null;
-var previouslyInstalledModules = { };
+var previouslyInstalledModules = {};
 function mainStart() {
     // Check the NodeJS is version 6 or better.
     if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6.x or above, current version is " + process.version + "."); return; }
@@ -2076,7 +2082,7 @@ function mainStart() {
         var modules = ['ws', 'cbor', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
-        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { if (!args.launch) { console.log("WARNING: Let's Encrypt support requires Node v10.12.0 or higher."); } } else { modules.push('greenlock'); } } // Add Greenlock Module
+        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
