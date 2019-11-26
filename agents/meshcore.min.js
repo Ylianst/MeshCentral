@@ -1046,11 +1046,11 @@ function createMeshCore(agent) {
             if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
         } else {
             // Handle tunnel data
-            if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Terminal (user), 8 = PowerShell (user)
+            if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user)
                 // Take a look at the protocol
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 7) || (this.httprequest.protocol == 8)) {
+                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9)) {
                     // Check user access rights for terminal
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOTERMINAL) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -1083,10 +1083,10 @@ function createMeshCore(agent) {
                     // Remote terminal using native pipes
                     if (process.platform == "win32") {
                         try {
-                            if (((this.httprequest.protocol == 6) || (this.httprequest.protocol == 8)) && (require('win-terminal').PowerShellCapable() == true)) {
-                                this.httprequest._term = require('win-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
+                            if (((this.httprequest.protocol == 6) || (this.httprequest.protocol == 9)) && (require('win-terminal').PowerShellCapable() == true)) {
+                                this.httprequest._term = require('win-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 9
                             } else {
-                                this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 7
+                                this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 8
                             }
                         } catch (e) {
                             MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
@@ -1100,13 +1100,13 @@ function createMeshCore(agent) {
                     } else {
                         try {
                             if (fs.existsSync('/usr/bin/python') && fs.existsSync('/bin/bash')) {
-                                this.httprequest.process = childProcess.execFile('/usr/bin/python', ['python', '-c', "import pty; pty.spawn([\"/bin/bash\"])"], { uid: (this.httprequest.protocol == 7) ? require('user-sessions').consoleUid() : null }); // Start as active user
+                                this.httprequest.process = childProcess.execFile('/usr/bin/python', ['python', '-c', "import pty; pty.spawn([\"/bin/bash\"])"], { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null }); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write("export TERM='xterm'\nalias ls='ls --color=auto'\nclear\n"); }
                             } else if (fs.existsSync('/bin/bash')) {
-                                this.httprequest.process = childProcess.execFile('/bin/bash', ['bash', '-i'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 7) ? require('user-sessions').consoleUid() : null }); // Start as active user
+                                this.httprequest.process = childProcess.execFile('/bin/bash', ['bash', '-i'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null }); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
                             } else {
-                                this.httprequest.process = childProcess.execFile('/bin/sh', ['sh'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 7)?require('user-sessions').consoleUid():null }); // Start as active user
+                                this.httprequest.process = childProcess.execFile('/bin/sh', ['sh'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8)?require('user-sessions').consoleUid():null }); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
                             }
                         } catch (e) {
@@ -1571,7 +1571,7 @@ function createMeshCore(agent) {
                         // Unknown action, ignore it.
                         break;
                 }
-            } else if (this.httprequest.protocol == 7) { // plugin data exchange
+            } else if (this.httprequest.protocol == 7) { // Plugin data exchange
                 var cmd = null;
                 try { cmd = JSON.parse(data); } catch (e) { };
                 if (cmd == null) { return; }
