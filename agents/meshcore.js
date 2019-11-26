@@ -1088,8 +1088,7 @@ function createMeshCore(agent) {
                             } else {
                                 this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 7
                             }
-                        }
-                        catch (e) {
+                        } catch (e) {
                             MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             this.end();
@@ -1097,17 +1096,24 @@ function createMeshCore(agent) {
                         }
                         this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
                         this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
-                        this.prependListener('end', function () { this.httprequest._term.end(function () { console.log('Terminal was closed'); }); });
+                        this.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
                     } else {
-                        if (fs.existsSync("/usr/bin/python") && fs.existsSync("/bin/bash")) {
-                            this.httprequest.process = childProcess.execFile("/usr/bin/python", ["python", "-c", "import pty; pty.spawn([\"/bin/bash\"])"], { uid: (this.httprequest.protocol == 7) ? require('user-sessions').consoleUid() : null }); // Start as active user
-                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("export TERM='xterm'\nalias ls='ls --color=auto'\nclear\n"); }
-                        } else if (fs.existsSync("/bin/bash")) {
-                            this.httprequest.process = childProcess.execFile("/bin/bash", ["bash", "-i"], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 7) ? require('user-sessions').consoleUid() : null }); // Start as active user
-                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
-                        } else {
-                            this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 7)?require('user-sessions').consoleUid():null }); // Start as active user
-                            if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
+                        try {
+                            if (fs.existsSync('/usr/bin/python') && fs.existsSync('/bin/bash')) {
+                                this.httprequest.process = childProcess.execFile('/usr/bin/python', ['python', '-c', "import pty; pty.spawn([\"/bin/bash\"])"], { uid: (this.httprequest.protocol == 7) ? require('user-sessions').consoleUid() : null }); // Start as active user
+                                if (process.platform == 'linux') { this.httprequest.process.stdin.write("export TERM='xterm'\nalias ls='ls --color=auto'\nclear\n"); }
+                            } else if (fs.existsSync('/bin/bash')) {
+                                this.httprequest.process = childProcess.execFile('/bin/bash', ['bash', '-i'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 7) ? require('user-sessions').consoleUid() : null }); // Start as active user
+                                if (process.platform == 'linux') { this.httprequest.process.stdin.write("alias ls='ls --color=auto'\nclear\n"); }
+                            } else {
+                                this.httprequest.process = childProcess.execFile('/bin/sh', ['sh'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 7)?require('user-sessions').consoleUid():null }); // Start as active user
+                                if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
+                            }
+                        } catch (e) {
+                            MeshServerLog("Failed to start remote terminal session, " + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                            this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
+                            this.end();
+                            return;
                         }
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
