@@ -355,9 +355,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Send user information to web socket, this is the first thing we send
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
 
-            // Send server tracing information
             if (user.siteadmin == 0xFFFFFFFF) {
+                // Send server tracing information
                 try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
+
+                // Send any server warnings if any
+                var serverWarnings = parent.parent.getServerWarnings();
+                if (serverWarnings.length > 0) { try { ws.send(JSON.stringify({ action: 'serverwarnings', warnings: serverWarnings })); } catch (ex) { } }
             }
 
             // See how many times bad login attempts where made since the last login
