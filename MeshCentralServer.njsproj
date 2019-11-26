@@ -71,6 +71,7 @@
     <Compile Include="agents\modules_meshcore\win-console.js" />
     <Compile Include="agents\modules_meshcore\win-info.js" />
     <Compile Include="agents\modules_meshcore\win-terminal.js" />
+    <Compile Include="agents\modules_meshcore\win-virtual-terminal.js" />
     <Compile Include="agents\modules_meshcore_min\amt-lme.min.js" />
     <Compile Include="agents\modules_meshcore_min\amt-mei.min.js" />
     <Compile Include="agents\modules_meshcore_min\amt-scanner.min.js" />

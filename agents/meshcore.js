@@ -1085,24 +1085,16 @@ function createMeshCore(agent) {
                     {
                         try
                         {
-                            if (((this.httprequest.protocol == 6) || (this.httprequest.protocol == 8)) && (require('win-terminal').PowerShellCapable() == true))
-                            {
-                                //if (require('win-virtual-terminal').supported)
-                                //{
-                                //    this.httprequest._term = require('win-virtual-terminal').StartPowerShell(80, 25);
-                                //}
-                                //else
-                                //{
+                            if (((this.httprequest.protocol == 6) || (this.httprequest.protocol == 8)) && (require('win-terminal').PowerShellCapable() == true)) {
+                                //if (require('win-virtual-terminal').supported) {
+                                    //this.httprequest._term = require('win-virtual-terminal').StartPowerShell(80, 25);
+                                //} else {
                                     this.httprequest._term = require('win-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
                                 //}
-                            } else
-                            {
-                                //if (require('win-virtual-terminal').supported)
-                                //{
-                                //    this.httprequest._term = require('win-virtual-terminal').Start(80, 25);
-                                //}
-                                //else
-                                //{
+                            } else {
+                                //if (require('win-virtual-terminal').supported) {
+                                    //this.httprequest._term = require('win-virtual-terminal').Start(80, 25);
+                                //} else {
                                     this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 7
                                 //}
                             }
