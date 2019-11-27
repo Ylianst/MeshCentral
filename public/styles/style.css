@@ -233,7 +233,7 @@ body {
 }
 
 /* #UserDummyMenuSpan,  */
-#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu {
+#MainSubMenuSpan, #MeshSubMenuSpan, #UserSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
     color: white;
@@ -241,6 +241,10 @@ body {
 }
 
 .menu_stack #UserDummyMenu {
+    display: none;
+}
+
+.menu_stack #PluginSubMenu {
     display: none;
 }
 
@@ -806,7 +810,7 @@ NoMeshesPanel img {
     padding-left: 15px;
 }
 
-#p2noMeshFound, #serverStats {
+#p2noMeshFound, #serverStats, #serverWarnings {
     margin-left: 40px;
 }
 
@@ -1678,6 +1682,10 @@ a {
     font-size: large;
     background-color: #FFFFFF;
 }
+
+.gradTable1 { background-image: linear-gradient(to right, #fff 0%, #d3d9d6 100%); }
+.gradTable2 { background-color: #d3d9d6; }
+.gradTable3 { background-image: linear-gradient(to right, #d3d9d6 0%, #fff 100%); }
 
 .h1 {
     background-position: 0% 0%;
@@ -2563,4 +2571,77 @@ a {
     padding: 3px;
     border-radius: 3px;
     background-color: #DDD;
+}
+
+.p42tblRow {
+    height: 36px;
+    max-height: 40px;
+}
+
+#p42tbl {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing:0 5px;
+}
+
+#p42tbl th, #p7tbl td {
+    text-align: left;
+    padding: 4px;
+}
+
+#p42tbl .chName {
+    width: 20%;
+}
+
+#p42tbl .chDescription {
+    width: 38%;
+}
+
+#p42tbl .chSite {
+    width: 7%;
+}
+
+#p42tbl .chVersion {
+    width: 5%;
+}
+
+#p42tbl .chUpgradeAvail {
+    width: 10%;
+}
+
+#p42tbl .chStatus {
+    width: 10%;
+}
+
+#p42tbl .chAction {
+    width: 10%;
+}
+
+.pActDisable, .pActDelete, .pActInstall, .pActUpgrade {
+    cursor: pointer;
+}
+
+#addPlugin {
+    background-image: url(../images/plus32.png);
+    width: 32px;
+    height: 32px;
+    float: right;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+#pluginRestartNotice {
+    /*
+    width: 40em;
+    font-weight: bold;
+    border: 1px solid red;
+    text-align: center;
+    padding: 14px;
+    margin: 50px auto;
+        */
+}
+
+.pluginContent {
+    width: 100%;
+    height: 100%;
 }

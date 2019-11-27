@@ -355,9 +355,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Send user information to web socket, this is the first thing we send
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
 
-            // Send server tracing information
             if (user.siteadmin == 0xFFFFFFFF) {
+                // Send server tracing information
                 try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
+
+                // Send any server warnings if any
+                var serverWarnings = parent.parent.getServerWarnings();
+                if (serverWarnings.length > 0) { try { ws.send(JSON.stringify({ action: 'serverwarnings', warnings: serverWarnings })); } catch (ex) { } }
             }
 
             // See how many times bad login attempts where made since the last login
@@ -3137,6 +3141,90 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'distributeCore': {
+                // This is only available when plugins are enabled since it could cause stress on the server
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                for (var i in command.nodes) {
+                    parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
+                }
+                break;
+            }
+            case 'plugins': {
+                // Since plugin actions generally require a server restart, use the Full admin permission
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                parent.db.getPlugins(function(err, docs) {
+                    try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                });
+                break;
+            }
+            case 'pluginLatestCheck': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                parent.parent.pluginHandler.getPluginLatest()
+                .then(function(latest) {
+                    try { ws.send(JSON.stringify({ action: 'pluginVersionsAvailable', list: latest })); } catch (ex) { } 
+                });
+                break;
+            }
+            case 'addplugin': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                try {
+                    parent.parent.pluginHandler.getPluginConfig(command.url)
+                    .then(parent.parent.pluginHandler.addPlugin)
+                    .then(function(docs){
+                        var targets = ['*', 'server-users'];
+                        parent.parent.DispatchEvent(targets, obj, { action: 'updatePluginList', list: docs });
+                    })
+                    .catch(function(err) {
+                        if (typeof err == 'object') err = err.message;
+                        try { ws.send(JSON.stringify({ action: 'pluginError', msg: err })); } catch (er) { }
+                    }); 
+                    
+                } catch(e) { console.log('Cannot add plugin: ' + e); }
+                break;
+            }
+            case 'installplugin': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.installPlugin(command.id, command.version_only, null, function(){
+                    parent.db.getPlugins(function(err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                    });
+                    var targets = ['*', 'server-users'];
+                    parent.parent.DispatchEvent(targets, obj, { action: 'pluginStateChange' });
+                });
+                break;
+            }
+            case 'disableplugin': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.disablePlugin(command.id, function(){
+                    parent.db.getPlugins(function(err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                        var targets = ['*', 'server-users'];
+                        parent.parent.DispatchEvent(targets, obj, { action: 'pluginStateChange' });
+                    });
+                });
+                break;
+            }
+            case 'removeplugin': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.removePlugin(command.id, function(){
+                    parent.db.getPlugins(function(err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
+                    });
+                });
+                break;
+            }
+            case 'getpluginversions': {
+                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                parent.parent.pluginHandler.getPluginVersions(command.id)
+                .then(function (versionInfo) {
+                    try { ws.send(JSON.stringify({ action: 'downgradePluginVersions', info: versionInfo, error: null })); } catch (ex) { } 
+                })
+                .catch(function (e) {
+                  try { ws.send(JSON.stringify({ action: 'pluginError', msg: e })); } catch (ex) { } 
+                });
+                
+                break;
+            }
             case 'plugin': {
                 if (parent.parent.pluginHandler == null) break; // If the plugin's are not supported, reject this command.
                 command.userid = user._id;
@@ -3144,8 +3232,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     routeCommandToNode(command);
                 } else {
                     try {
-                        var pluginHandler = require('./pluginHandler.js').pluginHandler(parent.parent);
-                        pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
+                        parent.parent.pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
                     } catch (e) { console.log('Error loading plugin handler (' + e + ')'); }
                 }
                 break;
