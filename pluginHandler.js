@@ -285,8 +285,8 @@ module.exports.pluginHandler = function (parent) {
                             var s = require('semver');
                             // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
                             // Convert the letter to ASCII for a "true" version number comparison
-                            var mcCurVer = parent.currentVer.replace(/-(.)$/, (m, p1) => { return p1.charCodeAt(0); });
-                            var piCompatVer = newconf.meshCentralCompat.replace(/-(.)\b/g, (m, p1) => { return p1.charCodeAt(0); });
+                            var mcCurVer = parent.currentVer.replace(/-(.)$/, (m, p1) => { return ("000" + p1.charCodeAt(0)).substr(-3,3); });
+                            var piCompatVer = newconf.meshCentralCompat.replace(/-(.)\b/g, (m, p1) => { return ("000" + p1.charCodeAt(0)).substr(-3,3); });
                             latestRet.push({
                                 'id': curconf._id,
                                 'installedVersion': curconf.version,
