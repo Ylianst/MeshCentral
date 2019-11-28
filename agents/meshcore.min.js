@@ -366,7 +366,7 @@ function createMeshCore(agent) {
                     // If SMBios tables say that Intel AMT is present, try to connect MEI
                     if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
                         var amtmodule = require('amt-manage');
-                        amt = new amtmodule(mesh, db, true);
+                        amt = new amtmodule(mesh, db, false);
                         amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } }
                         if (amtPolicy != null) { amt.setPolicy(amtPolicy); }
                         amt.start();
@@ -1110,17 +1110,17 @@ function createMeshCore(agent) {
                         try
                         {
                             if (((this.httprequest.protocol == 6) || (this.httprequest.protocol == 8)) && (require('win-terminal').PowerShellCapable() == true)) {
-                                //if (require('win-virtual-terminal').supported) {
-                                    //this.httprequest._term = require('win-virtual-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
-                                //} else {
+                                if (require('win-virtual-terminal').supported) {
+                                    this.httprequest._term = require('win-virtual-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
+                                } else {
                                     this.httprequest._term = require('win-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
-                                //}
+                                }
                             } else {
-                                //if (require('win-virtual-terminal').supported) {
-                                    //this.httprequest._term = require('win-virtual-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 8
-                                //} else {
+                                if (require('win-virtual-terminal').supported) {
+                                    this.httprequest._term = require('win-virtual-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 8
+                                } else {
                                     this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 8
-                                //}
+                                }
                             }
                         } catch (e) {
                             MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
