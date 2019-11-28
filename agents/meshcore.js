@@ -361,9 +361,9 @@ function createMeshCore(agent) {
                 if (data != null) {
                     SMBiosTablesRaw = data;
                     SMBiosTables = require('smbios').parse(data)
-                    if (mesh.isControlChannelConnected) { mesh.SendCommand({ "action": "smbios", "value": SMBiosTablesRaw }); }
+                    if (mesh.isControlChannelConnected) { mesh.SendCommand({ 'action': 'smbios', 'value': SMBiosTablesRaw }); }
 
-                    // If SMBios tables say that AMT is present, try to connect MEI
+                    // If SMBios tables say that Intel AMT is present, try to connect MEI
                     if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
                         var amtmodule = require('amt-manage');
                         amt = new amtmodule(mesh, db, true);
@@ -693,6 +693,30 @@ function createMeshCore(agent) {
                             try {
                                 var service = require('service-manager').manager.getService(data.serviceName);
                                 if (service != null) { service.restart(); }
+                            } catch (e) { }
+                            break;
+                        }
+                        case 'deskBackground': {
+                            // Toggle desktop background
+                            try {
+                                if (process.platform == 'win32') {
+                                    var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : 0;
+                                    var child = require('child_process').execFile(process.execPath, [process.execPath.split('\\').pop(), '-b64exec', 'dmFyIFNQSV9HRVRERVNLV0FMTFBBUEVSID0gMHgwMDczOwp2YXIgU1BJX1NFVERFU0tXQUxMUEFQRVIgPSAweDAwMTQ7CnZhciBHTSA9IHJlcXVpcmUoJ19HZW5lcmljTWFyc2hhbCcpOwp2YXIgdXNlcjMyID0gR00uQ3JlYXRlTmF0aXZlUHJveHkoJ3VzZXIzMi5kbGwnKTsKdXNlcjMyLkNyZWF0ZU1ldGhvZCgnU3lzdGVtUGFyYW1ldGVyc0luZm9BJyk7CgppZiAocHJvY2Vzcy5hcmd2Lmxlbmd0aCA9PSAzKQp7CiAgICB2YXIgdiA9IEdNLkNyZWF0ZVZhcmlhYmxlKDEwMjQpOwogICAgdXNlcjMyLlN5c3RlbVBhcmFtZXRlcnNJbmZvQShTUElfR0VUREVTS1dBTExQQVBFUiwgdi5fc2l6ZSwgdiwgMCk7CiAgICBjb25zb2xlLmxvZyh2LlN0cmluZyk7CiAgICBwcm9jZXNzLmV4aXQoKTsKfQplbHNlCnsKICAgIHZhciBuYiA9IEdNLkNyZWF0ZVZhcmlhYmxlKHByb2Nlc3MuYXJndlszXSk7CiAgICB1c2VyMzIuU3lzdGVtUGFyYW1ldGVyc0luZm9BKFNQSV9TRVRERVNLV0FMTFBBUEVSLCBuYi5fc2l6ZSwgbmIsIDApOwogICAgcHJvY2Vzcy5leGl0KCk7Cn0='], { type: id });
+                                    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                                    child.stderr.on('data', function () { });
+                                    child.waitExit();
+                                    var current = child.stdout.str.trim();
+                                    if (current != '') { require('MeshAgent')._wallpaper = current; }
+                                    child = require('child_process').execFile(process.execPath, [process.execPath.split('\\').pop(), '-b64exec', 'dmFyIFNQSV9HRVRERVNLV0FMTFBBUEVSID0gMHgwMDczOwp2YXIgU1BJX1NFVERFU0tXQUxMUEFQRVIgPSAweDAwMTQ7CnZhciBHTSA9IHJlcXVpcmUoJ19HZW5lcmljTWFyc2hhbCcpOwp2YXIgdXNlcjMyID0gR00uQ3JlYXRlTmF0aXZlUHJveHkoJ3VzZXIzMi5kbGwnKTsKdXNlcjMyLkNyZWF0ZU1ldGhvZCgnU3lzdGVtUGFyYW1ldGVyc0luZm9BJyk7CgppZiAocHJvY2Vzcy5hcmd2Lmxlbmd0aCA9PSAzKQp7CiAgICB2YXIgdiA9IEdNLkNyZWF0ZVZhcmlhYmxlKDEwMjQpOwogICAgdXNlcjMyLlN5c3RlbVBhcmFtZXRlcnNJbmZvQShTUElfR0VUREVTS1dBTExQQVBFUiwgdi5fc2l6ZSwgdiwgMCk7CiAgICBjb25zb2xlLmxvZyh2LlN0cmluZyk7CiAgICBwcm9jZXNzLmV4aXQoKTsKfQplbHNlCnsKICAgIHZhciBuYiA9IEdNLkNyZWF0ZVZhcmlhYmxlKHByb2Nlc3MuYXJndlszXSk7CiAgICB1c2VyMzIuU3lzdGVtUGFyYW1ldGVyc0luZm9BKFNQSV9TRVRERVNLV0FMTFBBUEVSLCBuYi5fc2l6ZSwgbmIsIDApOwogICAgcHJvY2Vzcy5leGl0KCk7Cn0=', current != '' ? '""' : require('MeshAgent')._wallpaper], { type: id });
+                                    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                                    child.stderr.on('data', function () { });
+                                    child.waitExit();
+                                } else {
+                                    var id = require('user-sessions').consoleUid();
+                                    var current = require('linux-gnome-helpers').getDesktopWallpaper(id);
+                                    if (current != '/dev/null') { require('MeshAgent')._wallpaper = current; }
+                                    require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
+                                }
                             } catch (e) { }
                             break;
                         }
@@ -1087,19 +1111,18 @@ function createMeshCore(agent) {
                         {
                             if (((this.httprequest.protocol == 6) || (this.httprequest.protocol == 8)) && (require('win-terminal').PowerShellCapable() == true)) {
                                 //if (require('win-virtual-terminal').supported) {
-                                    //this.httprequest._term = require('win-virtual-terminal').StartPowerShell(80, 25);
+                                    //this.httprequest._term = require('win-virtual-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
                                 //} else {
                                     this.httprequest._term = require('win-terminal').StartPowerShell(80, 25); // TODO: Start as logged in used when protocol is 8
                                 //}
                             } else {
                                 //if (require('win-virtual-terminal').supported) {
-                                    //this.httprequest._term = require('win-virtual-terminal').Start(80, 25);
+                                    //this.httprequest._term = require('win-virtual-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 8
                                 //} else {
-                                    this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 7
+                                    this.httprequest._term = require('win-terminal').Start(80, 25); // TODO: Start as logged in used when protocol is 8
                                 //}
                             }
-                        } catch (e)
-                        {
+                        } catch (e) {
                             MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             this.end();
@@ -1123,8 +1146,7 @@ function createMeshCore(agent) {
                                 this.httprequest.process = childProcess.execFile('/bin/sh', ['sh'], { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8)?require('user-sessions').consoleUid():null }); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write("stty erase ^H\nalias ls='ls --color=auto'\nPS1='\\u@\\h:\\w\\$ '\nclear\n"); }
                             }
-                        } catch (e)
-                        {
+                        } catch (e) {
                             MeshServerLog("Failed to start remote terminal session, " + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             this.end();
@@ -1802,7 +1824,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt';
+                    var fin = '', f = '', availcommands = 'help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,safemode,wallpaper';
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
                         if (f.length > 100) { fin += (f + ',\r\n'); f = ''; }
@@ -1840,18 +1862,14 @@ function createMeshCore(agent) {
                                         child.stderr.on('data', function () { });
                                         child.waitExit();
                                         var current = child.stdout.str.trim();
-                                        if (args['_'][0].toUpperCase() == 'GET')
-                                        {
+                                        if (args['_'][0].toUpperCase() == 'GET') {
                                             response = current;
                                             break;
                                         }
-                                        if (current != '')
-                                        {
+                                        if (current != '') {
                                             require('MeshAgent')._wallpaper = current;
                                             response = 'Wallpaper cleared';
-                                        }
-                                        else
-                                        {
+                                        } else {
                                             response = 'Wallpaper restored';
                                         }
                                         child = require('child_process').execFile(process.execPath, [process.execPath.split('\\').pop(), '-b64exec', 'dmFyIFNQSV9HRVRERVNLV0FMTFBBUEVSID0gMHgwMDczOwp2YXIgU1BJX1NFVERFU0tXQUxMUEFQRVIgPSAweDAwMTQ7CnZhciBHTSA9IHJlcXVpcmUoJ19HZW5lcmljTWFyc2hhbCcpOwp2YXIgdXNlcjMyID0gR00uQ3JlYXRlTmF0aXZlUHJveHkoJ3VzZXIzMi5kbGwnKTsKdXNlcjMyLkNyZWF0ZU1ldGhvZCgnU3lzdGVtUGFyYW1ldGVyc0luZm9BJyk7CgppZiAocHJvY2Vzcy5hcmd2Lmxlbmd0aCA9PSAzKQp7CiAgICB2YXIgdiA9IEdNLkNyZWF0ZVZhcmlhYmxlKDEwMjQpOwogICAgdXNlcjMyLlN5c3RlbVBhcmFtZXRlcnNJbmZvQShTUElfR0VUREVTS1dBTExQQVBFUiwgdi5fc2l6ZSwgdiwgMCk7CiAgICBjb25zb2xlLmxvZyh2LlN0cmluZyk7CiAgICBwcm9jZXNzLmV4aXQoKTsKfQplbHNlCnsKICAgIHZhciBuYiA9IEdNLkNyZWF0ZVZhcmlhYmxlKHByb2Nlc3MuYXJndlszXSk7CiAgICB1c2VyMzIuU3lzdGVtUGFyYW1ldGVyc0luZm9BKFNQSV9TRVRERVNLV0FMTFBBUEVSLCBuYi5fc2l6ZSwgbmIsIDApOwogICAgcHJvY2Vzcy5leGl0KCk7Cn0=', current != '' ? '""' : require('MeshAgent')._wallpaper], { type: id });
@@ -1863,18 +1881,14 @@ function createMeshCore(agent) {
                                     {
                                         var id = require('user-sessions').consoleUid();
                                         var current = require('linux-gnome-helpers').getDesktopWallpaper(id);
-                                        if (args['_'][0].toUpperCase() == 'GET')
-                                        {
+                                        if (args['_'][0].toUpperCase() == 'GET') {
                                             response = current;
                                             break;
                                         }
-                                        if (current != '/dev/null')
-                                        {
+                                        if (current != '/dev/null') {
                                             require('MeshAgent')._wallpaper = current;
                                             response = 'Wallpaper cleared';
-                                        }
-                                        else
-                                        {
+                                        } else {
                                             response = 'Wallpaper restored';
                                         }
                                         require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
@@ -1924,7 +1938,7 @@ function createMeshCore(agent) {
                                                 break;
                                         }
                                     }
-                                    response = 'Current: ' + require('win-bcd').bootMode + ' , NextBoot: ' + (nextboot ? nextboot : 'NORMAL');
+                                    response = 'Current: ' + require('win-bcd').bootMode + ', NextBoot: ' + (nextboot ? nextboot : 'NORMAL');
                                     break;
                             }
                         }
