@@ -34,9 +34,9 @@
     <Compile Include="agents\modules_meshcmd\amt-wsman.js" />
     <Compile Include="agents\modules_meshcmd\amt-xml.js" />
     <Compile Include="agents\modules_meshcmd\amt.js" />
-    <Compile Include="agents\modules_meshcmd\service-host.js" />
-    <Compile Include="agents\modules_meshcmd\service-manager.js" />
+    <Compile Include="agents\modules_meshcmd\identifiers.js" />
     <Compile Include="agents\modules_meshcmd\smbios.js" />
+    <Compile Include="agents\modules_meshcmd\sysinfo.js" />
     <Compile Include="agents\modules_meshcmd\user-sessions.js" />
     <Compile Include="agents\modules_meshcmd_min\amt-ider.min.js" />
     <Compile Include="agents\modules_meshcmd_min\amt-lme.min.js" />

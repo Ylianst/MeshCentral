@@ -25,7 +25,7 @@ limitations under the License.
  * @constructor
  */
 function AmtManager(agent, db, isdebug) {
-    var sendConsole = function (msg) { agent.SendCommand({ "action": "msg", "type": "console", "value": msg }); }
+    var sendConsole = function (msg) { agent.SendCommand({ 'action': 'msg', 'type': 'console', 'value': msg }); }
     var debug = function (msg) { if (isdebug) { sendConsole('amt-manager: ' + msg + '<br />'); } }
     var amtMei = null, amtMeiState = 0;
     var amtLms = null, amtLmsState = 0;
@@ -75,7 +75,7 @@ function AmtManager(agent, db, isdebug) {
                     obj.lmsreset();
                 }
             });
-        } catch (ex) { debug('MEI exception: ' + ex); amtMei = null; amtMeiState = -1; obj.state = -1; }
+        } catch (ex) { debug("MEI exception: " + ex); amtMei = null; amtMeiState = -1; obj.state = -1; }
     }
 
     // Get Intel AMT information using MEI
@@ -104,27 +104,26 @@ function AmtManager(agent, db, isdebug) {
         var amtMessage = notifyMsg.Body.MessageID, amtMessageArg = notifyMsg.Body.MessageArguments[0], notify = null;
 
         switch (amtMessage) {
-            case 'iAMT0050': { if (amtMessageArg == '48') { notify = 'Intel&reg; AMT Serial-over-LAN connected'; } else if (amtMessageArg == '49') { notify = 'Intel&reg; AMT Serial-over-LAN disconnected'; } break; } // SOL
-            case 'iAMT0052': { if (amtMessageArg == '1') { notify = 'Intel&reg; AMT KVM connected'; } else if (amtMessageArg == '2') { notify = 'Intel&reg; AMT KVM disconnected'; } break; } // KVM
+            case 'iAMT0050': { if (amtMessageArg == '48') { notify = "Intel&reg; AMT Serial-over-LAN connected"; } else if (amtMessageArg == '49') { notify = "Intel&reg; AMT Serial-over-LAN disconnected"; } break; } // SOL
+            case 'iAMT0052': { if (amtMessageArg == '1') { notify = "Intel&reg; AMT KVM connected"; } else if (amtMessageArg == '2') { notify = "Intel&reg; AMT KVM disconnected"; } break; } // KVM
             default: { break; }
         }
 
         // Sent to the entire group, no sessionid or userid specified.
-        if (notify != null) { agent.SendCommand({ "action": "msg", "type": "notify", "value": notify, "tag": "general", "amtMessage": amtMessage }); }
+        if (notify != null) { agent.SendCommand({ 'action': 'msg', 'type': 'notify', 'value': notify, 'tag': 'general', 'amtMessage': amtMessage }); }
     }
 
     // Launch LMS
     obj.lmsreset = function () {
         //debug('Binding to LMS');
-        var amtLms = null, amtLmsState = 0;
         obj.lmsstate = 0;
         try {
             var lme_heci = require('amt-lme');
             amtLmsState = 1;
             obj.lmsstate = 1;
             amtLms = new lme_heci();
-            amtLms.on('error', function (e) { amtLmsState = 0; obj.lmsstate = 0; amtLms = null; debug('LMS error'); setupMeiOsAdmin(1); });
-            amtLms.on('connect', function () { amtLmsState = 2; obj.lmsstate = 2; debug('LMS connected'); setupMeiOsAdmin(2); });
+            amtLms.on('error', function (e) { amtLmsState = 0; obj.lmsstate = 0; amtLms = null; debug("LMS error: " + e); setupMeiOsAdmin(1); });
+            amtLms.on('connect', function () { amtLmsState = 2; obj.lmsstate = 2; debug("LMS connected"); setupMeiOsAdmin(2); });
             //amtLms.on('bind', function (map) { });
             amtLms.on('notify', function (data, options, str, code) {
                 //debug('LMS notify');

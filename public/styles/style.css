@@ -2181,7 +2181,7 @@ a {
     -ms-grid-row: 4;
 }
 
-#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton {
+#DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton {
     float: right;
     margin-top: 1px;
     margin-right: 4px;
