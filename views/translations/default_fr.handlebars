@@ -516,7 +516,8 @@
                             <input id="DeskToolsButton" type="button" value="Outils" title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;
                             <span id="DeskChatButton" class="deskarea" title="Ouvrir la fenêtre de discussion sur cet ordinateur"><img src="images/icon-chat.png" onclick="deviceChat(event)" height="16" width="16" style="padding-top:2px"></span>
                             <span id="DeskNotifyButton" title="Display a notification on the remote computer"><img src="images/icon-notify.png" onclick="deviceToastFunction()" height="16" width="16" style="padding-top:2px"></span>
-                            <span id="DeskOpenWebButton" title="Open a web address on remote computer"><img src="images/icon-url2.png" onclick="deviceUrlFunction()" height="16" width="16" style="padding-top:2px"></span>
+                            <span id="DeskOpenWebButton" title="Open a web address on the remote computer"><img src="images/icon-url2.png" onclick="deviceUrlFunction()" height="16" width="16" style="padding-top:2px"></span>
+                            <span id="DeskBackgroundButton" title="Toggle remote desktop background"><img src="images/icon-background.png" onclick="deviceToggleBackground(event)" height="16" width="16" style="padding-top:2px"></span>
                         </div>
                         <div>
                             <select id="deskkeys">
@@ -4623,6 +4624,11 @@
             meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
         }
 
+        function deviceToggleBackground() {
+            if (xxdialogMode) return;
+            meshserver.send({ action: 'msg', type: 'deskBackground', nodeid: currentNode._id, op: 1 }); // Toggle desktop background image
+        }
+
         function deviceUrlFunction() {
             if (xxdialogMode) return;
             setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll></input>');
@@ -5123,6 +5129,7 @@
 
             QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (mesh.mtype == 2) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
@@ -7310,7 +7317,7 @@
             if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
             if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
             if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
-            if (meshNotifyStr.length == 0) { meshNotifyStr.push("None"); }
+            if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
             x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
 
             // Intel AMT setup
@@ -7495,7 +7502,7 @@
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
-            if (debugmode) { x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>'; }
+            x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
@@ -7510,14 +7517,14 @@
                 if (serverinfo.consent & 0x0010) { Q('d20flag4').checked = true; }
                 if (serverinfo.consent & 0x0004) { Q('d20flag5').checked = true; }
                 if (serverinfo.consent & 0x0020) { Q('d20flag6').checked = true; }
-                if (debugmode) { if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; } }
+                if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; }
                 QE('d20flag1', !(serverinfo.consent & 0x0001));
                 QE('d20flag2', !(serverinfo.consent & 0x0008));
                 QE('d20flag3', !(serverinfo.consent & 0x0002));
                 QE('d20flag4', !(serverinfo.consent & 0x0010));
                 QE('d20flag5', !(serverinfo.consent & 0x0004));
                 QE('d20flag6', !(serverinfo.consent & 0x0020));
-                if (debugmode) { QE('d20flag7', !(serverinfo.consent & 0x0040)); }
+                if (debugmode == 1) { QE('d20flag7', !(serverinfo.consent & 0x0040)); }
             }
         }
 
@@ -7529,7 +7536,7 @@
             if (Q('d20flag4').checked) { consent += 0x0010; }
             if (Q('d20flag5').checked) { consent += 0x0004; }
             if (Q('d20flag6').checked) { consent += 0x0020; }
-            if (debugmode) { if (Q('d20flag7').checked) { consent += 0x0040; } }
+            if (Q('d20flag7').checked) { consent += 0x0040; }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent });
         }
 

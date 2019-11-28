@@ -5131,7 +5131,7 @@
 
             QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskBackgroundButton', (debugmode == 1) && (deskState == 3) && (desktop.contype == 1) && (mesh.mtype == 2) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
+            QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (mesh.mtype == 2) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
@@ -7504,7 +7504,7 @@
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
-            if (debugmode == 1) { x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>'; }
+            x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
@@ -7519,7 +7519,7 @@
                 if (serverinfo.consent & 0x0010) { Q('d20flag4').checked = true; }
                 if (serverinfo.consent & 0x0004) { Q('d20flag5').checked = true; }
                 if (serverinfo.consent & 0x0020) { Q('d20flag6').checked = true; }
-                if (debugmode == 1) { if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; } }
+                if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; }
                 QE('d20flag1', !(serverinfo.consent & 0x0001));
                 QE('d20flag2', !(serverinfo.consent & 0x0008));
                 QE('d20flag3', !(serverinfo.consent & 0x0002));
@@ -7538,7 +7538,7 @@
             if (Q('d20flag4').checked) { consent += 0x0010; }
             if (Q('d20flag5').checked) { consent += 0x0004; }
             if (Q('d20flag6').checked) { consent += 0x0020; }
-            if (debugmode == 1) { if (Q('d20flag7').checked) { consent += 0x0040; } }
+            if (Q('d20flag7').checked) { consent += 0x0040; }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent });
         }
 
