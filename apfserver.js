@@ -282,7 +282,7 @@ module.exports.CreateApfServer = function (parent, db, args) {
                         });
                     } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
                         // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
-                        obj.db.getAmtUuidNode(mesh._id, socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
+                        obj.db.getAmtUuidNode(socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
                             if ((nodes == null) || (nodes.length !== 1)) {
                                 // New APF connection for unknown node, disconnect.
                                 unknownNodeCount++;
