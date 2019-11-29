@@ -511,7 +511,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return true if this user has 2-step auth active
-    function checkUserOneTimePasswordRequired(domain, user) {
+    function checkUserOneTimePasswordRequired(domain, user, req) {
+        // Check if we can skip 2nd factor auth because of the source IP address
+        if ((req != null) && (req.ip != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
+            for (var i in domain.passwordrequirements.skip2factor) { if (require('ipcheck').match(req.ip, domain.passwordrequirements.skip2factor[i]) === true) return false; }
+        }
+        // Check if a 2nd factor is present
         return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
@@ -657,7 +662,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var user = obj.users[userid];
 
                 // Check if this user has 2-step login active
-                if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user)) {
+                if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user, req)) {
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             var randomWaitTime = 0;
@@ -1011,7 +1016,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var responseSent = false;
                     for (var i in docs) {
                         var user = docs[i];
-                        if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                        if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             // Second factor setup, request it now.
                             checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                                 if (result == false) {
@@ -3503,7 +3508,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var user = obj.users[userid];
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
-                        if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                        if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             if (typeof req.query.token != 'string') {
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
                             } else {
@@ -3558,7 +3563,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var user = obj.users[userid];
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
-                        if (checkUserOneTimePasswordRequired(domain, user) == true) {
+                        if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             if (s.length != 3) {
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
                             } else {
