@@ -778,7 +778,7 @@ function performAmtAgentPresenceAssert() {
 // Called after the agent is asserted
 function performAmtAgentPresenceAssertRetry(stack, name, response, status, watchdog) {
     if (status == 200) {
-        debug(1, 'Succesful assert, sequence = ' + watchdog.Seq);
+        debug(1, 'Successful assert, sequence = ' + watchdog.Seq);
         watchdog.Retry = 0;
         tempWatchdogTimer = setTimeout(performAmtAgentPresenceAssert, watchdog.Interval);
     } else {
