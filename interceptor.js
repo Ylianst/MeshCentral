@@ -326,7 +326,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                         obj.amt.digestQOP = obj.amt.acc.substring(12 + realmlen + noncelen, 12 + realmlen + noncelen + qoplen);
                     }
                     else if (authType != obj.AuthenticationType.QUERY && authstatus == obj.AuthenticationStatus.SUCCESS) {
-                        // Intel AMT relayed that authentication was succesful, go to direct relay mode in both directions.
+                        // Intel AMT relayed that authentication was successful, go to direct relay mode in both directions.
                         obj.ws.direct = true;
                         obj.amt.direct = true;
                     }

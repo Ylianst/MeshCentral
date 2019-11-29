@@ -516,6 +516,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((req != null) && (req.ip != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
             for (var i in domain.passwordrequirements.skip2factor) { if (require('ipcheck').match(req.ip, domain.passwordrequirements.skip2factor[i]) === true) return false; }
         }
+
+        // Check if a 2nd factor cookie is present
+        if (typeof req.headers.cookie == 'string') {
+            const cookies = req.headers.cookie.split('; ');
+            for (var i in cookies) {
+                if (cookies[i].startsWith('twofactor=')) {
+                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // 30 day timeout
+                    if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
+                }
+            }
+        }
+
         // Check if a 2nd factor is present
         return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
@@ -686,16 +698,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
                         } else {
-                            // Login succesful
-                            parent.debug('web', 'handleLoginRequest: succesful 2FA login');
+                            // Check if we need to remember this device
+                            if (req.body.remembertoken === 'on') {
+                                const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id /*, ip: cleanRemoteAddr(req.ip)*/ }, obj.parent.loginCookieEncryptionKey);
+                                res.cookie('twofactor', twoFactorCookie, { maxAge: (30 * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
+                            }
+
+                            // Login successful
+                            parent.debug('web', 'handleLoginRequest: successful 2FA login');
                             completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
                         }
                     });
                     return;
                 }
 
-                // Login succesful
-                parent.debug('web', 'handleLoginRequest: succesful login');
+                // Login successful
+                parent.debug('web', 'handleLoginRequest: successful login');
                 completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
             } else {
                 // Login failed, wait a random delay
@@ -959,7 +977,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
-                            // Login succesful
+                            // Login successful
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
@@ -2570,7 +2588,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
                     if (checkAmtPassword(amtpassword) == false) { ws.send(JSON.stringify({ errorText: 'Invalid Intel AMT password' })); ws.close(); return; } // Invalid Intel AMT password, this should never happen.
 
-                    // Save some state, if activation is succesful, we need this to add the device
+                    // Save some state, if activation is successful, we need this to add the device
                     ws.xxstate = { uuid: cmd.uuid, realm: cmd.realm, tag: cmd.tag, name: cmd.name, hostname: cmd.hostname, pass: amtpassword, flags: activationMode, ver: cmd.ver, sku: cmd.sku }; // Flags: 2 = CCM, 4 = ACM
 
                     if (activationMode == 4) {

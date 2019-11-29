@@ -147,13 +147,19 @@
                                         <tr>
                                             <td align=right width=100>Login token:</td>
                                             <td>
-                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) />
+                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
                                                 <input id=hwtokenInput type=text name=hwtoken style="display:none" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="align-content:center">
+                                                <label><input id=tokenInputRemember name=remembertoken type=checkbox />Remember this device for 30 days.</label>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td colspan=2>
                                                 <div style=float:right><input id=tokenOkButton type=submit value="Login" disabled="disabled" /></div>
+                                                <div style=float:right><input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" /></div>
                                             </td>
                                         </tr>
                                     </table>
@@ -331,39 +337,13 @@
 
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
-                if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
-                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
-
-                    publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
-                    for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
-                        publicKeyCredentialRequestOptions.allowCredentials.push(
-                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
-                        );
-                    }
-
-                    // New WebAuthn hardware keys
-                    navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
-                        function (rawAssertion) {
-                            var assertion = {
-                                id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
-                                clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
-                                userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
-                                signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
-                                authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
-                            };
-                            Q('hwtokenInput').value = JSON.stringify(assertion);
-                            QE('tokenOkButton', true);
-                            Q('tokenOkButton').click();
-                        },
-                        function (error) { console.log('credentials-get error', error); }
-                    );
-                }
+                QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
             }
 
             if (loginMode == '5') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
-                    hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer;
+                    if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
 
                     publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
                     for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
@@ -393,6 +373,37 @@
 
             // Setup the user interface in the right mode
             userInterfaceSelectMenu();
+        }
+
+        // Use a hardware security key
+        function useSecurityKey() {
+            if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
+                if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
+
+                publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
+                    publicKeyCredentialRequestOptions.allowCredentials.push(
+                        { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                    );
+                }
+
+                // New WebAuthn hardware keys
+                navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions }).then(
+                    function (rawAssertion) {
+                        var assertion = {
+                            id: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.rawId))),
+                            clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.clientDataJSON))),
+                            userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.userHandle))),
+                            signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
+                            authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
+                        };
+                        Q('hwtokenInput').value = JSON.stringify(assertion);
+                        QE('tokenOkButton', true);
+                        Q('tokenOkButton').click();
+                    },
+                    function (error) { console.log('credentials-get error', error); }
+                );
+            }
         }
 
         function showPassHint(e) {
