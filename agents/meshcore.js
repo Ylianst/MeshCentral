@@ -1211,7 +1211,6 @@ function createMeshCore(agent) {
                         return;
                     }
 
-
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
@@ -1230,6 +1229,9 @@ function createMeshCore(agent) {
                             this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
                             this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
                         }
+
+                        // Place wallpaper back if needed
+                        // TODO
 
                         if (this.desktop.kvm.connectionCount == 0)
                         {
