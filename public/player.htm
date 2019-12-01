@@ -171,7 +171,7 @@
             x += addInfo("UserID", recFileMetadata.userid);
             x += addInfo("SessionID", recFileMetadata.sessionid);
             if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("Addresses", format("{0} to {1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
-            if (recFileMetadata.devicename) { x += addInfo("DeviceName", recFileMetadata.devicename); }
+            if (recFileMetadata.devicename) { x += addInfo("Device Name", recFileMetadata.devicename); }
             x += addInfo("NodeID", recFileMetadata.nodeid);
             if (recFileMetadata.protocol) {
                 var p = recFileMetadata.protocol;

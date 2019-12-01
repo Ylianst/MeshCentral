@@ -25,6 +25,8 @@ var meshCentralSourceFiles = [
     "../views/error404-mobile.handlebars",
     "../views/login.handlebars",
     "../views/login-mobile.handlebars",
+    "../views/terms.handlebars",
+    "../views/terms-mobile.handlebars",
     "../views/message.handlebars",
     "../views/messenger.handlebars",
     "../public/player.htm"
@@ -206,7 +208,11 @@ function extract(langFile, sources) {
     }
     for (var i = 0; i < sources.length; i++) { extractFromHtml(sources[i]); }
     var count = 0, output = [];
-    for (var i in sourceStrings) { count++; sourceStrings[i]['en'] = i; output.push(sourceStrings[i]); }
+    for (var i in sourceStrings) {
+        count++;
+        sourceStrings[i]['en'] = i;
+        if ((sourceStrings[i].xloc != null) && (sourceStrings[i].xloc.length > 0)) { output.push(sourceStrings[i]); } // Only save results that have a source location.
+    }
     fs.writeFileSync(langFile, JSON.stringify({ 'strings': output }, null, '  '), { flag: 'w+' });
     console.log(format("{0} strings in output file.", count));
     process.exit();
