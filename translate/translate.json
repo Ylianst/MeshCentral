@@ -27,6 +27,7 @@
     },
     {
       "en": "Storage limit exceed",
+      "cs": "Překročen limit pro ukládání",
       "xloc": [
         "default.handlebars->13->1071"
       ]
@@ -40,6 +41,7 @@
     {
       "en": "Reset Password",
       "fr": "Réinitialiser le mot de passe",
+      "cs": "Reset hesla",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpasswordpanel->1->7->1->6->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpasswordpanel->1->7->1->6->1->1"
@@ -54,6 +56,7 @@
     },
     {
       "en": "Delete selected item?",
+      "cs": "Smazat vybraný prvek?",
       "xloc": [
         "default.handlebars->13->609",
         "default.handlebars->13->1092",
@@ -87,6 +90,7 @@
     },
     {
       "en": "Console",
+      "cs": "Konzole",
       "xloc": [
         "default.handlebars->contextMenu->cxconsole",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevConsole",
@@ -103,6 +107,7 @@
     {
       "en": "Perform power actions on the device",
       "fr": "Effectuer des actions d'alimentation sur le périphérique",
+      "cs": "Akce napájení",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->1",
@@ -112,6 +117,7 @@
     },
     {
       "en": "Unable to scan this address range.",
+      "cs": "Nelze skenovat tento rozsah.",
       "xloc": [
         "default.handlebars->13->123"
       ]
@@ -151,6 +157,7 @@
     {
       "en": "{0} nodes",
       "fr": "{0} appareil",
+      "cs": "{0} zařízení",
       "xloc": [
         "default.handlebars->13->304"
       ]
@@ -164,6 +171,7 @@
     {
       "en": "Reset devices",
       "fr": "Réinitialiser les appareils",
+      "cs": "Reset zařízení",
       "xloc": [
         "default.handlebars->13->344"
       ]
@@ -185,6 +193,7 @@
     {
       "en": "New Device Group",
       "fr": "Nouveau Group",
+      "cs": "Nová skupina zařízení",
       "xloc": [
         "default.handlebars->13->524",
         "default.handlebars->13->889",
@@ -194,6 +203,7 @@
     },
     {
       "en": "Device is detected but power state could not be obtained.",
+      "cs": "Zařízení je detekováno, ale nelze zjistit stav.",
       "xloc": [
         "default.handlebars->13->317"
       ]
@@ -235,6 +245,7 @@
     {
       "en": "Select All",
       "fr": "Tout Sélectionner",
+      "cs": "Vybrat vše",
       "xloc": [
         "default.handlebars->meshContextMenu->cxselectall",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
@@ -278,6 +289,7 @@
     {
       "en": "Agent",
       "fr": "Agent",
+      "cs": "Agent",
       "xloc": [
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->1",
         "default.handlebars->13->143",
@@ -289,6 +301,7 @@
     },
     {
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.",
+      "cs": "Pro přidání nového zařízení do skupiny \\\"{0}\\\", si stáhněte agenta a nainstalujte na zařízení, které chcete spravovat. Tento agent již obsahuje veškeré informace pro připojení na server.",
       "xloc": [
         "default.handlebars->13->280"
       ]
@@ -301,6 +314,7 @@
     },
     {
       "en": "Power Actions...",
+      "cs": "Akce napájení",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
@@ -445,6 +459,7 @@
     },
     {
       "en": "Group1, Group2, Group3",
+      "cs": "Skupina1, Skupina2, Skupina3",
       "xloc": [
         "default-mobile.handlebars->9->223"
       ]
@@ -471,6 +486,7 @@
     {
       "en": "1 day",
       "fr": "1 jour",
+      "cs": "1 den",
       "xloc": [
         "default.handlebars->13->129",
         "default.handlebars->13->250",
@@ -559,6 +575,7 @@
     },
     {
       "en": "Paste",
+      "cs": "Vložit",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
@@ -582,6 +599,7 @@
     {
       "en": " node",
       "fr": "nœud",
+      "cs": " zařízení",
       "xloc": [
         "default-mobile.handlebars->9->124"
       ]
@@ -594,6 +612,7 @@
     },
     {
       "en": "Show",
+      "cs": "Zobrazit",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3",
         "default.handlebars->container->column_l->p16->3->1->0->5",
@@ -604,6 +623,7 @@
     {
       "en": "Unlimited",
       "fr": "Illimité",
+      "cs": "Bez limitu",
       "xloc": [
         "default.handlebars->13->132",
         "default.handlebars->13->253",
@@ -612,6 +632,7 @@
     },
     {
       "en": "Log In",
+      "cs": "Přihlásit",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->5->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->4->3",
@@ -621,6 +642,7 @@
     },
     {
       "en": "Description",
+      "cs": "Popis",
       "xloc": [
         "default.handlebars->13->56",
         "default.handlebars->13->388",
@@ -639,6 +661,7 @@
     },
     {
       "en": "total",
+      "cs": "celkově",
       "xloc": [
         "default.handlebars->13->1242"
       ]
@@ -697,6 +720,7 @@
     {
       "en": "TLS security required",
       "fr": "Sécurité TLS requise",
+      "cs": "TLS vyžadováno",
       "xloc": [
         "default.handlebars->13->202",
         "default.handlebars->13->517",
@@ -706,6 +730,7 @@
     {
       "en": "Scan",
       "fr": "Analyse",
+      "cs": "Skenovat",
       "xloc": [
         "default.handlebars->13->211"
       ]
@@ -719,6 +744,7 @@
     },
     {
       "en": "{0} megabytes remaining",
+      "cs": "{0} megabytů zbývá",
       "xloc": [
         "default.handlebars->13->1074"
       ]
@@ -730,19 +756,22 @@
       ]
     },
     {
-      "en": "Device is in powered off state (S5).",
+      "en": "Device is in powered off state (S5).",    
+      "cs": "Zařízení je vypnuto (S5).",
       "xloc": [
         "default.handlebars->13->315"
       ]
     },
     {
       "en": "Generate New Tokens",
+      "cs": "Generovat nové tokeny",
       "xloc": [
         "default.handlebars->13->96"
       ]
     },
     {
       "en": "Confirm delete selected devices(s)?",
+      "cs": "Potvrdit smázání vybraných zařízení?",
       "xloc": [
         "default.handlebars->13->350"
       ]
@@ -823,6 +852,7 @@
     {
       "en": "My Users",
       "fr": "Mes Utilisateurs",
+      "cs": "Uživatelé",
       "xloc": [
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyUsers",
@@ -963,6 +993,7 @@
     },
     {
       "en": "General -",
+      "cs": "Obecné -",
       "xloc": [
         "default.handlebars->container->column_l->p10->1->1->0->1->p10title->3",
         "default.handlebars->container->column_l->p20->5",
@@ -978,6 +1009,7 @@
     {
       "en": "Group Action",
       "fr": "Action de groupe",
+      "cs": "Akce skupiny",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
         "default.handlebars->13->348"
@@ -1043,6 +1075,7 @@
     },
     {
       "en": "Delete Account",
+      "cs": "Smazat účet",
       "xloc": [
         "default.handlebars->13->880",
         "default-mobile.handlebars->9->40"
@@ -1063,6 +1096,7 @@
     },
     {
       "en": "Upload File",
+      "cs": "Nahrát soubor",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog3->d3localmode->1",
         "default.handlebars->13->611",
@@ -1317,6 +1351,7 @@
     },
     {
       "en": "Installation Type",
+      "cs": "Typ instalace",
       "xloc": [
         "default.handlebars->13->254",
         "default.handlebars->13->276"
@@ -1355,6 +1390,7 @@
     {
       "en": "add one",
       "fr": "ajoute un",
+      "cs": "přidat",
       "xloc": [
         "default.handlebars->13->159",
         "default.handlebars->13->161"
@@ -1393,6 +1429,7 @@
     },
     {
       "en": "This page does not exist",
+      "cs": "Tato stránka neexistuje",
       "xloc": [
         "error404.handlebars->container->column_l->3"
       ]
@@ -1413,6 +1450,7 @@
     },
     {
       "en": "Wake-up",
+      "cs": "Probudit",
       "xloc": [
         "default.handlebars->13->503",
         "default-mobile.handlebars->9->203"
@@ -1434,6 +1472,7 @@
     {
       "en": "Scaling",
       "fr": "Mise à l'échelle",
+      "cs": "Škálování",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->1",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->3"
@@ -1481,6 +1520,7 @@
     {
       "en": "Power off devices",
       "fr": "Éteindre les appareils",
+      "cs": "Vypnout zařízení",
       "xloc": [
         "default.handlebars->13->345"
       ]
@@ -1544,6 +1584,7 @@
     {
       "en": "Group",
       "fr": "Groupe",
+      "cs": "Skupina",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->1",
         "default.handlebars->13->381",
@@ -1613,6 +1654,7 @@
     {
       "en": "Show server error log",
       "fr": "Afficher le journal des erreurs du serveur",
+      "cs": "Zobrazit chyby serveru",
       "xloc": [
         "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsErrors->0"
       ]
@@ -1653,6 +1695,7 @@
     },
     {
       "en": "Create a new group of devices.",
+      "cs": "Vytvořit novou skupinu zařízení.",
       "xloc": [
         "default.handlebars->13->162"
       ]
@@ -1668,6 +1711,7 @@
     {
       "en": "Send",
       "fr": "Envoyer",
+      "cs": "Odeslat",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1",
@@ -1719,6 +1763,7 @@
     {
       "en": "Invite someone to install the mesh agent on this mesh.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage sur ce maillage.",
+      "cs": "Pozvat kohokoliv k instalaci agenta pro vzdálené ovládání.",
       "xloc": [
         "default.handlebars->13->191",
         "default.handlebars->13->967"
@@ -1883,6 +1928,7 @@
     },
     {
       "en": "Remote computer is not powered on, click here to issue a power command.",
+      "cs": "Vzdálený počítač není zapnutý, klikněte zde pro zapnutí.",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning2->3",
         "default.handlebars->container->column_l->p12->p12warning2->3"
@@ -1891,6 +1937,7 @@
     {
       "en": "{0} bytes",
       "fr": "{0} octets",
+      "cs": "{0} bytů",
       "xloc": [
         "default.handlebars->13->1087",
         "default-mobile.handlebars->9->75"
@@ -1904,6 +1951,7 @@
     },
     {
       "en": "(optional)",
+      "cs": "(volitelné)",
       "xloc": [
         "default.handlebars->13->259"
       ]
@@ -2021,12 +2069,14 @@
     {
       "en": "No devices found.",
       "fr": "Aucun périphérique trouvé.",
+      "cs": "Žádné zařízení nalezeno.",
       "xloc": [
         "default.handlebars->13->370"
       ]
     },
     {
       "en": "Last agent address",
+      "cs": "Poslední adresa agenta",
       "xloc": [
         "default.handlebars->13->49",
         "default.handlebars->13->50",
@@ -2041,6 +2091,7 @@
     },
     {
       "en": "Delete",
+      "cs": "Smazat",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -2057,6 +2108,7 @@
     {
       "en": "Operation",
       "fr": "Opération",
+      "cs": "Operace",
       "xloc": [
         "default.handlebars->13->341",
         "default.handlebars->13->508",
@@ -2084,6 +2136,7 @@
     {
       "en": "Username",
       "fr": "Nom d'utilisateur",
+      "cs": "Uživatel",
       "xloc": [
         "default.handlebars->13->197",
         "default.handlebars->13->227",
@@ -2094,6 +2147,7 @@
     },
     {
       "en": "No Credentials",
+      "cs": "Žádné přihlašovací údaje",
       "xloc": [
         "default.handlebars->13->435",
         "default.handlebars->13->436",
@@ -2109,6 +2163,7 @@
     },
     {
       "en": "Remote clipboard is valid for 60 seconds.",
+      "cs": "Vzdálená schránka je platná 60 sekund.",
       "xloc": [
         "default.handlebars->13->564"
       ]
@@ -2138,6 +2193,7 @@
     },
     {
       "en": "Edit Device Notes",
+      "cs": "Upravit popis zařízení",
       "xloc": [
         "default.handlebars->13->1038",
         "default-mobile.handlebars->9->303"
@@ -2161,6 +2217,7 @@
     {
       "en": "Reset account",
       "fr": "Réinitialiser le compte",
+      "cs": "Reset účtu",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv->3",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->resetAccountDiv->3"
@@ -2181,6 +2238,7 @@
     },
     {
       "en": "Pass Hint:",
+      "cs": "Nápověda k heslu:",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->createPanelHint->1"
       ]
@@ -2201,6 +2259,7 @@
     {
       "en": "Username:",
       "fr": "Nom d'utilisateur:",
+      "cs": "Uživatel:",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->0->loginusername",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->nuUserRow->nuUser",
@@ -2211,6 +2270,7 @@
     {
       "en": "My Devices",
       "fr": "Mes Appareils",
+      "cs": "Moje zařízení",
       "xloc": [
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyDevices",
@@ -2252,6 +2312,7 @@
     },
     {
       "en": "Disconnected",
+      "cs": "Odpojeno",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->deskstatus",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->termstatus",
@@ -2268,6 +2329,7 @@
     },
     {
       "en": "Old password:",
+      "cs": "Staré heslo:",
       "xloc": [
         "default.handlebars->13->883",
         "default-mobile.handlebars->9->41"
@@ -2275,6 +2337,7 @@
     },
     {
       "en": "Only files less than 200k can be edited.",
+      "cs": "Jen soubory menší než 200k mohou být editovány.",
       "xloc": [
         "default.handlebars->13->613",
         "default-mobile.handlebars->9->253"
@@ -2371,6 +2434,7 @@
     },
     {
       "en": "Details",
+      "cs": "Detaily",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevInfo"
       ]
@@ -2472,6 +2536,7 @@
     {
       "en": "Powered",
       "fr": "Alimenté",
+      "cs": "Zapnuto",
       "xloc": [
         "default.handlebars->13->1",
         "default.handlebars->13->306",
@@ -2481,6 +2546,7 @@
     },
     {
       "en": "Locked",
+      "cs": "Zamknuto",
       "xloc": [
         "default.handlebars->13->1126"
       ]
@@ -2488,6 +2554,7 @@
     {
       "en": "Quality",
       "fr": "Qualité",
+      "cs": "Kvalita",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->3"
@@ -2496,6 +2563,7 @@
     {
       "en": "Cancel",
       "fr": "Annuler",
+      "cs": "Zrušit",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar",
         "default.handlebars->13->912",
@@ -2508,12 +2576,14 @@
     },
     {
       "en": "CPU load in the last minute",
+      "cs": "CPU zatížení v poslední minutě",
       "xloc": [
         "default.handlebars->13->1237"
       ]
     },
     {
       "en": ", right click on it or press \"control\" and click on the file. Then select \"Open\" and follow the instructions.",
+      "cs": ", poté spusťe instalaci. Postupujte dle instrukcí.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->macostab->3"
       ]
@@ -2527,6 +2597,7 @@
     {
       "en": "Last changed: {0}",
       "fr": "Dernière modification: {0}",
+      "cs": "Poslední změna: {0}",
       "xloc": [
         "default.handlebars->13->1200"
       ]
@@ -2548,6 +2619,7 @@
     },
     {
       "en": "Email Address Change",
+      "cs": "Změna emailové adresy",
       "xloc": [
         "default.handlebars->13->876",
         "default-mobile.handlebars->9->35"
@@ -2555,6 +2627,7 @@
     },
     {
       "en": "Edit Device Group",
+      "cs": "Editovat skupinu zařízení",
       "xloc": [
         "default.handlebars->13->1008",
         "default.handlebars->13->1026",
@@ -2567,6 +2640,7 @@
     {
       "en": "Sort by name",
       "fr": "Trier par nom",
+      "cs": "Třídit podle jména",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->2->p5filesubhead->1->p5sortdropdown->1",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader",
@@ -2584,6 +2658,7 @@
     },
     {
       "en": "Copy MAC address to clipboard",
+      "cs": "Kopírovat MAC adresu do schránky",
       "xloc": [
         "default.handlebars->13->60",
         "default.handlebars->13->68"
@@ -2605,12 +2680,14 @@
     {
       "en": "No devices",
       "fr": "Aucun appareil",
+      "cs": "Žádné zařízení",
       "xloc": [
         "default-mobile.handlebars->9->95"
       ]
     },
     {
       "en": "Link Expiration",
+      "cs": "Platnost linku",
       "xloc": [
         "default.handlebars->13->247",
         "default.handlebars->13->261"
@@ -2657,6 +2734,7 @@
     {
       "en": "Last 1000",
       "fr": "1000 derniers",
+      "cs": "Posledních 1000",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3->p3limitdropdown->9",
         "default.handlebars->container->column_l->p16->3->1->0->5->p16limitdropdown->9",
@@ -2686,6 +2764,7 @@
     {
       "en": "Large",
       "fr": "Grand",
+      "cs": "Velký",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->5"
       ]
@@ -2699,6 +2778,7 @@
     {
       "en": "New Account...",
       "fr": "Nouveau Compte...",
+      "cs": "Nový účet...",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->3"
       ]
@@ -2725,6 +2805,7 @@
     {
       "en": "1 week",
       "fr": "1 semaine",
+      "cs": "1 týden",
       "xloc": [
         "default.handlebars->13->130",
         "default.handlebars->13->251",
@@ -2757,6 +2838,7 @@
     },
     {
       "en": "State",
+      "cs": "Stav",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->1",
         "default.handlebars->13->568"
@@ -2790,6 +2872,7 @@
     },
     {
       "en": "Email is verified",
+      "cs": "Email ověřen",
       "xloc": [
         "default.handlebars->13->1188"
       ]
@@ -2822,6 +2905,7 @@
     {
       "en": "Password",
       "fr": "Mot de passe",
+      "cs": "Heslo",
       "xloc": [
         "default.handlebars->13->199",
         "default.handlebars->13->228",
@@ -2837,12 +2921,14 @@
     },
     {
       "en": "Stats",
+      "cs": "Statistiky",
       "xloc": [
         "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerStats"
       ]
     },
     {
       "en": "Check server version",
+      "cs": "Zkontrolovat verzi serveru",
       "xloc": [
         "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsVersion->0"
       ]
@@ -2877,6 +2963,7 @@
     },
     {
       "en": "Used",
+      "cs": "Použito",
       "xloc": [
         "default.handlebars->13->1233",
         "default.handlebars->13->1235"
@@ -2945,6 +3032,7 @@
     },
     {
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.",
+      "cs": "Pro přidání do skupiny \\\"{0}\\\", si musíte stáhnout agenta a nainstalovat ho na počítači, který chcete spravovat. Tento agent má všechny potřebné informace pro připojení již v sobě.",
       "xloc": [
         "default.handlebars->13->291"
       ]
@@ -3032,6 +3120,7 @@
     },
     {
       "en": "To install, cut and paste the following command in a root terminal.",
+      "cs": "Pro instalaci spusťte následující příkaz s právy uživatele root.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->linuxtab->3"
       ]
@@ -3086,6 +3175,7 @@
     },
     {
       "en": "Events",
+      "cs": "Události",
       "xloc": [
         "default.handlebars->contextMenu->cxevents",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevEvents",
@@ -3114,6 +3204,7 @@
     {
       "en": "New password:",
       "fr": "Nouveau mot de passe:",
+      "cs": "Nové heslo:",
       "xloc": [
         "default.handlebars->13->884",
         "default.handlebars->13->885",
@@ -3174,6 +3265,7 @@
     },
     {
       "en": "Actions",
+      "cs": "Akce",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->1",
@@ -3273,6 +3365,7 @@
     {
       "en": "Operating System",
       "fr": "Système opérateur",
+      "cs": "Operační systém",
       "xloc": [
         "default.handlebars->13->40",
         "default.handlebars->13->241",
@@ -3288,6 +3381,7 @@
     },
     {
       "en": "Desktop",
+      "cs": "Plocha",
       "xloc": [
         "default.handlebars->contextMenu->cxdesktop",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevDesktop",
@@ -3297,6 +3391,7 @@
     },
     {
       "en": "Medium",
+      "cs": "Středně",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
@@ -3481,6 +3576,7 @@
     },
     {
       "en": "Invitation Link ({0})",
+      "cs": "Link pro pozvání ({0})",
       "xloc": [
         "default.handlebars->13->133"
       ]
@@ -3507,6 +3603,7 @@
     {
       "en": "My Events",
       "fr": "Mes Événements",
+      "cs": "Moje události",
       "xloc": [
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyEvents",
@@ -3562,6 +3659,7 @@
     {
       "en": "Add Agent",
       "fr": "Ajouter un agent",
+      "cs": "Přidat agenta",
       "xloc": [
         "default.handlebars->13->190"
       ]
@@ -3581,6 +3679,7 @@
     {
       "en": "Add CIRA",
       "fr": "Ajouter CIRA",
+      "cs": "Přidat CIRA",
       "xloc": [
         "default.handlebars->13->180"
       ]
@@ -3667,6 +3766,7 @@
     {
       "en": "Up",
       "fr": "Up",
+      "cs": "Nahoru",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -3677,6 +3777,7 @@
     },
     {
       "en": "General",
+      "cs": "Obecné",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDev",
         "default.handlebars->container->topbar->1->1->MeshSubMenuSpan->MeshSubMenu->1->0->MeshGeneral",
@@ -3686,12 +3787,14 @@
     },
     {
       "en": "Connect to your home or office devices from anywhere in the world using",
+      "cs": "Přihlašte se na různá svá nebo firemní zařízení odkudkoliv z celého světa",
       "xloc": [
         "login.handlebars->container->column_l->welcomeText"
       ]
     },
     {
       "en": "Type",
+      "cs": "Typ",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->13->575",
@@ -3706,6 +3809,7 @@
     {
       "en": "Name (optional)",
       "fr": "Nom: (optionnel)",
+      "cs": "Jméno (volitelné)",
       "xloc": [
         "default.handlebars->13->238"
       ]
@@ -3718,12 +3822,14 @@
     },
     {
       "en": "Select a new group for this device",
+      "cs": "Vyber novou skupinu pro toto zařízení",
       "xloc": [
         "default.handlebars->13->522"
       ]
     },
     {
       "en": "Gateway MAC",
+      "cs": "MAC brány",
       "xloc": [
         "default.handlebars->13->67"
       ]
@@ -3736,6 +3842,7 @@
     },
     {
       "en": "User + Files",
+      "cs": "Uživatel + Soubory",
       "xloc": [
         "default.handlebars->13->1129"
       ]
@@ -3808,6 +3915,7 @@
     {
       "en": "My Account",
       "fr": "Mon Compte",
+      "cs": "Můj účet",
       "xloc": [
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyAccount",
@@ -3917,6 +4025,7 @@
     },
     {
       "en": "Filter",
+      "cs": "Filtr",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
         "default.handlebars->container->column_l->p4->3->1->0->3->3"
@@ -3941,6 +4050,7 @@
     {
       "en": "Architecture",
       "fr": "Architecture",
+      "cs": "Architektura",
       "xloc": [
         "default.handlebars->13->43"
       ]
@@ -3983,6 +4093,7 @@
     },
     {
       "en": "Last 100",
+      "cs": "Posledních 100",
       "fr": "100 dernières",
       "xloc": [
         "default.handlebars->container->column_l->p41->3->1->p41limitdropdown->1"
@@ -3991,6 +4102,7 @@
     {
       "en": "Last 120",
       "fr": "120 dernières",
+      "cs": "Posledních 120",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3->p3limitdropdown->3",
         "default.handlebars->container->column_l->p16->3->1->0->5->p16limitdropdown->3",
@@ -4017,12 +4129,14 @@
     },
     {
       "en": "Account security",
+      "cs": "Nastavení bezpečnosti",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2AccountSecurity->1->0"
       ]
     },
     {
       "en": "MeshCentral",
+      "cs": "MeshCentral",
       "xloc": [
         "login.handlebars->container->column_l->welcomeText->1"
       ]
@@ -4054,6 +4168,7 @@
     },
     {
       "en": "To uninstall, cut and paste the following command as root.",
+      "cs": "Pro odinstalování spustťe tento příkaz pod s uživatelskými právy root.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->linuxtab->9"
       ]
@@ -4061,12 +4176,14 @@
     {
       "en": " Password hint can be used but is not recommanded.",
       "fr": "Un indice de mot de passe peut être utilisé mais n'est pas recommandé.",
+      "cs": " Nápověda hesla může být použita, ale není doporučováno.",
       "xloc": [
         "default.handlebars->13->882"
       ]
     },
     {
       "en": "{0} second{1} until disconnect",
+      "cs": "{0} sekund{1} do odpojení",
       "xloc": [
         "default.handlebars->13->23"
       ]
@@ -4074,6 +4191,7 @@
     {
       "en": "1 byte",
       "fr": "1 octet",
+      "cs": "1 byte",
       "xloc": [
         "default.handlebars->13->1086",
         "default-mobile.handlebars->9->74",
@@ -4094,6 +4212,7 @@
     },
     {
       "en": "No Keys Configured",
+      "cs": "Žádný klíč není zkonfigurován",
       "xloc": [
         "default.handlebars->13->102"
       ]
@@ -4113,6 +4232,7 @@
     },
     {
       "en": "Create one",
+      "cs": "Vytvořit",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->newAccountDiv->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->newAccountDiv->1"
@@ -4132,6 +4252,7 @@
     },
     {
       "en": "No Terminal",
+      "cs": "Žádný terminál",
       "xloc": [
         "default.handlebars->13->1053",
         "default-mobile.handlebars->9->317"
@@ -4139,6 +4260,7 @@
     },
     {
       "en": "Services",
+      "cs": "Služby",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsAreaTop->deskToolsTopTabService"
       ]
@@ -4159,6 +4281,7 @@
     {
       "en": "1 month",
       "fr": "1 mois",
+      "cs": "1 měsíc",
       "xloc": [
         "default.handlebars->13->131",
         "default.handlebars->13->252",
@@ -4167,6 +4290,7 @@
     },
     {
       "en": "You have been invited to install a software that will allow a remote operator to fully access your computer remotely including the desktop and files.\n                Only follow the instructions below if this invitation was expected and you know who will be accessing your computer.\n                Selecting your operation system and follow the instructions below.",
+      "cs": "Byla vám doručena pozvánka k instalaci softwaru, který umožňuje vzdálenou správu zařízení.\n                Postupujte podle níže uvedených pokynů, pokud jste si vědom toho, že tato pozvánka je legitimní a chcete tento přístup umožnit.\n                Vyberte si operační systém a postupujte dle pokynů níže.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
       ]
@@ -4181,6 +4305,7 @@
     {
       "en": "Sort by size",
       "fr": "Trier par taille",
+      "cs": "Třídit podle velikosti",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->2->p5filesubhead->1->p5sortdropdown->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sortdropdown->3",
@@ -4196,6 +4321,7 @@
     },
     {
       "en": "Delete User {0}",
+      "cs": "Smazat uživatele {0}",
       "xloc": [
         "default.handlebars->13->1228"
       ]
@@ -4227,6 +4353,7 @@
     },
     {
       "en": "Columns",
+      "cs": "Buňky",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarViewIcons",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->1"
@@ -4242,6 +4369,7 @@
     },
     {
       "en": "Copy name to clipboard",
+      "cs": "Zkopírovat jméno do schránky",
       "xloc": [
         "default.handlebars->13->58"
       ]
@@ -4254,6 +4382,7 @@
     },
     {
       "en": "Tags",
+      "cs": "Tagy",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->7",
         "default.handlebars->13->548",
@@ -4265,6 +4394,7 @@
     {
       "en": "Size",
       "fr": "Taille",
+      "cs": "Velikost",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize"
       ]
@@ -4338,6 +4468,7 @@
     },
     {
       "en": "Checking...",
+      "cs": "Kontrola...",
       "xloc": [
         "default.handlebars->13->664"
       ]
@@ -4400,6 +4531,7 @@
     {
       "en": "Last 8 hours",
       "fr": "8 dernières heures",
+      "cs": "Posledních 8 hodin",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40time->3"
       ]
@@ -4453,6 +4585,7 @@
     {
       "en": "Last 500",
       "fr": "500 dernières",
+      "cs": "Posledních 500",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3->p3limitdropdown->7",
         "default.handlebars->container->column_l->p16->3->1->0->5->p16limitdropdown->7",
@@ -4463,6 +4596,7 @@
     {
       "en": "Last week",
       "fr": "Dernière semaine",
+      "cs": "Poslední týden",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40time->7"
       ]
@@ -4494,12 +4628,14 @@
     },
     {
       "en": "Agent is online",
+      "cs": "Agent je online",
       "xloc": [
         "default.handlebars->13->635"
       ]
     },
     {
       "en": "Power",
+      "cs": "Napájení",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->3"
       ]
@@ -4558,6 +4694,7 @@
     },
     {
       "en": "Agent connected",
+      "cs": "Agent připojen",
       "xloc": [
         "default.handlebars->13->115",
         "default.handlebars->13->487",
@@ -4642,6 +4779,7 @@
     {
       "en": "Good Password",
       "fr": "Bon mot de passe",
+      "cs": "Dobré heslo",
       "xloc": [
         "login.handlebars->5->5",
         "login.handlebars->5->9",
@@ -4652,6 +4790,7 @@
     {
       "en": "Memory",
       "fr": "Mémoire",
+      "cs": "Paměť",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->3",
         "default.handlebars->13->36",
@@ -4691,12 +4830,14 @@
     },
     {
       "en": "Log Event",
+      "cs": "Log udalostí",
       "xloc": [
         "default.handlebars->13->467"
       ]
     },
     {
       "en": "Add Mesh Agent",
+      "cs": "Přidat agenta",
       "xloc": [
         "default.handlebars->13->302"
       ]
@@ -4732,6 +4873,7 @@
     },
     {
       "en": "Frame rate",
+      "cs": "Obnovování",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->1"
       ]
@@ -4751,6 +4893,7 @@
     },
     {
       "en": "Plugins",
+      "cs": "Pluginy",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevPlugins"
       ]
@@ -4758,6 +4901,7 @@
     {
       "en": "Name",
       "fr": "Nom",
+      "cs": "Jméno",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader->3",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->3",
@@ -4916,6 +5060,7 @@
     },
     {
       "en": "Device Action",
+      "cs": "Akce zařízení",
       "xloc": [
         "default.handlebars->13->509",
         "default-mobile.handlebars->9->208"
@@ -4992,6 +5137,7 @@
     },
     {
       "en": "Cut",
+      "cs": "Vyjmout",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -5100,6 +5246,7 @@
     },
     {
       "en": "Delete Device",
+      "cs": "Smazat zařízení",
       "xloc": [
         "default.handlebars->13->472",
         "default-mobile.handlebars->9->196"
@@ -5108,6 +5255,7 @@
     {
       "en": "Reset Account",
       "fr": "Réinitialiser le Compte",
+      "cs": "Reset účtu",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->7->1->2->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpanel->1->7->1->2->1->1"
@@ -5123,6 +5271,7 @@
     },
     {
       "en": "Change Group",
+      "cs": "Změnit skupinu",
       "xloc": [
         "default.handlebars->13->470",
         "default.handlebars->13->525",
@@ -5192,6 +5341,7 @@
     },
     {
       "en": "Copy",
+      "cs": "Kopírovat",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -5211,6 +5361,7 @@
     },
     {
       "en": "Very slow",
+      "cs": "Velmi pomalu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->7"
@@ -5225,6 +5376,7 @@
     },
     {
       "en": "Copy MacOS agent URL to clipboard",
+      "cs": "Kopírovat odkaz pro MacOS agenta do schránky",
       "xloc": [
         "default.handlebars->13->293"
       ]
@@ -5232,6 +5384,7 @@
     {
       "en": "OS Name",
       "fr": "Nom du système",
+      "cs": "Jméno operačního systému",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->7->1"
       ]
@@ -5293,6 +5446,7 @@
     {
       "en": "Restrictions",
       "fr": "Restrictions",
+      "cs": "Omezení",
       "xloc": [
         "default.handlebars->13->1186"
       ]
@@ -5341,6 +5495,7 @@
     },
     {
       "en": "Last seen:",
+      "cs": "Naposledy spatřen:",
       "xloc": [
         "default.handlebars->13->44",
         "default.handlebars->13->495"
@@ -5364,6 +5519,7 @@
     },
     {
       "en": "{0}k left",
+      "cs": "{0}k zbývá",
       "xloc": [
         "default-mobile.handlebars->9->68"
       ]
@@ -5388,6 +5544,7 @@
     },
     {
       "en": "MAC address",
+      "cs": "MAC adresa",
       "xloc": [
         "default.handlebars->13->59"
       ]
@@ -5423,6 +5580,7 @@
     },
     {
       "en": "{0} gigabytes remaining",
+      "cs": "{0} gigabytů zbývá",
       "xloc": [
         "default.handlebars->13->1075"
       ]
@@ -5435,6 +5593,7 @@
     },
     {
       "en": "Don't have an account?",
+      "cs": "Nemáte účet?",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->newAccountDiv",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->newAccountDiv"
@@ -5442,6 +5601,7 @@
     },
     {
       "en": "MQTT connected",
+      "cs": "MQTT připojeno",
       "xloc": [
         "default.handlebars->13->118",
         "default.handlebars->13->493"
@@ -5456,6 +5616,7 @@
     {
       "en": "Security",
       "fr": "Sécurité",
+      "cs": "Bezpečnost",
       "xloc": [
         "default.handlebars->13->200",
         "default.handlebars->13->515",
@@ -5471,6 +5632,7 @@
     },
     {
       "en": "Create a new device group using the options below.",
+      "cs": "Vytvořit novou skupinu zařízení podle nastavení níže.",
       "xloc": [
         "default.handlebars->13->895"
       ]
@@ -5526,6 +5688,7 @@
     {
       "en": "Sort by state",
       "fr": "Trier par état",
+      "cs": "Třídit podle stavu",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader"
       ]
@@ -5551,6 +5714,7 @@
     },
     {
       "en": "Normal Speed",
+      "cs": "Normalní rychlost",
       "xloc": [
         "player.htm->p11->deskarea0->deskarea4->3->PlaySpeed->5"
       ]
@@ -5587,6 +5751,7 @@
     },
     {
       "en": "Remote Agent Installation",
+      "cs": "Instalace agenta pro vzdálený přístup",
       "xloc": [
         "agentinvite.handlebars->container->column_l->1"
       ]
@@ -5608,6 +5773,7 @@
     {
       "en": "Last interfaces update",
       "fr": "Dernière mise à jour des interfaces",
+      "cs": "Poslední změna rozhraní",
       "xloc": [
         "default.handlebars->13->54"
       ]
@@ -5620,6 +5786,7 @@
     },
     {
       "en": "Console - ",
+      "cs": "Konzole - ",
       "xloc": [
         "default.handlebars->13->379"
       ]
@@ -5627,6 +5794,7 @@
     {
       "en": "Map",
       "fr": "Carte",
+      "cs": "Mapa",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarViewIcons",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->viewselectmapoption"
@@ -5635,6 +5803,7 @@
     {
       "en": "Success",
       "fr": "Succès",
+      "cs": "Úspěch",
       "xloc": [
         "default.handlebars->13->45"
       ]
@@ -5642,6 +5811,7 @@
     {
       "en": "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \\\"{0}\\\" device group.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage. Un email doit être envoyé avec le lien vers l’installation de l’agent de maillage pour le groupe de périphériques \\\"{0}\\\".",
+      "cs": "Pozvěte někoho k instalaci agenta. Emailem bude zaslán link s adresou agenta pro skupinu \\\"{0}\\\".",
       "xloc": [
         "default.handlebars->13->237"
       ]
@@ -5649,6 +5819,7 @@
     {
       "en": "Permissions",
       "fr": "Permissions",
+      "cs": "Práva",
       "xloc": [
         "default.handlebars->13->1062",
         "default.handlebars->13->1116",
@@ -5683,6 +5854,7 @@
     {
       "en": "No devices in this group",
       "fr": "Aucun appareil dans ce groupe",
+      "cs": "Žádné zařízení v této skupině",
       "xloc": [
         "default.handlebars->13->160",
         "default-mobile.handlebars->9->94"
@@ -5712,6 +5884,7 @@
     {
       "en": "Terminal",
       "fr": "Terminal",
+      "cs": "Terminál",
       "xloc": [
         "default.handlebars->contextMenu->cxterminal",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevTerminal",
@@ -5749,6 +5922,7 @@
     {
       "en": "Welcome",
       "fr": "Bienvenue",
+      "cs": "Vítejte",
       "xloc": [
         "login.handlebars->container->column_l->1"
       ]
@@ -5768,12 +5942,14 @@
     },
     {
       "en": ", the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the \"My Devices\" section of this web site and you will be able to monitor them and take control of them.",
+      "cs": ". Jednoduchá správa přes web. Jediné co potřebujete je agent na daném zařízení.  Po instalaci uvidíte zařízení v sekci \"Moje zařízení\" a můžete toto zařízení ovládat.",
       "xloc": [
         "login.handlebars->container->column_l->welcomeText"
       ]
     },
     {
       "en": "Select an operation to perform on this device.",
+      "cs": "Vyber operaci na tomto zařízení.",
       "xloc": [
         "default.handlebars->13->502",
         "default-mobile.handlebars->9->202"
@@ -5781,6 +5957,7 @@
     },
     {
       "en": "Day",
+      "cs": "Den",
       "xloc": [
         "default.handlebars->13->510"
       ]
@@ -5798,6 +5975,7 @@
     {
       "en": "Remove",
       "fr": "Retirer",
+      "cs": "Odstranit",
       "xloc": [
         "default.handlebars->13->101"
       ]
@@ -5989,6 +6167,7 @@
     },
     {
       "en": "Fast",
+      "cs": "Rychle",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->1"
@@ -6039,6 +6218,7 @@
     },
     {
       "en": "Download",
+      "cs": "Stažení",
       "xloc": [
         "download.handlebars->container->page_content->column_l->1"
       ]
@@ -6244,6 +6424,7 @@
     {
       "en": "Tools",
       "fr": "Outils",
+      "cs": "Nástroje",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -6254,6 +6435,7 @@
     },
     {
       "en": "No TLS security",
+      "cs": "Žádné TLS",
       "xloc": [
         "default.handlebars->13->201",
         "default.handlebars->13->516",
@@ -6276,12 +6458,14 @@
     },
     {
       "en": "Enable web notifications",
+      "cs": "Zapnout notifikace prohlížeče",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2AccountActions->3->accountEnableNotificationsSpan->0"
       ]
     },
     {
       "en": "Public Link",
+      "cs": "Veřejný odkaz",
       "xloc": [
         "default.handlebars->13->1083",
         "default-mobile.handlebars->9->71"
@@ -6289,6 +6473,7 @@
     },
     {
       "en": "No Tools (MeshCmd/Router)",
+      "cs": "Žádné nástroje (MeshCmd/Router)",
       "xloc": [
         "default.handlebars->13->1179"
       ]
@@ -6321,6 +6506,7 @@
     },
     {
       "en": "Processes",
+      "cs": "Procesy",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsAreaTop->deskToolsTopTabProcess",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->DeskToolsBar"
@@ -6335,6 +6521,7 @@
     {
       "en": "Last 250",
       "fr": "250 dernières",
+      "cs": "Posledních 250",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3->p3limitdropdown->5",
         "default.handlebars->container->column_l->p16->3->1->0->5->p16limitdropdown->5",
@@ -6357,6 +6544,7 @@
     {
       "en": "Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \\\"{0}\\\" device group. The link is public and no account for this server is needed.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage en partageant un lien d'invitation. Ce lien renvoie l'utilisateur aux instructions d'installation du groupe de périphériques \\\"{0}\\\". Le lien est public et aucun compte n'est requis pour ce serveur.",
+      "cs": "Pozvěte někoho k instalaci agenta pomocí sdíleného odkazu. Tento link obsahuje  instrukce pro instalaci do skupiny  \\\"{0}\\\". Link je veřejný a protistrana nepotřebuje žádný účet na tomto serveru.",
       "xloc": [
         "default.handlebars->13->260"
       ]
@@ -6375,6 +6563,7 @@
     },
     {
       "en": "Password hint:",
+      "cs": "Nápovšda k heslu:",
       "xloc": [
         "default.handlebars->13->886",
         "default-mobile.handlebars->9->44"
@@ -6382,6 +6571,7 @@
     },
     {
       "en": "Input",
+      "cs": "Vstup",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->9->DeskControlSpan",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->11->DeskControlSpan"
@@ -6389,12 +6579,14 @@
     },
     {
       "en": "Device",
+      "cs": "Zařízení",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->5"
       ]
     },
     {
       "en": "Device is in deep sleep state (S3).",
+      "cs": "Zařízení je v hlubokém spánku (S3).",
       "xloc": [
         "default.handlebars->13->311"
       ]
@@ -6416,6 +6608,7 @@
     },
     {
       "en": "User Name",
+      "cs": "Uživatel",
       "xloc": [
         "default.handlebars->13->1060"
       ]
@@ -6445,6 +6638,7 @@
     {
       "en": "Back",
       "fr": "Retour",
+      "cs": "Zpět",
       "xloc": [
         "default.handlebars->container->column_l->p10->1->1->0->1->p10title->p10BackButton",
         "default.handlebars->container->column_l->p11->p11title->p11deviceNameHeader->p11BackButton",
@@ -6475,6 +6669,7 @@
     },
     {
       "en": "Send installation link",
+      "cs": "Odeslat odkaz na instalaci",
       "xloc": [
         "default.handlebars->13->242"
       ]
@@ -6501,6 +6696,7 @@
     {
       "en": "Invite",
       "fr": "Inviter",
+      "cs": "Pozvat",
       "xloc": [
         "default.handlebars->13->192",
         "default.handlebars->13->269",
@@ -6550,6 +6746,7 @@
     {
       "en": "Sleep",
       "fr": "Dormir",
+      "cs": "Spánek",
       "xloc": [
         "default.handlebars->13->2",
         "default.handlebars->13->3",
@@ -6609,6 +6806,7 @@
     },
     {
       "en": "Change Password",
+      "cs": "Změnit heslo",
       "xloc": [
         "default.handlebars->13->888",
         "default-mobile.handlebars->9->46"
@@ -6666,6 +6864,7 @@
     {
       "en": "Add Device Group",
       "fr": "Ajouter un groupe",
+      "cs": "Přidat skupinu zařízení",
       "xloc": [
         "default.handlebars->13->163"
       ]
@@ -6746,6 +6945,7 @@
     {
       "en": "My Files",
       "fr": "Mes Dossiers",
+      "cs": "Moje soubory",
       "xloc": [
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyFiles",
@@ -6799,6 +6999,7 @@
     {
       "en": "Sort",
       "fr": "Trier",
+      "cs": "Třídit",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort"
       ]
@@ -6813,6 +7014,7 @@
     {
       "en": "Upload",
       "fr": "Télécharger",
+      "cs": "Nahrát",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -6856,6 +7058,7 @@
     {
       "en": "Power off",
       "fr": "Éteindre",
+      "cs": "Vypnout",
       "xloc": [
         "default.handlebars->13->6",
         "default.handlebars->13->506",
@@ -6942,6 +7145,7 @@
     },
     {
       "en": "Change password",
+      "cs": "Změnit heslo",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2AccountActions->3->13",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->5->0"
@@ -6962,6 +7166,7 @@
     },
     {
       "en": "Connect",
+      "cs": "Připojit",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1span",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2span",
@@ -7080,6 +7285,7 @@
     {
       "en": "Last 60",
       "fr": "60 dernières",
+      "cs": "Posledních 60",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3->p3limitdropdown->1",
         "default.handlebars->container->column_l->p16->3->1->0->5->p16limitdropdown->1",
@@ -7100,6 +7306,7 @@
     },
     {
       "en": "Logout",
+      "cs": "Odhlásit",
       "xloc": [
         "default-mobile.handlebars->topMenu->logoutMenuOption->0->0"
       ]
@@ -7158,6 +7365,7 @@
     },
     {
       "en": "Download File",
+      "cs": "Stáhnout soubor",
       "xloc": [
         "default.handlebars->13->627",
         "default-mobile.handlebars->9->268"
@@ -7184,6 +7392,7 @@
     },
     {
       "en": "Address",
+      "cs": "Adresa",
       "xloc": [
         "default.handlebars->13->137",
         "default.handlebars->13->154"
@@ -7211,6 +7420,7 @@
     },
     {
       "en": "Delete account",
+      "cs": "Smazat účet",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2AccountActions->3->17",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->7->0"
@@ -7256,6 +7466,7 @@
     },
     {
       "en": "To remove a mesh agent, download the file below, run it and click \\\"uninstall\\\".",
+      "cs": "Pro odstranění agenta si stáhněte soubor níže, spusťte tento soubor a zvolte \\\"uninstall\\\".",
       "xloc": [
         "default.handlebars->13->294"
       ]
@@ -7424,6 +7635,7 @@
     {
       "en": "Weak Password",
       "fr": "Mot de passe faible",
+      "cs": "Slabé heslo",
       "xloc": [
         "login.handlebars->5->6",
         "login.handlebars->5->10",
@@ -7451,6 +7663,7 @@
     },
     {
       "en": "Settings",
+      "cs": "Nastavení",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
@@ -7479,6 +7692,7 @@
     {
       "en": "Requirements: ",
       "fr": "Exigences:",
+      "cs": "Požadavky: ",
       "xloc": [
         "default.handlebars->13->887"
       ]
@@ -7523,6 +7737,7 @@
     },
     {
       "en": "General information",
+      "cs": "Obecné informace",
       "xloc": [
         "default.handlebars->13->356"
       ]
@@ -7535,6 +7750,7 @@
     },
     {
       "en": ", run it and press \"Install\" or \"Connect\".",
+      "cs": ", spusťte soubor a zvolte \"Install\" nebo \"Connect\".",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab64->3",
         "agentinvite.handlebars->container->column_l->5->wintab32->3"
@@ -7596,6 +7812,7 @@
     },
     {
       "en": "To add a computer to {0} run the following command. Root credentials will be needed.",
+      "cs": "Pro přidání do {0} spusťte následující příkaz. Je třeba spouštět pod rootem.",
       "xloc": [
         "default.handlebars->13->289"
       ]
@@ -7633,6 +7850,7 @@
     },
     {
       "en": "Remote",
+      "cs": "Vzdálený",
       "xloc": [
         "messenger.handlebars->remoteVideo->1"
       ]
@@ -7652,6 +7870,7 @@
     {
       "en": "1 hour",
       "fr": "1 heure",
+      "cs": "1 hodina",
       "xloc": [
         "default.handlebars->13->248",
         "default.handlebars->13->262"
@@ -7665,12 +7884,14 @@
     },
     {
       "en": "Plugins -",
+      "cs": "Pluginy -",
       "xloc": [
         "default.handlebars->container->column_l->p19->1"
       ]
     },
     {
       "en": "Waiting for other user...",
+      "cs": "Čekání na ostatní uživatele...",
       "xloc": [
         "messenger.handlebars->13->6"
       ]
@@ -7683,12 +7904,14 @@
     },
     {
       "en": "Image Encoding",
+      "cs": "Kódovaní obrazu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->1"
       ]
     },
     {
       "en": "Move to device group",
+      "cs": "Přesunout do skupiny zařízení",
       "xloc": [
         "default.handlebars->13->346"
       ]
@@ -7716,6 +7939,7 @@
     {
       "en": "New Folder",
       "fr": "Nouveau Dossier",
+      "cs": "Nový adresář",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -7727,6 +7951,7 @@
     },
     {
       "en": "Features",
+      "cs": "Funkce",
       "xloc": [
         "default.handlebars->13->930"
       ]
@@ -7746,12 +7971,14 @@
     },
     {
       "en": "7 Day Power State",
+      "cs": "7 denní statistika provozu",
       "xloc": [
         "default.handlebars->13->512"
       ]
     },
     {
       "en": "Copy to clipboard",
+      "cs": "Zkopírovat do schránky",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->linuxtab",
         "agentinvite.handlebars->container->column_l->5->linuxtab"
@@ -7784,12 +8011,14 @@
     },
     {
       "en": "Local",
+      "cs": "Lokální",
       "xloc": [
         "messenger.handlebars->localVideo->1"
       ]
     },
     {
       "en": "Lock Account",
+      "cs": "Uzamknout účet",
       "xloc": [
         "default.handlebars->13->1177"
       ]
@@ -7797,6 +8026,7 @@
     {
       "en": "Slow",
       "fr": "Lent",
+      "cs": "Pomalu",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->5"
@@ -7860,6 +8090,7 @@
     },
     {
       "en": "Failed",
+      "cs": "Selhalo",
       "xloc": [
         "default.handlebars->13->46"
       ]
@@ -7887,6 +8118,7 @@
     },
     {
       "en": "Mesh Agent Console",
+      "cs": "Konzole agenta",
       "xloc": [
         "default.handlebars->13->1035",
         "default-mobile.handlebars->9->300"
@@ -7894,6 +8126,7 @@
     },
     {
       "en": "Server Statistics",
+      "cs": "Statistiky serveru",
       "xloc": [
         "default.handlebars->container->column_l->p6->8"
       ]
@@ -7901,6 +8134,7 @@
     {
       "en": "SelectAll",
       "fr": "ToutSélectionner",
+      "cs": "Vybrat vše",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1"
@@ -7908,6 +8142,7 @@
     },
     {
       "en": "click to reconnect",
+      "cs": "klikni pro opětovné připojení",
       "xloc": [
         "default.handlebars->container->column_l->p0->p0message->2->0",
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message->2->0"
@@ -7937,6 +8172,7 @@
     {
       "en": "Keyboard",
       "fr": "Clavier",
+      "cs": "Klávesnice",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
@@ -7944,6 +8180,7 @@
     {
       "en": "Refresh",
       "fr": "Rafraîchir",
+      "cs": "Obnovit",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsAreaTop->DeskToolsRefreshButton",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -7957,6 +8194,7 @@
     {
       "en": "Megabytes",
       "fr": "Mégaoctets",
+      "cs": "Megabytů",
       "xloc": [
         "default.handlebars->13->1249"
       ]
@@ -7981,12 +8219,14 @@
     },
     {
       "en": "Details -",
+      "cs": "Detaily -",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17title->3"
       ]
     },
     {
       "en": "Device is in sleep state (S1)",
+      "cs": "Zařízení je ve stavu spánku (S1)",
       "xloc": [
         "default.handlebars->13->320",
         "default-mobile.handlebars->9->112"
@@ -8000,6 +8240,7 @@
     },
     {
       "en": "Setup Method",
+      "cs": "Setup",
       "xloc": [
         "default.handlebars->13->217"
       ]
@@ -8036,6 +8277,7 @@
     },
     {
       "en": "Device is in deep sleep state (S3)",
+      "cs": "Zařízení je v hlubokém spánku (S3)",
       "xloc": [
         "default.handlebars->13->322",
         "default-mobile.handlebars->9->114"
@@ -8055,6 +8297,7 @@
     },
     {
       "en": "Open File...",
+      "cs": "Otevřít soubor...",
       "xloc": [
         "player.htm->p11->deskarea0->deskarea1->3",
         "player.htm->3->19"
@@ -8076,6 +8319,7 @@
     {
       "en": "Strong Password",
       "fr": "Mot de passe fort",
+      "cs": "Silné heslo",
       "xloc": [
         "login.handlebars->5->4",
         "login.handlebars->5->8",
@@ -8104,6 +8348,7 @@
     },
     {
       "en": "Download the installer here",
+      "cs": "Stáhnout instalaci zde",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->macostab->3->macosurl"
       ]
@@ -8123,6 +8368,7 @@
     },
     {
       "en": "Activation",
+      "cs": "Aktivace",
       "xloc": [
         "default.handlebars->13->186",
         "default.handlebars->13->188",
@@ -8194,6 +8440,7 @@
     },
     {
       "en": "Files -",
+      "cs": "Soubory -",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13title->3"
       ]
@@ -8243,12 +8490,14 @@
     },
     {
       "en": "Perform Agent Action",
+      "cs": "Akce agenta",
       "xloc": [
         "default.handlebars->13->642"
       ]
     },
     {
       "en": "Email not verified",
+      "cs": "Email není ověřen",
       "xloc": [
         "default.handlebars->13->1189"
       ]
@@ -8298,6 +8547,7 @@
     },
     {
       "en": "Account Reset",
+      "cs": "Reset hesla",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->5->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpanel->1->5->1"
@@ -8305,12 +8555,14 @@
     },
     {
       "en": "Delete Nodes",
+      "cs": "Smazat nody",
       "xloc": [
         "default.handlebars->13->352"
       ]
     },
     {
       "en": "Connect to server",
+      "cs": "Připojit se na server",
       "xloc": [
         "default.handlebars->13->994",
         "default.handlebars->13->998"
@@ -8324,6 +8576,7 @@
     },
     {
       "en": "Enable browser notification",
+      "cs": "Zapnout notifikace v prohlížeči",
       "xloc": [
         "messenger.handlebars->xtop"
       ]
@@ -8331,6 +8584,7 @@
     {
       "en": "Password:",
       "fr": "Mot de passe:",
+      "cs": "Heslo:",
       "xloc": [
         "default.handlebars->13->878",
         "default.handlebars->13->879",
@@ -8363,6 +8617,7 @@
     {
       "en": "Select None",
       "fr": "Rien sélectionner",
+      "cs": "Vybrat nic",
       "xloc": [
         "default.handlebars->meshContextMenu->cxselectnone",
         "default.handlebars->13->337",
@@ -8378,6 +8633,7 @@
     },
     {
       "en": "Desktops",
+      "cs": "Desktopy",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarViewIcons",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5"
@@ -8385,6 +8641,7 @@
     },
     {
       "en": "Device name",
+      "cs": "Název zařízení",
       "xloc": [
         "default.handlebars->13->369"
       ]
@@ -8409,6 +8666,7 @@
     },
     {
       "en": "Try again.",
+      "cs": "Zkusit znovu.",
       "xloc": [
         "default.handlebars->13->92"
       ]
@@ -8424,6 +8682,7 @@
     },
     {
       "en": "Change your account password by entering the old password and new password twice in the boxes below.",
+      "cs": "Změnit heslo zadáním starého a dvakrát nového hesla níže.",
       "xloc": [
         "default.handlebars->13->881"
       ]
@@ -8431,6 +8690,7 @@
     {
       "en": "Password*",
       "fr": "Mot de passe*",
+      "cs": "Heslo*",
       "xloc": [
         "default.handlebars->13->985",
         "default.handlebars->13->986"
@@ -8451,6 +8711,7 @@
     },
     {
       "en": "Wake-up devices",
+      "cs": "Probudit zařízení",
       "xloc": [
         "default.handlebars->13->342"
       ]
@@ -8458,6 +8719,7 @@
     {
       "en": "8 hours",
       "fr": "8 heures",
+      "cs": "8 hodin",
       "xloc": [
         "default.handlebars->13->249",
         "default.handlebars->13->263"
@@ -8478,6 +8740,7 @@
     },
     {
       "en": "{0} hour{1}",
+      "cs": "{0} hodina{1}",
       "xloc": [
         "default.handlebars->13->128"
       ]
@@ -8491,6 +8754,7 @@
     {
       "en": "Settings...",
       "fr": "Paramètres...",
+      "cs": "Nastavení...",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
       ]
@@ -8498,6 +8762,7 @@
     {
       "en": "Save a screenshot of the remote desktop",
       "fr": "Enregistrer une capture d'écran du bureau distant",
+      "cs": "Uložit screenshot vzdáleného počítače",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
       ]
@@ -8578,6 +8843,7 @@
     },
     {
       "en": "Create Device Group",
+      "cs": "Vytvořit skupinu zařízení",
       "xloc": [
         "default-mobile.handlebars->9->58"
       ]
@@ -8605,6 +8871,7 @@
     },
     {
       "en": "Mesh agent is connected and ready for use.",
+      "cs": "Agent je připojen a připraven.",
       "xloc": [
         "default.handlebars->13->142",
         "default.handlebars->13->326",
@@ -8620,6 +8887,7 @@
     {
       "en": "Small",
       "fr": "Petit",
+      "cs": "Malé",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->1"
       ]
@@ -8627,12 +8895,14 @@
     {
       "en": "1 active session",
       "fr": "1 session active",
+      "cs": "1 session aktivní",
       "xloc": [
         "default.handlebars->13->1216"
       ]
     },
     {
       "en": "Delete {0} selected items?",
+      "cs": "Smazat {0} vybrané prvky?",
       "xloc": [
         "default.handlebars->13->608",
         "default.handlebars->13->1091",
@@ -8649,6 +8919,7 @@
     },
     {
       "en": "None",
+      "cs": "Nic",
       "xloc": [
         "default.handlebars->container->column_l->p41->3->3->p41traceStatus",
         "default.handlebars->13->25",
@@ -8727,6 +8998,7 @@
     },
     {
       "en": "Delete {0}?",
+      "en": "Smazat {0}?",
       "xloc": [
         "default-mobile.handlebars->9->216"
       ]
@@ -8736,6 +9008,7 @@
     },
     {
       "en": "{0} kilobytes remaining",
+      "cs": "{0} kilobytů zbývá",
       "xloc": [
         "default.handlebars->13->1073"
       ]
@@ -8749,6 +9022,7 @@
     },
     {
       "en": "Manage Device Group Computers",
+      "cs": "Správa skupin zařízení",
       "xloc": [
         "default.handlebars->13->1028",
         "default.handlebars->13->1046",
@@ -8839,12 +9113,14 @@
     },
     {
       "en": "Send invitation email.",
+      "cs": "Zaslat pozvánku emailem.",
       "xloc": [
         "default.handlebars->13->1164"
       ]
     },
     {
       "en": "Full Administrator (all rights)",
+      "cs": "Hlavní administrator (všechna práva)",
       "xloc": [
         "default.handlebars->13->1043"
       ]
@@ -8858,6 +9134,7 @@
     {
       "en": "All",
       "fr": "Tout",
+      "cs": "Vše",
       "xloc": [
         "default-mobile.handlebars->9->73",
         "default-mobile.handlebars->9->241",
@@ -8866,6 +9143,7 @@
     },
     {
       "en": "Full administrator",
+      "cs": "Hlavní administrator",
       "xloc": [
         "default.handlebars->13->1184"
       ]
@@ -8879,6 +9157,7 @@
     },
     {
       "en": "Storage exceed",
+      "cs": "Uložiště plné",
       "xloc": [
         "default-mobile.handlebars->9->66"
       ]
@@ -8891,6 +9170,7 @@
     },
     {
       "en": "No users found.",
+      "cs": "Žádný uživatele nalezen.",
       "xloc": [
         "default.handlebars->13->1121"
       ]
@@ -8898,6 +9178,7 @@
     {
       "en": "Rename",
       "fr": "Renommer",
+      "cs": "Přejmenovat",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -8917,6 +9198,7 @@
     },
     {
       "en": "Email is verified.",
+      "cs": "Email je ověřen.",
       "xloc": [
         "default.handlebars->13->1163"
       ]
@@ -8937,6 +9219,7 @@
     },
     {
       "en": "Device is powered",
+      "cs": "Zařízení je zapnuto",
       "xloc": [
         "default.handlebars->13->319",
         "default-mobile.handlebars->9->111"
@@ -8944,6 +9227,7 @@
     },
     {
       "en": "My Server Stats",
+      "cs": "Statistika serveru",
       "xloc": [
         "default.handlebars->container->column_l->p40->1"
       ]
@@ -8964,18 +9248,21 @@
     {
       "en": "2x Speed",
       "fr": "2x vitesse",
+      "cs": "2x rychlost",
       "xloc": [
         "player.htm->p11->deskarea0->deskarea4->3->PlaySpeed->7"
       ]
     },
     {
       "en": "Verify Email",
+      "cs": "Ověřit Email",
       "xloc": [
         "default.handlebars->container->footer->3->verifyEmailId2"
       ]
     },
     {
       "en": "Toggle tools view",
+      "cs": "Přepnout zobrazení nástrojů",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -8992,6 +9279,7 @@
     {
       "en": " without TLS.",
       "fr": "sans TLS.",
+      "cs": " bez TLS.",
       "xloc": [
         "default.handlebars->13->126"
       ]
@@ -8999,6 +9287,7 @@
     {
       "en": "Weak",
       "fr": "Faible",
+      "cs": "Slabé",
       "xloc": [
         "default.handlebars->13->906"
       ]
@@ -9021,6 +9310,7 @@
     },
     {
       "en": ", click here to enable it.",
+      "cs": ", zde kliknout pro aktivaci.",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3->p11warninga",
         "default.handlebars->container->column_l->p12->p12warning->3->p12warninga"
@@ -9028,6 +9318,7 @@
     },
     {
       "en": "Agents",
+      "cs": "Agenti",
       "xloc": [
         "default.handlebars->13->1244"
       ]
@@ -9086,6 +9377,7 @@
     },
     {
       "en": "Online Users",
+      "cs": "Online uživatelů",
       "xloc": [
         "default.handlebars->13->1117"
       ]
@@ -9124,6 +9416,7 @@
     },
     {
       "en": "Protocol",
+      "cs": "Protokol",
       "xloc": [
         "player.htm->3->15"
       ]
@@ -9131,6 +9424,7 @@
     {
       "en": " - Reset in {0} day{1}.",
       "fr": "- Réinitialiser dans le {0} jour {1}.",
+      "cs": " - Reset v {0} den{1}.",
       "xloc": [
         "default.handlebars->13->22",
         "default-mobile.handlebars->9->13"
@@ -9138,6 +9432,7 @@
     },
     {
       "en": "Notes",
+      "cs": "Poznámky",
       "xloc": [
         "default.handlebars->13->465",
         "default.handlebars->13->498",
@@ -9177,6 +9472,7 @@
     {
       "en": "My Server",
       "fr": "Mon Serveur",
+      "cs": "Můj server",
       "xloc": [
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyServer",
@@ -9210,6 +9506,7 @@
     },
     {
       "en": "Files",
+      "cs": "Soubory",
       "xloc": [
         "default.handlebars->contextMenu->cxfiles",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevFiles",
@@ -9218,6 +9515,7 @@
     },
     {
       "en": "Do nothing",
+      "cs": "Nic",
       "xloc": [
         "default.handlebars->13->988"
       ]
@@ -9258,6 +9556,7 @@
     },
     {
       "en": "Folder",
+      "cs": "Adresář",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1"
@@ -9274,12 +9573,14 @@
     },
     {
       "en": "More",
+      "cs": "Více",
       "xloc": [
         "default.handlebars->13->1270"
       ]
     },
     {
       "en": "PowerShell Connect",
+      "cs": "PowerShell připojen",
       "xloc": [
         "default.handlebars->termShellContextMenu->cxtermps"
       ]
@@ -9298,6 +9599,7 @@
     },
     {
       "en": "Install",
+      "cs": "Instalace",
       "xloc": [
         "default.handlebars->13->966"
       ]
@@ -9310,12 +9612,14 @@
     },
     {
       "en": "Connected.",
+      "cs": "Připojeno.",
       "xloc": [
         "messenger.handlebars->13->7"
       ]
     },
     {
       "en": "Limit of 10 file uploads at the same time.",
+      "cs": "Max. 10 souběžně nahrávaných souborů.",
       "xloc": [
         "messenger.handlebars->13->4",
         "messenger.handlebars->13->5"
@@ -9323,6 +9627,7 @@
     },
     {
       "en": "Forgot password?",
+      "cs": "Zapomenuté heslo?",
       "xloc": [
         "login.handlebars->5->2",
         "login-mobile.handlebars->5->2"
@@ -9465,6 +9770,7 @@
     {
       "en": "Last day",
       "fr": "Dernier jour",
+      "cs": "Poslední den",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40time->5"
       ]
@@ -9495,12 +9801,14 @@
     },
     {
       "en": "Language",
+      "cs": "Jazyk",
       "xloc": [
         "default.handlebars->13->864"
       ]
     },
     {
       "en": "Dates & Time",
+      "cs": "Datum & čas",
       "xloc": [
         "default.handlebars->13->865"
       ]
