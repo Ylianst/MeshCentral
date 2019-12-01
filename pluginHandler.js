@@ -51,8 +51,8 @@ module.exports.pluginHandler = function (parent) {
                         parent.db.updatePlugin(plugin._id, plugin_config);
                     } catch (e) { console.log("Plugin config file for " + plugin.name + " could not be parsed."); }
                 }
-                obj.parent.updateMeshCore(); // db calls are delayed, lets inject here once we're ready
             });
+            obj.parent.updateMeshCore(); // db calls are async, lets inject here once we're ready
         });
     } else {
         obj.loadList.forEach(function (plugin, index) {
@@ -88,17 +88,25 @@ module.exports.pluginHandler = function (parent) {
                 }
             }
         };
-        
+        // accepts a function returning an object or an object with { tabId: "yourTabIdValue", tabTitle: "Your Tab Title" }
         obj.registerPluginTab = function(pluginRegInfo) {
-            var d = pluginRegInfo();
+            var d = null;
+            if (typeof pluginRegInfo == 'function') d = pluginRegInfo();
+            else d = pluginRegInfo;
             if (!Q(d.tabId)) {
-                QA('p19headers', '<span onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\');">'+d.tabTitle+'</span>');
+                var defaultOn = 'class="on"';
+                if (Q('p19headers').querySelectorAll("span.on").length) defaultOn = '';
+                QA('p19headers', '<span ' + defaultOn + ' onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>');
+                QA('p19pages', '<div id="' + d.tabId + '"></div>');
             }
         };
-        obj.callPluginPage = function(id) {
+        obj.callPluginPage = function(id, el) {
             var pages = Q('p19pages').querySelectorAll("#p19pages>div"); 
             for (const i of pages) { i.style.display = 'none'; }
             QV(id, true);
+            var tabs = Q('p19headers').querySelectorAll("span"); 
+            for (const i of tabs) { i.classList.remove('on'); }
+            el.classList.add('on');
         };
         obj.addPluginEx = function() {
             meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
