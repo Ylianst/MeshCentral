@@ -75,7 +75,7 @@
             <div style="float:right">
                 <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
-            <p id="logoutControl">{{{logoutControl}}}<span id=idleTimeoutNotify style="color:yellow"></span></p>
+            <p id="logoutControl"><span id=logoutControlSpan style="color:white"></span><span id=idleTimeoutNotify style="color:yellow"></span></p>
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
@@ -1063,6 +1063,7 @@
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
+        var logoutControls = {{{logoutControls}}};
         var authCookieRenewTimer = null;
         var multiDesktop = {};
         var multiDesktopFilter = null;
@@ -1098,6 +1099,12 @@
                 try { loc = top.location.toString().toLowerCase(); } catch (e) { }
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
+
+            // Setup logout control
+            var logoutControl = '';
+            if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
+            if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href=\"' + logoutControls.logoutUrl + '\" style="color:white">' + "Logout" + '</a>'); }
+            QH('logoutControlSpan', logoutControl);
 
             // Check if we are in debug mode
             args = parseUriArgs();
@@ -5419,13 +5426,13 @@
         function deskToggleFull(e) {
             fullscreen = !fullscreen;
             if (fullscreen) {
-                QC('body').add("fulldesk");
+                QC('body').add('fulldesk');
                 QS('deskarea3x')['height'] = '100%';
                 QS('deskarea3x')['max-height'] = '100%';
                 // If shift is pressed, enter browser full screen.
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
             } else {
-                QC('body').remove("fulldesk");
+                QC('body').remove('fulldesk');
                 QS('deskarea3x')['height'] = null;
                 QS('deskarea3x')['max-height'] = null;
                 if (browserfullscreen == true) { exitBrowserFullscreen(); browserfullscreen = false; }
@@ -6271,7 +6278,7 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : "<input type=checkbox id=p13recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
@@ -8097,7 +8104,7 @@
         function p5fileDragLeave(e) {
             if (xxdialogMode) return;
             haltEvent(e);
-            if (e.target.id != "p5filetable") {
+            if (e.target.id != 'p5filetable') {
                 QV('bigfail', false);
                 QV('bigok', false);
                 //QV('p5fileCatchAllInput', false);
@@ -8408,9 +8415,9 @@
                 var multiFactor = false, factors = [];
                 if ((users[i].otpsecret > 0) || (users[i].otphkeys > 0)) {
                     multiFactor = true;
-                    if (users[i].otpsecret > 0) { factors.push("AuthApp"); }
-                    if (users[i].otphkeys > 0) { factors.push("SecurityKey"); }
-                    if (users[i].otpkeys > 0) { factors.push("BackupCodes"); }
+                    if (users[i].otpsecret > 0) { factors.push('AuthApp'); }
+                    if (users[i].otphkeys > 0) { factors.push('SecurityKey'); }
+                    if (users[i].otpkeys > 0) { factors.push('BackupCodes'); }
                 }
                 csv += '\"' + users[i]._id + '\",\"' + users[i].name + '\",\"' + (users[i].email ? users[i].email : '') + '\",\"' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '\",\"' + (users[i].login ? new Date(users[i].login * 1000) : '') + '\",\"' + (users[i].groups ? users[i].groups.join(',') : '') + '\",\"' + (multiFactor ? factors.join(',') : '') + '\"\r\n';
             }

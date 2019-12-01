@@ -240,7 +240,7 @@
                                 </div>
                                 <p><strong>Account Actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
-                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
+                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Vérifier le courriel</a></span></div>
                                     <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
@@ -251,7 +251,7 @@
                             <span id="p3createMeshLink1">( <a onclick="account_createMesh()" style="cursor:pointer"><img src="images/icon-addnew.png" width="12" height="12" border="0"> Nouveau</a> )</span>
                             <br><br>
                             <div id="p3meshes"></div>
-                            <div id="p3noMeshFound" style="margin-left:9px;display:none">Aucun groupe d'appareils.<span id="p3createMeshLink2"> <a onclick="account_createMesh()" style="cursor:pointer"><strong>Get started here!</strong></a></span></div>
+                            <div id="p3noMeshFound" style="margin-left:9px;display:none">Aucun groupe d'appareils.<span id="p3createMeshLink2"> <a onclick="account_createMesh()" style="cursor:pointer"><strong>Commencez ici!</strong></a></span></div>
                             <br style="clear:both">
                         </div>
                     </div>
@@ -284,13 +284,13 @@
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile()" value="ToutSélectionner" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5RenameFileButton" disabled="disabled" value="Renommer" onclick="p5renamefile()" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5DeleteFileButton" disabled="disabled" value="Delete" onclick="p5deletefile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5NewFolderButton" disabled="disabled" value="Folder" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5NewFolderButton" disabled="disabled" value="Dossier" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                     <div style="width:100%;text-align:center">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5UploadButton" disabled="disabled" value="Télécharger" onclick="p5uploadFile()" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5CutButton" disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5CopyButton" disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5PasteButton" disabled="disabled" value="Paste" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5PasteButton" disabled="disabled" value="Coller" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p5RefreshButton" value="Rafraîchir" onclick="p5refreshFiles()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                 </td>
@@ -364,9 +364,9 @@
                                 </div>
                                 <div style="margin-left:3px">
                                     <input type="button" id="connectbutton1" value="Connect" onclick="connectDesktop(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type="button" id="connectbutton1h" value="HW Connect" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled">
+                                    <input type="button" id="connectbutton1h" value="Connexion AMT" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled">
                                     <input type="button" id="disconnectbutton1" value="Disconnect" onclick="connectDesktop(event,0)" onkeypress="return false" onkeydown="return false">
-                                    <span id="deskstatus">Disconnected</span>
+                                    <span id="deskstatus">Débranché</span>
                                 </div>
                             </div>
                         </div>
@@ -377,7 +377,7 @@
                                 </div>
                                 <div id="DeskTools" style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
                                     <a id="DeskToolsRefreshButton" style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Rafraîchir</a>
-                                    <div id="DeskToolsBar" style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
+                                    <div id="DeskToolsBar" style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processus</div>
                                     <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
                                         <div style="border-bottom:1px solid darkgray;padding:3px"><a style="width:50px;padding-right:5px;float:left;cursor:pointer" onclick="sortProcess(0)">PID</a><a style="cursor:pointer" onclick="sortProcess(1)">Nom</a></div>
                                         <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
@@ -394,7 +394,7 @@
                                 </div>
                                 <div>
                                     <input id="deskActionsBtn" type="button" style="margin-left:3px" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()">
-                                    <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
+                                    <input type="button" value="Paramètres" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
                                     <input id="DeskSpecialKeys" type="button" value="Special Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
                                     <input id="DeskSoftKeys" type="button" value="Clavier" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
@@ -413,7 +413,7 @@
                                     <div style="margin-left:2px">
                                         <input id="p13AutoConnect" value="AutoConnect" onclick="autoConnectFiles(event)" onkeypress="return false" onkeydown="return false" type="button" style="display:none">
                                         <input id="p13Connect" value="Connect" onclick="connectFiles(event)" onkeypress="return false" onkeydown="return false" type="button">
-                                        <span id="p13Status">Disconnected</span>
+                                        <span id="p13Status">Débranché</span>
                                     </div>
                                 </td>
                             </tr>
@@ -424,13 +424,13 @@
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13SelectAllButton" disabled="disabled" onclick="p13selectallfile()" value="ToutSélectionner" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13RenameFileButton" disabled="disabled" value="Renommer" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13DeleteFileButton" disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13NewFolderButton" disabled="disabled" value="Folder" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13NewFolderButton" disabled="disabled" value="Dossier" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                     <div style="width:100%;text-align:center">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13UploadButton" disabled="disabled" value="Télécharger" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13CutButton" disabled="disabled" value="Cut" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13CopyButton" disabled="disabled" value="Copy" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13PasteButton" disabled="disabled" value="Paste" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13PasteButton" disabled="disabled" value="Coller" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false">
                                         <input type="button" style="width:calc(100%/5 - 5px)" id="p13RefreshButton" disabled="disabled" value="Rafraîchir" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false">
                                     </div>
                                 </td>
@@ -545,10 +545,10 @@
                     </div>
                     <div style="margin:3px 0 3px 0">
                         <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected="selected" value="50">Fast</option>
-                            <option value="100">Medium</option>
+                            <option selected="selected" value="50">Vite</option>
+                            <option value="100">Moyen</option>
                             <option value="400">Lent</option>
-                            <option value="1000">Very slow</option>
+                            <option value="1000">Très lent</option>
                         </select>
                         <div style="height:20px">Rate</div>
                     </div>
@@ -559,8 +559,8 @@
                         <select id="d7desktopmode" style="float:right;width:200px">
                             <option value="1">RLE8, le plus rapide</option>
                             <option value="2">RLE16, recommandé</option>
-                            <option value="3">RAW8, Slow</option>
-                            <option value="4">RAW16, Very Slow</option>
+                            <option value="3">RAW8, lent</option>
+                            <option value="4">RAW16, très lent</option>
                         </select>
                         <div>Encoding</div>
                     </div>
@@ -582,7 +582,7 @@
     <div id="topMenu" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(2)">Mes Dossiers</div>
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(1)">Mon Compte</div>
-        <div id="logoutMenuOption"><a href="/logout"><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
+        <div id="logoutMenuOption"><a href="/logout"><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Déconnexion</div></a></div>
     </div>
     <iframe name="fileUploadFrame" style="display:none"></iframe>
     <script>
@@ -616,7 +616,7 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
-        var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
+        var StatusStrs = ["Débranché", "Connecting...", "Traitement...", "Connected", "Intel&reg; AMT Connected"];
         var files;
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -1147,7 +1147,7 @@
 
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "Loading..." + '</div>', 'otpauth-request');
+            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "Chargement..." + '</div>', 'otpauth-request');
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -1214,7 +1214,7 @@
         function account_showChangePassword() {
             if (xxdialogMode) return false;
             var x = '<table style=margin-left:10px>';
-            x += '<tr><td align=right>' + nobreak("Old password:") + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
+            x += '<tr><td align=right>' + nobreak("Ancien mot de passe:") + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
             x += '<tr><td align=right>' + nobreak("Nouveau mot de passe:") + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
             x += '<tr><td align=right>' + nobreak("Nouveau mot de passe:") + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
             if (features & 0x00010000) { x += '<tr><td align=right>' + "Password hint:" + '</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>'; }
@@ -1327,7 +1327,7 @@
                 // Mesh rights
                 var meshrights = meshes[i].links[userinfo._id].rights;
                 var rights = "Partial Rights";
-                if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
+                if (meshrights == 0xFFFFFFFF) rights = "Administrateur Complet"; else if (meshrights == 0) rights = "No Rights";
 
                 // Print the mesh information
                 r += '<div style=cursor:pointer onclick=goForward(\'' + i + '\')>';
@@ -1360,7 +1360,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>' + "Racine" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -1415,7 +1415,7 @@
                 } else {
                     var link = shortname;
                     var publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "Link" + '</a>)'; }
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "Lien" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -1443,7 +1443,7 @@
         }
 
         function getNiceSize(bytes) {
-            if (bytes <= 0) return "Storage exceed";
+            if (bytes <= 0) return "Stockage dépassent";
             if (bytes < 2048) return format("{0}b left", bytes);
             if (bytes < 2097152) return format("{0}k left", Math.round(bytes / 1024));
             if (bytes < 2147483648) return format("{0}m left", Math.round(bytes / 1024 / 1024));
@@ -1456,7 +1456,7 @@
             return getNiceSize(f.maxbytes - f.s) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' />';
         }
 
-        function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
+        function p5showPublicLink(u) { setDialogMode(2, "Lien public", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
 
         var sortorder;
         function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
@@ -1481,7 +1481,7 @@
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
-            Q('p5SelectAllButton').value = (cc > 0 ? "None" : "Tout");
+            Q('p5SelectAllButton').value = (cc > 0 ? "Aucun" : "Tout");
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
             QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
@@ -1497,7 +1497,7 @@
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
         function p5createfolder() { setDialogMode(2, "Nouveau Dossier", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
-        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "Suppression récursive" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
         function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Renommer", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile }); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
@@ -1509,7 +1509,7 @@
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
         function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
-        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confim {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confim {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) } setDialogMode(2, "Coller", 3, p5pasteFileEx, x); }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
         function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "copy" : "move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
@@ -1688,11 +1688,11 @@
 
                 count++;
                 var title = EscapeHtml(nodes[i].name);
-                if (title.length == 0) { title = '<i>' + "None" + '</i>'; }
+                if (title.length == 0) { title = '<i>' + "Aucun" + '</i>'; }
                 if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
                 var name = EscapeHtml(nodes[i].name);
                 if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
-                if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
+                if (name.length == 0) { name = '<i>' + "Aucun" + '</i>'; }
 
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
@@ -1743,7 +1743,7 @@
             }
 
             if (count == 0) {
-                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "Aucun appareil" + '</span><br /><br />' + "Use the desktop version of this website to add devices." + '</div>');
+                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "Aucun appareil" + '</span><br /><br />' + "Utilisez la version complète de ce site pour ajouter des appareils." + '</div>');
             } else {
                 QH('xdevices', r);
             }
@@ -1752,8 +1752,8 @@
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
         }
 
-        var powerStatetable = ['', "Alimenté", "Dormir", "Dormir", "Dormir", "Hibernating", "Éteindre", "Présent"];
-        var powerStateStrings = ['', "Alimenté", "Sleeping", "Sleeping", "Deep Sleep", "Hibernating", "Soft-Off", "Présent"];
+        var powerStatetable = ['', "Alimenté", "Endormir", "Endormir", "Endormir", "Hibernation", "Éteindre", "Présent"];
+        var powerStateStrings = ['', "Alimenté", "Dormir", "Dormir", "Deep Sleep", "Hibernation", "Soft-Off", "Présent"];
         var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined"];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
         function NodeStateStr(node) {
@@ -1841,7 +1841,7 @@
 
                 // Add node name
                 var nname = EscapeHtml(node.name);
-                if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
+                if (nname.length == 0) { nname = '<i>' + "Aucun" + '</i>'; }
                 if ((meshrights & 4) != 0) { nname = '<span onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + '</span>'; }
                 QH('p10deviceName', nname);
 
@@ -1860,7 +1860,7 @@
                         if (node.host) {
                             x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
                         } else {
-                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>' + "None" + '</i></span>');
+                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>' + "Aucun" + '</i></span>');
                         }
                     } else {
                         x += addDeviceAttribute("Hostname", EscapeHtml(node.host));
@@ -1868,7 +1868,7 @@
                 }
 
                 // Attribute: Description
-                var description = node.desc ? EscapeHtml(node.desc) : '<i>' + "None" + '</i>';
+                var description = node.desc ? EscapeHtml(node.desc) : '<i>' + "Aucun" + '</i>';
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
                 } else {
@@ -1944,7 +1944,7 @@
                 }
 
                 // Node tags
-                var groupingTags = '<i>' + "None" + '</i>';
+                var groupingTags = '<i>' + "Aucun" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
@@ -2029,7 +2029,7 @@
             var x = "Select an operation to perform on this device." + '<br /><br />';
             var y = '<select id=d2deviceop style=float:right;width:170px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
-            if ((meshrights & 8) != 0) { y += '<option value=4>' + "Dormir" + '</option><option value=3>' + "Réinitialiser" + '</option><option value=2>' + "Éteindre" + '</option>'; } // Remote control permission
+            if ((meshrights & 8) != 0) { y += '<option value=4>' + "Endormir" + '</option><option value=3>' + "Réinitialiser" + '</option><option value=2>' + "Éteindre" + '</option>'; } // Remote control permission
             y += '</select>';
             x += addHtmlValue("Opération", y);
             setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
@@ -2119,7 +2119,7 @@
             if ((meshrights & 4) == 0) return;
             x += addHtmlValue("Nom d'utilisateur", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Mot de passe", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue("Sécurité", '<select id=dp10tls style=width:176px><option value=0>' + "No TLS security" + '</option><option value=1>' + "Sécurité TLS requise" + '</option></select>');
+            x += addHtmlValue("Sécurité", '<select id=dp10tls style=width:176px><option value=0>' + "Pas de sécurité TLS" + '</option><option value=1>' + "Sécurité TLS requise" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
             setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
@@ -2175,7 +2175,7 @@
             x += '<div style=display:inline-block class=i4 onclick=p10setIcon(4)></div>';
             x += '<div style=display:inline-block class=i5 onclick=p10setIcon(5)></div>';
             x += '<div style=display:inline-block class=i6 onclick=p10setIcon(6)></div></table>';
-            setDialogMode(2, "Icon Selection", 0, null, x);
+            setDialogMode(2, "Sélection de l'icôn", 0, null, x);
             QV('id_dialogclose', true);
         }
 
@@ -2186,7 +2186,7 @@
 
         var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
-        var showEditNodeValueDialog_modes3 = ['', '', '', "Group1, Group2, Group3"];
+        var showEditNodeValueDialog_modes3 = ['', '', '', "Groupe1, Groupe2, Groupe3"];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
             var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:170px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
@@ -2352,7 +2352,7 @@
             if (xxdialogMode) return;
             applyDesktopSettings();
             updateDesktopButtons();
-            setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
+            setDialogMode(7, "Paramètres du bureau à distance", 3, showDesktopSettingsChanged);
         }
 
         function showDesktopSettingsChanged() {
@@ -2712,7 +2712,7 @@
         }
 
         function p13updateFiles(checkedNames) {
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>' + "Root" + '</a>', fullPath = 'Root';
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>' + "Racine" + '</a>', fullPath = 'Root';
 
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
@@ -2808,7 +2808,7 @@
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
-                Q('p13SelectAllButton').value = (cc > 0 ? "None" : "Tout");
+                Q('p13SelectAllButton').value = (cc > 0 ? "Aucun" : "Tout");
                 QE('p13RefreshButton', true);
                 QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -2822,7 +2822,7 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "Nouveau Dossier", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : "<input type=checkbox id=p13recdeleteinput style='display:none'>"; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Suppression récursive" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Renommer", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
@@ -2835,7 +2835,7 @@
                 if (checkboxes[i].checked) {
                     if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
                         p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponent(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
-                    } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
+                    } else { messagebox("Éditeur de fichier", "Only files less than 200k can be edited."); }
                     break;
                 }
             }
@@ -2852,7 +2852,7 @@
                     if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
                 }
             }
-            setDialogMode(2, "Paste", 3, p13pasteFileEx, x);
+            setDialogMode(2, "Coller", 3, p13pasteFileEx, x);
         }
         function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
         function p13updateClipview() {
@@ -3100,7 +3100,7 @@
 
             var x = '';
             x += addHtmlValue("Nom", addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
-            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "Aucun" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
@@ -3147,7 +3147,7 @@
             // Display all users for this mesh
             for (var i in sortedusers) {
                 var trash = '', rights = "Partial Rights", r = sortedusers[i].rights;
-                if (r == 0xFFFFFFFF) rights = "Full Administrator"; else if (r == 0) rights = "No Rights";
+                if (r == 0xFFFFFFFF) rights = "Administrateur Complet"; else if (r == 0) rights = "No Rights";
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
                 x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
@@ -3203,11 +3203,11 @@
             if (xxdialogMode) return;
             var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<div style="border:2px groove gray;background-color:white;max-height:120px;overflow-y:scroll">';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Administrateur Complet" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Télécommande" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
@@ -3277,15 +3277,15 @@
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
             var r = [], cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
-            if (meshrights == 0xFFFFFFFF) r.push("Full Administrator"); else {
+            if (meshrights == 0xFFFFFFFF) r.push("Administrateur Complet"); else {
                 if ((meshrights & 1) != 0) r.push("Edit Device Group");
                 if ((meshrights & 2) != 0) r.push("Manage Device Group Users");
                 if ((meshrights & 4) != 0) r.push("Manage Device Group Computers");
-                if ((meshrights & 8) != 0) r.push("Remote Control");
+                if ((meshrights & 8) != 0) r.push("Télécommande");
                 if ((meshrights & 16) != 0) r.push("Agent Console");
                 if ((meshrights & 32) != 0) r.push("Server Files");
                 if ((meshrights & 64) != 0) r.push("Wake Devices");
-                if ((meshrights & 128) != 0) r.push("Edit Notes");
+                if ((meshrights & 128) != 0) r.push("Modifier les notes");
                 if ((meshrights & 256) != 0) r.push("Remote View Only");
                 if ((meshrights & 512) != 0) r.push("No Terminal");
                 if ((meshrights & 1024) != 0) r.push("Aucun fichier");
@@ -3296,7 +3296,7 @@
                 if ((meshrights & 32768) != 0) r.push("Uninstall");
             }
             if (r.length == 0) { r.push("No Rights"); }
-            var buttons = 1, x = addHtmlValue("User", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
+            var buttons = 1, x = addHtmlValue("Utilisateur", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
             x += addHtmlValue("Permissions", r.join(", "));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);

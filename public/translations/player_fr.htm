@@ -53,7 +53,7 @@
                     <select id="PlaySpeed" onchange="this.blur();">
                         <option value="4">1/4 vitesse</option>
                         <option value="2">1/2 vitesse</option>
-                        <option value="1" selected="">Normal Speed</option>
+                        <option value="1" selected="">Vitesse normale</option>
                         <option value="0.5">2x vitesse</option>
                         <option value="0.25">4x vitesse</option>
                         <option value="0.1">10x vitesse</option>
@@ -167,9 +167,9 @@
             if (recFileEndTime != 0) { var secs = Math.floor((recFileEndTime - time) / 1000); x += addInfo("Duration", format("{0} second{1}", secs, (secs > 1) ? 's' : '')); }
             x += addInfo("Nom d'utilisateur", recFileMetadata.username);
             x += addInfo("Identifiant d'utilisateur", recFileMetadata.userid);
-            x += addInfo("SessionID", recFileMetadata.sessionid);
+            x += addInfo("ID de session", recFileMetadata.sessionid);
             if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("Addresses", format("{0} to {1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
-            if (recFileMetadata.devicename) { x += addInfo("DeviceName", recFileMetadata.devicename); }
+            if (recFileMetadata.devicename) { x += addInfo("Device Name", recFileMetadata.devicename); }
             x += addInfo("NodeID", recFileMetadata.nodeid);
             if (recFileMetadata.protocol) {
                 var p = recFileMetadata.protocol;
@@ -177,14 +177,14 @@
                 else if (p == 2) { p = "MeshCentral Desktop"; }
                 else if (p == 100) { p = "Intel&reg; AMT WSMAN"; }
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
-                x += addInfoNoEsc("Protocol", p);
+                x += addInfoNoEsc("Protocole", p);
             }
             QV('DeskParent', true);
             QV('TermParent', false);
             if (recFileMetadata.protocol == 1) {
                 // MeshCentral remote terminal
                 recFileProtocol = 1;
-                x += '<br /><br /><span style=color:gray>' + "Press [space] to play/pause." + '</span>';
+                x += '<br /><br /><span style=color:gray>' + "Appuyez sur [espace] pour jouer/mettre en pause." + '</span>';
                 QE('PlayButton', true);
                 QE('PauseButton', false);
                 QE('RestartButton', false);
@@ -193,7 +193,7 @@
             else if (recFileMetadata.protocol == 2) {
                 // MeshCentral remote desktop
                 recFileProtocol = 2;
-                x += '<br /><br /><span style=color:gray>' + "Press [space] to play/pause." + '</span>';
+                x += '<br /><br /><span style=color:gray>' + "Appuyez sur [espace] pour jouer/mettre en pause." + '</span>';
                 QE('PlayButton', true);
                 QE('PauseButton', false);
                 QE('RestartButton', false);

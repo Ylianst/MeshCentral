@@ -715,7 +715,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.config.domains == null) { obj.config.domains = {}; }
         if (obj.config.domains[''] == null) { obj.config.domains[''] = {}; }
         if (obj.config.domains[''].dns != null) { console.log("ERROR: Default domain can't have a DNS name."); return; }
-        var xdomains = {}; for (i in obj.config.domains) { if (obj.config.domains[i].title == null) { obj.config.domains[i].title = 'MeshCentral'; } if (obj.config.domains[i].title2 == null) { obj.config.domains[i].title2 = '2.0 Beta 2'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
+        var xdomains = {}; for (i in obj.config.domains) { if (obj.config.domains[i].title == null) { obj.config.domains[i].title = 'MeshCentral'; } if (obj.config.domains[i].title2 == null) { obj.config.domains[i].title2 = '2.0'; } xdomains[i.toLowerCase()] = obj.config.domains[i]; } obj.config.domains = xdomains;
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in config.json."); return; } } }
         for (i in obj.config.domains) {

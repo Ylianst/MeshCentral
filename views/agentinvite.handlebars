@@ -135,14 +135,14 @@
         var webPageStackMenu = false;
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
-        var domain = "{{{domain}}}";
-        var domainUrl = "{{{domainurl}}}";
-        var meshid = "{{{meshid}}}";
-        var serverPort = "{{{serverport}}}";
-        var serverHttps = "{{{serverhttps}}}";
-        var serverNoProxy = "{{{servernoproxy}}}";
-        var installFlags = "{{{installflags}}}";
-        var groupName = decodeURIComponent("{{{meshname}}}");
+        var domain = '{{{domain}}}';
+        var domainUrl = '{{{domainurl}}}';
+        var meshid = '{{{meshid}}}';
+        var serverPort = '{{{serverport}}}';
+        var serverHttps = '{{{serverhttps}}}';
+        var serverNoProxy = '{{{servernoproxy}}}';
+        var installFlags = '{{{installflags}}}';
+        var groupName = decodeURIComponent('{{{meshname}}}');
         if (groupName != '') { QH('groupname', ' for ' + groupName); }
         userInterfaceSelectMenu();
         setup();
@@ -179,15 +179,15 @@
             var hide = 0;
             //if (args.hide) { hide = parseInt(args.hide); }
             if (webPageFullScreen == false) {
-                QC('body').remove("menu_stack");
-                QC('body').remove("fullscreen");
-                QC('body').remove("arg_hide");
+                QC('body').remove('menu_stack');
+                QC('body').remove('fullscreen');
+                QC('body').remove('arg_hide');
                 //if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
                 //QV('UserDummyMenuSpan', false);
                 //QV('page_leftbar', false);
             } else {
-                QC('body').add("fullscreen");
-                if (hide & 16) QC('body').add("arg_hide"); // This is replacement for QV('page_leftbar', !(hide & 16));
+                QC('body').add('fullscreen');
+                if (hide & 16) QC('body').add('arg_hide'); // This is replacement for QV('page_leftbar', !(hide & 16));
                 //QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 //QV('page_leftbar', true);
             }
@@ -202,9 +202,9 @@
                     putstore('webPageStackMenu', webPageStackMenu);
                 }
                 if (webPageStackMenu == false) {
-                    QC('body').remove("menu_stack");
+                    QC('body').remove('menu_stack');
                 } else {
-                    QC('body').add("menu_stack");
+                    QC('body').add('menu_stack');
                     //if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 }
             }
@@ -218,20 +218,20 @@
             var i, tabcontent, tablinks;
 
             // Get all elements with class="tabcontent" and hide them
-            tabcontent = document.getElementsByClassName("tabcontent");
+            tabcontent = document.getElementsByClassName('tabcontent');
             for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
+                tabcontent[i].style.display = 'none';
             }
 
             // Get all elements with class="tablinks" and remove the class "active"
-            tablinks = document.getElementsByClassName("tablinks");
+            tablinks = document.getElementsByClassName('tablinks');
             for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
+                tablinks[i].className = tablinks[i].className.replace(' active', '');
             }
 
             // Show the current tab, and add an "active" class to the button that opened the tab
-            document.getElementById(tabname).style.display = "block";
-            if (evt != null) { evt.currentTarget.className += " active"; } else { document.getElementById('t' + tabname).className += " active"; }
+            document.getElementById(tabname).style.display = 'block';
+            if (evt != null) { evt.currentTarget.className += ' active'; } else { document.getElementById('t' + tabname).className += ' active'; }
         }
 
         var linuxInstall, linuxUnInstall;
@@ -257,22 +257,22 @@
             if (serverHttps == 1) {
                 var portStr = (serverPort == 443) ? '' : (":" + serverPort);
                 if (serverNoProxy == 0) {
-                    linuxInstall = "(wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + portStr + domainUrlNoSlash + " '" + meshid + "'\r\n";
-                    linuxUnInstall = "(wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                    linuxInstall = '(wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = '(wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 } else {
                     // Server asked that agent be installed to preferably not use a HTTP proxy.
-                    linuxInstall = "wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://" + servername + portStr + domainUrlNoSlash + " '" + meshid + "'\r\n";
-                    linuxUnInstall = "wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                    linuxInstall = 'wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = 'wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
             } else {
-                var portStr = (serverPort == 80) ? '' : (":" + serverPort);
+                var portStr = (serverPort == 80) ? '' : (':' + serverPort);
                 if (serverNoProxy == 0) {
-                    linuxInstall = "(wget http://" + servername + portStr + domainUrl + "meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + portStr + domainUrlNoSlash + " '" + meshid + "'\r\n";
-                    linuxUnInstall = "(wget http://" + servername + portStr + domainUrl + "meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                    linuxInstall = '(wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = '(wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 } else {
                     // Server asked that agent be installed to preferably not use a HTTP proxy.
-                    linuxInstall = "wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://" + servername + portStr + domainUrlNoSlash + " '" + meshid + "'\r\n";
-                    linuxUnInstall = "wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n";
+                    linuxInstall = 'wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = 'wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
             }
             QH('linuxinstall', linuxInstall);

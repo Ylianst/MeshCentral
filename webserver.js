@@ -1511,8 +1511,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else if (req.query.node) {
                 currentNode = 'node/' + domain.id + '/' + req.query.node;
             }
-            var logoutcontrol = '';
-            if (obj.args.nousers != true) { logoutcontrol = 'Welcome ' + user.name + '.'; }
+            var logoutcontrols = {};
+            if (obj.args.nousers != true) { logoutcontrols.name = user.name; }
 
             // Give the web page a list of supported server features
             features = 0;
@@ -1546,7 +1546,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Send the master web application
             var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
-            if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
+            if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
             var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
             // Clean up the U2F challenge if needed
@@ -1556,7 +1556,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
                 var webstate = (states.length == 1) ? obj.filterUserWebState(states[0].state) : '';
-                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControl: logoutcontrol, title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() });
+                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: JSON.stringify(logoutcontrols), title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() });
             });
         } else {
             // Send back the login application
@@ -1683,12 +1683,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.session && req.session.userid) {
                 if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
                 var user = obj.users[req.session.userid];
-                var logoutcontrol = 'Welcome ' + user.name + '.';
+                var logoutcontrols = { name: user.name };
                 var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
-                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-                render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControl: logoutcontrol });
+                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
+                render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControls: JSON.stringify(logoutcontrols) });
             } else {
-                render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()) });
+                render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()), logoutControls: '{}' });
             }
         } else {
             // See if there is a terms.txt file in meshcentral-data
@@ -1702,12 +1702,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (req.session && req.session.userid) {
                         if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
                         var user = obj.users[req.session.userid];
-                        var logoutcontrol = 'Welcome ' + user.name + '.';
+                        var logoutcontrols = { name: user.name };
                         var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
-                        if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-                        render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data), logoutControl: logoutcontrol });
+                        if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
+                        render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data), logoutControls: JSON.stringify(logoutcontrols) });
                     } else {
-                        render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data) });
+                        render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, terms: encodeURIComponent(data), logoutControls: '{}' });
                     }
                 });
             } else {
@@ -1717,12 +1717,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.session && req.session.userid) {
                     if (req.session.domainid != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check is the session is for the correct domain
                     var user = obj.users[req.session.userid];
-                    var logoutcontrol = 'Welcome ' + user.name + '.';
+                    var logoutcontrols = { name: user.name };
                     var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
-                    if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrol += ' <a href=' + domain.url + 'logout?' + Math.random() + extras + ' style=color:white>Logout</a>'; } // If a default user is in use or no user mode, don't display the logout button
-                    render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, logoutControl: logoutcontrol });
+                    if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
+                    render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, logoutControls: JSON.stringify(logoutcontrols) });
                 } else {
-                    render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url });
+                    render(req, res, getRenderPage('terms', req), { title: domain.title, title2: domain.title2, domainurl: domain.url, logoutControls: '{}' });
                 }
             }
         }
