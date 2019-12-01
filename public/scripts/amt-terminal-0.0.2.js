@@ -49,6 +49,12 @@ var CreateAmtRemoteTerminal = function (divid, options) {
     var _scrollRegion;
     var _altKeypadMode = false;
     var scrollBackBuffer = [];
+    // ###BEGIN###{Terminal-Enumation-UTF8}
+    //var utf8decodeBuffer = '';
+    // ###END###{Terminal-Enumation-UTF8}
+    // ###BEGIN###{Terminal-Enumation-All}
+    var utf8decodeBuffer = '';
+    // ###END###{Terminal-Enumation-All}
     obj.title = null;
     obj.onTitleChange = null;
 
@@ -73,10 +79,12 @@ var CreateAmtRemoteTerminal = function (divid, options) {
     obj.ProcessData = function (str) {
         if (obj.debugmode == 2) { console.log("TRecv(" + str.length + "): " + rstr2hex(str)); }
         // ###BEGIN###{Terminal-Enumation-UTF8}
-        //str = decode_utf8(str);
+        //try { str = decode_utf8(utf8decodeBuffer + str); } catch (ex) { utf8decodeBuffer += str; return; } // If we get data in the middle of a UTF-8 code, buffer it for next time.
+        //utf8decodeBuffer = '';
         // ###END###{Terminal-Enumation-UTF8}
         // ###BEGIN###{Terminal-Enumation-All}
-        if (obj.terminalEmulation == 0) { str = decode_utf8(str); }
+        if (obj.terminalEmulation == 0) { try { str = decode_utf8(utf8decodeBuffer + str); } catch (ex) { utf8decodeBuffer += str; return; } } // If we get data in the middle of a UTF-8 code, buffer it for next time.
+        utf8decodeBuffer = '';
         // ###END###{Terminal-Enumation-All}
         if (obj.capture != null) obj.capture += str; _ProcessVt100EscString(str); obj.TermDraw();
     }
@@ -604,6 +612,12 @@ var CreateAmtRemoteTerminal = function (divid, options) {
         _scrollRegion = [0, (obj.height - 1)];
         _altKeypadMode = false;
         obj.TermClear(7 << 6);
+        // ###BEGIN###{Terminal-Enumation-UTF8}
+        //utf8decodeBuffer = '';
+        // ###END###{Terminal-Enumation-UTF8}
+        // ###BEGIN###{Terminal-Enumation-All}
+        utf8decodeBuffer = '';
+        // ###END###{Terminal-Enumation-All}
     }
 
     function _EraseCursorToEol() {

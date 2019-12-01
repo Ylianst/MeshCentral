@@ -650,9 +650,9 @@ function CreateMeshCentralServer(config, args) {
 
                             // Lower case all keys in the config file
                             try {
-                                require('./common.js').objKeysToLower(config2, ["ldapoptions"]);
+                                require('./common.js').objKeysToLower(config2, ['ldapoptions']);
                             } catch (ex) {
-                                console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
+                                console.log("CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.");
                                 process.exit();
                                 return;
                             }
@@ -719,6 +719,7 @@ function CreateMeshCentralServer(config, args) {
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in config.json."); return; } } }
         for (i in obj.config.domains) {
+            if ((i.length > 0) && (i[0] == '_')) { delete obj.config.domains[i]; continue; } // Remove any domains with names that start with _
             if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); }
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
@@ -789,7 +790,7 @@ function CreateMeshCentralServer(config, args) {
                 if (user.length != 1) { console.log("Invalid user name."); process.exit(); return; }
                 user[0].siteadmin = 4294967295; // 0xFFFFFFFF
                 obj.db.Set(user[0], function () {
-                    if (user[0].domain == '') { console.log('User ' + user[0].name + ' set to site administrator.'); } else { console.log('User ' + user[0].name + ' of domain ' + user[0].domain + ' set to site administrator.'); }
+                    if (user[0].domain == '') { console.log('User ' + user[0].name + ' set to site administrator.'); } else { console.log("User " + user[0].name + " of domain " + user[0].domain + " set to site administrator."); }
                     process.exit();
                     return;
                 });
@@ -807,7 +808,7 @@ function CreateMeshCentralServer(config, args) {
                 if (user.length != 1) { console.log("Invalid user name."); process.exit(); return; }
                 if (user[0].siteadmin) { delete user[0].siteadmin; }
                 obj.db.Set(user[0], function () {
-                    if (user[0].domain == '') { console.log('User ' + user[0].name + ' is not a site administrator.'); } else { console.log('User ' + user[0].name + ' of domain ' + user[0].domain + ' is not a site administrator.'); }
+                    if (user[0].domain == '') { console.log("User " + user[0].name + " is not a site administrator."); } else { console.log("User " + user[0].name + " of domain " + user[0].domain + " is not a site administrator."); }
                     process.exit();
                     return;
                 });
