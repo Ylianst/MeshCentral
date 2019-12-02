@@ -2645,3 +2645,24 @@ a {
     width: 100%;
     height: 100%;
 }
+
+#p19headers {
+    padding-right: 7px;
+    padding-bottom: 10px;
+    font-weight: bold;
+    border-bottom: 1px dotted blue;
+}
+
+#p19headers > span:nth-child(n+2) {
+    border-left: 1px solid black;
+}
+
+#p19headers > span {
+    padding-left: 4px;
+    padding-right: 4px;
+    cursor: pointer;
+    font-weight: lighter;
+}
+#p19headers > span.on {
+    font-weight: bold;
+}
