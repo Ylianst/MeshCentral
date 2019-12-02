@@ -27,11 +27,13 @@
     <script keeplink="1" type="text/javascript" src="scripts/u2f-api.js"></script>
     <script keeplink="1" type="text/javascript" src="scripts/charts.js"></script>
     <script keeplink="1" type="text/javascript" src="scripts/filesaver.js"></script>
+    </head><body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px">{{{StartGeoLocation}}}
     <script keeplink="1" type="text/javascript" src="scripts/ol.js"></script>
     <script keeplink="1" type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
+    {{{EndGeoLocation}}}
     <title>{{{title}}}</title>
-</head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px">
+
+
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -1429,7 +1431,7 @@
                     if (updateNaggleFlags & 8) { drawNotifications(); }
                     if (updateNaggleFlags & 16) { updateMapMarkers(); }
                     if (updateNaggleFlags & 32) { eventsUpdate(); }
-                    if (updateNaggleFlags & 64) { refreshMap(false, true); }
+                    {{{StartGeoLocationJS}}}if (updateNaggleFlags & 64) { refreshMap(false, true); }{{{EndGeoLocationJS}}}
                     if (updateNaggleFlags & 256) { drawDeviceTimeline(); }
                     if (updateNaggleFlags & 1024) { deviceEventsUpdate(); }
                     if (updateNaggleFlags & 2048) { userEventsUpdate(); }
@@ -3695,6 +3697,8 @@
             mapView: null, // Sets the initial view
         }
 
+        {{{StartGeoLocationJS}}}
+
         // Add a feature for every Node and change style if connection status changes
         function updateMapMarkers(selectedMesh) {
             if ((xxmap != null) && (xxmap.map == null)) { try { loadmap(); } catch (ex) { console.error('loadmap() exception', ex); } }
@@ -3965,18 +3969,16 @@
                 //text: new ol.style.Text({ text: 'bob!', textAlign: 'right', offsetX: -10, fill: new ol.style.Fill({ color: '#000' }), stroke: new ol.style.Stroke({ color: '#fff', width: 2 }) })
             });
 
-            /*
-            deviceMark.setStyle(new ol.style.Style({
-                text: new ol.style.Text({
-                    //font: '12px helvetica,sans-serif',
-                    text: currentNode.name,
-                    textAlign: 'right',
-                    offsetX: -10,
-                    fill: new ol.style.Fill({ color: '#000' }),
-                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
-                    }),
-                image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
-            */
+            //deviceMark.setStyle(new ol.style.Style({
+            //    text: new ol.style.Text({
+            //        //font: '12px helvetica,sans-serif',
+            //        text: currentNode.name,
+            //        textAlign: 'right',
+            //        offsetX: -10,
+            //        fill: new ol.style.Fill({ color: '#000' }),
+            //        stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            //        }),
+            //    image: new ol.style.Icon(({ color: [113, 140, 0], src: 'images/dot.png' })) }));
 
             return [ style ];
         }
@@ -4123,18 +4125,16 @@
                 QV(nodes[i]._id + '-rowid', visible);
             }
             QV('noNodesMapPlace', count == 0);
-            /*
-            console.log(selected);
-            for (var i in nodes) {
-                if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].rnamel != null && nodes[i].rnamel.toLowerCase().indexOf(inputSearch) >= 0)) {
-                    console.log(selected.indexOf(nodes[i]._id));
-                    x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline ' + ((selected.indexOf(nodes[i]._id) >= 0)?'checked':'') + ' />';
-                    x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
-                }
-            }
-            if (x == '') { x = '<div style=text-align:center;width:100%>No devices found.</div>'; }
-            QH('placenode', '');
-            */
+            //console.log(selected);
+            //for (var i in nodes) {
+            //    if ((nodes[i].name.toLowerCase().indexOf(inputSearch) >= 0 || inputSearch == '') || (nodes[i].rnamel != null && nodes[i].rnamel.toLowerCase().indexOf(inputSearch) >= 0)) {
+            //        console.log(selected.indexOf(nodes[i]._id));
+            //        x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\''+ nodes[i]._id +'\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline ' + ((selected.indexOf(nodes[i]._id) >= 0)?'checked':'') + ' />';
+            //        x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
+            //    }
+            //}
+            //if (x == '') { x = '<div style=text-align:center;width:100%>No devices found.</div>'; }
+            //QH('placenode', '');
         }
 
         // Called when a user clicks on a device to toggle selection for placement on map.
@@ -4150,42 +4150,38 @@
 
         // Add option for available meshes in mesh Dropdown
         function addMeshOptions(addMeshid, meshName) {
-            /*
-            var meshOptions = Q('select-mesh');
-            if (addMeshid && meshName) {
-                var option = document.createElement('option');
-                option.value =addMeshid;
-                option.text = meshName;
-                meshOptions.add(option); // Add specific option
-            }
-            else {
-                for (var i in meshes) { // Add all options
-                    var option = document.createElement('option');
-                    option.value = i;
-                    option.text = meshes[i].name;
-                    meshOptions.add(option);
-                }
-            }
-            */
+            //var meshOptions = Q('select-mesh');
+            //if (addMeshid && meshName) {
+            //    var option = document.createElement('option');
+            //    option.value =addMeshid;
+            //    option.text = meshName;
+            //    meshOptions.add(option); // Add specific option
+            //}
+            //else {
+            //    for (var i in meshes) { // Add all options
+            //        var option = document.createElement('option');
+            //        option.value = i;
+            //        option.text = meshes[i].name;
+            //        meshOptions.add(option);
+            //    }
+            //}
         }
 
         // Remove/Modify options in Mesh dropdown (if modMeshname is defined then Modify else Remove)
         function meshOptionRmvMod(delMeshid, modMeshname){
-            /*
-            var meshOptions = Q('select-mesh');
-            if (delMeshid) {
-                var index=-1;
-                for (var i = 1; i < meshOptions.options.length; i++) {
-                    if (meshOptions[i].value === delMeshid) { index=i; }
-                }
-                if (index > 0) {
-                    if (modMeshname) {
-                        meshOptions[index].innerHTML=modMeshname; // If Mesh name is Modified
-                    }
-                    else { meshOptions.remove(index); }
-                }
-            }
-            */
+            //var meshOptions = Q('select-mesh');
+            //if (delMeshid) {
+            //    var index=-1;
+            //    for (var i = 1; i < meshOptions.options.length; i++) {
+            //        if (meshOptions[i].value === delMeshid) { index=i; }
+            //    }
+            //    if (index > 0) {
+            //        if (modMeshname) {
+            //            meshOptions[index].innerHTML=modMeshname; // If Mesh name is Modified
+            //        }
+            //        else { meshOptions.remove(index); }
+            //    }
+            //}
         }
 
         //Check if there is any mesh created
@@ -4203,10 +4199,8 @@
 
         // Clear all mesh options except 'All'
         function clearMeshOptions() {
-            /*
-            var meshOptions=Q('select-mesh');
-            for(var i = meshOptions.options.length - 1 ; i > 0 ; i--) { meshOptions.remove(i); }
-            */
+            //var meshOptions=Q('select-mesh');
+            //for(var i = meshOptions.options.length - 1 ; i > 0 ; i--) { meshOptions.remove(i); }
         }
 
         // Make a http get call- Replace this with AJAX get if jquery  is used
@@ -4283,7 +4277,8 @@
             var boundingExtent = ol.proj.transformExtent(extent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
             xxmap.map.getView().fit(boundingExtent, xxmap.map.getSize());
         }
-
+        
+        {{{EndGeoLocationJS}}}
 
         //
         // MY DEVICE
