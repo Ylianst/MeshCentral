@@ -100,6 +100,7 @@ module.exports.pluginHandler = function (parent) {
                 QA('p19headers', '<span ' + defaultOn + ' onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>');
                 QA('p19pages', '<div id="' + d.tabId + '"></div>');
             }
+            QV('MainDevPlugins', true);
         };
         obj.callPluginPage = function(id, el) {
             var pages = Q('p19pages').querySelectorAll("#p19pages>div"); 
