@@ -8531,13 +8531,13 @@
                     //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                   }
                 };
-                var vers_not_compat = ` [ <span onclick="return setDialogMode(2, 'Compatibility Issue', 1, null, 'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.');" title="Version incompatible, please upgrade your MeshCentral installation first" style="cursor: pointer; color:red;"> ! </span> ]`;
+                var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="Version incompatible, please upgrade your MeshCentral installation first" style="cursor: pointer; color:red;"> ! </span> ]';
 
                 var tbl = Q('p42tbl');
                 installedPluginList.forEach(function(p){
                     var cant_action = [];
                     if (p.hasAdminPanel == true && p.status) {
-                        p.nameHtml = `<a onclick="return goPlugin('${p.shortName}', '${p.name}');">${p.name}</a>`;
+                        p.nameHtml = '<a onclick="return goPlugin(' + p.shortName + ', ' + p.name + ');">' + p.name + '</a>';
                     } else {
                         p.nameHtml = p.name;
                     }
@@ -8572,7 +8572,7 @@
                     }
                     p.actions += '</select>';
 
-                    let tpl = `<td><img style=margin-top:3px src=images/plugin24.png></td><td class=gradTable1>&nbsp;</td><td class=gradTable2>${p.nameHtml}</td><td class=gradTable2>${p.description}</td><td class=gradTable2 style=text-align:center><a href="${p.homepage}" target="_blank">Home</a></td><td class=gradTable2 style=text-align:center>${p.version}</td><td style=text-align:center class="pluginUpgradeAvailable gradTable2">${p.upgradeAvail}</td><td class=gradTable2 style="text-align:center;color:#${p.statusColor}">${p.statusText}</td><td class="pluginAction gradTable2" style=text-align:center>${p.actions}</td><td class=gradTable3>&nbsp;</td>`;
+                    let tpl = '<td><img style=margin-top:3px src=images/plugin24.png></td><td class=gradTable1>&nbsp;</td><td class=gradTable2>' + p.nameHtml + '</td><td class=gradTable2>' + p.description + '</td><td class=gradTable2 style=text-align:center><a href="' + p.homepage + '" target="_blank">Home</a></td><td class=gradTable2 style=text-align:center>' + p.version + '</td><td style=text-align:center class="pluginUpgradeAvailable gradTable2">' + p.upgradeAvail + '</td><td class=gradTable2 style="text-align:center;color:#' + p.statusColor + '">' + p.statusText + '</td><td class="pluginAction gradTable2" style=text-align:center>' + p.actions + '</td><td class=gradTable3>&nbsp;</td>';
                     let tr = tbl.insertRow(-1);
                     tr.innerHTML = tpl;
                     tr.classList.add('p42tblRow');
