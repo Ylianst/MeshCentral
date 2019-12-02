@@ -93,6 +93,7 @@ module.exports.pluginHandler = function (parent) {
             var d = null;
             if (typeof pluginRegInfo == 'function') d = pluginRegInfo();
             else d = pluginRegInfo;
+            if (d.tabId == null || d.tabTitle == null) { return false; }
             if (!Q(d.tabId)) {
                 var defaultOn = 'class="on"';
                 if (Q('p19headers').querySelectorAll("span.on").length) defaultOn = '';
