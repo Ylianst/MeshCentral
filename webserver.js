@@ -1551,12 +1551,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Clean up the U2F challenge if needed
             if (req.session.u2fchallenge) { delete req.session.u2fchallenge; };
-                        
+
+            // If geolocation is disabled, comment out all geolocation code to speed up the web application
+            var StartGeoLocation = '', EndGeoLocation = '', StartGeoLocationJS = '', EndGeoLocationJS = '';
+            if (domain.geolocation !== true) { StartGeoLocation = '<!--'; EndGeoLocation = '-->'; StartGeoLocationJS = '/*'; EndGeoLocationJS = '*/'; }
+
             // Fetch the web state
             parent.debug('web', 'handleRootRequestEx: success.');
             obj.db.Get('ws' + user._id, function (err, states) {
                 var webstate = (states.length == 1) ? obj.filterUserWebState(states[0].state) : '';
-                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: JSON.stringify(logoutcontrols), title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() });
+                render(req, res, getRenderPage('default', req), { authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: JSON.stringify(logoutcontrols), title: domain.title, title2: domain.title2, extitle: encodeURIComponent(domain.title), extitle2: encodeURIComponent(domain.title2), domainurl: domain.url, domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(), StartGeoLocation: StartGeoLocation, EndGeoLocation: EndGeoLocation, StartGeoLocationJS: StartGeoLocationJS, EndGeoLocationJS: EndGeoLocationJS });
             });
         } else {
             // Send back the login application
