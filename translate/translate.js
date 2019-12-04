@@ -32,6 +32,9 @@ var meshCentralSourceFiles = [
     "../public/player.htm"
 ];
 
+// Check NodeJS version
+if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { console.log("Translate.js requires Node v8 or above, current version is " + process.version + "."); return; }
+
 // node translate.json CHECK ../meshcentral/views/default.handlebars
 // node translate.json EXTRACT bob.json ../meshcentral/views/default.handlebars
 // node translate.js TRANSLATE fr test2.json ../meshcentral/views/default.handlebars
@@ -42,6 +45,7 @@ if (minifyLib == 2) { libs.push('html-minifier'); }
 InstallModules(libs, start);
 
 function start() {
+    // Load dependencies
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
     if (minifyLib == 1) { minify = require('minify-js'); }

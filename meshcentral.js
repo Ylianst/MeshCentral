@@ -2069,7 +2069,7 @@ var childProcess = null;
 var previouslyInstalledModules = {};
 function mainStart() {
     // Check the NodeJS is version 6 or better.
-    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6.x or above, current version is " + process.version + "."); return; }
+    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6 or above, current version is " + process.version + "."); return; }
 
     // Check for any missing modules.
     InstallModules(['minimist'], function () {
