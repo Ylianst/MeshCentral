@@ -412,12 +412,16 @@ module.exports.pluginHandler = function (parent) {
                                         } else {
                                             parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func);
                                         }
-                                        obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
-                                        obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
-                                        if (typeof obj.plugins[plugin.shortName].server_startup == 'function') obj.plugins[plugin.shortName].server_startup();
-                                        var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
-                                        plugin_config = JSON.parse(plugin_config);
-                                        parent.db.updatePlugin(plugin._id, plugin_config);
+                                        try {
+                                            obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
+                                            obj.exports[plugin.shortName] = obj.plugins[plugin.shortName].exports;
+                                            if (typeof obj.plugins[plugin.shortName].server_startup == 'function') obj.plugins[plugin.shortName].server_startup();
+                                        } catch (e) { console.log('Error instantiating new plugin: ', e); }
+                                        try {
+                                            var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
+                                            plugin_config = JSON.parse(plugin_config);
+                                            parent.db.updatePlugin(plugin._id, plugin_config);
+                                        } catch (e) { console.log('Error reading plugin config upon install'); }
                                         parent.updateMeshCore();
                                     });
                                 });

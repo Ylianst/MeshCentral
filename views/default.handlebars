@@ -9539,7 +9539,7 @@
                 installedPluginList.forEach(function(p){
                     var cant_action = [];
                     if (p.hasAdminPanel == true && p.status) {
-                        p.nameHtml = '<a onclick="return goPlugin(' + p.shortName + ', ' + p.name + ');">' + p.name + '</a>';
+                        p.nameHtml = '<a onclick="return goPlugin(\'' + p.shortName + '\', \'' + p.name.replace(/'/g, "\\'") + '\');">' + p.name + '</a>';
                     } else {
                         p.nameHtml = p.name;
                     }
