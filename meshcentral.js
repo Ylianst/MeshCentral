@@ -405,7 +405,7 @@ function CreateMeshCentralServer(config, args) {
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers'].indexOf(i) == -1)) { addServerWarning('WARNING: unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { obj.args.userallowedip = null; } else { obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { obj.args.userblockedip = null; } else { obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -895,12 +895,20 @@ function CreateMeshCentralServer(config, args) {
             if ((nodeVersion < 8) || (require('crypto').generateKeyPair == null) || (obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else {
-                var le = require('./letsencrypt.js');
-                obj.letsencrypt = le.CreateLetsEncrypt(obj);
-                if (obj.letsencrypt != null) {
-                    obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt certificate
+                // Check Let's Encrypt settings
+                var leok = true;
+                if (typeof obj.config.letsencrypt.email != 'string') { leok = false; addServerWarning("Missing Let's Encrypt email address."); }
+                else if (typeof obj.config.letsencrypt.names != 'string') { leok = false; addServerWarning("Invalid Let's Encrypt host names."); }
+                else if (obj.config.letsencrypt.email.split('@').length != 2) { leok = false; addServerWarning("Invalid Let's Encrypt email address."); }
+                else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address."); }
+                else {
+                    var le = require('./letsencrypt.js');
+                    try { obj.letsencrypt = le.CreateLetsEncrypt(obj); } catch (ex) { }
+                    if (obj.letsencrypt == null) { addServerWarning("Unable to setup GreenLock module."); leok = false; }
+                }
+                if (leok == true) {
+                    obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt
                 } else {
-                    console.log("ERROR: Unable to setup GreenLock module.");
                     obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
                 }
             }
