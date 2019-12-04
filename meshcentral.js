@@ -241,8 +241,21 @@ function CreateMeshCentralServer(config, args) {
                 }
             }
         });
-        childProcess.stdout.on('data', function (data) { if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); } if (data.indexOf('Updating settings folder...') >= 0) { childProcess.xrestart = 1; } else if (data.indexOf('Updating server certificates...') >= 0) { childProcess.xrestart = 1; } else if (data.indexOf('Server Ctrl-C exit...') >= 0) { childProcess.xrestart = 2; } else if (data.indexOf('Starting self upgrade...') >= 0) { childProcess.xrestart = 3; } else if (data.indexOf('Server restart...') >= 0) { childProcess.xrestart = 1; } console.log(data); });
+        childProcess.stdout.on('data', function (data) {
+            if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
+            if (data.indexOf('Updating settings folder...') >= 0) { childProcess.xrestart = 1; }
+            else if (data.indexOf('Updating server certificates...') >= 0) { childProcess.xrestart = 1; }
+            else if (data.indexOf('Server Ctrl-C exit...') >= 0) { childProcess.xrestart = 2; }
+            else if (data.indexOf('Starting self upgrade...') >= 0) { childProcess.xrestart = 3; }
+            else if (data.indexOf('Server restart...') >= 0) { childProcess.xrestart = 1; }
+            var datastr = data;
+            while (datastr.endsWith('\r') || datastr.endsWith('\n')) { datastr = datastr.substring(0, datastr.length - 1); }
+            console.log(datastr);
+        });
         childProcess.stderr.on('data', function (data) {
+            var datastr = data;
+            while (datastr.endsWith('\r') || datastr.endsWith('\n')) { datastr = datastr.substring(0, datastr.length - 1); }
+            console.log('ERR: ' + datastr);
             if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
             try {

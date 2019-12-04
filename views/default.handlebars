@@ -1414,7 +1414,7 @@
                     if (updateNaggleFlags & 128) { updateMeshes(); }
                     if (updateNaggleFlags & 4) { updateDevices(); }
                     if (updateNaggleFlags & 8) { drawNotifications(); }
-                    if (updateNaggleFlags & 16) { updateMapMarkers(); }
+                    {{{StartGeoLocationJS}}}if (updateNaggleFlags & 16) { updateMapMarkers(); }{{{EndGeoLocationJS}}}
                     if (updateNaggleFlags & 32) { eventsUpdate(); }
                     {{{StartGeoLocationJS}}}if (updateNaggleFlags & 64) { refreshMap(false, true); }{{{EndGeoLocationJS}}}
                     if (updateNaggleFlags & 256) { drawDeviceTimeline(); }
