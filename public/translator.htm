@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <style>
+        .listItem {
+            width: calc(100vh - 8);
+            background-color: lightgray;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin: 4px;
+            padding: 6px;
+            text-align: left;
+        }
+        
+        .listItem:hover {
+            background-color: darkgray;
+        }
+
+    </style>
+</head>
+<body style="overflow:hidden">
+    <div id=p11 class="noselect" style="overflow:hidden">
+        <div id=deskarea0>
+            <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
+            <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
+            <div id=deskarea1 class="areaHead">
+                <div class="toright2" style="margin-top:3px;margin-right:5px">
+                    <span id="status"></span>
+                </div>
+                <div>
+                    <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()">
+                    <input id="SaveFileButton" type=button value="Save File..." onclick="savefile()">
+                    <select id="langSelector" onclick="langSelectorChange()" onchange="langSelectorChange()">
+                        <option value="ar">Arabic (ar)</option>
+                        <option value="fr">French (fr)</option>
+                        <option value="cs">Czech (cs)</option>
+                        <option value="de">German (de)</option>
+                        <option value="el">Greek (el)</option>
+                        <option value="he">Hebrew (he)</option>
+                        <option value="hi">Hindi (hi)</option>
+                        <option value="it">Italian (it)</option>
+                        <option value="ja">Japanese (ja)</option>
+                        <option value="ko">Korean (ko)</option>
+                        <option value="pl">Polish (pl)</option>
+                        <option value="pt">Portuguese (pt)</option>
+                        <option value="ru">Russian (ru)</option>
+                        <option value="ro">Romanian (ro)</option>
+                        <option value="zh-CHS">Simplified Chinese (zh-CHS)</option>
+                        <option value="zh-CHT">Traditional Chinese (zh-CHT)</option>
+                        <option value="es">Spanish (es)</option>
+                    </select> 
+                </div>
+            </div>
+            <div id=deskarea2 style="">
+                <div class="areaProgress"><div id="progressbar" style=""></div></div>
+            </div>
+            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);background-color:gray">
+                <div id="masterListArea" style="height:calc(33.33vh);overflow-y:scroll">
+                    <div class="listItem"><div style="display:inline-block;width:calc(40% - 10px)"></div><div style="display:inline-block;width:calc(40% - 10px)"></div><div style="display:inline-block;width:calc(20% - 10px)"></div></div>
+                </div>
+                <textarea id="defaultTextArea" readonly style="height:calc(33.33vh);overflow-y:scroll;width:calc(100% - 5px);resize:none"></textarea>
+                <textarea id="translatedTextArea" style="height:calc(33.33vh - 70px);overflow-y:scroll;width:calc(100% - 5px);resize:none"></textarea>
+            </div>
+            <div id=deskarea4 class="areaFoot">
+                <div class="toright2">
+                    <input id="PrevButton" type=button value="Prev" onclick="prev()">
+                    <input id="NextButton" type=button value="Next" onclick="next()">
+                </div>
+                <div style="height:22px">
+                    &nbsp;
+                    <input id="CopySource" type=button value="Copy Source" onclick="copySource()">
+                </div>
+            </div>
+        </div>
+        <div id=dialog class="noselect" style="display:none">
+            <div id=dialogHeader>
+                <div tabindex=0 id=id_dialogclose onclick=setDialogMode() onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
+                <div id=id_dialogtitle></div>
+            </div>
+            <div id=dialogBody>
+                <div id=dialog1>
+                    <div id=id_dialogMessage style=""></div>
+                </div>
+                <div id=dialog2 style="">
+                    <div id=id_dialogOptions></div>
+                </div>
+            </div>
+            <div id="idx_dlgButtonBar">
+                <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
+                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
+                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var translations = null;
+        var selectedLanguage = Q('langSelector').value;
+        var selectedItem = 0;
+
+        function start() {
+            window.onresize = deskAdjust;
+            document.ondrop = ondrop;
+            document.ondragover = ondragover;
+            document.ondragleave = ondragleave;
+            document.onkeypress = onkeypress;
+            updateMasterList();
+        }
+
+        function langSelectorChange() { selectedLanguage = Q('langSelector').value; updateMasterList(); }
+
+        function cleanup() {
+            translationFile = null;
+            updateMasterList();
+        }
+
+        function ondrop(e) {
+            haltEvent(e);
+            QV('bigfail', false);
+            QV('bigok', false);
+
+            // Check if these are files we can upload, remove all folders.
+            if (e.dataTransfer == null) return;
+            var files = [];
+            for (var i in e.dataTransfer.files) {
+                if ((e.dataTransfer.files[i].type != null) && (e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].size != 0) && (e.dataTransfer.files[i].name.endsWith('.json'))) {
+                    files.push(e.dataTransfer.files[i]);
+                }
+            }
+            if (files.length == 0) return;
+            cleanup();
+            readFile(files[0]);
+        }
+
+        var dragtimer = null;
+        function ondragover(e) {
+            haltEvent(e);
+            if (dragtimer != null) { clearTimeout(dragtimer); dragtimer = null; }
+            var ac = true;
+            QV('bigok', ac);
+            QV('bigfail', !ac);
+        }
+
+        function ondragleave(e) {
+            haltEvent(e);
+            dragtimer = setTimeout(function () { QV('bigfail', false); QV('bigok', false); dragtimer = null; }, 10);
+        }
+
+        function onkeypress(e) {
+            if (xxdialogMode) return;
+            //if (e.key == ' ') { togglePause(); haltEvent(e); }
+        }
+
+        function deskAdjust() {
+
+        }
+
+        function openfile() {
+            var x = '<input type=file name=files id=p2fileinput style=width:100% accept=".json" onchange="openfileChanged()" />';
+            setDialogMode(2, "Open File...", 3, openfileEx, x);
+            QE('idx_dlgOkButton', false);
+        }
+
+        function openfileEx() {
+            var xfiles = Q('p2fileinput').files;
+            if (xfiles != null) { var files = []; for (var i in xfiles) { if ((xfiles[i].type != null) && (xfiles[i].size != null) && (xfiles[i].size != 0) && (xfiles[i].name.endsWith('.json'))) { files.push(xfiles[i]); } } }
+            if (files.length == 0) return;
+            cleanup();
+            readFile(files[0]);
+            Q('OpenFileButton').blur();
+        }
+
+        function openfileChanged() {
+            var xfiles = Q('p2fileinput').files;
+            if (xfiles != null) { var files = []; for (var i in xfiles) { if ((xfiles[i].type != null) && (xfiles[i].size != null) && (xfiles[i].size != 0) && (xfiles[i].name.endsWith('.json'))) { files.push(xfiles[i]); } } }
+            QE('idx_dlgOkButton', files.length == 1);
+        }
+
+        function readFile(translationFile) {
+            var fr = new FileReader();
+            fr.onload = function () {
+                var file = null;
+                try { file = JSON.parse(this.result); } catch (ex) { }
+                if ((file != null) && (typeof file.strings == 'object') && (file.strings.length > 0)) {
+                    translations = file.strings;
+                    translations.sort(enSort);
+                    updateMasterList();
+                }
+            };
+            fr.readAsText(translationFile);
+        }
+
+        function updateMasterList() {
+            var x = [];
+            if (translations != null) {
+                //console.log(translations);
+                for (var i in translations) {
+                    var source = EscapeHtml(translations[i].en);
+                    var target = '';
+                    if (translations[i][selectedLanguage] != null) { target = EscapeHtml(translations[i][selectedLanguage]); }
+                    var comment = '';
+                    x.push('<div class="listItem" name=' + i + ' onclick=select(' + i + ')><div style="display:inline-block;width:calc(40% - 10px)">' + source + '</div><div style="display:inline-block;width:calc(40% - 10px)">' + target + '</div><div style="display:inline-block;width:calc(20% - 10px)">' + comment + '</div></div>');
+                }
+            }
+            QH('masterListArea', x.join(''));
+            updateButtons();
+        }
+
+        function select(i) {
+            selectedItem = i;
+            QH('defaultTextArea', translations[i].en);
+            if (translations[i][selectedLanguage] != null) { QH('translatedTextArea', translations[i][selectedLanguage]); } else { QH('translatedTextArea', ''); }
+            Q('translatedTextArea').focus();
+            updateButtons();
+        }
+
+        function next() { select(selectedItem + 1); }
+        function prev() { select(selectedItem - 1); }
+        function copySource() { QH('translatedTextArea', translations[selectedItem].en); Q('translatedTextArea').focus(); }
+
+        function updateButtons() {
+            QE('SaveFileButton', translations != null);
+            QE('NextButton', (translations != null) && (selectedItem < (translations.length - 1)));
+            QE('PrevButton', (translations != null) && (selectedItem > 0));
+            QE('CopySource', translations != null);
+            if (translations == null) {
+                QH('status', '');
+                QS('progressbar').width = '0%';
+            } else {
+                QH('status', (selectedItem + 1) + ' / ' + translations.length);
+                QS('progressbar').width = Math.floor(100 * ((selectedItem + 1) / translations.length)) + '%';
+            }
+        }
+
+        function enSort(a, b) { if (a.en.toLowerCase() > b.en.toLowerCase()) return 1; if (a.en.toLowerCase() < b.en.toLowerCase()) return -1; return 0; }
+
+        //
+        // POPUP DIALOG
+        //
+
+        // null = Hidden, 1 = Generic Message
+        var xxdialogMode;
+        var xxdialogFunc;
+        var xxdialogButtons;
+        var xxdialogTag;
+        var xxcurrentView = -1;
+
+        // Display a dialog box
+        // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
+        function setDialogMode(x, y, b, f, c, tag) {
+            xxdialogMode = x;
+            xxdialogFunc = f;
+            xxdialogButtons = b;
+            xxdialogTag = tag;
+            QE('idx_dlgOkButton', true);
+            QV('idx_dlgOkButton', b & 1);
+            QV('idx_dlgCancelButton', b & 2);
+            QV('id_dialogclose', (b & 2) || (b & 8));
+            QV('idx_dlgDeleteButton', b & 4);
+            QV('idx_dlgButtonBar', b & 7);
+            if (y) QH('id_dialogtitle', y);
+            for (var i = 1; i < 3; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
+            QV('dialog', x);
+            if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+        }
+
+        function dialogclose(x) {
+            var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
+            setDialogMode();
+            if (((b & 8) || x) && f) f(x, t);
+        }
+
+        function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+        function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
+        start();
+    </script>
+</body>
+</html>
