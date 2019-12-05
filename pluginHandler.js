@@ -490,6 +490,7 @@ module.exports.pluginHandler = function (parent) {
             parent.db.setPluginStatus(id, 0, func);
             delete obj.plugins[plugin.shortName];
             delete obj.exports[plugin.shortName];
+            parent.updateMeshCore();
         });
     };
 
@@ -501,7 +502,6 @@ module.exports.pluginHandler = function (parent) {
             rimraf.sync(pluginPath);
             parent.db.deletePlugin(id, func);
             delete obj.plugins[plugin.shortName];
-            obj.parent.updateMeshCore();
         });
     };
 
