@@ -8,6 +8,7 @@
     <meta name="format-detection" content="telephone=no" />
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <script type="text/javascript" src="scripts/filesaver.js"></script>
     <style>
         .listItem {
             width: calc(100vh - 8);
@@ -23,6 +24,15 @@
             background-color: darkgray;
         }
 
+        .listItemSel {
+            width: calc(100vh - 8);
+            background-color: #CFC;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin: 4px;
+            padding: 6px;
+            text-align: left;
+        }
     </style>
 </head>
 <body style="overflow:hidden">
@@ -30,13 +40,18 @@
         <div id=deskarea0>
             <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
             <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
-            <div id=deskarea1 class="areaHead">
+            <div id=deskarea0 style="position:absolute;left:0;right:0;top:0;height:28px;background-color:#036;color:#c8c8c8">
+                <div style="float:right;padding:2px" id="mainStatus"></div>
+                <div style="font-size:20px;font-family:Arial;padding:3px"><b>MeshCentral Translator</b></div>
+            </div>
+            <div id=deskarea1 class="areaHead" style="margin-top:28px">
                 <div class="toright2" style="margin-top:3px;margin-right:5px">
                     <span id="status"></span>
                 </div>
                 <div>
-                    <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()">
-                    <input id="SaveFileButton" type=button value="Save File..." onclick="savefile()">
+                    <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()" style="display:none">
+                    <input id="SaveFileButton" type=button value="Save to Server..." onclick="saveServerTranslations()">
+                    <input id="SaveFileButton" type=button value="Save to File..." onclick="saveToFile()">
                     <select id="langSelector" onclick="langSelectorChange()" onchange="langSelectorChange()">
                         <option value="ar">Arabic (ar)</option>
                         <option value="fr">French (fr)</option>
@@ -56,17 +71,19 @@
                         <option value="zh-CHT">Traditional Chinese (zh-CHT)</option>
                         <option value="es">Spanish (es)</option>
                     </select> 
+                    <input id="searchInput" type="text" placeholder="Search" onchange="onSearchChanged()" onkeyup="onSearchChanged()">
+                    <input id="showLocCheck" type="checkbox" onchange="onLocChanged()"> Show Location
                 </div>
             </div>
             <div id=deskarea2 style="">
-                <div class="areaProgress"><div id="progressbar" style=""></div></div>
+                <div class="areaProgress"><div id="progressbar" style="background-color:blue"></div></div>
             </div>
-            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);background-color:gray">
+            <div id=deskarea3x style="max-height:calc(100vh - 82px);height:calc(100vh - 54px);background-color:gray">
                 <div id="masterListArea" style="height:calc(33.33vh);overflow-y:scroll">
                     <div class="listItem"><div style="display:inline-block;width:calc(40% - 10px)"></div><div style="display:inline-block;width:calc(40% - 10px)"></div><div style="display:inline-block;width:calc(20% - 10px)"></div></div>
                 </div>
-                <textarea id="defaultTextArea" readonly style="height:calc(33.33vh);overflow-y:scroll;width:calc(100% - 5px);resize:none"></textarea>
-                <textarea id="translatedTextArea" style="height:calc(33.33vh - 70px);overflow-y:scroll;width:calc(100% - 5px);resize:none"></textarea>
+                <textarea id="defaultTextArea" autocomplete=off readonly style="height:calc(33.33vh);overflow-y:scroll;width:calc(100% - 5px);resize:none;background-color:#EFE"></textarea>
+                <textarea id="translatedTextArea" autocomplete=off style="height:calc(33.33vh - 70px);overflow-y:scroll;width:calc(100% - 5px);resize:none"></textarea>
             </div>
             <div id=deskarea4 class="areaFoot">
                 <div class="toright2">
@@ -111,13 +128,20 @@
             document.ondragleave = ondragleave;
             document.onkeypress = onkeypress;
             updateMasterList();
+            loadServerTranslations();
         }
 
-        function langSelectorChange() { selectedLanguage = Q('langSelector').value; updateMasterList(); }
+        function langSelectorChange() {
+            selectedLanguage = Q('langSelector').value;
+            updateMasterList();
+            onSearchChanged(true);
+        }
 
         function cleanup() {
             translationFile = null;
             updateMasterList();
+            Q('searchInput').value = '';
+            currentSearchFilter = '';
         }
 
         function ondrop(e) {
@@ -190,7 +214,10 @@
                 if ((file != null) && (typeof file.strings == 'object') && (file.strings.length > 0)) {
                     translations = file.strings;
                     translations.sort(enSort);
+                    Q('searchInput').value = '';
+                    currentSearchFilter = '';
                     updateMasterList();
+                    select(0, true);
                 }
             };
             fr.readAsText(translationFile);
@@ -205,23 +232,37 @@
                     var target = '';
                     if (translations[i][selectedLanguage] != null) { target = EscapeHtml(translations[i][selectedLanguage]); }
                     var comment = '';
-                    x.push('<div class="listItem" name=' + i + ' onclick=select(' + i + ')><div style="display:inline-block;width:calc(40% - 10px)">' + source + '</div><div style="display:inline-block;width:calc(40% - 10px)">' + target + '</div><div style="display:inline-block;width:calc(20% - 10px)">' + comment + '</div></div>');
+                    // <span id=ns' + i + ' style=display:none>&#9654;&nbsp;</span>
+                    x.push('<div class="listItem" id=nx' + i + ' onclick=select(' + i + ')><div style="display:inline-block;width:calc(40% - 10px)">' + source + '</div><div style="display:inline-block;width:calc(40% - 10px)">' + target + '</div><div style="display:inline-block;width:calc(20% - 10px)">' + comment + '</div></div>');
                 }
             }
             QH('masterListArea', x.join(''));
             updateButtons();
         }
 
-        function select(i) {
+        function select(i, scroll) {
+            Q('nx' + selectedItem).classList.remove('listItemSel');
+            Q('nx' + selectedItem).classList.add('listItem');
             selectedItem = i;
-            QH('defaultTextArea', translations[i].en);
-            if (translations[i][selectedLanguage] != null) { QH('translatedTextArea', translations[i][selectedLanguage]); } else { QH('translatedTextArea', ''); }
+            Q('nx' + selectedItem).classList.remove('listItem');
+            Q('nx' + selectedItem).classList.add('listItemSel');
+            if (scroll === true) {
+                var x = (Q('masterListArea').clientHeight / 2) - (Q('nx' + selectedItem).clientHeight / 2);
+                if (x < 0) { x = 0; }
+                Q('masterListArea').scrollTop = Q('nx' + selectedItem).offsetTop - x;
+            }
+            onLocChanged();
+            if (translations[i][selectedLanguage] != null) {
+                QH('translatedTextArea', translations[selectedItem][selectedLanguage]);
+            } else {
+                QH('translatedTextArea', '');
+            }
             Q('translatedTextArea').focus();
             updateButtons();
         }
 
-        function next() { select(selectedItem + 1); }
-        function prev() { select(selectedItem - 1); }
+        function next() { select(selectedItem + 1, true); }
+        function prev() { select(selectedItem - 1, true); }
         function copySource() { QH('translatedTextArea', translations[selectedItem].en); Q('translatedTextArea').focus(); }
 
         function updateButtons() {
@@ -239,6 +280,82 @@
         }
 
         function enSort(a, b) { if (a.en.toLowerCase() > b.en.toLowerCase()) return 1; if (a.en.toLowerCase() < b.en.toLowerCase()) return -1; return 0; }
+
+        var currentSearchFilter = '';
+        function onSearchChanged(force) {
+            if ((force != true) && (currentSearchFilter == Q('searchInput').value)) return;
+            currentSearchFilter = Q('searchInput').value;
+            if (translations != null) {
+                for (var i in translations) {
+                    if (currentSearchFilter == '') {
+                        QV('nx' + i, true);
+                    } else {
+                        QV('nx' + i, ((translations[i][selectedLanguage] != null) && (translations[i][selectedLanguage].indexOf(currentSearchFilter) >= 0)) || (translations[i]['en'].indexOf(currentSearchFilter) >= 0));
+                    }
+                }
+            }
+        }
+
+        function onLocChanged() {
+            if (Q('showLocCheck').checked) {
+                if ((translations[selectedItem].xloc != null) && (translations[selectedItem].xloc.length > 0)) {
+                    if (translations[selectedItem].xloc.length == 1) {
+                        QH('defaultTextArea', translations[selectedItem]['en'] + '\r\n\r\nLocation:\r\n' + translations[selectedItem].xloc.join('\r\n'));
+                    } else {
+                        QH('defaultTextArea', translations[selectedItem]['en'] + '\r\n\r\nLocations:\r\n' + translations[selectedItem].xloc.join('\r\n'));
+                    }
+                } else {
+                    QH('defaultTextArea', translations[selectedItem]['en'] + '\r\n\r\nNo locations.');
+                }
+            } else {
+                QH('defaultTextArea', translations[selectedItem]['en']);
+            }
+        }
+
+        // Poll the server, if it responds, refresh the page.
+        function loadServerTranslations() {
+            var xdr = null;
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open('POST', window.location.origin + '/translations');
+            xdr.timeout = 30000;
+            xdr.onload = function () {
+                var x = null;
+                try { x = JSON.parse(this.responseText); } catch (ex) { }
+                if ((x == null) || (typeof x.strings != 'object')) { messagebox('Translations', 'ERROR: Unable to parse translations from the server.'); return; }
+                translations = x.strings;
+                translations.sort(enSort);
+                Q('searchInput').value = '';
+                currentSearchFilter = '';
+                updateMasterList();
+                select(0, true);
+            };
+            xdr.onerror = function () {
+                messagebox('Translations', 'ERROR: Unable to load translations from the server.');
+            };
+            xdr.send('{ "action":"getTranslations" }');
+        }
+
+        // Save to server
+        function saveServerTranslations() {
+            var xdr = null;
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open('POST', window.location.origin + '/translations');
+            xdr.timeout = 30000;
+            xdr.onload = function () {
+                var x = null;
+                try { x = JSON.parse(this.responseText); } catch (ex) { }
+                if ((x == null) || (typeof x.strings != 'object')) { messagebox('Translations', 'ERROR: Unable to parse server response.'); return; }
+                // x
+            };
+            xdr.onerror = function () { messagebox('Translations', 'ERROR: Unable to save translations to server.'); };
+            xdr.send(JSON.stringify({ 'action': 'setTranslations', strings: translations }));
+        }
+
+        function saveToFile() {
+            saveAs(data2blob(JSON.stringify({ strings: translations })), 'translate.json');
+        }
 
         //
         // POPUP DIALOG
@@ -276,8 +393,8 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
-        function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };

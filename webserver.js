@@ -1937,6 +1937,50 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Handle translation request
+    function handleTranslationsRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        //if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
+
+        var user = null;
+        if (obj.args.user != null) {
+            // A default user is active
+            user = obj.users['user/' + domain.id + '/' + obj.args.user];
+            if (!user) { parent.debug('web', 'handleTranslationsRequest: user not found.'); res.sendStatus(401); return; }
+        } else {
+            // Check if the user is logged and we have all required parameters
+            if (!req.session || !req.session.userid) { parent.debug('web', 'handleTranslationsRequest: failed checks (2).'); res.sendStatus(401); return; }
+
+            // Get the current user
+            user = obj.users[req.session.userid];
+            if (!user) { parent.debug('web', 'handleTranslationsRequest: user not found.'); res.sendStatus(401); return; }
+            if (user.siteadmin != 0xFFFFFFFF) { parent.debug('web', 'handleTranslationsRequest: user not site administrator.'); res.sendStatus(401); return; }
+        }
+
+        var data = '';
+        req.setEncoding('utf8');
+        req.on('data', function (chunk) { data += chunk; });
+        req.on('end', function () {
+            try { data = JSON.parse(data); } catch (ex) { data = null; }
+            if (data == null) { res.sendStatus(404); return; }
+            if (data.action == 'getTranslations') {
+                if (obj.fs.existsSync(obj.path.join(obj.parent.datapath, 'translate.json'))) {
+                    // Return the translation file (JSON)
+                    try { res.sendFile(obj.path.join(obj.parent.datapath, 'translate.json')); } catch (ex) { res.sendStatus(404); }
+                } else if (obj.fs.existsSync(obj.path.join(__dirname, 'translate', 'translate.json'))) {
+                    // Return the default translation file (JSON)
+                    try { res.sendFile(obj.path.join(__dirname, 'translate', 'translate.json')); } catch (ex) { res.sendStatus(404); }
+                } else { res.sendStatus(404); }
+            } else if (data.action == 'setTranslations') {
+                obj.fs.writeFile(obj.path.join(obj.parent.datapath, 'translate.json'), JSON.stringify({ strings: data.strings } ), function (err) { res.send(JSON.stringify({ response:err })); });
+            } else {
+                // Unknown request
+                res.sendStatus(404);
+            }
+        });
+    }
+
     // Handle welcome image request
     function handleWelcomeImageRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3395,6 +3439,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.get(url + 'logo.png', handleLogoRequest);
+            obj.app.post(url + 'translations', handleTranslationsRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
             if (parent.pluginHandler != null) {
