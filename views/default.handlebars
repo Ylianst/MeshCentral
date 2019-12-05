@@ -187,7 +187,7 @@
                     <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
                     <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
                     <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
-                    <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map"><div class="viewSelector4"></div></div>
+                    <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map" style="display:none"><div class="viewSelector4"></div></div>
                 </div><div><h1>My Devices</h1></div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
@@ -216,7 +216,7 @@
                                     <option value=1>Columns</option>
                                     <option value=2>List</option>
                                     <option value=3>Desktops</option>
-                                    <option id=viewselectmapoption value=4>Map</option>
+                                    <option id=viewselectmapoption value=4 style="display:none">Map</option>
                                 </select>
                             </div>
                             <div style="display:none" id=devListToolbarSort>
@@ -3770,7 +3770,9 @@
         // Load the entire map
         function loadmap() {
             if (xxmap == null) return;
-            if ((features & 0x8000) == 0) { QV('viewselectmapoption', false); QV('devViewButton4', false); xxmap = null; return; } // Geolocation not supported
+            if ((features & 0x8000) == 0) { xxmap = null; return; } // Geolocation not supported
+            QV('viewselectmapoption', true);
+            QV('devViewButton4', true);
             try {
                 // Initialize a Source Vector
                 xxmap.markersSource = new ol.source.Vector();
