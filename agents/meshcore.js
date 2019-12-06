@@ -1242,7 +1242,7 @@ function createMeshCore(agent) {
                     }
 
                     // Remote desktop using native pipes
-                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(), tunnel: this };
+                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(require('MeshAgent')._tsid == null ? undefined : require('MeshAgent')._tsid), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
 
@@ -1286,7 +1286,7 @@ function createMeshCore(agent) {
                                     this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                                     this.httprequest.desktop.kvm.connectionBar.close();
 
-                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '));
+                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '), require('MeshAgent')._tsid);
                                     this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                                     this.httprequest.desktop.kvm.connectionBar.on('close', function ()
                                     {
@@ -1351,7 +1351,7 @@ function createMeshCore(agent) {
                                     }
                                     try
                                     {
-                                        this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.ws.httprequest.desktop.kvm.users.sort().join(', '));
+                                        this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.ws.httprequest.desktop.kvm.users.sort().join(', '), require('MeshAgent')._tsid);
                                         MeshServerLog('Remote Desktop Connection Bar Activated/Updated (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                     }
                                     catch(xx)
@@ -1405,7 +1405,7 @@ function createMeshCore(agent) {
                             }
                             try
                             {
-                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '));
+                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '), require('MeshAgent')._tsid);
                                 MeshServerLog('Remote Desktop Connection Bar Activated/Updated (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             }
                             catch(xx)
@@ -1866,6 +1866,40 @@ function createMeshCore(agent) {
                     response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
+                case 'tsid':
+                    if (process.platform == 'win32')
+                    {
+                        if (args['_'].length != 1)
+                        {
+                            response = 'TSID: ' + (require('MeshAgent')._tsid == null ? 'console' : require('MeshAgent')._tsid);
+                        }
+                        else
+                        {
+                            var i = parseInt(args['_'][0]);
+                            require('MeshAgent')._tsid = (isNaN(i) ? null : i);
+                            response = 'TSID set to: ' + (require('MeshAgent')._tsid == null ? 'console' : require('MeshAgent')._tsid);
+                        }
+                    }
+                    break;
+                case 'activeusers':
+                    if (process.platform == 'win32')
+                    {
+                        var p = require('user-sessions').enumerateUsers();
+                        p.sessionid = sessionid;
+                        p.then(function (u)
+                        {
+                            var v = [];
+                            for(var i in u)
+                            {
+                                if(u[i].State == 'Active' || u[i].State == 'Connected')
+                                {
+                                    v.push({ tsid: i, type: u[i].StationName, user: u[i].Username });
+                                }
+                            }
+                            sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
+                        });
+                    }
+                    break;
                 case 'wallpaper':
                     if (process.platform != 'win32' && !(process.platform == 'linux' && require('linux-gnome-helpers').available))
                     {
