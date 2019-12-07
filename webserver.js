@@ -574,7 +574,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             fmt: "fido-u2f",
                             publicKey: webAuthnKey.publicKey,
                             prevCounter: webAuthnKey.counter,
-                            userHandle: Buffer(user._id, 'binary').toString('base64')
+                            userHandle: Buffer.from(user._id, 'binary').toString('base64')
                         };
 
                         var webauthnResponse = null;
@@ -1973,7 +1973,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     try { res.sendFile(obj.path.join(__dirname, 'translate', 'translate.json')); } catch (ex) { res.sendStatus(404); }
                 } else { res.sendStatus(404); }
             } else if (data.action == 'setTranslations') {
-                obj.fs.writeFile(obj.path.join(obj.parent.datapath, 'translate.json'), JSON.stringify({ strings: data.strings } ), function (err) { res.send(JSON.stringify({ response:err })); });
+                obj.fs.writeFile(obj.path.join(obj.parent.datapath, 'translate.json'), JSON.stringify({ strings: data.strings }), function (err) { if (err == null) { res.send(JSON.stringify({ response: 'ok' })); } else { res.send(JSON.stringify({ response: err })); } });
+            } else if (data.action == 'translateServer') {
+                if (obj.pendingTranslation === true) { res.send(JSON.stringify({ response: 'Server is already performing a translation.' })); return; }
+                const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+                if (nodeVersion < 8) { res.send(JSON.stringify({ response: 'Server requires NodeJS 8.x or better.' })); return; }
+                var translateFile = obj.path.join(obj.parent.datapath, 'translate.json');
+                if (obj.fs.existsSync(translateFile) == false) { translateFile = obj.path.join(__dirname, 'translate', 'translate.json'); }
+                if (obj.fs.existsSync(translateFile) == false) { res.send(JSON.stringify({ response: 'Unable to find translate.js file on the server.' })); return; }
+                res.send(JSON.stringify({ response: 'ok' }));
+                console.log('Started server translation...');
+                obj.pendingTranslation = true;
+                require('child_process').exec('node translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                    delete obj.pendingTranslation;
+                    //console.log('error', error);
+                    //console.log('stdout', stdout);
+                    //console.log('stderr', stderr);
+                    //console.log('Server restart...'); // Perform a server restart
+                    //process.exit(0);
+                    console.log('Server translation completed.');
+                });
             } else {
                 // Unknown request
                 res.sendStatus(404);
