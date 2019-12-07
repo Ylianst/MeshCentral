@@ -5958,6 +5958,11 @@
                 y += addHtmlValue("Langages", z);
             }
             y += addHtmlValue("Dates & Time", x);
+
+            if ((userinfo.siteadmin == 0xFFFFFFFF) && (domain == '')) {
+                y += '<br /><a rel="noreferrer noopener" target="_blank" href="translator.htm">' + "Help translate MeshCentral" + '</a>';
+            }
+
             setDialogMode(2, "Localization Settings", 3, account_showLocalizationSettingsEx, y);
             return false;
         }

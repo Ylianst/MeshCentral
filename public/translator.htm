@@ -18,6 +18,7 @@
             margin: 4px;
             padding: 6px;
             text-align: left;
+            cursor: pointer;
         }
         
         .listItem:hover {
@@ -35,12 +36,18 @@
         }
     </style>
 </head>
-<body style="overflow:hidden">
-    <div id=p11 class="noselect" style="overflow:hidden">
+<body style="overflow:hidden" onbeforeunload="return onBeforeUnload(event)">
+    <div id=p11 class="noselect" style="overflow:hidden;position:relative">
+        <div id="startTips" style="top:15px;right:15px;width:calc(50vh);position:absolute;background-color:gold;z-index:1000;padding:10px;border-radius:8px;box-shadow:3px 3px 10px gray">
+            Welcome to the MeshCentral translator. You can use this to help translate MeshCentral into other languages. Start by selecting a language, translate a few strings and save the strings to your server. Then, hit "Translate Server" to apply your changes to your server's web pages.<br /><br />
+            When ready, please mail the "meshcentral-data/translate.json" file to <a href="mailto:ylianst@gmail.com">ylianst@gmail.com</a> for inclusion in the MeshCentral official builds.<br /><br />
+            <a onclick="closeStartTips()"><b>Close</b></a>
+        </div>
         <div id=deskarea0>
             <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
             <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
             <div id=deskarea0 style="position:absolute;left:0;right:0;top:0;height:28px;background-color:#036;color:#c8c8c8">
+                <input style="float:right;margin:3px" id="TransServerButton" type=button value="Translate Server" onclick="translateServer()">
                 <div style="float:right;padding:2px" id="mainStatus"></div>
                 <div style="font-size:20px;font-family:Arial;padding:3px"><b>MeshCentral Translator</b></div>
             </div>
@@ -50,9 +57,9 @@
                 </div>
                 <div>
                     <input id="OpenFileButton" type=button value="Open File..." onclick="openfile()" style="display:none">
-                    <input id="SaveFileButton" type=button value="Save to Server..." onclick="saveServerTranslations()">
+                    <input id="SaveServerButton" type=button value="Save to Server..." onclick="saveServerTranslations()">
                     <input id="SaveFileButton" type=button value="Save to File..." onclick="saveToFile()">
-                    <select id="langSelector" onclick="langSelectorChange()" onchange="langSelectorChange()">
+                    <select id="langSelector" onchange="langSelectorChange()">
                         <option value="ar">Arabic (ar)</option>
                         <option value="fr">French (fr)</option>
                         <option value="cs">Czech (cs)</option>
@@ -82,17 +89,19 @@
                 <div id="masterListArea" style="height:calc(33.33vh);overflow-y:scroll">
                     <div class="listItem"><div style="display:inline-block;width:calc(40% - 10px)"></div><div style="display:inline-block;width:calc(40% - 10px)"></div><div style="display:inline-block;width:calc(20% - 10px)"></div></div>
                 </div>
-                <textarea id="defaultTextArea" autocomplete=off readonly style="height:calc(33.33vh);overflow-y:scroll;width:calc(100% - 5px);resize:none;background-color:#EFE"></textarea>
-                <textarea id="translatedTextArea" autocomplete=off style="height:calc(33.33vh - 70px);overflow-y:scroll;width:calc(100% - 5px);resize:none"></textarea>
+                <textarea id="defaultTextArea" autocomplete=off readonly style="height:calc(28.33vh);overflow-y:scroll;width:calc(100% - 5px);resize:none;background-color:#EFE"></textarea>
+                <textarea id="translatedTextArea" autocomplete=off style="height:calc(38.33vh - 96px);overflow-y:scroll;width:calc(100% - 5px);resize:none;background-color:#EFE" onkeyup="onSourceChange()"></textarea>
             </div>
             <div id=deskarea4 class="areaFoot">
                 <div class="toright2">
+                    <input id="CopySource" type=button value="Copy English" onclick="copySource()">
                     <input id="PrevButton" type=button value="Prev" onclick="prev()">
                     <input id="NextButton" type=button value="Next" onclick="next()">
                 </div>
                 <div style="height:22px">
                     &nbsp;
-                    <input id="CopySource" type=button value="Copy Source" onclick="copySource()">
+                    <input id="SetButton" type=button value="Set" onclick="setTranslation()">
+                    <input id="CancelButton" type=button value="Cancel" onclick="cancelTranslation()">
                 </div>
             </div>
         </div>
@@ -120,6 +129,7 @@
         var translations = null;
         var selectedLanguage = Q('langSelector').value;
         var selectedItem = 0;
+        var changes = false;
 
         function start() {
             window.onresize = deskAdjust;
@@ -129,12 +139,20 @@
             document.onkeypress = onkeypress;
             updateMasterList();
             loadServerTranslations();
+            QE('SaveServerButton', false);
         }
+
+        function onBeforeUnload(e) {
+            if (changes) { e.preventDefault(); e.resturnValue = ''; }
+        }
+
+        function closeStartTips() { QV('startTips', false); }
 
         function langSelectorChange() {
             selectedLanguage = Q('langSelector').value;
             updateMasterList();
             onSearchChanged(true);
+            select(0, true, false);
         }
 
         function cleanup() {
@@ -233,14 +251,17 @@
                     if (translations[i][selectedLanguage] != null) { target = EscapeHtml(translations[i][selectedLanguage]); }
                     var comment = '';
                     // <span id=ns' + i + ' style=display:none>&#9654;&nbsp;</span>
-                    x.push('<div class="listItem" id=nx' + i + ' onclick=select(' + i + ')><div style="display:inline-block;width:calc(40% - 10px)">' + source + '</div><div style="display:inline-block;width:calc(40% - 10px)">' + target + '</div><div style="display:inline-block;width:calc(20% - 10px)">' + comment + '</div></div>');
+                    x.push('<div class="listItem" id=nx' + i + ' onclick=select(' + i + ')><div id=ns' + i + ' style="display:inline-block;width:calc(40% - 10px)">' + source + '</div><div id=nt' + i + ' style="display:inline-block;width:calc(40% - 10px)">' + target + '</div><div id=nc' + i + ' style="display:inline-block;width:calc(20% - 10px)">' + comment + '</div></div>');
                 }
             }
             QH('masterListArea', x.join(''));
             updateButtons();
         }
 
-        function select(i, scroll) {
+        function select(i, scroll, nofocus) {
+            // Hold selection is a change was made but not commited.
+            if ((scroll == null) && (isTargetChanged() == true)) { return; }
+
             Q('nx' + selectedItem).classList.remove('listItemSel');
             Q('nx' + selectedItem).classList.add('listItem');
             selectedItem = i;
@@ -253,22 +274,22 @@
             }
             onLocChanged();
             if (translations[i][selectedLanguage] != null) {
-                QH('translatedTextArea', translations[selectedItem][selectedLanguage]);
+                Q('translatedTextArea').value = translations[selectedItem][selectedLanguage];
             } else {
-                QH('translatedTextArea', '');
+                Q('translatedTextArea').value = '';
             }
-            Q('translatedTextArea').focus();
+            if (nofocus == true) { Q('translatedTextArea').focus(); }
             updateButtons();
         }
 
         function next() { select(selectedItem + 1, true); }
         function prev() { select(selectedItem - 1, true); }
-        function copySource() { QH('translatedTextArea', translations[selectedItem].en); Q('translatedTextArea').focus(); }
+        function copySource() { Q('translatedTextArea').value = translations[selectedItem].en; Q('translatedTextArea').focus(); }
 
         function updateButtons() {
             QE('SaveFileButton', translations != null);
-            QE('NextButton', (translations != null) && (selectedItem < (translations.length - 1)));
-            QE('PrevButton', (translations != null) && (selectedItem > 0));
+            QE('NextButton', (isTargetChanged() == false) && (translations != null) && (selectedItem < (translations.length - 1)));
+            QE('PrevButton', (isTargetChanged() == false) && (translations != null) && (selectedItem > 0));
             QE('CopySource', translations != null);
             if (translations == null) {
                 QH('status', '');
@@ -277,6 +298,7 @@
                 QH('status', (selectedItem + 1) + ' / ' + translations.length);
                 QS('progressbar').width = Math.floor(100 * ((selectedItem + 1) / translations.length)) + '%';
             }
+            onSourceChange();
         }
 
         function enSort(a, b) { if (a.en.toLowerCase() > b.en.toLowerCase()) return 1; if (a.en.toLowerCase() < b.en.toLowerCase()) return -1; return 0; }
@@ -285,12 +307,13 @@
         function onSearchChanged(force) {
             if ((force != true) && (currentSearchFilter == Q('searchInput').value)) return;
             currentSearchFilter = Q('searchInput').value;
+            var currentSearchFilterLower = currentSearchFilter.toLowerCase();
             if (translations != null) {
                 for (var i in translations) {
                     if (currentSearchFilter == '') {
                         QV('nx' + i, true);
                     } else {
-                        QV('nx' + i, ((translations[i][selectedLanguage] != null) && (translations[i][selectedLanguage].indexOf(currentSearchFilter) >= 0)) || (translations[i]['en'].indexOf(currentSearchFilter) >= 0));
+                        QV('nx' + i, ((translations[i][selectedLanguage] != null) && (translations[i][selectedLanguage].toLowerCase().indexOf(currentSearchFilterLower) >= 0)) || (translations[i]['en'].toLowerCase().indexOf(currentSearchFilterLower) >= 0));
                     }
                 }
             }
@@ -346,8 +369,14 @@
             xdr.onload = function () {
                 var x = null;
                 try { x = JSON.parse(this.responseText); } catch (ex) { }
-                if ((x == null) || (typeof x.strings != 'object')) { messagebox('Translations', 'ERROR: Unable to parse server response.'); return; }
-                // x
+                if ((x == null) || (x.response == null)) { messagebox('Translations', 'ERROR: Unable to parse server response.'); return; }
+                if (x.response == 'ok') {
+                    changes = false;
+                    QE('SaveServerButton', false);
+                    QS('SaveServerButton')['background-color'] = null;
+                } else {
+                    messagebox('Translations', 'ERROR: ' + x.response);
+                }
             };
             xdr.onerror = function () { messagebox('Translations', 'ERROR: Unable to save translations to server.'); };
             xdr.send(JSON.stringify({ 'action': 'setTranslations', strings: translations }));
@@ -355,6 +384,73 @@
 
         function saveToFile() {
             saveAs(data2blob(JSON.stringify({ strings: translations })), 'translate.json');
+        }
+
+        function setTranslation() {
+            if (Q('translatedTextArea').value == '') {
+                delete translations[selectedItem][selectedLanguage];
+                QH('nt' + selectedItem, '');
+            } else {
+                translations[selectedItem][selectedLanguage] = Q('translatedTextArea').value;
+                QH('nt' + selectedItem, translations[selectedItem][selectedLanguage]);
+            }
+            onSourceChange();
+            changes = true;
+            QE('SaveServerButton', true);
+            QS('SaveServerButton')['background-color'] = '#F93';
+        }
+
+        function cancelTranslation() {
+            Q('translatedTextArea').value = translations[selectedItem][selectedLanguage];
+        }
+
+        function isTargetChanged() {
+            if (translations == null) { return false; }
+            var source = '';
+            if (translations[selectedItem][selectedLanguage] != null) { source = translations[selectedItem][selectedLanguage]; }
+            return (source != Q('translatedTextArea').value);
+        }
+
+        function onSourceChange() {
+            var x = isTargetChanged();
+            QE('SetButton', x);
+            QE('CancelButton', x);
+            QE('NextButton', (isTargetChanged() == false) && (translations != null) && (selectedItem < (translations.length - 1)));
+            QE('PrevButton', (isTargetChanged() == false) && (translations != null) && (selectedItem > 0));
+            QS('translatedTextArea')['background-color'] = ((x == true) ? 'white' : '#EFE');
+            QE('SaveFileButton', !x);
+            QE('searchInput', !x);
+            QE('showLocCheck', !x);
+            QE('langSelector', !x);
+            QE('TransServerButton', !x);
+            QE('SaveServerButton', changes && !x);
+        }
+
+        function translateServer() {
+            var x = 'Perform server translation? The MeshCentral server will reset for 10 to 30 seconds to perform this operation.';
+            setDialogMode(2, "Translate Server", 3, translateServerEx, x);
+        }
+
+        function translateServerEx() {
+            QE('TransServerButton', false);
+            setTimeout(function () { QE('TransServerButton', true); }, 5000);
+            var xdr = null;
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open('POST', window.location.origin + '/translations');
+            xdr.timeout = 30000;
+            xdr.onload = function () {
+                var x = null;
+                try { x = JSON.parse(this.responseText); } catch (ex) { }
+                if ((x == null) || (x.response == null)) { messagebox('Server Translation', 'ERROR: Unable to parse server response.'); return; }
+                if (x.response == 'ok') {
+                    messagebox('Server Translation', 'Server translation initiated, this will take a minute or two. Once done, you can refresh the MeshCentral web pages to see the changes.<br /><br />When ready, please mail the file "meshcentral-data/translate.json" to <a href="mailto:ylianst@gmail.com">ylianst@gmail.com</a> for inclusion on the official build.');
+                } else {
+                    messagebox('Server Translation', 'ERROR: ' + x.response);
+                }
+            };
+            xdr.onerror = function () { messagebox('Translations', 'ERROR: Unable to save translations to server.'); };
+            xdr.send(JSON.stringify({ 'action': 'translateServer', strings: translations }));
         }
 
         //

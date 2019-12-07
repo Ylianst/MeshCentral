@@ -72,7 +72,7 @@ function start() {
         console.log('  TRANSLATE [language] [languagefile] [files]');
         console.log('    Use a language (.json) file to translate web pages to a give language.');
         console.log('');
-        console.log('  TRANSLATEALL');
+        console.log('  TRANSLATEALL (languagefile)');
         console.log('    Translate all MeshCentral strings using the languages.json file.');
         console.log('');
         console.log('  MINIFYALL');
@@ -110,7 +110,20 @@ function start() {
     if (command == 'translateall') {
         if (fs.existsSync("../views/translations") == false) { fs.mkdirSync("../views/translations"); }
         if (fs.existsSync("../public/translations") == false) { fs.mkdirSync("../public/translations"); }
-        translate(null, "translate.json", meshCentralSourceFiles, "translations");
+        if ((process.argv.length > 3)) {
+            if (fs.existsSync(process.argv[3]) == false) {
+                console.log('Unable to find: ' + process.argv[3]);
+            } else {
+                translate(null, process.argv[3], meshCentralSourceFiles, "translations");
+            }
+        } else {
+            if (fs.existsSync("translate.json") == false) {
+                console.log('Unable to find translate.json.');
+            } else {
+                translate(null, "translate.json", meshCentralSourceFiles, "translations");
+            }
+        }
+        return;
     }
 
     // Translate web pages to a given language given a language file
