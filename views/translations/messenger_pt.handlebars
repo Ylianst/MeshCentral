@@ -1,0 +1,642 @@
+<!DOCTYPE html><html style="height:100%"><head>
+        <title>MeshMessenger</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta name="format-detection" content="telephone=no">
+        <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS">
+        <link type="text/css" href="styles/messenger.css" media="screen" rel="stylesheet" title="CSS">
+        <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+        <script type="text/javascript" src="scripts/filesaver.js"></script>
+    </head>
+    <body style="font-family:Arial,Helvetica,sans-serif">
+        <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
+            <div style="position:absolute;background-color:#036;right:0;height:38px">
+                <div id="notifyButton" class="icon13 topButton" style="margin-right:4px;display:none" title="Ativar notificação do navegador" onclick="enableNotificationsButtonClick()"></div>
+                <div id="fileButton" class="icon4 topButton" title="Compartilhar um arquivo" style="display:none" onclick="fileButtonClick()"></div>
+                <div id="camButton" class="icon2 topButton" title="Ativar câmera e microfone" style="display:none" onclick="camButtonClick()"></div>
+                <div id="micButton" class="icon6 topButton" title="Ativar microfone" style="display:none" onclick="micButtonClick()"></div>
+                <div id="hangupButton" class="icon11 topRedButton" title="Desligar" style="display:none" onclick="hangUpButtonClick(1)"></div>
+            </div>
+            <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle">MeshMessenger</span></b></div>
+        </div>
+        <div id="xmiddle" style="position:absolute;left:0;right:0;top:38px;bottom:30px">
+            <div style="position:absolute;left:0;right:0;top:0;bottom:0;overflow-y:scroll">
+                <div id="xmsg" style="position:absolute;left:0;right:0;bottom:0;padding:5px"></div>
+            </div>
+        </div>
+        <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:30px;background-color:#036">
+            <div style="position:absolute;left:5px;right:215px;bottom:4px;top:4px;background-color:aliceblue"><input id="xouttext" type="text" style="width:calc(100% - 5px)" onfocus="onUserInputFocus(1)" onblur="onUserInputFocus(0)"></div>
+            <input type="button" id="sendButton" value="Enviar" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)">
+            <input type="button" id="clearButton" value="Limpo" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()">
+        </div>
+        <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
+            <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Remoto</div>
+            <video id="remoteVideoCanvas" autoplay="" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
+        </div>
+        <div id="localVideo" style="position:absolute;right:24px;top:320px;width:160px;height:calc(120px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
+            <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Local</div>
+            <video id="localVideoCanvas" autoplay="" muted="" style="position:absolute;top:20px;left:0;width:100%;height:calc(100% - 30px);background-color:black"></video>
+        </div>
+        <input id="uploadFileInput" type="file" multiple="" style="display:none">
+        <script type="text/javascript" onunload="onUnLoad()">
+            var userInputFocus = 0;
+            var args = parseUriArgs();
+            var socket = null;                  // Websocket object
+            var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
+
+            // WebRTC sessions and data, audio and video channels
+            var random = Math.random();         // Selected random, larger value initiates WebRTC.
+            var webrtcSessions = { };           // WebRTC objects: 0 for data, 1 for outbound audio/video, 2 for inbound audio/video
+            var webchannel = null;              // WebRTC data channel
+            var localStream = null;
+            var remoteStream = null;
+            var multiWebRtc = true;             // if set to true, multiple WebRTC sessions will be setup. If false, everything uses one session.
+            var userMediaSupport = 0;
+            var notification = null;
+            getUserMediaSupport(function (x) { userMediaSupport = x; })
+            var webrtcconfiguration = '{{{webrtconfig}}}';
+            if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: \"' + webrtcconfiguration + '\".'); webrtcconfiguration = null; } }
+
+            // File transfer state
+            var fileUploads = [];
+            var fileDownloads = {};
+            var currentFileUpload = null;
+            var currentFileDownload = null;
+
+            // Set the title
+            if (args.title) { QH('xtitle', args.title.split(' ').join('&nbsp')); document.title = document.title + ' - ' + args.title; }
+            
+            // Setup web notifications
+            if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+
+            // Listen to drag & drop events
+            document.addEventListener('dragover', haltEvent, false);
+            document.addEventListener('dragleave', haltEvent, false);
+            document.addEventListener('drop', fileDrop, false);
+
+            document.onclick = function (e) {
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notification != null) { notification.close(); notification = null; }
+            }
+
+            // Trap document key up events
+            document.onkeyup = function ondockeypress(e) {
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notification != null) { notification.close(); notification = null; }
+                if (state == 2) {
+                    if ((e.keyCode == 8) && (userInputFocus == 0)) {
+                        // Backspace
+                        var outtext = Q('xouttext').value;
+                        if (outtext.length > 0) { Q('xouttext').value = outtext.substring(0, outtext.length - 1); }
+                    }
+                }
+                if (userInputFocus == 0) { haltEvent(e); return false; }
+            }
+
+            // Trap document key presses
+            document.onkeypress = function ondockeypress(e) {
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (notification != null) { notification.close(); notification = null; }
+                if (state == 2) {
+                    if (e.keyCode == 13) {
+                        // Return
+                        xsend(e);
+                    } else {
+                        // Any other key
+                        if ((userInputFocus == 0) && (e.key.length == 1)) { Q('xouttext').value = Q('xouttext').value + e.key; }
+                    }
+                }
+                if (userInputFocus == 0) { haltEvent(e); return false; }
+            }
+
+            function onUserInputFocus(x) { userInputFocus = x; }
+            function displayClear() { QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
+
+            // Polyfill FileReader if needed
+            if (!FileReader.prototype.readAsBinaryString) {
+                FileReader.prototype.readAsBinaryString = function (fileData) {
+                    var binary = '', self = this, reader = new FileReader();
+                    reader.onload = function (e) {
+                        var bytes = new Uint8Array(reader.result);
+                        for (var i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
+                        self.onload({ target: { result: binary } });
+                    }
+                    reader.readAsArrayBuffer(fileData);
+                }
+            }
+
+            // Detect if microphone & camera are present
+            // 0 = nomedia, 1 = miconly, 2 = mic&cam
+            function getUserMediaSupport(func) {
+                try {
+                    navigator.mediaDevices.enumerateDevices().then(function (devices) {
+                        try {
+                            var mic = 0, cam = 0;
+                            devices.forEach(function (device) {
+                                if (device.kind === 'audioinput') { mic = 1; }
+                                if (device.kind === 'videoinput') { cam = 1; }
+                            });
+                            if (mic == 0) { func(0); }
+                            func(mic + cam);
+                        } catch (ex) { }
+                    })
+                } catch (ex) { }
+            }
+
+            // Display a control message
+            function displayControl(msg) {
+                QA('xmsg', '<div style="clear:both"><div style="color:gray;float:left;margin-bottom:2px">' + msg + '</div><div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+
+            function displayLocalVideo(active) { QV('localVideo', active); adjustVideoWindows(); }
+            function displayRemoteVideo(active) { QV('remoteVideo', active); adjustVideoWindows(); }
+            function adjustVideoWindows() {
+                //var lv = (QS('localVideo')['display'] != 'none');
+                var rv = (QS('remoteVideo')['display'] != 'none');
+                QS('localVideo')['top'] = rv ? '320px' : '45px';
+            }
+
+            // Display a message from the remote user
+            function displayRemote(msg) {
+                QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + msg + '</div><div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+
+                // If web notifications are granted, use it.
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                if (Notification && (Notification.permission == 'granted')) {
+                    if (notification != null) { notification.close(); notification = null; }
+                    if (args.title) {
+                        notification = new Notification("MeshMessenger" + ' - ' + args.title, { body: msg });
+                    } else {
+                        notification = new Notification("MeshMessenger", { body: msg });
+                    }
+                }
+            }
+
+            // Display and send a message from the local user
+            function xsend(event) {
+                if (notification != null) { notification.close(); notification = null; }
+                if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
+                var outtext = Q('xouttext').value;
+                if (outtext.length > 0) {
+                    Q('xouttext').value = '';
+                    QA('xmsg', '<div style="clear:both"><div class="localBubble">' + outtext + '</div><div></div></div>');
+                    Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+                    send({ action: 'chat', msg: outtext });
+                }
+            }
+
+            function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+            function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
+
+            // Update user controls
+            function updateControls() {
+                QE('sendButton', state == 2);
+                QE('clearButton', state == 2);
+                QE('xouttext', state == 2);
+                QV('fileButton', state == 2);
+                QV('camButton', webchannel && webchannel.ok && !localStream && (userMediaSupport == 2));
+                QV('micButton', webchannel && webchannel.ok && !localStream && (userMediaSupport > 0));
+                QV('hangupButton', webchannel && webchannel.ok && localStream);
+            }
+
+            // This is the WebRTC setup
+            function startWebRTC(id, startDataChannel) {
+                if ((webrtcSessions[0] != null) && (multiWebRtc == false)) { return webrtcSessions[0]; };
+
+                // Setup the WebRTC object
+                var webrtc = null;
+                if (typeof RTCPeerConnection !== 'undefined') { webrtc = new RTCPeerConnection(webrtcconfiguration); }
+                else if (typeof webkitRTCPeerConnection !== 'undefined') { webrtc = new webkitRTCPeerConnection(webrtcconfiguration); }
+                if (webrtc == null) return null; // No WebRTC support.
+
+                webrtc.id = id;
+                webrtc.onicecandidate = function (e) { try { if (e.candidate != null) { sendws({ action: 'webRtcIce', ice: e.candidate, id: this.id }); } } catch (ex) { } }
+                webrtc.oniceconnectionstatechange = function () { if (webrtc && webrtc.iceConnectionState == 'failed') { webrtc.close(); if (webrtcSessions[webrtc.id]) { delete webrtcSessions[webrtc.id]; } } }
+                webrtc.ondatachannel = function (ev) {
+                    //console.log('ondatachannel');
+                    webchannel = ev.channel;
+                    webchannel.onmessage = function (event) { processMessage(event.data, 2); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
+                }
+                webrtc.onnegotiationneeded = function (event) {
+                    if (webrtc.holdTimer != null) return;
+                    webrtc.holdTimer = setTimeout(function () { // This time is needed to keep Chrome from being to excited. Wait until we add all tracks before kicking this off.
+                        //console.log('onnegotiationneeded', id);
+                        webrtc.holdTimer = null;
+                        webrtc.createOffer(function (offer) { /*console.log('offer', offer.sdp.length);*/ webrtc.setLocalDescription(offer, function () { sendws({ action: 'webRtcSdp', sdp: offer, id: id }); }, function () { hangUpButtonClick(id); }); }, function () { hangUpButtonClick(id); });
+                    }, 20);
+                }
+                webrtc.ontrack = function (event) {
+                    //console.log('ontrack', id);
+                    var video = Q('remoteVideoCanvas');
+                    video.srcObject = remoteStream = event.streams[0];
+                    video.onloadedmetadata = function (e) { video.play(); };
+                    displayRemoteVideo(true);
+                }
+                //webrtc.onremovetrack = function (event) { console.log('onremovetrack'); }
+                //webrtc.onicegatheringstatechange = function (event) { console.log('onicegatheringstatechange', event); }
+                //webrtc.onsignalingstatechange = function (event) { console.log('onsignalingstatechange', event); }
+
+                // Initiate the WebRTC offer or handle the offer from the peer.
+                if (startDataChannel == true) {
+                    webchannel = webrtc.createDataChannel('DataChannel', {}); // { ordered: false, maxRetransmits: 2 }
+                    webchannel.onmessage = function (event) { processMessage(event.data, 2); };
+                    webchannel.onopen = function () { webchannel.ok = true; updateControls(); sendws({ action: 'rtcSwitch', v: 0 }); };
+                    webchannel.onclose = function (event) { if (webchannel && webchannel.ok) { disconnect(); } else { hangUpButtonClick(0); } }
+                }
+
+                webrtcSessions[id] = webrtc;
+                return webrtc;
+            }
+
+            function webRtcHandleOffer(id, description) {
+                //console.log('webRtcHandleOffer', description.sdp.length);
+                var webrtc = webrtcSessions[id];
+                if (webrtc) {
+                    webrtc.setRemoteDescription(new RTCSessionDescription(description), function () {
+                        if (description.type == 'offer') {
+                            webrtc.createAnswer(function (answer) {
+                                webrtc.setLocalDescription(answer, function (a, b) {
+                                    try { sendws({ action: 'webRtcSdp', sdp: answer, id: id }); } catch (ex) { }
+                                }, function () { hangUpButtonClick(id); });
+                            }, function () { hangUpButtonClick(id); });
+                        }
+                    }, function () { hangUpButtonClick(id); });
+                }
+            }
+
+            // Indicate to peer that data traffic will no longer be sent over websocket and start holding traffic.
+            function performWebRtcSwitch() {
+                if (webchannel && webchannel.ok) { sendws({ action: 'rtcSwitch', v: 1 }); webchannel.xoutBuffer = []; }
+            }
+
+            // Disconnect everything
+            function disconnect() {
+                if (state > 0) { displayControl("Conexão fechada."); }
+                if (state > 1) { setTimeout(start, 500); }
+                cancelAllFileTransfers();
+                hangUpButtonClick(0, true); // Data channel
+                hangUpButtonClick(1, true); // Local audio/video
+                hangUpButtonClick(2, true); // Remote audio/video
+                if (socket != null) { socket.close(); socket = null; }
+                updateControls();
+                state = 0;
+            }
+
+            // Send data over the current transport (WebRTC first)
+            function send(data) {
+                if (state != 2) return; // If not in connected state, ignore this.
+                if (typeof data == 'object') { data = JSON.stringify(data); } // If this is an object, convert it to a string.
+                if (webchannel && webchannel.ok) { if (webchannel.xoutBuffer != null) { webchannel.xoutBuffer.push(data); } else { webchannel.send(data); } } // If WebRTC channel is possible, use it or hold until we can use it.
+                else { if (socket != null) { try { socket.send(data); } catch (ex) { } } } // If a websocket channel is present, use that.
+            }
+
+            // Send data over the websocket transport (WebSocket only)
+            function sendws(data) {
+                if (state != 2) return;
+                //console.log('SEND', data);
+                if (typeof data == 'object') { data = JSON.stringify(data); }
+                if (socket != null) { socket.send(data); }
+            }
+
+            // WebRTC id switcher (0 -> 0, 1 -> 2, 2 -> 1)
+            function webRtcIdSwitch(id) { if (id == 0) { return 0; } return 3 - id; }
+
+            // Process incoming messages
+            function processMessage(data, transport) {
+                if (typeof data == 'string') {
+                    try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse', data); return; }
+                    //console.log('RECV', data);
+                    switch (data.action) {
+                        case 'chat': { displayRemote(data.msg); break; } // Incoming chat message.
+                        case 'random': { if (random > data.random) { startWebRTC(0, true); } break; } // If we have a larger random value, we start WebRTC.
+                        case 'webRtcSdp': { if (!webrtcSessions[webRtcIdSwitch(data.id)]) { startWebRTC(webRtcIdSwitch(data.id), false); } webRtcHandleOffer(webRtcIdSwitch(data.id), data.sdp); break; } // Remote WebRTC offer or answer.
+                        case 'webRtcIce': { var webrtc = webrtcSessions[webRtcIdSwitch(data.id)]; if (webrtc) { try { webrtc.addIceCandidate(new RTCIceCandidate(data.ice)); } catch (ex) { } } break; } // Remote ICE candidate
+                        case 'videoStop': { hangUpButtonClick(webRtcIdSwitch(data.id), true); break; }
+                        case 'rtcSwitch': { // WebRTC switch over commands.
+                            switch (data.v) {
+                                case 0: { performWebRtcSwitch(); break; } // Other side is ready for switch over to WebRTC
+                                case 1: { sendws({ action: 'rtcSwitch', v: 2 }); break; } // Other side no longer sending data on websocket, confirm we got the end marker
+                                case 2: { for (var i in webchannel.xoutBuffer) { webchannel.send(webchannel.xoutBuffer[i]); } delete webchannel.xoutBuffer; break; } // Send any pending data over WebRTC and start using WebRTC with all traffic
+                                default: { console.log('Unknown rtcSwitch value: ' + data.action); break; } //
+                            }
+                            break;
+                        }
+                        case 'file': { startFileDownload(data); break; }
+                        case 'fileUploadCancel': { cancelFileTransfer(data.id); break; }
+                        case 'fileUploadStart': {
+                            if (fileDownloads[data.id]) {
+                                currentFileDownload = fileDownloads[data.id];
+                                currentFileDownload.data = '';
+                                changeFileInfo(data.id, 2, 0);
+                                continueFileDownload(data);
+                                send({ action: 'fileUploadAck', id: data.id });
+                            } break;
+                        }
+                        case 'fileUploadEnd': {
+                            if (currentFileDownload && (currentFileDownload.id == data.id)) {
+                                changeFileInfo(data.id, 3, 200);
+                                currentFileDownload.done = 1;
+                                currentFileDownload = null;
+                                send({ action: 'fileUploadAck', id: data.id });
+                            }
+                            currentFileDownload = null;
+                            break;
+                        }
+                        case 'fileUploadAck': {
+                            continueFileUpload();
+                            break;
+                        }
+                        case 'fileData': {
+                            if (currentFileDownload && (currentFileDownload.id == data.id)) {
+                                currentFileDownload.data += data.data;
+                                changeFileInfo(data.id, 2, (currentFileDownload.data.length * 200 / currentFileDownload.size));
+                                send({ action: 'fileUploadAck', id: data.id });
+                            }
+                            break;
+                        }
+                        default: { console.log('Unhandled object data', data); break; }
+                    }
+                } else {
+                    console.log('Unhandled data', typeof data, data);
+                }
+            }
+
+            // File sharing button
+            function fileButtonClick() {
+                var chooser = Q('uploadFileInput');
+                if (chooser.getAttribute('eventset') != 1) {
+                    chooser.setAttribute('eventset', '1');
+                    chooser.addEventListener('change', fileSelect, false);
+                }
+                chooser.value = null;
+                chooser.click();
+            }
+
+            // User selected one or more files to upload to remote user.
+            function fileSelect() {
+                if (state != 2) return;
+                var x = Q('uploadFileInput');
+                if (x.files.length > 10) {
+                    displayControl("Limite de 10 uploads de arquivos ao mesmo tempo.");
+                } else {
+                    for (var i = 0; i < x.files.length; i++) {
+                        if (x.files[i].size > 0) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
+                            reader.xfile = x.files[i];
+                            reader.readAsBinaryString(x.files[i]);
+                        }
+                    }
+                }
+            }
+
+            // User drag & droped one or more files to upload to remote user.
+            function fileDrop(e) {
+                haltEvent(e);
+                if ((state != 2) || (e.dataTransfer == null)) return;
+                if (e.dataTransfer.files.length > 10) {
+                    displayControl("Limite de 10 uploads de arquivos ao mesmo tempo.");
+                } else {
+                    for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                        if (e.dataTransfer.files[i].size > 0) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) { this.xfile.data = e.target.result; startFileUpload(this.xfile); };
+                            reader.xfile = e.dataTransfer.files[i];
+                            reader.readAsBinaryString(e.dataTransfer.files[i]);
+                        }
+                    }
+                }
+            }
+
+            function startFileUpload(file) {
+                if (state != 2) return;
+                file.id = Math.random();
+                fileUploads.push(file);
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+                send({ action: 'file', size: file.size, id: file.id, type: file.type, name: file.name });
+                if (currentFileUpload == null) continueFileUpload();
+            }
+
+            function startFileDownload(file) {
+                if (state != 2) return;
+                fileDownloads[file.id] = file;
+                QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+                Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
+            }
+
+            // Change the file icon and progress
+            function changeFileInfo(id, icon, progress, progressColor) {
+                if (icon) {
+                    Q('FILEUP-ICON-' + id).classList.remove('fileicon');
+                    Q('FILEUP-ICON-' + id).classList.remove('fileiconx');
+                    Q('FILEUP-ICON-' + id).classList.remove('fileicontransfer');
+                    Q('FILEUP-ICON-' + id).classList.remove('fileicondone');
+                    Q('FILEUP-ICON-' + id).classList.add(['fileicon', 'fileiconx', 'fileicontransfer', 'fileicondone'][icon]);
+                }
+                if (progress) { QS('FILEUP-PROGRESS-' + id)['width'] = progress + 'px'; }
+                if (progressColor) { QS('FILEUP-PROGRESS-' + id)['background-color'] = progressColor; }
+            }
+
+            // Convert a string into a blob
+            function data2blob(data) {
+                var bytes = new Array(data.length);
+                for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
+                return new Blob([new Uint8Array(bytes)]);
+            };
+
+            function saveFileTransfer(id) {
+                var f = fileDownloads[id];
+                if (f && f.done == 1) { saveAs(data2blob(f.data), f.name); }
+            }
+
+            function cancelFileTransfer(id) {
+                if ((currentFileUpload != null) && (currentFileUpload.id == id)) { currentFileUpload = null; }
+                if ((currentFileDownload != null) && (currentFileDownload.id == id)) { currentFileDownload = null; }
+
+                var found = false;
+                if (fileDownloads[id] && (fileDownloads[id].done != 1)) {
+                    delete fileDownloads[id];
+                    found = true;
+                } else {
+                    for (var i in fileUploads) {
+                        if (fileUploads[i].id == id) {
+                            send({ action: 'fileUploadCancel', id: id });
+                            fileUploads.splice(i, 1);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) { changeFileInfo(id, 1, 200, 'gray'); } // Only cancel a file if it was in the file queue.
+            }
+
+            function cancelAllFileTransfers() {
+                for (var i in fileDownloads) { cancelFileTransfer(fileDownloads[i].id); }
+                for (var i in fileUploads) { cancelFileTransfer(fileUploads[i].id); }
+            }
+
+            function continueFileUpload() {
+                if (currentFileUpload == null) {
+                    // Select the next file to upload
+                    if (fileUploads.length == 0) { return; } // Nothing to do
+                    currentFileUpload = fileUploads[0];
+                    currentFileUpload.ptr = 0;
+
+                    // Indicate that we are sending this file
+                    send({ action: 'fileUploadStart', size: currentFileUpload.size, id: currentFileUpload.id, type: currentFileUpload.type, name: currentFileUpload.name });
+                } else {
+                    if (currentFileUpload.size <= currentFileUpload.ptr) {
+                        // If we are done, send the end marker
+                        send({ action: 'fileUploadEnd', size: currentFileUpload.size, id: currentFileUpload.id, type: currentFileUpload.type, name: currentFileUpload.name });
+                        changeFileInfo(currentFileUpload.id, 3, 200);
+                        fileUploads.splice(0, 1);
+                        currentFileUpload = null;
+                        continueFileUpload(); // Send the next file
+                    } else {
+                        // Send the next block
+                        var nextBlockLen = Math.min(4000, currentFileUpload.data.length - currentFileUpload.ptr);
+                        var data = currentFileUpload.data.substring(currentFileUpload.ptr, currentFileUpload.ptr + nextBlockLen);
+                        send({ action: 'fileData', id: currentFileUpload.id, data: data });
+                        currentFileUpload.ptr += nextBlockLen;
+                        changeFileInfo(currentFileUpload.id, 0, (currentFileUpload.ptr * 200 / currentFileUpload.size));
+                    }
+                }
+            }
+
+            function continueFileDownload(msg) {
+                send({ action: 'fileUploadAck', id: msg.id });
+            }
+
+            // Toggle notification
+            function enableNotificationsButtonClick() {
+                if (Notification) { Notification.requestPermission().then(function (permission) { QV('notifyButton', permission != 'granted'); }); }
+                return false;
+            }
+
+            // Camera button
+            function camButtonClick() {
+                if (localStream == null) { startLocalStream({ video: true, audio: true }); }
+            }
+
+            // Microphone
+            function micButtonClick() {
+                if (localStream == null) { startLocalStream({ video: false, audio: true }); }
+            }
+
+            function hangUpButtonClick(id, fromRemote) {
+                //console.log('hangUpButtonClick', id);
+                var localVideo = Q('localVideoCanvas');
+                var remoteVideo = Q('remoteVideoCanvas');
+                var webrtc = webrtcSessions[(multiWebRtc == true)? id : 0];
+
+                if ((id == 0) && (webchannel != null)) { try { webchannel.close(); } catch (e) { } webchannel = null; }
+
+                if (webrtc) {
+                    if ((multiWebRtc == true) || (id == 0)) {
+                        webrtc.ontrack = null;
+                        webrtc.onremovetrack = null;
+                        webrtc.onremovestream = null;
+                        webrtc.onnicecandidate = null;
+                        webrtc.oniceconnectionstatechange = null;
+                        webrtc.onsignalingstatechange = null;
+                        webrtc.onicegatheringstatechange = null;
+                        webrtc.onnotificationneeded = null;
+                    }
+
+                    if ((id == 1) && localStream) { var tracks = localStream.getTracks(); for (var i in tracks) { tracks[i].stop(); } localStream = null; }
+                    if ((id == 2) && remoteStream) { var tracks = remoteStream.getTracks(); for (var i in tracks) { tracks[i].stop(); } remoteStream = null; }
+
+                    if ((multiWebRtc == true) || (id == 0)) {
+                        webrtc.close();
+                        delete webrtcSessions[id];
+                    }
+                }
+
+                if (id == 1) {
+                    localVideo.removeAttribute('src');
+                    localVideo.removeAttribute('srcObject');
+                    if (localStream != null) { localStream = null; }
+                    displayLocalVideo(false);
+                } else if (id == 2) {
+                    remoteVideo.removeAttribute('src');
+                    remoteVideo.removeAttribute('srcObject');
+                    displayRemoteVideo(false);
+                }
+
+                if (fromRemote != true) { send({ action: 'videoStop', id: id }); }
+                updateControls();
+            }
+
+            // Setup local audio/video
+            function startLocalStream(constraints) {
+                var channel = (multiWebRtc == true) ? 1 : 0;
+                if (localStream != null) return;
+                if ((multiWebRtc == true) && (webrtcSessions[1] != null)) return;
+                if (navigator.mediaDevices.getUserMedia) {
+                    localStream = 1;
+                    updateControls();
+                    navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (stream) {
+                        localStream = stream;
+                        var tracks = localStream.getTracks();
+                        var webrtc = startWebRTC(channel);
+                        if (constraints.video == true) {
+                            var video = Q('localVideoCanvas');
+                            video.srcObject = stream;
+                            video.onloadedmetadata = function (e) { video.play(); };
+                            displayLocalVideo(true);
+                        }
+                        for (var i in tracks) { webrtc.addTrack(tracks[i], localStream); }
+                    }, function (err) {
+                        displayControl(err.message + '.');
+                        hangUpButtonClick(1);
+                    });
+                }
+            }
+
+            // This is the main start
+            function start() {
+                // Get started
+                updateControls();
+                if ((typeof args.id == 'string') && (args.id.length > 0)) {
+                    var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id;
+                    if ((args.auth != null) && (args.auth != '')) { url += '&auth=' + args.auth; }
+                    socket = new WebSocket(url);
+                    socket.onopen = function () { state = 1; displayControl("Aguardando outro usuário ..."); }
+                    socket.onerror = function (e) { /*console.error(e);*/ }
+                    socket.onclose = function () { disconnect(); }
+                    socket.onmessage = function (msg) {
+                        if ((state < 2) && (typeof msg.data == 'string') && ((msg.data == 'c') || (msg.data == 'cr'))) {
+                            hangUpButtonClick(0, true);
+                            hangUpButtonClick(1, true);
+                            hangUpButtonClick(2, true);
+                            displayControl("Conectado.");
+                            state = 2;
+                            updateControls();
+                            sendws({ action: 'random', random: random }); // Send a random number. Higher number starts the WebRTC session.
+                            return;
+                        }
+                        if (state == 2) { processMessage(msg.data, 1); }
+                    }
+                } else {
+                    displayControl("Erro: Nenhuma chave de conexão especificada.");
+                }
+            }
+
+            start();
+
+            function onUnLoad() {
+                for (var i = 0; i < 3; i++) { if (webrtcSessions[i]) { webrtcSessions[i].close(); delete webrtcSessions[i]; } }
+                if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
+                if (socket != null) { try { socket.close(); } catch (e) { } socket = null; }
+            }
+
+        </script>
+
+
+</body></html>

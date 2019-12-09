@@ -53,7 +53,7 @@ function start() {
 
     var command = null;
     if (process.argv.length > 2) { command = process.argv[2].toLowerCase(); }
-    if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall'].indexOf(command) == -1) { command = null; }
+    if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge'].indexOf(command) == -1) { command = null; }
 
     console.log('MeshCentral web site translator');
     if (command == null) {
@@ -77,6 +77,9 @@ function start() {
         console.log('');
         console.log('  MINIFYALL');
         console.log('    Minify the main MeshCentral english web pages.');
+        console.log('');
+        console.log('  MERGE [sourcefile] [tartgetfile] [language code]');
+        console.log('    Merge a language from a translation file into another translation file.');
         process.exit();
         return;
     }
@@ -103,6 +106,18 @@ function start() {
         for (var i = 4; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { console.log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
         if (sources.length == 0) { console.log('No source files specified.'); process.exit(); return; }
         extract(process.argv[3], sources);
+    }
+
+    // Merge one language from a language file into another language file.
+    if (command == 'merge') {
+        if ((process.argv.length == 6)) {
+            if (fs.existsSync(process.argv[3]) == false) { console.log('Unable to find: ' + process.argv[3]); return; }
+            if (fs.existsSync(process.argv[4]) == false) { console.log('Unable to find: ' + process.argv[4]); return; }
+            merge(process.argv[3], process.argv[4], process.argv[5]);
+        } else {
+            console.log('Usage: MERGE [sourcefile] [tartgetfile] [language code]');
+        }
+        return;
     }
 
     // Extract or translate all MeshCentral strings
@@ -178,6 +193,39 @@ function start() {
             }
         }
     }
+}
+
+function merge(source, target, lang) {
+    // Load the source language file
+    var sourceLangFileData = null;
+    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
+    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { console.log("Invalid source language file."); process.exit(); return; }
+
+    // Load the target language file
+    var targetLangFileData = null;
+    try { targetLangFileData = JSON.parse(fs.readFileSync(target)); } catch (ex) { }
+    if ((targetLangFileData == null) || (targetLangFileData.strings == null)) { console.log("Invalid target language file."); process.exit(); return; }
+
+    console.log('Merging ' + lang + '...');
+
+    // Index the target file
+    var index = {};
+    for (var i in targetLangFileData.strings) { if (targetLangFileData.strings[i].en != null) { index[targetLangFileData.strings[i].en] = targetLangFileData.strings[i]; } }
+
+    // Merge the translation
+    for (var i in sourceLangFileData.strings) {
+        if ((sourceLangFileData.strings[i].en != null) && (sourceLangFileData.strings[i][lang] != null) && (index[sourceLangFileData.strings[i].en] != null)) {
+            index[sourceLangFileData.strings[i].en][lang] = sourceLangFileData.strings[i][lang];
+        }
+    }
+
+    // Deindex the new target file
+    var targetData = { strings: [] };
+    for (var i in index) { targetData.strings.push(index[i]); }
+
+    // Save the target back
+    fs.writeFileSync(target, JSON.stringify(targetData, null, '  '), { flag: 'w+' });
+    console.log('Done.');
 }
 
 function translate(lang, langFile, sources, createSubDir) {
