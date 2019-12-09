@@ -118,7 +118,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'shownodes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -431,12 +431,14 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.showevents) { obj.db.GetAllEvents(function (err, docs) { console.log(docs); process.exit(); }); return; }
+                    if (obj.args.showsmbios) { obj.db.GetAllSMBIOS(function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.showpower) { obj.db.getAllPower(function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.clearpower) { obj.db.removeAllPowerEvents(function () { process.exit(); }); return; }
                     if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
                     if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
                     if (obj.args.recordencryptionrecode) { obj.db.performRecordEncryptionRecode(function (count) { console.log('Re-encoded ' + count + ' record(s).'); process.exit(); }); return; }
+                    if (obj.args.dbstats) { obj.db.getDbStats(function (stats) { console.log(stats); process.exit(); }); return; }
 
                     // Show a list of all configuration files in the database
                     if (obj.args.dblistconfigfiles) {
@@ -907,7 +909,23 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.letsencrypt == null) { addServerWarning("Unable to setup GreenLock module."); leok = false; }
                 }
                 if (leok == true) {
-                    obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt
+                    // Check that the email address domain MX resolves.
+                    require('dns').resolveMx(obj.config.letsencrypt.email.split('@')[1], function (err, addresses) {
+                        if (err == null) {
+                            // Check that all names resolve
+                            checkResolveAll(obj.config.letsencrypt.names.split(','), function (err) {
+                                if (err == null) {
+                                    obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt
+                                } else {
+                                    for (var i in err) { addServerWarning("Invalid Let's Encrypt names, unable to resolve: " + err[i]); }
+                                    obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
+                                }
+                            });
+                        } else {
+                            addServerWarning("Invalid Let's Encrypt email address, unable to resolve: " + obj.config.letsencrypt.email.split('@')[1]);
+                            obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
+                        }
+                    });
                 } else {
                     obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
                 }
@@ -1974,6 +1992,17 @@ function CreateMeshCentralServer(config, args) {
     };
 
     return obj;
+}
+
+// Resolve a list of names, call back with list of failed resolves.
+function checkResolveAll(names, func) {
+    var dns = require('dns'), state = { func: func, count: names.length, err: null };
+    for (var i in names) {
+        dns.resolve(names[i], function (err, records) {
+            if (err != null) { if (this.state.err == null) { this.state.err = [this.name]; } else { this.state.err.push(this.name); } }
+            if (--this.state.count == 0) { this.state.func(this.state.err); }
+        }.bind({ name: names[i], state: state }))
+    }
 }
 
 // Return the server configuration

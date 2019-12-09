@@ -233,22 +233,22 @@
                     <div id="p3info" style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
-                                <p><strong>Account Security</strong></p>
+                                <p><strong>Nastavení bezpečnosti</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
-                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a></div>
+                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Spravovat autentizační aplikace</a></div>
                                     <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a></div>
                                 </div>
-                                <p><strong>Account Actions</strong></p>
+                                <p><strong>Akce účtu</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
-                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
-                                    <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
+                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Ověřit email</a></span></div>
+                                    <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Změnit emailovou adresu</a></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Změnit heslo</a><span id="p2nextPasswordUpdateTime"></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Smazat účet</a></div>
                                 </div>
                                 <br style="clear:both">
                             </div>
-                            <strong>Device Groups</strong>
-                            <span id="p3createMeshLink1">( <a onclick="account_createMesh()" style="cursor:pointer"><img src="images/icon-addnew.png" width="12" height="12" border="0"> New</a> )</span>
+                            <strong>Skupiny zařízení</strong>
+                            <span id="p3createMeshLink1">( <a onclick="account_createMesh()" style="cursor:pointer"><img src="images/icon-addnew.png" width="12" height="12" border="0"> Vytvořit</a> )</span>
                             <br><br>
                             <div id="p3meshes"></div>
                             <div id="p3noMeshFound" style="margin-left:9px;display:none">No device groups.<span id="p3createMeshLink2"> <a onclick="account_createMesh()" style="cursor:pointer"><strong>Get started here!</strong></a></span></div>
@@ -569,7 +569,7 @@
                             <label><input type="checkbox" id="d7showfocus">Show Focus Tool</label><br>
                             <label><input type="checkbox" id="d7showcursor">Show Local Mouse Cursor</label><br>
                         </div>
-                        <div>Other</div>
+                        <div>Ostatní</div>
                     </div>
                 </div>
             </div>
@@ -692,12 +692,12 @@
             QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Reset při příštím přihlášení."); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} minute{1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} hour{1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset při příštím přihlášení."); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Reset v {0} minut{1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Reset v {0} hodin{1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
                     else { QH('p2nextPasswordUpdateTime', format(" - Reset v {0} den{1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
@@ -799,12 +799,12 @@
                 }
                 case 'otpauth-setup': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-faktorová autentizace zapnuta</b>. Je třeba platný token k přihlášení." : "<b style=color:red>2-faktorové přihlášení selhalo</b>. Je třeba smazat tajemství z aplikace a zkusit znovu. Na toto máte již jen pár minut.");
                     break;
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-faktorové přihlášení odstraněno</b>. Lze znovu kdykoliv zapnout." : "<b style=color:red>Odstranění 2-faktorového přihlášení selhalo</b>. Zkuste znovu.");
                     break;
                 }
                 case 'otpauth-getpasswords': {
@@ -1147,7 +1147,7 @@
 
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "Loading..." + '</div>', 'otpauth-request');
+            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "Nahrávání..." + '</div>', 'otpauth-request');
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -1246,10 +1246,10 @@
             if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "Nová skupina zařízení", 1, null, "This account does not have the rights to create a new device group."); return; }
 
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Nastavení bezpečnosti", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Nastavení bezpečnosti", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
 
             // We are allowed, let's prompt to information
             var x = addHtmlValue("Jméno", '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
@@ -1327,7 +1327,7 @@
                 // Mesh rights
                 var meshrights = meshes[i].links[userinfo._id].rights;
                 var rights = "Partial Rights";
-                if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
+                if (meshrights == 0xFFFFFFFF) rights = "Hlavní administrátor"; else if (meshrights == 0) rights = "No Rights";
 
                 // Print the mesh information
                 r += '<div style=cursor:pointer onclick=goForward(\'' + i + '\')>';
@@ -1663,7 +1663,7 @@
                     if (nodes[i].meshid != current) {
                         deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT pouze" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
@@ -1788,7 +1788,7 @@
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " zařízení" : " nodes");
+            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " nód" : " nódy");
             var title = '';
             for (var x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             deviceHeadersTitles['DevxHeader' + deviceHeaderId] = title;
@@ -1826,10 +1826,10 @@
         function gotoDevice(nodeid, panel, refresh) {
 
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Nastavení bezpečnosti", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Nastavení bezpečnosti", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
 
             var node = getNodeFromId(nodeid);
             if (node == null) { goBack(); return; }
@@ -1887,10 +1887,10 @@
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
                     var str = '';
-                    var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
+                    var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Aktivováno") };
                     if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + node.intelamt.ver; } else
 
-                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
+                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Aktivováno" + '</i>'; }
                         else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
@@ -2150,7 +2150,7 @@
 
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, format("Delete {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm", nodeid);
+            setDialogMode(2, "Smazat nod", 3, p10showDeleteNodeDialogEx, format("Smazat {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm", nodeid);
             p10validateDeleteNodeDialog();
         }
 
@@ -2592,7 +2592,7 @@
         function deskSetDisplay(e) {
             setSessionActivity();
             var display = 0, txt = Q('termdisplays').value;
-            if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
+            if (txt == "Všechny displeje") display = 65535; else display = parseInt(txt.substring(8));
             desktop.m.SetDisplay(display);
         }
 
@@ -3108,7 +3108,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Add User" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Přidat uživatele" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
@@ -3147,7 +3147,7 @@
             // Display all users for this mesh
             for (var i in sortedusers) {
                 var trash = '', rights = "Partial Rights", r = sortedusers[i].rights;
-                if (r == 0xFFFFFFFF) rights = "Full Administrator"; else if (r == 0) rights = "No Rights";
+                if (r == 0xFFFFFFFF) rights = "Hlavní administrátor"; else if (r == 0) rights = "No Rights";
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
                 x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
@@ -3158,7 +3158,7 @@
             x += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Smazat skupinu" + '</a></span></div>'; }
 
             QH('p20info', x);
         }
@@ -3167,7 +3167,7 @@
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
             x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
+            setDialogMode(2, "Smazat skupinu", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
             return false;
         }
@@ -3203,9 +3203,9 @@
             if (xxdialogMode) return;
             var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<div style="border:2px groove gray;background-color:white;max-height:120px;overflow-y:scroll">';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Hlavní administrátor" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Editovat skupinu zařízení" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Spravovat uživatele pro skupinu zařízení" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Správa skupin zařízení" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
@@ -3221,7 +3221,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
             x += '</div>';
-            setDialogMode(2, "Add User to Mesh", 3, p20showAddMeshUserDialogEx, x);
+            setDialogMode(2, "Přidat uživatele do skupiny", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
             Q('dp20username').focus();
         }
@@ -3277,12 +3277,12 @@
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
             var r = [], cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
-            if (meshrights == 0xFFFFFFFF) r.push("Full Administrator"); else {
+            if (meshrights == 0xFFFFFFFF) r.push("Hlavní administrátor"); else {
                 if ((meshrights & 1) != 0) r.push("Editovat skupinu zařízení");
-                if ((meshrights & 2) != 0) r.push("Manage Device Group Users");
+                if ((meshrights & 2) != 0) r.push("Spravovat uživatele pro skupinu zařízení");
                 if ((meshrights & 4) != 0) r.push("Správa skupin zařízení");
                 if ((meshrights & 8) != 0) r.push("Remote Control");
-                if ((meshrights & 16) != 0) r.push("Agent Console");
+                if ((meshrights & 16) != 0) r.push("Konzole agenta");
                 if ((meshrights & 32) != 0) r.push("Server Files");
                 if ((meshrights & 64) != 0) r.push("Wake Devices");
                 if ((meshrights & 128) != 0) r.push("Edit Notes");
@@ -3299,7 +3299,7 @@
             var buttons = 1, x = addHtmlValue("User", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
             x += addHtmlValue("Práva", r.join(", "));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
-            setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
+            setDialogMode(2, "Uživatelé této skupiny zařízení", buttons, p20viewuserEx, x, userid);
         }
 
         function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, format("Confirm removal of user {0}?", userid.split('/')[2]), userid); }

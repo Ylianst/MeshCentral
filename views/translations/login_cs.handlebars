@@ -29,7 +29,7 @@
             </div>
             <div id="column_l">
                 <h1>Vítejte</h1>
-                <div id="welcomeText" style="display:none">Přihlašte se na různá svá nebo firemní zařízení odkudkoliv z celého světa <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>. Jednoduchá správa přes web. Jediné co potřebujete je agent na daném zařízení.  Po instalaci uvidíte zařízení v sekci "Moje zařízení" a můžete toto zařízení ovládat.</div>
+                <div id="welcomeText" style="display:none">Přihlašte se na různá svá nebo firemní zařízení odkudkoliv z celého světa pomocí technologie MeshCentral. Jednoduchá správa přes web. Jediné co potřebujete je agent na daném zařízení.  Po instalaci uvidíte zařízení v sekci "Moje zařízení" a můžete toto zařízení ovládat.</div>
                 <table id="centralTable" style="">
                     <tbody><tr>
                         <td id="welcomeimage">
@@ -61,7 +61,7 @@
                                     </tbody></table>
                                     <div id="hrAccountDiv" style="display:none"><hr></div>
                                     <div id="resetAccountDiv" style="display:none;padding:2px">
-                                        <span id="resetAccountSpan">Forgot username/password?</span> <a onclick="return xgo(3,event);" href="#" style="cursor:pointer">Reset účtu</a>.
+                                        <span id="resetAccountSpan">Zapomenuté jméno/heslo?</span> <a onclick="return xgo(3,event);" href="#" style="cursor:pointer">Reset účtu</a>.
                                     </div>
                                     <div id="newAccountDiv" style="display:none;padding:2px">
                                         Nemáte účet? <a onclick="return xgo(2,event);" href="#" style="cursor:pointer">Vytvořit</a>.
@@ -74,7 +74,7 @@
                                     <input type="hidden" name="action" value="createaccount">
                                     <div id="message2"></div>
                                     <div>
-                                        <b>Account Creation</b>
+                                        <b>Vytvoření účtu</b>
                                     </div>
                                     <div id="passwordPolicyCallout" style="display:none"></div>
                                     <table>
@@ -271,7 +271,7 @@
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
         var okmessages = ['', "Hold on, reset mail sent."];
-        var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
+        var failmessages = ["Unable to create account.", "Maximální počet účtů dosažen.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Účet nenalezen.", "Invalid token, try again.", "Unable to sent email.", "Účet uzamknut.", "Přístup zamítnut", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
             if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
@@ -319,6 +319,7 @@
 
             // Display the welcome text
             if (welcomeText) { QH('welcomeText', welcomeText); }
+            QH('welcomeText', addTextLink('MeshCentral', Q('welcomeText').innerHTML, 'http://www.meshcommander.com/meshcentral2'));
             QV('welcomeText', true);
 
             window.onresize = center;
@@ -719,6 +720,7 @@
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
 
     </script>
 

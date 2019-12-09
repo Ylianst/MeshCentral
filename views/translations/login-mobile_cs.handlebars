@@ -64,7 +64,7 @@
                                     </tbody></table>
                                     <div id="hrAccountDiv" style="display:none"><hr></div>
                                     <div id="resetAccountDiv" style="display:none;padding:2px">
-                                        <span id="resetAccountSpan">Forgot user/password?</span> <a onclick="xgo(3)" style="cursor:pointer">Reset účtu</a>.
+                                        <span id="resetAccountSpan">Zapomenuté jméno/heslo?</span> <a onclick="xgo(3)" style="cursor:pointer">Reset účtu</a>.
                                     </div>
                                     <div id="newAccountDiv" style="display:none;padding:2px">
                                         Nemáte účet? <a onclick="xgo(2)" style="cursor:pointer">Vytvořit</a>.
@@ -78,7 +78,7 @@
                                         <input type="hidden" name="action" value="createaccount">
                                         <div id="message2"></div>
                                         <div>
-                                            <b>Account Creation</b>
+                                            <b>Vytvoření účtu</b>
                                         </div>
                                         <div id="passwordPolicyCallout" style="left:-5px;top:10px;width:100px;position:absolute;background-color:#FFC;border-radius:5px;padding:5px;box-shadow:0px 0px 15px #666;font-size:10px"></div>
                                         <table>
@@ -275,7 +275,7 @@
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
         var okmessages = ['', "Hold on, reset mail sent."];
-        var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
+        var failmessages = ["Unable to create account.", "Maximální počet účtů dosažen.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Účet nenalezen.", "Invalid token, try again.", "Unable to sent email.", "Účet uzamknut.", "Přístup zamítnut", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
             if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
