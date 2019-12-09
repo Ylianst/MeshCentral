@@ -691,9 +691,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            r = 'Available commands: help, info, versions, args, resetserver, showconfig, usersessions, tasklimiter, setmaxtasks, cores,\r\n'
-                            r += 'migrationagents, agentstats, webstats, mpsstats, swarmstats, acceleratorsstats, updatecheck, serverupdate, nodeconfig,\r\n';
-                            r += 'heapdump, relays, autobackup, backupconfig, dupagents, dispatchtable, badlogins.';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths';
+                            availcommands = availcommands.split(',').sort();
+                            while (availcommands.length > 0) {
+                                if (f.length > 80) { fin += (f + ',\r\n'); f = ''; }
+                                f += (((f != '') ? ', ' : ' ') + availcommands.shift());
+                            }
+                            if (f != '') { fin += f; }
+                            r = 'Available commands: \r\n' + fin + '.';
                             break;
                         }
                         case 'badlogins': {
@@ -776,12 +781,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var info = process.memoryUsage();
                             info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
                             if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
+                            try { info.nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]); } catch (ex) { }
+                            try { info.currentVer = parent.parent.currentVer; } catch (ex) { }
                             try { info.platform = process.platform; } catch (ex) { }
                             try { info.arch = process.arch; } catch (ex) { }
                             try { info.pid = process.pid; } catch (ex) { }
                             try { info.uptime = process.uptime(); } catch (ex) { }
                             try { info.version = process.version; } catch (ex) { }
                             try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
+                            try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
                             r = JSON.stringify(info, null, 4);
                             break;
                         }
@@ -837,6 +845,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         case 'cores': {
                             if (parent.parent.defaultMeshCores != null) { for (var i in parent.parent.defaultMeshCores) { r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes<br />'; } }
+                            break;
+                        }
+                        case 'showpaths': {
+                            r =  'Parent:     ' + parent.parent.parentpath + '\r\n';
+                            r += 'Data:       ' + parent.parent.datapath + '\r\n';
+                            r += 'Files:      ' + parent.parent.filespath + '\r\n';
+                            r += 'Backup:     ' + parent.parent.backuppath + '\r\n';
+                            r += 'Record:     ' + parent.parent.recordpath + '\r\n';
+                            r += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
+                            r += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
+                            if (parent.parent.webViewsOverridePath) { r += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
+                            if (parent.parent.webViewsOverridePath) { r += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
                             break;
                         }
                         case 'showconfig': {
