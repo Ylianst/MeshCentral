@@ -1357,7 +1357,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); res.sendStatus(404); return; }
+        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
 
@@ -2910,7 +2910,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Require modules
         const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
 
-        // Good practice to catch this error explicitly 
+        // Good practice to catch this error explicitly
         archive.on('error', function (err) { throw err; });
 
         // Set the archive name

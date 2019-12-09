@@ -650,10 +650,7 @@ module.exports.CreateDB = function (parent, func) {
     function setupFunctions(func) {
         if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
-            obj.Set = function (data, func) {
-                checkObjectNames(data, 'x1'); // DEBUG CHECKING
-                obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func);
-            };
+            obj.Set = function (data, func) { obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -681,25 +678,11 @@ module.exports.CreateDB = function (parent, func) {
             obj.Remove = function (id) { obj.file.deleteOne({ _id: id }); };
             obj.RemoveAll = function (func) { obj.file.deleteMany({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.deleteMany({ type: type }, { multi: true }, func); };
-            obj.InsertMany = function (data, func) {
-                checkObjectNames(data, 'x2'); // DEBUG CHECKING
-                obj.file.insertMany(data, func);
-            };
+            obj.InsertMany = function (data, func) { obj.file.insertMany(data, func); };
             obj.RemoveMeshDocuments = function (id) { obj.file.deleteMany({ meshid: id }, { multi: true }); obj.file.deleteOne({ _id: 'nt' + id }); };
-            obj.MakeSiteAdmin = function (username, domain) {
-                obj.Get('user/' + domain + '/' + username, function (err, docs) {
-                    if (docs.length == 1) {
-                        checkObjectNames(docs[0], 'x3'); // DEBUG CHECKING
-                        docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]);
-                    }
-                });
-            };
+            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.deleteMany({ domain: domain }, { multi: true }, func); };
-            obj.SetUser = function (user) {
-                checkObjectNames(user, 'x4'); // DEBUG CHECKING
-                var u = Clone(user);
-                if (u.subscriptions) { delete u.subscriptions; } obj.Set(u);
-            };
+            obj.SetUser = function (user) { if (u.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }).toArray(func); };
             obj.getAmtUuidMeshNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }).toArray(func); };
@@ -740,28 +723,19 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { obj.powerfile.find({}).toArray(func); };
-            obj.storePowerEvent = function (event, multiServer, func) {
-                checkObjectNames(event, 'x6'); // DEBUG CHECKING
-                if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insertOne(event, func);
-            };
+            obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insertOne(event, func); };
             obj.getPowerTimeline = function (nodeid, func) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }).project({ _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).toArray(func); };
             obj.removeAllPowerEvents = function () { obj.powerfile.deleteMany({}, { multi: true }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { obj.powerfile.deleteMany({ nodeid: nodeid }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}).toArray(func); };
-            obj.SetSMBIOS = function (smbios, func) {
-                checkObjectNames(smbios, 'x7'); // DEBUG CHECKING
-                obj.smbiosfile.updateOne({ _id: smbios._id }, { $set: smbios }, { upsert: true }, func);
-            };
+            obj.SetSMBIOS = function (smbios, func) { obj.smbiosfile.updateOne({ _id: smbios._id }, { $set: smbios }, { upsert: true }, func); };
             obj.RemoveSMBIOS = function (id) { obj.smbiosfile.deleteOne({ _id: id }); };
             obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }).toArray(func); };
 
             // Database actions on the Server Stats collection
-            obj.SetServerStats = function (data, func) {
-                checkObjectNames(data, 'x8'); // DEBUG CHECKING
-                obj.serverstatsfile.insertOne(data, func);
-            };
+            obj.SetServerStats = function (data, func) { obj.serverstatsfile.insertOne(data, func); };
             obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); obj.serverstatsfile.find({ time: { $gt: t } }, { _id: 0, cpu: 0 }).toArray(func); };
 
             // Read a configuration file from the database
@@ -791,11 +765,11 @@ module.exports.CreateDB = function (parent, func) {
             obj.getDbStats = function (func) {
                 obj.stats = { c: 6 };
                 obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } })
-                obj.file.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
-                obj.eventsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
-                obj.powerfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
-                obj.smbiosfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
-                obj.serverstatsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
+                obj.file.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } } );
+                obj.eventsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } } );
+                obj.powerfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } } );
+                obj.smbiosfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } } );
+                obj.serverstatsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } } );
             }
 
             // Plugin operations
@@ -810,11 +784,7 @@ module.exports.CreateDB = function (parent, func) {
             
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
-            obj.Set = function (data, func) {
-                checkObjectNames(data, 'x9'); // DEBUG CHECKING
-                var xdata = performTypedRecordEncrypt(data);
-                obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func);
-            };
+            obj.Set = function (data, func) { var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -842,24 +812,11 @@ module.exports.CreateDB = function (parent, func) {
             obj.Remove = function (id) { obj.file.remove({ _id: id }); };
             obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); };
-            obj.InsertMany = function (data, func) {
-                checkObjectNames(data, 'x10'); // DEBUG CHECKING
-                obj.file.insert(data, func);
-            };
+            obj.InsertMany = function (data, func) { obj.file.insert(data, func); };
             obj.RemoveMeshDocuments = function (id) { obj.file.remove({ meshid: id }, { multi: true }); obj.file.remove({ _id: 'nt' + id }); };
-            obj.MakeSiteAdmin = function (username, domain) {
-                obj.Get('user/' + domain + '/' + username, function (err, docs) {
-                    if (docs.length == 1) {
-                        checkObjectNames(docs[0], 'x11'); // DEBUG CHECKING
-                        docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]);
-                    }
-                });
-            };
+            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.remove({ domain: domain }, { multi: true }, func); };
-            obj.SetUser = function (user) {
-                checkObjectNames(user, 'x12'); // DEBUG CHECKING
-                var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u);
-            };
+            obj.SetUser = function (user) { if (u.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
             obj.getAmtUuidMeshNode = function (meshid, uuid, func) { obj.file.find({ type: 'node', meshid: meshid, 'intelamt.uuid': uuid }, func); };
@@ -868,10 +825,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { obj.eventsfile.find({}, func); };
-            obj.StoreEvent = function (event) {
-                checkObjectNames(event, 'x13'); // DEBUG CHECKING
-                obj.eventsfile.insert(event);
-            };
+            obj.StoreEvent = function (event) { obj.eventsfile.insert(event); };
             obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func); } };
             obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } };
             obj.GetUserEvents = function (ids, domain, username, func) {
@@ -896,10 +850,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { obj.powerfile.find({}, func); };
-            obj.storePowerEvent = function (event, multiServer, func) {
-                checkObjectNames(event, 'x14'); // DEBUG CHECKING
-                if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func);
-            };
+            obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func); };
             obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
             obj.removeAllPowerEvents = function () { obj.powerfile.remove({}, { multi: true }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { obj.powerfile.remove({ nodeid: nodeid }, { multi: true }); };
@@ -911,10 +862,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }, func); };
 
             // Database actions on the Server Stats collection
-            obj.SetServerStats = function (data, func) {
-                checkObjectNames(data, 'x15'); // DEBUG CHECKING
-                obj.serverstatsfile.insert(data, func);
-            };
+            obj.SetServerStats = function (data, func) { obj.serverstatsfile.insert(data, func); };
             obj.GetServerStats = function (hours, func) { var t = new Date(); t.setTime(t.getTime() - (60 * 60 * 1000 * hours)); obj.serverstatsfile.find({ time: { $gt: t } }, { _id: 0, cpu: 0 }, func); };
 
             // Read a configuration file from the database

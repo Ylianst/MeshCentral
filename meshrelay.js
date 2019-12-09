@@ -222,7 +222,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                     try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                                 } else {
                                     // Write the recording file header
-                                    var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: req.query.p, nodeid: req.query.nodeid };
+                                    var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: (((req == null) || (req.query == null)) ? null : req.query.p), nodeid: (((req == null) || (req.query == null)) ? null : req.query.nodeid ) };
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
                                     recordingEntry(fd, 1, ((req.query.browser) ? 2 : 0), firstBlock, function () {

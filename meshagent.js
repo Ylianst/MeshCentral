@@ -1092,11 +1092,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'smbios':
                     {
                         // Store the RAW SMBios table of this computer
-                        // We store SMBIOS information as a string because we don't want the MongoDB to attempt to store all of the sub-documents seperatly.
-                        // If an agent sends an insanely large SMBIOS table, don't store it.
+                        // Perform sanity checks before storing
                         try {
-                            var smbiosstr = JSON.stringify(command.value);
-                            if (smbiosstr.length < 65535) { db.SetSMBIOS({ _id: obj.dbNodeKey, domain: domain.id, time: new Date(), value: smbiosstr }); }
+                            for (var i in command.value) { var k = parseInt(i); if ((k != i) || (i > 255) || (typeof command.value[i] != 'object') || (command.value[i].length == null) || (command.value[i].length > 1024) || (command.value[i].length < 0)) { delete command.value[i]; } }
+                            db.SetSMBIOS({ _id: obj.dbNodeKey, domain: domain.id, time: new Date(), value: command.value });
                         } catch (ex) { }
 
                         // Event the node interface information change (This is a lot of traffic, probably don't need this).
