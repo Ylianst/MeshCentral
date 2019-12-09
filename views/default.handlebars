@@ -9713,6 +9713,7 @@
         function printDateTime(d) { return d.toLocaleString(args.locale); }
         function addDetailItem(title, value, state) { return '<div><span style=float:right>' + value + '</span><span>' + title + '</span></div>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
 
     </script>

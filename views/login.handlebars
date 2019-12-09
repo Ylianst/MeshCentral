@@ -31,7 +31,7 @@
             </div>
             <div id=column_l>
                 <h1>Welcome</h1>
-                <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using <a href="http://www.meshcommander.com/meshcentral2">MeshCentral</a>, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
+                <div id="welcomeText" style="display:none">Connect to your home or office devices from anywhere in the world using MeshCentral, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the &quot;My Devices&quot; section of this web site and you will be able to monitor them and take control of them.</div>
                 <table id="centralTable" style="">
                     <tr>
                         <td id="welcomeimage">
@@ -321,6 +321,7 @@
 
             // Display the welcome text
             if (welcomeText) { QH('welcomeText', welcomeText); }
+            QH('welcomeText', addTextLink('MeshCentral', Q('welcomeText').innerHTML, 'http://www.meshcommander.com/meshcentral2'));
             QV('welcomeText', true);
 
             window.onresize = center;
@@ -721,6 +722,7 @@
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
 
     </script>
 </body>

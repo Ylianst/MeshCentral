@@ -8655,7 +8655,7 @@
                 if (user.otpsecret > 0) { factors.push("Authentication App"); }
                 if (user.otphkeys > 0) { factors.push("Clef de sécurité"); }
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
-                x += addDeviceAttribute("Sécurité", '<img src="images/key12.png" height=12 width=11 title=\"' + "Authentification 2e facteur activée" + '\" style="margin-top:2px" /> ' + factors.join(', '));
+                x += addDeviceAttribute("Sécurité", '<img src="images/key12.png" height=12 width=11 title=\"' + "2nd factor authentication enabled" + '\" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
             x += '</table></div><br />';
@@ -9711,6 +9711,7 @@
         function printDateTime(d) { return d.toLocaleString(args.locale); }
         function addDetailItem(title, value, state) { return '<div><span style=float:right>' + value + '</span><span>' + title + '</span></div>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
 
     </script>

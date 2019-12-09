@@ -170,20 +170,39 @@ module.exports.CreateDB = function (parent, func) {
     // Get the number of records in the database for various types, this is the slow NeDB way.
     // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.
     obj.getStats = function (func) {
-        if (obj.databaseType > 1) {
-            // MongoJS or MongoDB version (not tested on MongoDB)
+        if (obj.databaseType == 3) {
+            // MongoDB
+            obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }]).toArray(function (err, docs) {
+                var counters = {}, totalCount = 0;
+                for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } }
+                func(counters);
+            });
+        } else if (obj.databaseType == 2) {
+            // MongoJS
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }], function (err, docs) {
                 var counters = {}, totalCount = 0;
                 for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } }
-                func({ nodes: counters['node'], meshes: counters['mesh'], users: counters['user'], total: totalCount });
-            })
-        } else {
+                func(counters);
+            });
+        } else if (obj.databaseType == 1) {
             // NeDB version
             obj.file.count({ type: 'node' }, function (err, nodeCount) {
                 obj.file.count({ type: 'mesh' }, function (err, meshCount) {
                     obj.file.count({ type: 'user' }, function (err, userCount) {
-                        obj.file.count({}, function (err, totalCount) {
-                            func({ nodes: nodeCount, meshes: meshCount, users: userCount, total: totalCount });
+                        obj.file.count({ type: 'sysinfo' }, function (err, sysinfoCount) {
+                            obj.file.count({ type: 'note' }, function (err, noteCount) {
+                                obj.file.count({ type: 'iploc' }, function (err, iplocCount) {
+                                    obj.file.count({ type: 'ifinfo' }, function (err, ifinfoCount) {
+                                        obj.file.count({ type: 'cfile' }, function (err, cfileCount) {
+                                            obj.file.count({ type: 'lastconnect' }, function (err, lastconnectCount) {
+                                                obj.file.count({}, function (err, totalCount) {
+                                                    func({ node: nodeCount, mesh: meshCount, user: userCount, sysinfo: sysinfoCount, iploc: iplocCount, note: noteCount, ifinfo: ifinfoCount, cfile: cfileCount, lastconnect: lastconnectCount, total: totalCount });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
                         });
                     });
                 });
@@ -730,6 +749,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.removeAllPowerEventsForNode = function (nodeid) { obj.powerfile.deleteMany({ nodeid: nodeid }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
+            obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}).toArray(func); };
             obj.SetSMBIOS = function (smbios, func) {
                 checkObjectNames(smbios, 'x7'); // DEBUG CHECKING
                 obj.smbiosfile.updateOne({ _id: smbios._id }, { $set: smbios }, { upsert: true }, func);
@@ -765,6 +785,17 @@ module.exports.CreateDB = function (parent, func) {
                     }
                     func(r);
                 });
+            }
+
+            // Get database information
+            obj.getDbStats = function (func) {
+                obj.stats = { c: 6 };
+                obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } })
+                obj.file.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
+                obj.eventsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
+                obj.powerfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
+                obj.smbiosfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
+                obj.serverstatsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, );
             }
 
             // Plugin operations
@@ -874,6 +905,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.removeAllPowerEventsForNode = function (nodeid) { obj.powerfile.remove({ nodeid: nodeid }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
+            obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}, func); };
             obj.SetSMBIOS = function (smbios, func) { obj.smbiosfile.update({ _id: smbios._id }, smbios, { upsert: true }, func); };
             obj.RemoveSMBIOS = function (id) { obj.smbiosfile.remove({ _id: id }); };
             obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }, func); };
@@ -908,10 +940,21 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
 
+            // Get database information
+            obj.getDbStats = function (func) {
+                obj.stats = { c: 6 };
+                obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } })
+                obj.file.count({}, function (err, count) { obj.stats.meshcentral = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.eventsfile.count({}, function (err, count) { obj.stats.events = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.powerfile.count({}, function (err, count) { obj.stats.power = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.smbiosfile.count({}, function (err, count) { obj.stats.smbios = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.serverstatsfile.count({}, function (err, count) { obj.stats.serverstats = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+            }
+
             // Plugin operations
             if (parent.config.settings.plugins != null) {
-                obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insert(plugin, func); }; // Add a plugin
-                obj.getPlugins = function (func) { obj.pluginsfile.find({ "type": "plugin" }, { "type": 0 }).sort({ name: 1 }).exec(func); }; // Get all plugins
+                obj.addPlugin = function (plugin, func) { plugin.type = 'plugin'; obj.pluginsfile.insert(plugin, func); }; // Add a plugin
+                obj.getPlugins = function (func) { obj.pluginsfile.find({ 'type': 'plugin' }, { 'type': 0 }).sort({ name: 1 }).exec(func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).exec(func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: { status: status } }, func); };

@@ -51,12 +51,12 @@
                     <input id="PauseButton" type="button" value="Pause" disabled="disabled" onclick="pause()">
                     <input id="RestartButton" type="button" value="Restart" disabled="disabled" onclick="restart()">
                     <select id="PlaySpeed" onchange="this.blur();">
-                        <option value="4">1/4 Speed</option>
-                        <option value="2">1/2 Speed</option>
+                        <option value="4">1/4 rychlost</option>
+                        <option value="2">1/2 rychlost</option>
                         <option value="1" selected="">Normalní rychlost</option>
                         <option value="0.5">2x rychlost</option>
-                        <option value="0.25">4x Speed</option>
-                        <option value="0.1">10x Speed</option>
+                        <option value="0.25">4x rychlost</option>
+                        <option value="0.1">10x rychlost</option>
                     </select>
                 </div>
             </div>
@@ -168,7 +168,7 @@
             x += addInfo("Uživatel", recFileMetadata.username);
             x += addInfo("UserID", recFileMetadata.userid);
             x += addInfo("SessionID", recFileMetadata.sessionid);
-            if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("Addresses", format("{0} to {1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
+            if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("Adresy", format("{0} to {1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
             if (recFileMetadata.devicename) { x += addInfo("Device Name", recFileMetadata.devicename); }
             x += addInfo("NodeID", recFileMetadata.nodeid);
             if (recFileMetadata.protocol) {
