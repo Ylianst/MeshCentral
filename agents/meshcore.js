@@ -1905,7 +1905,7 @@ function createMeshCore(agent) {
                             case 'ON':
                                 try
                                 {
-                                    reg.WriteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration', 1);
+                                    reg.WriteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration', 0);
                                     response = 'OK';
                                 }
                                 catch (ee)
@@ -1916,7 +1916,7 @@ function createMeshCore(agent) {
                             case 'OFF':
                                 try
                                 {
-                                    reg.WriteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration', 0);
+                                    reg.WriteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration', 1);
                                     response = 'OK';
                                 }
                                 catch (ee)
@@ -1929,7 +1929,7 @@ function createMeshCore(agent) {
                                 var s;
                                 try
                                 {
-                                    s = reg.QueryKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration')==1?'ENABLED':'DISABLED';
+                                    s = reg.QueryKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration')==1?'DISABLED':'ENABLED';
                                 }
                                 catch (ee)
                                 {
