@@ -1871,7 +1871,11 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,safemode,wallpaper';
+                    var fin = '', f = '', availcommands = 'help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    if (process.platform == 'win32')
+                    {
+                        availcommands += ',safemode,wpfhwacceleration';
+                    }
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
                         if (f.length > 100) { fin += (f + ',\r\n'); f = ''; }
@@ -1881,6 +1885,71 @@ function createMeshCore(agent) {
                     response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
+                case 'wpfhwacceleration':
+                    if (process.platform != 'win32') { throw ('wpfhwacceleration setting is only supported on Windows'); }
+                    if (args['_'].length != 1)
+                    {
+                        response = 'Proper usage: wpfhwacceleration (ON|OFF|STATUS)'; // Display usage
+                    }
+                    else
+                    {
+                        var reg = require('win-registry');
+                        var uname = require('user-sessions').getUsername(require('user-sessions').consoleUid());
+                        var key = reg.usernameToUserKey(uname);
+
+                        switch(args['_'][0].toUpperCase())
+                        {
+                            default:
+                                response = 'Proper usage: wpfhwacceleration (ON|OFF|STATUS|DEFAULT)'; // Display usage
+                                break;
+                            case 'ON':
+                                try
+                                {
+                                    reg.WriteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration', 1);
+                                    response = 'OK';
+                                }
+                                catch (ee)
+                                {
+                                    response = 'FAILED';
+                                }
+                                break;
+                            case 'OFF':
+                                try
+                                {
+                                    reg.WriteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration', 0);
+                                    response = 'OK';
+                                }
+                                catch (ee)
+                                {
+                                    response = 'FAILED';
+                                }
+                                break;
+                                break;
+                            case 'STATUS':
+                                var s;
+                                try
+                                {
+                                    s = reg.QueryKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration')==1?'ENABLED':'DISABLED';
+                                }
+                                catch (ee)
+                                {
+                                    s = 'DEFAULT';
+                                }
+                                response = 'WPF Hardware Acceleration: ' + s;
+                                break;
+                            case 'DEFAULT':
+                                try
+                                {
+                                    reg.DeleteKey(reg.HKEY.Users, key + '\\SOFTWARE\\Microsoft\\Avalon.Graphics', 'DisableHWAcceleration');
+                                }
+                                catch (ee)
+                                {
+                                }
+                                response = 'OK';
+                                break;
+                        }
+                    }
+                    break;
                 case 'tsid':
                     if (process.platform == 'win32')
                     {
