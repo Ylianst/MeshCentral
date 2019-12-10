@@ -447,13 +447,13 @@
             QV('getStarted2', !newGroupsAllowed);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', "- Redefinir no próximo login."); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Redefinir no próximo login."); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', "- Redefinir no próximo login."); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Redefinir no próximo login."); }
                     else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format("- Redefinir em {0} minuto {1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format("- Redefinir em {0} hora {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format("- Redefinir em {0} dia {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Redefinir em {0} hora {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    else { QH('p2nextPasswordUpdateTime', format(" - Redefinir em {0} dia {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
         }
@@ -1284,7 +1284,7 @@
                                     var r = message.event.results[i], shortname = r.hostname;
                                     if (shortname.length > 20) { shortname = shortname.substring(0, 20) + '...'; }
                                     var str = '<b title="' + EscapeHtml(r.hostname) + '">' + EscapeHtml(shortname) + '</b> - v' + r.ver;
-                                    if (r.state == 2) { if (r.tls == 1) { str += "com TLS."; } else { str += "sem TLS."; } } else { str += ' not activated.'; }
+                                    if (r.state == 2) { if (r.tls == 1) { str += " com TLS."; } else { str += " sem TLS."; } } else { str += ' not activated.'; }
                                     x += '<div style=width:100%;margin-bottom:2px;background-color:lightgray><div style=padding:4px><div style=display:inline-block;margin-right:5px><input class=DevScanCheckbox name=dp1checkbox tag="' + EscapeHtml(i) + '" type=checkbox onclick=addAmtScanToMeshCheckbox() /></div><div class=j1 style=display:inline-block></div><div style=display:inline-block;margin-left:5px;overflow-x:auto;white-space:nowrap>' + str + '</div></div></div>';
                                 }
                                 // If no results where found, display a nice message
@@ -2154,7 +2154,7 @@
 
             // Setup CIRA with user/pass authentication (Somewhat difficult)
             x += '<div id=dlgAddCira1 style=display:none>' + format("Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \"{0}\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT", EscapeHtml(mesh.name));
-            if (serverinfo.mpspass) { x += ("e autenticar no servidor usando esse nome de usuário e senha." + '<br /><br />'); } else { x += ("e autenticar no servidor usando esse nome de usuário e qualquer senha." + '<br /><br />'); }
+            if (serverinfo.mpspass) { x += (" e autenticar no servidor usando esse nome de usuário e senha." + '<br /><br />'); } else { x += (" e autenticar no servidor usando esse nome de usuário e qualquer senha." + '<br /><br />'); }
             x += addHtmlValue("Certificado raiz", '<a href=\"' + "MeshServerRootCert.cer" + '\" download>' + "Arquivo de certificado raiz" + '</a>');
             x += addHtmlValue("Nome de usuário", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
             if (serverinfo.mpspass) { x += addHtmlValue("Senha", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpspass) + '" />'); }
@@ -6063,7 +6063,7 @@
         function account_showChangePassword() {
             if (xxdialogMode) return false;
             var x = "Altere a senha da sua conta digitando a senha antiga e a nova senha duas vezes nas caixas abaixo.";
-            if (features & 0x00010000) { "Dica de senha pode ser usada, mas não é recomendada."; }
+            if (features & 0x00010000) { " Dica de senha pode ser usada, mas não é recomendada."; }
             x += '<br /><br />';
             //x += "<form action='" + domainUrl + "changepassword' method=post>";
             x += '<table style=margin-left:60px>';
@@ -6315,10 +6315,10 @@
                 if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate Client Control Mode (CCM)'; }
                 else if (currentMesh.amt.type == 2) {
                     intelAmtPolicy = "Modo de Controle de Cliente Simples (CCM)";
-                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += "+ CIRA"; }
+                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
                 } else if (currentMesh.amt.type == 3) {
                     intelAmtPolicy = "Modo de controle de administrador simples (ACM)";
-                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += "+ CIRA"; }
+                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
                 }
             }
             x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
@@ -6549,7 +6549,7 @@
             var x = '';
             if (userid == null) {
                 x += "Permitir que os usuários gerenciem esse grupo de dispositivos e dispositivos neste grupo.";
-                if (features & 0x00080000) { x += "Os usuários precisam fazer login neste servidor uma vez antes de poderem ser adicionados a um grupo de dispositivos." }
+                if (features & 0x00080000) { x += " Os usuários precisam fazer login neste servidor uma vez antes de poderem ser adicionados a um grupo de dispositivos." }
                 x += '<br /><br /><div style=\'position:relative\'>';
                 x += addHtmlValue("Nomes de usuário", '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
                 x += '<div id=dp20usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';

@@ -53,7 +53,7 @@ function start() {
 
     var command = null;
     if (process.argv.length > 2) { command = process.argv[2].toLowerCase(); }
-    if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge'].indexOf(command) == -1) { command = null; }
+    if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext'].indexOf(command) == -1) { command = null; }
 
     console.log('MeshCentral web site translator');
     if (command == null) {
@@ -80,6 +80,12 @@ function start() {
         console.log('');
         console.log('  MERGE [sourcefile] [tartgetfile] [language code]');
         console.log('    Merge a language from a translation file into another translation file.');
+        console.log('');
+        console.log('  TOTEXT [translationfile] [textfile] [language code]');
+        console.log('    Save a text for with all strings of a given language.');
+        console.log('');
+        console.log('  FROMTEXT [translationfile] [textfile] [language code]');
+        console.log('    Import raw text string as translations for a language code.');
         process.exit();
         return;
     }
@@ -106,6 +112,29 @@ function start() {
         for (var i = 4; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { console.log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
         if (sources.length == 0) { console.log('No source files specified.'); process.exit(); return; }
         extract(process.argv[3], sources);
+    }
+
+    // Save a text file with all the strings for a given language
+    if (command == 'totext') {
+        if ((process.argv.length == 6)) {
+            if (fs.existsSync(process.argv[3]) == false) { console.log('Unable to find: ' + process.argv[3]); return; }
+            totext(process.argv[3], process.argv[4], process.argv[5]);
+        } else {
+            console.log('Usage: TOTEXT [translationfile] [textfile] [language code]');
+        }
+        return;
+    }
+
+    // Read a text file and use it as translation for a given language
+    if (command == 'fromtext') {
+        if ((process.argv.length == 6)) {
+            if (fs.existsSync(process.argv[3]) == false) { console.log('Unable to find: ' + process.argv[3]); return; }
+            if (fs.existsSync(process.argv[4]) == false) { console.log('Unable to find: ' + process.argv[4]); return; }
+            fromtext(process.argv[3], process.argv[4], process.argv[5]);
+        } else {
+            console.log('Usage: FROMTEXT [translationfile] [textfile] [language code]');
+        }
+        return;
     }
 
     // Merge one language from a language file into another language file.
@@ -193,6 +222,75 @@ function start() {
             }
         }
     }
+}
+
+
+function totext(source, target, lang) {
+    // Load the source language file
+    var sourceLangFileData = null;
+    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
+    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { console.log("Invalid source language file."); process.exit(); return; }
+
+    console.log('Writing ' + lang + '...');
+
+    // Generate raw text
+    var output = [];
+    var splitOutput = [];
+    var count = 0;
+    for (var i in sourceLangFileData.strings) {
+        if ((sourceLangFileData.strings[i][lang] != null) && (sourceLangFileData.strings[i][lang].indexOf('\r') == -1) && (sourceLangFileData.strings[i][lang].indexOf('\n') == -1)) {
+            output.push(sourceLangFileData.strings[i][lang]);
+            if (splitOutput[Math.floor(count / 1000) + 1] == null) { splitOutput[Math.floor(count / 1000) + 1] = []; }
+            splitOutput[Math.floor(count / 1000) + 1].push(sourceLangFileData.strings[i][lang]);
+        } else {
+            output.push('');
+            if (splitOutput[Math.floor(count / 1000) + 1] == null) { splitOutput[Math.floor(count / 1000) + 1] = []; }
+            splitOutput[Math.floor(count / 1000) + 1].push('');
+        }
+        count++;
+    }
+
+    if (output.length <= 1000) {
+        // Save the target back
+        fs.writeFileSync(target + '-' + lang + '.txt', output.join('\r\n'), { flag: 'w+' });
+        console.log('Done.');
+    } else {
+        // Save the text in 1000 string bunches
+        for (var i in splitOutput) {
+            console.log('Writing ' + target + '-' + lang + '-' + i + '.txt...');
+            fs.writeFileSync(target + '-' + lang + '-' + i + '.txt', splitOutput[i].join('\r\n'), { flag: 'w+' });
+        }
+        console.log('Done.');
+    }
+}
+
+function fromtext(source, target, lang) {
+    // Load the source language file
+    var sourceLangFileData = null;
+    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
+    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { console.log("Invalid source language file."); process.exit(); return; }
+
+    console.log('Updating ' + lang + '...');
+
+    // Read raw text
+    var rawText = fs.readFileSync(target).toString('utf8');
+    var rawTextArray = rawText.split('\r\n');
+    var rawTextPtr = 0;
+
+    console.log('Translation file: ' + sourceLangFileData.strings.length + ' string(s)');
+    console.log('Text file: ' + rawTextArray.length + ' string(s)');
+    if (sourceLangFileData.strings.length != rawTextArray.length) { console.log('String count mismatch, unable to import.'); process.exit(1); return; }
+
+    var output = [];
+    var splitOutput = [];
+    for (var i in sourceLangFileData.strings) {
+        if ((sourceLangFileData.strings[i]['en'] != null) && (sourceLangFileData.strings[i]['en'].indexOf('\r') == -1) && (sourceLangFileData.strings[i]['en'].indexOf('\n') == -1)) {
+            sourceLangFileData.strings[i][lang] = rawTextArray[i];
+        }
+    }
+
+    fs.writeFileSync(source + '-new', JSON.stringify(sourceLangFileData), { flag: 'w+' });
+    console.log('Done.');
 }
 
 function merge(source, target, lang) {

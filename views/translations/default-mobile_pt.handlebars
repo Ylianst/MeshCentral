@@ -692,13 +692,13 @@
             QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', "- Redefinir no próximo login."); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Redefinir no próximo login."); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', "- Redefinir no próximo login."); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Redefinir no próximo login."); }
                     else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format("- Redefinir em {0} minuto {1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format("- Redefinir em {0} hora {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format("- Redefinir em {0} dia {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Redefinir em {0} hora {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    else { QH('p2nextPasswordUpdateTime', format(" - Redefinir em {0} dia {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
         }
@@ -1788,7 +1788,7 @@
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? "nó" : "nós");
+            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " nó" : " nós");
             var title = '';
             for (var x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             deviceHeadersTitles['DevxHeader' + deviceHeaderId] = title;
@@ -3108,7 +3108,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + "Adicionar usuário" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Adicionar usuário" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
