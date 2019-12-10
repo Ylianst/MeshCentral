@@ -200,7 +200,7 @@
             <div id="column_l" style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
                 <div id="p0" style="display:none;width:100%;height:100%">
                     <div style="display:flex;align-items:center;width:100%;height:100%">
-                        <div id="p0message" style="text-align:center;width:100%"><span id="p0span">Server disconnected</span>, <href onclick="reload()" style="cursor:pointer"><u>click to reconnect</u></href>.</div>
+                        <div id="p0message" style="text-align:center;width:100%"><span id="p0span">サーバーが切断されました</span>、 <href onclick="reload()" style="cursor:pointer"><u>クリックして再接続</u></href>。</div>
                     </div>
                 </div>
                 <div id="p1" style="display:none;width:100%;height:100%">
@@ -233,25 +233,25 @@
                     <div id="p3info" style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
-                                <p><strong>Account Security</strong></p>
+                                <p><strong>アカウントのセキュリティ</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
-                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a></div>
-                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a></div>
+                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">認証アプリを管理する</a></div>
+                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">バックアップコードを管理する</a></div>
                                 </div>
-                                <p><strong>Account Actions</strong></p>
+                                <p><strong>アカウントアクション</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
-                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Vérifier le courriel</a></span></div>
-                                    <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
-                                    <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
-                                    <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                    <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Eメールを確認します</a></span></div>
+                                    <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">メールアドレスを変更する</a></span></div>
+                                    <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">パスワードを変更する</a><span id="p2nextPasswordUpdateTime"></span></div>
+                                    <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">アカウントを削除する</a></div>
                                 </div>
                                 <br style="clear:both">
                             </div>
-                            <strong>Device Groups</strong>
-                            <span id="p3createMeshLink1">( <a onclick="account_createMesh()" style="cursor:pointer"><img src="images/icon-addnew.png" width="12" height="12" border="0"> Nouveau</a> )</span>
+                            <strong>デバイスグループ</strong>
+                            <span id="p3createMeshLink1">（ <a onclick="account_createMesh()" style="cursor:pointer"><img src="images/icon-addnew.png" width="12" height="12" border="0"> 新しい</a> ）</span>
                             <br><br>
                             <div id="p3meshes"></div>
-                            <div id="p3noMeshFound" style="margin-left:9px;display:none">Aucun groupe d'appareils.<span id="p3createMeshLink2"> <a onclick="account_createMesh()" style="cursor:pointer"><strong>Commencez ici!</strong></a></span></div>
+                            <div id="p3noMeshFound" style="margin-left:9px;display:none">デバイスグループはありません。<span id="p3createMeshLink2"> <a onclick="account_createMesh()" style="cursor:pointer"><strong>ここから始めましょう！</strong></a></span></div>
                             <br style="clear:both">
                         </div>
                     </div>
@@ -270,7 +270,7 @@
                             </td>
                             <td>
                                 <div style="margin-left:5px">
-                                    <strong style="font-size:large">Mes Dossiers</strong><br>
+                                    <strong style="font-size:large">私のファイル</strong><br>
                                 </div>
                             </td>
                         </tr>
@@ -280,18 +280,18 @@
                             <tbody><tr>
                                 <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign="bottom">
                                     <div style="width:100%;text-align:center">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5FolderUp" disabled="disabled" onclick="p5folderup()" value="Up">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile()" value="ToutSélectionner" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5RenameFileButton" disabled="disabled" value="Renommer" onclick="p5renamefile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5DeleteFileButton" disabled="disabled" value="Delete" onclick="p5deletefile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5NewFolderButton" disabled="disabled" value="Dossier" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5FolderUp" disabled="disabled" onclick="p5folderup()" value="アップ">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5SelectAllButton" disabled="disabled" onclick="p5selectallfile()" value="すべて選択" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5RenameFileButton" disabled="disabled" value="リネーム" onclick="p5renamefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5DeleteFileButton" disabled="disabled" value="削除する" onclick="p5deletefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5NewFolderButton" disabled="disabled" value="フォルダ" onclick="p5createfolder()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                     <div style="width:100%;text-align:center">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5UploadButton" disabled="disabled" value="Télécharger" onclick="p5uploadFile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5CutButton" disabled="disabled" value="Cut" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5CopyButton" disabled="disabled" value="Copy" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5PasteButton" disabled="disabled" value="Coller" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5RefreshButton" value="Rafraîchir" onclick="p5refreshFiles()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5UploadButton" disabled="disabled" value="アップロードする" onclick="p5uploadFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5CutButton" disabled="disabled" value="カット" onclick="p5copyFile(1)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5CopyButton" disabled="disabled" value="コピー" onclick="p5copyFile(0)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5PasteButton" disabled="disabled" value="ペースト" onclick="p5pasteFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p5RefreshButton" value="リフレッシュ" onclick="p5refreshFiles()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                 </td>
                             </tr>
@@ -302,12 +302,12 @@
                                             <td id="p5currentpath" style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
                                             <td style="text-align:right;padding-right:4px">
                                                 <select id="p5sortdropdown" onchange="updateFiles()">
-                                                    <option value="1" selected="selected">Trier par nom</option>
-                                                    <option value="2">Trier par taille</option>
-                                                    <option value="3">Trier par date</option>
-                                                    <option value="4">Descend by name</option>
-                                                    <option value="5">Descend by size</option>
-                                                    <option value="6">Descend by date</option>
+                                                    <option value="1" selected="selected">名前順</option>
+                                                    <option value="2">サイズで並べ替え</option>
+                                                    <option value="3">日付けで並び替え</option>
+                                                    <option value="4">名前で降順</option>
+                                                    <option value="5">サイズで降順</option>
+                                                    <option value="6">日付で降順</option>
                                                 </select>
                                             </td>
                                         </tr>
@@ -363,10 +363,10 @@
                                     <input id="DeskSoftInput" type="text" style="width:25px;display:none;opacity:.2" onblur="toggleSoftKeys(0)" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)">
                                 </div>
                                 <div style="margin-left:3px">
-                                    <input type="button" id="connectbutton1" value="Connect" onclick="connectDesktop(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type="button" id="connectbutton1h" value="Connexion AMT" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type="button" id="disconnectbutton1" value="Disconnect" onclick="connectDesktop(event,0)" onkeypress="return false" onkeydown="return false">
-                                    <span id="deskstatus">Débranché</span>
+                                    <input type="button" id="connectbutton1" value="つなぐ" onclick="connectDesktop(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled">
+                                    <input type="button" id="connectbutton1h" value="HW Connect" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled">
+                                    <input type="button" id="disconnectbutton1" value="切断する" onclick="connectDesktop(event,0)" onkeypress="return false" onkeydown="return false">
+                                    <span id="deskstatus">切断されました</span>
                                 </div>
                             </div>
                         </div>
@@ -376,10 +376,10 @@
                                     <canvas id="Desk" width="640" height="200" style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown="dmousedown(event)" onmouseup="dmouseup(event)" onmousemove="dmousemove(event)" onmousewheel="dmousewheel(event)"></canvas>
                                 </div>
                                 <div id="DeskTools" style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
-                                    <a id="DeskToolsRefreshButton" style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Rafraîchir</a>
-                                    <div id="DeskToolsBar" style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processus</div>
+                                    <a id="DeskToolsRefreshButton" style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">リフレッシュ</a>
+                                    <div id="DeskToolsBar" style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">プロセス</div>
                                     <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
-                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style="width:50px;padding-right:5px;float:left;cursor:pointer" onclick="sortProcess(0)">PID</a><a style="cursor:pointer" onclick="sortProcess(1)">Nom</a></div>
+                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style="width:50px;padding-right:5px;float:left;cursor:pointer" onclick="sortProcess(0)">PID</a><a style="cursor:pointer" onclick="sortProcess(1)">名</a></div>
                                         <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
                                     </div>
                                 </div>
@@ -393,12 +393,12 @@
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
-                                    <input id="deskActionsBtn" type="button" style="margin-left:3px" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()">
-                                    <input type="button" value="Paramètres" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
-                                    <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
-                                    <input id="DeskSpecialKeys" type="button" value="Special Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
-                                    <input id="DeskSoftKeys" type="button" value="Clavier" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
-                                    <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
+                                    <input id="deskActionsBtn" type="button" style="margin-left:3px" onkeypress="return false" onkeydown="return false" value="行動" onclick="deviceActionFunction()">
+                                    <input type="button" value="設定" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" value="電源アクション..." onclick="showPowerActionDlg()" style="display:none">
+                                    <input id="DeskSpecialKeys" type="button" value="特別なキー" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
+                                    <input id="DeskSoftKeys" type="button" value="キーボード" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
+                                    <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">入力</span></label>
                                 </div>
                             </div>
                         </div>
@@ -408,30 +408,30 @@
                             <tbody><tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
                                     <div style="float:right;text-align:right">
-                                        <input id="filesActionsBtn" type="button" onkeypress="return false" onkeydown="return false" value="Actions" onclick="deviceActionFunction()" style="margin-right:2px">
+                                        <input id="filesActionsBtn" type="button" onkeypress="return false" onkeydown="return false" value="行動" onclick="deviceActionFunction()" style="margin-right:2px">
                                     </div>
                                     <div style="margin-left:2px">
-                                        <input id="p13AutoConnect" value="AutoConnect" onclick="autoConnectFiles(event)" onkeypress="return false" onkeydown="return false" type="button" style="display:none">
-                                        <input id="p13Connect" value="Connect" onclick="connectFiles(event)" onkeypress="return false" onkeydown="return false" type="button">
-                                        <span id="p13Status">Débranché</span>
+                                        <input id="p13AutoConnect" value="自動接続" onclick="autoConnectFiles(event)" onkeypress="return false" onkeydown="return false" type="button" style="display:none">
+                                        <input id="p13Connect" value="つなぐ" onclick="connectFiles(event)" onkeypress="return false" onkeydown="return false" type="button">
+                                        <span id="p13Status">切断されました</span>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign="bottom">
                                     <div style="width:100%;text-align:center">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13FolderUp" disabled="disabled" onclick="p13folderup()" value="Up">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13SelectAllButton" disabled="disabled" onclick="p13selectallfile()" value="ToutSélectionner" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13RenameFileButton" disabled="disabled" value="Renommer" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13DeleteFileButton" disabled="disabled" value="Delete" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13NewFolderButton" disabled="disabled" value="Dossier" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13FolderUp" disabled="disabled" onclick="p13folderup()" value="アップ">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13SelectAllButton" disabled="disabled" onclick="p13selectallfile()" value="すべて選択" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13RenameFileButton" disabled="disabled" value="リネーム" onclick="p13renamefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13DeleteFileButton" disabled="disabled" value="削除する" onclick="p13deletefile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13NewFolderButton" disabled="disabled" value="フォルダ" onclick="p13createfolder()" onkeypress="return false" onkeydown="return false">
                                     </div>
                                     <div style="width:100%;text-align:center">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13UploadButton" disabled="disabled" value="Télécharger" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13CutButton" disabled="disabled" value="Cut" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13CopyButton" disabled="disabled" value="Copy" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13PasteButton" disabled="disabled" value="Coller" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false">
-                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13RefreshButton" disabled="disabled" value="Rafraîchir" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13UploadButton" disabled="disabled" value="アップロードする" onclick="p13uploadFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13CutButton" disabled="disabled" value="カット" onclick="p13copyFile(1)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13CopyButton" disabled="disabled" value="コピー" onclick="p13copyFile(0)" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13PasteButton" disabled="disabled" value="ペースト" onclick="p13pasteFile()" onkeypress="return false" onkeydown="return false">
+                                        <input type="button" style="width:calc(100%/5 - 5px)" id="p13RefreshButton" disabled="disabled" value="リフレッシュ" onclick="p13folderup(9999)" onkeypress="return false" onkeydown="return false">
                                     </div>
                                 </td>
                             </tr>
@@ -442,12 +442,12 @@
                                             <td id="p13currentpath" style="overflow:hidden;padding-left:4px;padding-top:2px"></td>
                                             <td style="text-align:right;padding-right:4px">
                                                 <select id="p13sortdropdown" onchange="p13updateFiles()">
-                                                    <option value="1" selected="selected">Trier par nom</option>
-                                                    <option value="2">Trier par taille</option>
-                                                    <option value="3">Trier par date</option>
-                                                    <option value="4">Descend by name</option>
-                                                    <option value="5">Descend by size</option>
-                                                    <option value="6">Descend by date</option>
+                                                    <option value="1" selected="selected">名前順</option>
+                                                    <option value="2">サイズで並べ替え</option>
+                                                    <option value="3">日付けで並び替え</option>
+                                                    <option value="4">名前で降順</option>
+                                                    <option value="5">サイズで降順</option>
+                                                    <option value="6">日付で降順</option>
                                                 </select>
                                             </td>
                                         </tr>
@@ -496,7 +496,7 @@
     </div>
     <div id="dialog" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:90px;width:300px;display:none">
         <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
-            <div id="id_dialogclose" style="float:right;padding:5px;cursor:pointer" onclick="setDialogMode()"><b>X</b></div>
+            <div id="id_dialogclose" style="float:right;padding:5px;cursor:pointer" onclick="setDialogMode()"><b>バツ</b></div>
             <div id="id_dialogtitle" style="padding:5px"></div>
             <div style="width:100%;margin:6px"></div>
         </div>
@@ -509,15 +509,15 @@
             </div>
             <div id="dialog3" style="margin:auto;margin:3px">
                 <select id="deskkeys" style="width:100%">
-                    <option value="10">Ctrl+Alt+Del</option>
-                    <option value="11">Tab</option>
-                    <option value="5">Win</option>
-                    <option value="0">Win+Down</option>
-                    <option value="1">Win+Up</option>
-                    <option value="2">Win+L</option>
-                    <option value="3">Win+M</option>
-                    <option value="4">Shift+Win+M</option>
-                    <option value="6">Win+R</option>
+                    <option value="10">Ctrl + Alt + Del</option>
+                    <option value="11">タブ</option>
+                    <option value="5">勝つ</option>
+                    <option value="0">Win + Down</option>
+                    <option value="1">Win + Up</option>
+                    <option value="2">Win + L</option>
+                    <option value="3">Win + M</option>
+                    <option value="4">Shift + Win + M</option>
+                    <option value="6">Win + R</option>
                     <option value="7">Alt-F4</option>
                     <option value="8">Ctrl-W</option>
                     <option value="9">Alt-Tab</option>
@@ -525,64 +525,64 @@
             </div>
             <div id="dialog7" style="margin:auto;margin:3px">
                 <div id="d7meshkvm">
-                    <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
+                    <h4 style="width:100%;border-bottom:1px solid gray">エージェントリモートデスクトップ</h4>
                     <div style="margin:3px 0 3px 0">
                         <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl"></select>
-                        <div style="height:20px">Qualité</div>
+                        <div style="height:20px">品質</div>
                     </div>
                     <div style="margin:3px 0 3px 0">
                         <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected="selected" value="1024">100%</option>
-                            <option value="896">87.5%</option>
-                            <option value="768">75%</option>
-                            <option value="640">62.5%</option>
-                            <option value="512">50%</option>
-                            <option value="384">37.5%</option>
-                            <option value="256">25%</option>
-                            <option value="128">12.5%</option>
+                            <option selected="selected" value="1024">100％</option>
+                            <option value="896">87.5％</option>
+                            <option value="768">75％</option>
+                            <option value="640">62.5％</option>
+                            <option value="512">50％</option>
+                            <option value="384">37.5％</option>
+                            <option value="256">25％</option>
+                            <option value="128">12.5％</option>
                         </select>
-                        <div style="height:20px">Mise à l'échelle</div>
+                        <div style="height:20px">スケーリング</div>
                     </div>
                     <div style="margin:3px 0 3px 0">
                         <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected="selected" value="50">Vite</option>
-                            <option value="100">Moyen</option>
-                            <option value="400">Lent</option>
-                            <option value="1000">Très lent</option>
+                            <option selected="selected" value="50">速い</option>
+                            <option value="100">中</option>
+                            <option value="400">スロー</option>
+                            <option value="1000">非常に遅い</option>
                         </select>
-                        <div style="height:20px">Rate</div>
+                        <div style="height:20px">レート</div>
                     </div>
                 </div>
                 <div id="d7amtkvm">
-                    <h4 style="width:100%;border-bottom:1px solid gray">Intel® AMT Hardware KVM</h4>
+                    <h4 style="width:100%;border-bottom:1px solid gray">インテル®AMTハードウェアKVM</h4>
                     <div style="height:26px">
                         <select id="d7desktopmode" style="float:right;width:200px">
-                            <option value="1">RLE8, le plus rapide</option>
-                            <option value="2">RLE16, recommandé</option>
-                            <option value="3">RAW8, lent</option>
-                            <option value="4">RAW16, très lent</option>
+                            <option value="1">RLE8、最速</option>
+                            <option value="2">RLE16、推奨</option>
+                            <option value="3">RAW8、遅い</option>
+                            <option value="4">RAW16、非常に遅い</option>
                         </select>
-                        <div>Encoding</div>
+                        <div>エンコーディング</div>
                     </div>
                     <div style="height:60px">
                         <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
-                            <label><input type="checkbox" id="d7showfocus">Show Focus Tool</label><br>
-                            <label><input type="checkbox" id="d7showcursor">Show Local Mouse Cursor</label><br>
+                            <label><input type="checkbox" id="d7showfocus">フォーカスツールを表示</label><br>
+                            <label><input type="checkbox" id="d7showcursor">ローカルマウスカーソルを表示</label><br>
                         </div>
-                        <div>Autre</div>
+                        <div>その他</div>
                     </div>
                 </div>
             </div>
         </div>
         <div id="idx_dlgButtonBar" style="padding:10px;margin-bottom:20px">
-            <input id="idx_dlgCancelButton" type="button" value="Annuler" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
+            <input id="idx_dlgCancelButton" type="button" value="キャンセル" style="float:right;width:80px;margin-left:5px" onclick="dialogclose(0)">
             <input id="idx_dlgOkButton" type="button" value="OK" style="float:right;width:80px" onclick="dialogclose(1)">
         </div>
     </div>
     <div id="topMenu" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
-        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(2)">Mes Dossiers</div>
-        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(1)">Mon Compte</div>
-        <div id="logoutMenuOption"><a href="/logout"><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Déconnexion</div></a></div>
+        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(2)">私のファイル</div>
+        <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick="topMenu(1)">マイアカウント</div>
+        <div id="logoutMenuOption"><a href="/logout"><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">ログアウト</div></a></div>
     </div>
     <iframe name="fileUploadFrame" style="display:none"></iframe>
     <script>
@@ -616,7 +616,7 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
-        var StatusStrs = ["Débranché", "Connecting...", "Traitement...", "Connected", "Intel&reg; AMT Connected"];
+        var StatusStrs = ["切断されました", "接続しています...", "セットアップ...", "接続済み", "Intel＆reg;接続されたAMT"];
         var files;
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -635,7 +635,7 @@
             window.onresize = center;
             center();
             QV('changeEmailId', (features & 0x200000) == 0);
-            QH('p1message', "Connecting...");
+            QH('p1message', "接続しています...");
             go(1);
 
             // Connect to the mesh server
@@ -655,8 +655,8 @@
                 // Control web socket disconnected
                 setDialogMode(0); // Close any dialog boxes if present
                 go(0); // Go to disconnection panel
-                if (errorCode == 'noauth') { QH('p0span', "Unable to perform authentication"); return; }
-                if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Unable to connect web socket"); }
+                if (errorCode == 'noauth') { QH('p0span', "認証を実行できません"); return; }
+                if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Webソケットに接続できません"); }
                 // Clean up here
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
@@ -692,13 +692,13 @@
             QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - Réinitialiser à la prochaine connexion."); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " -次回ログイン時にリセット。"); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Réinitialiser à la prochaine connexion."); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format("- Réinitialisation en {0} minute {1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Réinitialisation dans {0} heure {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format(" - Réinitialiser dans le {0} jour {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " -次回ログイン時にリセット。"); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" -{0}分でリセット{1}。", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" -{0}時間でリセット{1}。", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    else { QH('p2nextPasswordUpdateTime', format(" -{0}日でリセット{1}。"), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
         }
@@ -790,7 +790,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', "Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login." + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                        QH('d2optinfo', "インストール<a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank> Google Authenticator </a>または互換性のあるアプリケーションの場合、<a href=\"' + message.url +'\" rel=\"noreferrer noopener\" target=_blank>このリンク</a>を使用するか、下に秘密を入力します。次に、現在の6桁のトークンを入力して、2段階ログインを有効にします。" + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
                         Q('d2otpauthinput').focus();
@@ -799,17 +799,17 @@
                 }
                 case 'otpauth-setup': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    setDialogMode(2, "認証アプリ", 1, null, message.success ? "<b style = color：green> 2段階ログインの有効化に成功</ b>。再度ログインするには、有効なトークンが必要になります。" : "<b style = color：red> 2段階ログインの有効化に失敗しました</ b>。アプリケーションから秘密をクリアして、再試行してください。適切なコードを入力するのに数分しかかかりません。");
                     break;
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
+                    setDialogMode(2, "認証アプリ", 1, null, message.success ? "<b style = color：green> 2段階のログインアクティベーションが削除されました</ b>。この機能はいつでも再アクティブ化できます。" : "<b style = color：red> 2段階のログインアクティベーションの削除に失敗しました</ b>。再試行する。");
                     break;
                 }
                 case 'otpauth-getpasswords': {
                     if (xxdialogMode) return;
-                    var x = "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.";
+                    var x = "ワンタイムトークンは、セカンダリ認証として使用できます。セットを生成して印刷し、安全な場所に保管してください。";
                     x += '<div style=\'border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px\'><div style=\'padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold\'><table style=width:100%;text-align:center>';
                     if (message.passwords) {
                         var j = 0;
@@ -820,14 +820,14 @@
                             if (message.passwords[i].u === true) { x += '<td>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); } else { x += '<td><strike style=color:#BBB>' + p.substring(0, 4) + '&nbsp;' + p.substring(4); + '</strike>'; }
                         }
                     } else {
-                        x += '<tr><td>' + "No Active Tokens";
+                        x += '<tr><td>' + "アクティブなトークンがありません";
                     }
                     x += '</table></div></div><br />';
-                    x += '<div><input type=button value=\'' + "Close" + '\' onclick=setDialogMode(0) style=float:right></input>';
-                    x += '<input type=button value=\'' + "Nouveaux Jetons" + '\' onclick=\'account_manageOtp(1);\'></input>';
-                    if (message.passwords != null) { x += '<input type=button value=\'' + "Clear" + '\' onclick=\'account_manageOtp(2);\'></input>'; }
+                    x += '<div><input type=button value=\'' + "閉じる" + '\' onclick=setDialogMode(0) style=float:right></input>';
+                    x += '<input type=button value=\'' + "新しいトークン" + '\' onclick=\'account_manageOtp(1);\'></input>';
+                    if (message.passwords != null) { x += '<input type=button value=\'' + "クリア" + '\' onclick=\'account_manageOtp(2);\'></input>'; }
                     x += '</div><br />';
-                    setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
+                    setDialogMode(2, "バックアップコードの管理", 8, null, x, 'otpauth-manage');
                     break;
                 }
                 case 'event': {
@@ -1147,7 +1147,7 @@
 
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "Chargement..." + '</div>', 'otpauth-request');
+            setDialogMode(2, "認証アプリ", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, '<div id=d2optinfo>' + "読み込み中..." + '</div>', 'otpauth-request');
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -1159,7 +1159,7 @@
 
         function account_removeOtp() {
             if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of authenticator application 2-step login?");
+            setDialogMode(2, "認証アプリ", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "認証アプリケーションの削除2段階ログインを確認しますか？");
         }
 
         function account_manageOtp(action) {
@@ -1170,8 +1170,8 @@
 
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return;
-            var x = "Click ok to send a verification mail to:" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + '</b></div>' + "Please wait a few minute to receive the verification.";
-            setDialogMode(2, "Email Verification", 3, account_showVerifyEmailEx, x);
+            var x = "[OK]をクリックして確認メールを送信します：" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + '</b></div>' + "確認を受けるまで数分お待ちください。";
+            setDialogMode(2, "メール確認", 3, account_showVerifyEmailEx, x);
         }
 
         function account_showVerifyEmailEx() {
@@ -1180,8 +1180,8 @@
 
         function account_showChangeEmail() {
             if (xxdialogMode) return;
-            var x = addHtmlValue("Email", '<input id=dp3email style=width:170px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
-            setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
+            var x = addHtmlValue("Eメール", '<input id=dp3email style=width:170px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
+            setDialogMode(2, "メールアドレスの変更", 3, account_changeEmail, x);
             if (userinfo.email != null) { Q('dp3email').value = userinfo.email; }
             account_validateEmail();
             Q('dp3email').focus();
@@ -1199,13 +1199,13 @@
         function account_showDeleteAccount() {
             if (xxdialogMode) return;
             var x = '<form method=post><table style=margin-left:10px><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=' + authCookie + ' /><tr>';
-            x += '<td align=right>' + "Mot de passe:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
-            x += '</tr><tr><td align=right>' + "Mot de passe:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
+            x += '<td align=right>' + "パスワード：" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
+            x += '</tr><tr><td align=right>' + "パスワード：" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=\"' + "Annuler" + '\" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgCancelButton type=button value=\"' + "キャンセル" + '\" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=\"' + "OK" + '\" style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
-            setDialogMode(2, "Delete Account", 0, null, x);
+            setDialogMode(2, "アカウントを削除する", 0, null, x);
             account_validateDeleteAccount();
             Q('apassword1').focus();
         }
@@ -1214,18 +1214,18 @@
         function account_showChangePassword() {
             if (xxdialogMode) return false;
             var x = '<table style=margin-left:10px>';
-            x += '<tr><td align=right>' + nobreak("Ancien mot de passe:") + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
-            x += '<tr><td align=right>' + nobreak("Nouveau mot de passe:") + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
-            x += '<tr><td align=right>' + nobreak("Nouveau mot de passe:") + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
-            if (features & 0x00010000) { x += '<tr><td align=right>' + "Password hint:" + '</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>'; }
+            x += '<tr><td align=right>' + nobreak("以前のパスワード：") + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
+            x += '<tr><td align=right>' + nobreak("新しいパスワード：") + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
+            x += '<tr><td align=right>' + nobreak("新しいパスワード：") + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
+            if (features & 0x00010000) { x += '<tr><td align=right>' + "パスワードのヒント：" + '</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>'; }
             x += '</table>'
             if (passRequirements) {
                 var r = [], rc = 0;
                 for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
-                if (rc > 0) { x += '<br /><span style=font-size:x-small>' + format("Exigences: {0}.", r.join(', ')) + '</span>'; }
+                if (rc > 0) { x += '<br /><span style=font-size:x-small>' + format("要件：{0}。", r.join(', ')) + '</span>'; }
             }
             x += '<br />';
-            setDialogMode(2, "Change Password", 3, account_showChangePasswordEx, x);
+            setDialogMode(2, "パスワードを変更する", 3, account_showChangePasswordEx, x);
             Q('apassword0').focus();
             account_validateNewPassword();
             return false;
@@ -1243,19 +1243,19 @@
             if (xxdialogMode) return;
 
             // Check if we are disallowed from creating a device group
-            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "Nouveau Group", 1, null, "This account does not have the rights to create a new device group."); return; }
+            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "新しいデバイスグループ", 1, null, "このアカウントには、新しいデバイスグループを作成する権限がありません。"); return; }
 
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "アカウントのセキュリティ", 1, null, "メールアドレスが確認されるまでデバイスにアクセスできません。これはパスワードの回復に必要です。 「マイアカウント」に移動して、メールアドレスを変更および確認します。"); return; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "アカウントのセキュリティ", 1, null, "二要素認証が有効になるまでデバイスにアクセスできません。これは、追加のセキュリティのために必要です。 「マイアカウント」に移動して、「アカウントセキュリティ」セクションを確認します。"); return; }
 
             // We are allowed, let's prompt to information
-            var x = addHtmlValue("Nom", '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
-            x += addHtmlValue("Type", '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>' + "Groupe d'agents logiciels" + '</option><option value=1>' + "Intel&reg; AMT only" + '</option></select></div>');
-            x += addHtmlValue("Description", '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
-            setDialogMode(2, "Create Device Group", 3, account_createMeshEx, x);
+            var x = addHtmlValue("名", '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
+            x += addHtmlValue("タイプ", '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>' + "ソフトウェアエージェントグループ" + '</option><option value=1>' + "Intel＆reg; AMTのみ" + '</option></select></div>');
+            x += addHtmlValue("説明", '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
+            setDialogMode(2, "デバイスグループを作成する", 3, account_createMeshEx, x);
             account_validateMeshCreate();
             Q('dp3meshname').focus();
         }
@@ -1283,7 +1283,7 @@
                 } else {
                     // Password requirements provided, use that
                     var passReq = checkPasswordRequirements(Q('apassword1').value, passRequirements);
-                    if (passReq == false) { ok = false; r = '<span style=color:red>' + "Politique" + '<span>' }
+                    if (passReq == false) { ok = false; r = '<span style=color:red>' + "方針" + '<span>' }
                 }
             }
             QH('dxPassWarn', r);
@@ -1326,8 +1326,8 @@
 
                 // Mesh rights
                 var meshrights = meshes[i].links[userinfo._id].rights;
-                var rights = "Partial Rights";
-                if (meshrights == 0xFFFFFFFF) rights = "Administrateur Complet"; else if (meshrights == 0) rights = "No Rights";
+                var rights = "部分的権利";
+                if (meshrights == 0xFFFFFFFF) rights = "完全な管理者"; else if (meshrights == 0) rights = "権利なし";
 
                 // Print the mesh information
                 r += '<div style=cursor:pointer onclick=goForward(\'' + i + '\')>';
@@ -1360,7 +1360,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>' + "Racine" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p5folderup(0)>' + "ルート" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -1415,7 +1415,7 @@
                 } else {
                     var link = shortname;
                     var publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "Lien" + '</a>)'; }
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "リンク" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -1443,11 +1443,11 @@
         }
 
         function getNiceSize(bytes) {
-            if (bytes <= 0) return "Stockage dépassent";
-            if (bytes < 2048) return format("{0}b left", bytes);
-            if (bytes < 2097152) return format("{0}k left", Math.round(bytes / 1024));
-            if (bytes < 2147483648) return format("{0}m left", Math.round(bytes / 1024 / 1024));
-            return format("{0}g left", Math.round(bytes / 1024 / 1024 / 1024));
+            if (bytes <= 0) return "ストレージを超えています";
+            if (bytes < 2048) return format("{0} b残り", bytes);
+            if (bytes < 2097152) return format("{0} k残り", Math.round(bytes / 1024));
+            if (bytes < 2147483648) return format("残り{0} m", Math.round(bytes / 1024 / 1024));
+            return format("{0} g残り", Math.round(bytes / 1024 / 1024 / 1024));
         }
 
         function p5getQuotabar(f) {
@@ -1456,7 +1456,7 @@
             return getNiceSize(f.maxbytes - f.s) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' />';
         }
 
-        function p5showPublicLink(u) { setDialogMode(2, "Lien public", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
+        function p5showPublicLink(u) { setDialogMode(2, "公開リンク", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
 
         var sortorder;
         function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
@@ -1481,7 +1481,7 @@
             QE('p5UploadButton', filetreelocation.length > 0);
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
-            Q('p5SelectAllButton').value = (cc > 0 ? "Aucun" : "Tout");
+            Q('p5SelectAllButton').value = (cc > 0 ? "なし" : "すべて");
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
             QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
@@ -1492,26 +1492,26 @@
         function getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fc'); return checkboxes.length; }
         function p5selectallfile() { var nv = (getFileSelCount() == 0), checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p5setActions(); }
         function setupBackPointers(x) { if (x.f != null) { var fs = 0, fc = 0; for (var i in x.f) { setupBackPointers(x.f[i]); x.f[i].parent = x; if (x.f[i].s) { fs += x.f[i].s; } if (x.f[i].c) { fc += x.f[i].c; } if (x.f[i].t == 3) { fc++; } } x.s = fs; x.c = fc; } return x; }
-        function getFileSizeStr(size) { if (size == 1) return "1 octet"; return format("{0} octets", size); }
+        function getFileSizeStr(size) { if (size == 1) return "1バイト"; return format("{0}バイト", size); }
         function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); return false; }
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
-        function p5createfolder() { setDialogMode(2, "Nouveau Dossier", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5createfolder() { setDialogMode(2, "新しいフォルダ", 3, p5createfolderEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
-        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "Suppression récursive" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "再帰削除" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "削除する", 3, p5deletefileEx, (cc > 1) ? (format("選択したアイテム{0}を削除しますか？", cc) + rec) : ("選択したアイテムを削除しますか？" + rec)); }
         function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
-        function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Renommer", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile }); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "リネーム", 3, p5renamefileEx, '<input type=text id=p5renameinput maxlength=64 onkeyup=p5fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile }); focusTextBox('p5renameinput'); p5fileNameCheck(); }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "ファイルをアップロードする", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
         function p5copyFile(cut) { var checkboxes = document.getElementsByName('fc'); p5clipboard = []; p5clipboardCut = cut, p5clipboardFolder = Clone(filetreelocation); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p5clipboard.push(checkboxes[i].value); } } p5updateClipview(); }
-        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confim {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) } setDialogMode(2, "Coller", 3, p5pasteFileEx, x); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("{1}エントリ{2}のうち{0}をこの場所に拘束しますか？", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) } setDialogMode(2, "ペースト", 3, p5pasteFileEx, x); }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
-        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "copy" : "move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("{2}の{0}エントリを保持しています{1}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "コピー" : "動く")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "クリア" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
 
         function p5fileDragDrop(e) {
@@ -1663,7 +1663,7 @@
                     if (nodes[i].meshid != current) {
                         deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + "、Intel＆reg; AMTのみ" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
@@ -1688,11 +1688,11 @@
 
                 count++;
                 var title = EscapeHtml(nodes[i].name);
-                if (title.length == 0) { title = '<i>' + "Aucun" + '</i>'; }
-                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
+                if (title.length == 0) { title = '<i>' + "なし" + '</i>'; }
+                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " /" + EscapeHtml(nodes[i].rname); }
                 var name = EscapeHtml(nodes[i].name);
                 if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
-                if (name.length == 0) { name = '<i>' + "Aucun" + '</i>'; }
+                if (name.length == 0) { name = '<i>' + "なし" + '</i>'; }
 
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
@@ -1732,8 +1732,8 @@
                             r += '<div><div colspan=3 class=DevSt><span style=float:right>';
                             //r += getMeshActions(mesh, meshrights);
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
-                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "No Intel&reg; AMT devices in this group"; }
-                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>' + "Aucun appareil dans ce groupe"; }
+                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "Intel＆reg;なしこのグループのAMTデバイス"; }
+                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>' + "このグループにデバイスはありません"; }
                             r += '.</i></div></div>';
                             current = mesh._id;
                             count++;
@@ -1743,7 +1743,7 @@
             }
 
             if (count == 0) {
-                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "Aucun appareil" + '</span><br /><br />' + "Utilisez la version complète de ce site pour ajouter des appareils." + '</div>');
+                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "デバイスなし" + '</span><br /><br />' + "このWebサイトのデスクトップバージョンを使用して、デバイスを追加します。" + '</div>');
             } else {
                 QH('xdevices', r);
             }
@@ -1752,18 +1752,18 @@
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
         }
 
-        var powerStatetable = ['', "Alimenté", "Endormir", "Endormir", "Endormir", "Hibernation", "Éteindre", "Présent"];
-        var powerStateStrings = ['', "Alimenté", "Dormir", "Dormir", "Deep Sleep", "Hibernation", "Soft-Off", "Présent"];
-        var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined"];
+        var powerStatetable = ['', "パワード", "睡眠", "睡眠", "睡眠", "冬眠", "電源を切る", "プレゼント"];
+        var powerStateStrings = ['', "パワード", "睡眠", "睡眠", "深い眠り", "冬眠", "ソフトオフ", "プレゼント"];
+        var powerStateStrings2 = ['', "デバイスに電源が入っています", "デバイスはスリープ状態です（S1）", "デバイスはスリープ状態です（S2）", "デバイスはディープスリープ状態です（S3）", "デバイスは休止状態です（S4）", "デバイスはソフトオフ状態です（S5）", "デバイスは存在しますが、電源状態を判別できません"];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
         function NodeStateStr(node) {
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { states.push('<span>' + "Agent" + '</span>'); }
+                if ((node.conn & 1) != 0) { states.push('<span>' + "エージェント" + '</span>'); }
                 if ((node.conn & 2) != 0) { states.push('<span>' + "CIRA" + '</span>'); }
-                else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel&reg; AMT" + '</span>'); }
-                if ((node.conn & 8) != 0) { states.push('<span>' + "Relay" + '</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel＆reg; AMT" + '</span>'); }
+                if ((node.conn & 8) != 0) { states.push('<span>' + "リレー" + '</span>'); }
                 if ((node.conn & 16) != 0) { states.push('<span>' + "MQTT" + '</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
@@ -1777,7 +1777,7 @@
 
         function PowerStateStr2(x) {
             if ((x != 0) && (x < powerStatetable.length)) return powerStatetable[x];
-            return "Inconnue";
+            return "未知の";
         }
 
         function onSortSelectChange(skipsave) {
@@ -1788,7 +1788,7 @@
 
         function deviceHeaderSet() {
             if (deviceHeaderId == 0) { deviceHeaderId = 1; return; }
-            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " nœud" : " noeuds");
+            deviceHeaders['DevxHeader' + deviceHeaderId] = ', ' + deviceHeaderTotal + ((deviceHeaderTotal == 1) ? " ノード" : " ノード");
             var title = '';
             for (var x in deviceHeaderCount) { if (title.length > 0) title += ', '; title += deviceHeaderCount[x] + ' ' + PowerStateStr2(x); }
             deviceHeadersTitles['DevxHeader' + deviceHeaderId] = title;
@@ -1826,10 +1826,10 @@
         function gotoDevice(nodeid, panel, refresh) {
 
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" to change and verify an email address."); return; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "アカウントのセキュリティ", 1, null, "メールアドレスが確認されるまでデバイスにアクセスできません。これはパスワードの回復に必要です。 「マイアカウント」に移動して、メールアドレスを変更および確認します。"); return; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "アカウントのセキュリティ", 1, null, "二要素認証が有効になるまでデバイスにアクセスできません。これは、追加のセキュリティのために必要です。 「マイアカウント」に移動して、「アカウントセキュリティ」セクションを確認します。"); return; }
 
             var node = getNodeFromId(nodeid);
             if (node == null) { goBack(); return; }
@@ -1841,7 +1841,7 @@
 
                 // Add node name
                 var nname = EscapeHtml(node.name);
-                if (nname.length == 0) { nname = '<i>' + "Aucun" + '</i>'; }
+                if (nname.length == 0) { nname = '<i>' + "なし" + '</i>'; }
                 if ((meshrights & 4) != 0) { nname = '<span onclick=showEditNodeValueDialog(0) style=cursor:pointer>' + nname + '</span>'; }
                 QH('p10deviceName', nname);
 
@@ -1849,49 +1849,49 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span>' + "Groupe" + '</span>', '<a onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                x += addDeviceAttribute('<span>' + "グループ" + '</span>', '<a onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
-                if (node.rname != null) { x += addDeviceAttribute('<span>' + "Nom" + '</span>', '<span>' + EscapeHtml(node.rname) + '</span>'); }
+                if (node.rname != null) { x += addDeviceAttribute('<span>' + "名" + '</span>', '<span>' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
                 if ((mesh.mtype == 1) || (node.name != node.host)) {
                     if ((meshrights & 4) != 0) {
                         if (node.host) {
-                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
+                            x += addDeviceAttribute("ホスト名", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
                         } else {
-                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>' + "Aucun" + '</i></span>');
+                            x += addDeviceAttribute("ホスト名", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>' + "なし" + '</i></span>');
                         }
                     } else {
-                        x += addDeviceAttribute("Hostname", EscapeHtml(node.host));
+                        x += addDeviceAttribute("ホスト名", EscapeHtml(node.host));
                     }
                 }
 
                 // Attribute: Description
-                var description = node.desc ? EscapeHtml(node.desc) : '<i>' + "Aucun" + '</i>';
+                var description = node.desc ? EscapeHtml(node.desc) : '<i>' + "なし" + '</i>';
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
+                    x += addDeviceAttribute("説明", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + '</span>');
                 } else {
-                    x += addDeviceAttribute("Description", description);
+                    x += addDeviceAttribute("説明", description);
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ["Inconnue", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Inconnue", "Inconnue", "FreeBSD x86-64"];
+                var agentsStr = ["未知の", "Windows 32ビットコンソール", "Windows 64ビットコンソール", "Windows 32ビットサービス", "Windows 64ビットサービス", "Linux 32ビット", "Linux 64ビット", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32ビット", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64ビット", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64ビット", "Windows MinCoreコンソール", "Windows MinCoreサービス", "NodeJS", "ARM-リナロ", "ARMv6l / ARMv7l", "ARMv8 64ビット", "ARMv6l / ARMv7l / NoKVM", "未知の", "未知の", "FreeBSD x86-64"];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    x += addDeviceAttribute("Agent", str);
+                    x += addDeviceAttribute("エージェント", str);
                 }
 
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
                     var str = '';
-                    var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activé") };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Etat inconnu") + '</i>, v' + node.intelamt.ver; } else
+                    var provisioningStates = { 0: nobreak("アクティブ化されていない（前）"), 1: nobreak("アクティブ化されていない（イン）"), 2: nobreak("有効化") };
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("不明な状態") + '</i>, v' + node.intelamt.ver; } else
 
-                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activé" + '</i>'; }
-                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Version et état inconnus" + '</i>'; }
+                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "有効化" + '</i>'; }
+                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "不明なバージョンと状態" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
                             if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span>' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str = ' <span>' + "ACM" + '</span>'; } }
@@ -1902,9 +1902,9 @@
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
-                                str += ', <i style=color:#FF0000;cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>' + nobreak("No Credentials") + '</i>';
+                                str += ', <i style=color:#FF0000;cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>' + nobreak("資格情報なし") + '</i>';
                             } else {
-                                str += ', <i style=color:#FF0000>' + "No Credentials" + '</i>';
+                                str += ', <i style=color:#FF0000>' + "資格情報なし" + '</i>';
                             }
                         }
                         str += ' ';
@@ -1913,10 +1913,10 @@
                         }
                     }
 
-                    var meName = "Intel&reg; ME";
+                    var meName = "Intel＆reg;私";
                     if (typeof node.intelamt.sku == 'number') {
-                        if ((node.intelamt.sku & 8) != 0) { meName = "Intel&reg; AMT"; }
-                        else if ((node.intelamt.sku & 16) != 0) { meName = "Intel&reg; SM"; }
+                        if ((node.intelamt.sku & 8) != 0) { meName = "Intel＆reg; AMT"; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = "Intel＆reg; SM"; }
                     }
                     x += addDeviceAttribute(meName, str);
                 }
@@ -1925,7 +1925,7 @@
                 if ((node.agent != null) && (node.agent.tag != null) && (node.agent.tag != 'mailto:')) {
                     var tag = EscapeHtml(node.agent.tag);
                     if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
-                    x += addDeviceAttribute("Agent Tag", tag);
+                    x += addDeviceAttribute("エージェントタグ", tag);
                 }
 
                 // Attribute: Intel AMT
@@ -1935,21 +1935,21 @@
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
-                    if ((node.conn & 1) != 0) cstate.push('<span>' + "Agent" + '</span>');
-                    if ((node.conn & 2) != 0) cstate.push('<span>' + "Intel&reg; AMT CIRA" + '</span>');
-                    else if ((node.conn & 4) != 0) cstate.push('<span>' + "Intel&reg; AMT" + '</span>');
-                    if ((node.conn & 8) != 0) cstate.push('<span>' + "Agent Relay" + '</span>');
+                    if ((node.conn & 1) != 0) cstate.push('<span>' + "エージェント" + '</span>');
+                    if ((node.conn & 2) != 0) cstate.push('<span>' + "Intel＆reg; AMT CIRA" + '</span>');
+                    else if ((node.conn & 4) != 0) cstate.push('<span>' + "Intel＆reg; AMT" + '</span>');
+                    if ((node.conn & 8) != 0) cstate.push('<span>' + "エージェントリレー" + '</span>');
                     if ((node.conn & 16) != 0) cstate.push('<span>' + "MQTT" + '</span>');
-                    x += addDeviceAttribute("Connectivity", cstate.join(', '));
+                    x += addDeviceAttribute("接続性", cstate.join(', '));
                 }
 
                 // Node tags
-                var groupingTags = '<i>' + "Aucun" + '</i>';
+                var groupingTags = '<i>' + "なし" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
+                    x += addDeviceAttribute("タグ", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
                 } else {
-                    x += addDeviceAttribute("Tags", groupingTags);
+                    x += addDeviceAttribute("タグ", groupingTags);
                 }
 
                 x += '</table><br />';
@@ -1965,7 +1965,7 @@
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small;margin-right:10px>';
-                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>' + "Delete Device" + '</a>';
+                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>' + "デバイスを削除" + '</a>';
                 x += '</div><div style=font-size:x-small>';
                 //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
                 //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
@@ -1976,10 +1976,10 @@
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Mesh Agent" + '</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT connected" + '</span>'; }
-                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT detected" + '</span>'; }
-                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px>' + "MQTT channel connected" + '</span>'; }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "メッシュエージェント" + '</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel＆reg;接続されたAMT" + '</span>'; }
+                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel＆reg; AMTが検出されました" + '</span>'; }
+                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px>' + "MQTTチャネルが接続されました" + '</span>'; }
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
@@ -1998,7 +1998,7 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Device Toast", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
+            setDialogMode(2, "デバイストースト", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
         }
 
         function deviceToastFunctionEx() {
@@ -2026,13 +2026,13 @@
         function deviceActionFunction() {
             if (xxdialogMode) return;
             var meshrights = meshes[currentNode.meshid].links[userinfo._id].rights;
-            var x = "Select an operation to perform on this device." + '<br /><br />';
+            var x = "このデバイスで実行する操作を選択します。" + '<br /><br />';
             var y = '<select id=d2deviceop style=float:right;width:170px>';
-            if ((meshrights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
-            if ((meshrights & 8) != 0) { y += '<option value=4>' + "Endormir" + '</option><option value=3>' + "Réinitialiser" + '</option><option value=2>' + "Éteindre" + '</option>'; } // Remote control permission
+            if ((meshrights & 64) != 0) { y += '<option value=100>' + "目を覚ます" + '</option>'; } // Wake-up permission
+            if ((meshrights & 8) != 0) { y += '<option value=4>' + "睡眠" + '</option><option value=3>' + "リセットする" + '</option><option value=2>' + "電源を切る" + '</option>'; } // Remote control permission
             y += '</select>';
-            x += addHtmlValue("Opération", y);
-            setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
+            x += addHtmlValue("操作", y);
+            setDialogMode(2, "デバイスアクション", 3, deviceActionFunctionEx, x);
         }
 
         function deviceActionFunctionEx() {
@@ -2117,11 +2117,11 @@
             if (xxdialogMode) return;
             var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = getNodeRights(nodeid);
             if ((meshrights & 4) == 0) return;
-            x += addHtmlValue("Nom d'utilisateur", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue("Mot de passe", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue("Sécurité", '<select id=dp10tls style=width:176px><option value=0>' + "Pas de sécurité TLS" + '</option><option value=1>' + "Sécurité TLS requise" + '</option></select>');
+            x += addHtmlValue("ユーザー名", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue("パスワード", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
+            x += addHtmlValue("セキュリティ", '<select id=dp10tls style=width:176px><option value=0>' + "TLSセキュリティなし" + '</option><option value=1>' + "TLSセキュリティが必要" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
-            setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
+            setDialogMode(2, "Intelを編集＆reg; AMTクレデンシャル", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             Q('dp10tls').value = node.intelamt.tls;
             validateDeviceAmtSettings();
@@ -2150,7 +2150,7 @@
 
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, format("Delete {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm", nodeid);
+            setDialogMode(2, "ノードを削除", 3, p10showDeleteNodeDialogEx, format("{0}を削除しますか？", EscapeHtml(currentNode.name)) + '<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "確認する", nodeid);
             p10validateDeleteNodeDialog();
         }
 
@@ -2175,7 +2175,7 @@
             x += '<div style=display:inline-block class=i4 onclick=p10setIcon(4)></div>';
             x += '<div style=display:inline-block class=i5 onclick=p10setIcon(5)></div>';
             x += '<div style=display:inline-block class=i6 onclick=p10setIcon(6)></div></table>';
-            setDialogMode(2, "Sélection de l'icôn", 0, null, x);
+            setDialogMode(2, "アイコンの選択", 0, null, x);
             QV('id_dialogclose', true);
         }
 
@@ -2184,13 +2184,13 @@
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
-        var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
+        var showEditNodeValueDialog_modes = ["装置名", "ホスト名", "説明", "タグ"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
-        var showEditNodeValueDialog_modes3 = ['', '', '', "Groupe1, Groupe2, Groupe3"];
+        var showEditNodeValueDialog_modes3 = ['', '', '', "Group1、Group2、Group3"];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
             var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue style=width:170px maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
-            setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
+            setDialogMode(2, "デバイスを編集", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
             if (Array.isArray(v)) { v = v.join(', '); }
@@ -2326,7 +2326,7 @@
             var xstate = state;
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
-            if ((desktop != null) && (desktop.webRtcActive == true)) { str += ", WebRTC"; }
+            if ((desktop != null) && (desktop.webRtcActive == true)) { str += "、WebRTC"; }
             //if (desktop.m.stopInput == true) { str += ', Loopback'; }
             QH('deskstatus', str);
             switch (state) {
@@ -2352,7 +2352,7 @@
             if (xxdialogMode) return;
             applyDesktopSettings();
             updateDesktopButtons();
-            setDialogMode(7, "Paramètres du bureau à distance", 3, showDesktopSettingsChanged);
+            setDialogMode(7, "リモートデスクトップ設定", 3, showDesktopSettingsChanged);
         }
 
         function showDesktopSettingsChanged() {
@@ -2515,7 +2515,7 @@
 
         function sendSpecialKeys() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            setDialogMode(3, "Special Keys", 3, deskSendKeys);
+            setDialogMode(3, "特別なキー", 3, deskSendKeys);
         }
 
         // Send CTRL-ALT-DEL
@@ -2592,7 +2592,7 @@
         function deskSetDisplay(e) {
             setSessionActivity();
             var display = 0, txt = Q('termdisplays').value;
-            if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
+            if (txt == "すべてのディスプレイ") display = 65535; else display = parseInt(txt.substring(8));
             desktop.m.SetDisplay(display);
         }
 
@@ -2601,7 +2601,7 @@
         function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousemove(e) }
         function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
+        function stopProcess(id, name) { setDialogMode(2, "プロセス制御", 3, stopProcessEx, format("プロセス＃{0} \"{1} \"を停止しますか？", id, name), id); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
@@ -2620,9 +2620,9 @@
 
         function onFilesStateChange(xfiles, state) {
             setSessionActivity();
-            p13Connect.value = (state == 0) ? "Connect" : "Disconnect";
+            p13Connect.value = (state == 0) ? "つなぐ" : "切断する";
             var str = StatusStrs[state];
-            if (files.webRtcActive == true) { str += ", WebRTC"; }
+            if (files.webRtcActive == true) { str += "、WebRTC"; }
             Q('p13Status').textContent = str;
             switch (state) {
                 case 0:
@@ -2712,7 +2712,7 @@
         }
 
         function p13updateFiles(checkedNames) {
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>' + "Racine" + '</a>', fullPath = 'Root';
+            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer onclick=p13folderup(0)>' + "ルート" + '</a>', fullPath = 'Root';
 
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
@@ -2795,7 +2795,7 @@
                 QE('p13UploadButton', false);
                 QE('p13RenameFileButton', false);
                 QE('p13SelectAllButton', false);
-                Q('p13SelectAllButton').value = "Tout";
+                Q('p13SelectAllButton').value = "すべて";
                 QE('p13RefreshButton', false);
                 QE('p13CutButton', false);
                 QE('p13CopyButton', false);
@@ -2808,7 +2808,7 @@
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
-                Q('p13SelectAllButton').value = (cc > 0 ? "Aucun" : "Tout");
+                Q('p13SelectAllButton').value = (cc > 0 ? "なし" : "すべて");
                 QE('p13RefreshButton', true);
                 QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -2820,14 +2820,14 @@
         function p13getFileSelDirCount() { var cc = 0, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '999')) cc++; } return cc; }
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
-        function p13createfolder() { setDialogMode(2, "Nouveau Dossier", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13createfolder() { setDialogMode(2, "新しいフォルダ", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Suppression récursive" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "再帰削除" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "削除する", 3, p13deletefileEx, (cc > 1) ? (format("選択したアイテム{0}を削除しますか？", cc) + rec) : ("選択したアイテムを削除しますか？" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
-        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Renommer", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "リネーム", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
-        function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
+        function p13uploadFile() { setDialogMode(2, "ファイルをアップロードする", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
         function p13viewfile() {
             var checkboxes = document.getElementsByName('fd');
@@ -2835,7 +2835,7 @@
                 if (checkboxes[i].checked) {
                     if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
                         p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponent(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
-                    } else { messagebox("Éditeur de fichier", "Only files less than 200k can be edited."); }
+                    } else { messagebox("ファイルエディター", "編集できるのは200k未満のファイルのみです。"); }
                     break;
                 }
             }
@@ -2847,12 +2847,12 @@
             var x = '';
             if ((p13clipboard != null) && (p13clipboard.length > 0)) {
                 if (p13clipboardCut == 0) {
-                    if (p13clipboard.length > 1) { x = format("Confirm copy of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm copy of 1 entrie to this location?"); }
+                    if (p13clipboard.length > 1) { x = format("{0}エントリのコピーをこの場所に確認しますか？", p13clipboard.length); } else { x = format("この場所への1つのエントリのコピーを確認しますか？"); }
                 } else {
-                    if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
+                    if (p13clipboard.length > 1) { x = format("{0}エントリのこの場所への移動を確認しますか？", p13clipboard.length); } else { x = format("1エントリのこの場所への移動を確認しますか？"); }
                 }
             }
-            setDialogMode(2, "Coller", 3, p13pasteFileEx, x);
+            setDialogMode(2, "ペースト", 3, p13pasteFileEx, x);
         }
         function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
         function p13updateClipview() {
@@ -2860,15 +2860,15 @@
             if ((p13clipboard != null) && (p13clipboard.length > 0)) {
                 if (p13clipboardCut == 0) {
                     if (p13clipboard.length > 1) {
-                        x = format("Holding {0} entries for copy" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.', p13clipboard.length);
+                        x = format("コピー用に{0}エントリを保持しています" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "クリア" + '</a>.', p13clipboard.length);
                     } else {
-                        x = format("Holding 1 entrie for copy" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.');
+                        x = format("コピー用に1つのエントリを保持" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "クリア" + '</a>.');
                     }
                 } else {
                     if (p13clipboard.length > 1) {
-                        x = format("Holding {0} entries for move" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.', p13clipboard.length);
+                        x = format("移動のために{0}エントリを保持しています" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "クリア" + '</a>.', p13clipboard.length);
                     } else {
-                        x = format("Holding 1 entrie for move" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "Clear" + '</a>.');
+                        x = format("移動のために1つのエントリを保持" + ', <a href=# onclick="return p13clearClip()" style=cursor:pointer>' + "クリア" + '</a>.');
                     }
                 }
             }
@@ -2891,7 +2891,7 @@
             downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
             //console.log('p13downloadFileCancel', downloadFile);
             files.sendText({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path });
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            setDialogMode(2, "ダウンロードファイル", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
         }
 
         // Called by the html page to cancel the download
@@ -2993,7 +2993,7 @@
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
             uploadFile.xfilePtr = -1;
-            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            setDialogMode(2, "ファイルをアップロードする", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "接続しています..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
             p13uploadReconnect();
         }
 
@@ -3093,22 +3093,22 @@
         function p20updateMesh() {
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
-            var meshtype = format(" #{0} Inconnue", currentMesh.mtype);
+            var meshtype = format("不明な＃{0}", currentMesh.mtype);
             var meshrights = currentMesh.links[userinfo._id].rights;
-            if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
-            if (currentMesh.mtype == 2) meshtype = "Géré à l'aide d'un agent logiciel";
+            if (currentMesh.mtype == 1) meshtype = "Intel＆reg; AMTのみ、エージェントなし";
+            if (currentMesh.mtype == 2) meshtype = "ソフトウェアエージェントを使用して管理";
 
             var x = '';
-            x += addHtmlValue("Nom", addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
-            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "Aucun" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
-            x += addHtmlValue("Type", meshtype);
+            x += addHtmlValue("名", addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
+            x += addHtmlValue("説明", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "なし" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            x += addHtmlValue("タイプ", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
             //x += '<br><input type=button value=Notes onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Ajouter un utilisateur" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " ユーザーを追加する" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
@@ -3137,7 +3137,7 @@
             }
             */
 
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Authorizations" + '</th></tr>';
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "ユーザー認証" + '</th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -3146,8 +3146,8 @@
 
             // Display all users for this mesh
             for (var i in sortedusers) {
-                var trash = '', rights = "Partial Rights", r = sortedusers[i].rights;
-                if (r == 0xFFFFFFFF) rights = "Administrateur Complet"; else if (r == 0) rights = "No Rights";
+                var trash = '', rights = "部分的権利", r = sortedusers[i].rights;
+                if (r == 0xFFFFFFFF) rights = "完全な管理者"; else if (r == 0) rights = "権利なし";
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
                 x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
@@ -3158,16 +3158,16 @@
             x += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right;margin-top:6px><span><a onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "グループを削除" + '</a></span></div>'; }
 
             QH('p20info', x);
         }
 
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return false;
-            var x = format("Êtes-vous sûr de vouloir supprimer le groupe {0}? La suppression du groupe de périphériques supprimera également toutes les informations relatives aux périphériques de ce groupe.", EscapeHtml(currentMesh.name)) + '<br /><br />';
-            x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
+            var x = format("グループ{0}を削除してもよろしいですか？デバイスグループを削除すると、このグループ内のデバイスに関するすべての情報も削除されます。", EscapeHtml(currentMesh.name)) + '<br /><br />';
+            x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "確認する" + '</label>';
+            setDialogMode(2, "グループを削除", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
             return false;
         }
@@ -3182,9 +3182,9 @@
 
         function p20editmesh(focus) {
             if (xxdialogMode) return;
-            var x = addHtmlValue("Nom", '<input id=dp20meshname style=width:170px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
-            x += addHtmlValue("Description", '<input id=dp20meshdesc style=width:170px maxlength=1024 onkeyup=p20editmeshValidate() />');
-            setDialogMode(2, "Edit Device Group", 3, p20editmeshEx, x);
+            var x = addHtmlValue("名", '<input id=dp20meshname style=width:170px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate() />');
+            x += addHtmlValue("説明", '<input id=dp20meshdesc style=width:170px maxlength=1024 onkeyup=p20editmeshValidate() />');
+            setDialogMode(2, "デバイスグループの編集", 3, p20editmeshEx, x);
             Q('dp20meshname').value = currentMesh.name;
             if (currentMesh.desc) Q('dp20meshdesc').value = currentMesh.desc;
             p20editmeshValidate();
@@ -3203,25 +3203,25 @@
             if (xxdialogMode) return;
             var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<div style="border:2px groove gray;background-color:white;max-height:120px;overflow-y:scroll">';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Administrateur Complet" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Télécommande" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "Pas d'accès au fichier" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "Wake Devices" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "完全な管理者" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "デバイスグループの編集" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "デバイスグループユーザーの管理" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "デバイスグループコンピューターの管理" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "リモコン" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "リモートビューのみ" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "限定入力のみ" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "ターミナルアクセスなし" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "ファイルアクセスなし" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "Intel＆reg;なしAMT" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "メッシュエージェントコンソール" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "サーバーファイル" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "ウェイクデバイス" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "デバイスノートの編集" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "自分のイベントのみを表示" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "チャットと通知" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "エージェントのアンインストール" + '</label><br>';
             x += '</div>';
-            setDialogMode(2, "Ajouter un utilisateur au groupe", 3, p20showAddMeshUserDialogEx, x);
+            setDialogMode(2, "メッシュにユーザーを追加", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
             Q('dp20username').focus();
         }
@@ -3277,32 +3277,32 @@
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
             var r = [], cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
-            if (meshrights == 0xFFFFFFFF) r.push("Administrateur Complet"); else {
-                if ((meshrights & 1) != 0) r.push("Edit Device Group");
-                if ((meshrights & 2) != 0) r.push("Manage Device Group Users");
-                if ((meshrights & 4) != 0) r.push("Manage Device Group Computers");
-                if ((meshrights & 8) != 0) r.push("Télécommande");
-                if ((meshrights & 16) != 0) r.push("Agent Console");
-                if ((meshrights & 32) != 0) r.push("Server Files");
-                if ((meshrights & 64) != 0) r.push("Wake Devices");
-                if ((meshrights & 128) != 0) r.push("Modifier les notes");
-                if ((meshrights & 256) != 0) r.push("Remote View Only");
-                if ((meshrights & 512) != 0) r.push("No Terminal");
-                if ((meshrights & 1024) != 0) r.push("Aucun fichier");
-                if ((meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
-                if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
-                if ((meshrights & 8192) != 0) r.push("Self Events Only");
-                if ((meshrights & 16384) != 0) r.push("Chat & Notify");
-                if ((meshrights & 32768) != 0) r.push("Uninstall");
+            if (meshrights == 0xFFFFFFFF) r.push("完全な管理者"); else {
+                if ((meshrights & 1) != 0) r.push("デバイスグループの編集");
+                if ((meshrights & 2) != 0) r.push("デバイスグループユーザーの管理");
+                if ((meshrights & 4) != 0) r.push("デバイスグループコンピューターの管理");
+                if ((meshrights & 8) != 0) r.push("リモコン");
+                if ((meshrights & 16) != 0) r.push("エージェントコンソール");
+                if ((meshrights & 32) != 0) r.push("サーバーファイル");
+                if ((meshrights & 64) != 0) r.push("ウェイクデバイス");
+                if ((meshrights & 128) != 0) r.push("メモを編集");
+                if ((meshrights & 256) != 0) r.push("リモートビューのみ");
+                if ((meshrights & 512) != 0) r.push("ターミナルなし");
+                if ((meshrights & 1024) != 0) r.push("ファイルなし");
+                if ((meshrights & 2048) != 0) r.push("Intel＆reg;なしAMT");
+                if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("制限された入力");
+                if ((meshrights & 8192) != 0) r.push("自己イベントのみ");
+                if ((meshrights & 16384) != 0) r.push("チャットと通知");
+                if ((meshrights & 32768) != 0) r.push("アンインストール");
             }
-            if (r.length == 0) { r.push("No Rights"); }
-            var buttons = 1, x = addHtmlValue("Utilisateur", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
-            x += addHtmlValue("Permissions", r.join(", "));
+            if (r.length == 0) { r.push("権利なし"); }
+            var buttons = 1, x = addHtmlValue("ユーザー", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
+            x += addHtmlValue("許可", r.join("、"));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
-            setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
+            setDialogMode(2, "デバイスグループユーザー", buttons, p20viewuserEx, x, userid);
         }
 
-        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, format("Confirm removal of user {0}?", userid.split('/')[2]), userid); }
+        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "リモートメッシュユーザー", 3, p20viewuserEx2, format("ユーザー{0}の削除を確認しますか？", userid.split('/')[2]), userid); }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
 
@@ -3375,7 +3375,7 @@
         function addLink(x, f) { return '<a style=cursor:pointer;color:darkblue;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
-        function getFileSizeStr(size) { if (size == 1) return "1 octet"; return format('{0} bytes', size); }
+        function getFileSizeStr(size) { if (size == 1) return "1バイト"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
