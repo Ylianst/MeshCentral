@@ -285,7 +285,7 @@ function fromtext(source, target, lang) {
     var splitOutput = [];
     for (var i in sourceLangFileData.strings) {
         if ((sourceLangFileData.strings[i]['en'] != null) && (sourceLangFileData.strings[i]['en'].indexOf('\r') == -1) && (sourceLangFileData.strings[i]['en'].indexOf('\n') == -1)) {
-            sourceLangFileData.strings[i][lang] = rawTextArray[i];
+            if (sourceLangFileData.strings[i][lang] == null) { sourceLangFileData.strings[i][lang] = rawTextArray[i]; }
         }
     }
 
@@ -313,7 +313,7 @@ function merge(source, target, lang) {
     // Merge the translation
     for (var i in sourceLangFileData.strings) {
         if ((sourceLangFileData.strings[i].en != null) && (sourceLangFileData.strings[i][lang] != null) && (index[sourceLangFileData.strings[i].en] != null)) {
-            index[sourceLangFileData.strings[i].en][lang] = sourceLangFileData.strings[i][lang];
+            if (sourceLangFileData.strings[i][lang] == null) { index[sourceLangFileData.strings[i].en][lang] = sourceLangFileData.strings[i][lang]; }
         }
     }
 

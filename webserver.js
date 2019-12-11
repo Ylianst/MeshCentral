@@ -3716,7 +3716,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Start the ExpressJS web server
     function StartWebServer(port) {
-        if (port == 0 || port == 65535) return;
+        if ((port < 1) || (port > 65535)) return;
         obj.args.port = port;
         if (obj.tlsServer != null) {
             if (obj.args.lanonly == true) {
@@ -3731,6 +3731,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             obj.parent.updateServerState('http-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-aliasport', args.aliasport); }
+        }
+
+        // Check if there is a permissions problem with the ports.
+        if (require('os').platform() != 'win32') {
+            var expectedPort = obj.parent.config.settings.port ? obj.parent.config.settings.port : 443;
+            if ((expectedPort != port) && (port >= 1024) && (port < 1034)) {
+                console.log('');
+                console.log('WARNING: MeshCentral is running without permissions to use ports below 1025.');
+                console.log('         Use setcap to grant access to lower ports, or read installation guide.');
+                console.log('');
+                console.log('   sudo setcap \'cap_net_bind_service= +ep\' `which node` \r\n');
+                obj.parent.addServerWarning('Server running without permissions to use ports below 1025.', false);
+            }
         }
     }
 

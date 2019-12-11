@@ -1979,7 +1979,8 @@ function CreateMeshCentralServer(config, args) {
     function logInfoEvent(msg) { if (obj.servicelog != null) { obj.servicelog.info(msg); } console.log(msg); }
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
-    obj.getServerWarnings = function() { return serverWarnings; }
+    obj.getServerWarnings = function () { return serverWarnings; }
+    obj.addServerWarning = function(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // Return the path of a file into the meshcentral-data path
     obj.getConfigFilePath = function (filename) {
