@@ -56,8 +56,8 @@
     <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>管理シェル</b></div>
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(6,event)">管理者PowerShell</div>
-        <div id="cxtermunorm" class="cmtext" style="display:none" onclick="cmtermaction(8,event)">ユーザーシェル</div>
-        <div id="cxtermups" class="cmtext" style="display:none" onclick="cmtermaction(9,event)">ユーザーPowerShell</div>
+        <div id="cxtermunorm" class="cmtext" onclick="cmtermaction(8,event)">ユーザーシェル</div>
+        <div id="cxtermups" class="cmtext" onclick="cmtermaction(9,event)">ユーザーPowerShell</div>
     </div>
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>ルートシェル</b></div>
@@ -1103,10 +1103,6 @@
 
             if (nightMode) { QC('body').add('night'); }
             toggleFullScreen();
-
-            // Debug
-            QV('cxtermunorm', debugmode == 1);
-            QV('cxtermups', debugmode == 1);
 
             // Setup page visuals
             if (args.hide) {

@@ -313,7 +313,9 @@ function merge(source, target, lang) {
     // Merge the translation
     for (var i in sourceLangFileData.strings) {
         if ((sourceLangFileData.strings[i].en != null) && (sourceLangFileData.strings[i][lang] != null) && (index[sourceLangFileData.strings[i].en] != null)) {
-            if (sourceLangFileData.strings[i][lang] == null) { index[sourceLangFileData.strings[i].en][lang] = sourceLangFileData.strings[i][lang]; }
+            //if (sourceLangFileData.strings[i][lang] == null) {
+                index[sourceLangFileData.strings[i].en][lang] = sourceLangFileData.strings[i][lang];
+            //}
         }
     }
 
