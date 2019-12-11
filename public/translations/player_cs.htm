@@ -19,7 +19,7 @@
         <div id="deskarea0">
             <div id="deskarea1" class="areaHead">
                 <div class="toright2">
-                    <div class="deskareaicon" title="Toggle View Mode" onclick="toggleAspectRatio(1)">⇲</div>
+                    <div class="deskareaicon" title="Přepnout režim zobrazení" onclick="toggleAspectRatio(1)">⇲</div>
                 </div>
                 <div>
                     <input id="OpenFileButton" type="button" value="Otevřít soubor..." onclick="openfile()">
@@ -47,8 +47,8 @@
                 </div>
                 <div>
                     &nbsp;
-                    <input id="PlayButton" type="button" value="Play" disabled="disabled" onclick="play()">
-                    <input id="PauseButton" type="button" value="Pause" disabled="disabled" onclick="pause()">
+                    <input id="PlayButton" type="button" value="Spustit" disabled="disabled" onclick="play()">
+                    <input id="PauseButton" type="button" value="Pauza" disabled="disabled" onclick="pause()">
                     <input id="RestartButton" type="button" value="Restart" disabled="disabled" onclick="restart()">
                     <select id="PlaySpeed" onchange="this.blur();">
                         <option value="4">1/4 rychlost</option>
@@ -163,20 +163,20 @@
             try { recFileMetadata = JSON.parse(data) } catch (ex) { cleanup(); return; }
             if ((recFileMetadata == null) || (recFileMetadata.magic != 'MeshCentralRelaySession') || (recFileMetadata.ver != 1)) { cleanup(); return; }
             var x = '';
-            x += addInfo("Time", recFileMetadata.time);
-            if (recFileEndTime != 0) { var secs = Math.floor((recFileEndTime - time) / 1000); x += addInfo("Duration", format("{0} second{1}", secs, (secs > 1) ? 's' : '')); }
+            x += addInfo("Čas", recFileMetadata.time);
+            if (recFileEndTime != 0) { var secs = Math.floor((recFileEndTime - time) / 1000); x += addInfo("Trvání", format("{0} sekund{1}", secs, (secs > 1) ? 's' : '')); }
             x += addInfo("Uživatel", recFileMetadata.username);
-            x += addInfo("UserID", recFileMetadata.userid);
+            x += addInfo("Uživatelské ID", recFileMetadata.userid);
             x += addInfo("SessionID", recFileMetadata.sessionid);
-            if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("Adresy", format("{0} to {1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
-            if (recFileMetadata.devicename) { x += addInfo("Device Name", recFileMetadata.devicename); }
+            if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("Adresy", format("{0} na {1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
+            if (recFileMetadata.devicename) { x += addInfo("Název zařízení", recFileMetadata.devicename); }
             x += addInfo("NodeID", recFileMetadata.nodeid);
             if (recFileMetadata.protocol) {
                 var p = recFileMetadata.protocol;
-                if (p == 1) { p = "MeshCentral Terminal"; }
-                else if (p == 2) { p = "MeshCentral Desktop"; }
+                if (p == 1) { p = "MeshCentral terminal"; }
+                else if (p == 2) { p = "MeshCentral plocha"; }
                 else if (p == 100) { p = "Intel&reg; AMT WSMAN"; }
-                else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
+                else if (p == 101) { p = "Intel&reg; AMT přesměrování"; }
                 x += addInfoNoEsc("Protokol", p);
             }
             QV('DeskParent', true);
@@ -184,7 +184,7 @@
             if (recFileMetadata.protocol == 1) {
                 // MeshCentral remote terminal
                 recFileProtocol = 1;
-                x += '<br /><br /><span style=color:gray>' + "Press [space] to play/pause." + '</span>';
+                x += '<br /><br /><span style=color:gray>' + "Zmáčkni [mezerník] pro spuštění/pauzu." + '</span>';
                 QE('PlayButton', true);
                 QE('PauseButton', false);
                 QE('RestartButton', false);
@@ -193,7 +193,7 @@
             else if (recFileMetadata.protocol == 2) {
                 // MeshCentral remote desktop
                 recFileProtocol = 2;
-                x += '<br /><br /><span style=color:gray>' + "Press [space] to play/pause." + '</span>';
+                x += '<br /><br /><span style=color:gray>' + "Zmáčkni [mezerník] pro spuštění/pauzu." + '</span>';
                 QE('PlayButton', true);
                 QE('PauseButton', false);
                 QE('RestartButton', false);
@@ -299,7 +299,7 @@
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
-            QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Drag & drop a .mcrec file or click \"Open File...\"" + '</span>');
+            QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Drag & drop soubor .mcrec nebo klikni na \"Otevřít soubor...\"" + '</span>');
             QV('DeskParent', true);
             QV('TermParent', false);
         }

@@ -58,7 +58,7 @@
                                             <td><input id="password" type="password" maxlength="256" name="password" autocomplete="off" onchange="validateLogin(2)" onkeyup="validateLogin(2,event)"></td>
                                         </tr>
                                         <tr>
-                                            <td><div id="showPassHintLink" style="display:none"><a onclick="showPassHint()" style="cursor:pointer">Show Hint</a></div></td>
+                                            <td><div id="showPassHintLink" style="display:none"><a onclick="showPassHint()" style="cursor:pointer">Zobrazit nápovědu</a></div></td>
                                             <td align="right"><input id="loginButton" type="submit" value="Přihlásit" disabled="disabled"></td>
                                         </tr>
                                     </tbody></table>
@@ -102,18 +102,18 @@
                                                 <td align="right">Nápověda k heslu:</td>
                                                 <td><input id="apasswordhint" type="text" name="apasswordhint" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validateCreate(5)" onkeyup="validateCreate(5,event)"></td>
                                             </tr>
-                                            <tr id="newAccountPass" title="Enter the account creation token">
-                                                <td align="right">Creation Token:</td>
+                                            <tr id="newAccountPass" title="Zadejte token pro vytvoření účtu">
+                                                <td align="right">Vytvoření tokenu:</td>
                                                 <td><input id="anewaccountpass" type="password" name="anewaccountpass" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validateCreate(6)" onkeyup="validateCreate(6,event)"></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="2">
-                                                    <div style="float:right"><input id="createButton" type="submit" value="Create Account" disabled="disabled"></div>
+                                                    <div style="float:right"><input id="createButton" type="submit" value="Vytvořit účet" disabled="disabled"></div>
                                                     <div id="passWarning" style="padding-top:6px"></div>
                                                 </td>
                                             </tr>
                                         </tbody></table>
-                                        <hr><a onclick="xgo(1)" style="cursor:pointer">Back to login</a>
+                                        <hr><a onclick="xgo(1)" style="cursor:pointer">Zpět na přihlášení</a>
                                         <input id="createformargs" name="urlargs" type="hidden" value="">
                                     </form>
                                 </div>
@@ -137,7 +137,7 @@
                                             </td>
                                         </tr>
                                     </tbody></table>
-                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Back to login</a>
+                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Zpět na přihlášení</a>
                                     <input id="resetformargs" name="urlargs" type="hidden" value="">
                                 </form>
                             </div>
@@ -148,7 +148,7 @@
                                     <div id="message4"></div>
                                     <table>
                                         <tbody><tr>
-                                            <td align="right" width="100">Login token:</td>
+                                            <td align="right" width="100">Přihlašovací token:</td>
                                             <td>
                                                 <input id="tokenInput" type="text" name="token" maxlength="50" onchange="checkToken(event)" onkeyup="checkToken(event)" onkeydown="checkToken(event)" onfocus="checkTokenTimer(1)" onblur="checkTokenTimer(0)">
                                                 <input id="hwtokenInput" type="text" name="hwtoken" style="display:none">
@@ -156,17 +156,17 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2" style="align-content:center">
-                                                <label><input id="tokenInputRemember" name="remembertoken" type="checkbox">Remember this device for 30 days.</label>
+                                                <label><input id="tokenInputRemember" name="remembertoken" type="checkbox">Zapamatovat toto zařízení 30 dní.</label>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <div style="float:right"><input id="tokenOkButton" type="submit" value="Login" disabled="disabled"></div>
-                                                <div style="float:right"><input style="display:none;float:right" id="securityKeyButton" type="button" value="Use Security Key" onclick="useSecurityKey()"></div>
+                                                <div style="float:right"><input id="tokenOkButton" type="submit" value="Přihlášení" disabled="disabled"></div>
+                                                <div style="float:right"><input style="display:none;float:right" id="securityKeyButton" type="button" value="Použít bezpečnostní klíč" onclick="useSecurityKey()"></div>
                                             </td>
                                         </tr>
                                     </tbody></table>
-                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Back to login</a>
+                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Zpět na přihlášení</a>
                                     <input id="tokenformargs" name="urlargs" type="hidden" value="">
                                 </form>
                             </div>
@@ -177,7 +177,7 @@
                                     <div id="message5"></div>
                                     <table>
                                         <tbody><tr>
-                                            <td align="right" width="100">Login token:</td>
+                                            <td align="right" width="100">Přihlašovací token:</td>
                                             <td>
                                                 <input id="resetTokenInput" type="text" name="token" maxlength="50" onchange="resetCheckToken(event)" onpaste="resetCheckToken(event)" onkeyup="resetCheckToken(event)" onkeydown="resetCheckToken(event)">
                                                 <input id="resetHwtokenInput" type="text" name="hwtoken" style="display:none">
@@ -185,11 +185,11 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <div style="float:right"><input id="resetTokenOkButton" type="submit" value="Login" disabled="disabled"></div>
+                                                <div style="float:right"><input id="resetTokenOkButton" type="submit" value="Přihlášení" disabled="disabled"></div>
                                             </td>
                                         </tr>
                                     </tbody></table>
-                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Back to login</a>
+                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Zpět na přihlášení</a>
                                     <input id="resettokenformargs" name="urlargs" type="hidden" value="">
                                 </form>
                             </div>
@@ -209,7 +209,7 @@
                                             <td><input id="rapassword2" type="password" name="rpassword2" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validatePassReset(4,event)" onkeyup="validatePassReset(4,event)"></td>
                                         </tr>
                                         <tr id="resetpasswordpanelHint" style="display:none">
-                                            <td id="rnuHint" align="right">Password Hint:</td>
+                                            <td id="rnuHint" align="right">Nápověda k heslu:</td>
                                             <td><input id="rapasswordhint" type="text" name="rpasswordhint" autocomplete="off" maxlength="256" onkeydown="haltReturn(event)" onchange="validatePassReset(5,event)" onkeyup="validatePassReset(5,event)"></td>
                                         </tr>
                                         <tr>
@@ -219,7 +219,7 @@
                                             </td>
                                         </tr>
                                     </tbody></table>
-                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Back to login</a>
+                                    <hr><a onclick="xgo(1)" style="cursor:pointer">Zpět na přihlášení</a>
                                     <input id="resetpasswordformargs" name="urlargs" type="hidden" value="">
                                 </form>
                             </div>
@@ -233,7 +233,7 @@
             <table cellpadding="0" cellspacing="6" style="width:100%">
                 <tbody><tr>
                     <td style="text-align:left;color:white">{{{footer}}}</td>
-                    <td style="text-align:right">{{{rootCertLink}}}&nbsp;<a href="terms">Terms &amp; Privacy</a></td>
+                    <td style="text-align:right">{{{rootCertLink}}}&nbsp;<a href="terms">Podmínky &amp; soukromí</a></td>
                 </tr>
             </tbody></table>
         </div>
@@ -274,8 +274,8 @@
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Hold on, reset mail sent."];
-        var failmessages = ["Unable to create account.", "Maximální počet účtů dosažen.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Účet nenalezen.", "Invalid token, try again.", "Unable to sent email.", "Účet uzamknut.", "Přístup zamítnut", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
+        var okmessages = ['', "Vydržte, email je na cestě."];
+        var failmessages = ["Nelze vytvořit účet.", "Maximální počet účtů dosažen.", "Existuje účet s tímto emailem.", "Neplatný token pro vytvoření účtu.", "Uživatel již existuje.", "Heslo odmítnuto, zkuste jiné.", "Neplatný email.", "Účet nenalezen.", "Neplatný token, zkuste znovu.", "Nelze poslat email.", "Účet uzamknut.", "Přístup zamítnut", "Neplatné přihlášení, zkontrolujte jméno a heslo.", "Vyžaduje se změna hesla.", "IP adresa blokována, zkuste to později."];
         if (messageid > 0) {
             var msg = '';
             if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }
@@ -394,7 +394,7 @@
         }
 
         function showPassHint() {
-            if (passRequirements.hint === true) { messagebox("Password Hint", passhint); }
+            if (passRequirements.hint === true) { messagebox("Nápověda k heslu", passhint); }
         }
 
         function xgo(x) {
@@ -456,7 +456,7 @@
                         ok = false;
                         //QS('nuPass1').color = '#7b241c';
                         //QS('nuPass2').color = '#7b241c';
-                        QH('passWarning', '<span style=color:red><b>' + "Password Policy" + '</b><span>'); // TODO: Display problem hint
+                        QH('passWarning', '<span style=color:red><b>' + "Politia hesla" + '</b><span>'); // TODO: Display problem hint
                         QV('passwordPolicyCallout', true);
                         QH('passwordPolicyCallout', passwordPolicyText(Q('apassword1').value));
                     } else {
@@ -504,7 +504,7 @@
                         ok = false;
                         QS('rnuPass1').color = '#7b241c';
                         QS('rnuPass2').color = '#7b241c';
-                        QH('rpassWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>' + "Password Policy" + '</b><div>'); // This is also a link to the password policy
+                        QH('rpassWarning', '<div style=color:red;cursor:pointer onclick=showPasswordPolicy()><b>' + "Politia hesla" + '</b><div>'); // This is also a link to the password policy
                         QV('rpasswordPolicyCallout', true);
                         QH('rpasswordPolicyCallout', passwordPolicyText(Q('rapassword1').value));
                     } else {
@@ -534,12 +534,12 @@
         function passwordPolicyText(pass) {
             var policy = '<div style=text-align:left>';
             var counts = strCount(pass);
-            if (passRequirements.min && ((pass == null) || (pass.length < passRequirements.min))) { policy += format("Minimum length of {0}", passRequirements.min) + '<br />'; }
-            if (passRequirements.max && ((pass == null) || (pass.length > passRequirements.max))) { policy += format("Maximum length of {0}", passRequirements.max) + '<br />'; }
-            if (passRequirements.upper && ((pass == null) || (counts.upper < passRequirements.upper))) { policy += format("{0} upper case", passRequirements.upper) + '<br />'; }
-            if (passRequirements.lower && ((pass == null) || (counts.lower < passRequirements.lower))) { policy += format("{0} lower case", passRequirements.lower) + '<br />'; }
-            if (passRequirements.numeric && ((pass == null) || (counts.numeric < passRequirements.numeric))) { policy += format("{0} numeric", passRequirements.numeric) + '<br />'; }
-            if (passRequirements.nonalpha && ((pass == null) || (counts.nonalpha < passRequirements.nonalpha))) { policy += format("{0} non-alphanumeric", passRequirements.nonalpha) + '<br />'; }
+            if (passRequirements.min && ((pass == null) || (pass.length < passRequirements.min))) { policy += format("Minimální délka {0}", passRequirements.min) + '<br />'; }
+            if (passRequirements.max && ((pass == null) || (pass.length > passRequirements.max))) { policy += format("Maximální délka {0}", passRequirements.max) + '<br />'; }
+            if (passRequirements.upper && ((pass == null) || (counts.upper < passRequirements.upper))) { policy += format("{0} velkých písmen", passRequirements.upper) + '<br />'; }
+            if (passRequirements.lower && ((pass == null) || (counts.lower < passRequirements.lower))) { policy += format("{0} malých písmen", passRequirements.lower) + '<br />'; }
+            if (passRequirements.numeric && ((pass == null) || (counts.numeric < passRequirements.numeric))) { policy += format("{0} čísel", passRequirements.numeric) + '<br />'; }
+            if (passRequirements.nonalpha && ((pass == null) || (counts.nonalpha < passRequirements.nonalpha))) { policy += format("{0} speciálních znaků", passRequirements.nonalpha) + '<br />'; }
             policy += '</div>';
             return policy;
         }

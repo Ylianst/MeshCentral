@@ -12,10 +12,10 @@
         <div id="xtop" style="position:absolute;left:0;right:0;top:0;height:38px;background-color:#036;color:#c8c8c8;box-shadow:3px 3px 10px gray">
             <div style="position:absolute;background-color:#036;right:0;height:38px">
                 <div id="notifyButton" class="icon13 topButton" style="margin-right:4px;display:none" title="Zapnout notifikace v prohlížeči" onclick="enableNotificationsButtonClick()"></div>
-                <div id="fileButton" class="icon4 topButton" title="Share a file" style="display:none" onclick="fileButtonClick()"></div>
+                <div id="fileButton" class="icon4 topButton" title="Sdílet soubor" style="display:none" onclick="fileButtonClick()"></div>
                 <div id="camButton" class="icon2 topButton" title="Aktivovat kameru &amp; mikrofon" style="display:none" onclick="camButtonClick()"></div>
                 <div id="micButton" class="icon6 topButton" title="Aktivovat mikrofon" style="display:none" onclick="micButtonClick()"></div>
-                <div id="hangupButton" class="icon11 topRedButton" title="Hang up" style="display:none" onclick="hangUpButtonClick(1)"></div>
+                <div id="hangupButton" class="icon11 topRedButton" title="Zavěsit" style="display:none" onclick="hangUpButtonClick(1)"></div>
             </div>
             <div style="padding-top:9px;padding-left:6px;font-size:20px;display:inline-block"><b><span id="xtitle">MeshMessenger</span></b></div>
         </div>
@@ -27,7 +27,7 @@
         <div id="xbottom" style="position:absolute;left:0;right:0;bottom:0px;height:30px;background-color:#036">
             <div style="position:absolute;left:5px;right:215px;bottom:4px;top:4px;background-color:aliceblue"><input id="xouttext" type="text" style="width:calc(100% - 5px)" onfocus="onUserInputFocus(1)" onblur="onUserInputFocus(0)"></div>
             <input type="button" id="sendButton" value="Odeslat" style="position:absolute;right:110px;width:100px;top:4px;" onclick="xsend(event)">
-            <input type="button" id="clearButton" value="Clear" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()">
+            <input type="button" id="clearButton" value="Vymazat" style="position:absolute;right:5px;width:100px;top:4px;" onclick="displayClear()">
         </div>
         <div id="remoteVideo" style="position:absolute;right:24px;top:45px;width:320px;height:calc(240px + 30px);background-color:gray;border-radius:12px 12px 12px 12px;box-shadow:3px 3px 10px gray;display:none">
             <div style="position:absolute;right:0;left:0;top:2.5px;text-align:center">Vzdálený</div>
@@ -275,7 +275,7 @@
 
             // Disconnect everything
             function disconnect() {
-                if (state > 0) { displayControl("Connection closed."); }
+                if (state > 0) { displayControl("Připojení ukončeno."); }
                 if (state > 1) { setTimeout(start, 500); }
                 cancelAllFileTransfers();
                 hangUpButtonClick(0, true); // Data channel
@@ -624,7 +624,7 @@
                         if (state == 2) { processMessage(msg.data, 1); }
                     }
                 } else {
-                    displayControl("Error: No connection key specified.");
+                    displayControl("Chyba: nebyl zadán klíč pro připojení.");
                 }
             }
 
