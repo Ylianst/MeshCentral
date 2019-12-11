@@ -165,6 +165,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     command.username = user.name;       // Add user name
                     command.userid = user._id;          // Add user id
                     command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
+                    if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                     delete command.nodeid;              // Remove the nodeid since it's implied
                     try { agent.send(JSON.stringify(command)); } catch (ex) { }
                 }
@@ -183,6 +184,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         command.username = user.name;           // Add user name
                         command.userid = user._id;              // Add user id
                         command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
+                        if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                         parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                     }
                 }
