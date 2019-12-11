@@ -627,6 +627,7 @@ function createMeshCore(agent) {
                                     tunnel.sessionid = data.sessionid;
                                     tunnel.rights = data.rights;
                                     tunnel.consent = data.consent;
+                                    tunnel.privacybartext = data.privacybartext ? data.privacybartext : 'Sharing desktop with: {0}';
                                     tunnel.username = data.username;
                                     tunnel.userid = data.userid;
                                     tunnel.remoteaddr = data.remoteaddr;
@@ -1300,8 +1301,7 @@ function createMeshCore(agent) {
                                     this.httprequest.desktop.kvm.users.splice(i, 1);
                                     this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                                     this.httprequest.desktop.kvm.connectionBar.close();
-
-                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '), require('MeshAgent')._tsid);
+                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.sort().join(', ')), require('MeshAgent')._tsid);
                                     this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                                     this.httprequest.desktop.kvm.connectionBar.on('close', function ()
                                     {
@@ -1366,7 +1366,7 @@ function createMeshCore(agent) {
                                     }
                                     try
                                     {
-                                        this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.ws.httprequest.desktop.kvm.users.sort().join(', '), require('MeshAgent')._tsid);
+                                        this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.users.sort().join(', ')), require('MeshAgent')._tsid);
                                         MeshServerLog('Remote Desktop Connection Bar Activated/Updated (' + this.ws.httprequest.remoteaddr + ')', this.ws.httprequest);
                                     }
                                     catch(xx)
@@ -1420,7 +1420,7 @@ function createMeshCore(agent) {
                             }
                             try
                             {
-                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')('Sharing desktop with: ' + this.httprequest.desktop.kvm.users.sort().join(', '), require('MeshAgent')._tsid);
+                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.sort().join(', ')), require('MeshAgent')._tsid);
                                 MeshServerLog('Remote Desktop Connection Bar Activated/Updated (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             }
                             catch(xx)

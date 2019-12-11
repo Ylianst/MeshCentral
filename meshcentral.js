@@ -69,6 +69,8 @@ function CreateMeshCentralServer(config, args) {
     obj.taskLimiter = obj.common.createTaskLimiterQueue(50, 20, 60); // (maxTasks, maxTaskTime, cleaningInterval) This is a task limiter queue to smooth out server work.
     obj.agentUpdateBlockSize = 65531; // MeshAgent update block size
     obj.serverWarnings = []; // List of warnings that should be shown to administrators
+    obj.cookieUseOnceTable = {}; // List of cookies that are already expired
+    obj.cookieUseOnceTableCleanCounter = 0; // Clean the cookieUseOnceTable each 20 additions
     try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
 
     // Setup the default configuration and files paths
@@ -1857,7 +1859,30 @@ function CreateMeshCentralServer(config, args) {
     // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA386. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
         const r = obj.decodeCookieAESGCM(cookie, key, timeout);
-        if (r == null) { return obj.decodeCookieAESSHA(cookie, key, timeout); }
+        if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
+        if ((r != null) && (typeof r.once == 'string') && (r.once.length > 0)) {
+            // This cookie must only be used once.
+            if (timeout == null) { timeout = 2; }
+            if (obj.cookieUseOnceTable[r.once] == null) {
+                const ctimeout = (((r.expire) == null || (typeof r.expire != 'number')) ? (r.time + ((timeout + 3) * 60000)) : (r.time + ((r.expire + 3) * 60000)));
+
+                // Store the used cookie in RAM
+                obj.cookieUseOnceTable[r.once] = ctimeout;
+
+                // Store the used cookie in the database
+                // TODO
+
+                // Send the used cookie to peer servers
+                // TODO
+
+                // Clean up the used table
+                if (++obj.cookieUseOnceTableCleanCounter > 20) {
+                    const now = Date.now();
+                    for (var i in obj.cookieUseOnceTable) { if (obj.cookieUseOnceTable[i] < now) { delete obj.cookieUseOnceTable[i]; } }
+                    obj.cookieUseOnceTableCleanCounter = 0;
+                }
+            } else { return null; }
+        }
         return r;
     }
 
