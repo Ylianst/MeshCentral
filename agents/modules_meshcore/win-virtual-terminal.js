@@ -115,18 +115,18 @@ function vt()
                     ds.terminal = ret;
                     ds._rpbuf = GM.CreateVariable(4096);
                     ds._rpbufRead = GM.CreateVariable(4);
-                    ds._read = function _read()
+                    ds.__read = function __read()
                     {
-                        this._rp = this.terminal.k32.ReadFile.async(this.terminal._output.Deref(), this._rpbuf, this._rpbuf._size, this._rpbufRead, 0);
+                        this._rp = this.terminal.k32.ReadFile.async(this.terminal._output.Deref(), this._rpbuf, this._rpbuf._size, this._rpbufRead, 0);                      
                         this._rp.then(function ()
                         {
                             var len = this.parent._rpbufRead.toBuffer().readUInt32LE();
                             this.parent.push(this.parent._rpbuf.toBuffer().slice(0, len));
-                            this.parent._read();
+                            this.parent.__read();
                         });
                         this._rp.parent = this;
                     };
-                    ds._read();
+                    ds.__read();
                     return (ds);
                 }
                 else
