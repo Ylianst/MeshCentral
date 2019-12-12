@@ -1161,7 +1161,10 @@ function createMeshCore(agent) {
                                     this.ws._term = c;
                                     c.pipe(this.ws, { dataTypeSkip: 1 });
                                     this.ws.pipe(c, { dataTypeSkip: 1, end: false });
-                                    this.ws.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
+                                    this.ws.prependListener('end', function ()
+                                    {
+                                        if (this.httprequest._term) { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); }
+                                    });
                                 });
                             }
                         } catch (e)
