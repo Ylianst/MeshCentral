@@ -8471,14 +8471,13 @@
 
             if ((x == null) && (Q('p4email').value.length > 0) && (ve == false)) { QE('idx_dlgOkButton', false); return; }
             var ok = true;
-            if ((features & 0x200000) == 0) { ok &= (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))); }
+            if ((features & 0x200000) == 0) { ok &= (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))); } // Username is not email address
             if (Q('p4randomPassword').checked == false) { ok &= (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements)); }
-            if (ok && passRequirements) { if (checkPasswordRequirements(Q('p4pass1').value, passRequirements) == false) { ok = false; } }
             QE('idx_dlgOkButton', ok);
         }
 
         function showCreateNewAccountDialogEx() {
-            var username = ((features & 0x200000) == 0) ? Q('p4name').value : Q('p4email').value;
+            var username = ((features & 0x200000) == 0) ? Q('p4name').value : Q('p4email').value; // Username is email address
             var x = { action: 'adduser', username: username, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked, randomPassword: Q('p4randomPassword').checked };
             if (serverinfo.emailcheck) {
                 x.emailVerified = Q('p4verifiedEmail').checked;

@@ -163,9 +163,11 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl ListUsers");
                         console.log("  MeshCtrl ListUsers --json");
                         console.log("  MeshCtrl ListUsers --nameexists \"bob\"");
+                        console.log("  MeshCtrl ListUsers --filter 2fa");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --idexists [id]        - Return 1 if id exists, 0 if not.");
                         console.log("  --nameexists [name]    - Return id if name exists.");
+                        console.log("  --filter [filter1,...] - Filter user names: 2FA, NO2FA.");
                         console.log("  --json                 - Show result as JSON.");
                         break;
                     }
@@ -301,6 +303,7 @@ function performConfigOperations(args) {
     var fs = require('fs');
     var path = require('path');
     var configFile = path.join(__dirname, 'config.json');
+    if (fs.existsSync(configFile) == false) { configFile = path.join('meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, '..', 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { console.log("Unable to find config.json."); return; }
@@ -554,6 +557,18 @@ function serverConnect() {
                 }
                 break;
             case 'users': { // LISTUSERS
+                if (args.filter) {
+                    // Filter the list of users
+                    var filters = args.filter.toLowerCase().split(',');
+                    var filteredusers = [];
+                    for (var i in data.users) {
+                        var ok = false;
+                        if ((filters.indexOf('2fa') >= 0) && ((data.users[i].otphkeys != null) || (data.users[i].otpkeys != null) || (data.users[i].otpsecret != null))) { ok = true; }
+                        if ((filters.indexOf('no2fa') >= 0) && ((data.users[i].otphkeys == null) && (data.users[i].otpkeys == null) && (data.users[i].otpsecret == null))) { ok = true; }
+                        if (ok == true) { filteredusers.push(data.users[i]); }
+                    }
+                    data.users = filteredusers;
+                }
                 if (args.json) {
                     console.log(JSON.stringify(data.users, ' ', 2));
                 } else {
