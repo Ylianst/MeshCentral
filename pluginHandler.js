@@ -97,7 +97,7 @@ module.exports.pluginHandler = function (parent) {
             if (!Q(d.tabId)) {
                 var defaultOn = 'class="on"';
                 if (Q('p19headers').querySelectorAll("span.on").length) defaultOn = '';
-                QA('p19headers', '<span ' + defaultOn + ' onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>');
+                QA('p19headers', '<span ' + defaultOn + ' id="p19ph-' + d.tabId + '" onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>');
                 QA('p19pages', '<div id="' + d.tabId + '"></div>');
             }
             QV('MainDevPlugins', true);
@@ -109,6 +109,7 @@ module.exports.pluginHandler = function (parent) {
             var tabs = Q('p19headers').querySelectorAll("span"); 
             for (const i of tabs) { i.classList.remove('on'); }
             el.classList.add('on');
+            putstore('_curPluginPage', id);
         };
         obj.addPluginEx = function() {
             meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
