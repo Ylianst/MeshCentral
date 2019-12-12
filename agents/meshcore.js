@@ -1982,7 +1982,7 @@ function createMeshCore(agent) {
                             var v = [];
                             for(var i in u)
                             {
-                                if(u[i].State == 'Active' || u[i].State == 'Connected')
+                                if(u[i].State == 'Active')
                                 {
                                     v.push({ tsid: i, type: u[i].StationName, user: u[i].Username });
                                 }
