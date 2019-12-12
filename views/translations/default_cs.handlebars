@@ -943,6 +943,11 @@
                         <div id="d3serverfiles"></div>
                     </div>
                 </div>
+                <div id="dialog4" style="">
+                    <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()">
+                    <input id="d4SizeButton" type="button" value="Malé" onclick="d4ToggleSize()">
+                    <textarea id="d4editorarea" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
+                </div>
                 <div id="dialog7" style="">
                     <div id="d7meshkvm">
                         <h4>Agent vzdálené plochy</h4>
@@ -1227,6 +1232,13 @@
 
             // If SSPI or LDAP authentication not used, allow batch account creation.
             QV('p4UserBatchCreate', (features & 0x00080000) == 0);
+
+            // Set the file editor
+            // TODO: Set user values
+            d4EditWrapVal = getstore('editorWrap', 0);
+            d4EditSizeVal = getstore('editorSize', 0);
+            d4ToggleWrap(true);
+            d4ToggleSize(true);
         }
 
         // Toggle the web page to full screen
@@ -5956,7 +5968,7 @@
                     terminal.m.debugmode = debugmode;
                     terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
                     terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
-                    terminal.attemptWebRTC = attemptWebRTC;
+                    terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                     terminal.onStateChanged = onTerminalStateChange;
                     terminal.onConsoleMessageChange = function () {
                         p12clearConsoleMsg();
@@ -6388,11 +6400,11 @@
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
                 if (downloadFile.tag == 'viewer') {
                     // View the file in the dialog box
-                    //setDialogMode(2, downloadFile.file, 9, null, '<div style="height:400px;max-height:400px;overflow:auto"><pre>' + EscapeHtml(downloadFile.data) + '</pre></div>');
-                    setDialogMode(2, EscapeHtml(downloadFile.file), 3, p13editSaveBack, '<textarea id=p13fileeditarea style="height:400px;max-height:400px;width:100%;overflow:auto;resize:none">' + EscapeHtml(downloadFile.data) + '</textarea>', downloadFile.file);
+                    setDialogMode(4, EscapeHtml(downloadFile.file), 3, p13editSaveBack);
+                    QH('d4editorarea', EscapeHtml(downloadFile.data));
                     QS('dialog').width = 'auto';
-                    QS('dialog').left = '100px';
-                    QS('dialog').right = '100px';
+                    QS('dialog').bottom = '80px';
+                    QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                     downloadFile = null;
                 } else {
                     // Save the file to disk
@@ -6403,8 +6415,25 @@
             }
         }
 
+        var d4EditWrapVal = 0;
+        var d4EditSizeVal = 0;
+        function d4ToggleWrap(update) {
+            if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
+            Q('d4WrapButton').value = ["Wrap: ON","Wrap: OFF"][d4EditWrapVal];
+            QS('d4editorarea').overflow = (d4EditWrapVal == 0)?'auto':'scroll';
+            QS('d4editorarea')['white-space'] = (d4EditWrapVal == 0)?null:'pre';
+            putstore('editorWrap', d4EditWrapVal);
+        }
+
+        function d4ToggleSize(update) {
+            if (!update) { d4EditSizeVal = ++d4EditSizeVal % 4; }
+            QS('d4editorarea')['font-size'] = ['100%','125%','150%','200%'][d4EditSizeVal];
+            Q('d4SizeButton').value = ["Size: 100%","Size: 125%","Size: 150%","Size: 200%"][d4EditSizeVal];
+            putstore('editorSize', d4EditSizeVal);
+        }
+
         function p13editSaveBack(b, tag) {
-            var data = new TextEncoder().encode(Q('p13fileeditarea').value);
+            var data = new TextEncoder().encode(Q('d4editorarea').value);
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
 
