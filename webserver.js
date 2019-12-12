@@ -1470,7 +1470,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Figure out the minimal password requirement
         var passRequirements = null;
         if (domain.passwordrequirements != null) {
-            if (domain.passrequirementstr == null) { domain.passwordrequirementsstr = encodeURIComponent(JSON.stringify(domain.passwordrequirements)); }
+            if (domain.passrequirementstr == null) {
+                var passRequirements = {};
+                if (typeof domain.passwordrequirements.min == 'number') { passRequirements.min = domain.passwordrequirements.min; }
+                if (typeof domain.passwordrequirements.max == 'number') { passRequirements.max = domain.passwordrequirements.max; }
+                if (typeof domain.passwordrequirements.upper == 'number') { passRequirements.upper = domain.passwordrequirements.upper; }
+                if (typeof domain.passwordrequirements.lower == 'number') { passRequirements.lower = domain.passwordrequirements.lower; }
+                if (typeof domain.passwordrequirements.numeric == 'number') { passRequirements.numeric = domain.passwordrequirements.numeric; }
+                if (typeof domain.passwordrequirements.nonalpha == 'number') { passRequirements.nonalpha = domain.passwordrequirements.nonalpha; }
+                domain.passwordrequirementsstr = encodeURIComponent(JSON.stringify(passRequirements));
+            }
             passRequirements = domain.passwordrequirementsstr;
         }
 
