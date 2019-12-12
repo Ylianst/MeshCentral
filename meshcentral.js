@@ -1858,7 +1858,7 @@ function CreateMeshCentralServer(config, args) {
 
     // Decode a cookie back into an object using a key using AES256-GCM or AES128-CBC/HMAC-SHA386. Return null if it's not a valid cookie. (key must be 32 bytes or more)
     obj.decodeCookie = function (cookie, key, timeout) {
-        const r = obj.decodeCookieAESGCM(cookie, key, timeout);
+        var r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
         if ((r != null) && (typeof r.once == 'string') && (r.once.length > 0)) {
             // This cookie must only be used once.
