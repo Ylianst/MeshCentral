@@ -14,6 +14,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.rauthCookie = rauthCookie;
     obj.State = 0;
     obj.nodeid = null;
+    obj.options = null;
     obj.socket = null;
     obj.connectstate = -1;
     obj.tunnelid = Math.random().toString(36).substring(2); // Generate a random client tunnel id
@@ -101,6 +102,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if (obj.State < 3) {
             if ((e.data == 'c') || (e.data == 'cr')) {
                 if (e.data == 'cr') { obj.serverIsRecording = true; }
+                if (obj.options != null) { delete obj.options.action; obj.options.type = 'options'; try { obj.socket.send(JSON.stringify(obj.options)); } catch (ex) { } }
                 try { obj.socket.send(obj.protocol); } catch (ex) { }
                 obj.xxStateChange(3);
 

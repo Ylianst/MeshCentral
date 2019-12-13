@@ -768,11 +768,18 @@ function createMeshCore(agent) {
                             //sendConsoleText('setClip: ' + JSON.stringify(data));
                             if (typeof data.data == 'string') {
                                 MeshServerLog('Setting clipboard content, ' + data.data.length + ' byte(s)', data);
-                                if (typeof data.data == 'string') {
-                                    if (require('MeshAgent').isService) { require('clipboard').dispatchWrite(data.data); } else { require("clipboard")(data.data); } // Set the clipboard
-                                    mesh.SendCommand({ "action": "msg", "type": "setclip", "sessionid": data.sessionid, "success": true });
-                                }
+                                if (require('MeshAgent').isService) { require('clipboard').dispatchWrite(data.data); } else { require("clipboard")(data.data); } // Set the clipboard
+                                mesh.SendCommand({ "action": "msg", "type": "setclip", "sessionid": data.sessionid, "success": true });
                             }
+                            break;
+                        }
+                        case 'userSessions': {
+                            // Send back current user sessions list, this is Windows only.
+                            //sendConsoleText('userSessions: ' + JSON.stringify(data));
+                            if (process.platform != 'win32') break;
+                            var p = require('user-sessions').enumerateUsers();
+                            p.sessionid = data.sessionid;
+                            p.then(function (u) { mesh.SendCommand({ 'action': 'msg', 'type': 'userSessions', 'sessionid': u.sessionid, 'data': u }); });
                             break;
                         }
                         default:
@@ -1088,6 +1095,7 @@ function createMeshCore(agent) {
             // Handle tunnel data
             if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user)
                 // Take a look at the protocol
+                if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                 if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9)) {
@@ -1260,8 +1268,13 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Look for a TSID
+                    var tsid = null;
+                    if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
+                    if (require('MeshAgent')._tsid != null) { tsid = require('MeshAgent')._tsid; }
+
                     // Remote desktop using native pipes
-                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(require('MeshAgent')._tsid == null ? undefined : require('MeshAgent')._tsid), tunnel: this };
+                    this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
 
@@ -1742,7 +1755,12 @@ function createMeshCore(agent) {
             return;
         }
 
-        if (obj.type == 'close') {
+        if (obj.type == 'options') {
+            // These are additional connection options passed in the control channel.
+            //sendConsoleText('options: ' + JSON.stringify(obj));
+            delete obj.type;
+            ws.httprequest.xoptions = obj;
+        } else if (obj.type == 'close') {
             // We received the close on the websocket
             //sendConsoleText('Tunnel #' + ws.tunnel.index + ' WebSocket control close');
             try { ws.close(); } catch (e) { }
@@ -1982,10 +2000,7 @@ function createMeshCore(agent) {
                             var v = [];
                             for(var i in u)
                             {
-                                if(u[i].State == 'Active')
-                                {
-                                    v.push({ tsid: i, type: u[i].StationName, user: u[i].Username });
-                                }
+                                if(u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
                             sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
                         });
