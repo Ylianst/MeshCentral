@@ -1642,8 +1642,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a post request on the root
     function handleRootPostRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.send('Not Found'); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.send('Not Found'); return; } // Check 3FA URL key
         parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
        
         switch (req.body.action) {
