@@ -1892,7 +1892,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32')
                     {
                         availcommands += ',safemode,wpfhwacceleration';
@@ -1906,6 +1906,9 @@ function createMeshCore(agent) {
                     response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
+                case 'version':
+                    response = 'Mesh Agent Version: ' + process.versions.meshAgent;
+                    break;
                 case 'wpfhwacceleration':
                     if (process.platform != 'win32') { throw ('wpfhwacceleration setting is only supported on Windows'); }
                     if (args['_'].length != 1)
