@@ -474,7 +474,7 @@
                         <div>
                             <div id="idx_deskFullBtn2" onclick="deskToggleFull(event)">&nbsp;✖</div>
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick="autoConnectDesktop(event)" onkeypress="return false" onkeydown="return false" style="display:none">
-                            <span id="connectbutton1span"><input type="button" id="connectbutton1" value="Connect" onclick="connectDesktop(event,1)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
+                            <span id="connectbutton1span"><input type="button" id="connectbutton1" value="Connect" onclick="connectDesktop(event,3)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                             <span id="connectbutton1hspan">&nbsp;<input type="button" id="connectbutton1h" value="Connexion AMT" title="Connect using Intel AMT hardware KVM" onclick="connectDesktop(event,2)" onkeypress="return false" onkeydown="return false" disabled="disabled"></span>
                             <span id="disconnectbutton1span">&nbsp;<input type="button" id="disconnectbutton1" value="Disconnect" onclick="connectDesktop(event,0)" onkeypress="return false" onkeydown="return false"></span>
                             &nbsp;<span id="deskstatus">Débranché</span>
@@ -512,6 +512,7 @@
                             </div>
                         </div>
                         <div id="p11DeskConsoleMsg" style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick="p11clearConsoleMsg()"></div>
+                        <div id="p11DeskSessionSelector" style="display:none;position:absolute;left:30px;top:17px;right:30px"></div>
                     </div>
                     <div id="deskarea4" class="areaFoot">
                         <div class="toright2">
@@ -1234,7 +1235,6 @@
             QV('p4UserBatchCreate', (features & 0x00080000) == 0);
 
             // Set the file editor
-            // TODO: Set user values
             d4EditWrapVal = getstore('editorWrap', 0);
             d4EditSizeVal = getstore('editorSize', 0);
             d4ToggleWrap(true);
@@ -1705,6 +1705,22 @@
                                 // Display success/fail on the clipboard dialog box.
                                 QH('dlgClipStatus', message.success ? '<span style=color:green>' + "Succès" + '</span>' : '<span style=color:red>' + "Échoué" + '</span>')
                                 setTimeout(function () { try { QH('dlgClipStatus', ''); } catch (ex) { } }, 2000);
+                            } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
+                                // Got list of user sessions
+                                var userSessions = [];
+                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
+                                if (userSessions.length == 0) { connectDesktop(null, 1); } // No active sessions, do a normal connection.
+                                else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId); } // One active session, connect to it
+                                else {
+                                    var x = '';
+                                    for (var i in userSessions) {
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ')>' + userSessions[i].State + ', ' + userSessions[i].StationName;
+                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }
+                                        x += '</div>';
+                                    }
+                                    QH('p11DeskSessionSelector', x);
+                                    QV('p11DeskSessionSelector', true);
+                                }
                             }
                         }
                     } else {
@@ -3633,7 +3649,7 @@
                     // If possible, connect...
                     var mesh = meshes[currentNode.meshid];
                     if ((currentNode.conn & 1) && (mesh.mtype == 2)) {
-                        if ((panel == 11) && (desktop == null) && (currentNode.agent.caps & 1)) { connectDesktop(null, 1); } // Desktop
+                        if ((panel == 11) && (desktop == null) && (currentNode.agent.caps & 1)) { connectDesktop(null, 3); } // Desktop
                         if ((panel == 12) && (terminal == null) && (currentNode.agent.caps & 2)) { connectTerminal(null, 1); } // Terminal
                         if ((panel == 13) && (files == null)) { connectFiles(null); } // files
                     }
@@ -5144,9 +5160,10 @@
 
         // Debug
         var autoConnectDesktopTimer = null;
-        function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(connectDesktop, 100); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
+        function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
-        function connectDesktop(e, contype) {
+        function connectDesktop(e, contype, tsid) {
+            QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
             if (desktop == null) {
                 desktopNode = currentNode;
@@ -5234,12 +5251,13 @@
                     };
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
-                } else {
+                } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
+                    desktop.options = { tsid: tsid };
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onConsoleMessageChange = function () {
                         p11clearConsoleMsg();
@@ -5256,6 +5274,9 @@
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
                     desktop.contype = 1;
+                } else if (contype == 3) {
+                    // Ask for user sessions
+                    meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id });
                 }
             } else {
                 // Disconnect and clean up the remote desktop
@@ -7030,6 +7051,7 @@
             if (xxdialogMode) return false;
             var x = '';
             x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />' + "Notification sound." + '</label></div>';
+            x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display Group Name" + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Device connections." + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections." + '</label></div>';
             x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events." + '</label></div>';
@@ -7039,6 +7061,7 @@
             Q('p2notifyIntelDeviceConnect').checked = (n & 2);
             Q('p2notifyIntelDeviceDisconnect').checked = (n & 4);
             Q('p2notifyIntelAmtKvmActions').checked = (n & 8);
+            Q('p2notifyGroupName').checked = (n & 16);
             return false;
         }
 
@@ -7048,6 +7071,7 @@
             n += Q('p2notifyIntelDeviceConnect').checked ? 2 : 0;
             n += Q('p2notifyIntelDeviceDisconnect').checked ? 4 : 0;
             n += Q('p2notifyIntelAmtKvmActions').checked ? 8 : 0;
+            n += Q('p2notifyGroupName').checked ? 16 : 0;
             putstore('notifications', n);
         }
 
@@ -9013,19 +9037,20 @@
 
         // Refresh the notification box
         function drawNotifications() {
+            var notifySettings = getstore('notifications', 0);
             var r = '';
             if (notifications.length == 0) {
                 r = '<div style=margin:5px>' + "Il n'y a actuellement aucune notification" + '</div>';
             } else {
                 for (var i in notifications) {
-                    var n = notifications[i];
-                    var t = '';
+                    var n = notifications[i], t = '', d = new Date(n.time), icon = 0;
                     if (n.title != null) { t = '<b>' + n.title + '</b>: ' }
-                    var d = new Date(n.time);
-                    var icon = 0;
                     if (n.nodeid != null) {
                         var node = getNodeFromId(n.nodeid);
-                        if (node != null) { icon = node.icon; t = '<b>' + node.name + '</b>: ' }
+                        if (node != null) {
+                            icon = node.icon;
+                            if (notifySettings & 16) { t = '<b>' + meshes[node.meshid].name + ' / ' + node.name + '</b>: '; } else { t = '<b>' + node.name + '</b>: '; } // Display with or without group name
+                        }
                     }
 
                     r += '<div title="' + format("Survenu à {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
@@ -9104,7 +9129,13 @@
                 var text = n.text.split('&reg;').join('').split('<b>').join('').split('</b>').join('').split('<br />').join('\r\n'); // Clean up any HTML codes
                 if (n.nodeid) {
                     var node = getNodeFromId(n.nodeid);
-                    if (node) { notification = new Notification('{{{title}}} - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' }); }
+                    if (node) {
+                        if (notifySettings & 16) { // Notify with group name
+                            notification = new Notification('{{{title}}} - ' + meshes[node.meshid].name + ' - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
+                        } else {
+                            notification = new Notification('{{{title}}} - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
+                        }
+                    }
                 } else {
                     if (n.icon == null) { n.icon = 0; }
                     var title = n.title;
