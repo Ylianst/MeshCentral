@@ -5406,7 +5406,7 @@
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
                 if (downloadFile.tag == 'viewer') {
                     // View the file in the dialog box
-                    setDialogMode(4, EscapeHtml(downloadFile.file), 3, p13editSaveBack);
+                    setDialogMode(4, EscapeHtml(downloadFile.file), 3, p13editSaveBack, null, downloadFile.file);
                     QH('d4editorarea', EscapeHtml(downloadFile.data));
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
@@ -6036,7 +6036,7 @@
             if (xxdialogMode) return false;
             var x = '';
             x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />' + "Som de notificação." + '</label></div>';
-            x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display Group Name" + '</label></div>';
+            x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display Device Group Name" + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Conexões de dispositivos." + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Desconexões de dispositivos." + '</label></div>';
             x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; Área de trabalho AMT e eventos seriais." + '</label></div>';
@@ -8396,9 +8396,10 @@
             xxdialogFunc = f;
             xxdialogButtons = b;
             xxdialogTag = tag;
-            QS('dialog').width = null; // Reset dialog size
-            QS('dialog').left = null;
-            QS('dialog').right = null;
+
+            // Reset dialog size
+            QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
+
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
             QV('idx_dlgCancelButton', b & 2);
