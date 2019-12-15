@@ -2371,6 +2371,11 @@
                             pluginHandler.refreshPluginHandler();
                             break;
                         }
+                        case 'plugin': {
+                            if (pluginHandler == null) break;
+                            try { pluginHandler[message.event.plugin][message.event.pluginaction](message); } catch (e) { console.log("PluginHandler could not event message: ", e); }
+                            break;
+                        }
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
@@ -4610,9 +4615,10 @@
 
                 // Device refresh plugin handler
                 if (pluginHandler != null) { 
+                    QH('p19headers', ''); QH('p19pages', '');
                     pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event); 
                     var lastTab = getstore('_curPluginPage', null);
-                    if (lastTab != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
+                    if (lastTab != null && Q('p19ph-' + lastTab) != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
                 }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
