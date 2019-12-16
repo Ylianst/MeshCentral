@@ -1710,7 +1710,7 @@
                             } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
-                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
+                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
                                 if (userSessions.length == 0) { connectDesktop(null, 1); } // No active sessions, do a normal connection.
                                 else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId); } // One active session, connect to it
                                 else {
@@ -5165,6 +5165,8 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         function connectDesktop(e, contype, tsid) {
+            if (xxdialogMode) return;
+            if ((e != null) && (e.shiftKey == false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
             QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
             if (desktop == null) {
@@ -5259,7 +5261,7 @@
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
-                    desktop.options = { tsid: tsid };
+                    if (tsid != null) { desktop.options = { tsid: tsid }; }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onConsoleMessageChange = function () {
                         p11clearConsoleMsg();
