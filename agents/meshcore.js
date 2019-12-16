@@ -1271,7 +1271,9 @@ function createMeshCore(agent) {
                     // Look for a TSID
                     var tsid = null;
                     if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
-                    if (require('MeshAgent')._tsid != null) { tsid = require('MeshAgent')._tsid; }
+                    //if (require('MeshAgent')._tsid != null) { tsid = require('MeshAgent')._tsid; }
+                    //sendConsoleText('tsid: ' + tsid);
+                    //require('MeshAgent')._tsid = tsid;
 
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
