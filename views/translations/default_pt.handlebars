@@ -72,7 +72,8 @@
     <div id="container">
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
         <div id="masthead" class="noselect">
-            <div class="title">{{{title}}}</div>
+            <div style="float:left">{{{titlehtml}}}</div>
+            <div class="title">{{{title1}}}</div>
             <div class="title2">{{{title2}}}</div>
             <div style="float:right">
                 <div id="notificationCount" onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Clique para visualizar as notificações atuais">0</div>
@@ -1708,7 +1709,7 @@
                             } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
-                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
+                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
                                 if (userSessions.length == 0) { connectDesktop(null, 1); } // No active sessions, do a normal connection.
                                 else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId); } // One active session, connect to it
                                 else {
@@ -2367,6 +2368,11 @@
                         case 'pluginStateChange': {
                             if (pluginHandler == null) break;
                             pluginHandler.refreshPluginHandler();
+                            break;
+                        }
+                        case 'plugin': {
+                            if (pluginHandler == null) break;
+                            try { pluginHandler[message.event.plugin][message.event.pluginaction](message); } catch (e) { console.log("PluginHandler could not event message: ", e); }
                             break;
                         }
                         default:
@@ -4608,9 +4614,10 @@
 
                 // Device refresh plugin handler
                 if (pluginHandler != null) { 
+                    QH('p19headers', ''); QH('p19pages', '');
                     pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event); 
                     var lastTab = getstore('_curPluginPage', null);
-                    if (lastTab != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
+                    if (lastTab != null && Q('p19ph-' + lastTab) != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
                 }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
@@ -5163,6 +5170,8 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         function connectDesktop(e, contype, tsid) {
+            if (xxdialogMode) return;
+            if ((e != null) && (e.shiftKey == false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
             QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
             if (desktop == null) {
@@ -5257,7 +5266,7 @@
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
-                    desktop.options = { tsid: tsid };
+                    if (tsid != null) { desktop.options = { tsid: tsid }; }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onConsoleMessageChange = function () {
                         p11clearConsoleMsg();
