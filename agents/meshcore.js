@@ -1151,29 +1151,38 @@ function createMeshCore(agent) {
                             else
                             {
                                 // Logged in user
-                                var username = require('user-sessions').getUsername(require('user-sessions').consoleUid());
-                                if (require('win-virtual-terminal').supported)
+                                var userPromise = require('user-sessions').enumerateUsers();
+                                userPromise.that = this;
+                                userPromise.then(function (u)
                                 {
-                                    // ConPTY PseudoTerminal
-                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
-                                }
-                                else
-                                {
-                                    // Legacy Terminal
-                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (this.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
-                                }
-                                this.httprequest._dispatcher.ws = this;
-                                this.httprequest._dispatcher.on('connection', function (c)
-                                {
-                                    console.log('client connected');
-                                    this.ws._term = c;
-                                    c.pipe(this.ws, { dataTypeSkip: 1 });
-                                    this.ws.pipe(c, { dataTypeSkip: 1, end: false });
-                                    this.ws.prependListener('end', function ()
+                                    var that = this.that;
+                                    if (u.Active.length > 0)
                                     {
-                                        if (this.httprequest._term) { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); }
-                                    });
-                                });
+                                        var username = u.Active[0].Username;
+                                        if (require('win-virtual-terminal').supported)
+                                        {
+                                            // ConPTY PseudoTerminal
+                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
+                                        }
+                                        else
+                                        {
+                                            // Legacy Terminal
+                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
+                                        }
+                                        that.httprequest._dispatcher.ws = that;
+                                        that.httprequest._dispatcher.on('connection', function (c)
+                                        {
+                                            console.log('client connected');
+                                            this.ws._term = c;
+                                            c.pipe(this.ws, { dataTypeSkip: 1 });
+                                            this.ws.pipe(c, { dataTypeSkip: 1, end: false });
+                                            this.ws.prependListener('end', function ()
+                                            {
+                                                if (this.httprequest._term) { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); }
+                                            });
+                                        });
+                                    }
+                                });                       
                             }
                         } catch (e)
                         {
@@ -1271,9 +1280,7 @@ function createMeshCore(agent) {
                     // Look for a TSID
                     var tsid = null;
                     if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
-                    //if (require('MeshAgent')._tsid != null) { tsid = require('MeshAgent')._tsid; }
-                    //sendConsoleText('tsid: ' + tsid);
-                    //require('MeshAgent')._tsid = tsid;
+                    require('MeshAgent')._tsid = tsid;
 
                     // Remote desktop using native pipes
                     this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
