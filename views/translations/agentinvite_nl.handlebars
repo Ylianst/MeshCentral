@@ -1,0 +1,295 @@
+<!DOCTYPE html><html><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS">
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <title>{{{title}}} - Agent Installation</title>
+    <style>
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        .tab button.active {
+            background-color: #8f8;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+    </style>
+</head>
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="display:none;overflow:hidden">
+    <div id="container">
+        <!-- Begin Masthead -->
+        <div id="masthead" class="noselect" style="background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden;">
+            <div style="float:left">{{{titlehtml}}}</div>
+            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:14px; padding-top:7px">
+                <strong><font style="font-size:46px; font-family: Arial, Helvetica, sans-serif;">{{{title1}}}</font></strong>
+            </div>
+            <div style="float:left; height: 66px; color:#c8c8c8; padding-left:5px; padding-top:14px">
+                <strong><font style="font-size:14px; font-family: Arial, Helvetica, sans-serif;">{{{title2}}}</font></strong>
+            </div>
+            <p id="logoutControl" style="color:white;font-size:11px;margin: 10px 10px 0;">{{{logoutControl}}}</p>
+        </div>
+        <div id="page_leftbar">
+            <div style="height:16px"></div>
+        </div>
+        <div id="topbar" class="noselect style3" style="height:24px;position:relative">
+            <div id="uiMenuButton" title="Selectie gebruikersinterface" onclick="showUserInterfaceSelectMenu()">
+                ♦
+                <div id="uiMenu" style="display:none">
+                    <div id="uiViewButton1" class="uiSelector" onclick="userInterfaceSelectMenu(1)" title="Linkerbalk interface"><div class="uiSelector1"></div></div>
+                    <div id="uiViewButton2" class="uiSelector" onclick="userInterfaceSelectMenu(2)" title="Boven werkbalk interface"><div class="uiSelector2"></div></div>
+                    <div id="uiViewButton3" class="uiSelector" onclick="userInterfaceSelectMenu(3)" title="Interface met vaste breedte"><div class="uiSelector3"></div></div>
+                    <div id="uiViewButton4" class="uiSelector" onclick="toggleNightMode()" title="Wissel nachtmodus"><div class="uiSelector4"></div></div>
+                </div>
+            </div>
+        </div>
+        <div id="column_l" style="max-height:calc(100vh - 135px);overflow-y:auto">
+            <h1>Remote Agent installatie<span id="groupname"></span></h1>
+            <p>
+                U bent uitgenodigd om software te installeren waarmee een externe operator op afstand volledige toegang heeft tot uw computer, inclusief het bureaublad en de bestanden.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie toegang krijgt tot uw computer.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Selecteer uw besturingssysteem en volg de onderstaande instructies.
+            </p>
+            <div>
+                <div class="tab">
+                    <button id="twintab64" class="tablinks" onclick="openTab(event, 'wintab64')">Windows 64bit</button>
+                    <button id="twintab32" class="tablinks" onclick="openTab(event, 'wintab32')">Windows 32bit</button>
+                    <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux</button>
+                    <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
+                </div>
+
+                <div id="wintab64" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Microsoft™ Windows 64bit</h3>
+                    <p><a id="win64url">Download de software hier</a>, open het en klik op "installeren" of "verbinden".</p>
+                    <div style="text-align:center">
+                        <img class="winagent-img" src="images/winagent.png">
+                    </div>
+                </div>
+
+                <div id="wintab32" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Microsoft™ Windows 32bit</h3>
+                    <p><a id="win32url">Download de software hier</a>, open het en klik op "installeren" of "verbinden".</p>
+                    <div style="text-align:center">
+                        <img class="winagent-img" src="images/winagent.png">
+                    </div>
+                </div>
+
+                <div id="linuxtab" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Linux</h3>
+                    <p>Om de volgende opdracht te installeren, knippen en plakken in een root-terminal.</p>
+                    <div id="linuxinstall" style="font-family:courier,'courier new',monospace;margin-left:30px"></div>
+                    <input type="button" value="Kopieer naar het klembord" style="margin-left:30px;margin-top:4px" onclick="copyToClipLinuxInstall()">
+                    <p>Om de installatie ongedaan te maken, knip en plak je de volgende opdracht als root.</p>
+                    <div id="unlinuxinstall" style="font-family:courier,'courier new',monospace;margin-left:30px"></div>
+                    <input type="button" value="Kopieer naar het klembord" style="margin-left:30px;margin-top:4px" onclick="copyToClipLinuxUnInstall()">
+                    <br><br>
+                </div>
+
+                <div id="macostab" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Apple™ MacOS</h3>
+                    <p><a id="macosurl">Download het installatieprogramma hier</a>, klik er met de rechtermuisknop op of druk op "beheer" en klik op het bestand. Daarna op "open" en volg de instructies.</p>
+                    <div style="text-align:center">
+                        <img src="images/macosagent.png">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <table cellpadding="0" cellspacing="10" style="width: 100%">
+                <tbody><tr>
+                    <td style="text-align:left"></td>
+                    <td style="text-align:right"></td>
+                </tr>
+            </tbody></table>
+        </div>
+    </div>
+    <script>
+        'use strict';
+        var uiMode = parseInt(getstore('uiMode', 1));
+        var webPageStackMenu = false;
+        var webPageFullScreen = true;
+        var nightMode = (getstore('_nightMode', '0') == '1');
+        var domain = '{{{domain}}}';
+        var domainUrl = '{{{domainurl}}}';
+        var meshid = '{{{meshid}}}';
+        var serverPort = '{{{serverport}}}';
+        var serverHttps = '{{{serverhttps}}}';
+        var serverNoProxy = '{{{servernoproxy}}}';
+        var installFlags = '{{{installflags}}}';
+        var groupName = decodeURIComponent('{{{meshname}}}');
+        if (groupName != '') { QH('groupname', ' for ' + groupName); }
+        userInterfaceSelectMenu();
+        setup();
+
+        // Toggle user interface menu
+        function showUserInterfaceSelectMenu() {
+            Q('uiViewButton1').classList.remove('uiSelectorSel');
+            Q('uiViewButton2').classList.remove('uiSelectorSel');
+            Q('uiViewButton3').classList.remove('uiSelectorSel');
+            Q('uiViewButton4').classList.remove('uiSelectorSel');
+            try { Q('uiViewButton' + uiMode).classList.add('uiSelectorSel'); } catch (ex) { }
+            QV('uiMenu', (QS('uiMenu').display == 'none'));
+            if (nightMode) { Q('uiViewButton4').classList.add('uiSelectorSel'); }
+        }
+
+        function userInterfaceSelectMenu(s) {
+            if (s) { uiMode = s; putstore('uiMode', uiMode); }
+            webPageFullScreen = (uiMode < 3);
+            webPageStackMenu = true;//(uiMode > 1);
+            toggleFullScreen(0);
+            toggleStackMenu(0);
+            QC('column_l').add('room4submenu');
+        }
+
+        function toggleNightMode() {
+            nightMode = !nightMode;
+            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            putstore('_nightMode', nightMode ? '1' : '0');
+        }
+
+        // Toggle the web page to full screen
+        function toggleFullScreen(toggle) {
+            if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
+            var hide = 0;
+            //if (args.hide) { hide = parseInt(args.hide); }
+            if (webPageFullScreen == false) {
+                QC('body').remove('menu_stack');
+                QC('body').remove('fullscreen');
+                QC('body').remove('arg_hide');
+                //if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
+                //QV('UserDummyMenuSpan', false);
+                //QV('page_leftbar', false);
+            } else {
+                QC('body').add('fullscreen');
+                if (hide & 16) QC('body').add('arg_hide'); // This is replacement for QV('page_leftbar', !(hide & 16));
+                //QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
+                //QV('page_leftbar', true);
+            }
+            QV('body', true);
+        }
+
+        // If FullScreen, toggle menu to be horisontal or vertical
+        function toggleStackMenu(toggle) {
+            if (webPageFullScreen == true) {
+                if (toggle === 1) {
+                    webPageStackMenu = !webPageStackMenu;
+                    putstore('webPageStackMenu', webPageStackMenu);
+                }
+                if (webPageStackMenu == false) {
+                    QC('body').remove('menu_stack');
+                } else {
+                    QC('body').add('menu_stack');
+                    //if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
+                }
+            }
+        }
+
+        function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
+        function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
+
+        function openTab(evt, tabname) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName('tabcontent');
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = 'none';
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName('tablinks');
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(' active', '');
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabname).style.display = 'block';
+            if (evt != null) { evt.currentTarget.className += ' active'; } else { document.getElementById('t' + tabname).className += ' active'; }
+        }
+
+        var linuxInstall, linuxUnInstall;
+        function setup() {
+            var servername = window.location.hostname;
+            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+
+            // Windows 64bit Setup
+            var url = 'meshagents?id=4&meshid=' + meshid;
+            if (installFlags != 0) { url += ('&installflags=' + installFlags); }
+            Q('win64url').href = url;
+
+            // Windows 32bit Setup
+            url = 'meshagents?id=3&meshid=' + meshid;
+            if (installFlags != 0) { url += ('&installflags=' + installFlags); }
+            Q('win32url').href = url;
+
+            // MacOS Setup
+            url = 'meshosxagent?id=16&meshid=' + meshid;
+            Q('macosurl').href = url;
+
+            // Linux Setup
+            if (serverHttps == 1) {
+                var portStr = (serverPort == 443) ? '' : (":" + serverPort);
+                if (serverNoProxy == 0) {
+                    linuxInstall = '(wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = '(wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-check-certificate -O ./meshinstall.sh || wget https://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                } else {
+                    // Server asked that agent be installed to preferably not use a HTTP proxy.
+                    linuxInstall = 'wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = 'wget https://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                }
+            } else {
+                var portStr = (serverPort == 80) ? '' : (':' + serverPort);
+                if (serverNoProxy == 0) {
+                    linuxInstall = '(wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = '(wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 -O ./meshinstall.sh || wget http://" + servername + portStr + domainUrl + "meshagents?script=1 --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                } else {
+                    // Server asked that agent be installed to preferably not use a HTTP proxy.
+                    linuxInstall = 'wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
+                    linuxUnInstall = 'wget http://' + servername + portStr + domainUrl + 'meshagents?script=1 --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                }
+            }
+            QH('linuxinstall', linuxInstall);
+            QH('unlinuxinstall', linuxUnInstall);
+
+            // Attempt to detect the most likely operating system for this browser
+            if (navigator.userAgent.indexOf('Win64') >= 0) { openTab(null, 'wintab64'); }
+            else if (navigator.userAgent.indexOf('Windows') >= 0) { openTab(null, 'wintab32'); }
+            else if (navigator.userAgent.indexOf('Linux') >= 0) { openTab(null, 'linuxtab'); }
+            else if (navigator.userAgent.indexOf('Macintosh') >= 0) { openTab(null, 'macostab'); }
+            else { openTab(null, 'wintab64'); }
+        }
+
+        function copyToClipLinuxInstall() { copyTextToClip(linuxInstall); }
+        function copyToClipLinuxUnInstall() { copyTextToClip(linuxUnInstall); }
+        function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
+
+    </script>
+
+
+</body></html>

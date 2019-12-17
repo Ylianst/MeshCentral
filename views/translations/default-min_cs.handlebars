@@ -6370,10 +6370,10 @@
                 if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate Client Control Mode (CCM)'; }
                 else if (currentMesh.amt.type == 2) {
                     intelAmtPolicy = "Jednoduchý Client Control Mode (CCM)";
-                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += "+ CIRA"; }
+                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
                 } else if (currentMesh.amt.type == 3) {
                     intelAmtPolicy = "Jednoduchý Admin Control Mode (ACM)";
-                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += "+ CIRA"; }
+                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
                 }
             }
             x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
