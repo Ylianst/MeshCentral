@@ -2338,7 +2338,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     chnl.onData = function (ciraconn, data) {
                         // CIRA ---> TLS
                         parent.debug('webrelay', 'Relay TLS CIRA data', data.length);
-                        if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (e) { } }
+                        if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (ex) { console.log(ex); } }
                     };
 
                     // Handle CIRA tunnel state change
@@ -2438,7 +2438,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // Log to recording file
                             data = Buffer.from(data, 'binary');
-                            recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (e) { } }); // TODO: Add TLS support
+                            recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
                         }
                     }
                 };
