@@ -3071,7 +3071,7 @@
         function addDeviceToMesh(meshid) {
             if (xxdialogMode) return false;
             var mesh = meshes[meshid];
-            var x = format("新しいIntel＆reg;を追加しますAMTデバイスからデバイスグループ\"{0} \"へ。", EscapeHtml(mesh.name)) + '<br /><br />';
+            var x = format("新しいIntel＆reg;を追加しますAMTデバイスからデバイスグループ\"{0}\"へ。", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("装置名", '<input id=dp1devicename style=width:230px maxlength=32 autocomplete=off onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlValue("ホスト名", '<input id=dp1hostname style=width:230px maxlength=32 autocomplete=off placeholder=\"' + "デバイス名と同じ" + '\" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlValue("ユーザー名", '<input id=dp1username style=width:230px maxlength=32 autocomplete=off placeholder=\"' + "管理者" + '\" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
@@ -3096,7 +3096,7 @@
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
                 url = 'ws://' + servername + portStr + domainUrl;
             }
-            var x = format("MeshCMDツールをダウンロードして次のように実行することにより、グループ\"{0} \"にIntel AMTクライアントコントロールモード（CCM）アクティベーションを実行します。", EscapeHtml(mesh.name)) + '<br /><br />';
+            var x = format("MeshCMDツールをダウンロードして次のように実行することにより、グループ\"{0}\"にIntel AMTクライアントコントロールモード（CCM）アクティベーションを実行します。", EscapeHtml(mesh.name)) + '<br /><br />';
             x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtccm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
             setDialogMode(2, "Intel＆reg; AMTアクティベーション", 9, null, x);
             Q('idx_dlgOkButton').focus();
@@ -3116,7 +3116,7 @@
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
                 url = 'ws://' + servername + portStr + domainUrl;
             }
-            var x = format("MeshCMDツールをダウンロードして次のように実行することにより、グループ\"{0} \"にIntel AMT管理制御モード（ACM）アクティベーションを実行します。", EscapeHtml(mesh.name)) + '<br /><br />';
+            var x = format("MeshCMDツールをダウンロードして次のように実行することにより、グループ\"{0}\"にIntel AMT管理制御モード（ACM）アクティベーションを実行します。", EscapeHtml(mesh.name)) + '<br /><br />';
             x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtacm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
             if (serverinfo.amtAcmFqdn != null) {
                 x += ('<div style=margin-top:8px>' + "Intel AMTは、MEBxで信頼できるFQDNを使用して設定するか、ネットワーク上に有線LANが必要です。" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
@@ -3185,14 +3185,14 @@
             x += '<hr>';
 
             // Setup CIRA using a MeshCommander script (Pretty Simple)
-            x += '<div id=dlgAddCira0>' + format("新しいIntel＆reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\"{0} \"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=dlgAddCira0>' + format("新しいIntel＆reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\"{0}\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。", EscapeHtml(mesh.name)) + '<br /><br />';
             //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
             x += addHtmlValue("CIRAのセットアップ", '<a href="mescript.ashx?type=1&meshid=' + meshid + '" download>cira_setup.mescript</a>');
             x += addHtmlValue("CIRAのクリーンアップ", '<a href="mescript.ashx?type=2" download>cira_clean.mescript</a>');
             x += '</div>';
 
             // Setup CIRA with user/pass authentication (Somewhat difficult)
-            x += '<div id=dlgAddCira1 style=display:none>' + format("新しいIntel＆reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\"{0} \"に、Intel AMT内で信頼されたルートとして次の証明書をロード", EscapeHtml(mesh.name));
+            x += '<div id=dlgAddCira1 style=display:none>' + format("新しいIntel＆reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\"{0}\"に、Intel AMT内で信頼されたルートとして次の証明書をロード", EscapeHtml(mesh.name));
             if (serverinfo.mpspass) { x += (" このユーザー名とパスワードを使用してサーバーに対して認証します。" + '<br /><br />'); } else { x += (" このユーザー名とパスワードを使用してサーバーに対して認証します。" + '<br /><br />'); }
             x += addHtmlValue("ルート証明書", '<a href=\"' + "MeshServerRootCert.cer" + '\" download>' + "ルート証明書ファイル" + '</a>');
             x += addHtmlValue("ユーザー名", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
@@ -3202,7 +3202,7 @@
 
             // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
             if ((features & 16) == 0) {
-                x += '<div id=dlgAddCira2 style=display:none>' + format("新しいIntel＆reg;を追加するにはCIRAを使用してデバイスグループ\"{0} \"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += '<div id=dlgAddCira2 style=display:none>' + format("新しいIntel＆reg;を追加するにはCIRAを使用してデバイスグループ\"{0}\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("ルート証明書", '<a href="MeshServerRootCert.cer" download>' + "ルート証明書ファイル" + '</a>');
                 x += addHtmlValue("組織", '<input style=width:230px readonly value="' + meshidx + '" />');
                 if (serverinfo != null) { x += addHtmlValue("MPSサーバー", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
@@ -3234,7 +3234,7 @@
             var x = '', mesh = meshes[meshid];
             if (features & 64) {
                 x += addHtmlValue("招待タイプ", '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>Link invitation</option><option value=1>Email invitation</option></select>') + '<hr />';
-                x += '<div id=emailInviteDiv style=display:none>' + format("メッシュエージェントをインストールする人を招待します。 \"{0} \"デバイスグループのメッシュエージェントインストールへのリンクが記載されたメール。", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += '<div id=emailInviteDiv style=display:none>' + format("メッシュエージェントをインストールする人を招待します。 \"{0}\"デバイスグループのメッシュエージェントインストールへのリンクが記載されたメール。", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("名前（オプション）", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
                 x += addHtmlValue("Eメール", '<input id=agentInviteEmail style=width:230px placeholder=\"' + "example@email.com" + '\" onkeyup=validateAgentInvite()></input>');
                 x += addHtmlValue("オペレーティング・システム", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "インストールリンクを送信" + '</option><option value=0 selected>' + "サポートされているもの" + '</option><option value=1>' + "Windowsのみ" + '</option><option value=3>' + "Apple MacOSのみ" + '</option><option value=2>' + "Linuxのみ" + '</option></select>');
@@ -3245,7 +3245,7 @@
                 x += addHtmlValue("メッセージ" + '<br />' + "（オプション）", '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
                 x += '</div>';
             }
-            x += '<div id=urlInviteDiv>' + format("招待リンクを共有して、メッシュエージェントをインストールする人を招待します。このリンクは、ユーザーに\"{0} \"デバイスグループのインストール手順を示します。リンクは公開されており、このサーバーのアカウントは必要ありません。", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=urlInviteDiv>' + format("招待リンクを共有して、メッシュエージェントをインストールする人を招待します。このリンクは、ユーザーに\"{0}\"デバイスグループのインストール手順を示します。リンクは公開されており、このサーバーのアカウントは必要ありません。", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("リンクの有効期限", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1時間" + '</option><option value=8>' + "8時間" + '</option><option value=24>' + "1日" + '</option><option value=168>' + "1週間" + '</option><option value=5040>' + "1ヶ月" + '</option><option value=0>' + "無制限" + '</option></select>');
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title=\"' + "リンクをクリップボードにコピー" + '\" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "招待する", 3, performAgentInvite, x, meshid);
@@ -3297,7 +3297,7 @@
 
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
-            x += '<div id=agins_windows>' + format("デバイスグループ\"{0} \"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントには、サーバーとデバイスグループの情報が埋め込まれています。", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_windows>' + format("デバイスグループ\"{0}\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントには、サーバーとデバイスグループの情報が埋め込まれています。", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("メッシュエージェント", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title=\"' + "MeshAgentの32ビットバージョン" + '\">' + "Windows（.exe）" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("メッシュエージェント", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title=\"' + "MeshAgentの64ビットバージョン" + '\">' + "Windows x64（.exe）" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             if (debugmode > 0) { x += addHtmlValue("設定ファイル", '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + format("{0}設定（.msh）", EscapeHtml(mesh.name)) + '</a>'); }
@@ -3306,10 +3306,10 @@
             // Linux agent install
             x += '<div id=agins_linux style=display:none>' + format("{0}にコンピューターを追加するには、次のコマンドを実行します。ルート資格情報が必要になります。", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
-            x += '<div style=\'font-size:x-small\'>' + "* BSDの場合、最初に\"pkg install wget sudo bash \"を実行します。" + '</div></div>';
+            x += '<div style=\'font-size:x-small\'>' + "* BSDの場合、最初に\"pkg install wget sudo bash\"を実行します。" + '</div></div>';
 
             // MacOS agent install
-            x += '<div id=agins_osx style=display:none>' + format("デバイスグループ\"{0} \"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントインストーラーには、サーバーとデバイスグループの情報が埋め込まれています。", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_osx style=display:none>' + format("デバイスグループ\"{0}\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントインストーラーには、サーバーとデバイスグループの情報が埋め込まれています。", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("メッシュエージェント", '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" rel="noreferrer noopener" target="_blank" title="64bit version of MacOS Mesh Agent">MacOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "MacOSエージェントのURLをクリップボードにコピーします" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
@@ -5871,7 +5871,7 @@
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "プロセス制御", 3, stopProcessEx, format("プロセス＃{0} \"{1} \"を停止しますか？", id, name), id); return false; }
+        function stopProcess(id, name) { setDialogMode(2, "プロセス制御", 3, stopProcessEx, format("プロセス＃{0} \"{1}\"を停止しますか？", id, name), id); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //

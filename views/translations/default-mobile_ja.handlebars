@@ -2601,7 +2601,7 @@
         function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousemove(e) }
         function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "プロセス制御", 3, stopProcessEx, format("プロセス＃{0} \"{1} \"を停止しますか？", id, name), id); return false; }
+        function stopProcess(id, name) { setDialogMode(2, "プロセス制御", 3, stopProcessEx, format("プロセス＃{0} \"{1}\"を停止しますか？", id, name), id); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //

@@ -1469,7 +1469,7 @@
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
                     if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Réinitialiser à la prochaine connexion."); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format("- Réinitialisation en {0} minute {1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Réinitialisation en {0} minute {1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
                     else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Réinitialisation dans {0} heure {1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
                     else { QH('p2nextPasswordUpdateTime', format(" - Réinitialiser dans le {0} jour {1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }

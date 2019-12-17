@@ -78,7 +78,7 @@ function start() {
         console.log('  MINIFYALL');
         console.log('    Minify the main MeshCentral english web pages.');
         console.log('');
-        console.log('  MERGE [sourcefile] [tartgetfile] [language code]');
+        console.log('  MERGE [sourcefile] [targetfile] [language code]');
         console.log('    Merge a language from a translation file into another translation file.');
         console.log('');
         console.log('  TOTEXT [translationfile] [textfile] [language code]');
