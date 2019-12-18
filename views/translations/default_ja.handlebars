@@ -782,22 +782,21 @@
                 <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="バック" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                 <h1>Summary - <span id="p21meshName"></span></h1>
                 <div style="width:100%">
-                    <div style="display:table;margin:0 auto;">
-                        <div style="width:250px;height:250px;display:inline-block;text-align:center">
+                    <div style="display:table;width:93%">
+                        <div id="meshPowerChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
                             <div style="margin:10px;font-size:16px">Power States</div>
                             <canvas id="meshPowerChart" style="width:250px;height:250px"></canvas>
                         </div>
-                        <div id="meshOsChartDiv" style="width:250px;height:250px;display:inline-block;text-align:center">
+                        <div id="meshOsChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
                             <div style="margin:10px;font-size:16px">Agent Types</div>
                             <canvas id="meshOsChart" style="width:250px;height:250px"></canvas>
                         </div>
-                        <div style="width:250px;height:250px;display:inline-block;text-align:center">
+                        <div id="meshConnChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
                             <div style="margin:10px;font-size:16px">接続性</div>
                             <canvas id="meshConnChart" style="width:250px;height:250px"></canvas>
                         </div>
                     </div>
                 </div>
-                <br><br>
                 <p id="p21info"></p>
             </div>
             <div id="p30" style="display:none">
@@ -7884,20 +7883,38 @@
         //
 
         function setupMeshSummaryStats() {
+            var draw = Chart.controllers.doughnut.prototype.draw;
+            Chart.controllers.doughnut = Chart.controllers.doughnut.extend({
+                draw: function() {
+                    draw.apply(this, arguments);
+                    let ctx = this.chart.chart.ctx;
+                    let _fill = ctx.fill;
+                    ctx.fill = function() {
+                        ctx.save();
+                        ctx.shadowColor = 'blue';
+                        ctx.shadowBlur = 10;
+                        ctx.shadowOffsetX = 2;
+                        ctx.shadowOffsetY = 2;
+                        _fill.apply(this, arguments)
+                        ctx.restore();
+                    }
+                }
+            });
+
             window.meshPowerChart = new Chart(document.getElementById('meshPowerChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true } }
+                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
             window.meshOsChart = new Chart(document.getElementById('meshOsChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true } }
+                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
             window.meshConnChart = new Chart(document.getElementById('meshConnChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["Not Connected", "エージェント", "Intel AMT", "Agent + Intel AMT"] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true } }
+                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
         }
 
@@ -7911,14 +7928,16 @@
             var agentTypes = {};
             var powerStates = {};
             var connectivityStates = [ 0, 0, 0, 0 ]; // None, Agent, AMT, Agent + AMT
+            var showAgents = false;
+            var showPower = false;
+            var showConn = false;
             for (var i in nodes) {
                 if (nodes[i].meshid == currentMesh._id) {
-                    if (nodes[i].agent) { if (agentTypes[nodes[i].agent.id] == null) { agentTypes[nodes[i].agent.id] = 1; } else { agentTypes[nodes[i].agent.id]++; } }
-                    if (nodes[i].pwr) { if (powerStates[nodes[i].pwr] == null) { powerStates[nodes[i].pwr] = 1; } else { powerStates[nodes[i].pwr]++; } }
-                    if (nodes[i].conn == 0) {
-                        connectivityStates[0]++; }
-                    else if ((nodes[i].conn & 6) != 0) { if ((nodes[i].conn & 1) != 0) { connectivityStates[3]++; } else { connectivityStates[2]++; } }
-                    else if ((nodes[i].conn & 1) != 0) { connectivityStates[1]++; }
+                    if (nodes[i].agent) { showAgents = true; if (agentTypes[nodes[i].agent.id] == null) { agentTypes[nodes[i].agent.id] = 1; } else { agentTypes[nodes[i].agent.id]++; } }
+                    if (nodes[i].pwr) { showPower = true; if (powerStates[nodes[i].pwr] == null) { powerStates[nodes[i].pwr] = 1; } else { powerStates[nodes[i].pwr]++; } }
+                    if (nodes[i].conn == 0) { showConn = true; connectivityStates[0]++; }
+                    else if ((nodes[i].conn & 6) != 0) { showConn = true; if ((nodes[i].conn & 1) != 0) { connectivityStates[3]++; } else { connectivityStates[2]++; } }
+                    else if ((nodes[i].conn & 1) != 0) { showConn = true; connectivityStates[1]++; }
                 }
             }
 
@@ -7936,32 +7955,45 @@
             window.meshConnChart.config.data.datasets[0].data = connectivityStates;
             window.meshConnChart.update();
 
-            // Only show the OS chart if the mesh is agent type.
-            QS('meshOsChartDiv')['display'] = (currentMesh.mtype == 2)?'inline-block':'none';
-
             // Update tables
-            var x = '<br />', count = 0;
+            var x = '', count = 0;
             if (powerData.length > 0) {
-                count = 0;
+                var xpowerStates = [];
+                for (var i in powerStates) { xpowerStates.push([powerStatetable[i], powerStates[i]]); }
+                xpowerStates.sort(function(a, b){ return -(a[1]-b[1]) });
                 x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Power States" + '</th><th scope=col style=text-align:left></th></tr>';
-                for (var i in powerStates) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + powerStatetable[i] + '<div></div></div></td><td><div style=float:right>' + powerStates[i] + ' </div><div></div></td></tr>'; }
+                for (var i in xpowerStates) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xpowerStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xpowerStates[i][1] + ' </div><div></div></td></tr>'; }
                 x += '</tbody></table>';
             }
 
             if ((agentsData.length > 0) && (currentMesh.mtype == 2)) {
+                count = 0;
+                var xagentTypes = [];
+                for (var i in agentTypes) { xagentTypes.push([agentsStr[i], agentTypes[i]]); }
+                xagentTypes.sort(function(a, b){ return -(a[1]-b[1]) });
                 x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Agent Types" + '</th><th scope=col style=text-align:left></th></tr>';
-                for (var i in agentTypes) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + agentsStr[i] + '<div></div></div></td><td><div style=float:right>' + agentTypes[i] + ' </div><div></div></td></tr>'; }
+                for (var i in xagentTypes) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xagentTypes[i][0] + '<div></div></div></td><td><div style=float:right>' + xagentTypes[i][1] + ' </div><div></div></td></tr>'; }
                 x += '</tbody></table>';
             }
-            
-            count = 0;
-            x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Power States" + '</th><th scope=col style=text-align:left></th></tr>';
-            if (connectivityStates[0] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + "Not Connected" + '<div></div></div></td><td><div style=float:right>' + connectivityStates[0] + ' </div><div></div></td></tr>'; }
-            if (connectivityStates[1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + "エージェント" + '<div></div></div></td><td><div style=float:right>' + connectivityStates[1] + ' </div><div></div></td></tr>'; }
-            if (connectivityStates[2] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + "Intel AMT" + '<div></div></div></td><td><div style=float:right>' + connectivityStates[2] + ' </div><div></div></td></tr>'; }
-            if (connectivityStates[3] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + "Agent + Intel AMT" + '<div></div></div></td><td><div style=float:right>' + connectivityStates[3] + ' </div><div></div></td></tr>'; }
-            x += '</tbody></table>';
+
+            if (showConn) {
+                count = 0;
+                var xconnectivityStates = [];
+                for (var i = 0; i < 4; i++) { xconnectivityStates.push([["Not Connected", "エージェント", "Intel AMT", "Agent + Intel AMT"][i], connectivityStates[i]]); }
+                xconnectivityStates.sort(function(a, b){ return -(a[1]-b[1]) });
+                x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "接続性" + '</th><th scope=col style=text-align:left></th></tr>';
+                for (var i = 0; i < 4; i++) { if (xconnectivityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xconnectivityStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xconnectivityStates[i][1] + ' </div><div></div></td></tr>'; } }
+                x += '</tbody></table>';
+            }
+
+            if (x == '') { x = '<i>' + "No devices in this device group." + '</i>'; }
+
             QH('p21info', x);
+
+            // Only show the OS chart if the mesh is agent type.
+            QS('meshPowerChartDiv')['display'] = (showPower)?'inline-block':'none';
+            QS('meshOsChartDiv')['display'] = ((currentMesh.mtype == 2) && showAgents)?'inline-block':'none';
+            QS('meshConnChartDiv')['display'] = (showConn)?'inline-block':'none';
         }
 
         //
