@@ -4000,15 +4000,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return the correct render page arguments.
-    function getRenderArgs(args, domain) {
-        args.titlehtml = domain.titlehtml;
-        args.title = domain.title;
-        args.title1 = (domain.titlehtml == null) ? domain.title : '';
-        args.title2 = (domain.titlehtml == null) ? domain.title2 : '';
-        args.extitle = encodeURIComponent(domain.title);
-        args.extitle2 = encodeURIComponent(domain.title2);
-        args.domainurl = domain.url;
-        return args;
+    function getRenderArgs(xargs, domain) {
+        xargs.titlehtml = domain.titlehtml;
+        xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
+        if ((domain.titlepicture == null) && (domain.titlehtml == null)) {
+            if (domain.title == null) {
+                xargs.title1 = 'MeshCentral';
+                xargs.title2 = '2.0';
+            } else {
+                xargs.title1 = domain.title;
+                xargs.title2 = domain.title2 ? domain.title2 : '';
+            }
+        } else {
+            xargs.title1 = domain.title1 ? domain.title1 : '';
+            xargs.title2 = (args.title1 && domain.title2) ? domain.title2 : '';
+        }
+        xargs.extitle = encodeURIComponent(xargs.title);
+        xargs.domainurl = domain.url;
+        return xargs;
     }
 
     // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
