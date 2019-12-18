@@ -4122,7 +4122,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (fileOptions != null) {
                 for (var i in acceptLanguages) {
                     if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { break; } // English requested, break out.
-                    if (fileOptions[acceptLanguages[i]] != null) { res.render(fileOptions[acceptLanguages[i]], args); return; } // Found a match.
+                    if (fileOptions[acceptLanguages[i]] != null) {
+                        // Found a match. If the file no longer exists, default to English.
+                        if (obj.fs.existsSync(fileOptions[acceptLanguages[i]] + '.handlebars')) { res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
+                        return;
+                    } 
                 }
             }
         }
