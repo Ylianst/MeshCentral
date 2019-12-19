@@ -63,6 +63,7 @@
         var pluginHandler = null;
         if (pluginHandlerBuilder != null) { pluginHandler = new pluginHandlerBuilder(); }
         var installedPluginList = null;
+        var goBackStack = [];
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -8561,11 +8562,10 @@
 
         function goBack() {
             setSessionActivity();
-            if (xxdialogMode) return;
+            if (xxdialogMode || (goBackStack.length == 0)) return;
             if (fullscreen) { deskToggleFull(); }
-            if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } // Return to My Devices
-            if ((xxcurrentView >= 20) && (xxcurrentView < 30)) { go(2); } // Return to My Account
-            if ((xxcurrentView >= 30) && (xxcurrentView < 40)) { go(4); } // Return to My Users
+            go(goBackStack.pop());
+            goBackStack.pop();
         }
 
         function go(x, event) {
@@ -8584,7 +8584,14 @@
                 return;
             }
 
+            // If we are going to the same place, do nothing.
             if (xxcurrentView == x) return;
+
+            // Set the goback stack, if going to top-level view, clear the stack.
+            if ((xxcurrentView < 0) || (x < 10)) { goBackStack = []; } else {
+                // Do not push into the back stack if we are changing tabs at the same level.
+                if (Math.floor(xxcurrentView / 10) != Math.floor(x / 10)) { goBackStack.push(xxcurrentView); }
+            }
 
             // Edit this line when adding a new screen
             for (var i = 0; i < 44; i++) { QV('p' + i, i == x); }
@@ -8608,29 +8615,34 @@
             var mainMenuActiveClass = (x < 9 ? 'fullselect' : 'semiselect');
             var leftMenuActiveClass = (((x < 9) || (x == 115) || (x == 40) || (x == 41) || (x == 42)) ? 'lbbuttonsel2' : 'lbbuttonsel');
 
+            var backView = 0;
+            if (goBackStack.length > 0) { backView = goBackStack[goBackStack.length - 1]; }
+
             // My Devices
-            if (x == 1 || (x >= 10 && x < 20)) QC('MainMenuMyDevices').add(mainMenuActiveClass);
-            if (x == 1 || (x >= 10 && x < 20)) QC('LeftMenuMyDevices').add(leftMenuActiveClass);
-
-            // My Account
-            if (x == 2 || (x >= 20 && x < 30)) QC('MainMenuMyAccount').add(mainMenuActiveClass);
-            if (x == 2 || (x >= 20 && x < 30)) QC('LeftMenuMyAccount').add(leftMenuActiveClass);
-
-            // My Events
-            if (x == 3) QC('MainMenuMyEvents').add(mainMenuActiveClass);
-            if (x == 3) QC('LeftMenuMyEvents').add(leftMenuActiveClass);
-
-            // My Users
-            if (x == 4 || (x >= 30 && x < 40)) QC('MainMenuMyUsers').add(mainMenuActiveClass);
-            if (x == 4 || (x >= 30 && x < 40)) QC('LeftMenuMyUsers').add(leftMenuActiveClass);
-
-            // My Files
-            if (x == 5) QC('MainMenuMyFiles').add(mainMenuActiveClass);
-            if (x == 5) QC('LeftMenuMyFiles').add(leftMenuActiveClass);
-
-            // My Server
-            if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
-            if ((x == 6) || (x == 115) || (x == 40) || (x == 41) || (x == 42) || (x == 43)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            if (x == 1 || (backView == 1) || ((backView == 0) && (x >= 10 && x < 20))) {
+                QC('MainMenuMyDevices').add(mainMenuActiveClass);
+                QC('LeftMenuMyDevices').add(leftMenuActiveClass);
+            } else if (x == 2 || (backView == 2) || ((backView == 0) && (x >= 20 && x < 30))) {
+                // My Account
+                QC('MainMenuMyAccount').add(mainMenuActiveClass);
+                QC('LeftMenuMyAccount').add(leftMenuActiveClass);
+            } else if (x == 3) {
+                // My Events
+                QC('MainMenuMyEvents').add(mainMenuActiveClass);
+                QC('LeftMenuMyEvents').add(leftMenuActiveClass);
+            } else if (x == 4 || (x >= 30 && x < 40)) {
+                // My Users
+                QC('MainMenuMyUsers').add(mainMenuActiveClass);
+                QC('LeftMenuMyUsers').add(leftMenuActiveClass);
+            } else if (x == 5) {
+                // My Files
+                QC('MainMenuMyFiles').add(mainMenuActiveClass);
+                QC('LeftMenuMyFiles').add(leftMenuActiveClass);
+            } else if ((x == 6) || (x == 115) || (x >= 40 && x < 50)) {
+                // My Server
+                QC('MainMenuMyServer').add(mainMenuActiveClass);
+                QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            }
             QV('ServerPlugins', pluginHandler != null);
 
             // column_l max-height

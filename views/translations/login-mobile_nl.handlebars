@@ -274,8 +274,8 @@
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Wacht even, reset e-mail verzonden."];
-        var failmessages = ["Kan geen account maken.", "Gebruikersaccount limiet bereikt.", "Bestaand account met dit e-mailadres.", "Ongeldig token voor het maken van een account.", "Gebruikersnaam bestaal al.", "Wachtwoord geweigerd, gebruik een ander.", "Ongeldige e-mail.", "Gebruikersaccount niet gevonden", "Ongeldig token, probeer het opnieuw.", "Kan geen e-mail verzenden.", "Gebruikersaccount vergrendeld", "Toegang geweigerd.", "Inloggen mislukt, controleer gebruikersnaam en wachtwoord.", "Wachtwoordwijziging aangevraagd.", "IP-adres geblokkeerd, probeer het later opnieuw."];
+        var okmessages = ['', "even wachten, reset e-mail verzonden."];
+        var failmessages = ["Kan geen account maken.", "Gebruikersaccount limiet bereikt.", "Bestaand account met dit e-mailadres.", "Ongeldig token voor het maken van een account.", "Gebruikersnaam bestaat al.", "Wachtwoord geweigerd, gebruik een ander.", "Ongeldige e-mail.", "Gebruikersaccount niet gevonden", "Ongeldig token, probeer het opnieuw.", "Kan geen e-mail verzenden.", "Gebruikersaccount vergrendeld", "Toegang geweigerd.", "Inloggen mislukt, controleer gebruikersnaam en wachtwoord.", "Wachtwoordwijziging aangevraagd.", "IP-adres geblokkeerd, probeer het later opnieuw."];
         if (messageid > 0) {
             var msg = '';
             if ((messageid < 100) && (messageid < okmessages.length)) { msg = okmessages[messageid]; }

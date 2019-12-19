@@ -1663,7 +1663,7 @@
                     if (nodes[i].meshid != current) {
                         deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + "Intelreg; " + '</span>'; }
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
@@ -3297,7 +3297,7 @@
             }
             if (r.length == 0) { r.push("Sem direitos"); }
             var buttons = 1, x = addHtmlValue("Do utilizador", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
-            x += addHtmlValue("Permissões", r.join(","));
+            x += addHtmlValue("Permissões", r.join(", "));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Usuário do grupo de dispositivos", buttons, p20viewuserEx, x, userid);
         }

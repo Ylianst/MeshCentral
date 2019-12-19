@@ -51,12 +51,12 @@
                     <input id="PauseButton" type="button" value="Pause" disabled="disabled" onclick="pause()">
                     <input id="RestartButton" type="button" value="Herstarten" disabled="disabled" onclick="restart()">
                     <select id="PlaySpeed" onchange="this.blur();">
-                        <option value="4">kwart snelheid</option>
-                        <option value="2">halve snelheid</option>
+                        <option value="4">1/4 snelheid</option>
+                        <option value="2">1/2 snelheid</option>
                         <option value="1" selected="">Normale snelheid</option>
                         <option value="0.5">2x Snelheid</option>
                         <option value="0.25">4x snelheid</option>
-                        <option value="0.1">10x Sneheid</option>
+                        <option value="0.1">10x Snelheid</option>
                     </select>
                 </div>
             </div>
@@ -163,7 +163,7 @@
             try { recFileMetadata = JSON.parse(data) } catch (ex) { cleanup(); return; }
             if ((recFileMetadata == null) || (recFileMetadata.magic != 'MeshCentralRelaySession') || (recFileMetadata.ver != 1)) { cleanup(); return; }
             var x = '';
-            x += addInfo("Time", recFileMetadata.time);
+            x += addInfo("Tijd", recFileMetadata.time);
             if (recFileEndTime != 0) { var secs = Math.floor((recFileEndTime - time) / 1000); x += addInfo("Looptijd", format("{0} seconde {1}", secs, (secs > 1) ? 's' : '')); }
             x += addInfo("Gebruikersnaam", recFileMetadata.username);
             x += addInfo("GebruikersID", recFileMetadata.userid);
@@ -299,7 +299,7 @@
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
-            QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Sleep een .mcrec-bestand of klik op \"Bestand openen...\"" + '</span>');
+            QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Sleep een .mcrec-bestand of klik op \"Bestand openen ...\"" + '</span>');
             QV('DeskParent', true);
             QV('TermParent', false);
         }

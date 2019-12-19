@@ -554,7 +554,7 @@
                     </div>
                 </div>
                 <div id="d7amtkvm">
-                    <h4 style="width:100%;border-bottom:1px solid gray">インテル®AMTハードウェアKVM</h4>
+                    <h4 style="width:100%;border-bottom:1px solid gray">Intel® AMTハードウェアKVM</h4>
                     <div style="height:26px">
                         <select id="d7desktopmode" style="float:right;width:200px">
                             <option value="1">RLE8、最速</option>
@@ -616,7 +616,7 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
-        var StatusStrs = ["切断されました", "接続しています...", "セットアップ...", "接続済み", "Intel＆reg;接続されたAMT"];
+        var StatusStrs = ["切断されました", "接続しています...", "セットアップ...", "接続済み", "Intel&reg;接続されたAMT"];
         var files;
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -692,13 +692,13 @@
             QV('p3createMeshLink2', false);
 
             if (typeof userinfo.passchange == 'number') {
-                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " -次回ログイン時にリセット。"); }
+                if (userinfo.passchange == -1) { QH('p2nextPasswordUpdateTime', " - 次回ログイン時にリセット。"); }
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
-                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " -次回ログイン時にリセット。"); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" -{0}分でリセット{1}。", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" -{0}時間でリセット{1}。", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format(" -{0}日でリセット{1}。"), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - 次回ログイン時にリセット。"); }
+                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - {0}分でリセット{1}。", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
+                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - {0}時間でリセット{1}。", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
+                    else { QH('p2nextPasswordUpdateTime', format(" - {0}日でリセット{1}。"), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
                 }
             }
         }
@@ -1253,7 +1253,7 @@
 
             // We are allowed, let's prompt to information
             var x = addHtmlValue("名", '<input id=dp3meshname style=width:170px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate() />');
-            x += addHtmlValue("タイプ", '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>' + "ソフトウェアエージェントグループ" + '</option><option value=1>' + "Intel＆reg; AMTのみ" + '</option></select></div>');
+            x += addHtmlValue("タイプ", '<div style=width:170px;margin:0;padding:0><select id=dp3meshtype style=width:100% onchange=account_validateMeshCreate() ><option value=2>' + "ソフトウェアエージェントグループ" + '</option><option value=1>' + "Intel&reg; AMTのみ" + '</option></select></div>');
             x += addHtmlValue("説明", '<div style=width:170px;margin:0;padding:0><textarea id=dp3meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "デバイスグループを作成する", 3, account_createMeshEx, x);
             account_validateMeshCreate();
@@ -1663,7 +1663,7 @@
                     if (nodes[i].meshid != current) {
                         deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + "、Intel＆reg; AMTのみ" + '</span>'; }
+                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + "、Intel&reg; AMTのみ" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(mesh2, meshrights);
@@ -1689,7 +1689,7 @@
                 count++;
                 var title = EscapeHtml(nodes[i].name);
                 if (title.length == 0) { title = '<i>' + "なし" + '</i>'; }
-                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " /" + EscapeHtml(nodes[i].rname); }
+                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
                 var name = EscapeHtml(nodes[i].name);
                 if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
                 if (name.length == 0) { name = '<i>' + "なし" + '</i>'; }
@@ -1732,7 +1732,7 @@
                             r += '<div><div colspan=3 class=DevSt><span style=float:right>';
                             //r += getMeshActions(mesh, meshrights);
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
-                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "Intel＆reg;なしこのグループのAMTデバイス"; }
+                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "Intel&reg;なしこのグループのAMTデバイス"; }
                             if (mesh.mtype == 2) { r += '<div style=padding:10px><i>' + "このグループにデバイスはありません"; }
                             r += '.</i></div></div>';
                             current = mesh._id;
@@ -1762,7 +1762,7 @@
             if (node.conn) {
                 if ((node.conn & 1) != 0) { states.push('<span>' + "エージェント" + '</span>'); }
                 if ((node.conn & 2) != 0) { states.push('<span>' + "CIRA" + '</span>'); }
-                else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel＆reg; AMT" + '</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span>' + "Intel&reg; AMT" + '</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span>' + "リレー" + '</span>'); }
                 if ((node.conn & 16) != 0) { states.push('<span>' + "MQTT" + '</span>'); }
             }
@@ -1913,10 +1913,10 @@
                         }
                     }
 
-                    var meName = "Intel＆reg;私";
+                    var meName = "Intel&reg;私";
                     if (typeof node.intelamt.sku == 'number') {
-                        if ((node.intelamt.sku & 8) != 0) { meName = "Intel＆reg; AMT"; }
-                        else if ((node.intelamt.sku & 16) != 0) { meName = "Intel＆reg; SM"; }
+                        if ((node.intelamt.sku & 8) != 0) { meName = "Intel&reg; AMT"; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = "Intel&reg; SM"; }
                     }
                     x += addDeviceAttribute(meName, str);
                 }
@@ -1936,8 +1936,8 @@
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
                     if ((node.conn & 1) != 0) cstate.push('<span>' + "エージェント" + '</span>');
-                    if ((node.conn & 2) != 0) cstate.push('<span>' + "Intel＆reg; AMT CIRA" + '</span>');
-                    else if ((node.conn & 4) != 0) cstate.push('<span>' + "Intel＆reg; AMT" + '</span>');
+                    if ((node.conn & 2) != 0) cstate.push('<span>' + "Intel&reg; AMT CIRA" + '</span>');
+                    else if ((node.conn & 4) != 0) cstate.push('<span>' + "Intel&reg; AMT" + '</span>');
                     if ((node.conn & 8) != 0) cstate.push('<span>' + "エージェントリレー" + '</span>');
                     if ((node.conn & 16) != 0) cstate.push('<span>' + "MQTT" + '</span>');
                     x += addDeviceAttribute("接続性", cstate.join(', '));
@@ -1977,8 +1977,8 @@
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "メッシュエージェント" + '</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel＆reg;接続されたAMT" + '</span>'; }
-                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel＆reg; AMTが検出されました" + '</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg;接続されたAMT" + '</span>'; }
+                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMTが検出されました" + '</span>'; }
                 if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px>' + "MQTTチャネルが接続されました" + '</span>'; }
                 QH('MainComputerState', powerstate);
 
@@ -2121,7 +2121,7 @@
             x += addHtmlValue("パスワード", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("セキュリティ", '<select id=dp10tls style=width:176px><option value=0>' + "TLSセキュリティなし" + '</option><option value=1>' + "TLSセキュリティが必要" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
-            setDialogMode(2, "Intelを編集＆reg; AMTクレデンシャル", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
+            setDialogMode(2, "Intelを編集&reg; AMTクレデンシャル", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             Q('dp10tls').value = node.intelamt.tls;
             validateDeviceAmtSettings();
@@ -3095,7 +3095,7 @@
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = format("不明な＃{0}", currentMesh.mtype);
             var meshrights = currentMesh.links[userinfo._id].rights;
-            if (currentMesh.mtype == 1) meshtype = "Intel＆reg; AMTのみ、エージェントなし";
+            if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMTのみ、エージェントなし";
             if (currentMesh.mtype == 2) meshtype = "ソフトウェアエージェントを使用して管理";
 
             var x = '';
@@ -3212,7 +3212,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "限定入力のみ" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "ターミナルアクセスなし" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "ファイルアクセスなし" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "Intel＆reg;なしAMT" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "Intel&reg;なしAMT" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "メッシュエージェントコンソール" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "サーバーファイル" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "ウェイクデバイス" + '</label><br>';
@@ -3289,7 +3289,7 @@
                 if ((meshrights & 256) != 0) r.push("リモートビューのみ");
                 if ((meshrights & 512) != 0) r.push("ターミナルなし");
                 if ((meshrights & 1024) != 0) r.push("ファイルなし");
-                if ((meshrights & 2048) != 0) r.push("Intel＆reg;なしAMT");
+                if ((meshrights & 2048) != 0) r.push("Intel&reg;なしAMT");
                 if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("制限された入力");
                 if ((meshrights & 8192) != 0) r.push("自己イベントのみ");
                 if ((meshrights & 16384) != 0) r.push("チャットと通知");
