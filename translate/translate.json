@@ -41,7 +41,8 @@
       ],
       "pt": " + CIRA",
       "ja": " + CIRA",
-      "cs": " + CIRA"
+      "cs": " + CIRA",
+      "nl": " + CIRA"
     },
     {
       "en": " - Reset in {0} day{1}.",
@@ -52,7 +53,7 @@
         "default-mobile.handlebars->9->13"
       ],
       "pt": " - Redefinir em {0} dia {1}.",
-      "ja": " -{0}日でリセット{1}。",
+      "ja": " - {0}日でリセット{1}。",
       "nl": " - Reset in {0} dag(en){1}."
     },
     {
@@ -64,7 +65,7 @@
         "default-mobile.handlebars->9->12"
       ],
       "pt": " - Redefinir em {0} hora {1}.",
-      "ja": " -{0}時間でリセット{1}。",
+      "ja": " - {0}時間でリセット{1}。",
       "nl": " - Reset in {0} uur{1}."
     },
     {
@@ -76,7 +77,7 @@
         "default-mobile.handlebars->9->11"
       ],
       "pt": " - Redefinir em {0} minuto {1}.",
-      "ja": " -{0}分でリセット{1}。",
+      "ja": " - {0}分でリセット{1}。",
       "nl": " - Reset in {0} minuten{1}."
     },
     {
@@ -90,7 +91,7 @@
         "default-mobile.handlebars->9->10"
       ],
       "pt": " - Redefinir no próximo login.",
-      "ja": " -次回ログイン時にリセット。",
+      "ja": " - 次回ログイン時にリセット。",
       "nl": " - Reset bij volgende inlog."
     },
     {
@@ -99,7 +100,7 @@
         "default-mobile.handlebars->9->91"
       ],
       "pt": " / ",
-      "ja": " /",
+      "ja": " / ",
       "cs": " / ",
       "nl": " / "
     },
@@ -112,7 +113,7 @@
       ],
       "pt": " Adicionar usuário",
       "ja": " ユーザーを追加する",
-      "nl": " gebruiker toevoegen"
+      "nl": " Gebruiker toevoegen"
     },
     {
       "en": " and authenticate to the server using this username and any password.",
@@ -177,7 +178,8 @@
         "default.handlebars->23->1037"
       ],
       "pt": " Os usuários precisam fazer login neste servidor uma vez antes de poderem ser adicionados a um grupo de dispositivos.",
-      "ja": " ユーザーは、デバイスグループに追加する前にこのサーバーに1回ログインする必要があります。"
+      "ja": " ユーザーは、デバイスグループに追加する前にこのサーバーに1回ログインする必要があります。",
+      "nl": " Gebruikers moeten inloggen bij de server voordat ze kunnen worden toegevoegd aan een apparaatgroep."
     },
     {
       "en": " with TLS.",
@@ -199,7 +201,7 @@
       ],
       "pt": " sem TLS.",
       "ja": " TLSなし。",
-      "nl": "zonder TLS."
+      "nl": " zonder TLS."
     },
     {
       "en": "(",
@@ -270,10 +272,10 @@
         "default.handlebars->23->1080",
         "default-mobile.handlebars->9->327"
       ],
-      "pt": ",",
+      "pt": ", ",
       "ja": "、",
       "cs": ", ",
-      "nl": ","
+      "nl": ", "
     },
     {
       "en": ", click here to enable it.",
@@ -293,8 +295,8 @@
         "default.handlebars->23->145",
         "default-mobile.handlebars->9->89"
       ],
-      "pt": "Intelreg; ",
-      "ja": "、Intel＆reg; AMTのみ",
+      "pt": ", Intel&reg; AMT only",
+      "ja": "、Intel&reg; AMTのみ",
       "nl": ", Intel&reg; AMT alleen"
     },
     {
@@ -485,7 +487,7 @@
       ],
       "pt": "Mais 1 usuário não mostrado, use a caixa de pesquisa para procurar usuários...",
       "ja": "さらに1人のユーザーが表示されていません。検索ボックスを使用してユーザーを検索してください...",
-      "nl": "1 gebruiker niet getoond, gebruik de zoekfunctie om gebruikers te vinden"
+      "nl": "1 gebruiker niet getoond, gebruik de zoekfunctie om gebruikers te vinden..."
     },
     {
       "en": "1 node",
@@ -544,7 +546,7 @@
       ],
       "pt": "1.As redistribuições do código-fonte devem manter o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir.",
       "ja": "1.ソースコードの再配布には、上記の著作権表示、この条件リスト、および以下の免責事項を保持する必要があります。",
-      "nl": "1. Herdistributies van broncode moeten de bovenstaande copyright kennisgeving en deze lijst met voorwaarden en de volgende disclaimer bevatten."
+      "nl": "1.Herdistributies van broncode moeten de bovenstaande copyright kennisgeving en deze lijst met voorwaarden en de volgende disclaimer bevatten."
     },
     {
       "en": "1/2 Speed",
@@ -555,7 +557,7 @@
       ],
       "pt": "1/2 velocidade",
       "ja": "1/2速度",
-      "nl": "halve snelheid"
+      "nl": "1/2 snelheid"
     },
     {
       "en": "1/4 Speed",
@@ -566,7 +568,7 @@
       ],
       "pt": "1/4 de velocidade",
       "ja": "1/4スピード",
-      "nl": "kwart snelheid"
+      "nl": "1/4 snelheid"
     },
     {
       "en": "100%",
@@ -598,7 +600,7 @@
       ],
       "pt": "10x Velocidade",
       "ja": "10倍速",
-      "nl": "10x Sneheid"
+      "nl": "10x Snelheid"
     },
     {
       "en": "12.5%",
@@ -653,7 +655,7 @@
       ],
       "pt": "2.As redistribuições em formato binário devem reproduzir o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir na documentação e / ou outros materiais fornecidos com a distribuição.",
       "ja": "2.バイナリ形式での再配布では、上記の著作権表示、この条件リスト、および以下の免責事項を、配布物とともに提供されるドキュメントおよび/またはその他の資料に複製する必要があります。",
-      "nl": "2. Herdistributies in binaire vorm moeten de bovenstaande copyright kennisgeving, deze lijst met voorwaarden en de volgende disclaimer reproduceren in de documentatie en / of andere materialen die bij de distributie worden geleverd."
+      "nl": "2.Herdistributies in binaire vorm moeten de bovenstaande copyright kennisgeving, deze lijst met voorwaarden en de volgende disclaimer reproduceren in de documentatie en / of andere materialen die bij de distributie worden geleverd."
     },
     {
       "en": "25%",
@@ -708,7 +710,7 @@
       ],
       "pt": "3.Nem o nome da CodePlex Foundation nem os nomes de seus colaboradores podem ser usados \\u200b\\u200bpara endossar ou promover produtos derivados deste software sem permissão prévia por escrito específica.",
       "ja": "3. CodePlex Foundationの名前もその貢献者の名前も、書面による事前の許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用することはできません。",
-      "nl": "3. Noch de naam van CodePlex Foundation, noch de namen van haar bijdragers mogen worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder specifieke voorafgaande schriftelijke toestemming."
+      "nl": "3.Noch de naam van CodePlex Foundation, noch de namen van haar bijdragers mogen worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder specifieke voorafgaande schriftelijke toestemming."
     },
     {
       "en": "32bit version of the MeshAgent",
@@ -751,7 +753,7 @@
         "terms-mobile.handlebars->container->page_content->column_l->37->1"
       ],
       "ja": "4.「OpenSSL Toolkit」および「OpenSSL Project」という名前は、事前の書面による許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用しないでください。書面による許可については、openssl-core @ openssl.orgにお問い合わせください。",
-      "nl": "4. De namen \"OpenSSL Toolkit\" en \"OpenSSL Project\" mogen niet worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder voorafgaande schriftelijke toestemming. Neem voor schriftelijke toestemming contact op met openssl-core@openssl.org."
+      "nl": "4.De namen \"OpenSSL Toolkit\" en \"OpenSSL Project\" mogen niet worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder voorafgaande schriftelijke toestemming. Neem voor schriftelijke toestemming contact op met openssl-core@openssl.org."
     },
     {
       "en": "4x Speed",
@@ -783,7 +785,7 @@
         "terms-mobile.handlebars->container->page_content->column_l->39->1"
       ],
       "ja": "5.このソフトウェアから派生した製品は、OpenSSL Projectの事前の書面による許可なしに、「OpenSSL」と呼ばれたり、名前に「OpenSSL」が表示されたりすることはありません。",
-      "nl": "5. Producten die zijn afgeleid van deze software mogen niet \"OpenSSL\" worden genoemd, noch mag \"OpenSSL\" in hun naam worden weergegeven zonder voorafgaande schriftelijke toestemming van het OpenSSL-project."
+      "nl": "5.Producten die zijn afgeleid van deze software mogen niet \"OpenSSL\" worden genoemd, noch mag \"OpenSSL\" in hun naam worden weergegeven zonder voorafgaande schriftelijke toestemming van het OpenSSL-project."
     },
     {
       "en": "50%",
@@ -805,7 +807,7 @@
       ],
       "pt": "6.As redistribuições de qualquer forma devem manter o seguinte reconhecimento: \"Este produto inclui software desenvolvido pelo OpenSSL Project para uso no OpenSSL Toolkit (http://www.openssl.org/)\".",
       "ja": "6.いかなる形式の再配布でも、「この製品には、OpenSSL Toolkit（http://www.openssl.org/）で使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます」という承認を保持する必要があります。",
-      "nl": "6. Herdistributies in welke vorm dan ook moet de volgende tekst behouden: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit (http://www.openssl.org/)\"."
+      "nl": "6.Herdistributies in welke vorm dan ook moet de volgende tekst behouden: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit (http://www.openssl.org/)\"."
     },
     {
       "en": "62.5%",
@@ -922,7 +924,7 @@
       ],
       "pt": "<b style=color:green>Ativação de login em duas etapas removida</b>. Você pode reativar esse recurso a qualquer momento.",
       "ja": "<b style = color：green> 2段階のログインアクティベーションが削除されました</ b>。この機能はいつでも再アクティブ化できます。",
-      "nl": "<b style=color:green> Tweestapsverificatie verwijderd</b>. Je kan deze functie ten allen tijde weer inschakelen."
+      "nl": "<b style=color:green>Tweestapsverificatie verwijderd</b>. Je kan deze functie ten allen tijde weer inschakelen."
     },
     {
       "en": "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again.",
@@ -1116,7 +1118,7 @@
       ],
       "pt": "Ação",
       "ja": "アクション",
-      "nl": "Aktie"
+      "nl": "Actie"
     },
     {
       "en": "Actions",
@@ -1131,7 +1133,7 @@
       ],
       "pt": "Ações",
       "ja": "行動",
-      "nl": "Akties"
+      "nl": "Acties"
     },
     {
       "en": "Activate camera & microphone",
@@ -1190,7 +1192,7 @@
       ],
       "pt": "Usuário ativo {0}",
       "ja": "アクティブユーザー{0}",
-      "nl": "Actieve gebruiker(s){0}"
+      "nl": "Actieve gebruikers{0}"
     },
     {
       "en": "Add a new computer to this mesh by installing the mesh agent.",
@@ -1210,8 +1212,8 @@
         "default.handlebars->23->191"
       ],
       "pt": "Adicione um novo Intelreg; Computador AMT digitalizando a rede local.",
-      "ja": "新しいIntel＆reg;を追加しますローカルネットワークをスキャンしてAMTコンピューター。",
-      "nl": "Voeg een nieuwe Intel® AMT computer toe door het lokale netwerk te scannen."
+      "ja": "新しいIntel&reg;を追加しますローカルネットワークをスキャンしてAMTコンピューター。",
+      "nl": "Voeg een nieuwe Intel&reg; AMT computer toe door het lokale netwerk te scannen."
     },
     {
       "en": "Add a new Intel&reg; AMT computer that is located on the internet.",
@@ -1221,8 +1223,8 @@
         "default.handlebars->23->972"
       ],
       "pt": "Adicione um novo Intel&reg; Computador AMT localizado na Internet.",
-      "ja": "新しいIntel＆reg;を追加しますインターネット上にあるAMTコンピューター。",
-      "nl": "Voeg een nieuwe Intel® AMT computer toe welke zich op het internet bevind."
+      "ja": "新しいIntel&reg;を追加しますインターネット上にあるAMTコンピューター。",
+      "nl": "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het internet bevind."
     },
     {
       "en": "Add a new Intel&reg; AMT computer that is located on the local network.",
@@ -1232,8 +1234,8 @@
         "default.handlebars->23->974"
       ],
       "pt": "Adicione um novo Intel&reg; AMT computer that is located on the local network.",
-      "ja": "新しいIntel＆reg;を追加しますローカルネットワーク上にあるAMTコンピューター。",
-      "nl": "Voeg een nieuwe Intel® AMT computer toe welke zich op het lokale netwerk bevind."
+      "ja": "新しいIntel&reg;を追加しますローカルネットワーク上にあるAMTコンピューター。",
+      "nl": "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het lokale netwerk bevind."
     },
     {
       "en": "Add a new Intel&reg; AMT device to device group \\\"{0}\\\".",
@@ -1242,7 +1244,7 @@
         "default.handlebars->23->201"
       ],
       "pt": "Adicione um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\".",
-      "ja": "新しいIntel＆reg;を追加しますAMTデバイスからデバイスグループ\\\"{0}\\\"へ。",
+      "ja": "新しいIntel&reg;を追加しますAMTデバイスからデバイスグループ\\\"{0}\\\"へ。",
       "nl": "Voeg een nieuwe Intel&reg; AMT computer toe aan een apparaatgroep \\\"{0}\\\"."
     },
     {
@@ -1295,9 +1297,9 @@
       "xloc": [
         "default.handlebars->23->243"
       ],
-      "pt": "Adicione Intelreg; ",
-      "ja": "Intel＆reg;を追加AMT CIRAデバイス",
-      "nl": "Toevoegen Intel® AMT CIRA apparaat"
+      "pt": "Adicione Intelreg; AMT",
+      "ja": "Intel&reg;を追加AMT CIRAデバイス",
+      "nl": "Toevoegen Intel&reg; AMT CIRA apparaat"
     },
     {
       "en": "Add Intel&reg; AMT device",
@@ -1306,8 +1308,8 @@
         "default.handlebars->23->211"
       ],
       "pt": "Adicione Intelreg; dispositivo AMT",
-      "ja": "Intel＆reg;を追加AMTデバイス",
-      "nl": "Add Intel&reg; AMT aaparaat"
+      "ja": "Intel&reg;を追加AMTデバイス",
+      "nl": "Add Intel&reg; AMT apparaat"
     },
     {
       "en": "Add Key",
@@ -1406,8 +1408,8 @@
         "default.handlebars->23->108"
       ],
       "pt": "Adicione YubiKeyreg; OTP",
-      "ja": "YubiKey＆reg;を追加OTP",
-      "nl": "Voeg YubiKey® OTP toe"
+      "ja": "YubiKey&reg;を追加OTP",
+      "nl": "Voeg YubiKey&reg; OTP toe"
     },
     {
       "en": "Address",
@@ -1527,7 +1529,7 @@
       ],
       "pt": "Console do agente",
       "ja": "エージェントコンソール",
-      "nl": "Agentconsole"
+      "nl": "Agent console"
     },
     {
       "en": "Agent disconnected",
@@ -2014,7 +2016,7 @@
       ],
       "ja": "{0}台のデバイスに接続してもよろしいですか？",
       "cs": "Opravdu připojit k {0} zařízení?",
-      "nl": "Weet u zeker dat u verbinding wilt maken met {0} -apparaten?"
+      "nl": "Weet u zeker dat u verbinding wilt maken met {0} apparaten?"
     },
     {
       "en": "Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.",
@@ -2338,7 +2340,7 @@
       "pt": "Códigos de backup",
       "ja": "バックアップコード",
       "cs": "Záloha kódu",
-      "nl": "Back-upcodes"
+      "nl": "Back-up codes"
     },
     {
       "en": "Basque",
@@ -4013,7 +4015,7 @@
       "pt": "Área de Trabalho - ",
       "ja": "デスクトップ-",
       "cs": "Plocha -",
-      "nl": "bureaublad - "
+      "nl": "Bureaublad - "
     },
     {
       "en": "Desktop Notify",
@@ -4168,7 +4170,7 @@
       ],
       "pt": "O dispositivo foi detectado, mas não foi possível obter o estado de energia.",
       "ja": "デバイスは検出されましたが、電源状態を取得できませんでした。",
-      "nl": "Apparaat is gedetecteerd, maar de stroomstatus kon niet worden verkregen."
+      "nl": "Apparaat is gedetecteerd, maar de status kon niet worden verkregen."
     },
     {
       "en": "Device is hibernating (S4)",
@@ -4305,7 +4307,7 @@
       "pt": "O dispositivo está presente, mas o estado de energia não pode ser determinado",
       "ja": "デバイスは存在しますが、電源状態を判別できません",
       "cs": "Zařízení je přítomno, ale nelze získat stav napájení",
-      "nl": "Apparaat is aanwezig, maar de stroomstatus kan niet worden bepaald"
+      "nl": "Apparaat is aanwezig, maar de status kan niet worden bepaald"
     },
     {
       "en": "Device Location",
@@ -4358,7 +4360,7 @@
       "pt": "Brinde do dispositivo",
       "ja": "デバイストースト",
       "cs": "Device Toast",
-      "nl": "undefined"
+      "nl": ""
     },
     {
       "en": "DeviceCheckbox",
@@ -4486,7 +4488,7 @@
       "pt": "Não configure",
       "ja": "設定しないでください",
       "cs": "Nekonfigurovat",
-      "nl": "Configureer niet"
+      "nl": "Niet configureren"
     },
     {
       "en": "Don\\'t connect to server",
@@ -4690,7 +4692,7 @@
       "pt": "Arraste e solte um arquivo .mcrec ou clique em \\\"Abrir arquivo...\\\"",
       "ja": ".mcrecファイルをドラッグアンドドロップするか、[ファイルを開く...]をクリックします",
       "cs": "Drag & drop soubor .mcrec nebo klikni na \\\"Otevřít soubor...\\\"",
-      "nl": "Sleep een .mcrec-bestand of klik op \\\"Bestand openen...\\\""
+      "nl": "Sleep een .mcrec-bestand of klik op \\\"Bestand openen ...\\\""
     },
     {
       "en": "Duration",
@@ -4808,9 +4810,9 @@
         "default-mobile.handlebars->9->214"
       ],
       "pt": "Editar Intel & reg; Credenciais AMT",
-      "ja": "Intelを編集＆reg; AMTクレデンシャル",
+      "ja": "Intelを編集&reg; AMTクレデンシャル",
       "cs": "Upravit Intel&reg; AMT pověření",
-      "nl": "Bewerk Intel® AMT-gegevens"
+      "nl": "Bewerk Intel&reg; AMT-gegevens"
     },
     {
       "en": "Edit Notes",
@@ -5337,7 +5339,8 @@
       ],
       "pt": "O servidor remoto retornou um erro: (429) Too Many Requests.",
       "ja": "フェロー語",
-      "cs": "Faeroese"
+      "cs": "Faeroese",
+      "nl": "Faeroese"
     },
     {
       "en": "Failed",
@@ -5714,7 +5717,7 @@
       "pt": "Friuliano",
       "ja": "フリウリアン",
       "cs": "Friulian",
-      "nl": " "
+      "nl": "Friulian"
     },
     {
       "en": "Full Administrator",
@@ -6147,7 +6150,7 @@
       ],
       "ja": "お待ちください、送信されたメールをリセットします。",
       "cs": "Vydržte, email je na cestě.",
-      "nl": "Wacht even, reset e-mail verzonden."
+      "nl": "even wachten, reset e-mail verzonden."
     },
     {
       "en": "Holding 1 entrie for copy",
@@ -6449,7 +6452,7 @@
       ],
       "ja": "インストール<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a>または互換性のあるアプリケーションでバーコードをスキャンするには、<a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>このリンク</a>を使用するか、秘密。次に、現在の6桁のトークンを入力して、2段階ログインを有効にします。",
       "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci a naskenujte kód, použijte <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte secret. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
-      "nl": "Installeer <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> of een compatibele applicatie en scan de streepjescode, gebruik <a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank> deze link </a> of voer de link in geheim. Voer vervolgens het huidige 6-cijferige token hieronder in om 2-staps aanmelding te activeren."
+      "nl": "Installeer <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> of een compatibele applicatie en scan de streepjescode, gebruik <a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>deze link</a> of voer de link in geheim. Voer vervolgens het huidige 6-cijferige token hieronder in om 2-staps aanmelding te activeren."
     },
     {
       "en": "Install <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.",
@@ -6458,7 +6461,7 @@
       ],
       "ja": "インストール<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a>または互換性のあるアプリケーションの場合、<a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>このリンク</a>を使用するか、下に秘密を入力します。次に、現在の6桁のトークンを入力して、2段階ログインを有効にします。",
       "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci, použijte <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte secret. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
-      "nl": "Installeer <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a> of een compatibele toepassing, gebruik <a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank> deze link </a> of voer hieronder het geheim in. Voer vervolgens het huidige 6-cijferige token in om 2-staps aanmelding te activeren."
+      "nl": "Installeer <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> of een compatibele toepassing, gebruik <a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>deze link</a> of voer hieronder het geheim in. Voer vervolgens het huidige 6-cijferige token in om 2-staps aanmelding te activeren."
     },
     {
       "en": "Install CIRA",
@@ -6612,7 +6615,7 @@
         "default.handlebars->23->449"
       ],
       "pt": "Intel&reg; Tecnologia de gerenciamento ativo",
-      "ja": "Intel＆reg;アクティブ管理テクノロジー",
+      "ja": "Intel&reg;アクティブ管理テクノロジー",
       "cs": "Intel&reg; Active Management Technology",
       "nl": "Intel&reg; Active Management Technology"
     },
@@ -6629,7 +6632,7 @@
         "default-mobile.handlebars->9->189"
       ],
       "pt": "Intel&reg; AMT",
-      "ja": "Intel＆reg; AMT",
+      "ja": "Intel&reg; AMT",
       "cs": "Intel&reg; AMT",
       "nl": "Intel&reg; AMT"
     },
@@ -6640,7 +6643,7 @@
         "default.handlebars->23->216"
       ],
       "pt": "Intel&reg; Ativação AMT",
-      "ja": "Intel＆reg; AMTアクティベーション",
+      "ja": "Intel&reg; AMTアクティベーション",
       "cs": "Intel&reg; AMT aktivace",
       "nl": "Intel&reg; AMT activatie"
     },
@@ -6651,7 +6654,7 @@
         "default-mobile.handlebars->9->188"
       ],
       "pt": "Intel&reg; AMT CIRA",
-      "ja": "Intel＆reg; AMT CIRA",
+      "ja": "Intel&reg; AMT CIRA",
       "cs": "Intel&reg; AMT CIRA",
       "nl": "Intel&reg; AMT CIRA"
     },
@@ -6663,9 +6666,9 @@
         "default.handlebars->23->463"
       ],
       "pt": "Intel&reg; O AMT CIRA está conectado e pronto para uso.",
-      "ja": "Intel＆reg; AMT CIRAが接続され、使用できる状態になりました。",
+      "ja": "Intel&reg; AMT CIRAが接続され、使用できる状態になりました。",
       "cs": "Intel&reg; AMT CIRA je připojeno a připraveno k použití.",
-      "nl": "Intel® AMT CIRA is verbonden en klaar voor gebruik."
+      "nl": "Intel&reg; AMT CIRA is verbonden en klaar voor gebruik."
     },
     {
       "en": "Intel&reg; AMT Connected",
@@ -6674,9 +6677,9 @@
         "default-mobile.handlebars->9->5"
       ],
       "pt": "Intel&reg; AMT conectado",
-      "ja": "Intel＆reg;接続されたAMT",
+      "ja": "Intel&reg;接続されたAMT",
       "cs": "Intel&reg; AMT připojeno",
-      "nl": "Intel® AMT verbonden"
+      "nl": "Intel&reg; AMT verbonden"
     },
     {
       "en": "Intel&reg; AMT connected",
@@ -6686,9 +6689,9 @@
         "default-mobile.handlebars->9->198"
       ],
       "pt": "Intel&reg; AMT conectado",
-      "ja": "Intel＆reg;接続されたAMT",
+      "ja": "Intel&reg;接続されたAMT",
       "cs": "Intel&reg; AMT připojeno",
-      "nl": "Intel® AMT verbonden"
+      "nl": "Intel&reg; AMT verbonden"
     },
     {
       "en": "Intel&reg; AMT desktop and serial events.",
@@ -6696,9 +6699,9 @@
         "default.handlebars->23->885"
       ],
       "pt": "Intel&reg; Área de trabalho AMT e eventos seriais.",
-      "ja": "Intel＆reg; AMTデスクトップおよびシリアルイベント。",
+      "ja": "Intel&reg; AMTデスクトップおよびシリアルイベント。",
       "cs": "Intel&reg; AMT desktop and serial události.",
-      "nl": "Intel® AMT desktop- en seriële gebeurtenissen."
+      "nl": "Intel&reg; AMT desktop- en seriële gebeurtenissen."
     },
     {
       "en": "Intel&reg; AMT detected",
@@ -6708,7 +6711,7 @@
         "default-mobile.handlebars->9->199"
       ],
       "pt": "Intel&reg; AMT detectado",
-      "ja": "Intel＆reg; AMTが検出されました",
+      "ja": "Intel&reg; AMTが検出されました",
       "cs": "Intel&reg; AMT detekováno",
       "nl": "Intel&reg; AMT gedetecteerd"
     },
@@ -6718,9 +6721,9 @@
         "default.handlebars->23->465"
       ],
       "pt": "Intel&reg; O AMT é roteável e pronto para uso.",
-      "ja": "Intel＆reg; AMTはルーティング可能であり、すぐに使用できます。",
+      "ja": "Intel&reg; AMTはルーティング可能であり、すぐに使用できます。",
       "cs": "Intel&reg; AMT je směrovatelný a připraven k použití.",
-      "nl": "Intel® AMT is routeerbaar en klaar voor gebruik."
+      "nl": "Intel&reg; AMT is routeerbaar en klaar voor gebruik."
     },
     {
       "en": "Intel&reg; AMT is routable.",
@@ -6729,9 +6732,9 @@
         "default.handlebars->23->338"
       ],
       "pt": "Intel&reg; AMT é roteável.",
-      "ja": "Intel＆reg; AMTはルーティング可能です。",
+      "ja": "Intel&reg; AMTはルーティング可能です。",
       "cs": "Intel&reg; AMT je směrovatelný.",
-      "nl": "Intel® AMT is routeerbaar."
+      "nl": "Intel&reg; AMT is routeerbaar."
     },
     {
       "en": "Intel&reg; AMT only",
@@ -6739,7 +6742,7 @@
         "default-mobile.handlebars->9->56"
       ],
       "pt": "Intel&reg; Apenas AMT",
-      "ja": "Intel＆reg; AMTのみ",
+      "ja": "Intel&reg; AMTのみ",
       "cs": "Intel&reg; AMT pouze",
       "nl": "Intel&reg; AMT alleen"
     },
@@ -6751,7 +6754,7 @@
         "default-mobile.handlebars->9->271"
       ],
       "pt": "Intel&reg; Apenas AMT, nenhum agente",
-      "ja": "Intel＆reg; AMTのみ、エージェントなし",
+      "ja": "Intel&reg; AMTのみ、エージェントなし",
       "cs": "Intel&reg; AMT pouze, bez agenta",
       "nl": "Intel&reg; AMT alleen, geen agent"
     },
@@ -6761,9 +6764,9 @@
         "default.handlebars->23->999"
       ],
       "pt": "Intel&reg; Política da AMT",
-      "ja": "Intel＆reg; AMTポリシー",
+      "ja": "Intel&reg; AMTポリシー",
       "cs": "Intel&reg; AMT politika",
-      "nl": "Intel® AMT beleid"
+      "nl": "Intel&reg; AMT beleid"
     },
     {
       "en": "Intel&reg; AMT Redirection",
@@ -6771,7 +6774,7 @@
         "player.htm->3->14"
       ],
       "pt": "Intel&reg; Redirecionamento AMT",
-      "ja": "Intel＆reg; AMTリダイレクト",
+      "ja": "Intel&reg; AMTリダイレクト",
       "cs": "Intel&reg; AMT přesměrování",
       "nl": "Intel&reg; AMT omleiding"
     },
@@ -6781,7 +6784,7 @@
         "default.handlebars->23->454"
       ],
       "pt": "Intel&reg; Tag AMT ",
-      "ja": "Intel＆reg; AMTタグ",
+      "ja": "Intel&reg; AMTタグ",
       "cs": "Intel&reg; AMT značka",
       "nl": "Intel&reg; AMT Tag"
     },
@@ -6791,7 +6794,7 @@
         "player.htm->3->13"
       ],
       "pt": "Intel&reg; AMT WSMAN",
-      "ja": "Intel＆reg; AMT WSMAN",
+      "ja": "Intel&reg; AMT WSMAN",
       "cs": "Intel&reg; AMT WSMAN",
       "nl": "Intel&reg; AMT WSMAN"
     },
@@ -6802,7 +6805,7 @@
         "default-mobile.handlebars->9->183"
       ],
       "pt": "Intel&reg; ME",
-      "ja": "Intel＆reg;私",
+      "ja": "Intel&reg;私",
       "cs": "Intel&reg; ME",
       "nl": "Intel&reg; ME"
     },
@@ -6813,7 +6816,7 @@
         "default-mobile.handlebars->9->185"
       ],
       "pt": "Intel&reg; SM",
-      "ja": "Intel＆reg; SM",
+      "ja": "Intel&reg; SM",
       "cs": "Intel&reg; SM",
       "nl": "Intel&reg; SM"
     },
@@ -6823,9 +6826,9 @@
         "default.handlebars->23->451"
       ],
       "pt": "Intel&reg; Gerenciamento padrão",
-      "ja": "Intel＆reg;標準の管理性",
+      "ja": "Intel&reg;標準の管理性",
       "cs": "Intel&reg; Standard Manageability",
-      "nl": "Standaard beheerbaarheid van Intel®"
+      "nl": "Standaard beheerbaarheid van Intel&reg;"
     },
     {
       "en": "Intel® AMT",
@@ -6833,7 +6836,7 @@
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
       ],
       "pt": "Intel® AMT",
-      "ja": "インテル®AMT",
+      "ja": "Intel® AMT",
       "cs": "Intel® AMT",
       "nl": "Intel® AMT"
     },
@@ -6843,7 +6846,7 @@
         "default.handlebars->container->column_l->p14->p14title->5"
       ],
       "pt": "Intel® AMT -",
-      "ja": "インテル®AMT-",
+      "ja": "Intel® AMT -",
       "cs": "Intel® AMT -",
       "nl": "Intel® AMT -"
     },
@@ -6854,7 +6857,7 @@
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->1"
       ],
       "pt": "Intel® AMT Hardware KVM",
-      "ja": "インテル®AMTハードウェアKVM",
+      "ja": "Intel® AMTハードウェアKVM",
       "cs": "Intel® AMT Hardware KVM",
       "nl": "Intel® AMT Hardware KVM"
     },
@@ -6865,7 +6868,7 @@
         "default.handlebars->container->column_l->p12->p12warning->3"
       ],
       "pt": "Intel® Porta de redirecionamento AMT ou recurso KVM desativado",
-      "ja": "Intel®AMTリダイレクトポートまたはKVM機能が無効になっています",
+      "ja": "Intel® AMTリダイレクトポートまたはKVM機能が無効になっています",
       "cs": "Intel® AMT přesměrování portu nebo KVM vlastnost je vypnuta",
       "nl": "Intel® AMT omleidingspoort of KVM-functie is uitgeschakeld"
     },
@@ -8276,7 +8279,7 @@
       "pt": "Nome de usuário / senha manual",
       "ja": "手動ユーザー名/パスワード",
       "cs": "Vlastní přihlašovací jméno/heslo",
-      "nl": "Handmatige gebruikersnaam / wachtwoord"
+      "nl": "Handmatige gebruikersnaam/wachtwoord"
     },
     {
       "en": "Maori",
@@ -9282,7 +9285,7 @@
         "default-mobile.handlebars->9->319"
       ],
       "pt": "Nenhum Intel&reg; AMT",
-      "ja": "Intel＆reg;なしAMT",
+      "ja": "Intel&reg;なしAMT",
       "cs": "Žádné Intel&reg; AMT",
       "nl": "Geen Intel&reg; AMT"
     },
@@ -9292,7 +9295,7 @@
         "default-mobile.handlebars->9->93"
       ],
       "pt": "Nenhum Intel&reg; AMT devices in this group",
-      "ja": "Intel＆reg;なしこのグループのAMTデバイス",
+      "ja": "Intel&reg;なしこのグループのAMTデバイス",
       "cs": "Žádné Intel&reg; AMT zařízení v této skupině",
       "nl": "Geen Intel&reg; AMT-apparaten in deze groep"
     },
@@ -9302,7 +9305,7 @@
         "default.handlebars->23->164"
       ],
       "pt": "Nenhum Intel&reg; dispositivos AMT nessa malha",
-      "ja": "Intel＆reg;なしこのメッシュのAMTデバイス",
+      "ja": "Intel&reg;なしこのメッシュのAMTデバイス",
       "cs": "Žádné Intel&reg; AMT zařízení",
       "nl": "Geen Intel&reg; AMT-apparaten in deze mesh"
     },
@@ -10575,7 +10578,7 @@
       "pt": "Solicitar consentimento do usuário",
       "ja": "ユーザーの同意を求める",
       "cs": "Výzva k souhlasu uživatele",
-      "nl": "Vragen gebruikerstoestemming"
+      "nl": "Vraag gebruikerstoestemming"
     },
     {
       "en": "Protocol",
@@ -10723,9 +10726,9 @@
         "default.handlebars->23->1004"
       ],
       "pt": "Reativar Intel&reg;AMT",
-      "ja": "インテルを再アクティブ化＆reg; AMT",
+      "ja": "インテルを再アクティブ化&reg; AMT",
       "cs": "ReaktivaceIntel&reg; AMT",
-      "nl": "Heractiveer Intel® AMT"
+      "nl": "Heractiveer Intel&reg; AMT"
     },
     {
       "en": "Realms",
@@ -11371,7 +11374,7 @@
       "pt": "Valores de intervalo de IP de amostra<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100",
       "ja": "サンプルIP範囲値<br /> 192.168.0.100 <br /> 192.168.1.0/24 <br /> 192.167.0.1-192.168.0.100",
       "cs": "Příklad rozsahu IP adres<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100",
-      "nl": "Voorbeeld van IP-bereikwaarden <br /> 192.168.0.100 <br /> 192.168.1.0/24 <br /> 192.167.0.1-192.168.0.100"
+      "nl": "Voorbeeld van IP-bereikwaarden<br />192.168.0.100 <br />192.168.1.0/24 <br />192.167.0.1-192.168.0.100"
     },
     {
       "en": "Sango",
@@ -11466,9 +11469,9 @@
         "default.handlebars->23->220"
       ],
       "pt": "Digitalizar para Intel&reg; dispositivos AMT",
-      "ja": "Intelをスキャン＆reg; AMTデバイス",
+      "ja": "Intelをスキャン&reg; AMTデバイス",
       "cs": "Hledat Intel&reg; AMT zařízení",
-      "nl": "Scannen naar Intel® AMT-apparaten"
+      "nl": "Scannen naar Intel&reg;  AMT-apparaten"
     },
     {
       "en": "Scan Network",
@@ -12995,7 +12998,8 @@
       ],
       "pt": "Prompt do terminal",
       "ja": "端末プロンプト",
-      "cs": "Výzva terminálu"
+      "cs": "Výzva terminálu",
+      "nl": ""
     },
     {
       "en": "Terms & Privacy",
@@ -13141,7 +13145,8 @@
         "error404-mobile.handlebars->container->page_content->column_l->3"
       ],
       "pt": "Esta página não existe",
-      "ja": "このページは存在しません"
+      "ja": "このページは存在しません",
+      "nl": ""
     },
     {
       "en": "This policy will not impact devices with Intel&reg; AMT in ACM mode.",
@@ -13149,8 +13154,9 @@
         "default.handlebars->23->1015"
       ],
       "pt": "Esta política não afetará os dispositivos com Intel&reg; AMT no modo ACM.",
-      "ja": "このポリシーは、Intel＆reg;を搭載したデバイスには影響しません。 ACMモードのAMT。",
-      "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT in ACM módem."
+      "ja": "このポリシーは、Intel&reg;を搭載したデバイスには影響しません。 ACMモードのAMT。",
+      "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT in ACM módem.",
+      "nl": ""
     },
     {
       "en": "This software consists of voluntary contributions made by many individuals (AUTHORS.txt, http://jqueryui.com/about ). For exact contribution history,see the revision history and logs, available at http://jquery-ui.googlecode.com/svn/",
@@ -13160,7 +13166,8 @@
       ],
       "pt": "Este software consiste em contribuições voluntárias feitas por muitos indivíduos (AUTORES.txt, http://jqueryui.com/about ). Para obter o histórico exato de contribuições, consulte o histórico de revisões e os logs, disponíveis em http://jquery-ui.googlecode.com/svn/",
       "ja": "このソフトウェアは、多くの個人による自発的な貢献で構成されています（AUTHORS.txt、http：//jqueryui.com/about）。正確な貢献履歴については、http：//jquery-ui.googlecode.com/svn/にある改訂履歴とログをご覧ください",
-      "cs": "Tento software se skládá z dobrovolných příspěvků mnoha jednotlivců (AUTHORS.txt, http://jqueryui.com/about ). Přesnou historii příspěvků naleznete v historii revizí a protokolech dostupných na adrese http://jquery-ui.googlecode.com/svn/"
+      "cs": "Tento software se skládá z dobrovolných příspěvků mnoha jednotlivců (AUTHORS.txt, http://jqueryui.com/about ). Přesnou historii příspěvků naleznete v historii revizí a protokolech dostupných na adrese http://jquery-ui.googlecode.com/svn/",
+      "nl": ""
     },
     {
       "en": "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.",
@@ -13229,7 +13236,8 @@
       ],
       "pt": "Tigre",
       "ja": "ティグレ",
-      "cs": "Tigre"
+      "cs": "Tigre",
+      "nl": "Tigre"
     },
     {
       "en": "Time",
@@ -13239,7 +13247,8 @@
       ],
       "pt": "Tempo",
       "ja": "時間",
-      "cs": "Čas"
+      "cs": "Čas",
+      "nl": "Tijd"
     },
     {
       "en": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
@@ -13248,7 +13257,8 @@
       ],
       "pt": "tempo, conn.agente, conn.usuários.usersessions, conn.relaysession, conn.intelamt, mem.externo mem.amontoado, mem.heaptotal, mem.rss",
       "ja": "time、conn.agent、conn.users、conn.usersessions、conn.relaysession、conn.intelamt、mem.external、mem.heapused、mem.heaptotal、mem.rss",
-      "cs": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss"
+      "cs": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
+      "nl": "tijd, conn.agent, conn.gebruikers, conn.gebruikerssessies, conn.relaysessie, conn.intelamt, mem.extern, mem.heapused, mem.heaptotaal, mem.rss"
     },
     {
       "en": "time, source, message",
@@ -13257,7 +13267,8 @@
       ],
       "pt": "hora, fonte, mensagem",
       "ja": "時間、ソース、メッセージ",
-      "cs": "time, source, message"
+      "cs": "time, source, message",
+      "nl": "tijd, bron, bericht"
     },
     {
       "en": "time, type, action, user, message",
@@ -13266,7 +13277,8 @@
       ],
       "pt": "hora, tipo, ação, usuário, mensagem",
       "ja": "時間、タイプ、アクション、ユーザー、メッセージ",
-      "cs": "time, type, action, user, message"
+      "cs": "time, type, action, user, message",
+      "nl": "tijd, type, actie, gebruiker, bericht"
     },
     {
       "en": "TLS",
@@ -13277,7 +13289,8 @@
       ],
       "pt": "TLS",
       "ja": "TLS",
-      "cs": "TLS"
+      "cs": "TLS",
+      "nl": "TLS"
     },
     {
       "en": "TLS security required",
@@ -13328,9 +13341,9 @@
         "default.handlebars->23->226"
       ],
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, baixe os seguintes arquivos de script e use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> para executar o script para configurar computadores.",
-      "ja": "新しいIntel＆reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\\\"{0}\\\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。",
+      "ja": "新しいIntel&reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\\\"{0}\\\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。",
       "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny \\\"{0}\\\" s CIRA, si musíte stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro konfiguraci počítačů.",
-      "nl": "Om een nieuw Intel® AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href = 'http: //meshcommander.com' rel = 'noreferrer noopener' target = ' _blank '> MeshCommander </a> om het script uit te voeren om computers te configureren."
+      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> om het script uit te voeren om computers te configureren."
     },
     {
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT",
@@ -13338,9 +13351,9 @@
         "default.handlebars->23->229"
       ],
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT",
-      "ja": "新しいIntel＆reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel AMT内で信頼されたルートとして次の証明書をロード",
+      "ja": "新しいIntel&reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel AMT内で信頼されたルートとして次の証明書をロード",
       "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny \\\"{0}\\\" s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT",
-      "nl": "v"
+      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT"
     },
     {
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.",
@@ -13348,9 +13361,9 @@
         "default.handlebars->23->238"
       ],
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT, autentique usando um certificado de cliente com o seguinte nome comum e conecte-se ao servidor a seguir.",
-      "ja": "新しいIntel＆reg;を追加するにはCIRAを使用してデバイスグループ\\\"{0}\\\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。",
+      "ja": "新しいIntel&reg;を追加するにはCIRAを使用してデバイスグループ\\\"{0}\\\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。",
       "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny \\\"{0}\\\" s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT, tímto klientským certifikátem se pak bude autentizovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
-      "nl": "Om een nieuw Intel® AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server."
+      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server."
     },
     {
       "en": "To delete this account, type in the account password in both boxes below and hit ok.",
@@ -13390,7 +13403,7 @@
       ],
       "pt": "Para remover um agente de malha, faça o download do arquivo abaixo, execute-o e clique em \\\"uninstall\\\".",
       "ja": "メッシュエージェントを削除するには、以下のファイルをダウンロードして実行し、「アンインストール」をクリックします。",
-      "nl": "Om een mesh-agent te verwijderen, download het onderstaande bestand, voer het uit en klik op \\\"deinstalleer\\\"."
+      "nl": "Om een mesh-agent te verwijderen, download het onderstaande bestand, voer het uit en klik op \\\"deinstalleer \\\"."
     },
     {
       "en": "To remove a mesh agent, run the following command. Root credentials will be needed.",
@@ -13420,7 +13433,7 @@
       "pt": "Alterna o tipo de emulação de teclas F1 a F10",
       "ja": "F1からF10キーのエミュレーションタイプを切り替えます",
       "cs": "Přepněte typ emulace kláves F1 na F10",
-      "nl": "Schakel het emulatietype van F1 naar F10-toetsen"
+      "nl": "Schakel het emulatietype van F1 naar F10 toetsen"
     },
     {
       "en": "Toggle focus mode, when active only the region around the mouse is updated",
@@ -13671,7 +13684,7 @@
       "pt": "Digite um nome de chave, selecione a caixa OTP e pressione o botão no YubiKeytrade;.",
       "ja": "キー名を入力し、OTPボックスを選択して、YubiKey＆trade;のボタンを押します。",
       "cs": "Zadejte název klíče, vyberte pole OTP a stiskněte tlačítko na YubiKey&trade;.",
-      "nl": "Typ een sleutelnaam, selecteer het vak OTP en druk op de knop op de YubiKey ™."
+      "nl": "Typ een sleutelnaam, selecteer het vak OTP en druk op de knop op de YubiKey™."
     },
     {
       "en": "Type in the name of the key to add.",
@@ -14128,7 +14141,7 @@
       "pt": "Identificador do usuário",
       "ja": "ユーザー識別子",
       "cs": "Identifikátor uživatele",
-      "nl": "gebruikers-ID"
+      "nl": "gebruikersID"
     },
     {
       "en": "User interface selection",
@@ -14254,7 +14267,7 @@
       ],
       "ja": "ユーザー名は既に存在します。",
       "cs": "Uživatel již existuje.",
-      "nl": "Gebruikersnaam bestaal al."
+      "nl": "Gebruikersnaam bestaat al."
     },
     {
       "en": "Username:",
@@ -14443,7 +14456,7 @@
       ],
       "pt": "Aguardando outro usuário ...",
       "ja": "他のユーザーを待っています...",
-      "nl": "Wachten op andere gebruiker ..."
+      "nl": "Wachten op de gebruiker ..."
     },
     {
       "en": "Wake Devices",
@@ -14929,7 +14942,7 @@
         "agentinvite.handlebars->container->column_l->3"
       ],
       "pt": "Você foi convidado a instalar um software que permitirá que um operador remoto acesse totalmente seu computador remotamente, incluindo a área de trabalho e os arquivos.\n                Siga apenas as instruções abaixo se esse convite for esperado e você sabe quem acessará seu computador.\n                Selecionando seu sistema operacional e siga as instruções abaixo.",
-      "nl": "U bent uitgenodigd om software te installeren waarmee een externe operator op afstand volledige toegang heeft tot uw computer, inclusief het bureaublad en de bestanden.\n                 Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie toegang krijgt tot uw computer.\n                 Selecteer uw besturingssysteem en volg de onderstaande instructies."
+      "nl": "U bent uitgenodigd om software te installeren waarmee een externe operator op afstand volledige toegang heeft tot uw computer, inclusief het bureaublad en de bestanden. Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie toegang krijgt tot uw computer. Selecteer uw besturingssysteem en volg de onderstaande instructies."
     },
     {
       "en": "You will now need a valid token to login again.",
@@ -14950,7 +14963,7 @@
       "pt": "YubiKey&trade; OTP",
       "ja": "YubiKey＆trade; OTP",
       "cs": "YubiKey&trade; OTP",
-      "nl": "YubiKey™ OTP"
+      "nl": "YubiKey&trade; OTP"
     },
     {
       "en": "Zoom to fit extent",
@@ -15471,7 +15484,7 @@
       "xloc": [
         "default.handlebars->23->1285"
       ],
-      "ja": "\\\\ '",
+      "ja": "\\\\'",
       "cs": "\\\\'",
       "nl": "\\\\'"
     },

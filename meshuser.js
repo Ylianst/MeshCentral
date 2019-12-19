@@ -412,7 +412,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
                     if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
                     db.GetServerStats(command.hours, function (err, docs) {
-                        if (err == null) { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); }
+                        if (err == null) {
+                            try { ws.send(JSON.stringify({ action: 'servertimelinestats', events: docs })); } catch (ex) { }
+                        }
                     });
                     break;
                 }

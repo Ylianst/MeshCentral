@@ -393,7 +393,7 @@
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
-                                    <input id="deskActionsBtn" type="button" style="margin-left:3px" onkeypress="return false" onkeydown="return false" value="Akties" onclick="deviceActionFunction()">
+                                    <input id="deskActionsBtn" type="button" style="margin-left:3px" onkeypress="return false" onkeydown="return false" value="Acties" onclick="deviceActionFunction()">
                                     <input type="button" value="Instellingen" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actie's..." onclick="showPowerActionDlg()" style="display:none">
                                     <input id="DeskSpecialKeys" type="button" value="Speciale toetsen" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
@@ -408,7 +408,7 @@
                             <tbody><tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
                                     <div style="float:right;text-align:right">
-                                        <input id="filesActionsBtn" type="button" onkeypress="return false" onkeydown="return false" value="Akties" onclick="deviceActionFunction()" style="margin-right:2px">
+                                        <input id="filesActionsBtn" type="button" onkeypress="return false" onkeydown="return false" value="Acties" onclick="deviceActionFunction()" style="margin-right:2px">
                                     </div>
                                     <div style="margin-left:2px">
                                         <input id="p13AutoConnect" value="Automatisch verbinden" onclick="autoConnectFiles(event)" onkeypress="return false" onkeydown="return false" type="button" style="display:none">
@@ -616,7 +616,7 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
-        var StatusStrs = ["Verbroken", "Verbinden...", "Setup...", "Verbonden", "Intel® AMT verbonden"];
+        var StatusStrs = ["Verbroken", "Verbinden...", "Setup...", "Verbonden", "Intel&reg; AMT verbonden"];
         var files;
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -790,7 +790,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', "Installeer <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank> Google Authenticator </a> of een compatibele toepassing, gebruik <a href=\"' + message.url +'\" rel=\"noreferrer noopener\" target=_blank> deze link </a> of voer hieronder het geheim in. Voer vervolgens het huidige 6-cijferige token in om 2-staps aanmelding te activeren." + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                        QH('d2optinfo', "Installeer <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> of een compatibele toepassing, gebruik <a href=\"' + message.url +'\" rel=\"noreferrer noopener\" target=_blank>deze link</a> of voer hieronder het geheim in. Voer vervolgens het huidige 6-cijferige token in om 2-staps aanmelding te activeren." + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
                         Q('d2otpauthinput').focus();
@@ -804,7 +804,7 @@
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Verificatie-app", 1, null, message.success ? "<b style=color:green> Tweestapsverificatie verwijderd</b>. Je kan deze functie ten allen tijde weer inschakelen." : "<b style=color:red>Tweestapsverificatie verwijdering mislukt</b>. Probeer het opnieuw.");
+                    setDialogMode(2, "Verificatie-app", 1, null, message.success ? "<b style=color:green>Tweestapsverificatie verwijderd</b>. Je kan deze functie ten allen tijde weer inschakelen." : "<b style=color:red>Tweestapsverificatie verwijdering mislukt</b>. Probeer het opnieuw.");
                     break;
                 }
                 case 'otpauth-getpasswords': {
@@ -1754,7 +1754,7 @@
 
         var powerStatetable = ['', "ingeschakeld", "Slaap", "Slaap", "Slaap", "Slaapstand", "Uitzetten", "Aanwezig"];
         var powerStateStrings = ['', "ingeschakeld", "Slapen", "Slapen", "Slaapstand", "Slaapstand", "softwarematig uit", "Aanwezig"];
-        var powerStateStrings2 = ['', "Apparaat is ingeschakeld", "Apparaat bevindt zich in slaapstand (S1)", "Apparaat bevindt zich in slaapstand (S2)", "Apparaat bevindt zich in diepe slaapstand (S3)", "Apparaat is in slaapstand (S4)", "Apparaat is uitgeschakeld (S5)", "Apparaat is aanwezig, maar de stroomstatus kan niet worden bepaald"];
+        var powerStateStrings2 = ['', "Apparaat is ingeschakeld", "Apparaat bevindt zich in slaapstand (S1)", "Apparaat bevindt zich in slaapstand (S2)", "Apparaat bevindt zich in diepe slaapstand (S3)", "Apparaat is in slaapstand (S4)", "Apparaat is uitgeschakeld (S5)", "Apparaat is aanwezig, maar de status kan niet worden bepaald"];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
         function NodeStateStr(node) {
             var states = [];
@@ -1977,7 +1977,7 @@
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Mesh Agent" + '</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel® AMT verbonden" + '</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT verbonden" + '</span>'; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT gedetecteerd" + '</span>'; }
                 if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px>' + "MQTT-kanaal verbonden" + '</span>'; }
                 QH('MainComputerState', powerstate);
@@ -1998,7 +1998,7 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "undefined", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
+            setDialogMode(2, "Device Toast", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
         }
 
         function deviceToastFunctionEx() {
@@ -2121,7 +2121,7 @@
             x += addHtmlValue("wachtwoord", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Veiligheid", '<select id=dp10tls style=width:176px><option value=0>' + "Geen TLS beveiliging" + '</option><option value=1>' + "TLS beveiliging vereist" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
-            setDialogMode(2, "Bewerk Intel® AMT-gegevens", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
+            setDialogMode(2, "Bewerk Intel&reg; AMT-gegevens", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             Q('dp10tls').value = node.intelamt.tls;
             validateDeviceAmtSettings();
@@ -3108,7 +3108,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " gebruiker toevoegen" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Gebruiker toevoegen" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
@@ -3282,7 +3282,7 @@
                 if ((meshrights & 2) != 0) r.push("Beheer apparaatgroep gebruikers");
                 if ((meshrights & 4) != 0) r.push("Beheer apparaatgroep computers");
                 if ((meshrights & 8) != 0) r.push("Extern beheer");
-                if ((meshrights & 16) != 0) r.push("Agentconsole");
+                if ((meshrights & 16) != 0) r.push("Agent console");
                 if ((meshrights & 32) != 0) r.push("Serverbestanden");
                 if ((meshrights & 64) != 0) r.push("apparaat wekken");
                 if ((meshrights & 128) != 0) r.push("Notities bewerken");
@@ -3297,7 +3297,7 @@
             }
             if (r.length == 0) { r.push("Geen rechten"); }
             var buttons = 1, x = addHtmlValue("Gebruiker", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
-            x += addHtmlValue("machtigingen", r.join(","));
+            x += addHtmlValue("machtigingen", r.join(", "));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Apparaatgroep gebruiker", buttons, p20viewuserEx, x, userid);
         }

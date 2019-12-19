@@ -448,7 +448,7 @@
                     <div id="p11deviceNameHeader">
                         <div id="p11BackButton"><div class="backButton" tabindex="0" onclick="goBack()" title="Terug" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                         <div id="devListToolbarViewIcons"><div class="viewSelector" onclick="deskToggleFull(event)" title="Volledig scherm. Houd shift ingedrukt om de browser op volledig scherm weer te geven."><div class="viewSelector5"></div></div></div>
-                        <h1>bureaublad -  <span id="p11deviceName"></span></h1>
+                        <h1>Bureaublad -  <span id="p11deviceName"></span></h1>
                     </div>
                 </div>
                 <div id="p11warning" onclick="showFeaturesDlg()">
@@ -469,7 +469,7 @@
                             <div id="deskRecordIcon" class="deskareaicon" title="Server neemt deze sessie op" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                             <input id="deskFocusBtn" type="button" title="Schakel focusmodus in, indien actief wordt alleen het gebied rond de muis bijgewerkt" onkeypress="return false" onkeydown="return false" value="Focus alles" onclick="deskToggleFocus()" style="margin-right:3px;display:none">
                             <input id="deskSaveBtn" type="button" title="Bewaar een screenshot van het externe bureaublad" onkeypress="return false" onkeydown="return false" value="Opslaan..." onclick="deskSaveImage()" class="mR">
-                            <input id="deskActionsBtn" type="button" title="Voer krachtacties uit op het apparaat" onkeypress="return false" onkeydown="return false" value="Akties" onclick="deviceActionFunction()" class="mR">
+                            <input id="deskActionsBtn" type="button" title="Voer krachtacties uit op het apparaat" onkeypress="return false" onkeydown="return false" value="Acties" onclick="deviceActionFunction()" class="mR">
                             <input id="deskActionsSettings" type="button" value="Instellingen ..." title="Bewerk externe bureaubladinstellingen" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR">
                             <input type="button" title="Wijzig de stroomstatus van het externe apparaat" onkeypress="return false" onkeydown="return false" value="Power Actie's..." onclick="showPowerActionDlg()" style="display:none">
                         </div>
@@ -569,7 +569,7 @@
                             <td class="areaHead">
                                 <div class="toright2">
                                     <div id="termRecordIcon" class="deskareaicon" title="Server neemt deze sessie op" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
-                                    <input id="termActionsBtn" type="button" title="Voer krachtacties uit op het apparaat" onkeypress="return false" onkeydown="return false" value="Akties" onclick="deviceActionFunction()">
+                                    <input id="termActionsBtn" type="button" title="Voer krachtacties uit op het apparaat" onkeypress="return false" onkeydown="return false" value="Acties" onclick="deviceActionFunction()">
                                 </div>
                                 <div>
                                     <input type="button" id="autoconnectbutton2" value="Automatisch verbinden" onclick="autoConnectTerminal(event)" onkeypress="return false" onkeydown="return false" style="display:none">
@@ -596,7 +596,7 @@
                                     <span id="TermTimer" title="Sessie tijd"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Wissel wat de return toets zal verzenden" onclick="termToggleCr()">
-                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Schakel het emulatietype van F1 naar F10-toetsen" onclick="termToggleFx()">
+                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Schakel het emulatietype van F1 naar F10 toetsen" onclick="termToggleFx()">
                                         <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Schakel het type terminal emulatie in" onclick="termToggleType()">
                                     </span>
                                     <span id="terminalSizeDropDown">
@@ -628,7 +628,7 @@
                     <tbody><tr>
                         <td class="areaHead">
                             <div class="toright2">
-                                <input id="filesActionsBtn" type="button" title="Voer krachtacties uit op het apparaat" value="Akties" onclick="deviceActionFunction()">
+                                <input id="filesActionsBtn" type="button" title="Voer krachtacties uit op het apparaat" value="Acties" onclick="deviceActionFunction()">
                                 <div id="filesRecordIcon" class="deskareaicon" title="Server neemt deze sessie op" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                             </div>
                             <div>
@@ -908,7 +908,7 @@
                     </div>
                 </div>
                 <table id="p42tbl">
-                    <tbody><tr class="DevSt"><th style="width:26px"></th><th style="width:10px"></th><th class="chName">Naam</th><th class="chDescription">Omschrijving</th><th class="chSite" style="text-align:center">Link</th><th class="chVersion" style="text-align:center">Versie</th><th class="chUpgradeAvail" style="text-align:center">Laatste</th><th class="chStatus" style="text-align:center">Status</th><th class="chAction" style="text-align:center">Aktie</th><th style="width:10px"></th></tr>
+                    <tbody><tr class="DevSt"><th style="width:26px"></th><th style="width:10px"></th><th class="chName">Naam</th><th class="chDescription">Omschrijving</th><th class="chSite" style="text-align:center">Link</th><th class="chVersion" style="text-align:center">Versie</th><th class="chUpgradeAvail" style="text-align:center">Laatste</th><th class="chStatus" style="text-align:center">Status</th><th class="chAction" style="text-align:center">Actie</th><th style="width:10px"></th></tr>
                 </tbody></table>
                 <div id="pluginNoneNotice" style="width:100%;text-align:center;padding-top:10px;display:none"><i>Geen plug-ins op server.</i></div>
             </div>
@@ -1047,7 +1047,7 @@
         var args;
         var autoReconnect = true;
         var powerStatetable = ['', "ingeschakeld", "Slaap", "Slaap", "Slaap", "Slaapstand", "Uitzetten", "Aanwezig"];
-        var StatusStrs = ["Verbroken", "Verbinden...", "Setup...", "Verbonden", "Intel® AMT verbonden"];
+        var StatusStrs = ["Verbroken", "Verbinden...", "Setup...", "Verbonden", "Intel&reg; AMT verbonden"];
         var agentsStr = ["Onbekend", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Onbekend", "Onbekend", "FreeBSD x86-64"];
         var sort = 0;
         var searchFocus = 0;
@@ -1101,6 +1101,7 @@
         var pluginHandler = null;
         if (pluginHandlerBuilder != null) { pluginHandler = new pluginHandlerBuilder(); }
         var installedPluginList = null;
+        var goBackStack = [];
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1876,7 +1877,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + "Installeer <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank> Google Authenticator </a> of een compatibele applicatie en scan de streepjescode, gebruik <a href=\"' + message.url +'\" rel=\"noreferrer noopener\" target=_blank> deze link </a> of voer de link in geheim. Voer vervolgens het huidige 6-cijferige token hieronder in om 2-staps aanmelding te activeren." + '<br /><br />Secret<br /><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Voer hier het token in voor tweestaps-aanmelding:" + ' <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + "Installeer <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> of een compatibele applicatie en scan de streepjescode, gebruik <a href=\"' + message.url +'\" rel=\"noreferrer noopener\" target=_blank>deze link</a> of voer de link in geheim. Voer vervolgens het huidige 6-cijferige token hieronder in om 2-staps aanmelding te activeren." + '<br /><br />Secret<br /><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Voer hier het token in voor tweestaps-aanmelding:" + ' <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                         new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
@@ -1943,7 +1944,7 @@
                     x += '</div>';
                     x += '<div><input type=button value="' + "Sluiten" + '" onclick=setDialogMode(0) style=float:right></input>';
                     if ((features & 0x00020000) != 0) { x += '<input id=d2addkey3 type=button value="' + "Sleutel toevoegen" + '" onclick="account_addhkey(3);"></input>'; }
-                    if ((features & 0x00004000) != 0) { x += '<input id=d2addkey2 type=button value="' + "Voeg YubiKey® OTP toe" + '" onclick="account_addhkey(2);"></input>'; }
+                    if ((features & 0x00004000) != 0) { x += '<input id=d2addkey2 type=button value="' + "Voeg YubiKey&reg; OTP toe" + '" onclick="account_addhkey(2);"></input>'; }
                     x += '</div><br />';
                     setDialogMode(2, "Beheer beveiligingssleutels", 8, null, x, 'otpauth-hardware-manage');
                     if (u2fSupported() == false) { QE('d2addkey1', false); }
@@ -2336,7 +2337,7 @@
                             var x = '';
                             if (message.event.results == null) {
                                 // The scan could not occur because of an error. Likely the user range was invalid.
-                                x = '<div style=width:100%;text-align:center;margin-top:12px>' + "Kan dit adresbereik niet scannen." + '</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Voorbeeld van IP-bereikwaarden <br /> 192.168.0.100 <br /> 192.168.1.0/24 <br /> 192.167.0.1-192.168.0.100" + '</div>';
+                                x = '<div style=width:100%;text-align:center;margin-top:12px>' + "Kan dit adresbereik niet scannen." + '</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Voorbeeld van IP-bereikwaarden<br />192.168.0.100 <br />192.168.1.0/24 <br />192.167.0.1-192.168.0.100" + '</div>';
                             } else {
                                 // Go thru all the results and populate the dialog box
                                 amtScanResults = message.event.results;
@@ -2344,7 +2345,7 @@
                                     var r = message.event.results[i], shortname = r.hostname;
                                     if (shortname.length > 20) { shortname = shortname.substring(0, 20) + '...'; }
                                     var str = '<b title="' + EscapeHtml(r.hostname) + '">' + EscapeHtml(shortname) + '</b> - v' + r.ver;
-                                    if (r.state == 2) { if (r.tls == 1) { str += " met TLS."; } else { str += "zonder TLS."; } } else { str += ' not activated.'; }
+                                    if (r.state == 2) { if (r.tls == 1) { str += " met TLS."; } else { str += " zonder TLS."; } } else { str += ' not activated.'; }
                                     x += '<div style=width:100%;margin-bottom:2px;background-color:lightgray><div style=padding:4px><div style=display:inline-block;margin-right:5px><input class=DevScanCheckbox name=dp1checkbox tag="' + EscapeHtml(i) + '" type=checkbox onclick=addAmtScanToMeshCheckbox() /></div><div class=j1 style=display:inline-block></div><div style=display:inline-block;margin-left:5px;overflow-x:auto;white-space:nowrap>' + str + '</div></div></div>';
                                 }
                                 // If no results where found, display a nice message
@@ -2764,8 +2765,8 @@
                         var states = [];
                         if (node.conn) {
                             if ((node.conn & 1) != 0) { states.push('<span title=\"' + "Mesh-agent is verbonden en klaar voor gebruik." + '\">' + "Agent" + '</span>'); }
-                            if ((node.conn & 2) != 0) { states.push('<span title=\"' + "Intel® AMT CIRA is verbonden en klaar voor gebruik." + '\">' + "CIRA" + '</span>'); }
-                            else if ((node.conn & 4) != 0) { states.push('<span title=\"' + "Intel® AMT is routeerbaar." + '\">' + "AMT" + '</span>'); }
+                            if ((node.conn & 2) != 0) { states.push('<span title=\"' + "Intel&reg; AMT CIRA is verbonden en klaar voor gebruik." + '\">' + "CIRA" + '</span>'); }
+                            else if ((node.conn & 4) != 0) { states.push('<span title=\"' + "Intel&reg; AMT is routeerbaar." + '\">' + "AMT" + '</span>'); }
                             if ((node.conn & 8) != 0) { states.push('<span title=\"' + "Mesh-agent is bereikbaar met een andere agent als relay." + '\">' + "Relay" + '</span>'); }
                             if ((node.conn & 16) != 0) { states.push('<span title=\"' + "MQTT verbinding met het apparaat is actief." + '\">' + "MQTT" + '</span>'); }
                         }
@@ -3000,7 +3001,7 @@
                         }
                     }
                 }
-                if (count > 8) { setDialogMode(2, "Alles verbinden", 3, function() { connectAllKvmFunction(true); }, format("Weet u zeker dat u verbinding wilt maken met {0} -apparaten?", count)); return; }
+                if (count > 8) { setDialogMode(2, "Alles verbinden", 3, function() { connectAllKvmFunction(true); }, format("Weet u zeker dat u verbinding wilt maken met {0} apparaten?", count)); return; }
             }
 
             // Perform connect all
@@ -3076,12 +3077,12 @@
             if ((meshrights & 4) == 0) return '';
             var r = '';
             if ((features & 1024) == 0) { // If CIRA is allowed
-                r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voeg een nieuwe Intel® AMT computer toe welke zich op het internet bevind." + '\" onclick=\'return addCiraDeviceToMesh(\"' + mesh._id + '\")\'>' + "Toevoegen CIRA" + '</a>';
+                r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het internet bevind." + '\" onclick=\'return addCiraDeviceToMesh(\"' + mesh._id + '\")\'>' + "Toevoegen CIRA" + '</a>';
             }
             if (mesh.mtype == 1) {
                 if ((features & 1) == 0) { // If not WAN-Only
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voeg een nieuwe Intel® AMT computer toe welke zich op het lokale netwerk bevind." + '\" onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "Lokaal toevoegen" + '</a>';
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voeg een nieuwe Intel® AMT computer toe door het lokale netwerk te scannen." + '\" onclick=\'return addAmtScanToMesh(\"' + mesh._id + '\")\'>' + "Scan Netwerk" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het lokale netwerk bevind." + '\" onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "Lokaal toevoegen" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voeg een nieuwe Intel&reg; AMT computer toe door het lokale netwerk te scannen." + '\" onclick=\'return addAmtScanToMesh(\"' + mesh._id + '\")\'>' + "Scan Netwerk" + '</a>';
                 }
                 if (mesh.amt && (mesh.amt.type == 2)) { // CCM activation
                     r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Voer Intel AMT client control mode (CCM) activering uit." + '\" onclick=\'return showCcmActivation(\"' + mesh._id + '\")\'>' + "Activatie" + '</a>';
@@ -3105,7 +3106,7 @@
             x += addHtmlValue("Gebruikersnaam", '<input id=dp1username style=width:230px maxlength=32 autocomplete=off placeholder=\"' + "Beheerder" + '\" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlValue("wachtwoord", '<input id=dp1password type=password style=width:230px autocomplete=off maxlength=32 onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlValue("Veiligheid", '<select id=dp1tls style=width:236px><option value=0>' + "Geen TLS beveiliging" + '</option><option value=1>' + "TLS beveiliging vereist" + '</option></select>');
-            setDialogMode(2, "Add Intel&reg; AMT aaparaat", 3, addDeviceToMeshEx, x, meshid);
+            setDialogMode(2, "Add Intel&reg; AMT apparaat", 3, addDeviceToMeshEx, x, meshid);
             validateDeviceToMesh();
             Q('dp1devicename').focus();
             return false;
@@ -3160,7 +3161,7 @@
             var x = "Voer een reeks IP-adressen in om te scannen op Intel AMT-apparaten." + '<br /><br />';
             x += addHtmlValue("IP-bereik", '<input id=dp1range style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value=\"' + "Scan" + '\" onclick=addAmtScanToMeshButton()></input>');
             x += '<div id=dp1results style="width:100%;height:200px;background-color:white;border:1px gray solid;overflow-y:scroll"></div>';
-            setDialogMode(2, "Scannen naar Intel® AMT-apparaten", 3, addAmtScanToMeshEx, x, meshid);
+            setDialogMode(2, "Scannen naar Intel&reg;  AMT-apparaten", 3, addAmtScanToMeshEx, x, meshid);
             QE('idx_dlgOkButton', false);
             QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>Sample IP range values<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>');
             focusTextBox('dp1range');
@@ -3205,7 +3206,7 @@
             // Replace non alphabetic characters (@ and $) with 'X' because MPS username cannot accept it.
             var meshidx = meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X');
 
-            var y = '<select id=dlgAddCiraSel onclick=dlgAddCiraSelClick() style=width:230px><option value=0>' + "MeshCommander Script" + '</option><option value=1>' + "Handmatige gebruikersnaam / wachtwoord" + '</option>';
+            var y = '<select id=dlgAddCiraSel onclick=dlgAddCiraSelClick() style=width:230px><option value=0>' + "MeshCommander Script" + '</option><option value=1>' + "Handmatige gebruikersnaam/wachtwoord" + '</option>';
             if ((features & 16) == 0) { y += ('<option value=2>' + "Handmatig certificaat" + '</option></select>'); } // Only display this option if Intel AMT CIRA with Mutual-Auth is allowed.
 
             var x = '';
@@ -3213,14 +3214,14 @@
             x += '<hr>';
 
             // Setup CIRA using a MeshCommander script (Pretty Simple)
-            x += '<div id=dlgAddCira0>' + format("Om een nieuw Intel® AMT-apparaat toe te voegen aan apparaatgroep \"{0}\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href = 'http: //meshcommander.com' rel = 'noreferrer noopener' target = ' _blank '> MeshCommander </a> om het script uit te voeren om computers te configureren.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=dlgAddCira0>' + format("Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \"{0}\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> om het script uit te voeren om computers te configureren.", EscapeHtml(mesh.name)) + '<br /><br />';
             //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
             x += addHtmlValue("CIRA instellen", '<a href="mescript.ashx?type=1&meshid=' + meshid + '" download>cira_setup.mescript</a>');
             x += addHtmlValue("Opruimen CIRA", '<a href="mescript.ashx?type=2" download>cira_clean.mescript</a>');
             x += '</div>';
 
             // Setup CIRA with user/pass authentication (Somewhat difficult)
-            x += '<div id=dlgAddCira1 style=display:none>' + format("v", EscapeHtml(mesh.name));
+            x += '<div id=dlgAddCira1 style=display:none>' + format("Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \"{0}\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT", EscapeHtml(mesh.name));
             if (serverinfo.mpspass) { x += (" verifieer bij de server met deze gebruikersnaam en wachtwoord." + '<br /><br />'); } else { x += (" verifieer bij de server met deze gebruikersnaam en elk wachtwoord." + '<br /><br />'); }
             x += addHtmlValue("Hoofd certificaat", '<a href=\"' + "MeshServerRootCert.cer" + '\" download>' + "Hoofd certificaat bestand" + '</a>');
             x += addHtmlValue("Gebruikersnaam", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
@@ -3230,14 +3231,14 @@
 
             // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
             if ((features & 16) == 0) {
-                x += '<div id=dlgAddCira2 style=display:none>' + format("Om een nieuw Intel® AMT-apparaat toe te voegen aan apparaatgroep \"{0}\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server.", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += '<div id=dlgAddCira2 style=display:none>' + format("Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \"{0}\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("Hoofd certificaat", '<a href="MeshServerRootCert.cer" download>' + "Hoofd certificaat bestand" + '</a>');
                 x += addHtmlValue("Organisatie", '<input style=width:230px readonly value="' + meshidx + '" />');
                 if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
                 x += '</div>';
             }
 
-            setDialogMode(2, "Toevoegen Intel® AMT CIRA apparaat", 2, null, x, 'fileDownload');
+            setDialogMode(2, "Toevoegen Intel&reg; AMT CIRA apparaat", 2, null, x, 'fileDownload');
             Q('dlgAddCiraSel').focus();
             return false;
         }
@@ -3342,7 +3343,7 @@
             x += '</div>';
 
             // Windows agent uninstall
-            x += '<div id=agins_windows_un style=display:none>' + "Om een mesh-agent te verwijderen, download het onderstaande bestand, voer het uit en klik op \"deinstalleer\"." + '<br /><br />';
+            x += '<div id=agins_windows_un style=display:none>' + "Om een mesh-agent te verwijderen, download het onderstaande bestand, voer het uit en klik op \"deinstalleer \"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a href="meshagents?id=3" download onclick="setDialogMode(0)" title="' + "32bit versie van de MeshAgent" + '">' + "Windows (.exe)" + '</a>');
             x += addHtmlValue("Mesh Agent", '<a href="meshagents?id=4" download onclick="setDialogMode(0)" title="' + "64bit versie van de MeshAgent" + '">' + "Windows x64 (.exe)" + '</a>');
             x += '</div>';
@@ -3440,16 +3441,16 @@
             deviceHeaderTotal = 0;
         }
 
-        var powerStateStrings = ['', '<span title=\"' + "Apparaat is ingeschakeld." + '\">' + "ingeschakeld" + '</span>', '<span title=\"' + "Apparaat bevindt zich in slaapstand (S1)." + '\">' + "Slapen" + '</span>', '<span title=\"' + "Apparaat bevindt zich in slaapstand (S2)." + '\">' + "Slapen" + '</span>', '<span title=\"' + "Apparaat bevindt zich in diepe slaapstand (S3)." + '\">' + "Slaapstand" + '</span>', '<span title=\"' + "Apparaat bevindt zich in de slaapstand (S4)." + '\">' + "Slaapstand" + '</span>', '<span title=\"' + "Apparaat is uitgeschakeld (S5)." + '\">' + "softwarematig uit" + '</span>', '<span title=\"' + "Apparaat is gedetecteerd, maar de stroomstatus kon niet worden verkregen." + '\">' + "Aanwezig" + '</span>'];
-        var powerStateStrings2 = ['', "Apparaat is ingeschakeld", "Apparaat bevindt zich in slaapstand (S1)", "Apparaat bevindt zich in slaapstand (S2)", "Apparaat bevindt zich in diepe slaapstand (S3)", "Apparaat is in slaapstand (S4)", "Apparaat is uitgeschakeld (S5)", "Apparaat is aanwezig, maar de stroomstatus kan niet worden bepaald"];
+        var powerStateStrings = ['', '<span title=\"' + "Apparaat is ingeschakeld." + '\">' + "ingeschakeld" + '</span>', '<span title=\"' + "Apparaat bevindt zich in slaapstand (S1)." + '\">' + "Slapen" + '</span>', '<span title=\"' + "Apparaat bevindt zich in slaapstand (S2)." + '\">' + "Slapen" + '</span>', '<span title=\"' + "Apparaat bevindt zich in diepe slaapstand (S3)." + '\">' + "Slaapstand" + '</span>', '<span title=\"' + "Apparaat bevindt zich in de slaapstand (S4)." + '\">' + "Slaapstand" + '</span>', '<span title=\"' + "Apparaat is uitgeschakeld (S5)." + '\">' + "softwarematig uit" + '</span>', '<span title=\"' + "Apparaat is gedetecteerd, maar de status kon niet worden verkregen." + '\">' + "Aanwezig" + '</span>'];
+        var powerStateStrings2 = ['', "Apparaat is ingeschakeld", "Apparaat bevindt zich in slaapstand (S1)", "Apparaat bevindt zich in slaapstand (S2)", "Apparaat bevindt zich in diepe slaapstand (S3)", "Apparaat is in slaapstand (S4)", "Apparaat is uitgeschakeld (S5)", "Apparaat is aanwezig, maar de status kan niet worden bepaald"];
         var powerColorTable = ['pwsTransparent', 'pwsBlack', 'pwsBlue', 'pwsBlue2', 'pwsLightblue', 'pwsBlueviolet', 'pwsDarkgreen', 'pwsLightseagreen', 'pwsLightseagreen2'];
         function NodeStateStr(node) {
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
                 if ((node.conn & 1) != 0) { states.push('<span title=\"' + "Mesh-agent is verbonden en klaar voor gebruik." + '\">' + "Agent" + '</span>'); }
-                if ((node.conn & 2) != 0) { states.push('<span title=\"' + "Intel® AMT CIRA is verbonden en klaar voor gebruik." + '\">' + "CIRA" + '</span>'); }
-                else if ((node.conn & 4) != 0) { states.push('<span title=\"' + "Intel® AMT is routeerbaar." + '\">' + "AMT" + '</span>'); }
+                if ((node.conn & 2) != 0) { states.push('<span title=\"' + "Intel&reg; AMT CIRA is verbonden en klaar voor gebruik." + '\">' + "CIRA" + '</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span title=\"' + "Intel&reg; AMT is routeerbaar." + '\">' + "AMT" + '</span>'); }
                 if ((node.conn & 8) != 0) { states.push('<span title=\"' + "Mesh-agent is bereikbaar met een andere agent als relay." + '\">' + "Relay" + '</span>'); }
                 if ((node.conn & 16) != 0) { states.push('<span title=\"' + "MQTT verbinding met het apparaat is actief." + '\">' + "MQTT" + '</span>'); }
             }
@@ -4439,21 +4440,21 @@
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
-                                str += ', <i style=color:#FF0000;cursor:pointer title=\"' + "Bewerk Intel® AMT-gegevens" + '\" onclick=editDeviceAmtSettings("' + node._id + '")>' + "Geen referenties" + '</i>';
+                                str += ', <i style=color:#FF0000;cursor:pointer title=\"' + "Bewerk Intel&reg; AMT-gegevens" + '\" onclick=editDeviceAmtSettings("' + node._id + '")>' + "Geen referenties" + '</i>';
                             } else {
                                 str += ', <i style=color:#FF0000>' + "Geen referenties" + '</i>';
                             }
                         }
                         str += ' ';
                         if ((meshrights & 4) != 0) {
-                            str += '<img src=images/link4.png height=10 width=10 title=\"' + "Bewerk Intel® AMT-gegevens" + '\" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
+                            str += '<img src=images/link4.png height=10 width=10 title=\"' + "Bewerk Intel&reg; AMT-gegevens" + '\" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
 
                     var meName = '<span title=\"Intel&reg; Manageability Engine\">' + "Intel&reg; ME" + '<span>';
                     if (typeof node.intelamt.sku == 'number') {
                         if ((node.intelamt.sku & 8) != 0) { meName = '<span title=\"' + "Intel&reg; Active Management Technology" + '\">' + "Intel&reg; AMT" + '<span>'; }
-                        else if ((node.intelamt.sku & 16) != 0) { meName = '<span title=\"' + "Standaard beheerbaarheid van Intel®" + '\">' + "Intel&reg; SM" + '<span>'; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = '<span title=\"' + "Standaard beheerbaarheid van Intel&reg;" + '\">' + "Intel&reg; SM" + '<span>'; }
                     }
                     x += addDeviceAttribute(meName, str);
                 }
@@ -4496,15 +4497,15 @@
                 }
 
                 // Active Users
-                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(format("Actieve gebruiker(s){0}", ((node.users.length > 1)?'s':'')), node.users.join(', ')); }
+                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(format("Actieve gebruikers{0}", ((node.users.length > 1)?'s':'')), node.users.join(', ')); }
 
                 // Attribute: Connectivity (Only show this if more than just the agent is connected).
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
                     if ((node.conn & 1) != 0) cstate.push('<span title=\"' + "Mesh-agent is verbonden en klaar voor gebruik." + '\">' + "Mesh Agent" + '</span>');
-                    if ((node.conn & 2) != 0) cstate.push('<span title=\"' + "Intel® AMT CIRA is verbonden en klaar voor gebruik." + '\">' + "Intel&reg; AMT CIRA" + '</span>');
-                    else if ((node.conn & 4) != 0) cstate.push('<span title=\"' + "Intel® AMT is routeerbaar en klaar voor gebruik." + '\">' + "Intel&reg; AMT" + '</span>');
+                    if ((node.conn & 2) != 0) cstate.push('<span title=\"' + "Intel&reg; AMT CIRA is verbonden en klaar voor gebruik." + '\">' + "Intel&reg; AMT CIRA" + '</span>');
+                    else if ((node.conn & 4) != 0) cstate.push('<span title=\"' + "Intel&reg; AMT is routeerbaar en klaar voor gebruik." + '\">' + "Intel&reg; AMT" + '</span>');
                     if ((node.conn & 8) != 0) cstate.push('<span title=\"' + "Mesh-agent is bereikbaar met een andere agent als relay." + '\">' + "Mesh Relay" + '</span>');
                     if ((node.conn & 16) != 0) { cstate.push('<span title=\"' + "MQTT verbinding met het apparaat is actief." + '\">' + "MQTT" + '</span>'); }
                     x += addDeviceAttribute("connectiviteit", cstate.join(', '));
@@ -4521,7 +4522,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<input type=button value=\"' + "Akties" + '\" title=\"' + "Voer krachtacties uit op het apparaat" + '\" onclick=deviceActionFunction() />'; }
+                if ((meshrights & 76) != 0) { x += '<input type=button value=\"' + "Acties" + '\" title=\"' + "Voer krachtacties uit op het apparaat" + '\" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=\"' + "Notities" + '\" title=\"' + "Bekijk opmerkingen over dit apparaat" + '\" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 x += '<input type=button value=\"' + "Gebeurtenissenlog" + '\" title=\"' + "Schrijf een gebeurtenis voor dit apparaat" + '\" onclick=writeDeviceEvent("' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
@@ -4561,7 +4562,7 @@
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
                 if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Agent verbonden" + '\">' + "Agent verbonden" + '</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Intel® AMT verbonden" + '\">' + "Intel® AMT verbonden" + '</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Intel&reg; AMT verbonden" + '\">' + "Intel&reg; AMT verbonden" + '</span>'; }
                 else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Intel&reg; AMT gedetecteerd" + '\">' + "Intel&reg; AMT gedetecteerd" + '</span>'; }
                 if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "MQTT verbonden" + '\">' + "MQTT-kanaal verbonden" + '</span>'; }
                 if ((powerstate == '') && node.lastconnect) { powerstate = '<span style=font-size:12px>' + "Laatst gezien" + '<br />' + printDateTime(new Date(node.lastconnect)) + '</span>'; }
@@ -4830,7 +4831,7 @@
             x += addHtmlValue("wachtwoord", '<input id=dp10password type=password style=width:230px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Veiligheid", '<select id=dp10tls style=width:236px><option value=0>' + "Geen TLS beveiliging" + '</option><option value=1>' + "TLS beveiliging vereist" + '</option></select>');
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
-            setDialogMode(2, "Bewerk Intel® AMT-gegevens", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func, arg: arg });
+            setDialogMode(2, "Bewerk Intel&reg; AMT-gegevens", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func, arg: arg });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             Q('dp10tls').value = node.intelamt.tls;
             validateDeviceAmtSettings();
@@ -6914,7 +6915,7 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Agentactie uitvoeren", 3, p15uploadCoreEx, addHtmlValue("Aktie", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload standaard serverkern" + '</option><option value=2>' + "Maak de kern leeg" + '</option><option value=6>' + "Upload herstelkern" + '</option><option value=3>' + "Upload een kernbestand" + '</option><option value=4>' + "Softwarematig verbreken agent" + '</option><option value=5>' + "Harde ontkoppeling agent" + '</option></select>')); }
+            else { setDialogMode(2, "Agentactie uitvoeren", 3, p15uploadCoreEx, addHtmlValue("Actie", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload standaard serverkern" + '</option><option value=2>' + "Maak de kern leeg" + '</option><option value=6>' + "Upload herstelkern" + '</option><option value=3>' + "Upload een kernbestand" + '</option><option value=4>' + "Softwarematig verbreken agent" + '</option><option value=5>' + "Harde ontkoppeling agent" + '</option></select>')); }
         }
 
         function p15uploadCoreEx() {
@@ -7007,9 +7008,9 @@
                 var x = "Typ de naam van de sleutel die u wilt toevoegen." + '<br /><br />';
                 x += addHtmlValue("Sleutelnaam", '<input id=dp1keyname style=width:230px maxlength=20 autocomplete=off placeholder="' + "Mijn sleutel" + '" onkeyup=account_addhkeyValidate(event,2) />');
             } else if (type == 2) {
-                var x = "Typ een sleutelnaam, selecteer het vak OTP en druk op de knop op de YubiKey ™." + '<br /><br />';
+                var x = "Typ een sleutelnaam, selecteer het vak OTP en druk op de knop op de YubiKey™." + '<br /><br />';
                 x += addHtmlValue("Sleutelnaam", '<input id=dp1keyname style=width:230px maxlength=20 autocomplete=off placeholder="' + "Mijn sleutel" + '" onkeyup=account_addhkeyValidate(event,1) />');
-                x += addHtmlValue("YubiKey™ OTP", '<input id=dp1key style=width:230px autocomplete=off onkeyup=account_addhkeyValidate(event,2) />');
+                x += addHtmlValue("YubiKey&trade; OTP", '<input id=dp1key style=width:230px autocomplete=off onkeyup=account_addhkeyValidate(event,2) />');
             }
             setDialogMode(2, "Beveiligingssleutel toevoegen", 3, account_addhkeyEx, x, type);
             Q('dp1keyname').focus();
@@ -7035,7 +7036,7 @@
             meshserver.send({ action: 'otp-hkey-get' });
         }
 
-        var loclist = { 'af': "Afrikaans", 'sq': "Albanees", 'ar': "Arabisch (Standaard)", 'ar-dz': "Arabisch (Algerije)", 'ar-bh': "Arabisch (Bahrein)", 'ar-eg': "Arabisch (Egypte)", 'ar-iq': "Arabisch (Irak)", 'ar-jo': "Arabisch (Jordanië)", 'ar-kw': "Arabisch (Koeweit)", 'ar-lb': "Arabisch (Libanon)", 'ar-ly': "Arabisch (Libië)", 'ar-ma': "Arabisch (Marokko)", 'ar-om': "Arabisch (Oman)", 'ar-qa': "Arabisch (Qatar)", 'ar-sa': "Arabisch (Saoedi-Arabië)", 'ar-sy': "Arabisch (Syrië)", 'ar-tn': "Arabisch (Tunesië)", 'ar-ae': "Arabisch (Verenigde Arabische Emiraten.)", 'ar-ye': "Arabisch (Jemen)", 'an': "Aragonese", 'hy': "Armeens", 'as': "Assamees", 'ast': "Asturische", 'az': "Azerbeidzjaanse", 'eu': "baskisch", 'bg': "Bulgaars", 'be': "Wit-Rusland", 'bn': "Bengalees", 'bs': "Bosnisch", 'br': "Breton", 'my': "Birmaans", 'ca': "Catalaans", 'ch': "Chamorro", 'ce': "Tsjetsjeense", 'zh': "Chinees", 'zh-hk': "Chinees (Hong Kong)", 'zh-cn': "Chinees (PRC)", 'zh-sg': "Chinees (Singapore)", 'zh-tw': "Chinees (Taiwan)", 'cv': "Chuvash", 'co': "Corsicaans", 'cr': "Cree", 'hr': "Kroatisch", 'cs': "Tsjechisch", 'da': "Deens", 'nl': "Nederlands (Standaard)", 'nl-be': "Nederlands (Belgisch)", 'en': "Engels", 'en-au': "Engels (Australië)", 'en-bz': "Engels (Belize)", 'en-ca': "Engels (Canada)", 'en-ie': "Engels (Ierland)", 'en-jm': "Engels (Jamaica)", 'en-nz': "Engels (Nieuw Zeeland)", 'en-ph': "Engels (Filippijnen)", 'en-za': "Engels (Zuid Africa)", 'en-tt': "Engels (Trinidad & Tobago)", 'en-gb': "Engels (Verenigd Koninkrijk)", 'en-us': "Engels (Verenigde staten van America)", 'en-zw': "Engels (Zimbabwe)", 'eo': "Esperanto", 'et': "Estlands", 'fo': "Faeroese", 'fa': "Perzisch (Perzisch)", 'fj': "Fijian", 'fi': "Fins", 'fr': "Frans (standaard)", 'fr-be': "Frans (België)", 'fr-ca': "Frans (Canada)", 'fr-fr': "Frans (Frankrijk)", 'fr-lu': "Frans (Luxemburg)", 'fr-mc': "Frans (Monaco)", 'fr-ch': "Frans (Zwitserland)", 'fy': "Fries", 'fur': " ", 'gd': "Gaelic (Schots)", 'gd-ie': "Gaelic (Iers)", 'gl': "Galacian", 'ka': "Georgisch", 'de': "Duits (standaard)", 'de-at': "Duits (Oostenrijk)", 'de-de': "Duits (duitsland)", 'de-li': "Duits (Liechtenstein)", 'de-lu': "Duits (Luxemburg)", 'de-ch': "Duits (Zwitserland)", 'el': "Grieks", 'gu': "Gujurati", 'ht': "Haïtiaanse", 'he': "Hebreeuws", 'hi': "Hindi", 'hu': "Hongaars", 'is': "IJslands", 'id': "Indonesisch", 'iu': "Inuktitut", 'ga': "Iers", 'it': "Italiaans (standaard)", 'it-ch': "Italiaans (Zwitserland)", 'ja': "Japans", 'kn': "Kannada", 'ks': "kasjmier", 'kk': "Kazachse", 'km': "Khmer", 'ky': "Kirgizisch", 'tlh': "Klingon", 'ko': "Koreaans", 'ko-kp': "Koreaans (Noord-Korea)", 'ko-kr': "Koreaans (Zuid-Korea)", 'la': "latijns", 'lv': "Lets", 'lt': "Litouws", 'lb': "Luxemburgs", 'mk': "FYRO Macedonisch", 'ms': "Maleis", 'ml': "Malayalam", 'mt': "Maltese", 'mi': "Maori", 'mr': "Marathi", 'mo': "Moldavisch ", 'nv': "Navajo", 'ng': "Ndonga", 'ne': "Nepalees", 'no': "Noors", 'nb': "Noors (Bokmal)", 'nn': "Noors (Nynorsk)", 'oc': "Occitaans", 'or': "Oriya", 'om': "Oromo", 'fa-ir': "Perzisch / Iran", 'pl': "Pools", 'pt': "Portugees", 'pt-br': "Portugees (Brazilië)", 'pa': "Punjabi", 'pa-in': "Punjabi (India)", 'pa-pk': "Punjabi (Pakistan)", 'qu': "Quechua", 'rm': "Rhetoromaans", 'ro': "Roemeense", 'ro-mo': "Roemeens (Moldavië)", 'ru': "Russisch", 'ru-mo': "Russisch (Moldavië)", 'sz': "Sami (Lapse)", 'sg': "Sango", 'sa': "Sanskriet", 'sc': "Sardijns", 'sd': "Sindhi", 'si': "Sinhalees", 'sr': "Servisch", 'sk': "Slowaaks", 'sl': "Sloveens", 'so': "Somani", 'sb': "Sorbisch", 'es': "Spaans", 'es-ar': "Spaans (Argentinië)", 'es-bo': "Spaans (Bolivia)", 'es-cl': "Spaans (Chili)", 'es-co': "Spaans (Colombia)", 'es-cr': "Spaans (Costa Rica)", 'es-do': "Spaans (Dominicaanse Republiek)", 'es-ec': "Spaans (Ecuador)", 'es-sv': "Spaans (El Salvador)", 'es-gt': "Spaans (Guatemala)", 'es-hn': "Spaans (Honduras)", 'es-mx': "Spaans (Mexico)", 'es-ni': "Spaans (Nicaragua)", 'es-pa': "Spaans (Panama)", 'es-py': "Spaans (Paraguay)", 'es-pe': "Spaans (Peru)", 'es-pr': "Spaans (Puerto Rico)", 'es-es': "Spaans (Spanje)", 'es-uy': "Spaans (Uruguay)", 'es-ve': "Spaans (Venezuela)", 'sx': "Sutu", 'sw': "Swahili", 'sv': "Zweeds", 'sv-fi': "Zweeds (Finland)", 'sv-sv': "Zweeds (Zweden)", 'ta': "Tamil", 'tt': "Tartaar", 'te': "Teluga", 'th': "Thais", 'tig': "Tigre", 'ts': "Tsonga", 'tn': "Tswana", 'tr': "Turks", 'tk': "Turkmeens", 'uk': "Oekraïens", 'hsb': "Sorbisch", 'ur': "Urdu", 've': "Venda", 'vi': "Vietnamees", 'vo': "Volapuk", 'wa': "Waals", 'cy': "Wels", 'xh': "Xhosa", 'ji': "Jiddisch", 'zu': "Zoeloe" };
+        var loclist = { 'af': "Afrikaans", 'sq': "Albanees", 'ar': "Arabisch (Standaard)", 'ar-dz': "Arabisch (Algerije)", 'ar-bh': "Arabisch (Bahrein)", 'ar-eg': "Arabisch (Egypte)", 'ar-iq': "Arabisch (Irak)", 'ar-jo': "Arabisch (Jordanië)", 'ar-kw': "Arabisch (Koeweit)", 'ar-lb': "Arabisch (Libanon)", 'ar-ly': "Arabisch (Libië)", 'ar-ma': "Arabisch (Marokko)", 'ar-om': "Arabisch (Oman)", 'ar-qa': "Arabisch (Qatar)", 'ar-sa': "Arabisch (Saoedi-Arabië)", 'ar-sy': "Arabisch (Syrië)", 'ar-tn': "Arabisch (Tunesië)", 'ar-ae': "Arabisch (Verenigde Arabische Emiraten.)", 'ar-ye': "Arabisch (Jemen)", 'an': "Aragonese", 'hy': "Armeens", 'as': "Assamees", 'ast': "Asturische", 'az': "Azerbeidzjaanse", 'eu': "baskisch", 'bg': "Bulgaars", 'be': "Wit-Rusland", 'bn': "Bengalees", 'bs': "Bosnisch", 'br': "Breton", 'my': "Birmaans", 'ca': "Catalaans", 'ch': "Chamorro", 'ce': "Tsjetsjeense", 'zh': "Chinees", 'zh-hk': "Chinees (Hong Kong)", 'zh-cn': "Chinees (PRC)", 'zh-sg': "Chinees (Singapore)", 'zh-tw': "Chinees (Taiwan)", 'cv': "Chuvash", 'co': "Corsicaans", 'cr': "Cree", 'hr': "Kroatisch", 'cs': "Tsjechisch", 'da': "Deens", 'nl': "Nederlands (Standaard)", 'nl-be': "Nederlands (Belgisch)", 'en': "Engels", 'en-au': "Engels (Australië)", 'en-bz': "Engels (Belize)", 'en-ca': "Engels (Canada)", 'en-ie': "Engels (Ierland)", 'en-jm': "Engels (Jamaica)", 'en-nz': "Engels (Nieuw Zeeland)", 'en-ph': "Engels (Filippijnen)", 'en-za': "Engels (Zuid Africa)", 'en-tt': "Engels (Trinidad & Tobago)", 'en-gb': "Engels (Verenigd Koninkrijk)", 'en-us': "Engels (Verenigde staten van America)", 'en-zw': "Engels (Zimbabwe)", 'eo': "Esperanto", 'et': "Estlands", 'fo': "Faeroese", 'fa': "Perzisch (Perzisch)", 'fj': "Fijian", 'fi': "Fins", 'fr': "Frans (standaard)", 'fr-be': "Frans (België)", 'fr-ca': "Frans (Canada)", 'fr-fr': "Frans (Frankrijk)", 'fr-lu': "Frans (Luxemburg)", 'fr-mc': "Frans (Monaco)", 'fr-ch': "Frans (Zwitserland)", 'fy': "Fries", 'fur': "Friulian", 'gd': "Gaelic (Schots)", 'gd-ie': "Gaelic (Iers)", 'gl': "Galacian", 'ka': "Georgisch", 'de': "Duits (standaard)", 'de-at': "Duits (Oostenrijk)", 'de-de': "Duits (duitsland)", 'de-li': "Duits (Liechtenstein)", 'de-lu': "Duits (Luxemburg)", 'de-ch': "Duits (Zwitserland)", 'el': "Grieks", 'gu': "Gujurati", 'ht': "Haïtiaanse", 'he': "Hebreeuws", 'hi': "Hindi", 'hu': "Hongaars", 'is': "IJslands", 'id': "Indonesisch", 'iu': "Inuktitut", 'ga': "Iers", 'it': "Italiaans (standaard)", 'it-ch': "Italiaans (Zwitserland)", 'ja': "Japans", 'kn': "Kannada", 'ks': "kasjmier", 'kk': "Kazachse", 'km': "Khmer", 'ky': "Kirgizisch", 'tlh': "Klingon", 'ko': "Koreaans", 'ko-kp': "Koreaans (Noord-Korea)", 'ko-kr': "Koreaans (Zuid-Korea)", 'la': "latijns", 'lv': "Lets", 'lt': "Litouws", 'lb': "Luxemburgs", 'mk': "FYRO Macedonisch", 'ms': "Maleis", 'ml': "Malayalam", 'mt': "Maltese", 'mi': "Maori", 'mr': "Marathi", 'mo': "Moldavisch ", 'nv': "Navajo", 'ng': "Ndonga", 'ne': "Nepalees", 'no': "Noors", 'nb': "Noors (Bokmal)", 'nn': "Noors (Nynorsk)", 'oc': "Occitaans", 'or': "Oriya", 'om': "Oromo", 'fa-ir': "Perzisch / Iran", 'pl': "Pools", 'pt': "Portugees", 'pt-br': "Portugees (Brazilië)", 'pa': "Punjabi", 'pa-in': "Punjabi (India)", 'pa-pk': "Punjabi (Pakistan)", 'qu': "Quechua", 'rm': "Rhetoromaans", 'ro': "Roemeense", 'ro-mo': "Roemeens (Moldavië)", 'ru': "Russisch", 'ru-mo': "Russisch (Moldavië)", 'sz': "Sami (Lapse)", 'sg': "Sango", 'sa': "Sanskriet", 'sc': "Sardijns", 'sd': "Sindhi", 'si': "Sinhalees", 'sr': "Servisch", 'sk': "Slowaaks", 'sl': "Sloveens", 'so': "Somani", 'sb': "Sorbisch", 'es': "Spaans", 'es-ar': "Spaans (Argentinië)", 'es-bo': "Spaans (Bolivia)", 'es-cl': "Spaans (Chili)", 'es-co': "Spaans (Colombia)", 'es-cr': "Spaans (Costa Rica)", 'es-do': "Spaans (Dominicaanse Republiek)", 'es-ec': "Spaans (Ecuador)", 'es-sv': "Spaans (El Salvador)", 'es-gt': "Spaans (Guatemala)", 'es-hn': "Spaans (Honduras)", 'es-mx': "Spaans (Mexico)", 'es-ni': "Spaans (Nicaragua)", 'es-pa': "Spaans (Panama)", 'es-py': "Spaans (Paraguay)", 'es-pe': "Spaans (Peru)", 'es-pr': "Spaans (Puerto Rico)", 'es-es': "Spaans (Spanje)", 'es-uy': "Spaans (Uruguay)", 'es-ve': "Spaans (Venezuela)", 'sx': "Sutu", 'sw': "Swahili", 'sv': "Zweeds", 'sv-fi': "Zweeds (Finland)", 'sv-sv': "Zweeds (Zweden)", 'ta': "Tamil", 'tt': "Tartaar", 'te': "Teluga", 'th': "Thais", 'tig': "Tigre", 'ts': "Tsonga", 'tn': "Tswana", 'tr': "Turks", 'tk': "Turkmeens", 'uk': "Oekraïens", 'hsb': "Sorbisch", 'ur': "Urdu", 've': "Venda", 'vi': "Vietnamees", 'vo': "Volapuk", 'wa': "Waals", 'cy': "Wels", 'xh': "Xhosa", 'ji': "Jiddisch", 'zu': "Zoeloe" };
         function account_showLocalizationSettings() {
             if (xxdialogMode) return false;
             var n = getstore('loctag', 0), y = '';
@@ -7090,7 +7091,7 @@
             x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display Device Group Name" + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Apparaat verbindingen." + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Apparaat verbroken." + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel® AMT desktop- en seriële gebeurtenissen." + '</label></div>';
+            x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop- en seriële gebeurtenissen." + '</label></div>';
             setDialogMode(2, "meldingsinstellingen", 3, account_showAccountNotifySettingsEx, x);
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
@@ -7430,8 +7431,8 @@
 
             if ((meshrights & 4) != 0) {
                 if (currentMesh.mtype == 1) {
-                    x += '<a href=# onclick=\'return addCiraDeviceToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Voeg een nieuwe Intel® AMT computer toe welke zich op het internet bevind." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Installeer CIRA" + '</a>';
-                    x += '<a href=# onclick=\'return addDeviceToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Voeg een nieuwe Intel® AMT computer toe welke zich op het lokale netwerk bevind." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Installeer lokaal" + '</a>';
+                    x += '<a href=# onclick=\'return addCiraDeviceToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het internet bevind." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Installeer CIRA" + '</a>';
+                    x += '<a href=# onclick=\'return addDeviceToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het lokale netwerk bevind." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Installeer lokaal" + '</a>';
                     if (currentMesh.amt && (currentMesh.amt.type == 2)) { // CCM activation
                         x += '<a href=# onclick=\'return showCcmActivation(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Voer Intel AMT client control mode (CCM) activering uit." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activatie" + '</a>';
                     } else if (currentMesh.amt && (currentMesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
@@ -7483,7 +7484,7 @@
                 x += addHtmlValue("Typen", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "Geen beleid" + '</option><option value=1>' + "Deactiveer Client Control Mode (CCM)" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '</select>');
             }
             x += '<div id=dp20amtpolicydiv></div>';
-            setDialogMode(2, "Intel® AMT beleid", 3, p20editMeshAmtEx, x);
+            setDialogMode(2, "Intel&reg; AMT beleid", 3, p20editMeshAmtEx, x);
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
             p20editMeshAmtChange();
 
@@ -7502,12 +7503,12 @@
             if (ptype >= 2) {
                 x = addHtmlValue("Wachtwoord*", '<input id=dp20amtpolicypass type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += addHtmlValue("Wachtwoord*", '<input id=dp20amtpolicypass2 type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
-                if ((ptype == 2) && (currentMesh.mtype == 2)) { x += addHtmlValue("Wachtwoord komt niet overeen", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Doe niets" + '</option><option value=1>' + "Heractiveer Intel® AMT" + '</option></select>'); }
+                if ((ptype == 2) && (currentMesh.mtype == 2)) { x += addHtmlValue("Wachtwoord komt niet overeen", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Doe niets" + '</option><option value=1>' + "Heractiveer Intel&reg; AMT" + '</option></select>'); }
                 if ((features & 0x400) == 0) {
                     if (ptype == 2) {
-                        x += addHtmlValue('<span title="' + "Gebruiker geïnitieerde externe toegang" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Configureer niet" + '</option><option value=1>' + "Maak geen verbinding met de server" + '</option><option value=2>' + "Verbinden met de server" + '</option></select>');
+                        x += addHtmlValue('<span title="' + "Gebruiker geïnitieerde externe toegang" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Niet configureren" + '</option><option value=1>' + "Maak geen verbinding met de server" + '</option><option value=2>' + "Verbinden met de server" + '</option></select>');
                     } else {
-                        x += addHtmlValue('<span title="' + "Gebruiker geïnitieerde externe toegang" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Configureer niet" + '</option><option value=2>' + "Verbinden met de server" + '</option></select>');
+                        x += addHtmlValue('<span title="' + "Gebruiker geïnitieerde externe toegang" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Niet configureren" + '</option><option value=2>' + "Verbinden met de server" + '</option></select>');
                     }
                 }
                 x += '<br/><span style="font-size:10px">' + "* Laat leeg om een willekeurig wachtwoord toe te wijzen aan elk apparaat." + '</span><br/>';
@@ -7588,14 +7589,14 @@
             var x = '', consent = (currentMesh.consent) ? currentMesh.consent : 0;
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Bureaublad" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Gebruiker informeren" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Vragen gebruikerstoestemming" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Vraag gebruikerstoestemming" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Toon verbindingswerkbalk" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Gebruiker informeren" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Vragen gebruikerstoestemming" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Vraag gebruikerstoestemming" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Bestanden" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Gebruiker informeren" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Vragen gebruikerstoestemming" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Vraag gebruikerstoestemming" + '</label></div>';
             setDialogMode(2, "Toestemming gebruikersgroep bewerken", 3, p20editmeshconsentEx, x);
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
@@ -7647,7 +7648,7 @@
             var x = '';
             if (userid == null) {
                 x += "Gebruikers toestaan deze apparaatgroep en apparaten in deze groep te beheren.";
-                if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
+                if (features & 0x00080000) { x += " Gebruikers moeten inloggen bij de server voordat ze kunnen worden toegevoegd aan een apparaatgroep." }
                 x += '<br /><br /><div style=\'position:relative\'>';
                 x += addHtmlValue("Gebruikersnamen", '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
                 x += '<div id=dp20usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
@@ -7819,7 +7820,7 @@
                     if ((meshrights & 2) != 0) r.push("Beheer apparaatgroep gebruikers");
                     if ((meshrights & 4) != 0) r.push("Beheer apparaatgroep computers");
                     if ((meshrights & 8) != 0) r.push("Extern beheer");
-                    if ((meshrights & 16) != 0) r.push("Agentconsole");
+                    if ((meshrights & 16) != 0) r.push("Agent console");
                     if ((meshrights & 32) != 0) r.push("Serverbestanden");
                     if ((meshrights & 64) != 0) r.push("apparaat wekken");
                     if ((meshrights & 128) != 0) r.push("Notities bewerken");
@@ -7837,9 +7838,9 @@
                 if (users && users[xuserid]) { uname = users[xuserid].name; }
                 if (userinfo._id == xuserid) { uname = userinfo.name; }
                 var buttons = 1, x = addHtmlValue("Gebruikersnaam", EscapeHtml(decodeURIComponent(uname)));
-                if (xuserid.split('/')[2] != uname) { x += addHtmlValue("gebruikers-ID", EscapeHtml(xuserid.split('/')[2])); }
+                if (xuserid.split('/')[2] != uname) { x += addHtmlValue("gebruikersID", EscapeHtml(xuserid.split('/')[2])); }
 
-                x += addHtmlValue("machtigingen", r.join(","));
+                x += addHtmlValue("machtigingen", r.join(", "));
                 if (((userinfo._id) != xuserid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
                 setDialogMode(2, "Apparaatgroep gebruiker", buttons, p20viewuserEx, x, xuserid);
             }
@@ -8385,7 +8386,7 @@
             if (mode == 1) { eventList = currentDeviceEvents; }
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
-            csv = "time, type, action, user, message" + '\r\n';
+            csv = "tijd, type, actie, gebruiker, bericht" + '\r\n';
             for (var i in eventList) { csv += '\"' + eventList[i].time + '\",\"' + eventList[i].etype + '\",\"' + ((eventList[i].action != null) ? eventList[i].action : '') + '\",\"' + ((eventList[i].username != null) ? eventList[i].username : '') + '\",\"' + ((eventList[i].msg != null) ? eventList[i].msg : '') + '\"\r\n'; }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "eventslist.csv");
             return false;
@@ -8464,7 +8465,7 @@
                 }
             }
             x += '</table>';
-            if (hiddenUsers == 1) { x += '<br />' + "1 gebruiker niet getoond, gebruik de zoekfunctie om gebruikers te vinden" + '<br />'; }
+            if (hiddenUsers == 1) { x += '<br />' + "1 gebruiker niet getoond, gebruik de zoekfunctie om gebruikers te vinden..." + '<br />'; }
             else if (hiddenUsers > 1) { x += '<br />' + format("{0} meer gebruikers niet getoond, gebruik zoekvak om gebruikers te zoeken ...", hiddenUsers) + '<br />'; }
             if (maxUsers == 100) { x += '<br />' + "Geen gebruikers gevonden" + '<br />'; }
             QH('p3users', x);
@@ -8826,7 +8827,7 @@
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>' + "Niet ingesteld" + '</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title=\"' + "Email is geverifieerd" + '\">&#x2713</b> ' : '<b style=color:red;cursor:pointer title=\"' + "Email is niet geverifieerd" + '\">&#x2717;</b> '); }
-            if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("gebruikers-ID", user._id.split('/')[2]); }
+            if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("gebruikersID", user._id.split('/')[2]); }
             if (((features & 0x200000) == 0) && ((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
                 x += addDeviceAttribute("Email", everify + '<a href=# style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"' + userid + '\")>' + email + '</a> <a href=# style=cursor:pointer onclick=\'return doemail(event,\"' + user.email + '\")\'><img class=hoverButton src="images/link1.png" /></a>');
             } else {
@@ -8860,7 +8861,7 @@
                 var factors = [];
                 if (user.otpsecret > 0) { factors.push("Verificatie-app"); }
                 if (user.otphkeys > 0) { factors.push("Veiligheidssleutel"); }
-                if (user.otpkeys > 0) { factors.push("Back-upcodes"); }
+                if (user.otpkeys > 0) { factors.push("Back-up codes"); }
                 x += addDeviceAttribute("Veiligheid", '<img src="images/key12.png" height=12 width=11 title=\"' + "Tweestapsverificatie ingeschakeld" + '\" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
@@ -9482,7 +9483,7 @@
         }
 
         function p40downloadEvents() {
-            var csv = "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss" + '\r\n';
+            var csv = "tijd, conn.agent, conn.gebruikers, conn.gebruikerssessies, conn.relaysessie, conn.intelamt, mem.extern, mem.heapused, mem.heaptotaal, mem.rss" + '\r\n';
             for (var i = 0; i < serverTimelineStats.length; i++) {
                 if (serverTimelineStats[i].conn && serverTimelineStats[i].mem) {
                     csv += new Date(serverTimelineStats[i].time) + ', ' + serverTimelineStats[i].conn.ca + ', ' + serverTimelineStats[i].conn.cu + ', ' + serverTimelineStats[i].conn.us + ', ' + serverTimelineStats[i].conn.rs + ', ' + (serverTimelineStats[i].conn.am ? serverTimelineStats[i].conn.am : '') + ', ' + serverTimelineStats[i].mem.external + ', ' + serverTimelineStats[i].mem.heapUsed + ', ' + serverTimelineStats[i].mem.heapTotal + ', ' + serverTimelineStats[i].mem.rss + '\r\n';
@@ -9539,7 +9540,7 @@
         }
 
         function p41downloadServerTrace() {
-            var csv = "time, source, message" + '\r\n';
+            var csv = "tijd, bron, bericht" + '\r\n';
             for (var i in serverTrace) { csv += '\"' + new Date(serverTrace[i].time).toLocaleTimeString() + '\",\"' + serverTrace[i].source + '\",\"' + serverTrace[i].args.join(', ') + '\"\r\n'; }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "servertrace.csv");
             return false;
@@ -9599,11 +9600,10 @@
 
         function goBack() {
             setSessionActivity();
-            if (xxdialogMode) return;
+            if (xxdialogMode || (goBackStack.length == 0)) return;
             if (fullscreen) { deskToggleFull(); }
-            if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } // Return to My Devices
-            if ((xxcurrentView >= 20) && (xxcurrentView < 30)) { go(2); } // Return to My Account
-            if ((xxcurrentView >= 30) && (xxcurrentView < 40)) { go(4); } // Return to My Users
+            go(goBackStack.pop());
+            goBackStack.pop();
         }
 
         function go(x, event) {
@@ -9622,7 +9622,14 @@
                 return;
             }
 
+            // If we are going to the same place, do nothing.
             if (xxcurrentView == x) return;
+
+            // Set the goback stack, if going to top-level view, clear the stack.
+            if ((xxcurrentView < 0) || (x < 10)) { goBackStack = []; } else {
+                // Do not push into the back stack if we are changing tabs at the same level.
+                if (Math.floor(xxcurrentView / 10) != Math.floor(x / 10)) { goBackStack.push(xxcurrentView); }
+            }
 
             // Edit this line when adding a new screen
             for (var i = 0; i < 44; i++) { QV('p' + i, i == x); }
@@ -9646,29 +9653,34 @@
             var mainMenuActiveClass = (x < 9 ? 'fullselect' : 'semiselect');
             var leftMenuActiveClass = (((x < 9) || (x == 115) || (x == 40) || (x == 41) || (x == 42)) ? 'lbbuttonsel2' : 'lbbuttonsel');
 
+            var backView = 0;
+            if (goBackStack.length > 0) { backView = goBackStack[goBackStack.length - 1]; }
+
             // My Devices
-            if (x == 1 || (x >= 10 && x < 20)) QC('MainMenuMyDevices').add(mainMenuActiveClass);
-            if (x == 1 || (x >= 10 && x < 20)) QC('LeftMenuMyDevices').add(leftMenuActiveClass);
-
-            // My Account
-            if (x == 2 || (x >= 20 && x < 30)) QC('MainMenuMyAccount').add(mainMenuActiveClass);
-            if (x == 2 || (x >= 20 && x < 30)) QC('LeftMenuMyAccount').add(leftMenuActiveClass);
-
-            // My Events
-            if (x == 3) QC('MainMenuMyEvents').add(mainMenuActiveClass);
-            if (x == 3) QC('LeftMenuMyEvents').add(leftMenuActiveClass);
-
-            // My Users
-            if (x == 4 || (x >= 30 && x < 40)) QC('MainMenuMyUsers').add(mainMenuActiveClass);
-            if (x == 4 || (x >= 30 && x < 40)) QC('LeftMenuMyUsers').add(leftMenuActiveClass);
-
-            // My Files
-            if (x == 5) QC('MainMenuMyFiles').add(mainMenuActiveClass);
-            if (x == 5) QC('LeftMenuMyFiles').add(leftMenuActiveClass);
-
-            // My Server
-            if ((x == 6) || (x == 115)) QC('MainMenuMyServer').add(mainMenuActiveClass);
-            if ((x == 6) || (x == 115) || (x == 40) || (x == 41) || (x == 42) || (x == 43)) QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            if (x == 1 || (backView == 1) || ((backView == 0) && (x >= 10 && x < 20))) {
+                QC('MainMenuMyDevices').add(mainMenuActiveClass);
+                QC('LeftMenuMyDevices').add(leftMenuActiveClass);
+            } else if (x == 2 || (backView == 2) || ((backView == 0) && (x >= 20 && x < 30))) {
+                // My Account
+                QC('MainMenuMyAccount').add(mainMenuActiveClass);
+                QC('LeftMenuMyAccount').add(leftMenuActiveClass);
+            } else if (x == 3) {
+                // My Events
+                QC('MainMenuMyEvents').add(mainMenuActiveClass);
+                QC('LeftMenuMyEvents').add(leftMenuActiveClass);
+            } else if (x == 4 || (x >= 30 && x < 40)) {
+                // My Users
+                QC('MainMenuMyUsers').add(mainMenuActiveClass);
+                QC('LeftMenuMyUsers').add(leftMenuActiveClass);
+            } else if (x == 5) {
+                // My Files
+                QC('MainMenuMyFiles').add(mainMenuActiveClass);
+                QC('LeftMenuMyFiles').add(leftMenuActiveClass);
+            } else if ((x == 6) || (x == 115) || (x >= 40 && x < 50)) {
+                // My Server
+                QC('MainMenuMyServer').add(mainMenuActiveClass);
+                QC('LeftMenuMyServer').add(leftMenuActiveClass);
+            }
             QV('ServerPlugins', pluginHandler != null);
 
             // column_l max-height

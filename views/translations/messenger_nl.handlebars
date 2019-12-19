@@ -607,7 +607,7 @@
                     var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?id=' + args.id;
                     if ((args.auth != null) && (args.auth != '')) { url += '&auth=' + args.auth; }
                     socket = new WebSocket(url);
-                    socket.onopen = function () { state = 1; displayControl("Wachten op andere gebruiker ..."); }
+                    socket.onopen = function () { state = 1; displayControl("Wachten op de gebruiker ..."); }
                     socket.onerror = function (e) { /*console.error(e);*/ }
                     socket.onclose = function () { disconnect(); }
                     socket.onmessage = function (msg) {
