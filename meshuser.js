@@ -756,9 +756,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'mpsstats': {
-                            var stats = parent.parent.mpsserver.getStats();
-                            for (var i in stats) {
-                                if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            if (parent.parent.mpsserver == null) {
+                                r = 'MPS not enabled.';
+                            } else {
+                                var stats = parent.parent.mpsserver.getStats();
+                                for (var i in stats) {
+                                    if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                                }
                             }
                             break;
                         }

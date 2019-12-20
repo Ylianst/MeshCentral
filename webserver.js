@@ -1642,8 +1642,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a post request on the root
     function handleRootPostRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.send('Not Found'); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.send('Not Found'); return; } // Check 3FA URL key
+        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.end('Not Found'); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.end('Not Found'); return; } // Check 3FA URL key
         parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
        
         switch (req.body.action) {
@@ -2026,9 +2026,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             try { res.sendFile(obj.path.join(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
         }
 
-        if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg'))) {
-            // Use the override logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+        if (parent.webPublicOverridePath) {
+            obj.fs.exists(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg'), function (exists) {
+                if (exists) {
+                    // Use the override logo picture
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+                } else {
+                    // Use the default logo picture
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+                }
+            });
         } else {
             // Use the default logo picture
             try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
@@ -4017,6 +4024,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
         xargs.extitle = encodeURIComponent(xargs.title);
         xargs.domainurl = domain.url;
+        if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
         return xargs;
     }
 
@@ -4124,7 +4132,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { break; } // English requested, break out.
                     if (fileOptions[acceptLanguages[i]] != null) {
                         // Found a match. If the file no longer exists, default to English.
-                        if (obj.fs.existsSync(fileOptions[acceptLanguages[i]] + '.handlebars')) { res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
+                        obj.fs.exists(fileOptions[acceptLanguages[i]] + '.handlebars', function (exists) {
+                            if (exists) { res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
+                        });
                         return;
                     } 
                 }
