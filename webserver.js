@@ -564,14 +564,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (webAuthnKey != null) {
                         // Figure out the origin
                         var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
-                        var origin = "https://" + (domain.dns ? domain.dns : parent.certificates.CommonName);
+                        var origin = 'https://' + (domain.dns ? domain.dns : parent.certificates.CommonName);
                         if (httpport != 443) { origin += ':' + httpport; }
 
                         var assertionExpectations = {
                             challenge: req.session.u2fchallenge,
                             origin: origin,
-                            factor: "either",
-                            fmt: "fido-u2f",
+                            factor: 'either',
+                            fmt: 'fido-u2f',
                             publicKey: webAuthnKey.publicKey,
                             prevCounter: webAuthnKey.counter,
                             userHandle: Buffer.from(user._id, 'binary').toString('base64')
@@ -1924,7 +1924,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleLogoRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
 
-        res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
         if ((domain != null) && domain.titlepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.titlepicture] != null)) {
                 // Use the logo in the database
@@ -2013,7 +2013,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleWelcomeImageRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
 
-        res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
         if ((domain != null) && domain.welcomepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.welcomepicture] != null)) {
                 // Use the welcome image in the database
@@ -3391,7 +3391,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
             parent.debug('webrequest', req.url);
-            res.removeHeader("X-Powered-By");
+            res.removeHeader('X-Powered-By');
             var domain = req.xdomain = getDomain(req);
 
             // If this domain has configured headers, use them.
@@ -3528,8 +3528,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     serialtunnel.xdomain = domain;
                     serialtunnel.xip = req.ip;
                     ws.on('message', function (b) { serialtunnel.updateBuffer(Buffer.from(b, 'binary')) });
-                    serialtunnel.forwardwrite = function (b) { ws.send(b, "binary") }
-                    ws.on("close", function () { serialtunnel.emit('end'); });
+                    serialtunnel.forwardwrite = function (b) { ws.send(b, 'binary') }
+                    ws.on('close', function () { serialtunnel.emit('end'); });
                     obj.parent.mqttbroker.handle(serialtunnel); // Pass socket wrapper to MQTT broker
                 });
             }
@@ -3568,10 +3568,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             //obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
 
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
-            if (obj.parent.webPublicOverridePath != null) { obj.app.use(url, obj.express.static(obj.parent.webPublicOverridePath, { maxAge: '1h' })); }
+            if (obj.parent.webPublicOverridePath != null) { obj.app.use(url, obj.express.static(obj.parent.webPublicOverridePath)); }
 
             // Indicates to ExpressJS that the default public folder should be used to serve static files.
-            obj.app.use(url, obj.express.static(obj.parent.webPublicPath, { maxAge: '1h' }));
+            obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
 
             // Start regular disconnection list flush every 2 minutes.
             obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
