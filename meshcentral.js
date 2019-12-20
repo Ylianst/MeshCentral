@@ -60,7 +60,6 @@ function CreateMeshCentralServer(config, args) {
     obj.multiServer = null;
     obj.maintenanceTimer = null;
     obj.serverId = null;
-    obj.currentVer = null;
     obj.serverKey = Buffer.from(obj.crypto.randomBytes(48), 'binary');
     obj.loginCookieEncryptionKey = null;
     obj.invitationLinkEncryptionKey = null;
@@ -71,7 +70,11 @@ function CreateMeshCentralServer(config, args) {
     obj.serverWarnings = []; // List of warnings that should be shown to administrators
     obj.cookieUseOnceTable = {}; // List of cookies that are already expired
     obj.cookieUseOnceTableCleanCounter = 0; // Clean the cookieUseOnceTable each 20 additions
-    try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } // Fetch server version
+
+    // Server version
+    obj.currentVer = null;
+    function getCurrentVerion() { try { obj.currentVer = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'package.json'), 'utf8')).version; } catch (e) { } return obj.currentVer; } // Fetch server version
+    getCurrentVerion();
 
     // Setup the default configuration and files paths
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
@@ -126,7 +129,7 @@ function CreateMeshCentralServer(config, args) {
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
-            console.log('MeshCentral v' + obj.currentVer + ', a open source remote computer management web portal.');
+            console.log('MeshCentral v' + getCurrentVerion() + ', a open source remote computer management web portal.');
             console.log('Details at: https://www.meshcommander.com/meshcentral2\r\n');
             if (obj.platform == 'win32') {
                 console.log('Run as a Windows Service');
@@ -263,7 +266,7 @@ function CreateMeshCentralServer(config, args) {
             try {
                 var errlogpath = null;
                 if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
-                obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' ---- ' + obj.currentVer + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
+                obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' ---- ' + getCurrentVerion() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
             } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
         });
         childProcess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
@@ -273,7 +276,7 @@ function CreateMeshCentralServer(config, args) {
     obj.getLatestServerVersion = function (callback) {
         if (callback == null) return;
         try {
-            if (typeof obj.args.selfupdate == 'string') { callback(obj.currentVer, obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
+            if (typeof obj.args.selfupdate == 'string') { callback(getCurrentVerion(), obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
             var child_process = require('child_process');
             var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
             var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
@@ -284,9 +287,9 @@ function CreateMeshCentralServer(config, args) {
             xxprocess.on('close', function (code) {
                 var latestVer = null;
                 if (code == 0) { try { latestVer = xxprocess.data.split(' ').join('').split('\r').join('').split('\n').join(''); } catch (e) { } }
-                callback(obj.currentVer, latestVer);
+                callback(getCurrentVerion(), latestVer);
             });
-        } catch (ex) { callback(obj.currentVer, null, ex); } // If the system is running out of memory, an exception here can easily happen.
+        } catch (ex) { callback(getCurrentVerion(), null, ex); } // If the system is running out of memory, an exception here can easily happen.
     };
 
     // Initiate server self-update
@@ -702,7 +705,7 @@ function CreateMeshCentralServer(config, args) {
         // If we are targetting a specific version, update now.
         if ((obj.serverSelfWriteAllowed == true) && (typeof obj.args.selfupdate == 'string')) {
             obj.args.selfupdate = obj.args.selfupdate.toLowerCase();
-            if (obj.currentVer !== obj.args.selfupdate) { obj.performServerUpdate(); return; } // We are targetting a specific version, run self update now.
+            if (getCurrentVerion() !== obj.args.selfupdate) { obj.performServerUpdate(); return; } // We are targetting a specific version, run self update now.
         }
 
         // Write the server state
@@ -966,7 +969,7 @@ function CreateMeshCentralServer(config, args) {
         // Write server version and run mode
         var productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
         var runmode = (obj.args.lanonly ? 2 : (obj.args.wanonly ? 1 : 0));
-        console.log("MeshCentral v" + obj.currentVer + ', ' + (["Hybrid (LAN + WAN) mode", "WAN mode", "LAN mode"][runmode]) + (productionMode ? ", Production mode." : '.'));
+        console.log("MeshCentral v" + getCurrentVerion() + ', ' + (["Hybrid (LAN + WAN) mode", "WAN mode", "LAN mode"][runmode]) + (productionMode ? ", Production mode." : '.'));
 
         // Check that no sub-domains have the same DNS as the parent
         for (i in obj.config.domains) {
@@ -1167,7 +1170,7 @@ function CreateMeshCentralServer(config, args) {
     // Perform maintenance operations (called every hour)
     obj.maintenanceActions = function () {
         // Check for self-update that targets a specific version
-        if ((typeof obj.args.selfupdate == 'string') && (obj.currentVer === obj.args.selfupdate)) { obj.args.selfupdate = false; }
+        if ((typeof obj.args.selfupdate == 'string') && (getCurrentVerion() === obj.args.selfupdate)) { obj.args.selfupdate = false; }
 
         // Check if we need to perform server self-update
         if ((obj.args.selfupdate) && (obj.serverSelfWriteAllowed == true)) {
@@ -1620,7 +1623,7 @@ function CreateMeshCentralServer(config, args) {
         else if ((obj.args.minifycore !== false) && (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.min.js')))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.min.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
         else if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.js'))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
         else { obj.defaultMeshCmd = null; if (func != null) { func(false); } } // meshcmd.js not found
-        meshCmd = meshCmd.replace("'***Mesh*Cmd*Version***'", '\'' + obj.currentVer + '\'');
+        meshCmd = meshCmd.replace("'***Mesh*Cmd*Version***'", '\'' + getCurrentVerion() + '\'');
 
         // Figure out where the modules_meshcmd folder is.
         if (obj.args.minifycore !== false) { try { moduleDirPath = obj.path.join(meshcmdPath, 'modules_meshcmd_min'); modulesDir = obj.fs.readdirSync(moduleDirPath); } catch (e) { } } // Favor minified modules if present.

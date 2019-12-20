@@ -104,6 +104,7 @@
         <div id="topbar" class="noselect">
             <div>
                 <div style="position:relative">
+                    <span id="logoutControlSpan2" style="color:white"></span>
                     <div tabindex="0" id="uiMenuButton" title="Seleção da interface do usuário" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
                         ♦
                         <div id="uiMenu" style="display:none">
@@ -183,12 +184,14 @@
                 <div id="p0message"><span id="p0span">Servidor desconectado</span>, <href onclick="reload()" style="cursor:pointer"><u>clique para reconectar</u></href>.</div>
             </div>
             <div id="p1" style="display:none">
-                <div style="display:none" id="devListToolbarViewIcons">
-                    <div tabindex="0" id="devViewButton1" class="viewSelector" onclick="onDeviceViewChange(1)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Colunas"><div class="viewSelector2"></div></div>
-                    <div tabindex="0" id="devViewButton2" class="viewSelector" onclick="onDeviceViewChange(2)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="Lista"><div class="viewSelector1"></div></div>
-                    <div tabindex="0" id="devViewButton3" class="viewSelector" onclick="onDeviceViewChange(3)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Áreas de trabalho"><div class="viewSelector3"></div></div>
-                    <div tabindex="0" id="devViewButton4" class="viewSelector" onclick="onDeviceViewChange(4)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Mapa" style="display:none"><div class="viewSelector4"></div></div>
-                </div><div><h1>Meus dispositivos</h1></div>
+                <div id="p1title">
+                    <div style="display:none" id="devListToolbarViewIcons">
+                        <div tabindex="0" id="devViewButton1" class="viewSelector" onclick="onDeviceViewChange(1)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Colunas"><div class="viewSelector2"></div></div>
+                        <div tabindex="0" id="devViewButton2" class="viewSelector" onclick="onDeviceViewChange(2)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="Lista"><div class="viewSelector1"></div></div>
+                        <div tabindex="0" id="devViewButton3" class="viewSelector" onclick="onDeviceViewChange(3)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Áreas de trabalho"><div class="viewSelector3"></div></div>
+                        <div tabindex="0" id="devViewButton4" class="viewSelector" onclick="onDeviceViewChange(4)" onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Mapa" style="display:none"><div class="viewSelector4"></div></div>
+                    </div><div><h1>Meus dispositivos</h1></div>
+                </div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tbody><tr>
                         <td class="h1"></td>
@@ -269,7 +272,7 @@
                 <div id="xmap-info-window"></div>
             </div>
             <div id="p2" style="display:none">
-                <h1>Minha conta</h1>
+                <div id="p2title"><h1>Minha conta</h1></div>
                 <img id="p2AccountImage" alt="" src="images/clipboard-128.png">
                 <div id="p2AccountSecurity" style="display:none">
                     <p><strong>Segurança da conta</strong></p>
@@ -300,7 +303,7 @@
                 <br style="clear:both">
             </div>
             <div id="p3" style="display:none">
-                <h1>Meus Eventos</h1>
+                <div id="p3title"><h1>Meus Eventos</h1></div>
                 <table class="pTable">
                     <tbody><tr>
                         <td class="h1"></td>
@@ -321,7 +324,7 @@
                 <div id="p3events" style=""></div>
             </div>
             <div id="p4" style="display:none">
-                <h1>Meus usuários</h1>
+                <div id="p4title"><h1>Meus usuários</h1></div>
                 <table class="pTable">
                     <tbody><tr>
                         <td class="h1"></td>
@@ -342,7 +345,7 @@
                 <div id="p3users"></div>
             </div>
             <div id="p5" style="display:none">
-                <h1>Meus arquivos</h1>
+                <div id="p5title"><h1>Meus arquivos</h1></div>
                 <table id="p5toolbar" cellpadding="0" cellspacing="0">
                     <tbody><tr>
                         <td id="p5filehead" valign="bottom">
@@ -395,8 +398,10 @@
                 </tbody></table>
             </div>
             <div id="p6" style="display:none">
-                <img id="MainMeshImage" src="serverpic.ashx">
-                <h1>Meu servidor</h1>
+                <div id="p6title">
+                    <img id="MainMeshImage" src="serverpic.ashx">
+                    <h1>Meu servidor</h1>
+                </div>
                 <div id="p2ServerActions">
                     <p><strong>Ações do servidor</strong></p>
                     <div class="mL">
@@ -770,17 +775,21 @@
                 <div id="p17info"></div>
             </div>
             <div id="p20" style="display:none">
-                <picture id="MainMeshImage" style="border-width:0px;height:200px;width:200px;float:right">
-                    <source type="image/webp" width="200" height="200" srcset="images/webp/mesh-256.webp">
-                    <img alt="" width="200" height="200" src="images/mesh-256.png">
-                </picture>
-                <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Voltar" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                <h1>Geral -  <span id="p20meshName"></span></h1>
+                <div id="p20title">
+                    <picture id="MainMeshImage" style="border-width:0px;height:200px;width:200px;float:right">
+                        <source type="image/webp" width="200" height="200" srcset="images/webp/mesh-256.webp">
+                        <img alt="" width="200" height="200" src="images/mesh-256.png">
+                    </picture>
+                    <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Voltar" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Geral -  <span id="p20meshName"></span></h1>
+                </div>
                 <p id="p20info"></p>
             </div>
             <div id="p21" style="display:none">
-                <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Voltar" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                <h1>Summary - <span id="p21meshName"></span></h1>
+                <div id="p21title">
+                    <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Voltar" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Summary - <span id="p21meshName"></span></h1>
+                </div>
                 <div style="width:100%">
                     <div style="display:table;width:93%">
                         <div id="meshPowerChartDiv" style="width:31%;display:inline-block;text-align:center;max-width:250px">
@@ -823,8 +832,10 @@
                 <div id="p30html3"></div>
             </div>
             <div id="p31" style="display:none">
-                <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Voltar" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                <h1>Eventos - <span id="p31userName"></span></h1>
+                <div id="p31title">
+                    <div style="float:left"><div class="backButton" tabindex="0" onclick="goBack()" title="Voltar" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Eventos - <span id="p31userName"></span></h1>
+                </div>
                 <table class="pTable">
                     <tbody><tr>
                         <td class="h1"></td>
@@ -846,7 +857,7 @@
                 <div id="p31events" style=""></div>
             </div>
             <div id="p40" style="display:none">
-                <h1>Estatísticas do meu servidor</h1>
+                <div id="p40title"><h1>Estatísticas do meu servidor</h1></div>
                 <div class="areaHead">
                     <div class="toright2">
                         <select id="p40type" onchange="updateServerTimelineStats()">
@@ -870,7 +881,7 @@
                 <canvas id="serverMainStats" style=""></canvas>
             </div>
             <div id="p41" style="display:none">
-                <h1>Rastreio do meu servidor</h1>
+                <div id="p41title"><h1>Rastreio do meu servidor</h1></div>
                 <div class="areaHead">
                     <div class="toright2">
                         Mostrar
@@ -1116,12 +1127,6 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
-            // Setup logout control
-            var logoutControl = '';
-            if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
-            if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href=\"' + logoutControls.logoutUrl + '\" style="color:white">' + "Sair" + '</a>'); }
-            QH('logoutControlSpan', logoutControl);
-
             // Check if we are in debug mode
             args = parseUriArgs();
             if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
@@ -1136,58 +1141,20 @@
             toggleFullScreen();
 
             // Setup page visuals
-            if (args.hide) {
-                var hide = parseInt(args.hide);
-                QV('masthead', !(hide & 1));
-                QV('topbar', !(hide & 2));
-                QV('footer', !(hide & 4));
-                QV('p10title', !(hide & 8));
-                QV('p11title', !(hide & 8));
-                QV('p12title', !(hide & 8));
-                QV('p13title', !(hide & 8));
-                QV('p14title', !(hide & 8));
-                QV('p15title', !(hide & 8));
-                QV('p16title', !(hide & 8));
-                //if (hide & 16) {
-                //    QV('page_leftbar', false);
-                //    QS('page_content').left = '0px';
-                //}
-
-                // Fix the main grid to zero-height elements we want to hide.
-                QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
-                QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
-
-                // Adjust height of remote desktop, files and Intel AMT
-                var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
-                QS('p3users')['max-height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
-                QS('p3events')['height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
-                QS('deskarea3x')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
-                QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
-                QS('p5filetable')['height'] = 'calc(100vh - ' + (160 + xh) + 'px)';
-                QS('p13filetable')['height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
-                QS('serverMainStats')['height'] = 'calc(100vh - ' + (110 + xh) + 'px)';
-                QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (110 + xh) + 'px)';
-                QS('xdevices')['max-height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
-                QS('xdevicesmap')['max-height'] = 'calc(100vh - ' + (124 + xh) + 'px)';
-                QS('p15agentConsole')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
-                QS('p15agentConsole')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
-                QS('p15agentConsoleText')['height'] = 'calc(100vh - ' + (81 + xh) + 'px)';
-                QS('p15agentConsoleText')['max-height'] = 'calc(100vh - ' + (81 + xh) + 'px)';
-                QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
-                QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            var hide = 0;
+            var globalHide = parseInt('{{{hide}}}');
+            if (globalHide || args.hide) {
+                if (args.hide) { hide = parseInt(args.hide); }
+                if (globalHide) { hide = (hide | globalHide); }
             }
+            args.hide = hide;
+            adjustPanels();
 
-            // We are looking at a single device, remove all the back buttons
-            if ('{{currentNode}}' != '') {
-                QV('p10BackButton', false);
-                QV('p11BackButton', false);
-                QV('p12BackButton', false);
-                QV('p13BackButton', false);
-                QV('p14BackButton', false);
-                QV('p15BackButton', false);
-                QV('p16BackButton', false);
-            }
-            p1updateInfo();
+            // Setup logout control
+            var logoutControl = '';
+            if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
+            if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href=\"' + logoutControls.logoutUrl + '\" style="color:white">' + "Sair" + '</a>'); }
+            if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }
@@ -1269,13 +1236,91 @@
             d4ToggleSize(true);
         }
 
+        function adjustPanels() {
+            var hide = args.hide;
+            QV('masthead', !(hide & 1));
+            QV('topbar', !(hide & 2));
+            QV('footer', !(hide & 4));
+            QV('p1title', !(hide & 8));
+            QV('p2title', !(hide & 8));
+            QV('p3title', !(hide & 8));
+            QV('p4title', !(hide & 8));
+            QV('p5title', !(hide & 8));
+            QV('p6title', !(hide & 8));
+            QV('p10title', !(hide & 8));
+            QV('p11title', !(hide & 8));
+            QV('p12title', !(hide & 8));
+            QV('p13title', !(hide & 8));
+            QV('p14title', !(hide & 8));
+            QV('p15title', !(hide & 8));
+            QV('p16title', !(hide & 8));
+            QV('p17title', !(hide & 8));
+            QV('p20title', !(hide & 8));
+            QV('p21title', !(hide & 8));
+            QV('p30title', !(hide & 8));
+            QV('p31title', !(hide & 8));
+            QV('p40title', !(hide & 8));
+            QV('p41title', !(hide & 8));
+            //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
+
+            if (hide != 0) {
+                // Fix the main grid to zero-height elements we want to hide.
+                if (uiMode == 2) {
+                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                } else {
+                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                }
+            }
+
+            // Adjust height of remote desktop, files and Intel AMT
+            // 1 = Top bar, 2 = Tool Bar, 4 = Bottom Bar, 8 = Tab Title
+            var xh = (((args.hide & 1) ? 0 : 66) + ((args.hide & 2) ? 0 : 24) + ((args.hide & 4) ? 0 : 45) + ((args.hide & 8) ? 0 : 60)); // 0 to 195
+            var xh2 = (uiMode > 1)?24:0;
+            QS('p3users')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
+            QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
+            QS('deskarea3x')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
+            QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
+            QS('p5filetable')['height'] = 'calc(100vh - ' + (99 + xh) + 'px)'; // 160
+            QS('p13filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)'; // 124
+            QS('serverMainStats')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
+            QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
+            QS('xdevices')['max-height'] = 'calc(100vh - ' + (46 + xh) + 'px)'; // 124
+            QS('xdevicesmap')['max-height'] = 'calc(100vh - ' + (46 + xh) + 'px)'; // 124
+            QS('p15agentConsole')['height'] = 'calc(100vh - ' + (84 + xh + xh2) + 'px)';
+            QS('p15agentConsole')['max-height'] = 'calc(100vh - ' + (84 + xh + xh2) + 'px)';
+            QS('p15agentConsoleText')['height'] = 'calc(100vh - ' + (81 + xh + xh2) + 'px)';
+            QS('p15agentConsoleText')['max-height'] = 'calc(100vh - ' + (81 + xh + xh2) + 'px)';
+            QS('p14iframe')['height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
+            QS('p14iframe')['max-height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
+            QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            QS('p16events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
+            QS('p16events')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
+            QS('p41events')['height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
+            QS('p41events')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
+
+            // We are looking at a single device, remove all the back buttons
+            if ('{{currentNode}}' != '') {
+                QV('p10BackButton', false);
+                QV('p11BackButton', false);
+                QV('p12BackButton', false);
+                QV('p13BackButton', false);
+                QV('p14BackButton', false);
+                QV('p15BackButton', false);
+                QV('p16BackButton', false);
+            }
+            p1updateInfo();
+        }
+
         // Toggle the web page to full screen
         function toggleAspectRatio(toggle) {
             if (toggle === 1) { deskAspectRatio = ((deskAspectRatio + 1) % 3); putstore('deskAspectRatio', deskAspectRatio); }
             deskAdjust();
         }
 
-        // If FullScreen, toggle menu to be horisontal or vertical
+        // If FullScreen, toggle menu to be horizontal or vertical
         function toggleStackMenu(toggle) {
             if (webPageFullScreen == true) {
                 if (toggle === 1) {
@@ -1311,6 +1356,7 @@
             toggleFullScreen(0);
             toggleStackMenu(0);
             if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
+            adjustPanels();
         }
 
         function toggleNightMode() {
@@ -1322,8 +1368,6 @@
         // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
-            var hide = 0;
-            if (args.hide) { hide = parseInt(args.hide); }
             if (webPageFullScreen == false) {
                 QC('body').remove('menu_stack');
                 QC('body').remove('fullscreen');
@@ -1333,9 +1377,9 @@
                 //QV('page_leftbar', false);
             } else {
                 QC('body').add('fullscreen');
-                if (hide & 16) QC('body').add('arg_hide'); // This is replacement for QV('page_leftbar', !(hide & 16));
-                QV('page_leftbar', !(hide & 16));
-                QV('MainMenuSpan', !(hide & 16));
+                if (args.hide & 16) QC('body').add('arg_hide'); // This is replacement for QV('page_leftbar', !(args.hide & 16));
+                QV('page_leftbar', !(args.hide & 16));
+                QV('MainMenuSpan', !(args.hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
             }
@@ -5487,8 +5531,9 @@
                 if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
             } else {
                 QC('body').remove('fulldesk');
-                QS('deskarea3x')['height'] = null;
-                QS('deskarea3x')['max-height'] = null;
+                var xh = (((args.hide & 1) ? 0 : 66) + ((args.hide & 2) ? 0 : 24) + ((args.hide & 4) ? 0 : 45) + ((args.hide & 8) ? 0 : 60)); // 0 to 195
+                QS('deskarea3x')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
                 if (browserfullscreen == true) { exitBrowserFullscreen(); browserfullscreen = false; }
             }
             deskAdjust();
@@ -9690,10 +9735,10 @@
             QV('topbar', x != 0);
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
-            QV('MainSubMenuSpan', x >= 10 && x < 20);
+            QV('MainSubMenuSpan', (x >= 10) && (x < 20));
             QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
-            QV('MeshSubMenuSpan', x >= 20 && x < 30);
-            QV('UserSubMenuSpan', x >= 30 && x < 40);
+            QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
+            QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
             var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 115: 'ServerConsole' };
             for (var i in panels) {

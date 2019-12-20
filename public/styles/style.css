@@ -221,6 +221,14 @@ body {
     right: 6px;
 }
 
+#logoutControlSpan2 {
+    cursor: pointer;
+    color: white;
+    position: absolute;
+    top: 5px;
+    right: 24px;
+}
+
 #uiMenu {
     position: absolute;
     top: 17px;
