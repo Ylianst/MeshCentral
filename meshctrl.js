@@ -303,7 +303,9 @@ function displayConfigHelp() {
 }
 
 function performConfigOperations(args) {
-    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapoptions', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording'];
+    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapoptions', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide', 'loginkey'];
+    var domainObjectValues = [ 'ldapoptions', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording' ];
+    var domainArrayValues = [ 'newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig' ];
     var configChange = false;
     var fs = require('fs');
     var path = require('path');
@@ -341,15 +343,40 @@ function performConfigOperations(args) {
     if (args.settodomain != null) {
         didSomething++;
         if (config.domains == null) { config.domains = {}; }
+        if (args.settodomain == true) { args.settodomain = ''; }
         if (config.domains[args.settodomain] == null) { console.log("Error: Domain \"" + args.settodomain + "\" does not exist"); }
         else {
             for (var i in args) {
+                if ((i == '_') || (i == 'settodomain')) continue;
                 if (domainValues.indexOf(i.toLowerCase()) >= 0) {
-                    if (args[i] == '') { delete config.domains[args.settodomain][i]; configChange = true; } else {
-                        if (args[i] == 'true') { args[i] = true; } else if (args[i] == 'false') { args[i] = false; } else if (parseInt(args[i]) == args[i]) { args[i] = parseInt(args[i]); }
-                        config.domains[args.settodomain][i] = args[i];
-                        configChange = true;
+                    var isObj = (domainObjectValues.indexOf(i.toLowerCase()) >= 0);
+                    var isArr = (domainArrayValues.indexOf(i.toLowerCase()) >= 0);
+                    if ((isObj == false) && (isArr == false)) {
+                        // Simple value set
+                        if (args[i] == '') { delete config.domains[args.settodomain][i]; configChange = true; } else {
+                            if (args[i] == 'true') { args[i] = true; } else if (args[i] == 'false') { args[i] = false; } else if (parseInt(args[i]) == args[i]) { args[i] = parseInt(args[i]); }
+                            config.domains[args.settodomain][i] = args[i];
+                            configChange = true;
+                        }
+                    } else if (isObj || isArr) {
+                        // Set an object/array value
+                        if (args[i] == '') { delete config.domains[args.settodomain][i]; configChange = true; } else {
+                            var x = null;
+                            try { x = JSON.parse(args[i]); } catch (ex) { }
+                            if ((x == null) || (typeof x != 'object')) { console.log("Unable to parse JSON for " + i + "."); } else {
+                                if (isArr && Array.isArray(x) == false) {
+                                    console.log("Value " + i + " must be an array.");
+                                } else if (!isArr && Array.isArray(x) == true) {
+                                    console.log("Value " + i + " must be an object.");
+                                } else {
+                                    config.domains[args.settodomain][i] = x;
+                                    configChange = true;
+                                }
+                            }
+                        }
                     }
+                } else {
+                    console.log('Invalid configuration value: ' + i);
                 }
             }
         }
@@ -376,7 +403,7 @@ function performConfigOperations(args) {
         if (didSomething == 0) {
             displayConfigHelp();
         } else {
-            console.log("Done.", didSomething);
+            console.log("Done.");
         }
     }
 }

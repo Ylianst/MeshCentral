@@ -1139,7 +1139,7 @@
             QV('autoconnectbutton1', debugmode); // Desktop
             //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
-            if (nightMode) { QC('body').add('night'); }
+            if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; }
             toggleFullScreen();
 
             // Setup page visuals
@@ -1282,8 +1282,6 @@
             var xh2 = (uiMode > 1)?24:0;
             QS('p3users')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
-            QS('deskarea3x')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
-            QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
             QS('p5filetable')['height'] = 'calc(100vh - ' + (99 + xh) + 'px)'; // 160
             QS('p13filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)'; // 124
             QS('serverMainStats')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
@@ -1294,8 +1292,17 @@
             QS('p15agentConsole')['max-height'] = 'calc(100vh - ' + (84 + xh + xh2) + 'px)';
             QS('p15agentConsoleText')['height'] = 'calc(100vh - ' + (81 + xh + xh2) + 'px)';
             QS('p15agentConsoleText')['max-height'] = 'calc(100vh - ' + (81 + xh + xh2) + 'px)';
-            QS('p14iframe')['height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
-            QS('p14iframe')['max-height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
+            if (fullscreen) {
+                QS('deskarea3x')['height'] = null;
+                QS('deskarea3x')['max-height'] = null;
+                QS('p14iframe')['height'] = null;
+                QS('p14iframe')['max-height'] = null;
+            } else {
+                QS('deskarea3x')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
+                QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
+                QS('p14iframe')['height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
+                QS('p14iframe')['max-height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
+            }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p16events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
@@ -1363,7 +1370,7 @@
 
         function toggleNightMode() {
             nightMode = !nightMode;
-            if (nightMode) { QC('body').add('night'); } else { QC('body').remove('night'); }
+            if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; }
             putstore('_nightMode', nightMode?'1':'0');
         }
 
@@ -5542,6 +5549,7 @@
             }
             deskAdjust();
             updateDesktopButtons();
+            adjustPanels();
         }
 
         function deskToggleFocus() {
