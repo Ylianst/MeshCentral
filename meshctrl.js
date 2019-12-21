@@ -111,18 +111,7 @@ if (args['_'].length == 0) {
             } else {
                 switch (args['_'][1].toLowerCase()) {
                     case 'config': {
-                        console.log("Perform operations on the config.json file. Example usage:\r\n");
-                        console.log("  MeshCtrl config --show");
-                        console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --show                        - Display the config.json file.");
-                        console.log("  --adddomain [domain]          - Add a domain.");
-                        console.log("  --removedomain [domain]       - Remove a domain.");
-                        console.log("  --settodomain [domain]        - Set values to the domain.");
-                        console.log("  --removefromdomain [domain]   - Remove values from the domain.");
-                        console.log("\r\nWith adddomain, removedomain, settodomain and removefromdomain you can add the key and value pair. For example:\r\n");
-                        console.log("  --adddomain \"MyDomain\" --title \"My Server Name\" --newAccounts false");
-                        console.log("  --settodomain \"MyDomain\" --title \"My Server Name\"");
-                        console.log("  --removefromdomain \"MyDomain\" --title");
+                        displayConfigHelp();
                         break;
                     }
                     case 'sendinviteemail': {
@@ -297,12 +286,29 @@ if (args['_'].length == 0) {
     if (ok) { serverConnect(); }
 }
 
+function displayConfigHelp() {
+    console.log("Perform operations on the config.json file. Example usage:\r\n");
+    console.log("  MeshCtrl config --show");
+    console.log("\r\nOptional arguments:\r\n");
+    console.log("  --show                        - Display the config.json file.");
+    console.log("  --listdomains                 - Display non-default domains.");
+    console.log("  --adddomain [domain]          - Add a domain.");
+    console.log("  --removedomain [domain]       - Remove a domain.");
+    console.log("  --settodomain [domain]        - Set values to the domain.");
+    console.log("  --removefromdomain [domain]   - Remove values from the domain.");
+    console.log("\r\nWith adddomain, removedomain, settodomain and removefromdomain you can add the key and value pair. For example:\r\n");
+    console.log("  --adddomain \"MyDomain\" --title \"My Server Name\" --newAccounts false");
+    console.log("  --settodomain \"MyDomain\" --title \"My Server Name\"");
+    console.log("  --removefromdomain \"MyDomain\" --title");
+}
+
 function performConfigOperations(args) {
     var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapoptions', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording'];
     var configChange = false;
     var fs = require('fs');
     var path = require('path');
     var configFile = path.join(__dirname, 'config.json');
+    var didSomething = 0;
     if (fs.existsSync(configFile) == false) { configFile = path.join('meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, '..', 'meshcentral-data', 'config.json'); }
@@ -311,6 +317,7 @@ function performConfigOperations(args) {
     try { config = fs.readFileSync(configFile); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
     try { config = JSON.parse(config); } catch (ex) { console.log("Error: Unable to parse config.json"); return; }
     if (args.adddomain != null) {
+        didSomething++;
         if (config.domains == null) { config.domains = {}; }
         if (config.domains[args.adddomain] != null) { console.log("Error: Domain \"" + args.adddomain + "\" already exists"); }
         else {
@@ -326,11 +333,13 @@ function performConfigOperations(args) {
         }
     }
     if (args.removedomain != null) {
+        didSomething++;
         if (config.domains == null) { config.domains = {}; }
         if (config.domains[args.removedomain] == null) { console.log("Error: Domain \"" + args.removedomain + "\" does not exist"); }
         else { delete config.domains[args.removedomain]; configChange = true; }
     }
     if (args.settodomain != null) {
+        didSomething++;
         if (config.domains == null) { config.domains = {}; }
         if (config.domains[args.settodomain] == null) { console.log("Error: Domain \"" + args.settodomain + "\" does not exist"); }
         else {
@@ -346,15 +355,30 @@ function performConfigOperations(args) {
         }
     }
     if (args.removefromdomain != null) {
+        didSomething++;
         if (config.domains == null) { config.domains = {}; }
         if (config.domains[args.removefromdomain] == null) { console.log("Error: Domain \"" + args.removefromdomain + "\" does not exist"); }
         else { for (var i in args) { if (domainValues.indexOf(i.toLowerCase()) >= 0) { delete config.domains[args.removefromdomain][i]; configChange = true; } } }
     }
-    if (args.show == 1) { console.log(JSON.stringify(config, null, 2)); } else { console.log("Done."); }
     if (configChange) {
         try { fs.writeFileSync(configFile, JSON.stringify(config, null, 2)); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
     }
-    //console.log(configFile);
+    if (args.show == 1) {
+        console.log(JSON.stringify(config, null, 2)); return;
+    } else if (args.listdomains == 1) {
+        if (config.domains == null) {
+            console.log('No domains found.'); return;
+        } else {
+            // Show the list of active domains, skip the default one.
+            for (var i in config.domains) { if ((i != '') && (i[0] != '_')) { console.log(i); } } return;
+        }
+    } else {
+        if (didSomething == 0) {
+            displayConfigHelp();
+        } else {
+            console.log("Done.", didSomething);
+        }
+    }
 }
 
 function onVerifyServer(clientName, certs) { return null; }
