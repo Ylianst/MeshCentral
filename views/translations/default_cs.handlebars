@@ -289,9 +289,11 @@
                         <span id="accountEnableNotificationsSpan" style="display:none"><a href="#" onclick="return account_enableNotifications()">Zapnout notifikace prohlížeče</a><br></span>
                         <a href="#" onclick="return account_showLocalizationSettings()">Nastavení lokalizace</a><br>
                         <a href="#" onclick="return account_showAccountNotifySettings()">Nastavení notifikací</a><br>
-                        <span id="accountChangeEmailAddressSpan" style="display:none"><a href="#" onclick="return account_showChangeEmail()">Změnit emailovou adresu</a><br></span>
-                        <a href="#" onclick="return account_showChangePassword()">Změnit heslo</a><span id="p2nextPasswordUpdateTime"></span><br>
-                        <a href="#" onclick="return account_showDeleteAccount()">Smazat účet</a><br>
+                        <span id="p2AccountPassActions">
+                            <span id="accountChangeEmailAddressSpan" style="display:none"><a href="#" onclick="return account_showChangeEmail()">Změnit emailovou adresu</a><br></span>
+                            <a href="#" onclick="return account_showChangePassword()">Změnit heslo</a><span id="p2nextPasswordUpdateTime"></span><br>
+                            <a href="#" onclick="return account_showDeleteAccount()">Smazat účet</a><br>
+                        </span>
                     </p>
                     <br style="clear:both">
                 </div>
@@ -1449,8 +1451,8 @@
 
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode, domain authentication to 2 factor auth not supported.
-            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
-            QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
+            QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
+            //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('p2ServerActions', siteRights & 21);
             QV('LeftMenuMyServer', siteRights & 21); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
@@ -7133,7 +7135,7 @@
             if (xxdialogMode) return false;
             var x = '';
             x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />' + "Zvuk notifikací" + '</label></div>';
-            x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display Device Group Name" + '</label></div>';
+            x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display device group name" + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Připojení zařízení" + '</label></div>';
             x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Odpojení zařízení" + '</label></div>';
             x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial události." + '</label></div>';
@@ -7657,7 +7659,7 @@
                 QE('d20flag4', !(serverinfo.consent & 0x0010));
                 QE('d20flag5', !(serverinfo.consent & 0x0004));
                 QE('d20flag6', !(serverinfo.consent & 0x0020));
-                if (debugmode == 1) { QE('d20flag7', !(serverinfo.consent & 0x0040)); }
+                QE('d20flag7', !(serverinfo.consent & 0x0040));
             }
         }
 
