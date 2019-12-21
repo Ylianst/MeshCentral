@@ -2913,11 +2913,13 @@
                 }
 
                 if (r != '') {
+                    r += '</table>';
                     if (view == 2) {
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
                         r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray><th style=color:gray;width:120px>' + "User" + '<th style=color:gray;width:120px>' + "Address" + '<th style=color:gray;width:100px>' + "Connectivity" + r + '</tr></table><div style=height:1px></div>'; //<th style=color:gray;width:100px>State';
                     }
                 } else {
+                    r += '</table>';
                     if (sort == 3) { r = '<div style="margin:10px"><i>' + "No devices with tags found." + '</i></div>'; }
                 }
 
