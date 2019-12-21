@@ -217,8 +217,8 @@ body {
     cursor: pointer;
     color: white;
     position: absolute;
-    top: 3px;
-    right: 6px;
+    padding: 3px;
+    right: 3px;
 }
 
 #logoutControlSpan2 {
