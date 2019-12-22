@@ -2930,7 +2930,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         archive.on('error', function (err) { throw err; });
 
         // Set the archive name
-        res.attachment((domain.title ? domain.title : "Meshcentral") + '-Backup-' + new Date().toLocaleDateString().replace('/', '-').replace('/', '-') + '.zip');
+        res.attachment((domain.title ? domain.title : 'MeshCentral') + '-Backup-' + new Date().toLocaleDateString().replace('/', '-').replace('/', '-') + '.zip');
 
         // Pipe archive data to the file 
         archive.pipe(res);
