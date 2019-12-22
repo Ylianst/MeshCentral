@@ -3061,7 +3061,7 @@
                 var count = 0;
                 for (var i in nodes) {
                     var node = nodes[i], nodeid = nodes[i]._id;
-                    if (multiDesktop[nodeid] == null) {
+                    if ((multiDesktop[nodeid] == null) && ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodeid) >= 0))) {
                         var mesh = meshes[node.meshid], meshrights = mesh.links[userinfo._id].rights;
                         if ((meshrights & 8) || (meshrights & 256)) { // Requires remote control rights or desktop view only rights
                             //var conn = 0;
@@ -3074,7 +3074,11 @@
             }
 
             // Perform connect all
-            for (var i in nodes) { if (multiDesktop[nodes[i]._id] == null) { toggleKvmDevice(nodes[i]._id); } }
+            for (var i in nodes) {
+                if ((multiDesktop[nodes[i]._id] == null) && ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + nodes[i]._id) >= 0))) {
+                    toggleKvmDevice(nodes[i]._id);
+                }
+            }
         }
         function disconnectAllKvmFunction() { if (xxdialogMode) return false; for (var nodeid in multiDesktop) { multiDesktop[nodeid].Stop(); } multiDesktop = {}; }
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Odpojeno", "Připojování...", "Nastavení...", '', ''][state]); } catch (ex) {} }
