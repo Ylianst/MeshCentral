@@ -1,0 +1,537 @@
+<!DOCTYPE html><html dir="ltr" xmlns="http://www.w3.org/1999/xhtml"><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS">
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/amt-desktop-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/amt-terminal-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/zlib.js"></script>
+    <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
+    <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
+    <script type="text/javascript" src="scripts/zlib-crc32.js"></script>
+</head>
+<body style="overflow:hidden;background-color:black">
+    <div id="p11" class="noselect" style="overflow:hidden">
+        <div id="deskarea0">
+            <div id="deskarea1" class="areaHead">
+                <div class="toright2">
+                    <div class="deskareaicon" title="表示モードの切り替え" onclick="toggleAspectRatio(1)">⇲</div>
+                </div>
+                <div>
+                    <input id="OpenFileButton" type="button" value="ファイルを開く..." onclick="openfile()">
+                    <span id="deskstatus"></span>
+                </div>
+            </div>
+            <div id="deskarea2" style="">
+                <div class="areaProgress"><div id="progressbar" style=""></div></div>
+            </div>
+            <div id="deskarea3x" style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);" onclick="togglePause()">
+                <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>✓</b></div>
+                <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>✗</b></div>
+                <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
+                <div id="DeskParent">
+                    <canvas id="Desk" width="640" height="480"></canvas>
+                </div>
+                <div id="TermParent" style="display:none">
+                    <pre id="Term"></pre>
+                </div>
+                <div id="p11DeskConsoleMsg" style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick="clearConsoleMsg()"></div>
+            </div>
+            <div id="deskarea4" class="areaFoot">
+                <div class="toright2">
+                    <div id="timespan" style="padding-top:4px;padding-right:4px">00:00:00</div>
+                </div>
+                <div>
+                    &nbsp;
+                    <input id="PlayButton" type="button" value="遊びます" disabled="disabled" onclick="play()">
+                    <input id="PauseButton" type="button" value="一時停止" disabled="disabled" onclick="pause()">
+                    <input id="RestartButton" type="button" value="再起動" disabled="disabled" onclick="restart()">
+                    <select id="PlaySpeed" onchange="this.blur();">
+                        <option value="4">1/4スピード</option>
+                        <option value="2">1/2速度</option>
+                        <option value="1" selected="">通常速度</option>
+                        <option value="0.5">2倍速</option>
+                        <option value="0.25">4倍速</option>
+                        <option value="0.1">10倍速</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="dialog" class="noselect" style="display:none">
+            <div id="dialogHeader">
+                <div tabindex="0" id="id_dialogclose" onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()">✖</div>
+                <div id="id_dialogtitle"></div>
+            </div>
+            <div id="dialogBody">
+                <div id="dialog1">
+                    <div id="id_dialogMessage" style=""></div>
+                </div>
+                <div id="dialog2" style="">
+                    <div id="id_dialogOptions"></div>
+                </div>
+            </div>
+            <div id="idx_dlgButtonBar">
+                <input id="idx_dlgCancelButton" type="button" value="キャンセル" style="" onclick="dialogclose(0)">
+                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
+                <div><input id="idx_dlgDeleteButton" type="button" value="削除する" style="display:none" onclick="dialogclose(2)"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var recFile = null;
+        var recFilePtr = 0;
+        var recFileStartTime = 0;
+        var recFileLastTime = 0;
+        var recFileEndTime = 0;
+        var recFileMetadata = null;
+        var recFileProtocol = 0;
+        var agentDesktop = null;
+        var amtDesktop = null;
+        var playing = false;
+        var readState = 0;
+        var waitTimer = null;
+        var waitTimerArgs = null;
+        var deskAspectRatio = 0;
+        var currentDeltaTimeTotalSec = 0;
+
+        function start() {
+            window.onresize = deskAdjust;
+            document.ondrop = ondrop;
+            document.ondragover = ondragover;
+            document.ondragleave = ondragleave;
+            document.onkeypress = onkeypress;
+            Q('PlaySpeed').value = 1;
+            cleanup();
+        }
+
+        function readNextBlock(func) {
+            if ((recFilePtr + 16) > recFile.size) { QS('progressbar').width = '100%'; func(-1); } else {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    var type = ReadShort(this.result, 0);
+                    var flags = ReadShort(this.result, 2);
+                    var size = ReadInt(this.result, 4);
+                    var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
+                    if ((recFilePtr + 16 + size) > recFile.size) { QS('progressbar').width = '100%'; func(-1); } else {
+                        var fr2 = new FileReader();
+                        fr2.onload = function () {
+                            recFilePtr += (16 + size);
+                            if (recFileEndTime == 0) {
+                                // File pointer progress bar
+                                QS('progressbar').width = Math.floor(100 * (recFilePtr / recFile.size)) + '%';
+                            } else {
+                                // Time progress bar
+                                QS('progressbar').width = Math.floor(((recFileLastTime - recFileStartTime) / (recFileEndTime - recFileStartTime)) * 100) + '%';
+                            }
+                            func(type, flags, time, this.result);
+                        };
+                        fr2.readAsBinaryString(recFile.slice(recFilePtr + 16, recFilePtr + 16 + size));
+                    }
+                };
+                fr.readAsBinaryString(recFile.slice(recFilePtr, recFilePtr + 16));
+            }
+        }
+
+        function readLastBlock(func) {
+            if (recFile.size < 32) { func(-1); } else {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    var type = ReadShort(this.result, 0);
+                    var flags = ReadShort(this.result, 2);
+                    var size = ReadInt(this.result, 4);
+                    var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
+                    if ((type == 3) && (size == 16) && (this.result.substring(16, 32) == 'MeshCentralMCREC')) { func(type, flags, time); } else { func(-1); }
+                };
+                fr.readAsBinaryString(recFile.slice(recFile.size - 32, recFile.size));
+            }
+        }
+
+        function addInfo(name, value) { if (value == null) return ''; return addInfoNoEsc(name, EscapeHtml(value)); }
+
+        function addInfoNoEsc(name, value) {
+            if (value == null) return '';
+            return '<span style=color:gray>' + EscapeHtml(name) + '</span>:&nbsp;<span style=font-size:20px>' + value + '</span><br/>';
+        }
+
+        function processFirstBlock(type, flags, time, data) {
+            recFileProtocol = 0;
+            if ((type != 1) || (flags != 0)) { cleanup(); return; }
+            try { recFileMetadata = JSON.parse(data) } catch (ex) { cleanup(); return; }
+            if ((recFileMetadata == null) || (recFileMetadata.magic != 'MeshCentralRelaySession') || (recFileMetadata.ver != 1)) { cleanup(); return; }
+            var x = '';
+            x += addInfo("時間", recFileMetadata.time);
+            if (recFileEndTime != 0) { var secs = Math.floor((recFileEndTime - time) / 1000); x += addInfo("期間", format("{0}秒{1}", secs, (secs > 1) ? 's' : '')); }
+            x += addInfo("ユーザー名", recFileMetadata.username);
+            x += addInfo("ユーザーID", recFileMetadata.userid);
+            x += addInfo("セッションID", recFileMetadata.sessionid);
+            if (recFileMetadata.ipaddr1 && recFileMetadata.ipaddr2) { x += addInfo("住所", format("{0}から{1}", recFileMetadata.ipaddr1, recFileMetadata.ipaddr2)); }
+            if (recFileMetadata.devicename) { x += addInfo("装置名", recFileMetadata.devicename); }
+            x += addInfo("NodeID", recFileMetadata.nodeid);
+            if (recFileMetadata.protocol) {
+                var p = recFileMetadata.protocol;
+                if (p == 1) { p = "MeshCentralターミナル"; }
+                else if (p == 2) { p = "MeshCentralデスクトップ"; }
+                else if (p == 100) { p = "Intel&reg; AMT WSMAN"; }
+                else if (p == 101) { p = "Intel&reg; AMTリダイレクト"; }
+                x += addInfoNoEsc("プロトコル", p);
+            }
+            QV('DeskParent', true);
+            QV('TermParent', false);
+            if (recFileMetadata.protocol == 1) {
+                // MeshCentral remote terminal
+                recFileProtocol = 1;
+                x += '<br /><br /><span style=color:gray>' + "[スペース]を押して再生/一時停止します。" + '</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+            }
+            else if (recFileMetadata.protocol == 2) {
+                // MeshCentral remote desktop
+                recFileProtocol = 2;
+                x += '<br /><br /><span style=color:gray>' + "[スペース]を押して再生/一時停止します。" + '</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+                agentDesktop = CreateAgentRemoteDesktop('Desk');
+                agentDesktop.onScreenSizeChange = deskAdjust;
+                agentDesktop.State = 3;
+                deskAdjust();
+            }
+            else if (recFileMetadata.protocol == 101) {
+                // Intel AMT Redirection
+                recFileProtocol = 101;
+                x += '<br /><br /><span style=color:gray>Press [space] to play/pause.</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+                amtDesktop = CreateAmtRemoteDesktop('Desk');
+                amtDesktop.onScreenSizeChange = deskAdjust;
+                amtDesktop.State = 3;
+                amtDesktop.Start();
+                deskAdjust();
+            }
+            QV('metadatadiv', true);
+            QH('metadatadiv', x);
+            QH('deskstatus', recFile.name);
+        }
+
+        function processBlock(type, flags, time, data) {
+            if (type < 0) { pause(); return; }
+            var waitTime = Math.round((time - recFileLastTime) * parseFloat(Q('PlaySpeed').value));
+            if (waitTime < 5) {
+                processBlockEx(type, flags, time, data);
+            } else {
+                waitTimerArgs = [type, flags, time, data]
+                waitTimer = setTimeout(function () { waitTimer = null; processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]); }, waitTime);
+            }
+        }
+
+        function processBlockEx(type, flags, time, data) {
+            if (playing == false) return;
+            var flagBinary = (flags & 1) != 0, flagUser = (flags & 2) != 0;
+
+            // Update the clock
+            var deltaTimeTotalSec = Math.floor((time - recFileStartTime) / 1000);
+            if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
+                currentDeltaTimeTotalSec = deltaTimeTotalSec;
+                var deltaTimeHours = Math.floor(deltaTimeTotalSec / 3600);
+                deltaTimeTotalSec -= (deltaTimeHours * 3600)
+                var deltaTimeMinutes = Math.floor(deltaTimeTotalSec / 60);
+                deltaTimeTotalSec -= (deltaTimeHours * 60)
+                var deltaTimeSeconds = Math.floor(deltaTimeTotalSec);
+                QH('timespan', pad2(deltaTimeHours) + ':' + pad2(deltaTimeMinutes) + ':' + pad2(deltaTimeSeconds))
+            }
+
+            if ((type == 2) && flagBinary && !flagUser) {
+                // Device --> User data
+                if (recFileProtocol == 1) {
+                    // MeshCentral Terminal
+                    agentTerminal.ProcessData(data);
+                } else if (recFileProtocol == 2) {
+                    // MeshCentral Remote Desktop
+                    agentDesktop.ProcessData(data);
+                } else if (recFileProtocol == 101) {
+                    // Intel AMT KVM
+                    if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) {
+                        // We are not authenticated, KVM data starts here.
+                        readState = 1;
+                        if (data.length > 8) { amtDesktop.ProcessData(data.substring(8)); }
+                    } else if (readState == 1) {
+                        amtDesktop.ProcessData(data);
+                    }
+                }
+            } else if ((type == 2) && flagBinary && flagUser) {
+                // User --> Device data
+                if (recFileProtocol == 101) {
+                    // Intel AMT KVM
+                    if (rstr2hex(data) == '0000000008080001000700070003050200000000') { amtDesktop.bpp = 1; } // Switch to 1 byte per pixel.
+                }
+            }
+
+            recFileLastTime = time;
+            if (playing) { readNextBlock(processBlock); }
+        }
+
+        function cleanup() {
+            recFile = null;
+            recFilePtr = 0;
+            recFileMetadata = null;
+            playing = false;
+            if (agentDesktop != null) { agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height); agentDesktop = null; }
+            if (amtDesktop != null) { amtDesktop.canvas.clearRect(0, 0, amtDesktop.CanvasId.width, amtDesktop.CanvasId.height); amtDesktop = null; }
+            readState = 0;
+            waitTimerArgs = null;
+            currentDeltaTimeTotalSec = 0;
+            recFileEndTime = 0;
+            agentTerminal = null;
+            if (waitTimer != null) { clearTimeout(waitTimer); waitTimer = null; }
+            QH('deskstatus', '');
+            QE('PlayButton', false);
+            QE('PauseButton', false);
+            QE('RestartButton', false);
+            QS('progressbar').width = '0px';
+            QH('timespan', '00:00:00');
+            QV('metadatadiv', true);
+            QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + ".mcrecファイルをドラッグアンドドロップするか、[ファイルを開く...]をクリックします" + '</span>');
+            QV('DeskParent', true);
+            QV('TermParent', false);
+        }
+
+        function ondrop(e) {
+            haltEvent(e);
+            QV('bigfail', false);
+            QV('bigok', false);
+
+            // Check if these are files we can upload, remove all folders.
+            if (e.dataTransfer == null) return;
+            var files = [];
+            for (var i in e.dataTransfer.files) {
+                if ((e.dataTransfer.files[i].type != null) && (e.dataTransfer.files[i].size != null) && (e.dataTransfer.files[i].size != 0) && (e.dataTransfer.files[i].name.endsWith('.mcrec'))) {
+                    files.push(e.dataTransfer.files[i]);
+                }
+            }
+            if (files.length == 0) return;
+            cleanup();
+            recFile = files[0];
+            recFilePtr = 0;
+            readNextBlock(processFirstBlock);
+            readLastBlock(function (type, flags, time) { if (type == 3) { recFileEndTime = time; } else { recFileEndTime = 0; } });
+        }
+
+        var dragtimer = null;
+        function ondragover(e) {
+            haltEvent(e);
+            if (dragtimer != null) { clearTimeout(dragtimer); dragtimer = null; }
+            var ac = true;
+            QV('bigok', ac);
+            QV('bigfail', !ac);
+        }
+
+        function ondragleave(e) {
+            haltEvent(e);
+            dragtimer = setTimeout(function () { QV('bigfail', false); QV('bigok', false); dragtimer = null; }, 10);
+        }
+
+        function onkeypress(e) {
+            if (xxdialogMode) return;
+            if (e.key == ' ') { togglePause(); haltEvent(e); }
+            if (e.key == '1') { Q('PlaySpeed').value = 4; haltEvent(e); }
+            if (e.key == '2') { Q('PlaySpeed').value = 2; haltEvent(e); }
+            if (e.key == '3') { Q('PlaySpeed').value = 1; haltEvent(e); }
+            if (e.key == '4') { Q('PlaySpeed').value = 0.5; haltEvent(e); }
+            if (e.key == '5') { Q('PlaySpeed').value = 0.25; haltEvent(e); }
+            if (e.key == '6') { Q('PlaySpeed').value = 0.1; haltEvent(e); }
+            if (e.key == '0') { pause(); restart(); haltEvent(e); }
+        }
+
+        function openfile() {
+            var x = '<input type=file name=files id=p2fileinput style=width:100% accept=".mcrec" onchange="openfileChanged()" />';
+            setDialogMode(2, "ファイルを開く...", 3, openfileEx, x);
+            QE('idx_dlgOkButton', false);
+        }
+
+        function openfileEx() {
+            var xfiles = Q('p2fileinput').files;
+            if (xfiles != null) { var files = []; for (var i in xfiles) { if ((xfiles[i].type != null) && (xfiles[i].size != null) && (xfiles[i].size != 0) && (xfiles[i].name.endsWith('.mcrec'))) { files.push(xfiles[i]); } } }
+            if (files.length == 0) return;
+            cleanup();
+            recFile = files[0];
+            recFilePtr = 0;
+            readNextBlock(processFirstBlock);
+            readLastBlock(function (type, flags, time) { if (type == 3) { recFileEndTime = time; } else { recFileEndTime = 0; } });
+            Q('OpenFileButton').blur();
+        }
+
+        function openfileChanged() {
+            var xfiles = Q('p2fileinput').files;
+            if (xfiles != null) { var files = []; for (var i in xfiles) { if ((xfiles[i].type != null) && (xfiles[i].size != null) && (xfiles[i].size != 0) && (xfiles[i].name.endsWith('.mcrec'))) { files.push(xfiles[i]); } } }
+            QE('idx_dlgOkButton', files.length == 1);
+        }
+
+        function togglePause() {
+            if (recFile != null) { if (playing == true) { pause(); } else { if (recFilePtr != recFile.size) { play(); } } } return false;
+        }
+
+        function play() {
+            Q('PlayButton').blur();
+            if ((playing == true) || (recFileProtocol == 0)) return;
+            playing = true;
+            QV('metadatadiv', false);
+            QE('PlayButton', false);
+            QE('PauseButton', true);
+            QE('RestartButton', false);
+            if ((recFileProtocol == 1) && (agentTerminal == null)) {
+                QV('DeskParent', false);
+                QV('TermParent', true);
+                agentTerminal = CreateAmtRemoteTerminal('Term', {});
+                agentTerminal.State = 3;
+            }
+            readNextBlock(processBlock);
+        }
+
+        function pause() {
+            Q('PauseButton').blur();
+            if (playing == false) return;
+            playing = false;
+            QE('PlayButton', recFilePtr != recFile.size);
+            QE('PauseButton', false);
+            QE('RestartButton', recFilePtr != 0);
+            if (waitTimer != null) {
+                clearTimeout(waitTimer);
+                waitTimer = null;
+                processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]);
+                waitTimerArgs = null;
+            }
+        }
+
+        function restart() {
+            Q('RestartButton').blur();
+            if (playing == true) return;
+            recFilePtr = 0;
+            readState = 0;
+            currentDeltaTimeTotalSec = 0;
+            QV('metadatadiv', true);
+            QE('PlayButton', true);
+            QE('PauseButton', false);
+            QE('RestartButton', false);
+            QS('progressbar').width = '0px';
+            QH('timespan', '00:00:00');
+            QV('DeskParent', true);
+            QV('TermParent', false);
+            if (agentDesktop) {
+                agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
+            } else if (amtDesktop) {
+                amtDesktop.canvas.clearRect(0, 0, amtDesktop.CanvasId.width, amtDesktop.CanvasId.height);
+                amtDesktop = CreateAmtRemoteDesktop('Desk');
+                amtDesktop.onScreenSizeChange = deskAdjust;
+                amtDesktop.State = 3;
+                amtDesktop.Start();
+            } else if (agentTerminal) {
+                agentTerminal = null;
+            }
+        }
+
+        function clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); }
+
+        // Toggle the web page to full screen
+        function toggleAspectRatio(toggle) {
+            if (toggle === 1) { deskAspectRatio = ((deskAspectRatio + 1) % 3); }
+            deskAdjust();
+        }
+
+        function deskAdjust() {
+            var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
+            var deskH = Q('Desk').height, deskW = Q('Desk').width;
+
+            if (deskAspectRatio == 2) {
+                // Scale mode
+                QS('Desk')['margin-top'] = null;
+                QS('Desk').height = '100%';
+                QS('Desk').width = '100%';
+                QS('DeskParent').overflow = 'hidden';
+            } else if (deskAspectRatio == 1) {
+                // Zoomed mode
+                QS('Desk')['margin-top'] = '0px';
+                //QS('Desk')['margin-left'] = '0px';
+                QS('Desk').height = deskH + 'px';
+                QS('Desk').width = deskW + 'px';
+                QS('DeskParent').overflow = 'scroll';
+            } else {
+                // Fixed aspect ratio
+                if ((parentH / parentW) > (deskH / deskW)) {
+                    var hNew = ((deskH * parentW) / deskW) + 'px';
+                    //if (webPageFullScreen || fullscreen) {
+                    //QS('deskarea3x').height = null;
+                    //} else {
+                    // QS('deskarea3x').height = hNew;
+                    //QS('deskarea3x').height = null;
+                    //}
+                    QS('Desk').height = hNew;
+                    QS('Desk').width = '100%';
+                } else {
+                    var wNew = ((deskW * parentH) / deskH) + 'px';
+                    //if (webPageFullScreen || fullscreen) {
+                    //QS('Desk').height = null;
+                    //} else {
+                    QS('Desk').height = '100%';
+                    //}
+                    QS('Desk').width = wNew;
+                }
+                QS('Desk')['margin-top'] = null;
+                QS('DeskParent').overflow = 'hidden';
+            }
+        }
+
+        //
+        // POPUP DIALOG
+        //
+
+        // null = Hidden, 1 = Generic Message
+        var xxdialogMode;
+        var xxdialogFunc;
+        var xxdialogButtons;
+        var xxdialogTag;
+        var xxcurrentView = -1;
+
+        // Display a dialog box
+        // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
+        function setDialogMode(x, y, b, f, c, tag) {
+            xxdialogMode = x;
+            xxdialogFunc = f;
+            xxdialogButtons = b;
+            xxdialogTag = tag;
+            QE('idx_dlgOkButton', true);
+            QV('idx_dlgOkButton', b & 1);
+            QV('idx_dlgCancelButton', b & 2);
+            QV('id_dialogclose', (b & 2) || (b & 8));
+            QV('idx_dlgDeleteButton', b & 4);
+            QV('idx_dlgButtonBar', b & 7);
+            if (y) QH('id_dialogtitle', y);
+            for (var i = 1; i < 3; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
+            QV('dialog', x);
+            if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+        }
+
+        function dialogclose(x) {
+            var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
+            setDialogMode();
+            if (((b & 8) || x) && f) f(x, t);
+        }
+
+        function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+        function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
+        start();
+    </script>
+
+</body></html>
