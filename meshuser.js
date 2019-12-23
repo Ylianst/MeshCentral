@@ -288,39 +288,65 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Take a look at server stats
                 var os = require('os');
                 var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
-                if (parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); } // else { stats.cpuavg = [ 0.2435345, 0.523234234, 0.6435345345 ]; }
+                if (parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); }
                 var serverStats = {
-                    "User Accounts": Object.keys(parent.users).length,
-                    "Device Groups": Object.keys(parent.meshes).length,
-                    "Agent Sessions": Object.keys(parent.wsagents).length,
-                    "Connected Users": Object.keys(parent.wssessions).length,
-                    "Users Sessions": Object.keys(parent.wssessions2).length,
-                    "Relay Sessions": parent.relaySessionCount,
-                    "Relay Count": Object.keys(parent.wsrelays).length
+                    UserAccounts: Object.keys(parent.users).length,
+                    DeviceGroups: Object.keys(parent.meshes).length,
+                    AgentSessions: Object.keys(parent.wsagents).length,
+                    ConnectedUsers: Object.keys(parent.wssessions).length,
+                    UsersSessions: Object.keys(parent.wssessions2).length,
+                    RelaySessions: parent.relaySessionCount,
+                    RelayCount: Object.keys(parent.wsrelays).length
                 };
-                if (parent.relaySessionErrorCount != 0) { serverStats['Relay Errors'] = parent.relaySessionErrorCount; }
-                if (parent.parent.mpsserver != null) { serverStats['Connected Intel&reg; AMT'] = Object.keys(parent.parent.mpsserver.ciraConnections).length; }
+                if (parent.relaySessionErrorCount != 0) { serverStats.RelayErrors = parent.relaySessionErrorCount; }
+                if (parent.parent.mpsserver != null) { serverStats.ConnectedIntelAMT = Object.keys(parent.parent.mpsserver.ciraConnections).length; }
 
                 // Take a look at agent errors
                 var agentstats = parent.getAgentStats();
                 var errorCounters = {}, errorCountersCount = 0;
-                if (agentstats.meshDoesNotExistCount > 0) { errorCountersCount++; errorCounters["Unknown Group"] = agentstats.meshDoesNotExistCount; }
-                if (agentstats.invalidPkcsSignatureCount > 0) { errorCountersCount++; errorCounters["Invalid PKCS signature"] = agentstats.invalidPkcsSignatureCount; }
-                if (agentstats.invalidRsaSignatureCount > 0) { errorCountersCount++; errorCounters["Invalid RSA siguature"] = agentstats.invalidRsaSignatureCount; }
-                if (agentstats.invalidJsonCount > 0) { errorCountersCount++; errorCounters["Invalid JSON"] = agentstats.invalidJsonCount; }
-                if (agentstats.unknownAgentActionCount > 0) { errorCountersCount++; errorCounters["Unknown Action"] = agentstats.unknownAgentActionCount; }
-                if (agentstats.agentBadWebCertHashCount > 0) { errorCountersCount++; errorCounters["Bad Web Certificate"] = agentstats.agentBadWebCertHashCount; }
-                if ((agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count) > 0) { errorCountersCount++; errorCounters["Bad Signature"] = (agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count); }
-                if (agentstats.agentMaxSessionHoldCount > 0) { errorCountersCount++; errorCounters["Max Sessions Reached"] = agentstats.agentMaxSessionHoldCount; }
-                if ((agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count) > 0) { errorCountersCount++; errorCounters["Unknown Device Group"] = (agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count); }
-                if ((agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count) > 0) { errorCountersCount++; errorCounters["Invalid Device Group Type"] = (agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count); }
-                //if (agentstats.duplicateAgentCount > 0) { errorCountersCount++; errorCounters["Duplicate Agent"] = agentstats.duplicateAgentCount; }
+                if (agentstats.meshDoesNotExistCount > 0) { errorCountersCount++; errorCounters.UnknownGroup = agentstats.meshDoesNotExistCount; }
+                if (agentstats.invalidPkcsSignatureCount > 0) { errorCountersCount++; errorCounters.InvalidPKCSsignature = agentstats.invalidPkcsSignatureCount; }
+                if (agentstats.invalidRsaSignatureCount > 0) { errorCountersCount++; errorCounters.InvalidRSAsiguature = agentstats.invalidRsaSignatureCount; }
+                if (agentstats.invalidJsonCount > 0) { errorCountersCount++; errorCounters.InvalidJSON = agentstats.invalidJsonCount; }
+                if (agentstats.unknownAgentActionCount > 0) { errorCountersCount++; errorCounters.UnknownAction = agentstats.unknownAgentActionCount; }
+                if (agentstats.agentBadWebCertHashCount > 0) { errorCountersCount++; errorCounters.BadWebCertificate = agentstats.agentBadWebCertHashCount; }
+                if ((agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count) > 0) { errorCountersCount++; errorCounters.BadSignature = (agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count); }
+                if (agentstats.agentMaxSessionHoldCount > 0) { errorCountersCount++; errorCounters.MaxSessionsReached = agentstats.agentMaxSessionHoldCount; }
+                if ((agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count) > 0) { errorCountersCount++; errorCounters.UnknownDeviceGroup = (agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count); }
+                if ((agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count) > 0) { errorCountersCount++; errorCounters.InvalidDeviceGroupType = (agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count); }
+                //if (agentstats.duplicateAgentCount > 0) { errorCountersCount++; errorCounters.DuplicateAgent = agentstats.duplicateAgentCount; }
 
                 // Send out the stats
-                stats.values = { "Server State": serverStats }
-                if (errorCountersCount > 0) { stats.values["Agent Error Counters"] = errorCounters; }
+                stats.values = { ServerState: serverStats }
+                if (errorCountersCount > 0) { stats.values.AgentErrorCounters = errorCounters; }
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }
             }
+
+            //
+            var serverStatsStrings = {
+                ServerState: "Server State",
+                AgentErrorCounters: "Agent Error Counters",
+                UnknownGroup: "Unknown Group",
+                InvalidPKCSsignature: "Invalid PKCS signature",
+                InvalidRSAsiguature: "Invalid RSA siguature",
+                InvalidJSON: "Invalid JSON",
+                UnknownAction: "Unknown Action",
+                BadWebCertificate: "Bad Web Certificate",
+                BadSignature: "Bad Signature",
+                MaxSessionsReached: "Max Sessions Reached",
+                UnknownDeviceGroup: "Unknown Device Group",
+                InvalidDeviceGroupType: "Invalid Device Group Type",
+                DuplicateAgent: "Duplicate Agent",
+                ConnectedIntelAMT: "Connected Intel&reg; AMT",
+                RelayErrors: "Relay Errors",
+                UserAccounts: "User Accounts",
+                DeviceGroups: "Device Groups",
+                AgentSessions: "Agent Sessions",
+                ConnectedUsers: "Connected Users",
+                UsersSessions: "Users Sessions",
+                RelaySessions: "Relay Sessions",
+                RelayCount: "Relay Count"
+            };
 
             // When data is received from the web socket
             ws.on('message', processWebSocketData);

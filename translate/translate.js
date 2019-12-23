@@ -235,22 +235,28 @@ function totext(source, target, lang) {
 
     // Generate raw text
     var output = [];
+    var outputCharCount = 0; // Google has a 5000 character limit
     var splitOutput = [];
+    var splitOutputPtr = 1;
     var count = 0;
     for (var i in sourceLangFileData.strings) {
         if ((sourceLangFileData.strings[i][lang] != null) && (sourceLangFileData.strings[i][lang].indexOf('\r') == -1) && (sourceLangFileData.strings[i][lang].indexOf('\n') == -1)) {
             output.push(sourceLangFileData.strings[i][lang]);
-            if (splitOutput[Math.floor(count / 1000) + 1] == null) { splitOutput[Math.floor(count / 1000) + 1] = []; }
-            splitOutput[Math.floor(count / 1000) + 1].push(sourceLangFileData.strings[i][lang]);
+            outputCharCount += (sourceLangFileData.strings[i][lang].length + 2);
+            if (outputCharCount > 4500) { outputCharCount = 0; splitOutputPtr++; }
+            if (splitOutput[splitOutputPtr] == null) { splitOutput[splitOutputPtr] = []; }
+            splitOutput[splitOutputPtr].push(sourceLangFileData.strings[i][lang]);
         } else {
             output.push('');
-            if (splitOutput[Math.floor(count / 1000) + 1] == null) { splitOutput[Math.floor(count / 1000) + 1] = []; }
-            splitOutput[Math.floor(count / 1000) + 1].push('');
+            outputCharCount += 2;
+            if (outputCharCount > 4500) { outputCharCount = 0; splitOutputPtr++; }
+            if (splitOutput[splitOutputPtr] == null) { splitOutput[splitOutputPtr] = []; }
+            splitOutput[splitOutputPtr].push('');
         }
         count++;
     }
 
-    if (output.length <= 1000) {
+    if (splitOutputPtr == 1) {
         // Save the target back
         fs.writeFileSync(target + '-' + lang + '.txt', output.join('\r\n'), { flag: 'w+' });
         console.log('Done.');
@@ -376,7 +382,8 @@ function extract(langFile, sources) {
     for (var i in sourceStrings) {
         count++;
         sourceStrings[i]['en'] = i;
-        if ((sourceStrings[i].xloc != null) && (sourceStrings[i].xloc.length > 0)) { output.push(sourceStrings[i]); } // Only save results that have a source location.
+        //if ((sourceStrings[i].xloc != null) && (sourceStrings[i].xloc.length > 0)) { output.push(sourceStrings[i]); } // Only save results that have a source location.
+        output.push(sourceStrings[i]); // Save all results
     }
     fs.writeFileSync(langFile, JSON.stringify({ 'strings': output }, null, '  '), { flag: 'w+' });
     console.log(format("{0} strings in output file.", count));
