@@ -2586,11 +2586,11 @@
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', x);
             var userSearch = null, ipSearch = null, groupSearch = null;
-            if (x.startsWith('user:')) { userSearch = x.substring(5); }
-            else if (x.startsWith('u:')) { userSearch = x.substring(2); }
-            else if (x.startsWith('ip:')) { ipSearch = x.substring(3); }
-            else if (x.startsWith('group:')) { groupSearch = x.substring(6); }
-            else if (x.startsWith('g:')) { groupSearch = x.substring(2); }
+            if (x.startsWith("user:")) { userSearch = x.substring(5); }
+            else if (x.startsWith("u:")) { userSearch = x.substring(2); }
+            else if (x.startsWith("ip:")) { ipSearch = x.substring(3); }
+            else if (x.startsWith("group:")) { groupSearch = x.substring(6); }
+            else if (x.startsWith("g:")) { groupSearch = x.substring(2); }
 
             if (x == '') {
                 // No search
@@ -2919,7 +2919,7 @@
                 });
 
                 // On right click open the context menu
-                contextmenu.on("開いた", function (evt) {
+                contextmenu.on('open', function (evt) {
                     var feature = xxmap.map.forEachFeatureAtPixel(evt.pixel, function(ft, l){ return ft;  });
                     xxmap.contextmenu.clear(); //Clear the context menu
                     if (feature) {
@@ -6656,8 +6656,8 @@
         function p20editmeshfeatures() {
             if (xxdialogMode) return;
             var flags = (currentMesh.flags)?currentMesh.flags:0;
-            var x = '<div><label><input type=checkbox id=d20flag1 ' + ((flags & 1) ? 'checked' : '') + '>Remove device on disconnect</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((flags & 2) ? 'checked' : '') + '>Sync server device name to hostname</label><br></div>';
+            var x = '<div><label><input type=checkbox id=d20flag1 ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag2 ' + ((flags & 2) ? 'checked' : '') + '>' + "Sync server device name to hostname" + '</label><br></div>';
             setDialogMode(2, "デバイスグループ機能の編集", 3, p20editmeshfeaturesEx, x);
         }
 
@@ -6885,10 +6885,10 @@
             if (xxdialogMode) return false;
             var meshNotify = 0;
             if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
-            var x = 'Notification settings must also be turned on in account settings.<br /><br />';
-            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />Device connections.</label></div>';
-            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />Device disconnections.</label></div>';
-            x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />Intel&reg; AMT desktop and serial events.</label></div>';
+            var x = "Notification settings must also be turned on in account settings." + '<br /><br />';
+            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "デバイス接続。" + '</label></div>';
+            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "デバイスの切断。" + '</label></div>';
+            x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMTデスクトップおよびシリアルイベント。" + '</label></div>';
             setDialogMode(2, "通知設定", 3, p20editMeshNotifyEx, x);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
@@ -7452,7 +7452,7 @@
 
             // Display the users using the sorted list
             var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
-            x += '<th>' + "名" + '<th style=width:80px>Groups<th style=width:120px>' + nobreak("最終アクセス") + '<th style=width:120px>' + "許可";
+            x += '<th>' + "名" + '<th style=width:80px>' + "Groups" + '<th style=width:120px>' + nobreak("最終アクセス") + '<th style=width:120px>' + "許可";
 
             // Online users
             for (var i in sortedUserIds) {
@@ -7909,9 +7909,9 @@
 
             // Show bottom buttons
             x = '<div style=float:right;font-size:x-small>';
-            if (deletePossible) x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">Delete User</a>';
+            if (deletePossible) x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>';
             x += '</div><div style=font-size:x-small>';
-            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="Change the password for this user">Change Password</a>';
+            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="Change the password for this user">' + "パスワードを変更する" + '</a>';
             x += '</div><br>'
             QH('p30html3', x);
 
@@ -8052,7 +8052,7 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p30html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:150px>Day</th><th scope=col style=text-align:center>7 Day Login State</th></tr>' + x + '</tbody></table>');
+            QH('p30html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:150px>' + "日" + '</th><th scope=col style=text-align:center>' + "7 Day Login State" + '</th></tr>' + x + '</tbody></table>');
         }
 
         //
@@ -8356,6 +8356,31 @@
             });
         }
 
+        var serverStatsStrings = {
+            ServerState: "Server State",
+            AgentErrorCounters: "Agent Error Counters",
+            UnknownGroup: "Unknown Group",
+            InvalidPKCSsignature: "Invalid PKCS signature",
+            InvalidRSAsiguature: "Invalid RSA siguature",
+            InvalidJSON: "Invalid JSON",
+            UnknownAction: "Unknown Action",
+            BadWebCertificate: "Bad Web Certificate",
+            BadSignature: "Bad Signature",
+            MaxSessionsReached: "Max Sessions Reached",
+            UnknownDeviceGroup: "Unknown Device Group",
+            InvalidDeviceGroupType: "Invalid Device Group Type",
+            DuplicateAgent: "Duplicate Agent",
+            ConnectedIntelAMT: "Connected Intel&reg; AMT",
+            RelayErrors: "Relay Errors",
+            UserAccounts: "User Accounts",
+            DeviceGroups: "デバイスグループ",
+            AgentSessions: "Agent Sessions",
+            ConnectedUsers: "Connected Users",
+            UsersSessions: "Users Sessions",
+            RelaySessions: "中継セッション",
+            RelayCount: "Relay Count"
+        };
+
         var lastServerStats = null;
         function updateGeneralServerStats(message) {
             if (message != null) { lastServerStats = message; } else { message = lastServerStats; }
@@ -8365,7 +8390,7 @@
             if (typeof message.cpuavg == 'object') {
                 var m = Math.min(message.cpuavg[0], 1);
                 window.serverStatCpu.config.data.datasets[0].data = [m, 1 - m];
-                QH('serverCpuChartText', '<div style=margin-bottom:5px>CPU Load</div><div><b title=\"' + "直前のCPU負荷" + '\">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title=\"' + "過去5分間のCPU負荷" + '\">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title=\"' + "過去15分間のCPU負荷" + '\">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
+                QH('serverCpuChartText', '<div style=margin-bottom:5px>' + "CPU Load" + '</div><div><b title=\"' + "直前のCPU負荷" + '\">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title=\"' + "過去5分間のCPU負荷" + '\">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title=\"' + "過去15分間のCPU負荷" + '\">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
                 QS('serverCpuChartView')['display'] = 'inline-block';
                 window.serverStatCpu.update();
             }
@@ -8377,12 +8402,13 @@
             }
 
             // Display all of the server values
+            // serverStatsStrings
             var x = '<div style=width:100% cellpadding=0 cellspacing=0>';
             if (typeof message.values == 'object') {
                 for (var i in message.values) {
-                    x += '<div class=userTableHeader style=margin-bottom:4px;width:200px>' + i + '</div>';
+                    x += '<div class=userTableHeader style=margin-bottom:4px;width:200px>' + (serverStatsStrings[i]?serverStatsStrings[i]:i) + '</div>';
                     for (var j in message.values[i]) {
-                        x += '<div style=display:inline-block><table class=serverStateTableCell><tr><td class=h1></td><td><span>' + j + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td class=h2></td></tr></table></div>';
+                        x += '<div style=display:inline-block><table class=serverStateTableCell><tr><td class=h1></td><td><span>' + (serverStatsStrings[j]?serverStatsStrings[j]:j) + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td class=h2></td></tr></table></div>';
                     }
                 }
             }
@@ -8473,10 +8499,10 @@
                 data = {
                     labels: [pastDate(0), timeAfter],
                     datasets: [
-                        { label: 'External', data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
-                        { label: 'Heap Used', data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
-                        { label: 'Heap Total', data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
-                        { label: 'RSS', data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true }
+                        { label: "External", data: [], backgroundColor: 'rgba(158, 151, 16, .1)', borderColor: 'rgb(158, 151, 16)', fill: true },
+                        { label: "Heap Used", data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
+                        { label: "Heap Total", data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
+                        { label: "RSS", data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true }
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
