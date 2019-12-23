@@ -1211,9 +1211,9 @@ function createMeshCore(agent) {
                             var setupcommands = " alias ls='ls --color=auto'\n";
                             if (shell == sh) setupcommands += "stty erase ^H\n"
 
-                            if (script && shell) {
+                            if (script && shell && process.platform == 'linux') {
                                 this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
+                                this.httprequest.process.stdin.write(setupcommands); 
                             } else if (python && shell) {
                                 this.httprequest.process = childProcess.execFile(python, ['python', '-c', 'import pty; pty.spawn(["' + shell + '"])'], options); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
