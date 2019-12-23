@@ -1170,7 +1170,7 @@
             document.onkeyup = ondockeyup;
             //window.addEventListener('focus', ondocfocus, false);
             window.addEventListener('blur', ondocblur, false);
-            window.onresize = function () { masterUpdate(512); }
+            window.onresize = function () { hideContextMenu(); masterUpdate(512); }
             setTimeout(function() { masterUpdate(512); }, 200);
 
             // Connect to the mesh server
@@ -3691,35 +3691,26 @@
             if (elem && elem != null && elem.id == 'connectbutton2' && currentNode && currentNode.agent && (currentNode.agent.id > 0) && (currentNode.agent.id < 5)) {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('termShellContextMenu');
-                contextmenudiv.style.left = event.pageX + 'px';
-                contextmenudiv.style.top = event.pageY + 'px';
-                contextmenudiv.style.display = 'block';
+                showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
             } else if (elem && elem != null && elem.id == 'connectbutton2' && currentNode && currentNode.agent && (currentNode.agent.id > 4)) {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('termShellContextMenuLinux');
-                contextmenudiv.style.left = event.pageX + 'px';
-                contextmenudiv.style.top = event.pageY + 'px';
-                contextmenudiv.style.display = 'block';
+                showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
             } else if (elem && elem != null && elem.id == 'MxMESH') {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('meshContextMenu');
-                contextmenudiv.style.left = event.pageX + 'px';
-                contextmenudiv.style.top = event.pageY + 'px';
-                contextmenudiv.style.display = 'block';
+                showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
                 /*} else if (elem && elem != null && elem.classList.contains('pluginTab')) {
                     contextelement = elem;
                     var contextmenudiv = document.getElementById('pluginTabContextMenu');
-                    contextmenudiv.style.left = event.pageX + 'px';
-                    contextmenudiv.style.top = event.pageY + 'px';
-                    contextmenudiv.style.display = 'block';*/
+                    showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
+                */
             } else {
                 while (elem && elem != null && elem.id != 'devs') { elem = elem.parentElement; }
                 if (!elem || elem == null) return true;
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('contextMenu');
-                contextmenudiv.style.left = event.pageX + 'px';
-                contextmenudiv.style.top = event.pageY + 'px';
-                contextmenudiv.style.display = 'block';
+                showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
 
                 // Get the node and set the menu options
                 var nodeid = contextelement.children[1].attributes.onclick.value;
@@ -3741,6 +3732,16 @@
             }
 
             return haltEvent(event);
+        }
+
+        function showContextMenuDiv(element, x, y) {
+            var clientRect = document.documentElement.getBoundingClientRect();
+            var docHeight = clientRect.height;
+            var docWidth = clientRect.width;
+            element.style.left = element.style.right = element.style.top = element.style.bottom = null;
+            if (x > (docWidth / 2)) { element.style.right = (docWidth - event.pageX) + 'px'; } else { element.style.left = event.pageX + 'px'; }
+            if (y > (docHeight / 2)) { element.style.bottom = (docHeight - event.pageY) + 'px'; } else { element.style.top = event.pageY + 'px'; }
+            element.style.display = 'block';
         }
 
         function cmaction(action,event) {
