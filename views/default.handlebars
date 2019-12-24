@@ -2785,6 +2785,7 @@
                     if (sort == 0) {
                         // Mesh header
                         if (node.meshid != current) {
+                            if ((view == 1) && (current != null)) { r += '</div>'; } // Close collapse div
                             deviceHeaderSet();
                             var extra = '';
                             if (view == 2) { r += '<tr><td colspan=5>'; }
@@ -2793,11 +2794,15 @@
                             if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span>' + extra;
-                            r += '</span><span id=MxMESH tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
+                            r += '</span>';
+                            var collapsed = CollapsedGroups[node.meshid];
+                            r += '<img id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"' + node.meshid + '\")></img>'; // Collapse action
+                            r += '<span id=MxMESH tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
                             if (view == 2) { r += '</div>'; }
                             current = node.meshid;
                             displayedMeshes[current] = 1;
                             c = 0;
+                            if (view == 1) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
                         }
                     } else if (sort == 1) {
                         // Power header
@@ -2876,6 +2881,8 @@
                     if (typeof deviceHeaderCount[node.state] == 'undefined') { deviceHeaderCount[node.state] = 1; } else { deviceHeaderCount[node.state]++; }
                 }
 
+                if ((view == 1) && (current != null)) { r += '</div>'; } // Close collapse div
+
                 // Above 32 devices, gray out the auto connect feature.
                 if (kvmDivs.length >= 32) { Q('autoConnectDesktopCheckbox').checked = false; }
                 QE('autoConnectDesktopCheckbox', kvmDivs.length < 32);
@@ -2908,13 +2915,21 @@
 
                 // Display all empty device groups, we need to do this because users can add devices to these at any time.
                 if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
+                    var deviceHeaderId2 = deviceHeaderId;
                     for (var i in meshes) {
                         var mesh = meshes[i], meshlink = mesh.links[userinfo._id];
                         if (meshlink != null) {
                             var meshrights = meshlink.rights;
                             if (displayedMeshes[mesh._id] == null) {
                                 if ((current != '') && (r != '')) { r += '</tr></table>'; }
-                                r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt><span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span><span>';
+                                r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt>';
+                                
+                                // Collapsing header & start collapsing area
+                                deviceHeaderId2++;
+                                var collapsed = CollapsedGroups[mesh._id];
+                                r += '<img id=\"DevxColImg' + deviceHeaderId2 + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId2 + '\",\"' + mesh._id + '\")></img>'; // Collapse action
+
+                                r += '<span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span><span>';
                                 r += getMeshActions(mesh, meshrights);
                                 r += '</span></td></tr><tr>';
                                 if (mesh.mtype == 1) {
@@ -2922,10 +2937,14 @@
                                     if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
                                 }
                                 if (mesh.mtype == 2) {
-                                    r += '<td><div style=padding:10px><i>' + "No devices in this group";
+                                    r += '<td>';
+                                    if (view == 1) { r += '<div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
+                                    r += '<div style=padding:10px><i>' + "No devices in this group";
                                     if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
                                 }
                                 r += '.</i></div></td>';
+                                if (view == 1) { r += '</div>'; } // End collapsing area
+
                                 current = mesh._id;
                                 count++;
                             }
@@ -3034,6 +3053,14 @@
                 }
             }
             oldviewmode = view;
+        }
+
+        var CollapsedGroups = {};
+        function toggleCollapseGroup(id, id2) {
+            var x = (QS('DevxCol' + id)['display'] == 'none');
+            if (x) { delete CollapsedGroups[id2]; } else { CollapsedGroups[id2] = true; }
+            Q('DevxColImg' + id).src = x?'images/c2.png':'images/c1.png';
+            QV('DevxCol' + id, x);
         }
 
         function toggleKvmDevice(node) {
