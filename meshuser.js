@@ -402,6 +402,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // We are all set, start receiving data
             ws._socket.resume();
+            if (parent.parent.pluginHandler != null) parent.parent.pluginHandler.callHook('userLoggedIn_end', user);
         });
     } catch (e) { console.log(e); }
 
