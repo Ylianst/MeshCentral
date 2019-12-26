@@ -8,7 +8,8 @@
       "nl": "0",
       "xloc": [
         "default.handlebars->container->masthead->7->notificationCount",
-        "default-mobile.handlebars->9->229"
+        "default-mobile.handlebars->9->229",
+        { "$ref": "#" }
       ]
     },
     {
@@ -15638,7 +15639,7 @@
       ]
     },
     {
-      "en": "Toggle footer bar",      
+      "en": "Toggle footer bar",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu"
       ]
@@ -15651,21 +15652,21 @@
     },
     {
       "en": "Sync server device name to hostname",
-      "nl" "Synchroniseer serverapparaatnaam met hostnaam",
+      "nl": "Synchroniseer serverapparaatnaam met hostnaam",
       "xloc": [
         "default.handlebars->23->1046"
       ]
     },
     {
       "en": "Notification settings must also be turned on in account settings.",
-      "nl" "Meldingsinstellingen moeten ook worden ingeschakeld in accountinstellingen.",
+      "nl": "Meldingsinstellingen moeten ook worden ingeschakeld in accountinstellingen.",
       "xloc": [
         "default.handlebars->23->1096"
       ]
     },
     {
       "en": "Groups",
-      "nl" "Groepen
+      "nl": "Groepen",
       "xloc": [
         "default.handlebars->23->1160"
       ]
@@ -15686,7 +15687,7 @@
     },
     {
       "en": "CPU Load",
-      "nL": "CPU gebruik",
+      "nl": "CPU gebruik",
       "xloc": [
         "default.handlebars->23->1306"
       ]
@@ -15720,7 +15721,7 @@
     },
     {
       "en": "Invalid RSA siguature",
-      "n;": "Ongeldige RSA handtekening",
+      "nl": "Ongeldige RSA handtekening",
       "xloc": [
         "default.handlebars->23->1288"
       ]
@@ -15835,7 +15836,7 @@
       ]
     },
     {
-      "en": "u:",      
+      "en": "u:",
       "xloc": [
         "default.handlebars->23->393"
       ]
@@ -15862,7 +15863,7 @@
     },
     {
       "en": "External",
-      "en": "Extern",
+      "nl": "Extern",
       "xloc": [
         "default.handlebars->23->1320"
       ]

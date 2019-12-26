@@ -72,7 +72,7 @@ function start() {
         console.log('  TRANSLATE [language] [languagefile] [files]');
         console.log('    Use a language (.json) file to translate web pages to a give language.');
         console.log('');
-        console.log('  TRANSLATEALL (languagefile)');
+        console.log('  TRANSLATEALL (languagefile) (language code)');
         console.log('    Translate all MeshCentral strings using the languages.json file.');
         console.log('');
         console.log('  MINIFYALL');
@@ -152,19 +152,21 @@ function start() {
     // Extract or translate all MeshCentral strings
     if (command == 'extractall') { extract("translate.json", meshCentralSourceFiles); }
     if (command == 'translateall') {
-        if (fs.existsSync("../views/translations") == false) { fs.mkdirSync("../views/translations"); }
-        if (fs.existsSync("../public/translations") == false) { fs.mkdirSync("../public/translations"); }
-        if ((process.argv.length > 3)) {
+        if (fs.existsSync('../views/translations') == false) { fs.mkdirSync('../views/translations'); }
+        if (fs.existsSync('../public/translations') == false) { fs.mkdirSync('../public/translations'); }
+        var lang = null;
+        if (process.argv.length > 4) { lang = process.argv[4].toLowerCase(); }
+        if (process.argv.length > 3) {
             if (fs.existsSync(process.argv[3]) == false) {
                 console.log('Unable to find: ' + process.argv[3]);
             } else {
-                translate(null, process.argv[3], meshCentralSourceFiles, "translations");
+                translate(lang, process.argv[3], meshCentralSourceFiles, 'translations');
             }
         } else {
-            if (fs.existsSync("translate.json") == false) {
+            if (fs.existsSync('translate.json') == false) {
                 console.log('Unable to find translate.json.');
             } else {
-                translate(null, "translate.json", meshCentralSourceFiles, "translations");
+                translate(lang, 'translate.json', meshCentralSourceFiles, 'translations');
             }
         }
         return;
@@ -346,7 +348,7 @@ function translate(lang, langFile, sources, createSubDir) {
     } else {
         // See that languages are in the translation file
         langs = {};
-        for (var i in langFileData.strings) { var entry = langFileData.strings[i]; for (var j in entry) { if ((j != 'en') && (j != 'xloc') && (j != '*')) { langs[j] = true; } } }
+        for (var i in langFileData.strings) { var entry = langFileData.strings[i]; for (var j in entry) { if ((j != 'en') && (j != 'xloc') && (j != '*')) { langs[j.toLowerCase()] = true; } } }
         for (var i in langs) { translateEx(i, langFileData, sources, createSubDir); }
     }
 
