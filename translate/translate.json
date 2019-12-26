@@ -7004,7 +7004,7 @@
       "fr": "Inviter",
       "pt": "Convite",
       "ja": "招待する",
-      "nl": "Nodig uit",
+      "nl": "Uitnodigen",
       "xloc": [
         "default.handlebars->23->230",
         "default.handlebars->23->307",
@@ -14330,7 +14330,7 @@
       "fr": "Vendeur",
       "pt": "Fornecedor",
       "ja": "ベンダー",
-      "nl": "Verkoper",
+      "nl": "Fabrikant",
       "xloc": [
         "default.handlebars->23->62",
         "default.handlebars->23->65"
@@ -15519,18 +15519,21 @@
     },
     {
       "en": "Summary",
+      "nl": "Samenvatting -",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MeshSubMenuSpan->MeshSubMenu->1->0->MeshSummary"
       ]
     },
     {
       "en": "Summary -",
+      "nl": "Samenvatting -",
       "xloc": [
         "default.handlebars->container->column_l->p21->p21title->3"
       ]
     },
     {
       "en": "Power States",
+      "nl": "Power Status",
       "xloc": [
         "default.handlebars->container->column_l->p21->3->1->meshPowerChartDiv->1",
         "default.handlebars->23->1105"
@@ -15538,6 +15541,7 @@
     },
     {
       "en": "Agent Types",
+      "nl": "Agent Type",
       "xloc": [
         "default.handlebars->container->column_l->p21->3->1->meshOsChartDiv->1",
         "default.handlebars->23->1106"
@@ -15551,12 +15555,14 @@
     },
     {
       "en": "PluginHandler could not event message: ",
+      "nl": "PluginHandler kon geen gebeurtenisbericht weergeven: ",
       "xloc": [
         "default.handlebars->23->162"
       ]
     },
     {
       "en": "No devices with tags found.",
+      "nl": "Geen apparaten tags gevonden.",
       "xloc": [
         "default.handlebars->23->197"
       ]
@@ -15575,36 +15581,42 @@
     },
     {
       "en": "Size: 100%",
+      "nl": "Grootte: 150%",
       "xloc": [
         "default.handlebars->23->647"
       ]
     },
     {
       "en": "Size: 125%",
+      "nl": "Grootte: 150%",
       "xloc": [
         "default.handlebars->23->648"
       ]
     },
     {
       "en": "Size: 150%",
+      "nl": "Grootte: 150%",
       "xloc": [
         "default.handlebars->23->649"
       ]
     },
     {
       "en": "Size: 200%",
+      "nl": "Grootte: 200%",
       "xloc": [
         "default.handlebars->23->650"
       ]
     },
     {
       "en": "Display device group name",
+      "nl": "Toon apparaatgroepsnaam",
       "xloc": [
         "default.handlebars->23->892"
       ]
     },
     {
       "en": "Not Connected",
+      "nl": "Niet verbonden",
       "xloc": [
         "default.handlebars->23->1101",
         "default.handlebars->23->1107"
@@ -15612,6 +15624,7 @@
     },
     {
       "en": "Agent + Intel AMT",
+      "nl": "Agent + Intel AMT",
       "xloc": [
         "default.handlebars->23->1104",
         "default.handlebars->23->1110"
@@ -15619,12 +15632,13 @@
     },
     {
       "en": "No devices in this device group.",
+      "nl": "Geen apparaten in deze apparaatgroep.",
       "xloc": [
         "default.handlebars->23->1112"
       ]
     },
     {
-      "en": "Toggle footer bar",
+      "en": "Toggle footer bar",      
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu"
       ]
@@ -15637,42 +15651,49 @@
     },
     {
       "en": "Sync server device name to hostname",
+      "nl" "Synchroniseer serverapparaatnaam met hostnaam",
       "xloc": [
         "default.handlebars->23->1046"
       ]
     },
     {
       "en": "Notification settings must also be turned on in account settings.",
+      "nl" "Meldingsinstellingen moeten ook worden ingeschakeld in accountinstellingen.",
       "xloc": [
         "default.handlebars->23->1096"
       ]
     },
     {
       "en": "Groups",
+      "nl" "Groepen
       "xloc": [
         "default.handlebars->23->1160"
       ]
     },
     {
       "en": "Delete User",
+      "nl": "Verwijder gebruiker",
       "xloc": [
         "default.handlebars->23->1259"
       ]
     },
     {
       "en": "7 Day Login State",
+      "nl": "Inlogstatus afgelopen 7 dagen",
       "xloc": [
         "default.handlebars->23->1275"
       ]
     },
     {
       "en": "CPU Load",
+      "nL": "CPU gebruik",
       "xloc": [
         "default.handlebars->23->1306"
       ]
     },
     {
       "en": "Server State",
+      "nl": "Server Status",
       "xloc": [
         "default.handlebars->23->1284"
       ]
@@ -15685,72 +15706,84 @@
     },
     {
       "en": "Unknown Group",
+      "nl": "Onbekende groep",
       "xloc": [
         "default.handlebars->23->1286"
       ]
     },
     {
       "en": "Invalid PKCS signature",
+      "nl": "Onjuiste PKCS handtekening",
       "xloc": [
         "default.handlebars->23->1287"
       ]
     },
     {
       "en": "Invalid RSA siguature",
+      "n;": "Ongeldige RSA handtekening",
       "xloc": [
         "default.handlebars->23->1288"
       ]
     },
     {
       "en": "Invalid JSON",
+      "nl": "Onjuiste JSON",
       "xloc": [
         "default.handlebars->23->1289"
       ]
     },
     {
       "en": "Unknown Action",
+      "nl": "Onbekende actie",
       "xloc": [
         "default.handlebars->23->1290"
       ]
     },
     {
       "en": "Bad Web Certificate",
+      "nl": "Onjuist webcertificaat",
       "xloc": [
         "default.handlebars->23->1291"
       ]
     },
     {
       "en": "Bad Signature",
+      "nl": "Ongeldige handtening",
       "xloc": [
         "default.handlebars->23->1292"
       ]
     },
     {
       "en": "Max Sessions Reached",
+      "nl": "Max Sessies bereikt",
       "xloc": [
         "default.handlebars->23->1293"
       ]
     },
     {
       "en": "Unknown Device Group",
+      "nl": "Onbekende apparaatgroep",
       "xloc": [
         "default.handlebars->23->1294"
       ]
     },
     {
       "en": "Invalid Device Group Type",
+      "nl": "Ongeldige apparaatgroep type",
       "xloc": [
         "default.handlebars->23->1295"
       ]
     },
     {
       "en": "Duplicate Agent",
+      "nl": "Duplicaat Agent",
       "xloc": [
         "default.handlebars->23->1296"
       ]
     },
     {
       "en": "Connected Intel&reg; AMT",
+      "nl": "Verbonden Intel&reg; AMT",
       "xloc": [
         "default.handlebars->23->1297"
       ]
@@ -15763,6 +15796,7 @@
     },
     {
       "en": "User Accounts",
+      "nl": "Gebruikersaccounts",
       "xloc": [
         "default.handlebars->23->1299"
       ]
@@ -15775,12 +15809,14 @@
     },
     {
       "en": "Connected Users",
+      "nl": "Verbonden gebruikers",
       "xloc": [
         "default.handlebars->23->1302"
       ]
     },
     {
       "en": "Users Sessions",
+      "nl": "gebruikers Sessies",
       "xloc": [
         "default.handlebars->23->1303"
       ]
@@ -15793,24 +15829,27 @@
     },
     {
       "en": "user:",
+      "nl": "gebruiker:",
       "xloc": [
         "default.handlebars->23->392"
       ]
     },
     {
-      "en": "u:",
+      "en": "u:",      
       "xloc": [
         "default.handlebars->23->393"
       ]
     },
     {
       "en": "ip:",
+      "nl": "ip:",
       "xloc": [
         "default.handlebars->23->394"
       ]
     },
     {
       "en": "group:",
+      "nl": "groep:",
       "xloc": [
         "default.handlebars->23->395"
       ]
@@ -15823,6 +15862,7 @@
     },
     {
       "en": "External",
+      "en": "Extern",
       "xloc": [
         "default.handlebars->23->1320"
       ]
@@ -15841,6 +15881,7 @@
     },
     {
       "en": "RSS",
+      "nl": "RSS",
       "xloc": [
         "default.handlebars->23->1323"
       ]
