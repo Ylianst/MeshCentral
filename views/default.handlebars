@@ -2858,7 +2858,7 @@
                         }
 
                         var collapseName = node.meshid;
-                        if (sort == 1) { collapseName = 'pwr:' + node.pwr; }
+                        if (sort == 1) { collapseName = ('pwr:' + (node.pwr?node.pwr:0)); }
                         else if (sort == 3) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
                         var collapsed = (sort != 3) & CollapsedGroups[collapseName];
                         r += '<tr name=DevxCol' + collapseName + (collapsed?' style=display:none':'') + '><td><div id=devs class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
