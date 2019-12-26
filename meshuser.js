@@ -322,32 +322,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try { ws.send(JSON.stringify(stats)); } catch (ex) { }
             }
 
-            //
-            var serverStatsStrings = {
-                ServerState: "Server State",
-                AgentErrorCounters: "Agent Error Counters",
-                UnknownGroup: "Unknown Group",
-                InvalidPKCSsignature: "Invalid PKCS signature",
-                InvalidRSAsiguature: "Invalid RSA siguature",
-                InvalidJSON: "Invalid JSON",
-                UnknownAction: "Unknown Action",
-                BadWebCertificate: "Bad Web Certificate",
-                BadSignature: "Bad Signature",
-                MaxSessionsReached: "Max Sessions Reached",
-                UnknownDeviceGroup: "Unknown Device Group",
-                InvalidDeviceGroupType: "Invalid Device Group Type",
-                DuplicateAgent: "Duplicate Agent",
-                ConnectedIntelAMT: "Connected Intel&reg; AMT",
-                RelayErrors: "Relay Errors",
-                UserAccounts: "User Accounts",
-                DeviceGroups: "Device Groups",
-                AgentSessions: "Agent Sessions",
-                ConnectedUsers: "Connected Users",
-                UsersSessions: "Users Sessions",
-                RelaySessions: "Relay Sessions",
-                RelayCount: "Relay Count"
-            };
-
             // When data is received from the web socket
             ws.on('message', processWebSocketData);
 
