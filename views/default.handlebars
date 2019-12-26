@@ -2798,9 +2798,9 @@
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
                             r += '<span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx></span>' + extra;
                             r += '</span>';
-                            if ((view == 1) || (view == 3)) {
+                            if ((view == 1) || (view == 2) || (view == 3)) {
                                 var collapsed = CollapsedGroups[node.meshid];
-                                r += '<img id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"' + node.meshid + '\")></img>'; // Collapse action
+                                r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"' + node.meshid + '\",' + view + ')></img>'; // Collapse action
                             }
                             r += '<span id=MxMESH tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
                             if (view == 2) { r += '</div>'; }
@@ -2819,9 +2819,9 @@
 
                             if (view == 2) { r += '<tr><td>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span>';
-                            if ((view == 1) || (view == 3)) {
+                            if ((view == 1) || (view == 2) || (view == 3)) {
                                 var collapsed = CollapsedGroups['pwr:' + pwr];
-                                r += '<img id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"pwr:' + pwr + '\")></img>'; // Collapse action
+                                r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"pwr:' + pwr + '\",' + view + ')></img>'; // Collapse action
                             }
                             r += '<span>' + PowerStateStr2(node.pwr) + '</span></div>';
 
@@ -2856,7 +2856,12 @@
                             if ((node.conn & 8) != 0) { states.push('<span title=\"' + "Mesh agent is reachable using another agent as relay." + '\">' + "Relay" + '</span>'); }
                             if ((node.conn & 16) != 0) { states.push('<span title=\"' + "MQTT connection to the device is active." + '\">' + "MQTT" + '</span>'); }
                         }
-                        r += '<tr><td><div id=devs class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
+
+                        var collapseName = node.meshid;
+                        if (sort == 1) { collapseName = 'pwr:' + node.pwr; }
+                        else if (sort == 3) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
+                        var collapsed = (sort != 3) & CollapsedGroups[collapseName];
+                        r += '<tr name=DevxCol' + collapseName + (collapsed?' style=display:none':'') + '><td><div id=devs class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
                         r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=\"j' + icon + '\" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
@@ -2882,7 +2887,9 @@
                         if (node.tags) {
                             for (var j in node.tags) {
                                 var tag = node.tags[j];
-                                if (groups[tag] == null) { groups[tag] = r; groupCount[tag] = 1; } else { groups[tag] += r; groupCount[tag] += 1; }
+                                var collapsed = CollapsedGroups['tag:' + tag];
+                                var r2 = r.replace('**xx**xx*TaG*xx**xx**', tag + (collapsed?' style=display:none':''));
+                                if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
                                 if (view == 3) break;
                             }
                         }
@@ -2907,17 +2914,20 @@
                     for (var j in groupNames) {
                         var i = groupNames[j];
                         if (view == 2) {
-                            r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
+                            r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px>';
+                            var collapsed = CollapsedGroups['tag:' + i];
+                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + i + '\",2)></img>'; // Collapse action
+                            r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
                         } else {
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span>';
                             var collapsed = CollapsedGroups['tag:' + i];
-                            r += '<img id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + i + '\")></img>'; // Collapse action
+                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + i + '\")></img>'; // Collapse action
                             r += '<span>' + i + '</span></div>';
                             r += '<div id=DevxCol' + tagDeviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                             r += groups[i];
                             r += '</div>';
-                            tagDeviceHeaderId++;
                         }
+                        tagDeviceHeaderId++;
                     }
                 }
 
@@ -2946,7 +2956,7 @@
                                 // Collapsing header & start collapsing area
                                 deviceHeaderId2++;
                                 var collapsed = CollapsedGroups[mesh._id];
-                                r += '<img id=\"DevxColImg' + deviceHeaderId2 + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId2 + '\",\"' + mesh._id + '\")></img>'; // Collapse action
+                                r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId2 + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId2 + '\",\"' + mesh._id + '\")></img>'; // Collapse action
 
                                 r += '<span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span><span>';
                                 r += getMeshActions(mesh, meshrights);
@@ -2957,12 +2967,12 @@
                                 }
                                 if (mesh.mtype == 2) {
                                     r += '<td>';
-                                    if (view == 1) { r += '<div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
+                                    r += '<div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                                     r += '<div style=padding:10px><i>' + "No devices in this group";
                                     if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
                                 }
                                 r += '.</i></div></td>';
-                                if (view == 1) { r += '</div>'; } // End collapsing area
+                                r += '</div>'; // End collapsing area
 
                                 current = mesh._id;
                                 count++;
@@ -3074,11 +3084,22 @@
             oldviewmode = view;
         }
 
-        function toggleCollapseGroup(id, id2) {
-            var x = (QS('DevxCol' + id)['display'] == 'none');
-            if (x) { delete CollapsedGroups[id2]; } else { CollapsedGroups[id2] = true; }
+        function toggleCollapseGroup(id, id2, type) {
+            var x;
+            if (type == 2) {
+                // Table rows collapse
+                var rows = document.getElementsByName('DevxCol' + id2);
+                if (rows.length == 0) return;
+                x = (rows[0].style['display'] == 'none');
+                if (x) { delete CollapsedGroups[id2]; } else { CollapsedGroups[id2] = true; }
+                for (var i = 0; i < rows.length; i++) { rows[i].style['display'] = (x ? '' : 'none'); }
+            } else {
+                // Simple DIV collapse
+                x = (QS('DevxCol' + id)['display'] == 'none');
+                if (x) { delete CollapsedGroups[id2]; } else { CollapsedGroups[id2] = true; }
+                QV('DevxCol' + id, x);
+            }
             Q('DevxColImg' + id).src = x?'images/c2.png':'images/c1.png';
-            QV('DevxCol' + id, x);
             putstore('_collapse', JSON.stringify(CollapsedGroups));
         }
 
