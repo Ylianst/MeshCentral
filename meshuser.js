@@ -1396,6 +1396,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // TODO: Notify all sessions on other peers.
                             }
                         } else {
+                            // Remove any events for this userid
+                            if (command.removeEvents === true) { db.RemoveAllUserEvents(domain.id, newuserid); }
+
                             // Create a new user
                             var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                             if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }

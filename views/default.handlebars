@@ -1316,6 +1316,8 @@
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p16events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p16events')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
+            QS('p31events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
+            QS('p31events')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p41events')['height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
             QS('p41events')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
 
@@ -8801,6 +8803,7 @@
             x += addHtmlValue("Password", '<input id=p4pass2 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
             x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
+            x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Remove all previous events for this userid." + '</label></div>';
             if (serverinfo.emailcheck) {
                 x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Email is verified." + '</label></div>';
                 x += '<div><label><input id=p4invitationEmail type=checkbox />' + "Send invitation email." + '</label></div>';
@@ -8838,7 +8841,7 @@
 
         function showCreateNewAccountDialogEx() {
             var username = ((features & 0x200000) == 0) ? Q('p4name').value : Q('p4email').value; // Username is email address
-            var x = { action: 'adduser', username: username, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked, randomPassword: Q('p4randomPassword').checked };
+            var x = { action: 'adduser', username: username, email: Q('p4email').value, pass: Q('p4pass1').value, resetNextLogin: Q('p4resetNextLogin').checked, randomPassword: Q('p4randomPassword').checked, removeEvents: Q('p4removeEvents').checked };
             if (serverinfo.emailcheck) {
                 x.emailVerified = Q('p4verifiedEmail').checked;
                 x.emailInvitation = Q('p4invitationEmail').checked;
@@ -9188,6 +9191,7 @@
 
         var currentUserEvents = null;
         function userEventsUpdate() {
+            if (currentUser == null) return;
             var x = '', dateHeader = null;
             for (var i in currentUserEvents) {
                 var event = currentUserEvents[i], time = new Date(event.time);

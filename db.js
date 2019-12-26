@@ -713,6 +713,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { obj.eventsfile.find({ domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } }).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
             obj.RemoveAllEvents = function (domain) { obj.eventsfile.deleteMany({ domain: domain }, { multi: true }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { obj.eventsfile.deleteMany({ domain: domain, nodeid: nodeid }, { multi: true }); };
+            obj.RemoveAllUserEvents = function (domain, userid) { obj.eventsfile.deleteMany({ domain: domain, userid: userid }, { multi: true }); };
             obj.GetFailedLoginCount = function (username, domainid, lastlogin, func) {
                 if (obj.eventsfile.countDocuments) {
                     obj.eventsfile.countDocuments({ action: 'authfail', username: username, domain: domainid, time: { "$gte": lastlogin } }, function (err, count) { func((err == null) ? count : 0); });
@@ -846,6 +847,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func); } };
             obj.RemoveAllEvents = function (domain) { obj.eventsfile.remove({ domain: domain }, { multi: true }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { obj.eventsfile.remove({ domain: domain, nodeid: nodeid }, { multi: true }); };
+            obj.RemoveAllUserEvents = function (domain, userid) { obj.eventsfile.remove({ domain: domain, userid: userid }, { multi: true }); };
             obj.GetFailedLoginCount = function (username, domainid, lastlogin, func) { obj.eventsfile.count({ action: 'authfail', username: username, domain: domainid, time: { "$gte": lastlogin } }, function (err, count) { func((err == null) ? count : 0); }); }
 
             // Database actions on the power collection
