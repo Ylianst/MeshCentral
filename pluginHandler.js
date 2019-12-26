@@ -137,7 +137,7 @@ module.exports.pluginHandler = function (parent) {
         for (var p in obj.plugins) {
             if (typeof obj.plugins[p][hookName] == 'function') {
                 try {
-                    obj.plugins[p][hookName](args);
+                    obj.plugins[p][hookName](...args);
                 } catch (e) {
                     console.log("Error ocurred while running plugin hook" + p + ':' + hookName + ' (' + e + ')');
                 }
