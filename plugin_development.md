@@ -62,6 +62,7 @@ These are separated into the following categories depending on the type of funct
 `onDeviceRefeshEnd`: called when a device is selected in the MeshCentral web interface
 `registerPluginTab`: callable when a device is selected in the MeshCentral web interface to register a new tab for plugin data, if required. Accepts an object, or function that returns an object, with the following properties: { tabId: "yourShortNameHere", tabTitle: "Your Display Name"}. A tab and div with the associated ID and title will be created for your use
 `onDesktopDisconnect`: called when a remote desktop session is disconnected
+`onWebUIStartupEnd`: called when the page has loaded for the first time after a login / refresh
 
 #### Exports
 Any function can be exported to the Web UI layer by adding the name of the function to an `exports` array in the plugin object.
@@ -70,6 +71,7 @@ Any function can be exported to the Web UI layer by adding the name of the funct
 `server_startup`: called once when the server starts (or when the plugin is first installed)
 `hook_agentCoreIsStable`: called once when an agent initially checks in
 `hook_processAgentData`: called each time an agent transmits data back to the server
+`hook_userLoggedIn`: called when a user has logged into the web interface
 
 ### Mesh Agent
 Use of the optional file `plugin_name.js` in the optional folder `modules_meshcore` will include the file in the default meshcore file sent to each endpoint. This is useful to add functionality on each of the endpoints.
