@@ -15,6 +15,10 @@ body {
     /* overflow-y: hidden; */
 }
 
+.night .collapseImage {
+    filter: invert(100%);
+}
+
 #container {
     background-color: #fff;
     width: 960px;
