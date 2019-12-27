@@ -11,7 +11,7 @@
 /*jshint strict:false */
 /*jshint -W097 */
 /*jshint esversion: 6 */
-"use strict";
+'use strict';
 
 /*
 class SerialTunnel extends require('stream').Duplex {
@@ -63,7 +63,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Setup WebAuthn / FIDO2
-    obj.webauthn = require("./webauthn.js").CreateWebAuthnModule();
+    obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
 
     // Variables
     obj.parent = parent;
@@ -75,11 +75,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.tcpServer = null;
     obj.certificates = certificates;
     obj.args = args;
-    obj.users = {};
-    obj.meshes = {};
-    obj.userAllowedIp = args.userallowedip;  // List of allowed IP addresses for users
-    obj.agentAllowedIp = args.agentallowedip;  // List of allowed IP addresses for agents
-    obj.agentBlockedIp = args.agentblockedip;  // List of blocked IP addresses for agents
+    obj.users = {};                             // UserID --> User
+    obj.meshes = {};                            // MeshID --> Mesh (also called device group)
+    obj.userAllowedIp = args.userallowedip;     // List of allowed IP addresses for users
+    obj.agentAllowedIp = args.agentallowedip;   // List of allowed IP addresses for agents
+    obj.agentBlockedIp = args.agentblockedip;   // List of blocked IP addresses for agents
     obj.tlsSniCredentials = null;
     obj.dnsDomains = {};
     obj.relaySessionCount = 0;
@@ -196,7 +196,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
-    function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     // Fetch all users from the database, keep this in memory
     obj.db.GetAllType('user', function (err, docs) {
@@ -506,7 +506,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id }); }
         }
         req.session = null;
-        if (req.query.key != null) { res.redirect(domain.url + "?key=" + req.query.key); } else { res.redirect(domain.url); }
+        if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key); } else { res.redirect(domain.url); }
         parent.debug('web', 'handleLogoutRequest: success.');
     }
 
@@ -1756,9 +1756,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Returns the server root certificate encoded in base64
     function getRootCertBase64() {
         var rootcert = obj.certificates.root.cert;
-        var i = rootcert.indexOf("-----BEGIN CERTIFICATE-----\r\n");
+        var i = rootcert.indexOf('-----BEGIN CERTIFICATE-----\r\n');
         if (i >= 0) { rootcert = rootcert.substring(i + 29); }
-        i = rootcert.indexOf("-----END CERTIFICATE-----");
+        i = rootcert.indexOf('-----END CERTIFICATE-----');
         if (i >= 0) { rootcert = rootcert.substring(i, 0); }
         return Buffer.from(rootcert, 'base64').toString('base64');
     }
@@ -1899,7 +1899,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
         if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         if (domain.id != '') { domainname = 'domain-' + domain.id; }
-        var path = obj.path.join(obj.filespath, domainname + "/user-" + spliturl[2] + "/Public");
+        var path = obj.path.join(obj.filespath, domainname + '/user-' + spliturl[2] + '/Public');
         for (var i = 3; i < spliturl.length; i++) { if (obj.common.IsFilenameValid(spliturl[i]) == true) { path += '/' + spliturl[i]; filename = spliturl[i]; } else { res.sendStatus(404); return; } }
 
         var stat = null;
@@ -2046,7 +2046,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.handleDomainRedirect = function (req, res) {
         const domain = checkUserIpAddress(req, res);
         if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
-        var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split("?");
+        var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split('?');
         if (splitUrl.length > 1) { urlArgs = '?' + splitUrl[1]; }
         if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) { urlName = splitUrl[0].substring(1).toLowerCase(); }
         if ((urlName == null) || (domain.redirects[urlName] == null) || (urlName[0] == '_')) { res.sendStatus(404); return; }
@@ -2837,7 +2837,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         try {
             if (req.headers.authorization) {
                 var authstr = req.headers.authorization;
-                if (authstr.substring(0, 7) == "Digest ") {
+                if (authstr.substring(0, 7) == 'Digest ') {
                     var auth = obj.common.parseNameValueList(obj.common.quoteSplit(authstr.substring(7)));
                     if ((req.url === auth.uri) && (obj.httpAuthRealm === auth.realm) && (auth.opaque === obj.crypto.createHmac('SHA384', obj.httpAuthRandom).update(auth.nonce).digest('hex'))) {
 
@@ -2858,10 +2858,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         if (nodes.length == 1) {
                                             // Yes, the node exists, compute Intel AMT digest password
                                             var node = nodes[0];
-                                            var amtpass = obj.crypto.createHash('sha384').update(auth.username.toLowerCase() + ":" + nodeid + ":" + obj.parent.dbconfig.amtWsEventSecret).digest("base64").substring(0, 12).split("/").join("x").split("\\").join("x");
+                                            var amtpass = obj.crypto.createHash('sha384').update(auth.username.toLowerCase() + ':' + nodeid + ":" + obj.parent.dbconfig.amtWsEventSecret).digest('base64').substring(0, 12).split('/').join('x').split('\\').join('x');
 
                                             // Check the MD5 hash
-                                            if (auth.response === obj.common.ComputeDigesthash(auth.username, amtpass, auth.realm, "POST", auth.uri, auth.qop, auth.nonce, auth.nc, auth.cnonce)) {
+                                            if (auth.response === obj.common.ComputeDigesthash(auth.username, amtpass, auth.realm, 'POST', auth.uri, auth.qop, auth.nonce, auth.nc, auth.cnonce)) {
 
                                                 // This is an authenticated Intel AMT event, update the host address
                                                 var amthost = req.ip;
@@ -3014,14 +3014,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
                 var xdomain = (domain.dns == null) ? domain.id : '';
-                if (xdomain != '') xdomain += "/";
-                var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
-                if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local\r\n"; }
-                if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
-                if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
-                if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
-                if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
-                if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
+                if (xdomain != '') xdomain += '/';
+                var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
+                if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
+                if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+                if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
+                if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
+                if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
+                if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
 
                 try {
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + meshfilename + '"' });
@@ -3178,15 +3178,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
         var xdomain = (domain.dns == null) ? domain.id : '';
-        if (xdomain != '') xdomain += "/";
-        var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+        if (xdomain != '') xdomain += '/';
+        var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local\r\n"; }
-        if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
-        if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
-        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
-        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
-        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
+        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
+        if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+        if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
+        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
+        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
+        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
 
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
@@ -3201,11 +3201,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         archive.pipe(res);
 
         // Opens the "MeshAgentOSXPackager.zip"
-        var yauzl = require("yauzl");
+        var yauzl = require('yauzl');
         yauzl.open(obj.path.join(__dirname, 'agents', 'MeshAgentOSXPackager.zip'), { lazyEntries: true }, function (err, zipfile) {
             if (err) { res.sendStatus(500); return; }
             zipfile.readEntry();
-            zipfile.on("entry", function (entry) {
+            zipfile.on('entry', function (entry) {
                 if (/\/$/.test(entry.fileName)) {
                     // Skip all folder entries
                     zipfile.readEntry();
@@ -3213,8 +3213,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (entry.fileName == 'MeshAgent.mpkg/Contents/distribution.dist') {
                         // This is a special file entry, we need to fix it.
                         zipfile.openReadStream(entry, function (err, readStream) {
-                            readStream.on("data", function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
-                            readStream.on("end", function () {
+                            readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
+                            readStream.on('end', function () {
                                 var meshname = mesh.name.split(']').join('').split('[').join(''); // We can't have ']]' in the string since it will terminate the CDATA.
                                 var welcomemsg = 'Welcome to the MeshCentral agent for MacOS\n\nThis installer will install the mesh agent for "' + meshname + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to https://www.meshcommander.com/meshcentral2.\n\nThis software is provided under Apache 2.0 license.\n';
                                 var installsize = Math.floor((argentInfo.size + meshsettings.length) / 1024);
@@ -3234,9 +3234,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 }
             });
-            zipfile.on("end", function () {
-                archive.file(argentInfo.path, { name: "MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.bin" });
-                archive.append(meshsettings, { name: "MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.msh" });
+            zipfile.on('end', function () {
+                archive.file(argentInfo.path, { name: 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.bin' });
+                archive.append(meshsettings, { name: 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.msh' });
                 archive.finalize();
             });
         });
@@ -3267,15 +3267,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
         var xdomain = (domain.dns == null) ? domain.id : '';
-        if (xdomain != '') xdomain += "/";
-        var meshsettings = "MeshName=" + mesh.name + "\r\nMeshType=" + mesh.mtype + "\r\nMeshID=0x" + meshidhex + "\r\nServerID=" + serveridhex + "\r\n";
+        if (xdomain != '') xdomain += '/';
+        var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (obj.args.lanonly != true) { meshsettings += "MeshServer=ws" + (obj.args.notls ? '' : 's') + "://" + obj.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "agent.ashx\r\n"; } else { meshsettings += "MeshServer=local\r\n"; }
-        if (req.query.tag != null) { meshsettings += "Tag=" + req.query.tag + "\r\n"; }
-        if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += "InstallFlags=" + req.query.installflags + "\r\n"; }
-        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += "ignoreProxyFile=1\r\n"; }
-        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + "\r\n"; } }
-        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + "\r\n"; } }
+        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
+        if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+        if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
+        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
+        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
+        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshagent.msh"' });
         res.send(meshsettings);
@@ -3906,6 +3906,46 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
     };
+
+    // Returns a list of all meshes that this user has some rights too
+    obj.GetAllMeshWithRights = function (user, rights) {
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if ((user == null) || (user.links == null)) { return []; }
+        var r = [];
+        for (var i in user.links) { const m = obj.meshes[i]; if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) { r.push(m); } }
+        return r;
+    }
+
+    // Returns a list of all mesh id's that this user has some rights too
+    obj.GetAllMeshIdWithRights = function (user, rights) {
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if ((user == null) || (user.links == null)) { return []; }
+        var r = [];
+        for (var i in user.links) { const m = obj.meshes[i]; if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) { r.push(m._id); } }
+        return r;
+    }
+
+    // Get the right of a user on a given device group
+    obj.GetMeshRights = function (user, mesh) {
+        if ((user == null) || (mesh == null)) { return 0; }
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if ((user == null) || (user.links == null)) { return 0; }
+        var r = 0;
+        if (typeof mesh == 'string') { r = user.links[mesh]; } else { r = user.links[mesh._id]; }
+        if (r == null) { return 0; }
+        return r.rights;
+    }
+
+    // Returns true if the user can view the given device group
+    obj.IsMeshViewable = function (user, mesh) {
+        if ((user == null) || (mesh == null)) { return false; }
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if ((user == null) || (user.links == null)) { return false; }
+        var r = 0;
+        if (typeof mesh == 'string') { r = user.links[mesh]; } else { r = user.links[mesh._id]; }
+        if (r == null) { return false; }
+        return true;
+    }
 
     // Clone a safe version of a user object, remove everything that is secret.
     obj.CloneSafeUser = function (user) {
