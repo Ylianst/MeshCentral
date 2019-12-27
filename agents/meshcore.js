@@ -1919,13 +1919,10 @@ function createMeshCore(agent) {
             switch (cmd) {
                 case 'help': { // Displays available commands
                     var fin = '', f = '', availcommands = 'version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
-                    if (process.platform == 'win32')
-                    {
-                        availcommands += ',safemode,wpfhwacceleration';
-                    }
+                    if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
-                        if (f.length > 100) { fin += (f + ',\r\n'); f = ''; }
+                        if (f.length > 90) { fin += (f + ',\r\n'); f = ''; }
                         f += (((f != '') ? ', ' : ' ') + availcommands.shift());
                     }
                     if (f != '') { fin += f; }

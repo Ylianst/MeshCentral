@@ -152,11 +152,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                var meshrights = parent.GetMeshRights(user, agent.dbMeshKey);
+                var meshrights = parent.GetMeshRights(user, agent.dbMeshKey); // TODO: We will need to get the rights for this specific node.
                 var mesh = parent.meshes[agent.dbMeshKey];
                 if ((mesh != null) && ((meshrights & MESHRIGHT_REMOTECONTROL) || (meshrights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
                     command.sessionid = ws.sessionId;   // Set the session id, required for responses
-                    command.rights = meshrights;     // Add user rights flags to the message
+                    command.rights = meshrights;        // Add user rights flags to the message
                     command.consent = mesh.consent;     // Add user consent
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                     command.username = user.name;       // Add user name
@@ -503,101 +503,74 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'powertimeline':
                 {
-                    // Perform pre-validation
-                    if (common.validateString(command.nodeid, 0, 128) == false) break;
-                    var snode = command.nodeid.split('/');
-                    if ((snode.length != 3) || (snode[1] != domain.id)) break;
-
-                    // Check that we have permissions for this node.
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes == null || nodes.length != 1) return;
-                        const node = nodes[0];
-
-                        if (parent.GetMeshRights(user, node.meshid) != 0) {
-                            // Query the database for the power timeline for a given node
-                            // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
-                            db.getPowerTimeline(command.nodeid, function (err, docs) {
-                                if ((err == null) && (docs != null) && (docs.length > 0)) {
-                                    var timeline = [], time = null, previousPower;
-                                    for (i in docs) {
-                                        var doc = docs[i], j = parseInt(i);
-                                        doc.time = Date.parse(doc.time);
-                                        if (time == null) { // First element
-                                            // Skip all starting power 0 events.
-                                            if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
-                                            time = doc.time;
-                                            if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
-                                        } else if (previousPower != doc.power) { // Delta element
-                                            // If this event is of a short duration (2 minutes or less), skip it.
-                                            if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
-                                            timeline.push((doc.time - time) / 1000, doc.power);
-                                            time = doc.time;
-                                        }
-                                        previousPower = doc.power;
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if (visible == false) return;
+                        // Query the database for the power timeline for a given node
+                        // The result is a compacted array: [ startPowerState, startTimeUTC, powerState ] + many[ deltaTime, powerState ]
+                        db.getPowerTimeline(node._id, function (err, docs) {
+                            if ((err == null) && (docs != null) && (docs.length > 0)) {
+                                var timeline = [], time = null, previousPower;
+                                for (i in docs) {
+                                    var doc = docs[i], j = parseInt(i);
+                                    doc.time = Date.parse(doc.time);
+                                    if (time == null) { // First element
+                                        // Skip all starting power 0 events.
+                                        if ((doc.power == 0) && ((doc.oldPower == null) || (doc.oldPower == 0))) continue;
+                                        time = doc.time;
+                                        if (doc.oldPower) { timeline.push(doc.oldPower, time / 1000, doc.power); } else { timeline.push(0, time / 1000, doc.power); }
+                                    } else if (previousPower != doc.power) { // Delta element
+                                        // If this event is of a short duration (2 minutes or less), skip it.
+                                        if ((docs.length > (j + 1)) && ((Date.parse(docs[j + 1].time) - doc.time) < 120000)) continue;
+                                        timeline.push((doc.time - time) / 1000, doc.power);
+                                        time = doc.time;
                                     }
-                                    try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: timeline, tag: command.tag })); } catch (ex) { }
-                                } else {
-                                    // No records found, send current state if we have it
-                                    var state = parent.parent.GetConnectivityState(command.nodeid);
-                                    if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: command.nodeid, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
+                                    previousPower = doc.power;
                                 }
-                            });
-                        }
+                                try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: timeline, tag: command.tag })); } catch (ex) { }
+                            } else {
+                                // No records found, send current state if we have it
+                                var state = parent.parent.GetConnectivityState(command.nodeid);
+                                if (state != null) { try { ws.send(JSON.stringify({ action: 'powertimeline', nodeid: node._id, timeline: [state.powerState, Date.now(), state.powerState], tag: command.tag })); } catch (ex) { } }
+                            }
+                        });
                     });
                     break;
                 }
             case 'getsysinfo':
                 {
-                    // Perform pre-validation
-                    if (common.validateString(command.nodeid, 0, 128) == false) break;
-                    var snode = command.nodeid.split('/');
-                    if ((snode.length != 3) || (snode[1] != domain.id)) break;
-
-                    // Check that we have permissions for this node.
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes == null || nodes.length != 1) return;
-                        const node = nodes[0];
-
-                        if (parent.GetMeshRights(user, node.meshid) != 0) {
-                            // Query the database system information
-                            db.Get('si' + command.nodeid, function (err, docs) {
-                                if ((docs != null) && (docs.length > 0)) {
-                                    var doc = docs[0];
-                                    doc.action = 'getsysinfo';
-                                    doc.nodeid = command.nodeid;
-                                    doc.tag = command.tag;
-                                    delete doc.type;
-                                    delete doc.domain;
-                                    delete doc._id;
-                                    try { ws.send(JSON.stringify(doc)); } catch (ex) { }
-                                } else {
-                                    try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true })); } catch (ex) { }
-                                }
-                            });
-                        }
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if (visible == false) return;
+                        // Query the database system information
+                        db.Get('si' + command.nodeid, function (err, docs) {
+                            if ((docs != null) && (docs.length > 0)) {
+                                var doc = docs[0];
+                                doc.action = 'getsysinfo';
+                                doc.nodeid = node._id;
+                                doc.tag = command.tag;
+                                delete doc.type;
+                                delete doc.domain;
+                                delete doc._id;
+                                try { ws.send(JSON.stringify(doc)); } catch (ex) { }
+                            } else {
+                                try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true })); } catch (ex) { }
+                            }
+                        });
                     });
                     break;
                 }
             case 'lastconnect':
                 {
-                    // Perform pre-validation
-                    if (common.validateString(command.nodeid, 0, 128) == false) return;
-                    var snode = command.nodeid.split('/');
-                    if ((snode.length != 3) || (snode[1] != domain.id)) break;
-
-                    // Check that we have permissions for this node.
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if (nodes == null || nodes.length != 1) return;
-                        const node = nodes[0];
-
-                        if (parent.GetMeshRights(user, node.meshid) != 0) {
-                            // Query the database for the last time this node connected
-                            db.Get('lc' + command.nodeid, function (err, docs) {
-                                if ((docs != null) && (docs.length > 0)) {
-                                    try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
-                                }
-                            });
-                        }
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if (visible == false) return;
+                        // Query the database for the last time this node connected
+                        db.Get('lc' + command.nodeid, function (err, docs) {
+                            if ((docs != null) && (docs.length > 0)) {
+                                try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                            }
+                        });
                     });
                     break;
                 }
@@ -963,31 +936,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
                         }
-                    } else if (common.validateString(command.nodeid, 0, 128) == true) { // Device filtered events
+                    } else if (command.nodeid != null) { // Device filtered events
                         // Check that the user has access to this nodeid
-                        db.Get(command.nodeid, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            const node = nodes[0];
+                        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                            if (node == null) return;
 
-                            var meshrights = parent.GetMeshRights(user, node.meshid);
-                            if (meshrights != 0) {
-                                // Put a limit on the number of returned entries if present
-                                var limit = 10000;
-                                if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
+                            // Put a limit on the number of returned entries if present
+                            var limit = 10000;
+                            if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
 
-                                if ((meshrights & MESHRIGHT_LIMITEVENTS) != 0) {
-                                    // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
-                                    db.GetNodeEventsSelfWithLimit(command.nodeid, domain.id, user._id, limit, function (err, docs) {
-                                        if (err != null) return;
-                                        try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
-                                    });
-                                } else {
-                                    // Send the list of most recent events for this nodeid, up to 'limit' count
-                                    db.GetNodeEventsWithLimit(command.nodeid, domain.id, limit, function (err, docs) {
-                                        if (err != null) return;
-                                        try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: command.nodeid, tag: command.tag })); } catch (ex) { }
-                                    });
-                                }
+                            if ((rights & MESHRIGHT_LIMITEVENTS) != 0) {
+                                // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
+                                db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, function (err, docs) {
+                                    if (err != null) return;
+                                    try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: node._id, tag: command.tag })); } catch (ex) { }
+                                });
+                            } else {
+                                // Send the list of most recent events for this nodeid, up to 'limit' count
+                                db.GetNodeEventsWithLimit(node._id, domain.id, limit, function (err, docs) {
+                                    if (err != null) return;
+                                    try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: node._id, tag: command.tag })); } catch (ex) { }
+                                });
                             }
                         });
                     } else {
@@ -997,7 +966,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // All events
                         var exGroupFilter2 = [], filter = [], filter2 = user.subscriptions;
 
-                        // Remove MeshID's that we do not have rights to see events for (TODO: user groups)
+                        // Add all meshes for groups this user is part of
+                        // TODO (UserGroups)
+
+                        // Remove MeshID's that we do not have rights to see events for
                         for (var link in obj.user.links) { if (((obj.user.links[link].rights & MESHRIGHT_LIMITEVENTS) != 0) && ((obj.user.links[link].rights != 0xFFFFFFFF))) { exGroupFilter2.push(link); } }
                         for (var i in filter2) { if (exGroupFilter2.indexOf(filter2[i]) == -1) { filter.push(filter2[i]); } }
 
@@ -1198,7 +1170,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
-                    // TODO: Remove user groups??
+                    // TODO (UserGroups): Remove user groups??
 
                     db.Remove('ws' + deluser._id); // Remove user web state
                     db.Remove('nt' + deluser._id); // Remove notes for this user
@@ -1507,17 +1479,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
                         else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                         if (common.validateInt(command.notify) == false) { err = 'Invalid notification flags'; }
-                        if (parent.GetMeshRights(user, command.meshid) == 0) err = 'Access denied';
+                        if (parent.IsMeshViewable(user, command.meshid) == false) err = 'Access denied';
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
                     // Handle any errors
                     if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changemeshnotify', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
 
                     // Change the notification (TODO: Add user group support, not sure how to do this here)
-                    if (command.notify == 0) {
-                        delete user.links[command.meshid].notify;
-                    } else {
-                        user.links[command.meshid].notify = command.notify;
+                    // TODO (UserGroups)
+                    if (user.links[command.meshid]) {
+                        if (command.notify == 0) {
+                            delete user.links[command.meshid].notify;
+                        } else {
+                            user.links[command.meshid].notify = command.notify;
+                        }
                     }
 
                     // Save the user
@@ -1674,33 +1649,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
+                    // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
+                    if (args.lanonly == true) { return; }
+
                     // Setup a user-to-node session
-                    if (common.validateString(command.nodeid, 1, 2048)) {
-                        if (args.lanonly == true) { return; } // User-to-device chat is not support in LAN-only mode yet. We need the agent to replace the IP address of the server??
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        // Check if this user has rights to do this
+                        if ((rights & MESHRIGHT_CHATNOTIFY) == 0) return;
 
-                        // Get the device
-                        db.Get(command.nodeid, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            var node = nodes[0];
+                        // Create the server url
+                        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                        var xdomain = (domain.dns == null) ? domain.id : '';
+                        if (xdomain != '') xdomain += "/";
+                        var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
 
-                            // Get the mesh for this device
-                            mesh = parent.meshes[node.meshid];
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_CHATNOTIFY) == 0) return;
-
-                                // Create the server url
-                                var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
-                                var xdomain = (domain.dns == null) ? domain.id : '';
-                                if (xdomain != '') xdomain += "/";
-                                var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
-
-                                // Create the notification message
-                                routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
-                            }
-                        });
-                    }
-
+                        // Create the notification message
+                        routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
+                    });
                     break;
                 }
             case 'serverversion':
@@ -2084,20 +2049,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // For each nodeid, change the group
                     for (var i = 0; i < command.nodeids.length; i++) {
-                        db.Get(command.nodeids[i], function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            const node = nodes[0];
-
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
                             // Check if already in the right mesh
-                            if (node.meshid == command.meshid) return;
+                            if ((node == null) || (node.meshid == command.meshid)) return;
 
                             // Make sure both source and target mesh are the same type
                             try { if (parent.meshes[node.meshid].mtype != parent.meshes[command.meshid].mtype) return; } catch (e) { return; };
 
                             // Make sure that we have rights on both source and destination mesh
-                            const sourceMeshRights = parent.GetMeshRights(user, node.meshid);
                             const targetMeshRights = parent.GetMeshRights(user, command.meshid);
-                            if (((sourceMeshRights & MESHRIGHT_MANAGECOMPUTERS) == 0) || ((targetMeshRights & MESHRIGHT_MANAGECOMPUTERS) == 0)) return;
+                            if (((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) || ((targetMeshRights & MESHRIGHT_MANAGECOMPUTERS) == 0)) return;
 
                             // Perform the switch, start by saving the node with the new meshid.
                             const oldMeshId = node.meshid;
@@ -2139,146 +2101,103 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'removedevices':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-
                     for (i in command.nodeids) {
-                        nodeid = command.nodeids[i];
-                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                            // Check we have the rights to delete this device
+                            if ((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
 
-                        // Get the device
-                        db.Get(nodeid, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            var node = nodes[0];
+                            // Delete this node including network interface information, events and timeline
+                            db.Remove(node._id);                            // Remove node with that id
+                            db.Remove('if' + node._id);                     // Remove interface information
+                            db.Remove('nt' + node._id);                     // Remove notes
+                            db.Remove('lc' + node._id);                     // Remove last connect time
+                            db.Remove('si' + node._id);                     // Remove system information
+                            db.RemoveSMBIOS(node._id);                      // Remove SMBios data
+                            db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
+                            db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
+                            db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                                if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
+                                db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
+                            });
 
-                            // Get the mesh for this device
-                            mesh = parent.meshes[node.meshid];
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+                            // Event node deletion
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id };
+                            // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
+                            //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
+                            parent.parent.DispatchEvent(['*', node.meshid], obj, event);
 
-                                // Delete this node including network interface information, events and timeline
-                                db.Remove(node._id);                            // Remove node with that id
-                                db.Remove('if' + node._id);                     // Remove interface information
-                                db.Remove('nt' + node._id);                     // Remove notes
-                                db.Remove('lc' + node._id);                     // Remove last connect time
-                                db.Remove('si' + node._id);                     // Remove system information
-                                db.RemoveSMBIOS(node._id);                      // Remove SMBios data
-                                db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
-                                db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
-                                db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
-                                    if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
-                                    db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
-                                });
-
-                                // Event node deletion
-                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id };
-                                // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
-                                //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
-                                parent.parent.DispatchEvent(['*', node.meshid], obj, event);
-
-                                // Disconnect all connections if needed
-                                var state = parent.parent.GetConnectivityState(nodeid);
-                                if ((state != null) && (state.connectivity != null)) {
-                                    if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
-                                    if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[nodeid]); } // Disconnect CIRA connection
-                                }
+                            // Disconnect all connections if needed
+                            var state = parent.parent.GetConnectivityState(nodeid);
+                            if ((state != null) && (state.connectivity != null)) {
+                                if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
+                                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[nodeid]); } // Disconnect CIRA connection
                             }
                         });
                     }
-
                     break;
                 }
             case 'wakedevices':
                 {
-                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     // TODO: We can optimize this a lot.
                     // - We should get a full list of all MAC's to wake first.
                     // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     for (i in command.nodeids) {
-                        nodeid = command.nodeids[i];
-                        var wakeActions = 0;
-                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                            // Get the device
-                            db.Get(nodeid, function (err, nodes) {
-                                if ((nodes == null) || (nodes.length != 1)) return;
-                                var node = nodes[0];
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                            // Check we have the rights to delete this device
+                            if ((rights & MESHRIGHT_WAKEDEVICE) == 0) return;
 
-                                // Get the mesh for this device
-                                mesh = parent.meshes[node.meshid];
-                                if (mesh) {
+                            // If this device is connected on MQTT, send a wake action.
+                            if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', 'wake'); }
 
-                                    // Check if this user has rights to do this
-                                    if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_WAKEDEVICE) != 0) {
+                            // Get the device interface information
+                            db.Get('if' + node._id, function (err, nodeifs) {
+                                if ((nodeifs != null) && (nodeifs.length == 1)) {
+                                    var macs = [], nodeif = nodeifs[0];
+                                    for (var i in nodeif.netif) { if (nodeif.netif[i].mac) { macs.push(nodeif.netif[i].mac); } }
 
-                                        // If this device is connected on MQTT, send a wake action.
-                                        if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', 'wake'); }
+                                    // Have the server send a wake-on-lan packet (Will not work in WAN-only)
+                                    if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs); }
 
-                                        // Get the device interface information
-                                        db.Get('if' + node._id, function (err, nodeifs) {
-                                            if ((nodeifs != null) && (nodeifs.length == 1)) {
-                                                var nodeif = nodeifs[0];
-                                                var macs = [];
-                                                for (var i in nodeif.netif) { if (nodeif.netif[i].mac) { macs.push(nodeif.netif[i].mac); } }
+                                    // Get the list of mesh this user as access to
+                                    var targetMeshes = [];
+                                    for (i in user.links) { targetMeshes.push(i); } // TODO: Include used security groups!!
 
-                                                // Have the server send a wake-on-lan packet (Will not work in WAN-only)
-                                                if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs); wakeActions++; }
-
-                                                // Get the list of mesh this user as access to
-                                                var targetMeshes = [];
-                                                for (i in user.links) { targetMeshes.push(i); } // TODO: Include used security groups!!
-
-                                                // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
-                                                for (i in parent.wsagents) {
-                                                    var agent = parent.wsagents[i];
-                                                    if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
-                                                        //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
-                                                        try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
-                                                        wakeActions++;
-                                                    }
-                                                }
-                                            }
-                                        });
-
+                                    // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
+                                    for (i in parent.wsagents) {
+                                        var agent = parent.wsagents[i];
+                                        if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
+                                            //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
+                                            try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
+                                        }
                                     }
                                 }
                             });
-                        }
+                        });
                         // Confirm we may be doing something (TODO)
                         try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
                     }
-
                     break;
                 }
             case 'uninstallagent':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     for (i in command.nodeids) {
-                        nodeid = command.nodeids[i];
-                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                            // Get the device
-                            db.Get(nodeid, function (err, nodes) {
-                                if ((nodes == null) || (nodes.length != 1)) return;
-                                var node = nodes[0];
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                            // Check we have the rights to delete this device
+                            if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
 
-                                // Get the mesh for this device
-                                mesh = parent.meshes[node.meshid];
-                                if (mesh) {
-                                    // Check if this user has rights to do this
-                                    if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_UNINSTALL) != 0) {
-                                        // Send uninstall command to connected agent
-                                        var agent = parent.wsagents[node._id];
-                                        if (agent != null) {
-                                            //console.log('Asking agent ' + agent.dbNodeKey + ' to uninstall.');
-                                            try { agent.send(JSON.stringify({ action: 'uninstallagent' })); } catch (ex) { }
-                                        }
-                                    }
-                                }
-                            });
-                        }
+                            // Send uninstall command to connected agent
+                            const agent = parent.wsagents[node._id];
+                            if (agent != null) {
+                                //console.log('Asking agent ' + agent.dbNodeKey + ' to uninstall.');
+                                try { agent.send(JSON.stringify({ action: 'uninstallagent' })); } catch (ex) { }
+                            }
+                        });
                     }
-
                     break;
                 }
             case 'poweraction':
@@ -2286,34 +2205,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     if (common.validateInt(command.actiontype, 2, 4) == false) break; // Check actiontype
                     for (i in command.nodeids) {
-                        nodeid = command.nodeids[i];
-                        var powerActions = 0;
-                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                            // Get the device
-                            db.Get(nodeid, function (err, nodes) {
-                                if ((nodes == null) || (nodes.length != 1)) return;
-                                var node = nodes[0];
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                            // Check we have the rights to delete this device
+                            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
 
-                                // Get the mesh for this device
-                                mesh = parent.meshes[node.meshid];
-                                if (mesh) {
-                                    // If this device is connected on MQTT, send a power action.
-                                    if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(nodeid, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
+                            // If this device is connected on MQTT, send a power action.
+                            if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
 
-                                    // Check if this user has rights to do this
-                                    if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_REMOTECONTROL) != 0) { // "Remote Control permission"
-                                        // Get this device
-                                        var agent = parent.wsagents[node._id];
-                                        if (agent != null) {
-                                            // Send the power command
-                                            try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
-                                            powerActions++;
-                                        }
-                                    }
-                                }
-                            });
-                        }
+                            // Get this device and send the power command
+                            const agent = parent.wsagents[node._id];
+                            if (agent != null) {
+                                try { agent.send(JSON.stringify({ action: 'poweraction', actiontype: command.actiontype })); } catch (ex) { }
+                            }
+                        });
+
                         // Confirm we may be doing something (TODO)
                         try { ws.send(JSON.stringify({ action: 'poweraction' })); } catch (ex) { }
                     }
@@ -2325,30 +2231,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.title, 1, 512) == false) break; // Check title
                     if (common.validateString(command.msg, 1, 4096) == false) break; // Check message
                     for (i in command.nodeids) {
-                        nodeid = command.nodeids[i];
-                        var powerActions = 0;
-                        if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
-                        if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                            // Get the device
-                            db.Get(nodeid, function (err, nodes) {
-                                if ((nodes == null) || (nodes.length != 1)) return;
-                                var node = nodes[0];
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                            // Check we have the rights to delete this device
+                            if ((rights & MESHRIGHT_CHATNOTIFY) == 0) return;
 
-                                // Get the mesh for this device
-                                mesh = parent.meshes[node.meshid];
-                                if (mesh) {
-                                    // Check if this user has rights to do this
-                                    if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_CHATNOTIFY) != 0) {
-                                        // Get this device
-                                        var agent = parent.wsagents[node._id];
-                                        if (agent != null) {
-                                            // Send the power command
-                                            try { agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg, sessionid: ws.sessionId, username: user.name, userid: user._id })); } catch (ex) { }
-                                        }
-                                    }
-                                }
-                            });
-                        }
+                            // Get this device and send toast command
+                            const agent = parent.wsagents[node._id];
+                            if (agent != null) {
+                                try { agent.send(JSON.stringify({ action: 'toast', title: command.title, msg: command.msg, sessionid: ws.sessionId, username: user.name, userid: user._id })); } catch (ex) { }
+                            }
+                        });
                     }
                     break;
                 }
@@ -2358,24 +2251,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                    // Get the device
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
-                        var node = nodes[0];
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if (visible == false) return;
 
-                        // Get the mesh for this device
-                        mesh = parent.meshes[node.meshid];
-                        if (mesh) {
-                            // Check if this user has rights to do this
-                            if (parent.GetMeshRights(user, mesh) == 0) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
-
-                            // Get network information about this node
-                            db.Get('if' + command.nodeid, function (err, netinfos) {
-                                if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, netif: null })); } catch (ex) { } return; }
-                                var netinfo = netinfos[0];
-                                try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, updateTime: netinfo.updateTime, netif: netinfo.netif })); } catch (ex) { }
-                            });
-                        }
+                        // Get network information about this node
+                        db.Get('if' + node._id, function (err, netinfos) {
+                            if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null })); } catch (ex) { } return; }
+                            var netinfo = netinfos[0];
+                            try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif })); } catch (ex) { }
+                        });
                     });
                     break;
                 }
@@ -2383,106 +2268,89 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Argument validation
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
                     if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) return;
 
-                    // Change the device
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length != 1)) return;
-                        var node = nodes[0];
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if ((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+                        var mesh = parent.meshes[node.meshid];
 
-                        // Get the mesh for this device
-                        mesh = parent.meshes[node.meshid];
-                        if (mesh) {
-                            // Check if this user has rights to do this
-                            if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+                        // Ready the node change event
+                        var changes = [], event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
+                        change = 0;
+                        event.msg = ': ';
 
-                            // Ready the node change event
-                            var changes = [], event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
-                            change = 0;
-                            event.msg = ": ";
+                        // If we are in WAN-only mode, host is not used
+                        if ((args.wanonly == true) && (command.host)) { delete command.host; }
 
-                            // If we are in WAN-only mode, host is not used
-                            if ((args.wanonly == true) && (command.host)) { delete command.host; }
-
-                            // Look for a change
-                            if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
-                            if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
-                            if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
-                            if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
-                                change = 1;
-                                if ((command.userloc.length == 0) && (node.userloc)) {
-                                    delete node.userloc;
-                                    changes.push('location removed');
-                                } else {
-                                    command.userloc.push((Math.floor((new Date()) / 1000)));
-                                    node.userloc = command.userloc.join(',');
-                                    changes.push('location');
-                                }
+                        // Look for a change
+                        if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
+                        if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
+                        if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
+                        if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
+                            change = 1;
+                            if ((command.userloc.length == 0) && (node.userloc)) {
+                                delete node.userloc;
+                                changes.push('location removed');
+                            } else {
+                                command.userloc.push((Math.floor((new Date()) / 1000)));
+                                node.userloc = command.userloc.join(',');
+                                changes.push('location');
                             }
-                            if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
-                            if (command.intelamt != null) {
-                                if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
-                                if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
-                            }
-                            if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
-                                var ok = true, group2 = [];
-                                if (common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
-                                for (var i in command.tags) { var tname = command.tags[i].trim(); if ((tname.length > 0) && (tname.length < 64) && (group2.indexOf(tname) == -1)) { group2.push(tname); } }
-                                group2.sort();
-                                if (node.tags != group2) { node.tags = group2; change = 1; }
-                            } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
+                        }
+                        if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
+                        if (command.intelamt != null) {
+                            if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
+                            if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
+                        }
+                        if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
+                            var ok = true, group2 = [];
+                            if (common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
+                            for (var i in command.tags) { var tname = command.tags[i].trim(); if ((tname.length > 0) && (tname.length < 64) && (group2.indexOf(tname) == -1)) { group2.push(tname); } }
+                            group2.sort();
+                            if (node.tags != group2) { node.tags = group2; change = 1; }
+                        } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
 
-                            if (change == 1) {
-                                // Save the node
-                                db.Set(node);
+                        if (change == 1) {
+                            // Save the node
+                            db.Set(node);
 
-                                // Event the node change. Only do this if the database will not do it.
-                                event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                                event.node = parent.CloneSafeNode(node);
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                                parent.parent.DispatchEvent(['*', node.meshid, user._id], obj, event);
-                            }
+                            // Event the node change. Only do this if the database will not do it.
+                            event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
+                            event.node = parent.CloneSafeNode(node);
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                            parent.parent.DispatchEvent(['*', node.meshid, user._id], obj, event);
                         }
                     });
                     break;
                 }
             case 'uploadagentcore':
                 {
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     if (common.validateString(command.type, 1, 40) == false) break; // Check path
 
-                    // Change the device
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length != 1)) return;
-                        var node = nodes[0];
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != 0xFFFFFFFF))) return;
 
-                        // Get the mesh for this device
-                        mesh = parent.meshes[node.meshid];
-                        if (mesh) {
-                            // Check if this user has rights to do this
-                            if (((parent.GetMeshRights(user, mesh) & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != 0xFFFFFFFF)) { return; }
-
-                            if (command.type == 'default') {
-                                // Send the default core to the agent
-                                parent.parent.updateMeshCore(function () { parent.sendMeshAgentCore(user, domain, command.nodeid, 'default'); });
-                            } else if (command.type == 'clear') {
-                                // Clear the mesh agent core on the mesh agent
-                                parent.sendMeshAgentCore(user, domain, command.nodeid, 'clear');
-                            } else if (command.type == 'recovery') {
-                                // Send the recovery core to the agent
-                                parent.sendMeshAgentCore(user, domain, command.nodeid, 'recovery');
-                            } else if ((command.type == 'custom') && (common.validateString(command.path, 1, 2048) == true)) {
-                                // Send a mesh agent core to the mesh agent
-                                var file = parent.getServerFilePath(user, domain, command.path);
-                                if (file != null) {
-                                    fs.readFile(file.fullpath, 'utf8', function (err, data) {
-                                        if (err != null) {
-                                            data = common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                                            parent.sendMeshAgentCore(user, domain, command.nodeid, 'custom', data);
-                                        }
-                                    });
-                                }
+                        if (command.type == 'default') {
+                            // Send the default core to the agent
+                            parent.parent.updateMeshCore(function () { parent.sendMeshAgentCore(user, domain, node._id, 'default'); });
+                        } else if (command.type == 'clear') {
+                            // Clear the mesh agent core on the mesh agent
+                            parent.sendMeshAgentCore(user, domain, node._id, 'clear');
+                        } else if (command.type == 'recovery') {
+                            // Send the recovery core to the agent
+                            parent.sendMeshAgentCore(user, domain, node._id, 'recovery');
+                        } else if ((command.type == 'custom') && (common.validateString(command.path, 1, 2048) == true)) {
+                            // Send a mesh agent core to the mesh agent
+                            var file = parent.getServerFilePath(user, domain, command.path);
+                            if (file != null) {
+                                fs.readFile(file.fullpath, 'utf8', function (err, data) {
+                                    if (err != null) {
+                                        data = common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
+                                        parent.sendMeshAgentCore(user, domain, node._id, 'custom', data);
+                                    }
+                                });
                             }
                         }
                     });
@@ -2490,23 +2358,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'agentdisconnect':
                 {
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                     if (common.validateInt(command.disconnectMode) == false) return; // Check disconnect mode
 
-                    // Change the device
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length != 1)) return;
-                        var node = nodes[0];
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != 0xFFFFFFFF))) return;
 
-                        // Get the mesh for this device
-                        mesh = parent.meshes[node.meshid];
-                        if (mesh) {
-                            // Check if this user has rights to do this
-                            if (((parent.GetMeshRights(user, mesh) & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != 0xFFFFFFFF)) return;
-
-                            // Force mesh agent disconnection
-                            parent.forceMeshAgentDisconnect(user, domain, command.nodeid, command.disconnectMode);
-                        }
+                        // Force mesh agent disconnection
+                        parent.forceMeshAgentDisconnect(user, domain, node._id, command.disconnectMode);
                     });
                     break;
                 }
@@ -2552,7 +2411,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 mesh = parent.meshes[command.meshid];
                                 if (mesh == null) { err = 'Unknown device group'; } // Check if the group exists
                                 else if (mesh.mtype != 2) { err = 'Invalid group type'; } // Check if this is the correct group type
-                                else if (parent.GetMeshRights(user, mesh) == 0) { err = 'Not allowed'; } // Check if this user has rights to do this
+                                else if (parent.IsMeshViewable(user, mesh) == false) { err = 'Not allowed'; } // Check if this user has rights to do this
                             }
                         }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -2574,24 +2433,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Argument validation
                     if (common.validateString(command.msg, 1, 4096) == false) break; // Check event
-                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
-                    var splitid = command.nodeid.split('/');
-                    if ((splitid.length != 3) || (splitid[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                    var idtype = splitid[0];
-                    if ((idtype != 'node')) return;
 
-                    // Check if this user has rights on this id to set notes
-                    db.Get(command.nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length == 1)) {
-                            if (parent.GetMeshRights(user, nodes[0].meshid) != 0) {
-                                // Add an event for this device
-                                var targets = ['*', 'server-users', user._id, nodes[0].meshid];
-                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: nodes[0]._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
-                                parent.parent.DispatchEvent(targets, obj, event);
-                            }
-                        }
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        if (rights == 0) return;
+
+                        // Add an event for this device
+                        var targets = ['*', 'server-users', user._id, nodes[0].meshid];
+                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: nodes[0]._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
+                        parent.parent.DispatchEvent(targets, obj, event);
                     });
-
                     break;
                 }
             case 'setNotes':
@@ -2604,16 +2455,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
 
                     if (idtype == 'node') {
-                        // Check if this user has rights on this id to set notes
-                        db.Get(command.id, function (err, nodes) { // TODO: Make a NodeRights(user) method that also does not do a db call if agent is connected (???)
-                            if ((nodes == null) || (nodes.length == 1)) {
-                                if ((parent.GetMeshRights(user, nodes[0].meshid) & MESHRIGHT_SETNOTES) != 0) {
-                                    // Set the id's notes
-                                    if (common.validateString(command.notes, 1) == false) {
-                                        db.Remove('nt' + command.id); // Delete the note for this node
-                                    } else {
-                                        db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this node
-                                    }
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.id, function (node, rights, visible) {
+                            if ((rights & MESHRIGHT_SETNOTES) != 0) {
+                                // Set the id's notes
+                                if (common.validateString(command.notes, 1) == false) {
+                                    db.Remove('nt' + node._id); // Delete the note for this node
+                                } else {
+                                    db.Set({ _id: 'nt' + node._id, type: 'note', value: command.notes }); // Set the note for this node
                                 }
                             }
                         });
@@ -2893,44 +2742,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'getClip': {
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
 
-                // Get the device
-                db.Get(command.nodeid, function (err, nodes) {
-                    if ((nodes == null) || (nodes.length != 1)) return;
-                    var node = nodes[0];
+                // Get the node and the rights for this node
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    if ((rights & MESHRIGHT_AGENTCONSOLE) == 0) return;
 
-                    // Get the mesh for this device
-                    mesh = parent.meshes[node.meshid];
-                    if (mesh) {
-                        // Check if this user has "remote" rights to do this
-                        var meshrights = parent.GetMeshRights(user, mesh);
-                        if ((meshrights & MESHRIGHT_AGENTCONSOLE) == 0) return;
-
-                        // Ask for clipboard data from agent
-                        var agent = parent.wsagents[node._id];
-                        if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
-                    }
+                    // Ask for clipboard data from agent
+                    var agent = parent.wsagents[node._id];
+                    if (agent != null) { try { agent.send(JSON.stringify({ action: 'getClip' })); } catch (ex) { } }
                 });
                 break;
             }
             case 'setClip': {
-                if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
                 if (common.validateString(command.data, 1, 65535) == false) break; // Check 
 
-                // Get the device
-                db.Get(command.nodeid, function (err, nodes) {
-                    if ((nodes == null) || (nodes.length != 1)) return;
-                    var node = nodes[0];
+                // Get the node and the rights for this node
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    if ((rights & MESHRIGHT_AGENTCONSOLE) == 0) return;
 
-                    // Get the mesh for this device
-                    mesh = parent.meshes[node.meshid];
-                    if (mesh) {
-                        // Check if this user has "remote" rights to do this
-                        if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_AGENTCONSOLE) == 0) return;
-
-                        // Send clipboard data to the agent
-                        var agent = parent.wsagents[node._id];
-                        if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
-                    }
+                    // Send clipboard data to the agent
+                    var agent = parent.wsagents[node._id];
+                    if (agent != null) { try { agent.send(JSON.stringify({ action: 'setClip', data: command.data })); } catch (ex) { } }
                 });
                 break;
             }
@@ -2951,25 +2782,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((idtype != 'user') && (idtype != 'mesh') && (idtype != 'node')) return;
 
                     if (idtype == 'node') {
-                        // Get the device
-                        db.Get(command.id, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            var node = nodes[0];
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.id, function (node, rights, visible) {
+                            if (visible == false) return;
 
-                            // Get the mesh for this device
-                            mesh = parent.meshes[node.meshid];
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if (parent.GetMeshRights(user, mesh) == 0) return;
-
-                                // Get the notes about this node
-                                db.Get('nt' + command.id, function (err, notes) {
-                                    try {
-                                        if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
-                                        ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
-                                    } catch (ex) { }
-                                });
-                            }
+                            // Get the notes about this node
+                            db.Get('nt' + command.id, function (err, notes) {
+                                try {
+                                    if ((notes == null) || (notes.length != 1)) { ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: null })); return; }
+                                    ws.send(JSON.stringify({ action: 'getNotes', id: command.id, notes: notes[0].value }));
+                                } catch (ex) { }
+                            });
                         });
                     } else if (idtype == 'mesh') {
                         // Get the mesh for this device
@@ -3037,6 +2860,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'sendmqttmsg': {
+                if (parent.parent.mqttbroker == null) { err = 'MQTT not supported on this server'; }; // MQTT not available
                 if (common.validateArray(command.nodeids, 1) == false) { err = 'Invalid nodeids'; }; // Check nodeid's
                 if (common.validateString(command.topic, 1, 64) == false) { err = 'Invalid topic'; } // Check the topic
                 if (common.validateString(command.msg, 1, 4096) == false) { err = 'Invalid msg'; } // Check the message
@@ -3047,30 +2871,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
 
-                // TODO: We can optimize this a lot.
-                // - We should get a full list of all MAC's to wake first.
-                // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
+                // Send the MQTT message
                 for (i in command.nodeids) {
-                    nodeid = command.nodeids[i];
-                    var wakeActions = 0;
-                    if (common.validateString(nodeid, 1, 1024) == false) break; // Check nodeid
-                    if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                        // Get the device
-                        db.Get(nodeid, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            var node = nodes[0];
-
-                            // Get the mesh for this device
-                            mesh = parent.meshes[node.meshid];
-                            if (mesh) {
-                                // Check if this user has rights to do this
-                                if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_WAKEDEVICE) != 0) {
-                                    // If this device is connected on MQTT, send a wake action.
-                                    if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, command.topic, command.msg); }
-                                }
-                            }
-                        });
-                    }
+                    // Get the node and the rights for this node
+                    parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        // If this device is connected on MQTT, send a wake action.
+                        if (rights != 0) { parent.parent.mqttbroker.publish(node._id, command.topic, command.msg); }
+                    });
                 }
 
                 break;
@@ -3083,43 +2890,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Handle any errors
                 if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
 
-                var nodeid = command.nodeid;
-                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                    // Get the device
-                    db.Get(nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length != 1)) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } return; } }
-                        var node = nodes[0];
+                // Get the node and the rights for this node
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    // Check if this user has rights to do this
+                    if (rights == 0xFFFFFFFF) {
+                        var token = parent.parent.mqttbroker.generateLogin(node.meshid, node._id);
+                        var r = { action: 'getmqttlogin', responseid: command.responseid, nodeid: node._id, user: token.user, pass: token.pass };
+                        const serverName = parent.getWebServerName(domain);
 
-                        // Get the device group for this node
-                        var mesh = parent.meshes[node.meshid];
-                        if (mesh) {
-                            // Check if this user has rights to do this
-                            if ((parent.GetMeshRights(user, mesh) == 0xFFFFFFFF)) {
-                                var token = parent.parent.mqttbroker.generateLogin(mesh._id, node._id);
-                                var r = { action: 'getmqttlogin', responseid: command.responseid, nodeid: node._id, user: token.user, pass: token.pass };
-                                const serverName = parent.getWebServerName(domain);
-
-                                // Add MPS URL
-                                if (parent.parent.mpsserver != null) {
-                                    r.mpsCertHashSha384 = parent.parent.certificateOperations.getCertHash(parent.parent.mpsserver.certificates.mps.cert);
-                                    r.mpsCertHashSha1 = parent.parent.certificateOperations.getCertHashSha1(parent.parent.mpsserver.certificates.mps.cert);
-                                    r.mpsUrl = 'mqtts://' + serverName + ':' + ((args.mpsaliasport != null) ? args.mpsaliasport : args.mpsport) + '/';
-                                }
-
-                                // Add WS URL
-                                var xdomain = (domain.dns == null) ? domain.id : '';
-                                if (xdomain != '') xdomain += "/";
-                                var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
-                                r.wsUrl = "ws" + (args.notls ? '' : 's') + "://" + serverName + ":" + httpsPort + "/" + xdomain + "mqtt.ashx";
-                                r.wsTrustedCert = parent.isTrustedCert(domain);
-
-                                try { ws.send(JSON.stringify(r)); } catch (ex) { }
-                            } else {
-                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: 'Unable to perform this operation' })); } catch (ex) { } }
-                            }
+                        // Add MPS URL
+                        if (parent.parent.mpsserver != null) {
+                            r.mpsCertHashSha384 = parent.parent.certificateOperations.getCertHash(parent.parent.mpsserver.certificates.mps.cert);
+                            r.mpsCertHashSha1 = parent.parent.certificateOperations.getCertHashSha1(parent.parent.mpsserver.certificates.mps.cert);
+                            r.mpsUrl = 'mqtts://' + serverName + ':' + ((args.mpsaliasport != null) ? args.mpsaliasport : args.mpsport) + '/';
                         }
-                    });
-                }
+
+                        // Add WS URL
+                        var xdomain = (domain.dns == null) ? domain.id : '';
+                        if (xdomain != '') xdomain += '/';
+                        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                        r.wsUrl = 'ws' + (args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'mqtt.ashx';
+                        r.wsTrustedCert = parent.isTrustedCert(domain);
+
+                        try { ws.send(JSON.stringify(r)); } catch (ex) { }
+                    } else {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'getmqttlogin', responseid: command.responseid, result: 'Unable to perform this operation' })); } catch (ex) { } }
+                    }
+                });
                 break;
             }
             case 'amt': {
@@ -3136,23 +2933,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else if (command.mode == 3) {
                     if (parent.parent.apfserver.apfConnections[command.nodeid] == null) break;
                 }
-                var nodeid = command.nodeid;
-                if ((nodeid.split('/').length == 3) && (nodeid.split('/')[1] == domain.id)) { // Validate the domain, operation only valid for current domain
-                    // Get the device
-                    db.Get(nodeid, function (err, nodes) {
-                        if ((nodes == null) || (nodes.length != 1)) return;
-                        var node = nodes[0];
 
-                        // Get the mesh for this device
-                        var mesh = parent.meshes[node.meshid];
-                        if (mesh) {
-                            // Check if this user has rights to do this
-                            if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_REMOTECONTROL) != 0) { // "Remote Control permission"
-                                handleAmtCommand(command, node);
-                            }
-                        }
-                    });
-                }
+                // Get the node and the rights for this node
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+                    handleAmtCommand(command, node);
+                });
                 break;
             }
             case 'distributeCore': {
@@ -3304,15 +3090,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Read all files recursively
         try {
-            files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2]));
+            files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/user-' + usersplit[2]));
         } catch (e) {
             // TODO: We may want to fake this file structure until it's needed.
             // Got an error, try to create all the folders and try again...
             try { fs.mkdirSync(parent.filespath); } catch (e) { }
             try { fs.mkdirSync(parent.path.join(parent.filespath, domainx)); } catch (e) { }
-            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
-            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2] + "/Public")); } catch (e) { }
-            try { files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + "/user-" + usersplit[2])); } catch (e) { }
+            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx + '/user-' + usersplit[2])); } catch (e) { }
+            try { fs.mkdirSync(parent.path.join(parent.filespath, domainx + '/user-' + usersplit[2] + '/Public')); } catch (e) { }
+            try { files.filetree.f[user._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/user-' + usersplit[2])); } catch (e) { }
         }
 
         // Add files for each mesh // TODO: Get all meshes including groups!!
@@ -3326,7 +3112,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Read all files recursively
                     try {
-                        files.filetree.f[mesh._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + "/mesh-" + meshsplit[2]));
+                        files.filetree.f[mesh._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/mesh-' + meshsplit[2]));
                     } catch (e) {
                         files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
                     }
@@ -3338,7 +3124,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { ws.send(JSON.stringify(files)); } catch (ex) { }
     }
 
-    function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
+    function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
     // Split a string taking into account the quoats. Used for command line parsing
@@ -3388,13 +3174,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             node.intelamt.tls, tlsoptions, parent.parent, cmd.mode);
         var amt = new Amt(wsman);
         switch (cmd.command) {
-            case "Get-GeneralSettings": {
-                amt.Get("AMT_GeneralSettings", function (obj, name, response, status) {
+            case 'Get-GeneralSettings': {
+                amt.Get('AMT_GeneralSettings', function (obj, name, response, status) {
                     if (status == 200) {
                         var resp = { action: 'amt', nodeid: cmd.nodeid, command: 'Get-GeneralSettings', value: response.Body }
                         ws.send(JSON.stringify(resp));
                     } else {
-                        ws.send(JSON.stringify({ "error": error }));
+                        ws.send(JSON.stringify({ 'error': error }));
                     }
                 });
                 break;

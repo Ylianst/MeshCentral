@@ -11,7 +11,7 @@
 /*jshint strict:false */
 /*jshint -W097 */
 /*jshint esversion: 6 */
-"use strict";
+'use strict';
 
 // Construct a Mesh Multi-Server object. This is used for MeshCentral-to-MeshCentral communication.
 module.exports.CreateMultiServer = function (parent, args) {
@@ -552,14 +552,10 @@ module.exports.CreateMultiServer = function (parent, args) {
                     if (msg.fromNodeid != null) { msg.nodeid = msg.fromNodeid; delete msg.fromNodeid; }
                     var cmdstr = JSON.stringify(msg);
                     for (userid in obj.parent.webserver.wssessions) { // Find all connected users for this mesh and send the message
-                        var user = obj.parent.webserver.users[userid];
-                        if (user) {
-                            var rights = user.links[msg.meshid];
-                            if (rights != null) { // TODO: Look at what rights are needed for message routing
-                                var sessions = obj.parent.webserver.wssessions[userid];
-                                // Send the message to all users on this server
-                                for (i in sessions) { sessions[i].send(cmdstr); }
-                            }
+                        if (parent.webserver.GetMeshRights(userid, msg.meshid) != 0) { // TODO: Look at what rights are needed for message routing
+                            var sessions = obj.parent.webserver.wssessions[userid];
+                            // Send the message to all users on this server
+                            for (i in sessions) { sessions[i].send(cmdstr); }
                         }
                     }
                 }

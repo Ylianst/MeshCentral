@@ -80,7 +80,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                rights = user.links[agent.dbMeshKey];
+                rights = user.links[agent.dbMeshKey]; // TODO: Need to include user group / node rights
                 mesh = parent.meshes[agent.dbMeshKey];
                 if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
@@ -98,7 +98,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    rights = user.links[routing.meshid];
+                    rights = user.links[routing.meshid]; // TODO: Need to include user groups / node rights
                     mesh = parent.meshes[routing.meshid];
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
