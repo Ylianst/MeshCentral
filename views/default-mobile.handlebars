@@ -1327,7 +1327,7 @@
                 count++;
 
                 // Mesh rights
-                var meshrights = meshes[i].links[userinfo._id].rights;
+                var meshrights = GetMeshRights(meshes[i]);
                 var rights = "Partial Rights";
                 if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
 
@@ -1576,8 +1576,7 @@
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
-                    var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links[userinfo._id].rights;
+                    var meshrights = GetMeshRights(currentNode.meshid);
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -1594,8 +1593,7 @@
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
-                    var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links[userinfo._id].rights;
+                    var meshrights = GetMeshRights(currentNode.meshid);
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -1612,8 +1610,7 @@
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
-                    var mesh = meshes[currentNode.meshid];
-                    var meshrights = mesh.links[userinfo._id].rights;
+                    var meshrights = GetMeshRights(currentNode.meshid);
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -1655,9 +1652,7 @@
             // Go thru the list of nodes and display them
             for (var i in nodes) {
                 if (nodes[i].v == false) continue;
-                var mesh2 = meshes[nodes[i].meshid], meshlinks = mesh2.links[userinfo._id];
-                if (meshlinks == null) continue;
-                var meshrights = meshlinks.rights;
+                //var meshrights = GetNodeRights(nodes[i]);
 
                 if (sort == 0) {
                     // Mesh header
@@ -1668,7 +1663,7 @@
                         if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
-                        //r += getMeshActions(mesh2, meshrights);
+                        //r += getMeshActions(meshes[nodes[i].meshid], meshrights);
                         r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
                         current = nodes[i].meshid;
                         displayedMeshes[current] = 1;
@@ -1726,20 +1721,17 @@
             // Display all empty meshes, we need to do this because users can add devices to these at any time.
             if (sort == 0) {
                 for (var i in meshes) {
-                    var mesh = meshes[i], meshlink = mesh.links[userinfo._id];
-                    if (meshlink != null) {
-                        var meshrights = meshlink.rights;
-                        if (displayedMeshes[mesh._id] == null) {
-                            if ((current != '') && (r != '')) { r += '</tr></table>'; }
-                            r += '<div><div colspan=3 class=DevSt><span style=float:right>';
-                            //r += getMeshActions(mesh, meshrights);
-                            r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
-                            if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "No Intel&reg; AMT devices in this group"; }
-                            if (mesh.mtype == 2) { r += '<div style=padding:10px><i>' + "No devices in this group"; }
-                            r += '.</i></div></div>';
-                            current = mesh._id;
-                            count++;
-                        }
+                    var mesh = meshes[i];
+                    if (IsMeshViewable(mesh)) {
+                        if ((current != '') && (r != '')) { r += '</tr></table>'; }
+                        r += '<div><div colspan=3 class=DevSt><span style=float:right>';
+                        //r += getMeshActions(mesh, meshrights);
+                        r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span></div>';
+                        if (mesh.mtype == 1) { r += '<div style=padding:10px><i>' + "No Intel&reg; AMT devices in this group"; }
+                        if (mesh.mtype == 2) { r += '<div style=padding:10px><i>' + "No devices in this group"; }
+                        r += '.</i></div></div>';
+                        current = mesh._id;
+                        count++;
                     }
                 }
             }
@@ -1813,11 +1805,6 @@
             gotoDevice(nodeid, xxcurrentView, true);
         }
 
-        function getNodeRights(nodeid) {
-            var node = getNodeFromId(nodeid), mesh = meshes[node.meshid];
-            return mesh.links[userinfo._id].rights;
-        }
-
         var currentDevicePanel = 0;
         var currentNode;
         var powerTimelineNode = null;
@@ -1837,7 +1824,7 @@
             if (node == null) { goBack(); return; }
             var mesh = meshes[node.meshid];
             if (mesh == null) { goBack(); return; }
-            var meshrights = mesh.links[userinfo._id].rights;
+            var meshrights = GetMeshRights(mesh);
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -2008,8 +1995,7 @@
         }
 
         function setupDeviceMenu(op, obj) {
-            var meshrights = 0;
-            if (currentNode) { meshrights = meshes[currentNode.meshid].links[userinfo._id].rights; }
+            var meshrights = GetNodeRights(currentNode);
             if (op != null) { currentDevicePanel = op; }
             QV('p10general', currentDevicePanel == 0);
             QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
@@ -2027,7 +2013,7 @@
 
         function deviceActionFunction() {
             if (xxdialogMode) return;
-            var meshrights = meshes[currentNode.meshid].links[userinfo._id].rights;
+            var meshrights = GetNodeRights(currentNode);
             var x = "Select an operation to perform on this device." + '<br /><br />';
             var y = '<select id=d2deviceop style=float:right;width:170px>';
             if ((meshrights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
@@ -2117,7 +2103,7 @@
 
         function editDeviceAmtSettings(nodeid, func) {
             if (xxdialogMode) return;
-            var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = getNodeRights(nodeid);
+            var x = '', node = getNodeFromId(nodeid), buttons = 3, meshrights = GetNodeRights(node);
             if ((meshrights & 4) == 0) return;
             x += addHtmlValue("Username", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Password", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
@@ -2166,9 +2152,8 @@
 
         function p10showiconselector() {
             if (xxdialogMode) return;
-            var mesh = meshes[currentNode.meshid];
-            var meshrights = mesh.links[userinfo._id].rights;
-            if ((meshrights & 4) == 0) return;
+            var rights = GetNodeRights(currentNode);
+            if ((rights & 4) == 0) return;
 
             var x = '<table align=center><td>';
             x += '<div style=display:inline-block class=i1 onclick=p10setIcon(1)></div>';
@@ -2245,7 +2230,7 @@
             var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
-            var meshrights = mesh.links[userinfo._id].rights;
+            var meshrights = GetNodeRights(currentNode);
 
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
@@ -3096,7 +3081,7 @@
             if (currentMesh == null) return;
             QH('p20meshName', EscapeHtml(currentMesh.name));
             var meshtype = format("Unknown #{0}", currentMesh.mtype);
-            var meshrights = currentMesh.links[userinfo._id].rights;
+            var meshrights = GetMeshRights(currentMesh);
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
 
@@ -3229,7 +3214,7 @@
         }
 
         function p20validateAddMeshUserDialog() {
-            var meshrights = currentMesh.links[userinfo._id].rights;
+            var meshrights = GetMeshRights(currentMesh);
             var nc = !Q('p20fulladmin').checked;
             QE('p20fulladmin', meshrights == 0xFFFFFFFF);
             QE('p20editmesh', nc && (meshrights == 0xFFFFFFFF));
@@ -3278,7 +3263,7 @@
         function p20viewuser(userid) {
             if (xxdialogMode) return;
             userid = decodeURIComponent(userid);
-            var r = [], cmeshrights = currentMesh.links[userinfo._id].rights, meshrights = currentMesh.links[userid].rights;
+            var r = [], cmeshrights = GetMeshRights(currentMesh), meshrights = GetMeshRights(currentMesh, userid);
             if (meshrights == 0xFFFFFFFF) r.push("Full Administrator"); else {
                 if ((meshrights & 1) != 0) r.push("Edit Device Group");
                 if ((meshrights & 2) != 0) r.push("Manage Device Group Users");
@@ -3360,6 +3345,49 @@
             setDialogMode();
             if (((b & 8) || x) && f) f(x, t);
         }
+
+        //
+        // Access Control Functions
+        // These must match server
+        //
+
+        // Get the right of a user on a given device group
+        function GetMeshRights(mesh, user) {
+            if (mesh == null) { return 0; }
+            if (user == null) { user = userinfo._id; }
+            if (typeof mesh == 'string') { mesh = meshes[mesh] }
+            if ((mesh == null) || (mesh.links == null)) { return 0; }
+            var rights = mesh.links[user];
+            if (rights == null) { return 0; }
+            return rights.rights;
+        }
+
+        // Returns true if the user can view the given device group
+        function IsMeshViewable(mesh, user) {
+            if (mesh == null) { return 0; }
+            if (user == null) { user = userinfo._id; }
+            if (typeof mesh == 'string') { mesh = meshes[mesh] }
+            if ((mesh == null) || (mesh.links == null)) { return false; }
+            var rights = mesh.links[user];
+            if (rights == null) { return false; }
+            return true;
+        }
+
+        // Return the user rights for a given node
+        function GetNodeRights(node, user) {
+            if (node == null) { return 0; }
+            if (user == null) { user = userinfo._id; }
+            if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
+            var mesh = meshes[node.meshid];
+            if ((mesh == null) || (mesh.links == null)) { return 0; }
+            var meshlinks = mesh.links[user];
+            if (meshlinks == null) { return 0; }
+            return meshlinks.rights;
+        }
+
+        //
+        // Generic Methods
+        //
 
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }

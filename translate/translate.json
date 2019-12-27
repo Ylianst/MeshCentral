@@ -8,8 +8,7 @@
       "nl": "0",
       "xloc": [
         "default.handlebars->container->masthead->7->notificationCount",
-        "default-mobile.handlebars->9->229",
-        { "$ref": "#" }
+        "default-mobile.handlebars->9->229"
       ]
     },
     {
@@ -5610,7 +5609,7 @@
     {
       "en": "free",
       "fr": "libre",
-      "pt": "Livre",
+      "pt": "livre",
       "ja": "無料",
       "cs": "volné",
       "nl": "vrij",

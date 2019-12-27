@@ -2065,7 +2065,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
         var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
         if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
-        if (splitpath[0] == 'mesh') { var link = user.links[objid]; if ((link == null) || (link.rights == null) || ((link.rights & 32) == 0)) { return null; } } // Check mesh server file rights
+        if (splitpath[0] == 'mesh') { if ((obj.GetMeshRights(user, objid) & 32) == 0) { return null; } } // Check mesh server file rights
         if (splitpath[1] != '') { serverpath += '-' + splitpath[1]; } // Add the domain if needed
         serverpath += ('/' + splitpath[0] + '-' + splitpath[2]);
         for (var i = 3; i < splitpath.length; i++) { if (obj.common.IsFilenameValid(splitpath[i]) == true) { serverpath += '/' + splitpath[i]; filename = splitpath[i]; } else { return null; } } // Check that each folder is correct
@@ -2265,8 +2265,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
 
             // Check if this user has permission to manage this computer
-            var meshlinks = user.links[node.meshid];
-            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); try { ws.close(); } catch (e) { } return; }
+            if ((obj.GetMeshRights(user, node.meshid) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { ws.close(); } catch (e) { } return; }
 
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
@@ -2998,9 +2997,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // If required, check if this user has rights to do this
                 if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
-                    var user = obj.users[req.session.userid];
-                    if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
-                    if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+                    if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { res.sendStatus(401); return; }
                 }
 
                 var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
@@ -3168,9 +3165,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
-            var user = obj.users[req.session.userid];
-            if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
-            if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+            if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { res.sendStatus(401); return; }
         }
 
         var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
@@ -3257,9 +3252,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // If needed, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
-            var user = obj.users[req.session.userid];
-            if ((user == null) || (mesh.links[user._id] == null) || ((mesh.links[user._id].rights & 1) == 0)) { res.sendStatus(401); return; }
-            if (domain.id != mesh.domain) { res.sendStatus(401); return; }
+            if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { res.sendStatus(401); return; }
         }
 
         var meshidhex = Buffer.from(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
@@ -3297,9 +3290,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var node = docs[0];
 
                 // Check if we have right to this node
-                var rights = 0;
-                for (var i in user.links) { if (i == node.meshid) { rights = user.links[i].rights; } }
-                if (rights == 0) { res.sendStatus(401); return; }
+                if (obj.GetMeshRights(user, node.meshid) == 0) { res.sendStatus(401); return; }
 
                 // Get the list of power events and send them
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="powerevents.csv"' });
@@ -3772,8 +3763,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (agent == null) return;
 
         // Check we have agent rights
-        var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
+        if (((obj.GetMeshRights(user, agent.dbMeshKey) & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
     };
 
     // Send the core module to the mesh agent
@@ -3787,8 +3777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (agent == null) return;
 
         // Check we have agent rights
-        var rights = user.links[agent.dbMeshKey].rights;
-        if ((rights != null) && ((rights & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) {
+        if (((obj.GetMeshRights(user, agent.dbMeshKey) & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) {
             if (coretype == 'clear') {
                 // Clear the mesh agent core
                 agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
@@ -3906,6 +3895,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
     };
+
+    //
+    // Access Control Functions
+    //
+
+    // Return the node and rights for a given nodeid
+    obj.GetNodeWithRights = function (domain, user, nodeid, func) {
+        // Perform user pre-validation
+        if ((user == null) || (nodeid == null)) { func(null, 0, false); return; } // Invalid user
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if ((user == null) || (user.links == null)) { func(null, 0, false); return; } // No rights
+
+        // Perform node pre-validation
+        if (obj.common.validateString(nodeid, 0, 128) == false) { func(null, 0, false); return; } // Invalid nodeid
+        const snode = nodeid.split('/');
+        if ((snode.length != 3) || (snode[0] != 'node')) { func(null, 0, false); return; } // Invalid nodeid
+        if ((domain != null) && (snode[1] != domain.id)) { func(null, 0, false); return; } // Invalid domain
+
+        // Check that we have permissions for this node.
+        db.Get(nodeid, function (err, nodes) {
+            if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
+            var rights = user.links[nodes[0].meshid];
+            if (rights == null) { func(null, 0, false); return; } // No rights to this mesh
+            func(nodes[0], rights.rights, true);
+        });
+    }
 
     // Returns a list of all meshes that this user has some rights too
     obj.GetAllMeshWithRights = function (user, rights) {
@@ -4076,9 +4091,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (typeof command.sessionid != 'string') return;
             var splitsessionid = command.sessionid.split('/');
             // Check that we are in the same domain and the user has rights over this node.
-            if ((splitsessionid[0] == 'user') && (splitsessionid[1] == domainid)) {
+            if ((splitsessionid.length == 4) && (splitsessionid[0] == 'user') && (splitsessionid[1] == domainid)) {
                 // Check if this user has rights to get this message
-                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+                if (obj.GetMeshRights(splitsessionid[0] + '/' + splitsessionid[1] + '/' + splitsessionid[2], meshid) == 0) return; // TODO: Check if this is ok
 
                 // See if the session is connected. If so, go ahead and send this message to the target node
                 var ws = obj.wssessions2[command.sessionid];
@@ -4101,7 +4116,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Check that we are in the same domain and the user has rights over this node.
             if ((splituserid[0] == 'user') && (splituserid[1] == domainid)) {
                 // Check if this user has rights to get this message
-                //if (mesh.links[user._id] == null || ((mesh.links[user._id].rights & 16) == 0)) return; // TODO!!!!!!!!!!!!!!!!!!!!!
+                if (obj.GetMeshRights(command.userid, meshid) == 0) return; // TODO: Check if this is ok
 
                 // See if the session is connected
                 var sessions = obj.wssessions[command.userid];
@@ -4120,16 +4135,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else { // Route this command to the mesh
             command.nodeid = nodeid;
             var cmdstr = JSON.stringify(command);
-            for (var userid in obj.wssessions) { // Find all connected users for this mesh and send the message
-                var user = obj.users[userid];
-                if ((user != null) && (user.links != null)) {
-                    var rights = user.links[meshid];
-                    if (rights != null) { // TODO: Look at what rights are needed for message routing
-                        var xsessions = obj.wssessions[userid];
-                        // Send the message to all users on this server
-                        for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
-                    }
-                }
+            if (obj.GetMeshRights(userid, meshid) == 0) return; // TODO: Check if this is ok
+
+            // Find all connected users for this mesh and send the message
+            for (var userid in obj.wssessions) {
+                var xsessions = obj.wssessions[userid];
+                // Send the message to all users on this server
+                for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
             }
 
             // Send the message to all users of other servers

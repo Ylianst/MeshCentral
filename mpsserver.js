@@ -11,7 +11,7 @@
 /*jshint strict:false */
 /*jshint -W097 */
 /*jshint esversion: 6 */
-"use strict";
+'use strict';
 
 // Construct a Intel AMT MPS server object
 module.exports.CreateMpsServer = function (parent, db, args, certificates) {
@@ -24,9 +24,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var tlsSessionStore = {};       // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
-    const common = require("./common.js");
-    const net = require("net");
-    const tls = require("tls");
+    const common = require('./common.js');
+    const net = require('net');
+    const tls = require('tls');
     const MAX_IDLE = 90000;         // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
 
     if (obj.args.mpstlsoffload) {
@@ -42,9 +42,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     obj.server.listen(args.mpsport, function () { console.log("MeshCentral Intel(R) AMT server running on " + certificates.AmtMpsName + ":" + args.mpsport + ((args.mpsaliasport != null) ? (", alias port " + args.mpsaliasport) : "") + "."); }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available."); if (args.exactports) { process.exit(); } });
     obj.server.on('tlsClientError', function (err, tlssocket) { if (args.mpsdebug) { var remoteAddress = tlssocket.remoteAddress; if (tlssocket.remoteFamily == 'IPv6') { remoteAddress = '[' + remoteAddress + ']'; } console.log('MPS:Invalid TLS connection from ' + remoteAddress + ':' + tlssocket.remotePort + '.'); } });
-    obj.parent.updateServerState("mps-port", args.mpsport);
-    obj.parent.updateServerState("mps-name", certificates.AmtMpsName);
-    if (args.mpsaliasport != null) { obj.parent.updateServerState("mps-alias-port", args.mpsaliasport); }
+    obj.parent.updateServerState('mps-port', args.mpsport);
+    obj.parent.updateServerState('mps-name', certificates.AmtMpsName);
+    if (args.mpsaliasport != null) { obj.parent.updateServerState('mps-alias-port', args.mpsaliasport); }
 
     const APFProtocol = {
         UNKNOWN: 0,
@@ -202,47 +202,47 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     function onConnection(socket) {
         connectionCount++;
         if (obj.args.mpstlsoffload) {
-            socket.tag = { first: true, clientCert: null, accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         } else {
-            socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: "", activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         }
-        socket.setEncoding("binary");
+        socket.setEncoding('binary');
         parent.debug('mps', "New CIRA connection");
 
         // Setup the CIRA keep alive timer
         socket.setTimeout(MAX_IDLE);
-        socket.on("timeout", () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
+        socket.on('timeout', () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
 
-        socket.addListener("data", function (data) {
-            if (args.mpsdebug) { var buf = Buffer.from(data, "binary"); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
+        socket.addListener('data', function (data) {
+            if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
             socket.tag.accumulator += data;
 
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
             if (socket.tag.first == true) {
                 if (socket.tag.accumulator.length < 3) return;
                 //if (!socket.tag.clientCert.subject) { console.log("MPS Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nNo client certificate given.'); socket.end(); return; }
-                if (socket.tag.accumulator.substring(0, 3) == "GET") { if (args.mpsdebug) { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); } socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>MeshCentral2 MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>"); socket.end(); return; }
+                if (socket.tag.accumulator.substring(0, 3) == 'GET') { if (args.mpsdebug) { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); } socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>MeshCentral2 MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>"); socket.end(); return; }
 
                 // If the MQTT broker is active, look for inbound MQTT connections
                 if (parent.mqttbroker != null) {
-                    var chunk = Buffer.from(socket.tag.accumulator, "binary");
+                    var chunk = Buffer.from(socket.tag.accumulator, 'binary');
                     var packet_len = 0;
                     if (chunk.readUInt8(0) == 16) { packet_len = getMQTTPacketLength(chunk); }
                     if (chunk.readUInt8(0) == 16 && (socket.tag.accumulator.length < packet_len)) return; // Minimum MQTT detection
 
                     // check if it is MQTT, need more initial packet to probe
-                    if (chunk.readUInt8(0) == 16 && ((chunk.slice(4, 8).toString() === "MQTT") || (chunk.slice(5, 9).toString() === "MQTT")
-                        || (chunk.slice(6, 10).toString() === "MQTT") || (chunk.slice(7, 11).toString() === "MQTT"))) {
-                        parent.debug("mps", "MQTT connection detected.");
+                    if (chunk.readUInt8(0) == 16 && ((chunk.slice(4, 8).toString() === 'MQTT') || (chunk.slice(5, 9).toString() === 'MQTT')
+                        || (chunk.slice(6, 10).toString() === 'MQTT') || (chunk.slice(7, 11).toString() === 'MQTT'))) {
+                        parent.debug('mps', "MQTT connection detected.");
                         socket.removeAllListeners("data");
                         socket.removeAllListeners("close");
                         socket.setNoDelay(true);
                         socket.serialtunnel = SerialTunnel();
                         socket.serialtunnel.xtransport = 'mps';
                         socket.serialtunnel.xip = socket.remoteAddress;
-                        socket.on("data", function (b) { socket.serialtunnel.updateBuffer(Buffer.from(b, "binary")) });
-                        socket.serialtunnel.forwardwrite = function (b) { socket.write(b, "binary") }
-                        socket.on("close", function () { socket.serialtunnel.emit("end"); });
+                        socket.on('data', function (b) { socket.serialtunnel.updateBuffer(Buffer.from(b, 'binary')) });
+                        socket.serialtunnel.forwardwrite = function (b) { socket.write(b, 'binary') }
+                        socket.on('close', function () { socket.serialtunnel.emit('end'); });
 
                         // Pass socket wrapper to the MQTT broker
                         parent.mqttbroker.handle(socket.serialtunnel);
@@ -533,7 +533,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var request = data.substring(5, 5 + requestLen);
                     //var wantResponse = data.charCodeAt(5 + requestLen);
 
-                    if (request == "tcpip-forward") {
+                    if (request == 'tcpip-forward') {
                         var addrLen = common.ReadInt(data, 6 + requestLen);
                         if (len < 14 + requestLen + addrLen) return 0;
                         var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
@@ -545,7 +545,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         return 14 + requestLen + addrLen;
                     }
 
-                    if (request == "cancel-tcpip-forward") {
+                    if (request == 'cancel-tcpip-forward') {
                         var addrLen = common.ReadInt(data, 6 + requestLen);
                         if (len < 14 + requestLen + addrLen) return 0;
                         var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
@@ -557,7 +557,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         return 14 + requestLen + addrLen;
                     }
 
-                    if (request == "udp-send-to@amt.intel.com") {
+                    if (request == 'udp-send-to@amt.intel.com') {
                         var addrLen = common.ReadInt(data, 6 + requestLen);
                         if (len < 26 + requestLen + addrLen) return 0;
                         var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
@@ -748,14 +748,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             }
         }
 
-        socket.addListener("close", function () {
+        socket.addListener('close', function () {
             socketClosedCount++;
             parent.debug('mps', 'CIRA connection closed');
             try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
             obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
         });
 
-        socket.addListener("error", function () {
+        socket.addListener('error', function () {
             socketErrorCount++;
             //console.log("MPS Error: " + socket.remoteAddress);
         });
@@ -802,7 +802,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     */
 
     function SendChannelOpen(socket, direct, channelid, windowsize, target, targetport, source, sourceport) {
-        var connectionType = ((direct == true) ? "direct-tcpip" : "forwarded-tcpip");
+        var connectionType = ((direct == true) ? 'direct-tcpip' : 'forwarded-tcpip');
         if ((target == null) || (target == null)) target = ''; // TODO: Reports of target being undefined that causes target.length to fail. This is a hack.
         Write(socket, String.fromCharCode(APFProtocol.CHANNEL_OPEN) + common.IntToStr(connectionType.length) + connectionType + common.IntToStr(channelid) + common.IntToStr(windowsize) + common.IntToStr(-1) + common.IntToStr(target.length) + target + common.IntToStr(targetport) + common.IntToStr(source.length) + source + common.IntToStr(sourceport));
     }
@@ -837,11 +837,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     function Write(socket, data) {
         if (args.mpsdebug) {
             // Print out sent bytes
-            var buf = Buffer.from(data, "binary");
+            var buf = Buffer.from(data, 'binary');
             console.log('MPS --> (' + buf.length + '):' + buf.toString('hex'));
             socket.write(buf);
         } else {
-            socket.write(Buffer.from(data, "binary"));
+            socket.write(Buffer.from(data, 'binary'));
         }
     }
 

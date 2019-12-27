@@ -1155,6 +1155,14 @@ a {
     border: none;
 }
 
+.i7 {
+    background: url(../images/icons50.png) -300px 0px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+    border: none;
+}
+
 .j1 {
     background: url(../images/icons16.png) 0px 0px;
     height: 16px;
@@ -1197,6 +1205,14 @@ a {
 
 .j6 {
     background: url(../images/icons16.png) -80px 0px;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+}
+
+.j7 {
+    background: url(../images/icons16.png) -96px 0px;
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1339,7 +1355,7 @@ a {
     float: left;
 }
 
-.si0 {
+.si1 {
     background: url(../images/icons16.png) 0px 0px;
     height: 16px;
     width: 16px;
@@ -1347,7 +1363,7 @@ a {
     float: left;
 }
 
-.si1 {
+.si2 {
     background: url(../images/icons16.png) -16px 0px;
     height: 16px;
     width: 16px;
@@ -1355,7 +1371,7 @@ a {
     float: left;
 }
 
-.si2 {
+.si3 {
     background: url(../images/icons16.png) -32px 0px;
     height: 16px;
     width: 16px;
@@ -1363,7 +1379,7 @@ a {
     float: left;
 }
 
-.si3 {
+.si4 {
     background: url(../images/icons16.png) -48px 0px;
     height: 16px;
     width: 16px;
@@ -1371,7 +1387,7 @@ a {
     float: left;
 }
 
-.si4 {
+.si5 {
     background: url(../images/icons16.png) -64px 0px;
     height: 16px;
     width: 16px;
@@ -1379,8 +1395,16 @@ a {
     float: left;
 }
 
-.si5 {
+.si6 {
     background: url(../images/icons16.png) -80px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si7 {
+    background: url(../images/icons16.png) -96px 0px;
     height: 16px;
     width: 16px;
     border: none;
