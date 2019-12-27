@@ -496,7 +496,7 @@
       "fr": "1 appareil",
       "pt": "1 nó",
       "ja": "1ノード",
-      "nl": "1 apparaat",
+      "nl": "1 knooppunt",
       "xloc": [
         "default.handlebars->23->341"
       ]
@@ -1805,7 +1805,7 @@
       "pt": "Apenas Apple MacOS ",
       "ja": "Apple MacOSのみ",
       "cs": "Apple MacOS pouze",
-      "nl": "Apple MacOS alleen",
+      "nl": "Alleen Apple MacOS",
       "xloc": [
         "default.handlebars->23->283"
       ]
@@ -2318,7 +2318,7 @@
       "pt": "Apenas em segundo plano",
       "ja": "背景のみ",
       "cs": "Pouze na pozadí",
-      "nl": "Achtergrond alleen",
+      "nl": "Alleen achtergrond",
       "xloc": [
         "default.handlebars->23->294",
         "default.handlebars->23->316"
@@ -2360,7 +2360,7 @@
       "pt": "Lote criar muitas contas de usuário",
       "ja": "多数のユーザーアカウントをバッチ作成する",
       "cs": "Dávkově vytvořit více uživatelů",
-      "nl": "Batch aanmaken gebruikersaccounts",
+      "nl": "Gebruikersaccounts aanmaken in batch",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->1->5"
       ]
@@ -2484,7 +2484,7 @@
       "fr": "Annuler",
       "pt": "Cancelar",
       "ja": "キャンセル",
-      "nl": "Afbreken",
+      "nl": "Annuleren",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar",
         "default.handlebars->23->937",
@@ -3007,7 +3007,7 @@
       "pt": "Confirme {0} da {1} entrada {2} para este local?",
       "ja": "{1}エントリ{2}のうち{0}をこの場所に拘束しますか？",
       "cs": "Potvrdit {0} z {1} záznam{2} do tohoto umístění?",
-      "nl": "Bevestig {0} van {1} vermelding {2} voor deze locatie?",
+      "nl": "Bevestig {0} van {1} bestand {2} naar deze locatie?",
       "xloc": [
         "default.handlebars->23->1141",
         "default-mobile.handlebars->9->83"
@@ -3033,7 +3033,7 @@
       "pt": "Confirmar cópia de 1 entrada para este local?",
       "ja": "この場所への1つのエントリのコピーを確認しますか？",
       "cs": "Potvrdit kopírování jednoho záznamu do tohoto umístění?",
-      "nl": "Bevestig kopie van 1 vermelding tot deze locatie?",
+      "nl": "Bevestig kopie van 1 bestand naar deze locatie?",
       "xloc": [
         "default.handlebars->23->632",
         "default-mobile.handlebars->9->254"
@@ -3044,7 +3044,7 @@
       "pt": "Confirmar cópia de {0} entradas para este local?",
       "ja": "{0}エントリのコピーをこの場所に確認しますか？",
       "cs": "Potvrdit kopírování {0} zaznámů do tohoto umístění?",
-      "nl": "Bevestig kopieën van {0} vermeldingen tot deze locatie?",
+      "nl": "Bevestig kopieën van {0} bestanden naar deze locatie?",
       "xloc": [
         "default.handlebars->23->631",
         "default-mobile.handlebars->9->253"
@@ -3065,7 +3065,7 @@
       "pt": "Confirmar a movimentação de 1 entrada para este local?",
       "ja": "1エントリのこの場所への移動を確認しますか？",
       "cs": "Potvrdit přesun jednoho záznamu do tohoto umístění?",
-      "nl": "Verplaatsing van 1 vermelding naar deze locatie bevestigen?",
+      "nl": "Verplaatsing van 1 bestand naar deze locatie bevestigen?",
       "xloc": [
         "default.handlebars->23->634",
         "default-mobile.handlebars->9->256"
@@ -3076,7 +3076,7 @@
       "pt": "Confirmar a movimentação de {0} entradas para este local?",
       "ja": "{0}エントリのこの場所への移動を確認しますか？",
       "cs": "Potvrdit přesun {0} záznamů do tohoto umístění?",
-      "nl": "Verplaatsing van {0} vermeldingen naar deze locatie bevestigen?",
+      "nl": "Verplaatsing van {0} bestanden naar deze locatie bevestigen?",
       "xloc": [
         "default.handlebars->23->633",
         "default-mobile.handlebars->9->255"
@@ -4366,7 +4366,7 @@
       "pt": "Brinde do dispositivo",
       "ja": "デバイストースト",
       "cs": "Device Toast",
-      "nl": "",
+      "nl": "Device Toast",
       "xloc": [
         "default-mobile.handlebars->9->201"
       ]
@@ -4860,7 +4860,7 @@
       "pt": "Email",
       "ja": "Eメール",
       "cs": "Email",
-      "nl": "Email",
+      "nl": "E-mail",
       "xloc": [
         "default.handlebars->23->277",
         "default.handlebars->23->1201",
@@ -4875,7 +4875,7 @@
       "cs": "Změna emailové adresy",
       "pt": "Alteração de endereço de email",
       "ja": "メールアドレスの変更",
-      "nl": "Email Adres wijzigen",
+      "nl": "E-mailadres wijzigen",
       "xloc": [
         "default.handlebars->23->901",
         "default-mobile.handlebars->9->35"
@@ -4886,7 +4886,7 @@
       "cs": "Email ověřen",
       "pt": "O email foi verificado",
       "ja": "メールが確認されました",
-      "nl": "Email is geverifieerd",
+      "nl": "E-mail is geverifieerd",
       "xloc": [
         "default.handlebars->23->1231"
       ]
@@ -4896,7 +4896,7 @@
       "cs": "Email je ověřen.",
       "pt": "O email foi verificado.",
       "ja": "メールが確認されました。",
-      "nl": "Email is geverifieerd.",
+      "nl": "E-mail is geverifieerd.",
       "xloc": [
         "default.handlebars->23->1206"
       ]
@@ -4906,7 +4906,7 @@
       "cs": "Email není ověřen",
       "pt": "Email não verificado",
       "ja": "メールが確認されていません",
-      "nl": "Email is niet geverifieerd",
+      "nl": "E-mail is niet geverifieerd",
       "xloc": [
         "default.handlebars->23->1232"
       ]
@@ -4916,7 +4916,7 @@
       "pt": "verificação de e-mail",
       "ja": "メール確認",
       "cs": "Ověření emailu",
-      "nl": "email verificatie",
+      "nl": "E-mail verificatie",
       "xloc": [
         "default.handlebars->23->899",
         "default-mobile.handlebars->9->33"
@@ -4927,7 +4927,7 @@
       "pt": "Email:",
       "ja": "Eメール：",
       "cs": "Email:",
-      "nl": "Email:",
+      "nl": "E-mail:",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
@@ -5249,7 +5249,7 @@
       "pt": "Exportação da lista de eventos",
       "ja": "イベントリストのエクスポート",
       "cs": "Export seznamu událostí",
-      "nl": "Gebeurtenis Lijst exporteren",
+      "nl": "Gebeurtenissenlijst exporteren",
       "xloc": [
         "default.handlebars->23->1155"
       ]
@@ -5423,7 +5423,7 @@
       "pt": "Seleção de arquivo",
       "ja": "ファイル選択",
       "cs": "Výběr souboru",
-      "nl": "Bestand selectie",
+      "nl": "Bestandsselectie",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog3->d3upload->1"
       ]
@@ -5570,7 +5570,7 @@
       "cs": "Zapomenuté jméno/heslo?",
       "pt": "Esqueceu usuário / senha?",
       "ja": "ユーザー/パスワードを忘れましたか？",
-      "nl": "Gebruiker / wachtwoord vergeten?",
+      "nl": "Gebruikersnaam/wachtwoord vergeten?",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->resetAccountDiv->resetAccountSpan"
       ]
@@ -5580,7 +5580,7 @@
       "cs": "Zapomenuté jméno/heslo?",
       "pt": "Esqueceu seu nome de usuário / senha?",
       "ja": "ユーザー名/パスワードを忘れましたか？",
-      "nl": "Gebruikersnaam / wachtwoord vergeten?",
+      "nl": "Gebruikersnaam/wachtwoord vergeten?",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->resetAccountDiv->resetAccountSpan"
       ]
@@ -5763,7 +5763,7 @@
       "fr": "Administrateur Complet (tous droits)",
       "pt": "Administrador Pleno (todos os direitos)",
       "ja": "完全な管理者（すべての権利）",
-      "nl": "Volledige beheerder (alle rechten)",
+      "nl": "Volledige beheerder (met alle rechten)",
       "xloc": [
         "default.handlebars->23->1071"
       ]
@@ -6221,7 +6221,7 @@
       "pt": "Hostname",
       "ja": "ホスト名",
       "cs": "Hostname",
-      "nl": "Hostname",
+      "nl": "Hostnaam",
       "xloc": [
         "default.handlebars->23->233",
         "default.handlebars->23->427",
@@ -6239,7 +6239,7 @@
       "pt": "Sincronização de nome de host",
       "ja": "ホスト名の同期",
       "cs": "Hostname Sync",
-      "nl": "Hostname Sync",
+      "nl": "Hostnaam Sync",
       "xloc": [
         "default.handlebars->23->953"
       ]
@@ -6385,7 +6385,7 @@
       "pt": "Identificador",
       "ja": "識別子",
       "cs": "Identifikátor",
-      "nl": "Identifier",
+      "nl": "Identificeren",
       "xloc": [
         "default.handlebars->23->69"
       ]
@@ -6753,7 +6753,7 @@
       "pt": "Intel&reg; Apenas AMT",
       "ja": "Intel&reg; AMTのみ",
       "cs": "Intel&reg; AMT pouze",
-      "nl": "Intel&reg; AMT alleen",
+      "nl": "Alleen Intel&reg; AMT",
       "xloc": [
         "default-mobile.handlebars->9->56"
       ]
@@ -6763,7 +6763,7 @@
       "pt": "Intel&reg; Apenas AMT, nenhum agente",
       "ja": "Intel&reg; AMTのみ、エージェントなし",
       "cs": "Intel&reg; AMT pouze, bez agenta",
-      "nl": "Intel&reg; AMT alleen, geen agent",
+      "nl": "Alleen Intel&reg; AMT, geen agent",
       "xloc": [
         "default.handlebars->23->924",
         "default.handlebars->23->946",
@@ -10248,7 +10248,7 @@
       "fr": "Effectuer des actions d'alimentation sur le périphérique",
       "pt": "Execute ações de energia no dispositivo",
       "ja": "デバイスの電源操作を実行します",
-      "nl": "Voer krachtacties uit op het apparaat",
+      "nl": "Voer power acties uit op het apparaat",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->1",
@@ -13007,7 +13007,7 @@
       "pt": "Prompt do terminal",
       "ja": "端末プロンプト",
       "cs": "Výzva terminálu",
-      "nl": "",
+      "nl": "Terminal Prompt",
       "xloc": [
         "default.handlebars->23->960"
       ]
@@ -13164,7 +13164,7 @@
       "pt": "Esta política não afetará os dispositivos com Intel&reg; AMT no modo ACM.",
       "ja": "このポリシーは、Intel&reg;を搭載したデバイスには影響しません。 ACMモードのAMT。",
       "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT in ACM módem.",
-      "nl": "",
+      "nl": "Dit beleid heeft geen invloed op apparaten met Intel&reg; AMT ACM-modus",
       "xloc": [
         "default.handlebars->23->1025"
       ]
@@ -13174,7 +13174,7 @@
       "pt": "Este software consiste em contribuições voluntárias feitas por muitos indivíduos (AUTORES.txt, http://jqueryui.com/about ). Para obter o histórico exato de contribuições, consulte o histórico de revisões e os logs, disponíveis em http://jquery-ui.googlecode.com/svn/",
       "ja": "このソフトウェアは、多くの個人による自発的な貢献で構成されています（AUTHORS.txt、http：//jqueryui.com/about）。正確な貢献履歴については、http：//jquery-ui.googlecode.com/svn/にある改訂履歴とログをご覧ください",
       "cs": "Tento software se skládá z dobrovolných příspěvků mnoha jednotlivců (AUTHORS.txt, http://jqueryui.com/about ). Přesnou historii příspěvků naleznete v historii revizí a protokolech dostupných na adrese http://jquery-ui.googlecode.com/svn/",
-      "nl": "",
+      "nl": "Deze software bestaat uit vrijwillige bijdragen van veel personen (AUTHORS.txt, http://jqueryui.com/about ). Voor de exacte contributiegeschiedenis, zie de revisiegeschiedenis en logboeken, beschikbaar op http://jquery-ui.googlecode.com/svn/",
       "xloc": [
         "terms.handlebars->container->column_l->55->1",
         "terms-mobile.handlebars->container->page_content->column_l->55->1"
@@ -15520,7 +15520,7 @@
     },
     {
       "en": "Summary",
-      "nl": "Samenvatting -",
+      "nl": "Samenvatting",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MeshSubMenuSpan->MeshSubMenu->1->0->MeshSummary"
       ]
@@ -15640,12 +15640,14 @@
     },
     {
       "en": "Toggle footer bar",
+      "nl": "Schakel de voettekstbalk in",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu"
       ]
     },
     {
       "en": "Remove device on disconnect",
+      "nl": "Verwijder apparaat bij verbreken",
       "xloc": [
         "default.handlebars->23->1045"
       ]
@@ -15791,6 +15793,7 @@
     },
     {
       "en": "Relay Errors",
+      "nl": "Relay fouten",
       "xloc": [
         "default.handlebars->23->1298"
       ]
@@ -15824,6 +15827,7 @@
     },
     {
       "en": "Relay Count",
+      "en": "Relay teller",
       "xloc": [
         "default.handlebars->23->1305"
       ]
@@ -15837,6 +15841,7 @@
     },
     {
       "en": "u:",
+      "nl": "u:",
       "xloc": [
         "default.handlebars->23->393"
       ]
@@ -15857,6 +15862,7 @@
     },
     {
       "en": "g:",
+      "nl": "g:",
       "xloc": [
         "default.handlebars->23->396"
       ]
@@ -15870,12 +15876,14 @@
     },
     {
       "en": "Heap Used",
+      "nl": "Heap gebruikt",
       "xloc": [
         "default.handlebars->23->1321"
       ]
     },
     {
       "en": "Heap Total",
+      "nl": "Heap Totaal",
       "xloc": [
         "default.handlebars->23->1322"
       ]
