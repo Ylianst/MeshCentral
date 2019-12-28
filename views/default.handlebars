@@ -9834,6 +9834,7 @@
         }
 
         function go(x, event) {
+            if (pluginHandler != null) pluginHandler.callHook('goPageStart', x, event);
             setSessionActivity();
             if (xxdialogMode) return;
             QV('uiMenu', false);
@@ -9959,6 +9960,7 @@
             } else {
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
+            if (pluginHandler != null) pluginHandler.callHook('goPageEnd', x, event);
         }
 
         //
