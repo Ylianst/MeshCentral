@@ -180,7 +180,6 @@
     <Content Include="public\clickonce\minirouter\MeshMiniRouter.application" />
     <Content Include="public\clickonce\minirouter\publish.htm" />
     <Content Include="public\commander.htm" />
-    <Content Include="public\compress.bat" />
     <Content Include="public\compress.wcc" />
     <Content Include="public\favicon.ico" />
     <Content Include="public\images-isdu\ComputerIcon.png" />
@@ -270,6 +269,7 @@
     <Content Include="public\styles\font-awesome\scss\_variables.scss" />
     <Content Include="public\styles\messenger.css" />
     <Content Include="public\styles\style.css" />
+    <Content Include="public\translate.bat" />
     <Content Include="public\translator.htm" />
     <Content Include="readme.md" />
     <Content Include="sample-config.json" />

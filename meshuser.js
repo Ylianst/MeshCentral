@@ -38,14 +38,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_UNINSTALL = 32768;
 
     // Site rights
-    const SITERIGHT_SERVERBACKUP = 1;
-    const SITERIGHT_MANAGEUSERS = 2;
-    const SITERIGHT_SERVERRESTORE = 4;
-    const SITERIGHT_FILEACCESS = 8;
-    const SITERIGHT_SERVERUPDATE = 16;
-    const SITERIGHT_LOCKED = 32;            // 0x00000020
-    const SITERIGHT_NONEWGROUPS = 64;       // 0x00000040
-    const SITERIGHT_NOMESHCMD = 128;        // 0x00000080
+    const SITERIGHT_SERVERBACKUP = 1;           // 0x00000001
+    const SITERIGHT_MANAGEUSERS = 2;            // 0x00000002
+    const SITERIGHT_SERVERRESTORE = 4;          // 0x00000004
+    const SITERIGHT_FILEACCESS = 8;             // 0x00000008
+    const SITERIGHT_SERVERUPDATE = 16;          // 0x00000010
+    const SITERIGHT_LOCKED = 32;                // 0x00000020
+    const SITERIGHT_NONEWGROUPS = 64;           // 0x00000040
+    const SITERIGHT_NOMESHCMD = 128;            // 0x00000080
+    const SITERIGHT_USERGROUPS = 256;           // 0x00000100
 
     var obj = {};
     obj.user = user;
@@ -1469,6 +1470,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
                     }
+                    break;
+                }
+            case 'createusergroup':
+                {
+                    // TODO
+                    //console.log(command);
+                    break;
+                }
+            case 'deleteusergroup':
+                {
+                    // TODO
+                    //console.log(command);
                     break;
                 }
             case 'changemeshnotify':
