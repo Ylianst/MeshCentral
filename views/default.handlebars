@@ -162,6 +162,15 @@
                             </tr>
                         </table>
                     </div>
+                    <div id=UsersSubMenuSpan style="display:none">
+                        <table id=UsersSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=UsersGeneral class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">Users</td>
+                                <td tabindex=0 id=UsersGroups class="topbar_td style3x" onclick=go(50,event) onkeypress="if (event.key == 'Enter') go(50)">Groups</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
                     <div id=ServerSubMenuSpan style="display:none">
                         <table id=ServerSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
@@ -932,6 +941,23 @@
                 <div id="p43BackButton"><div class="backButton" tabindex=0 onclick=go(42) title="Back" onkeypress="if (event.key == 'Enter') go(42)"><div class="backButtonEx"></div></div></div>
                 <h1>My Server Plugins - <span id="p43title"></span></h1>
                 <iframe id="p43iframe" frameBorder=0 style="width:100%;height:calc(100vh - 245px);max-height:calc(100vh - 245px)"></iframe>
+            </div>
+            <div id=p50 style="display:none">
+                <div id="p50title"><h1>My User Groups</h1></div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div style="float:right">
+                            </div>
+                            <div>
+                                <input id=NewUserGroupButton type=button style=margin-left:6px onclick=showCreateUserGroupDialog() value="New Group..." />
+                            </div>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id="p50groups"></div>
             </div>
             <div id=p19 style="display:none">
                 <h1>Plugins - <span id=p19deviceName></span></h1>
@@ -8875,6 +8901,7 @@
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>' + "Server Restore" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>' + "Server Updates" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>' + "Manage Users" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusergroups>' + "Manage User Groups" + '</label><br>';
             x += '<hr/></div><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
@@ -8883,18 +8910,20 @@
             setDialogMode(2, "Server Permissions", 3, showUserAdminDialogEx, x, user);
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
-                Q('ua_serverbackup').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1) != 0));     // Server Backup
-                Q('ua_manageusers').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2) != 0));      // Manage Users
-                Q('ua_serverrestore').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 4) != 0));    // Server Restore
-                Q('ua_fileaccess').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 8) != 0));       // Server Files
-                Q('ua_serverupdate').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 16) != 0));    // Server Update
-                Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));   // Account locked
-                Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));     // No New Groups
-                Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));      // No Tools (MeshCMD / Router)
+                Q('ua_serverbackup').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1) != 0));       // Server Backup
+                Q('ua_manageusers').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2) != 0));        // Manage Users
+                Q('ua_serverrestore').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 4) != 0));      // Server Restore
+                Q('ua_fileaccess').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 8) != 0));         // Server Files
+                Q('ua_serverupdate').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 16) != 0));      // Server Update
+                Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));     // Account locked
+                Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));       // No New Groups
+                Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));        // No Tools (MeshCMD / Router)
+                Q('ua_manageusergroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 256) != 0)); // Manage User Groups
             }
             QE('ua_fulladmin', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverbackup', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_manageusers', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_manageusergroups', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_serverrestore', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_fileaccess', userinfo.siteadmin == 0xFFFFFFFF);
             QE('ua_fileaccessquota', userinfo.siteadmin == 0xFFFFFFFF);
@@ -8918,6 +8947,7 @@
                 QE('ua_lockedaccount', !Q('ua_fulladmin').checked);
                 QE('ua_nonewgroups', !Q('ua_fulladmin').checked);
                 QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
+                QE('ua_manageusergroups', !Q('ua_fulladmin').checked && Q('ua_manageusers').checked);
                 QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
             }
         }
@@ -8933,6 +8963,7 @@
                 if (Q('ua_lockedaccount').checked == true) siteadmin += 32;
                 if (Q('ua_nonewgroups').checked == true) siteadmin += 64;
                 if (Q('ua_nomeshcmd').checked == true) siteadmin += 128;
+                if (Q('ua_manageusergroups').checked == true) siteadmin += 256;
             }
             var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
@@ -8941,8 +8972,35 @@
 
         function onUserSearchInputChanged() { updateUsers(); }
 
+
         //
-        // MY USERS GENERAL
+        // MY USER GROUPS
+        //
+
+        function updateUserGroups() {
+
+        }
+
+        function showCreateUserGroupDialog() {
+            if (xxdialogMode) return;
+            var x = '';
+            x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
+            x += addHtmlValue("Description", '<textarea id=p4desc value="" style=width:230px;height:60px;resize:none maxlength=1024 /></textarea>');
+            setDialogMode(2, "Create User Group", 3, showCreateUserGroupDialogEx, x);
+            showCreateUserGroupDialogValidate();
+            Q('p4name').focus();
+        }
+
+        function showCreateUserGroupDialogValidate() {
+            QE('idx_dlgOkButton', (Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1));
+        }
+
+        function showCreateUserGroupDialogEx() {
+            meshserver.send({ action: 'createusergroup', name: Q('p4name').value, desc: Q('p4desc').value });
+        }
+
+        //
+        // MY USER GENERAL
         //
 
         var currentUser = null;
@@ -9173,7 +9231,7 @@
         }
 
         //
-        // MY USERS EVENTS
+        // MY USER EVENTS
         //
 
         var currentUserEvents = null;
@@ -9801,7 +9859,7 @@
             }
 
             // Edit this line when adding a new screen
-            for (var i = 0; i < 44; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 51; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Remove top bar selection
@@ -9837,7 +9895,7 @@
                 // My Events
                 QC('MainMenuMyEvents').add(mainMenuActiveClass);
                 QC('LeftMenuMyEvents').add(leftMenuActiveClass);
-            } else if (x == 4 || (x >= 30 && x < 40)) {
+            } else if (x == 4 || (x >= 30 && x < 40) || x == 50) {
                 // My Users
                 QC('MainMenuMyUsers').add(mainMenuActiveClass);
                 QC('LeftMenuMyUsers').add(leftMenuActiveClass);
@@ -9864,7 +9922,8 @@
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
-            var panels = { 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 115: 'ServerConsole' };
+            QV('UsersSubMenuSpan', x == 4 || x == 50);
+            var panels = { 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
