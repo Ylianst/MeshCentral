@@ -212,6 +212,14 @@ body {
     cursor: pointer;
 }
 
+.nonenglish .topbar_td {
+    width: 10px;
+    height: 24px;
+    cursor: pointer;
+    padding-left:16px;
+    padding-right:16px;
+}
+
 .topbar_td_end {
     text-align: right;
     height: 24px;
