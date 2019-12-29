@@ -2135,7 +2135,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             });
 
                             // Event node deletion
-                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + mesh.name, domain: domain.id };
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + parent.meshes[node.meshid].name, domain: domain.id };
                             // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
                             //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
                             parent.parent.DispatchEvent(['*', node.meshid], obj, event);
