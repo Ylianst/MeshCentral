@@ -117,7 +117,7 @@
     },
     {
       "en": " and authenticate to the server using this username and any password.",
-      "cs": " a autentizovat se na serveru pomocí tohoto uživatelského jména a hesla.",
+      "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a hesla.",
       "fr": " et vous authentifier sur le serveur en utilisant ce nom d'utilisateur et n'importe quel mot de passe.",
       "pt": " e autenticar no servidor usando esse nome de usuário e qualquer senha.",
       "ja": " このユーザー名とパスワードを使用してサーバーに対して認証します。",
@@ -128,7 +128,7 @@
     },
     {
       "en": " and authenticate to the server using this username and password.",
-      "cs": " a autentizovat se na serveru pomocí tohoto uživatelského jména a hesla.",
+      "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a hesla.",
       "fr": " et authentifiez-vous sur le serveur en utilisant ce nom d'utilisateur et mot de passe.",
       "pt": " e autenticar no servidor usando esse nome de usuário e senha.",
       "ja": " このユーザー名とパスワードを使用してサーバーに対して認証します。",
@@ -139,7 +139,7 @@
     },
     {
       "en": " node",
-      "cs": " nód",
+      "cs": " uzel",
       "fr": " nœud",
       "pt": " nó",
       "ja": " ノード",
@@ -150,7 +150,7 @@
     },
     {
       "en": " nodes",
-      "cs": " nódy",
+      "cs": " uzly",
       "fr": " noeuds",
       "pt": " nós",
       "ja": " ノード",
@@ -161,7 +161,7 @@
     },
     {
       "en": " Password hint can be used but is not recommanded.",
-      "cs": " Nápověda hesla může být použita, ale není doporučováno.",
+      "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
       "fr": " Un indice de mot de passe peut être utilisé mais n'est pas recommandé.",
       "pt": " Dica de senha pode ser usada, mas não é recomendada.",
       "ja": " パスワードヒントは使用できますが、推奨されません。",
@@ -172,7 +172,7 @@
     },
     {
       "en": " Users need to login to this server once before they can be added to a device group.",
-      "cs": " Uživatelé se musí před přidáním do skupiny zařízení jednou přihlásit k tomuto serveru.",
+      "cs": " Než budou moci být přidáni do skupiny zařízení, je třeba aby se uživatelé alespoň jednou k tomuto serveru přihlásili.",
       "fr": " Les utilisateurs doivent se connecter une fois sur ce serveur avant de pouvoir être ajoutés à un groupe de périphériques..",
       "pt": " Os usuários precisam fazer login neste servidor uma vez antes de poderem ser adicionados a um grupo de dispositivos.",
       "ja": " ユーザーは、デバイスグループに追加する前にこのサーバーに1回ログインする必要があります。",
@@ -237,7 +237,7 @@
     },
     {
       "en": "* For BSD, run \\\"pkg install wget sudo bash\\\" first.",
-      "cs": "* Pro BSD, spusť \\\"pkg install wget sudo bash\\\" nejprve.",
+      "cs": "* Pro BSD, nejprve spusťte „pkg install wget sudo bash“.",
       "pt": "* Para o BSD, execute \\\"pkg install wget sudo bash\\\".",
       "ja": "* BSDの場合、最初に\\\"pkg install wget sudo bash\\\"を実行します。",
       "nl": "* Voor BSD, start eerst \\\"pkg install wget sudo bash\\\" .",
@@ -247,7 +247,7 @@
     },
     {
       "en": "* Leave blank to assign a random password to each device.",
-      "cs": "* Ponechat prázdné pro vygenerování náhodného hesla každému zařízení.",
+      "cs": "* Pro vytvoření náhodných hesel pro každé ze zařízení, ponechte nevyplněné.",
       "pt": "* Deixe em branco para atribuir uma senha aleatória a cada dispositivo.",
       "ja": "*空白のままにして、各デバイスにランダムなパスワードを割り当てます。",
       "nl": "* Laat leeg om een willekeurig wachtwoord toe te wijzen aan elk apparaat.",
@@ -279,7 +279,7 @@
     },
     {
       "en": ", click here to enable it.",
-      "cs": ", zde kliknout pro aktivaci.",
+      "cs": ", zapnete kliknutím sem.",
       "pt": ", clique aqui para habilitá-lo.",
       "ja": "、ここをクリックして有効にします。",
       "nl": ", klik hier om in te schakelen",
@@ -290,7 +290,7 @@
     },
     {
       "en": ", Intel&reg; AMT only",
-      "cs": ", Intel&reg; AMT pouze",
+      "cs": ", Pouze Intel&reg; AMT",
       "pt": ", Intel&reg; AMT only",
       "ja": "、Intel&reg; AMTのみ",
       "nl": ", Intel&reg; AMT alleen",
@@ -311,7 +311,7 @@
     },
     {
       "en": ", right click on it or press \"control\" and click on the file. Then select \"Open\" and follow the instructions.",
-      "cs": ", poté spusťe instalaci. Postupujte dle instrukcí.",
+      "cs": ", klikněte na něj pravým tlačítkem nebo stiskněte klávesu Ctrl a klikněte na něj levým tlačítkem. Pak vyberte „Otevřít“ a postupujte podle pokynů.",
       "pt": ", clique com o botão direito do mouse ou pressione \"control\".Em seguida, selecione \"Open\".",
       "ja": "、それを右クリックするか、「control」を押してファイルをクリックします。次に、「開く」を選択し、指示に従います。",
       "nl": ", klik er met de rechtermuisknop op of druk op \"beheer\" en klik op het bestand. Daarna op \"open\" en volg de instructies.",
@@ -321,7 +321,7 @@
     },
     {
       "en": ", run it and press \"Install\" or \"Connect\".",
-      "cs": ", spusťte soubor a zvolte \"Install\" nebo \"Connect\".",
+      "cs": ", spusťte ho a zvolte „Nainstalovat“ nebo „Připojit“.",
       "pt": ", execute-o e pressione \"Install\" or \"Connect\".",
       "ja": "、実行して「インストール」または「接続」を押します。",
       "nl": ", open het en klik op \"installeren\" of \"verbinden\".",
@@ -358,7 +358,7 @@
       "en": "-",
       "pt": "-",
       "ja": "-",
-      "cs": "-",
+      "cs": "–",
       "nl": "-",
       "xloc": [
         "default-mobile.handlebars->9->228"
@@ -386,7 +386,7 @@
       "en": "...",
       "pt": "...",
       "ja": "...",
-      "cs": "...",
+      "cs": "…",
       "nl": "...",
       "xloc": [
         "default.handlebars->23->620",
@@ -408,7 +408,7 @@
     },
     {
       "en": "1 active session",
-      "cs": "1 session aktivní",
+      "cs": "1 aktivní relace",
       "fr": "1 session active",
       "pt": "1 sessão ativa",
       "ja": "1つのアクティブなセッション",
@@ -419,7 +419,7 @@
     },
     {
       "en": "1 byte",
-      "cs": "1 byte",
+      "cs": "1 bajt",
       "fr": "1 octet",
       "pt": "1 byte",
       "ja": "1バイト",
@@ -481,7 +481,7 @@
     },
     {
       "en": "1 more user not shown, use search box to look for users...",
-      "cs": "1 další uživatel není zobrazen, pomocí vyhledávacího pole vyhledejte uživatele ...",
+      "cs": "1 další uživatel není zobrazen, pro vyhledání uživatelů použijte kolonku pro vyhledávání…",
       "pt": "Mais 1 usuário não mostrado, use a caixa de pesquisa para procurar usuários...",
       "ja": "さらに1人のユーザーが表示されていません。検索ボックスを使用してユーザーを検索してください...",
       "nl": "1 gebruiker niet getoond, gebruik de zoekfunctie om gebruikers te vinden...",
@@ -491,7 +491,7 @@
     },
     {
       "en": "1 node",
-      "cs": "1 nód",
+      "cs": "1 uzel",
       "fr": "1 appareil",
       "pt": "1 nó",
       "ja": "1ノード",
@@ -502,7 +502,7 @@
     },
     {
       "en": "1 session",
-      "cs": "1 session",
+      "cs": "1 relace",
       "fr": "1 session",
       "pt": "1 sessão",
       "ja": "1セッション",
@@ -526,7 +526,7 @@
     },
     {
       "en": "1.AJAX Control Toolkit - New BSD License",
-      "cs": "1.AJAX Control Toolkit - Nová BSD Licence",
+      "cs": "1.AJAX Control Toolkit – Nová BSD Licence",
       "pt": "1.AJAX Control Toolkit - Nova licença BSD",
       "ja": "1.AJAX Control Toolkit-新しいBSDライセンス",
       "nl": "1.AJAX Control Toolkit - Nieuwe BSD Licentie",
@@ -537,7 +537,7 @@
     },
     {
       "en": "1.Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.",
-      "cs": "1.Redistribuce zdrojového kódu si musí zachovat výše uvedené upozornění o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti.",
+      "cs": "1. Při šíření zdrojového kódu dál musí být zachováno výše uvedené upozornění o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti.",
       "pt": "1.As redistribuições do código-fonte devem manter o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir.",
       "ja": "1.ソースコードの再配布には、上記の著作権表示、この条件リスト、および以下の免責事項を保持する必要があります。",
       "nl": "1.Herdistributies van broncode moeten de bovenstaande copyright kennisgeving en deze lijst met voorwaarden en de volgende disclaimer bevatten.",
@@ -606,7 +606,7 @@
       "en": "12.5%",
       "pt": "12.5%",
       "ja": "12.5％",
-      "cs": "12.5%",
+      "cs": "12,5%",
       "nl": "12.5%",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15",
@@ -615,7 +615,7 @@
     },
     {
       "en": "2-step login activation failed.",
-      "cs": "aktivace 2-faktorového přihlašování selhalo.",
+      "cs": "aktivace 2-faktorového přihlašování se nezdařila.",
       "pt": "Falha na ativação do login em duas etapas.",
       "ja": "2段階ログインのアクティベーションに失敗しました。",
       "nl": "Tweestapsverificatie is msilukt.",
@@ -625,7 +625,7 @@
     },
     {
       "en": "2-step login activation removal failed.",
-      "cs": "odstranění 2-faktorového přihlašování selhalo.",
+      "cs": "odstranění 2-faktorového přihlašování se nezdařila.",
       "pt": "A remoção da ativação do login em duas etapas falhou.",
       "ja": "2段階ログインアクティベーションの削除に失敗しました。",
       "nl": "Tweestapsverificatie verwijdering is mislukt.",
@@ -635,7 +635,7 @@
     },
     {
       "en": "2.OpenSSL – OpenSSL and SSLeay License",
-      "cs": "2.OpenSSL – OpenSSL a SSLeay licence",
+      "cs": "2. OpenSSL – OpenSSL a SSLeay licence",
       "pt": "2.OpenSSL - Licença OpenSSL e SSLeay",
       "ja": "2.OpenSSL – OpenSSLおよびSSLeayライセンス",
       "nl": "2.OpenSSL – OpenSSL en SSLeay Licentie",
@@ -646,7 +646,7 @@
     },
     {
       "en": "2.Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
-      "cs": "2.Redistribuce v binární podobě musí reprodukovat výše uvedené oznámení o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti v dokumentaci a / nebo jiných materiálech dodávaných s distribucí.",
+      "cs": "2. Šíření dál ve zkompiloavné podobě musí reprodukovat výše uvedené oznámení o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti v dokumentaci a / nebo jiných materiálech dodávaných s distribucí.",
       "pt": "2.As redistribuições em formato binário devem reproduzir o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir na documentação e / ou outros materiais fornecidos com a distribuição.",
       "ja": "2.バイナリ形式での再配布では、上記の著作権表示、この条件リスト、および以下の免責事項を、配布物とともに提供されるドキュメントおよび/またはその他の資料に複製する必要があります。",
       "nl": "2.Herdistributies in binaire vorm moeten de bovenstaande copyright kennisgeving, deze lijst met voorwaarden en de volgende disclaimer reproduceren in de documentatie en / of andere materialen die bij de distributie worden geleverd.",
@@ -681,7 +681,7 @@
     },
     {
       "en": "3.All advertising materials mentioning features or use of this software must display the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
-      "cs": "Všechny reklamní materiály uvádějící funkce nebo použití tohoto softwaru musí obsahovat následující potvrzení: \"Tento produkt zahrnuje software vyvinutý projektem OpenSSL pro použití v sadě OpenSSL Toolkit. (http://www.openssl.org/)\"",
+      "cs": "3. Všechny reklamní materiály zmiňující funkce nebo použití tohoto softwaru musí obsahovat následující oznámení: „Tento produkt zahrnuje software vyvinutý projektem OpenSSL pro použití v sadě OpenSSL Toolkit. (http://www.openssl.org/)“",
       "pt": "3.Todos os materiais publicitários que mencionam os recursos ou o uso deste software devem exibir o seguinte reconhecimento: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
       "ja": "3.このソフトウェアの機能または使用について言及するすべての広告資料には、「この製品には、OpenSSL Toolkitで使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます。（http://www.openssl.org/）」",
       "nl": "3.Alle advertentiematerialen die functies of gebruik van deze software maken, moeten de volgende tekst bevatten: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit. (Http://www.openssl.org/)\"",
@@ -692,7 +692,7 @@
     },
     {
       "en": "3.jQuery Foundation - MIT License",
-      "cs": "3.jQuery Foundation - MIT licence",
+      "cs": "3. jQuery Foundation – MIT licence",
       "pt": "3.jQuery Foundation - Licença MIT",
       "ja": "3. jQuery Foundation-MITライセンス",
       "nl": "3.jQuery Foundation - MIT Licentie",
@@ -703,7 +703,7 @@
     },
     {
       "en": "3.Neither the name of CodePlex Foundation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
-      "cs": "3.Název Nadace CodePlex Foundation ani jména jejích přispěvatelů nesmí být bez předchozího písemného svolení použita k podpoře nebo propagaci produktů odvozených od tohoto softwaru.",
+      "cs": "3. Název nadace CodePlex Foundation ani jména jejích přispěvatelů nesmí být bez předchozího písemného svolení použita k doporučování nebo propagaci produktů odvozených od tohoto softwaru.",
       "pt": "3.Nem o nome da CodePlex Foundation nem os nomes de seus colaboradores podem ser usados \\u200b\\u200bpara endossar ou promover produtos derivados deste software sem permissão prévia por escrito específica.",
       "ja": "3. CodePlex Foundationの名前もその貢献者の名前も、書面による事前の許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用することはできません。",
       "nl": "3.Noch de naam van CodePlex Foundation, noch de namen van haar bijdragers mogen worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder specifieke voorafgaande schriftelijke toestemming.",
@@ -727,7 +727,7 @@
       "en": "37.5%",
       "pt": "37..5%",
       "ja": "37.5％",
-      "cs": "37.5%",
+      "cs": "37,5%",
       "nl": "37.5%",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11",
@@ -736,7 +736,7 @@
     },
     {
       "en": "4.jQuery User Interface - MIT License",
-      "cs": "4.jQuery User Interface - MIT Licence",
+      "cs": "4. jQuery uživatelské rozhraní – MIT Licence",
       "pt": "4.Interface do Usuário jQuery - Licença MIT",
       "ja": "4. jQueryユーザーインターフェイス-MITライセンス",
       "nl": "4.jQuery Gebruikers Interface - MIT Licentie",
@@ -747,7 +747,7 @@
     },
     {
       "en": "4.The names \"OpenSSL Toolkit\" and \"OpenSSL Project\" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact openssl-core@openssl.org.",
-      "cs": "4.Názvy \"OpenSSL Toolkit\" a \"OpenSSL Project\" nesmí být bez předchozího písemného souhlasu použity k propagaci nebo propagaci produktů odvozených z tohoto softwaru. Pro písemné povolení nás prosím kontaktujte openssl-core@openssl.org.",
+      "cs": "4. Názvy „OpenSSL Toolkit“ a „OpenSSL Project“ nesmí být bez předchozího písemného souhlasu použity k doporučování nebo propagaci produktů odvozených z tohoto softwaru. Pro písemné povolení kontaktujte na openssl-core@openssl.org.",
       "ja": "4.「OpenSSL Toolkit」および「OpenSSL Project」という名前は、事前の書面による許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用しないでください。書面による許可については、openssl-core @ openssl.orgにお問い合わせください。",
       "nl": "4.De namen \"OpenSSL Toolkit\" en \"OpenSSL Project\" mogen niet worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder voorafgaande schriftelijke toestemming. Neem voor schriftelijke toestemming contact op met openssl-core@openssl.org.",
       "xloc": [
@@ -768,7 +768,7 @@
     },
     {
       "en": "5.noVNC - Mozilla Public License 2.0",
-      "cs": "5.noVNC - Mozilla Public licence 2.0",
+      "cs": "5. noVNC – Mozilla Public licence 2.0",
       "pt": "5.noVNC - Licença Pública Mozilla 2.0 0",
       "ja": "5. noVNC-Mozilla Public License 2.0",
       "nl": "5.noVNC - Mozilla Public Licentie 2.0",
@@ -779,7 +779,7 @@
     },
     {
       "en": "5.Products derived from this software may not be called \"OpenSSL\" nor may \"OpenSSL\" appear in their names without prior written permission of the OpenSSL Project.",
-      "cs": "5.Produkty odvozené od tohoto softwaru nesmí být nazývány \"OpenSSL\" ani se nesmí \"OpenSSL\" objevit v jejich jménech bez předchozího písemného souhlasu projektu OpenSSL.",
+      "cs": "5. Produkty odvozené od tohoto softwaru nesmí být nazývány „OpenSSL“ ani se nesmí „OpenSSL“ objevit v jejich názvech bez předchozího písemného souhlasu projektu OpenSSL.",
       "ja": "5.このソフトウェアから派生した製品は、OpenSSL Projectの事前の書面による許可なしに、「OpenSSL」と呼ばれたり、名前に「OpenSSL」が表示されたりすることはありません。",
       "nl": "5.Producten die zijn afgeleid van deze software mogen niet \"OpenSSL\" worden genoemd, noch mag \"OpenSSL\" in hun naam worden weergegeven zonder voorafgaande schriftelijke toestemming van het OpenSSL-project.",
       "xloc": [
@@ -800,7 +800,7 @@
     },
     {
       "en": "6.Redistributions of any form whatsoever must retain the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)\".",
-      "cs": "6.Redistribuce jakékoli formy si musí zachovat následující potvrzení: \"Tento produkt zahrnuje software vyvinutý v rámci projektu OpenSSL pro použití v sadě OpenSSL Toolkit (http://www.openssl.org/)\".",
+      "cs": "6. Šíření dál v jakékoli formě si musí zachovat následující prohlášení: „Tento produkt zahrnuje software vyvinutý v rámci projektu OpenSSL pro použití v sadě OpenSSL Toolkit (http://www.openssl.org/)“.",
       "pt": "6.As redistribuições de qualquer forma devem manter o seguinte reconhecimento: \"Este produto inclui software desenvolvido pelo OpenSSL Project para uso no OpenSSL Toolkit (http://www.openssl.org/)\".",
       "ja": "6.いかなる形式の再配布でも、「この製品には、OpenSSL Toolkit（http://www.openssl.org/）で使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます」という承認を保持する必要があります。",
       "nl": "6.Herdistributies in welke vorm dan ook moet de volgende tekst behouden: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit (http://www.openssl.org/)\".",
@@ -813,7 +813,7 @@
       "en": "62.5%",
       "pt": "62.5%",
       "ja": "62.5％",
-      "cs": "62.5%",
+      "cs": "62,5%",
       "nl": "62.5%",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7",
@@ -833,7 +833,7 @@
     },
     {
       "en": "7 Day Power State",
-      "cs": "7 denní statistika provozu",
+      "cs": "Stav napájení za uplynulých 7 dnů",
       "pt": "Estado de energia de 7 dias",
       "ja": "7日間の電源状態",
       "nl": "7 dagen stroom status",
@@ -843,7 +843,7 @@
     },
     {
       "en": "7.Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK License",
-      "cs": "7.Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK licence",
+      "cs": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK licence",
       "pt": "7.Webtoolkit Javascript Base 64 - Licença Creative Commons Attribution 2.0 UK",
       "ja": "7.Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UKライセンス",
       "nl": "7.Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK Licentie",
@@ -889,7 +889,7 @@
       "en": "87.5%",
       "pt": "87.5%",
       "ja": "87.5％",
-      "cs": "87.5%",
+      "cs": "87,5%",
       "nl": "87.5%",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3",
@@ -908,7 +908,7 @@
     },
     {
       "en": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardware keys</a> are used as secondary login authentication.",
-      "cs": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardwarové klíče</a> jsou použity jako druhá možnost autentizace.",
+      "cs": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardwarové klíče</a> jsou použity jako druhý faktor ověřování.",
       "pt": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Chaves Hardware</a> são usados como autenticação de login secundária.",
       "ja": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">ハードウェアキー</a>は、セカンダリログイン認証として使用されます。",
       "nl": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardware sleutels</a> worden gebruikt als secundaire inlogverificatie.",
@@ -918,7 +918,7 @@
     },
     {
       "en": "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time.",
-      "cs": "<b style=color:green>2-faktorové přihlášení odstraněno</b>. Lze znovu kdykoliv zapnout.",
+      "cs": "<b style=color:green>2-faktorové přihlašování odebráno</b>. Lze znovu kdykoliv znovu zapnout.",
       "pt": "<b style=color:green>Ativação de login em duas etapas removida</b>. Você pode reativar esse recurso a qualquer momento.",
       "ja": "<b style = color：green> 2段階のログインアクティベーションが削除されました</ b>。この機能はいつでも再アクティブ化できます。",
       "nl": "<b style=color:green>Tweestapsverificatie verwijderd</b>. Je kan deze functie ten allen tijde weer inschakelen.",
@@ -928,7 +928,7 @@
     },
     {
       "en": "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again.",
-      "cs": "<b style=color:green>2-faktorová autentizace zapnuta</b>. Je třeba platný token k přihlášení.",
+      "cs": "<b style=color:green>2-faktorové ověřování zapnuto</b>. Pro opětovné přihlášení nyní budete potřebovat platný token.",
       "pt": "<b style=color:green> ativação de login em duas etapas </b>. Agora você precisará de um token válido para fazer login novamente.",
       "ja": "<b style = color：green> 2段階ログインの有効化に成功</ b>。再度ログインするには、有効なトークンが必要になります。",
       "nl": "<b style=color:green>Tweestapsverificatie successvol</b>. U hebt nu een geldig token nodig om opnieuw in te loggen.",
@@ -938,7 +938,7 @@
     },
     {
       "en": "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.",
-      "cs": "<b style=color:red>2-faktorové přihlášení selhalo</b>. Je třeba smazat tajemství z aplikace a zkusit znovu. Na toto máte již jen pár minut.",
+      "cs": "<b style=color:red>2-faktorové přihlášení se nezdařilo</b>. Vymažte tajemství z aplikace a zkuste to znovu. Na zadání správného kódu už vám zbývá jen pár minut.",
       "pt": "<b style=color:red> falha na ativação do login em duas etapas </b>. Limpe o segredo do aplicativo e tente novamente. Você tem apenas alguns minutos para inserir o código correto.",
       "ja": "<b style = color：red> 2段階ログインの有効化に失敗しました</ b>。アプリケーションから秘密をクリアして、再試行してください。適切なコードを入力するのに数分しかかかりません。",
       "nl": "<b style=color:red>Tweestapsverificatie mislukt</b>. Wis het geheim van de applicatie en probeer het opnieuw. Je hebt maar een paar minuten om de juiste code in te voeren.",
@@ -948,7 +948,7 @@
     },
     {
       "en": "<b style=color:red>2-step login activation removal failed</b>. Try again.",
-      "cs": "<b style=color:red>Odstranění 2-faktorového přihlášení selhalo</b>. Zkuste znovu.",
+      "cs": "<b style=color:red>Odstranění 2-faktorového přihlášení se nezdařilo</b>. Zkuste znovu.",
       "pt": "<b style=color:red> falha na remoção da ativação do login em duas etapas </b>. Tente novamente.",
       "ja": "<b style = color：red> 2段階のログインアクティベーションの削除に失敗しました</ b>。再試行する。",
       "nl": "<b style=color:red>Tweestapsverificatie verwijdering mislukt</b>. Probeer het opnieuw.",
@@ -969,7 +969,7 @@
     },
     {
       "en": "Access Denied",
-      "cs": "Přístup zamítnut",
+      "cs": "Přístup odepřen",
       "fr": "Accès refusé",
       "pt": "Acesso Negado",
       "ja": "アクセスが拒否されました",
@@ -980,7 +980,7 @@
     },
     {
       "en": "Access denied.",
-      "cs": "Přístup zamítnut",
+      "cs": "Přístup odepřen",
       "ja": "アクセスが拒否されました。",
       "nl": "Toegang geweigerd.",
       "xloc": [
@@ -1031,7 +1031,7 @@
     },
     {
       "en": "Account limit reached.",
-      "cs": "Maximální počet účtů dosažen.",
+      "cs": "Dosažen nejvyšší možný počet účtů.",
       "ja": "アカウントの上限に達しました。",
       "nl": "Gebruikersaccount limiet bereikt.",
       "xloc": [
@@ -1061,7 +1061,7 @@
     },
     {
       "en": "Account Reset",
-      "cs": "Reset hesla",
+      "cs": "Reset hesla k účtu",
       "pt": "Redefinição de conta",
       "ja": "アカウントのリセット",
       "nl": "Gebruikersaccount resetten",
@@ -1072,7 +1072,7 @@
     },
     {
       "en": "Account security",
-      "cs": "Nastavení bezpečnosti",
+      "cs": "Nastavení zabezpečení",
       "pt": "Segurança da conta",
       "ja": "アカウントのセキュリティ",
       "nl": "Gebruikersaccount beveiliging",
@@ -1082,7 +1082,7 @@
     },
     {
       "en": "Account Security",
-      "cs": "Nastavení bezpečnosti",
+      "cs": "Nastavení zabezpečení",
       "pt": "Segurança da Conta",
       "ja": "アカウントのセキュリティ",
       "nl": "Gebruikersaccount beveiliging",
@@ -1137,7 +1137,7 @@
     },
     {
       "en": "Activate camera & microphone",
-      "cs": "Aktivovat kameru & mikrofon",
+      "cs": "Zapnout kameru a mikrofon",
       "fr": "Activer caméra et microphone",
       "pt": "Ativar câmera e microfone",
       "ja": "カメラとマイクを有効にする",
@@ -1148,7 +1148,7 @@
     },
     {
       "en": "Activate microphone",
-      "cs": "Aktivovat mikrofon",
+      "cs": "Zapnout mikrofon",
       "fr": "Activer le microphone",
       "pt": "Ativar microfone",
       "ja": "マイクを有効にする",
@@ -1159,7 +1159,7 @@
     },
     {
       "en": "Activated",
-      "cs": "Aktivováno",
+      "cs": "Zapnuto",
       "fr": "Activé",
       "pt": "ativado",
       "ja": "有効化",
@@ -1173,7 +1173,7 @@
     },
     {
       "en": "Activation",
-      "cs": "Aktivace",
+      "cs": "Zapnutí",
       "pt": "Ativação",
       "ja": "アクティベーション",
       "nl": "Activatie",
@@ -1239,7 +1239,7 @@
     },
     {
       "en": "Add a new Intel&reg; AMT device to device group \\\"{0}\\\".",
-      "cs": "Přidat nové Intel&reg; AMT zařízení do skupiny \\\"{0}\\\".",
+      "cs": "Přidat nové Intel&reg; AMT zařízení do skupiny „{0}“.",
       "pt": "Adicione um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\".",
       "ja": "新しいIntel&reg;を追加しますAMTデバイスからデバイスグループ\\\"{0}\\\"へ。",
       "nl": "Voeg een nieuwe Intel&reg; AMT computer toe aan een apparaatgroep \\\"{0}\\\".",
@@ -1433,7 +1433,7 @@
     },
     {
       "en": "admin",
-      "pt": "admin",
+      "pt": "správce",
       "ja": "管理者",
       "cs": "admin",
       "nl": "Beheerder",
@@ -1443,7 +1443,7 @@
     },
     {
       "en": "Admin Realms",
-      "cs": "Administrátorské realmy",
+      "cs": "Oblasti správy",
       "pt": "Admin Realms",
       "ja": "管理レルム",
       "nl": "Beheerdersgebied",
@@ -1453,7 +1453,7 @@
     },
     {
       "en": "Administrative Realms",
-      "cs": "Administrátorské realmy",
+      "cs": "Administrativní oblasti",
       "pt": "Domínios Administrativos",
       "ja": "管理レルム",
       "nl": "Administratieve gebieden",
@@ -1465,7 +1465,7 @@
       "en": "Administrator",
       "pt": "Administrador",
       "ja": "管理者",
-      "cs": "Administrátor",
+      "cs": "Správce",
       "nl": "Beheerder",
       "xloc": [
         "default.handlebars->23->1178"
@@ -1475,7 +1475,7 @@
       "en": "Afrikaans",
       "pt": "afrikaans",
       "ja": "アフリカーンス語",
-      "cs": "Afrikaans",
+      "cs": "afrikánština",
       "nl": "Afrikaans",
       "xloc": [
         "default.handlebars->23->690"
@@ -1566,7 +1566,7 @@
       "en": "Agent Relay",
       "pt": "Retransmissão do agente",
       "ja": "エージェントリレー",
-      "cs": "Agent Relay (přesměrování)",
+      "cs": "Agent Relay (předávání)",
       "nl": "Agent Relay",
       "xloc": [
         "default-mobile.handlebars->9->190"
@@ -1587,7 +1587,7 @@
       "en": "Agent Tag",
       "pt": "Etiqueta do agente",
       "ja": "エージェントタグ",
-      "cs": "Značka agenta",
+      "cs": "Štítek agenta",
       "nl": "Agent Tag",
       "xloc": [
         "default.handlebars->23->458",
@@ -1608,7 +1608,7 @@
       "en": "Albanian",
       "pt": "albanês",
       "ja": "アルバニア語",
-      "cs": "Albanian",
+      "cs": "albánština",
       "nl": "Albanees",
       "xloc": [
         "default.handlebars->23->691"
@@ -1686,7 +1686,7 @@
       "en": "Alternate (F10 = ESC+0)",
       "pt": "Alternativo (F10 = ESC + 0)",
       "ja": "代替（F10 = ESC + 0）",
-      "cs": "Nebo (F10 = ESC+0)",
+      "cs": "Alternativní (F10 = ESC+0)",
       "nl": "Alternatief (F10 = ESC + 0)",
       "xloc": [
         "default.handlebars->23->611"
@@ -1783,7 +1783,7 @@
       "en": "Any supported",
       "pt": "Qualquer suportado",
       "ja": "サポートされているもの",
-      "cs": "Všechny podporovány",
+      "cs": "Všechny podporované",
       "nl": "Alle ondersteunde",
       "xloc": [
         "default.handlebars->23->281"
@@ -1803,7 +1803,7 @@
       "en": "Apple MacOS only",
       "pt": "Apenas Apple MacOS ",
       "ja": "Apple MacOSのみ",
-      "cs": "Apple MacOS pouze",
+      "cs": "pouze Apple MacOS",
       "nl": "Alleen Apple MacOS",
       "xloc": [
         "default.handlebars->23->283"
@@ -1823,7 +1823,7 @@
       "en": "Arabic (Algeria)",
       "pt": "Árabe (Argélia)",
       "ja": "アラビア語（アルジェリア）",
-      "cs": "Arabic (Algeria)",
+      "cs": "arabština (Alžír)",
       "nl": "Arabisch (Algerije)",
       "xloc": [
         "default.handlebars->23->693"
@@ -1833,7 +1833,7 @@
       "en": "Arabic (Bahrain)",
       "pt": "Árabe (Bahrain)",
       "ja": "アラビア語（バーレーン）",
-      "cs": "Arabic (Bahrain)",
+      "cs": "arabština (Bahrajn)",
       "nl": "Arabisch (Bahrein)",
       "xloc": [
         "default.handlebars->23->694"
@@ -1843,7 +1843,7 @@
       "en": "Arabic (Egypt)",
       "pt": "Árabe (Egito)",
       "ja": "アラビア語（エジプト）",
-      "cs": "Arabic (Egypt)",
+      "cs": "arabština (Egypt)",
       "nl": "Arabisch (Egypte)",
       "xloc": [
         "default.handlebars->23->695"
@@ -1853,7 +1853,7 @@
       "en": "Arabic (Iraq)",
       "pt": "Árabe (Iraque)",
       "ja": "アラビア語（イラク）",
-      "cs": "Arabic (Iraq)",
+      "cs": "arabština (Irák)",
       "nl": "Arabisch (Irak)",
       "xloc": [
         "default.handlebars->23->696"
@@ -1863,7 +1863,7 @@
       "en": "Arabic (Jordan)",
       "pt": "Árabe (Jordânia)",
       "ja": "アラビア語（ヨルダン）",
-      "cs": "Arabic (Jordan)",
+      "cs": "arabština (Jordánsko)",
       "nl": "Arabisch (Jordanië)",
       "xloc": [
         "default.handlebars->23->697"
@@ -1873,7 +1873,7 @@
       "en": "Arabic (Kuwait)",
       "pt": "Árabe (Kuwait)",
       "ja": "アラビア語（クウェート）",
-      "cs": "Arabic (Kuwait)",
+      "cs": "arabština (Kuvajt)",
       "nl": "Arabisch (Koeweit)",
       "xloc": [
         "default.handlebars->23->698"
@@ -1883,7 +1883,7 @@
       "en": "Arabic (Lebanon)",
       "pt": "Árabe (Líbano)",
       "ja": "アラビア語（レバノン）",
-      "cs": "Arabic (Lebanon)",
+      "cs": "arabština (Libanon)",
       "nl": "Arabisch (Libanon)",
       "xloc": [
         "default.handlebars->23->699"
@@ -1893,7 +1893,7 @@
       "en": "Arabic (Libya)",
       "pt": "Árabe (Líbia)",
       "ja": "アラビア語（リビア）",
-      "cs": "Arabic (Libya)",
+      "cs": "arabština (Libye)",
       "nl": "Arabisch (Libië)",
       "xloc": [
         "default.handlebars->23->700"
@@ -1903,7 +1903,7 @@
       "en": "Arabic (Morocco)",
       "pt": "Árabe (Marrocos)",
       "ja": "アラビア語（モロッコ）",
-      "cs": "Arabic (Morocco)",
+      "cs": "arabština (Maroko)",
       "nl": "Arabisch (Marokko)",
       "xloc": [
         "default.handlebars->23->701"
@@ -1913,7 +1913,7 @@
       "en": "Arabic (Oman)",
       "pt": "Árabe (Omã)",
       "ja": "アラビア語（オマーン）",
-      "cs": "Arabic (Oman)",
+      "cs": "arabština (Omán)",
       "nl": "Arabisch (Oman)",
       "xloc": [
         "default.handlebars->23->702"
@@ -1923,7 +1923,7 @@
       "en": "Arabic (Qatar)",
       "pt": "Árabe (Catar)",
       "ja": "アラビア語（カタール）",
-      "cs": "Arabic (Qatar)",
+      "cs": "arabština (Katar)",
       "nl": "Arabisch (Qatar)",
       "xloc": [
         "default.handlebars->23->703"
@@ -1933,7 +1933,7 @@
       "en": "Arabic (Saudi Arabia)",
       "pt": "Árabe (Arábia Saudita)",
       "ja": "アラビア語（サウジアラビア）",
-      "cs": "Arabic (Saudi Arabia)",
+      "cs": "arabština (Saudská Arábie)",
       "nl": "Arabisch (Saoedi-Arabië)",
       "xloc": [
         "default.handlebars->23->704"
@@ -1943,7 +1943,7 @@
       "en": "Arabic (Standard)",
       "pt": "Árabe (padrão)",
       "ja": "アラビア語（標準）",
-      "cs": "Arabic (Standard)",
+      "cs": "arabština (standardní)",
       "nl": "Arabisch (Standaard)",
       "xloc": [
         "default.handlebars->23->692"
@@ -1953,7 +1953,7 @@
       "en": "Arabic (Syria)",
       "pt": "Árabe (Síria)",
       "ja": "アラビア語（シリア）",
-      "cs": "Arabic (Syria)",
+      "cs": "arabština (Sýrie)",
       "nl": "Arabisch (Syrië)",
       "xloc": [
         "default.handlebars->23->705"
@@ -1963,7 +1963,7 @@
       "en": "Arabic (Tunisia)",
       "pt": "Árabe (Tunísia)",
       "ja": "アラビア語（チュニジア）",
-      "cs": "Arabic (Tunisia)",
+      "cs": "arabština (Tunisko)",
       "nl": "Arabisch (Tunesië)",
       "xloc": [
         "default.handlebars->23->706"
@@ -1973,7 +1973,7 @@
       "en": "Arabic (U.A.E.)",
       "pt": "Árabe (U.A.E)",
       "ja": "アラビア語（U.A.E.）",
-      "cs": "Arabic (U.A.E.)",
+      "cs": "arabština (Spojené Emiráty)",
       "nl": "Arabisch (Verenigde Arabische Emiraten.)",
       "xloc": [
         "default.handlebars->23->707"
@@ -1983,7 +1983,7 @@
       "en": "Arabic (Yemen)",
       "pt": "Árabe (Iêmen)",
       "ja": "アラビア語（イエメン）",
-      "cs": "Arabic (Yemen)",
+      "cs": "arabština (Jemen)",
       "nl": "Arabisch (Jemen)",
       "xloc": [
         "default.handlebars->23->708"
@@ -1993,7 +1993,7 @@
       "en": "Aragonese",
       "pt": "Aragonês",
       "ja": "アラゴン語",
-      "cs": "Aragonese",
+      "cs": "aragonština",
       "nl": "Aragonese",
       "xloc": [
         "default.handlebars->23->709"
@@ -2024,7 +2024,7 @@
       "fr": "Êtes-vous sûr de vouloir supprimer le groupe {0}? La suppression du groupe de périphériques supprimera également toutes les informations relatives aux périphériques de ce groupe.",
       "pt": "Tem certeza de que deseja excluir o grupo {0}? A exclusão do grupo de dispositivos também excluirá todas as informações sobre os dispositivos desse grupo.",
       "ja": "グループ{0}を削除してもよろしいですか？デバイスグループを削除すると、このグループ内のデバイスに関するすべての情報も削除されます。",
-      "cs": "Opravdu smazat skupinu {0}? Smazáním skupiny se smažou všechny informace o zařízeních v této skupině.",
+      "cs": "Opravdu smazat skupinu {0}? Smazáním skupiny se smažou také všechny informace o zařízeních v této skupině.",
       "nl": "Weet je zeker dat je groep {0} wilt verwijderen? Als u de apparaatgroep verwijdert, wordt ook alle informatie over apparaten binnen deze groep verwijderd.",
       "xloc": [
         "default.handlebars->23->1030",
@@ -2036,7 +2036,7 @@
       "fr": "Êtes-vous sûr de vouloir supprimer le noeud {0}?",
       "pt": "Tem certeza de que deseja excluir o nó {0}?",
       "ja": "ノード{0}を削除してもよろしいですか？",
-      "cs": "Opravdu smazat nód {0}?",
+      "cs": "Opravdu smazat uzel {0}?",
       "nl": "Weet u zeker dat u apparaat {0} wilt verwijderen?",
       "xloc": [
         "default.handlebars->23->550"
@@ -2054,7 +2054,7 @@
     {
       "en": "Are you sure you want to uninstall the selected {0} agents?",
       "ja": "選択した{0}エージェントをアンインストールしてもよろしいですか？",
-      "cs": "Opravdu odinstalovat vybraných {0} agentů?",
+      "cs": "Opravdu odinstalovat označených {0} agentů?",
       "nl": "Weet u zeker dat u de geselecteerde {0} agenten wilt verwijderen?",
       "xloc": [
         "default.handlebars->23->538"
@@ -2063,7 +2063,7 @@
     {
       "en": "Are you sure you want to {0} the plugin: {1}",
       "ja": "プラグインを{0}してもよろしいですか：{1}",
-      "cs": "Opravdu {0} plugin: {1}",
+      "cs": "Opravdu chcete {0} zásuvný modul: {1}",
       "nl": "Weet u zeker dat u de plug-in {0} wilt gebruiken: {1}",
       "xloc": [
         "default.handlebars->23->1352"
@@ -2147,7 +2147,7 @@
       "en": "Authentication App",
       "pt": "Aplicativo de autenticação",
       "ja": "認証アプリ",
-      "cs": "Autentizační aplikace",
+      "cs": "Aplikace pro ověřování se",
       "nl": "Verificatie-app",
       "xloc": [
         "default.handlebars->23->1253"
@@ -2157,7 +2157,7 @@
       "en": "Authenticator App",
       "pt": "Autenticador de aplicativo",
       "ja": "認証アプリ",
-      "cs": "Aplikace pro autentizaci",
+      "cs": "Aplikace pro ověřování se,
       "nl": "Verificatie-app",
       "xloc": [
         "default.handlebars->23->117",
@@ -2174,7 +2174,7 @@
       "en": "Authenticator app activation successful.",
       "pt": "Ativação do aplicativo autenticador bem-sucedida.",
       "ja": "認証アプリのアクティベーションが成功しました。",
-      "cs": "Aktivace autentizační aplikace úspěšná.",
+      "cs": "Aktivace aplikace pro ověřování se úspěšná.",
       "nl": "Verificatie-app activatie geslaagd",
       "xloc": [
         "default.handlebars->23->118"
@@ -2184,7 +2184,7 @@
       "en": "Authenticator application removed.",
       "pt": "Aplicativo autenticador removido.",
       "ja": "認証アプリケーションが削除されました。",
-      "cs": "Autentizační aplikace odstraněna.",
+      "cs": "Aplikace pro ověřování se odstraněna.",
       "nl": "Verificatie-applicatie verwijderd.",
       "xloc": [
         "default.handlebars->23->123"
@@ -2195,7 +2195,7 @@
       "fr": "Automatique",
       "pt": "Auto",
       "ja": "オート",
-      "cs": "Auto",
+      "cs": "Automaticky",
       "nl": "Automatisch",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->5",
@@ -2296,7 +2296,7 @@
       "en": "Background & interactive",
       "pt": "Segundo plano e interativo",
       "ja": "背景とインタラクティブ",
-      "cs": "Na pozadí & interaktivní",
+      "cs": "Na pozadí a interaktivní",
       "nl": "Achtergrond & interactief",
       "xloc": [
         "default.handlebars->23->315"
@@ -2328,7 +2328,7 @@
       "fr": "Retour arrière",
       "pt": "Excluir",
       "ja": "バックスペース",
-      "cs": "Zpětná klávesa (backspace)",
+      "cs": "Backspace (klávesa zpětného výmazu)",
       "nl": "Backspace",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
@@ -2338,7 +2338,7 @@
       "en": "Backup Codes",
       "pt": "Códigos de backup",
       "ja": "バックアップコード",
-      "cs": "Záloha kódu",
+      "cs": "Záložní kódy",
       "nl": "Back-up codes",
       "xloc": [
         "default.handlebars->23->1255"
@@ -2358,7 +2358,7 @@
       "en": "Batch create many user accounts",
       "pt": "Lote criar muitas contas de usuário",
       "ja": "多数のユーザーアカウントをバッチ作成する",
-      "cs": "Dávkově vytvořit více uživatelů",
+      "cs": "Dávkově vytvořit vícero uživatelských účtů",
       "nl": "Gebruikersaccounts aanmaken in batch",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->1->5"
@@ -2471,7 +2471,7 @@
       "fr": "Erreur d'appel",
       "pt": "Erro de chamada",
       "ja": "呼び出しエラー",
-      "cs": "Chybová volání",
+      "cs": "Chyba volání",
       "nl": "Oproepfout",
       "xloc": [
         "default.handlebars->23->1353"
@@ -2479,7 +2479,7 @@
     },
     {
       "en": "Cancel",
-      "cs": "Zrušit",
+      "cs": "Storno",
       "fr": "Annuler",
       "pt": "Cancelar",
       "ja": "キャンセル",
@@ -2530,7 +2530,7 @@
       "fr": "Centré la carte ici",
       "pt": "Centralize o mapa aqui",
       "ja": "センターマップはこちら",
-      "cs": "Vycentrovat mapu zde",
+      "cs": "Vystředit mapu zde",
       "nl": "Centreer kaart hier",
       "xloc": [
         "default.handlebars->23->410"
@@ -2548,7 +2548,7 @@
     },
     {
       "en": "Change email address",
-      "cs": "Změnit emailovou adresu",
+      "cs": "Změnit e-mailovou adresu",
       "pt": "Mude o endereço de email",
       "ja": "メールアドレスを変更する",
       "nl": "Verander e-mailadres",
@@ -2559,7 +2559,7 @@
     },
     {
       "en": "Change Email for {0}",
-      "cs": "Změnit email pro {0}",
+      "cs": "Změnit e-mail pro {0}",
       "pt": "Alterar email para {0}",
       "ja": "{0}のメールを変更",
       "nl": "Verander e-mail voor {0}",
@@ -2616,7 +2616,7 @@
       "en": "Change the agent Java Script code module",
       "pt": "Alterar o módulo de código Java Script do agente",
       "ja": "エージェントのJava Scriptコードモジュールを変更する",
-      "cs": "Změnit kód modulu agenta Java Script",
+      "cs": "Změnit modul Java Script kódu agenta",
       "nl": "Wijzig de Javascript code module van de agent",
       "xloc": [
         "default.handlebars->container->column_l->p15->consoleTable->1->0->1->1"
@@ -2626,7 +2626,7 @@
       "en": "Change the power state of the remote machine",
       "pt": "Alterar o estado de energia da máquina remota",
       "ja": "リモートマシンの電源状態を変更する",
-      "cs": "Změnit stav napájení vzdáleného zařízení",
+      "cs": "Změnit stav napájení vzdáleného stroje",
       "nl": "Wijzig de stroomstatus van het externe apparaat",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
@@ -2636,7 +2636,7 @@
       "en": "Change your account email address here.",
       "pt": "Mude o endereço de e-mail da sua conta aqui.",
       "ja": "ここでアカウントのメールアドレスを変更します。",
-      "cs": "Změň si svůj email zde.",
+      "cs": "Svůj e-mail si změníte zde.",
       "nl": "Wijzig hier het e-mailadres van uw account.",
       "xloc": [
         "default.handlebars->23->902"
@@ -2644,7 +2644,7 @@
     },
     {
       "en": "Change your account password by entering the old password and new password twice in the boxes below.",
-      "cs": "Změnit heslo zadáním starého a dvakrát nového hesla níže.",
+      "cs": "Heslo ke svému účtu si změníte zadáním stávajícího hesla a pak nového (do obou kolonek) do níže uvedených kolonek.",
       "pt": "Altere a senha da sua conta digitando a senha antiga e a nova senha duas vezes nas caixas abaixo.",
       "ja": "下のボックスに古いパスワードと新しいパスワードを2回入力して、アカウントのパスワードを変更します。",
       "nl": "Wijzig uw wachtwoord door het invoeren van het oude en het nieuwe wachtwoord twee keer in de vakken hieronder.",
@@ -2656,7 +2656,7 @@
       "en": "Changing the language will require a refresh of the page.",
       "pt": "Alterar o idioma exigirá uma atualização da página.",
       "ja": "言語を変更するには、ページを更新する必要があります。",
-      "cs": "Změna jazyka vyžaduje obnovení stránky.",
+      "cs": "Změna jazyka vyžaduje znovunačtení stránky.",
       "nl": "Als u de taal wilt wijzigen, moet de pagina worden vernieuwd.",
       "xloc": [
         "default.handlebars->23->887"
@@ -2676,7 +2676,7 @@
       "en": "Chat & Notify",
       "pt": "Chat & Notificação",
       "ja": "チャットと通知",
-      "cs": "Chat & Upozornění",
+      "cs": "Chat a upozornění",
       "nl": "Chat & Melden",
       "xloc": [
         "default.handlebars->23->1069",
@@ -2699,7 +2699,7 @@
       "en": "Check and click OK to clear error log.",
       "pt": "Verifique e clique em OK para limpar o log de erros.",
       "ja": "チェックして[OK]をクリックし、エラーログをクリアします。",
-      "cs": "Zatrhni a klikni na OK pro vymazaní chybového logu.",
+      "cs": "Pro vymazání záznamu chyb zaškrtněte a klikněte na OK.",
       "nl": "Controleer en klik op OK om het foutenlogboek te wissen.",
       "xloc": [
         "default.handlebars->23->114"
@@ -2709,7 +2709,7 @@
       "en": "Check and click OK to start server self-update.",
       "pt": "Marque e clique em OK para iniciar a atualização automática do servidor.",
       "ja": "チェックして[OK]をクリックし、サーバーの自己更新を開始します。",
-      "cs": "Zatrhni a klikni na OK pro automatickou aktializaci serveru. ",
+      "cs": "Pro zahájení samoaktualizace serveru zaškrtněte a klikněte na OK. ",
       "nl": "Controleer en klik op OK om de serverupdate te starten.",
       "xloc": [
         "default.handlebars->23->109"
@@ -2727,7 +2727,7 @@
     },
     {
       "en": "Checking...",
-      "cs": "Kontrola...",
+      "cs": "Kontrola…",
       "pt": "Verificando ...",
       "ja": "確認しています...",
       "nl": "Controleren...",
@@ -2835,7 +2835,7 @@
       "en": "CIRA Server Commands",
       "pt": "Comandos do servidor CIRA",
       "ja": "CIRAサーバーコマンド",
-      "cs": "CIRA Server příkazy",
+      "cs": "příkazy CIRA serveru",
       "nl": "CIRA Server opdrachten",
       "xloc": [
         "default.handlebars->23->1344"
@@ -2888,7 +2888,7 @@
       "en": "Clear the secret from the application and try again. You only have a few minutes to enter the proper code.",
       "pt": "Limpe o segredo do aplicativo e tente novamente. Você tem apenas alguns minutos para inserir o código correto.",
       "ja": "アプリケーションから秘密をクリアして、再試行してください。適切なコードを入力するのに数分しかかかりません。",
-      "cs": "Vymaž tajemství z aplikace a zkus to znovu. Máš na zadání správného kódu jen pár minut.",
+      "cs": "Vymažte tajemství z aplikace a zkuste to znovu. Na zadání správného kódu máte jen několik minut.",
       "nl": "Wis het geheim van de applicatie en probeer het opnieuw. Je hebt maar een paar minuten om de juiste code in te voeren.",
       "xloc": [
         "default.handlebars->23->121"
@@ -2908,7 +2908,7 @@
       "en": "click here to create a device group",
       "pt": "clique aqui para criar um grupo de dispositivos",
       "ja": "ここをクリックしてデバイスグループを作成します",
-      "cs": "klikni zde pro vytvoření skupiny zařízení",
+      "cs": "pro vytvoření skupiny zařízení klikněte sem",
       "nl": "klik hier om een apparaatgroep te maken",
       "xloc": [
         "default.handlebars->container->column_l->p1->NoMeshesPanel->1->1->0->3->getStarted1->1->0"
@@ -2918,7 +2918,7 @@
       "en": "Click here to edit the server-side device name",
       "pt": "clique aqui para criar um grupo de dispositivos",
       "ja": "サーバー側のデバイス名を編集するにはここをクリックしてください",
-      "cs": "Klikni zde pro úpravu server-side jména zařízení",
+      "cs": "Pro úpravu toho, jak je zařízení nazýváno na serveru, klikněte sem",
       "nl": "Klik hier om de apparaatnaam van de server te bewerken",
       "xloc": [
         "default.handlebars->23->424"
@@ -2928,7 +2928,7 @@
       "en": "Click ok to send a verification mail to:",
       "pt": "Clique em ok para enviar um email de verificação para:",
       "ja": "[OK]をクリックして確認メールを送信します：",
-      "cs": "Klikni na OK pro zaslání verifikačního emailu na:",
+      "cs": "Klikněte na OK a bude vám zaslán ověřovací e-mail na:",
       "nl": "Klik op OK om een verificatiebericht te sturen naar:",
       "xloc": [
         "default.handlebars->23->899",
@@ -2937,7 +2937,7 @@
     },
     {
       "en": "click to reconnect",
-      "cs": "klikni pro opětovné připojení",
+      "cs": "klikněte pro opětovné připojení",
       "pt": "clique para reconectar",
       "ja": "クリックして再接続",
       "nl": "klik om opnieuw verbinding te maken",
@@ -2950,7 +2950,7 @@
       "en": "Click to view current notifications",
       "pt": "Clique para visualizar as notificações atuais",
       "ja": "クリックして現在の通知を表示します",
-      "cs": "Klikni pro zobrazení nastavení notifikací",
+      "cs": "Klikněte pro zobrazení aktuálních upozornění",
       "nl": "Klik om de huidige meldingen te bekijken",
       "xloc": [
         "default.handlebars->container->masthead->7"
@@ -2992,7 +2992,7 @@
     },
     {
       "en": "Columns",
-      "cs": "Buňky",
+      "cs": "Sloupce",
       "pt": "Colunas",
       "ja": "列",
       "nl": "kolommen",
@@ -3094,7 +3094,7 @@
       "en": "Confirm removal of authenticator application 2-step login?",
       "pt": "Confirmar remoção do login do aplicativo autenticador em duas etapas?",
       "ja": "認証アプリケーションの削除2段階ログインを確認しますか？",
-      "cs": "Potvrdit odstranění autentizační aplikace pro 2-faktorové přihlašování?",
+      "cs": "Potvrdit odstranění aplikace pro 2-faktorové ověřování se?",
       "nl": "Bevestig de verwijdering van de Tweestapsverificatie applicatie?",
       "xloc": [
         "default.handlebars->23->679",
@@ -3186,7 +3186,7 @@
       "en": "Connecting...",
       "pt": "Conectando...",
       "ja": "接続しています...",
-      "cs": "Připojování...",
+      "cs": "Připojování…",
       "nl": "Verbinden...",
       "xloc": [
         "default.handlebars->23->9",
@@ -3213,7 +3213,7 @@
       "en": "Connection Count",
       "pt": "Contagem de conexões",
       "ja": "接続数",
-      "cs": "Čítač připojení",
+      "cs": "Počitadlo připojení",
       "nl": "Aantal verbindingen",
       "xloc": [
         "default.handlebars->23->1316"
@@ -3223,7 +3223,7 @@
       "en": "Connection Relay",
       "pt": "Encaminhador de conexão",
       "ja": "接続リレー",
-      "cs": "Přesměrování spojení",
+      "cs": "Předávání (relay) spojení",
       "nl": "Verbindings Relay",
       "xloc": [
         "default.handlebars->23->1342"
@@ -3267,7 +3267,7 @@
     },
     {
       "en": "Console - ",
-      "cs": "Konzole - ",
+      "cs": "Konzole – ",
       "pt": "Console - ",
       "ja": "コンソール -",
       "nl": "Console - ",
@@ -3289,7 +3289,7 @@
       "en": "Cookie encoder",
       "pt": "Codificador de cookies",
       "ja": "Cookieエンコーダー",
-      "cs": "Cookie dekodér",
+      "cs": "Cookie enkodér",
       "nl": "Cookie encoder",
       "xloc": [
         "default.handlebars->23->1330"
@@ -3485,7 +3485,7 @@
       "en": "CPU load in the last 15 minutes",
       "pt": "Carga da CPU nos últimos 15 minutos",
       "ja": "過去15分間のCPU負荷",
-      "cs": "CPU zatížení v posledních 15 minutách",
+      "cs": "vytížení procesoru v uplynulých 15 minutách",
       "nl": "CPU-belasting in de afgelopen 15 minuten",
       "xloc": [
         "default.handlebars->23->1312"
@@ -3495,7 +3495,7 @@
       "en": "CPU load in the last 5 minutes",
       "pt": "Carga da CPU nos últimos 5 minutos",
       "ja": "過去5分間のCPU負荷",
-      "cs": "CPU zatížení v posledních 5 minutách",
+      "cs": "vyžítení procesoru v uplynulých 5 minutách",
       "nl": "CPU-belasting in de afgelopen 5 minuten",
       "xloc": [
         "default.handlebars->23->1311"
@@ -3503,7 +3503,7 @@
     },
     {
       "en": "CPU load in the last minute",
-      "cs": "CPU zatížení v poslední minutě",
+      "cs": "vytížení procesoru v předešlé minutě",
       "pt": "Carga da CPU no último minuto",
       "ja": "直前のCPU負荷",
       "nl": "CPU-belasting in de laatste minuut",
@@ -3717,7 +3717,7 @@
       "en": "Czech",
       "pt": "Tcheco",
       "ja": "チェコ語",
-      "cs": "Czech",
+      "cs": "čeština",
       "nl": "Tsjechisch",
       "xloc": [
         "default.handlebars->23->733"
@@ -3745,7 +3745,7 @@
     },
     {
       "en": "Dates & Time",
-      "cs": "Datum & čas",
+      "cs": "Datum a čas",
       "pt": "Datas e Horário",
       "ja": "日時",
       "nl": "Datum & Tiid",
@@ -3873,7 +3873,7 @@
     },
     {
       "en": "Delete Nodes",
-      "cs": "Smazat nody",
+      "cs": "Smazat uzly",
       "pt": "Excluir nós",
       "ja": "ノードを削除する",
       "nl": "Verwijder apparaten",
@@ -3931,7 +3931,7 @@
       "en": "Descend by date",
       "pt": "Descrescente por data",
       "ja": "日付で降順",
-      "cs": "Sestupně podle datumu",
+      "cs": "Sestupně podle data",
       "nl": "Aflopend op datum",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->2->p5filesubhead->1->p5sortdropdown->11",
@@ -4016,7 +4016,7 @@
       "en": "Desktop -",
       "pt": "Área de Trabalho - ",
       "ja": "デスクトップ-",
-      "cs": "Plocha -",
+      "cs": "Plocha –",
       "nl": "Bureaublad - ",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11title->p11deviceNameHeader->5"
@@ -4075,7 +4075,7 @@
     },
     {
       "en": "Details",
-      "cs": "Detaily",
+      "cs": "Podrobnosti",
       "pt": "Detalhes",
       "ja": "詳細",
       "nl": "Details",
@@ -4085,7 +4085,7 @@
     },
     {
       "en": "Details -",
-      "cs": "Detaily -",
+      "cs": "Podrobnosti –",
       "pt": "Detalhes - ",
       "ja": "詳細-",
       "nl": "Details -",
@@ -4140,7 +4140,7 @@
       "en": "Device group notes can be viewed and changed by other device group administrators.",
       "pt": "As notas do grupo de dispositivos podem ser visualizadas e alteradas por outros administradores do grupo de dispositivos.",
       "ja": "デバイスグループのメモは、他のデバイスグループ管理者が表示および変更できます。",
-      "cs": "Poznámky pro skupinu zařízení si může prohlédnout nebo upravit jen jiný administrátor skupiny.",
+      "cs": "Poznámky pro skupinu zařízení si mohou zobrazit nebo upravit pouze ostatní správci skupiny.",
       "nl": "Apparaatgroepnotities kunnen worden bekeken en gewijzigd door andere apparaatgroepbeheerders.",
       "xloc": [
         "default.handlebars->23->514"
@@ -4148,7 +4148,7 @@
     },
     {
       "en": "Device Group User",
-      "cs": "Uživatelé této skupiny zařízení",
+      "cs": "Uživatel této skupiny zařízení",
       "pt": "Usuário do grupo de dispositivos",
       "ja": "デバイスグループユーザー",
       "nl": "Apparaatgroep gebruiker",
@@ -4172,7 +4172,7 @@
     },
     {
       "en": "Device is detected but power state could not be obtained.",
-      "cs": "Zařízení je detekováno, ale nelze zjistit stav.",
+      "cs": "Zařízení je zjištěno, ale nelze zjistit stav jeho napájení.",
       "pt": "O dispositivo foi detectado, mas não foi possível obter o estado de energia.",
       "ja": "デバイスは検出されましたが、電源状態を取得できませんでした。",
       "nl": "Apparaat is gedetecteerd, maar de status kon niet worden verkregen.",
@@ -4287,7 +4287,7 @@
     },
     {
       "en": "Device is powered",
-      "cs": "Zařízení je zapnuto",
+      "cs": "Zařízení je zapnuté",
       "pt": "O dispositivo está ligado",
       "ja": "デバイスに電源が入っています",
       "nl": "Apparaat is ingeschakeld",
@@ -4300,7 +4300,7 @@
       "en": "Device is powered on.",
       "pt": "O dispositivo está ligado.",
       "ja": "デバイスの電源が入っています。",
-      "cs": "Zařízení je zapnuto.",
+      "cs": "Zařízení je zapnuté.",
       "nl": "Apparaat is ingeschakeld.",
       "xloc": [
         "default.handlebars->23->343"
@@ -4310,7 +4310,7 @@
       "en": "Device is present, but power state cannot be determined",
       "pt": "O dispositivo está presente, mas o estado de energia não pode ser determinado",
       "ja": "デバイスは存在しますが、電源状態を判別できません",
-      "cs": "Zařízení je přítomno, ale nelze získat stav napájení",
+      "cs": "Zařízení je přítomno, ale nedaří se zjistit stav napájení",
       "nl": "Apparaat is aanwezig, maar de status kan niet worden bepaald",
       "xloc": [
         "default.handlebars->23->363",
@@ -4440,7 +4440,7 @@
       "en": "Display a notification on the remote computer",
       "pt": "Exibir uma notificação no computador remoto",
       "ja": "リモートコンピューターに通知を表示する",
-      "cs": "Zobrazit notifikaci na vzdáleném zařízení",
+      "cs": "Zobrazit upozornění na vzdáleném zařízení",
       "nl": "Toon een melding op de externe computer",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -4460,7 +4460,7 @@
       "en": "DNS suffix",
       "pt": "Sufixo DNS",
       "ja": "DNSサフィックス",
-      "cs": "DNS suffix",
+      "cs": "DNS přípona",
       "nl": "DNS-achtervoegsel",
       "xloc": [
         "default.handlebars->23->91"
@@ -4468,7 +4468,7 @@
     },
     {
       "en": "Do nothing",
-      "cs": "Nic",
+      "cs": "Nedělat nic",
       "pt": "Fazer nada",
       "ja": "何もしない",
       "nl": "Doe niets",
@@ -4491,7 +4491,7 @@
       "en": "Don\\'t configure",
       "pt": "Não configure",
       "ja": "設定しないでください",
-      "cs": "Nekonfigurovat",
+      "cs": "Nenastavovat",
       "nl": "Niet configureren",
       "xloc": [
         "default.handlebars->23->1019",
@@ -4523,7 +4523,7 @@
       "en": "Download console text",
       "pt": "Baixar do texto do console",
       "ja": "コンソールテキストをダウンロードする",
-      "cs": "Stáhnout text z konzole",
+      "cs": "Stáhnout si text z konzole",
       "nl": "Consoletekst downloaden",
       "xloc": [
         "default.handlebars->container->column_l->p15->consoleTable->1->0->1->1"
@@ -4533,7 +4533,7 @@
       "en": "Download data points (.csv)",
       "pt": "Baixar pontos de dados (.csv)",
       "ja": "データポイント（.csv）をダウンロードする",
-      "cs": "Stáhnout datové body (.csv)",
+      "cs": "Stáhnout si datové body (.csv)",
       "nl": "Gegevenspunten downloaden (.csv)",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1"
@@ -4543,7 +4543,7 @@
       "en": "Download error log",
       "pt": "Baixar log de erro",
       "ja": "エラーログをダウンロードする",
-      "cs": "Stáhnout chybový log",
+      "cs": "Stáhnout si záznam chyb",
       "nl": "Foutenlogboek downloaden",
       "xloc": [
         "default.handlebars->23->113"
@@ -4553,7 +4553,7 @@
       "en": "Download Events",
       "pt": "Download de Eventos",
       "ja": "イベントをダウンロードする",
-      "cs": "Stáhnout události",
+      "cs": "Stáhnout si události",
       "nl": "Download gebeurtenissen",
       "xloc": [
         "default.handlebars->container->column_l->p3->3->1->0->3->3",
@@ -4563,7 +4563,7 @@
     },
     {
       "en": "Download File",
-      "cs": "Stáhnout soubor",
+      "cs": "Stáhnout si soubor",
       "pt": "⇬ Fazer download do arquivo",
       "ja": "ダウンロードファイル",
       "nl": "Download Bestand",
@@ -4576,7 +4576,7 @@
       "en": "Download MeshCentral Router, a TCP port mapping tool.",
       "pt": "Faça o download do MeshCentral Router, uma ferramenta de mapeamento de portas TCP.",
       "ja": "TCPポートマッピングツールであるMeshCentralルーターをダウンロードします。",
-      "cs": "Stáhnout MeshCentral, což je TCP nástroj pro mapování portů.",
+      "cs": "Stáhnout si MeshCentral Router – nástroj pro mapování TCP portů.",
       "nl": "Download MeshCentral Router, een hulpmiddel voor het toewijzen van TCP-poorten.",
       "xloc": [
         "default.handlebars->23->202"
@@ -4586,7 +4586,7 @@
       "en": "Download MeshCmd",
       "pt": "Baixar MeshCmd",
       "ja": "MeshCmdをダウンロード",
-      "cs": "Stáhnout MeshCmd",
+      "cs": "Stáhnout si MeshCmd",
       "nl": "Download MeshCmd",
       "xloc": [
         "default.handlebars->23->564"
@@ -4596,7 +4596,7 @@
       "en": "Download MeshCmd, a command line tool that performs many functions.",
       "pt": "Faça o download do MeshCmd, uma ferramenta de linha de comando que executa muitas funções.",
       "ja": "多くの機能を実行するコマンドラインツール、MeshCmdをダウンロードします。",
-      "cs": "Stáhnout MeshCmd, což je nástroj pro příkazovou řásku s mnoha funkcemi.",
+      "cs": "Stáhnout si MeshCmd – nástroj pro příkazový řádek s mnoha funkcemi.",
       "nl": "Download MeshCmd, een opdrachtregelprogramma dat vele functies uitvoert.",
       "xloc": [
         "default.handlebars->23->200"
@@ -4605,7 +4605,7 @@
     {
       "en": "Download Plugin",
       "ja": "プラグインをダウンロード",
-      "cs": "Stáhnout plugin",
+      "cs": "Stáhnout si zásuvný modul",
       "nl": "Download Plugin",
       "xloc": [
         "default.handlebars->container->column_l->p42->3->3"
@@ -4615,7 +4615,7 @@
       "en": "Download power events",
       "pt": "Download de eventos de energia",
       "ja": "電源イベントをダウンロードする",
-      "cs": "Stáhnout události napájení",
+      "cs": "Stáhnout si události napájení",
       "nl": "Downloaden Power gebeurtenissen",
       "xloc": [
         "default.handlebars->23->527"
@@ -4625,7 +4625,7 @@
       "en": "Download server backup",
       "pt": "Fazer o download do backup do servidor",
       "ja": "サーバーのバックアップをダウンロード",
-      "cs": "Stáhnout zálohu serveru",
+      "cs": "Stáhnout si zálohu serveru",
       "nl": "Download server back-up",
       "xloc": [
         "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsBackup->0"
@@ -4633,7 +4633,7 @@
     },
     {
       "en": "Download the installer here",
-      "cs": "Stáhnout instalaci zde",
+      "cs": "Instalátor si stáhnete zde",
       "pt": "Faça o download do instalador aqui",
       "ja": "ここからインストーラーをダウンロードしてください",
       "nl": "Download het installatieprogramma hier",
@@ -4645,7 +4645,7 @@
       "en": "Download the list of events with one of the file formats below.",
       "pt": "Faça o download da lista de eventos com um dos formatos de arquivo abaixo.",
       "ja": "以下のファイル形式のいずれかでイベントのリストをダウンロードします。",
-      "cs": "Stáhnout seznam událostí v níže uvedeném formátu.",
+      "cs": "Stáhnout si seznam událostí v níže uvedeném formátu.",
       "nl": "Download de lijst met gebeurtenissen in een van de onderstaande bestandsindelingen.",
       "xloc": [
         "default.handlebars->23->1152"
@@ -4655,7 +4655,7 @@
       "en": "Download the list of users with one of the file formats below.",
       "pt": "Baixe a lista de usuários com um dos formatos de arquivo abaixo.",
       "ja": "以下のファイル形式のいずれかでユーザーのリストをダウンロードします。",
-      "cs": "Stáhnout seznam uživatelů v níže uvedeném formátu.",
+      "cs": "Stáhnout si seznam uživatelů v níže uvedeném formátu.",
       "nl": "Download de lijst met gebruikers in een van de onderstaande bestandsindelingen.",
       "xloc": [
         "default.handlebars->23->1191"
@@ -4665,7 +4665,7 @@
       "en": "Download the software here",
       "pt": "Faça o download do software aqui",
       "ja": "ここからソフトウェアをダウンロードしてください",
-      "cs": "Stáhnout software zde",
+      "cs": "Software si stáhnete zde",
       "nl": "Download de software hier",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab64->3->win64url",
@@ -4676,7 +4676,7 @@
       "en": "Download trace (.csv)",
       "pt": "Rastreio de download (.csv)",
       "ja": "トレースのダウンロード（.csv）",
-      "cs": "Stáhnout trace (.csv)",
+      "cs": "Stáhnout si trace (.csv)",
       "nl": "Download sporen (.csv)",
       "xloc": [
         "default.handlebars->container->column_l->p41->3->1"
@@ -4686,7 +4686,7 @@
       "en": "Download user information",
       "pt": "Baixar informações do usuário",
       "ja": "ユーザー情報をダウンロードする",
-      "cs": "Stáhnout uživatelské informace",
+      "cs": "Stáhnout si informace o uživateli",
       "nl": "Download gebruikers informatie",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->1->3"
@@ -4696,7 +4696,7 @@
       "en": "Drag & drop a .mcrec file or click \\\"Open File...\\\"",
       "pt": "Arraste e solte um arquivo .mcrec ou clique em \\\"Abrir arquivo...\\\"",
       "ja": ".mcrecファイルをドラッグアンドドロップするか、[ファイルを開く...]をクリックします",
-      "cs": "Drag & drop soubor .mcrec nebo klikni na \\\"Otevřít soubor...\\\"",
+      "cs": "Přetáhněte soubor .mcrec nebo klikněte na „Otevřít soubor…“",
       "nl": "Sleep een .mcrec-bestand of klik op \\\"Bestand openen ...\\\"",
       "xloc": [
         "player.htm->3->18"
@@ -4706,7 +4706,7 @@
       "en": "Duration",
       "pt": "Duração",
       "ja": "期間",
-      "cs": "Trvání",
+      "cs": "Délka trvání",
       "nl": "Looptijd",
       "xloc": [
         "player.htm->3->2"
@@ -4716,7 +4716,7 @@
       "en": "During activation, the agent will have access to admin password infomation.",
       "pt": "Durante a ativação, o agente terá acesso às informações da senha do administrador.",
       "ja": "アクティベーション中、エージェントは管理者パスワード情報にアクセスできます。",
-      "cs": "Během aktivace bude mít agent administrátorská práva.",
+      "cs": "Během aktivace bude mít agent přístup k heslu správce.",
       "nl": "Tijdens activering heeft de agent toegang tot beheerderswachtwoordinformatie.",
       "xloc": [
         "default.handlebars->23->1029"
@@ -4792,7 +4792,7 @@
       "en": "Edit Device Group User Consent",
       "pt": "Editar consentimento do usuário do grupo de dispositivos",
       "ja": "デバイスグループユーザーの同意の編集",
-      "cs": "Upravit souhlas uživatele skupiny zařízení",
+      "cs": "Upravit souhlas uživatele u skupiny zařízení",
       "nl": "Toestemming gebruikersgroep bewerken",
       "xloc": [
         "default.handlebars->23->1046"
@@ -4813,7 +4813,7 @@
       "en": "Edit Intel&reg; AMT credentials",
       "pt": "Editar Intel & reg; Credenciais AMT",
       "ja": "Intelを編集&reg; AMTクレデンシャル",
-      "cs": "Upravit Intel&reg; AMT pověření",
+      "cs": "Upravit přihlašovací údaje k Intel&reg; AMT",
       "nl": "Bewerk Intel&reg; AMT-gegevens",
       "xloc": [
         "default.handlebars->23->449",
@@ -4848,7 +4848,7 @@
       "en": "Edit User Device Group Permissions",
       "pt": "Editar permissões do grupo de dispositivos do usuário",
       "ja": "ユーザーデバイスグループ権限の編集",
-      "cs": "Upravit uživatelská práva pro skupinu zařízení ",
+      "cs": "Upravit oprávnění uživatele pro skupinu zařízení",
       "nl": "Gebruikersrechten apparaatgroep bewerken",
       "xloc": [
         "default.handlebars->23->1072"
@@ -4858,7 +4858,7 @@
       "en": "Email",
       "pt": "Email",
       "ja": "Eメール",
-      "cs": "Email",
+      "cs": "E-mail",
       "nl": "E-mail",
       "xloc": [
         "default.handlebars->23->277",
@@ -4871,7 +4871,7 @@
     },
     {
       "en": "Email Address Change",
-      "cs": "Změna emailové adresy",
+      "cs": "Změna e-mailové adresy",
       "pt": "Alteração de endereço de email",
       "ja": "メールアドレスの変更",
       "nl": "E-mailadres wijzigen",
@@ -4882,7 +4882,7 @@
     },
     {
       "en": "Email is verified",
-      "cs": "Email ověřen",
+      "cs": "E-mail je ověřen",
       "pt": "O email foi verificado",
       "ja": "メールが確認されました",
       "nl": "E-mail is geverifieerd",
@@ -4892,7 +4892,7 @@
     },
     {
       "en": "Email is verified.",
-      "cs": "Email je ověřen.",
+      "cs": "E-mail je ověřen.",
       "pt": "O email foi verificado.",
       "ja": "メールが確認されました。",
       "nl": "E-mail is geverifieerd.",
@@ -4902,7 +4902,7 @@
     },
     {
       "en": "Email not verified",
-      "cs": "Email není ověřen",
+      "cs": "E-mail není ověřen",
       "pt": "Email não verificado",
       "ja": "メールが確認されていません",
       "nl": "E-mail is niet geverifieerd",
@@ -4914,7 +4914,7 @@
       "en": "Email Verification",
       "pt": "verificação de e-mail",
       "ja": "メール確認",
-      "cs": "Ověření emailu",
+      "cs": "Ověření e-mailu",
       "nl": "E-mail verificatie",
       "xloc": [
         "default.handlebars->23->901",
@@ -4925,7 +4925,7 @@
       "en": "Email:",
       "pt": "Email:",
       "ja": "Eメール：",
-      "cs": "Email:",
+      "cs": "E-mail:",
       "nl": "E-mail:",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail",
@@ -4938,7 +4938,7 @@
     },
     {
       "en": "Enable browser notification",
-      "cs": "Zapnout notifikace v prohlížeči",
+      "cs": "Zapnout upozorňování v prohlížeči",
       "pt": "Ativar notificação do navegador",
       "ja": "ブラウザ通知を有効にする",
       "nl": "Schakel browsermelding in",
@@ -4948,7 +4948,7 @@
     },
     {
       "en": "Enable web notifications",
-      "cs": "Zapnout notifikace prohlížeče",
+      "cs": "Zapnout upozorňování z webu v prohlížeči",
       "pt": "Ativar notificações da web",
       "ja": "Web通知を有効にする",
       "nl": "Schakel webmeldingen in",
@@ -5114,7 +5114,7 @@
       "en": "Enter a comma seperate list of administrative realms names.",
       "pt": "Insira uma lista separada por vírgulas de nomes de regiões administrativas.",
       "ja": "管理レルム名のコンマ区切りリストを入力します。",
-      "cs": "Zadejte seznam administrativních realmů oddělených čárkami.",
+      "cs": "Zadejte seznam správních oblastí (oddělovaných čárkou).",
       "nl": "Voer een door komma's gescheiden lijst met beheerdersnamen in.",
       "xloc": [
         "default.handlebars->23->1213"
@@ -5134,7 +5134,7 @@
       "en": "Enter text and click OK to remotely type it using a US english keyboard. Make sure to place the remote cursor at the correct position before proceeding.",
       "pt": "Digite o texto e clique em OK para digitá-lo remotamente usando um teclado em inglês dos EUA.Certifique-se de colocar o cursor remoto na posição correta antes de continuar.",
       "ja": "テキストを入力し、[OK]をクリックして、米国英語キーボードを使用してリモートで入力します。続行する前に、リモートカーソルを正しい位置に配置してください。",
-      "cs": "Zadejte text a kliknutím na OK jej zadáte na dálku pomocí americké anglické klávesnice. Než budete pokračovat, nezapomeňte vzdálený kurzor na správnou pozici.",
+      "cs": "Zadejte text a kliknutím na OK ho zadáte na dálku pomocí klávesnice (rozložení en-US). Než budete pokračovat, nezapomeňte umístnit vzdálený kurzor na správnou pozici.",
       "nl": "Voer tekst in en klik op OK om deze op afstand te typen met een Amerikaans Engels toetsenbord. Zorg ervoor dat u de externe cursor op de juiste positie plaatst voordat u doorgaat.",
       "xloc": [
         "default.handlebars->23->582"
@@ -5165,7 +5165,7 @@
       "en": "Error, Unable to add key.",
       "pt": "Erro, não foi possível adicionar a chave.",
       "ja": "エラー、キーを追加できません。",
-      "cs": "Chyba, nelze přidat klíč.",
+      "cs": "Chyba, klíč nelze přidat.",
       "nl": "Fout, kan sleutel niet toevoegen.",
       "xloc": [
         "default.handlebars->23->142"
@@ -5197,7 +5197,7 @@
       "fr": "ERREUR: Impossible d'ajouter la clé.",
       "pt": "ERRO: Não foi possível adicionar a chave.",
       "ja": "エラー：キーを追加できません。",
-      "cs": "CHYBA: nelze přidat klíč.",
+      "cs": "CHYBA: klíč nelze přidat.",
       "nl": "FOUT: kan sleutel niet toevoegen.",
       "xloc": [
         "default.handlebars->23->144"
@@ -5237,7 +5237,7 @@
       "en": "Event Details",
       "pt": "Detalhes do evento",
       "ja": "イベントの詳細",
-      "cs": "Detail události",
+      "cs": "Podrobnosti události",
       "nl": "Gebeurtenis details",
       "xloc": [
         "default.handlebars->23->658"
@@ -5271,7 +5271,7 @@
       "fr": "Événements -",
       "pt": "Eventos -",
       "ja": "イベント-",
-      "cs": "Události -",
+      "cs": "Události –",
       "nl": "Gebeurtenissen -",
       "xloc": [
         "default.handlebars->container->column_l->p16->p16title->3",
@@ -5304,7 +5304,7 @@
       "en": "example@email.com",
       "pt": "example@email.com",
       "ja": "example@email.com",
-      "cs": "example@email.com",
+      "cs": "e-mail@example.com",
       "nl": "voorbeeld@email.nl",
       "xloc": [
         "default.handlebars->23->278"
@@ -5313,7 +5313,7 @@
     {
       "en": "Existing account with this email address.",
       "ja": "このメールアドレスを持つ既存のアカウント。",
-      "cs": "Existuje účet s tímto emailem.",
+      "cs": "Tato e-mailová adresa už je používána u jiného účtu.",
       "nl": "Bestaand account met dit e-mailadres.",
       "xloc": [
         "login.handlebars->5->4",
@@ -5352,7 +5352,7 @@
     },
     {
       "en": "Failed",
-      "cs": "Selhalo",
+      "cs": "Nezdařilo se",
       "fr": "Échoué",
       "pt": "Falhou",
       "ja": "失敗しました",
@@ -5443,7 +5443,7 @@
     {
       "en": "Files -",
       "cs": "Soubory -",
-      "fr": "Dossiers -",
+      "fr": "Dossiers –",
       "pt": "Arquivos - ",
       "ja": "ファイル-",
       "nl": "Bestanden -",
@@ -5531,7 +5531,7 @@
     },
     {
       "en": "Folder",
-      "cs": "Adresář",
+      "cs": "Složka",
       "fr": "Dossier",
       "pt": "Pasta",
       "ja": "フォルダ",
@@ -5586,7 +5586,7 @@
     },
     {
       "en": "Frame rate",
-      "cs": "Obnovování",
+      "cs": "Snímková frekvence",
       "pt": "Taxa de quadros",
       "ja": "フレームレート",
       "nl": "Frameverhouding",
@@ -5729,7 +5729,7 @@
     },
     {
       "en": "Full Administrator",
-      "cs": "Hlavní administrátor",
+      "cs": "Hlavní správce",
       "fr": "Administrateur Complet",
       "pt": "Administrador completo",
       "ja": "完全な管理者",
@@ -5747,7 +5747,7 @@
     },
     {
       "en": "Full administrator",
-      "cs": "Hlavní administrator",
+      "cs": "Hlavní správce",
       "fr": "Administrateur complet",
       "pt": "Administrador completo",
       "ja": "完全な管理者",
@@ -5758,7 +5758,7 @@
     },
     {
       "en": "Full Administrator (all rights)",
-      "cs": "Hlavní administrator (všechna práva)",
+      "cs": "Hlavní správce (všechna práva)",
       "fr": "Administrateur Complet (tous droits)",
       "pt": "Administrador Pleno (todos os direitos)",
       "ja": "完全な管理者（すべての権利）",
@@ -5825,7 +5825,7 @@
     },
     {
       "en": "Gateway MAC",
-      "cs": "MAC brány",
+      "cs": "MAC adresa brány",
       "fr": "Passerelle MAC",
       "pt": "Gateway MAC",
       "ja": "ゲートウェイMAC",
@@ -5850,7 +5850,7 @@
     },
     {
       "en": "General -",
-      "cs": "Obecné -",
+      "cs": "Obecné –",
       "fr": "Général -",
       "pt": "Geral - ",
       "ja": "全般-",
@@ -5874,7 +5874,7 @@
     },
     {
       "en": "Generate New Tokens",
-      "cs": "Generovat nové tokeny",
+      "cs": "Vytvořit nové tokeny",
       "fr": "Générer de nouveaux jetons",
       "pt": "Gere novos tokens",
       "ja": "新しいトークンを生成する",
@@ -6109,7 +6109,7 @@
       "fr": "Déconnexion forcée de l'agent",
       "pt": "Forçar desconexão do agente",
       "ja": "ハード切断エージェント",
-      "cs": "Tvrdě odpojit aenta",
+      "cs": "Vynutit odpojení agenta",
       "nl": "Harde ontkoppeling agent",
       "xloc": [
         "default.handlebars->23->674"
@@ -6130,7 +6130,7 @@
       "fr": "Hibernation",
       "pt": "Hibernando",
       "ja": "冬眠",
-      "cs": "Hibernuji",
+      "cs": "Hibernuje se",
       "nl": "Slaapstand",
       "xloc": [
         "default.handlebars->23->5",
@@ -6164,7 +6164,7 @@
       "en": "Holding 1 entrie for copy",
       "pt": "Mantendo 1 entrada para cópia",
       "ja": "コピー用に1つのエントリを保持",
-      "cs": "Držím jeden záznam pro kopii",
+      "cs": "Drží se jeden záznam pro kopii",
       "nl": "1 item vasthouden voor kopiëren",
       "xloc": [
         "default.handlebars->23->640",
@@ -6175,7 +6175,7 @@
       "en": "Holding 1 entrie for move",
       "pt": "Segurando 1 entrada para mover",
       "ja": "移動のために1つのエントリを保持",
-      "cs": "Držím jeden záznam pro přesun",
+      "cs": "Drží se jeden záznam pro přesun",
       "nl": "1 item vasthouden voor verplaatsen",
       "xloc": [
         "default.handlebars->23->644",
@@ -6186,7 +6186,7 @@
       "en": "Holding {0} entries for copy",
       "pt": "Mantendo {0} entradas para cópia",
       "ja": "コピー用に{0}エントリを保持しています",
-      "cs": "Držím {0} záznamů pro kopii",
+      "cs": "Drží se {0} záznamů pro kopii",
       "nl": "{0} items vasthouden voor kopiëren",
       "xloc": [
         "default.handlebars->23->638",
@@ -6197,7 +6197,7 @@
       "en": "Holding {0} entries for move",
       "pt": "Manter {0} entradas para mover",
       "ja": "移動のために{0}エントリを保持しています",
-      "cs": "Držím {0} zaznamů pro přesun",
+      "cs": "Drží se {0} zaznamů pro přesun",
       "nl": "{0} items vasthouden voor verplaatsen",
       "xloc": [
         "default.handlebars->23->642",
@@ -6208,7 +6208,7 @@
       "en": "Holding {0} entrie{1} for {2}",
       "pt": "Mantendo {0} entrada {1} para {2}",
       "ja": "{2}の{0}エントリを保持しています{1}",
-      "cs": "Držím {0} zaznamů{1} pro {2}",
+      "cs": "Drží se {0} zaznamů{1} pro {2}",
       "nl": "Houd {0} item {1} vast voor {2}",
       "xloc": [
         "default.handlebars->23->1145",
@@ -6219,7 +6219,7 @@
       "en": "Hostname",
       "pt": "Hostname",
       "ja": "ホスト名",
-      "cs": "Hostname",
+      "cs": "Název stroje",
       "nl": "Hostnaam",
       "xloc": [
         "default.handlebars->23->233",
@@ -6237,7 +6237,7 @@
       "en": "Hostname Sync",
       "pt": "Sincronização de nome de host",
       "ja": "ホスト名の同期",
-      "cs": "Hostname Sync",
+      "cs": "Synchronizace názvu stroje",
       "nl": "Hostnaam Sync",
       "xloc": [
         "default.handlebars->23->955"
@@ -6372,7 +6372,7 @@
       "en": "id, name, email, creation, lastlogin, groups, authfactors",
       "pt": "id, nome, email, criação, último login, grupos, fatores de autenticação",
       "ja": "id、名前、電子メール、作成、lastlogin、グループ、authfactors",
-      "cs": "id, jméno, email, vytvoření, poslední přihlášení, skupiny, ověřovatel",
+      "cs": "identif., jméno, e-mail, vytvoření, poslední přihlášení, skupiny, faktory ověrování",
       "nl": "id, naam, e-mail, aanmaken, laatste inlog, groepen, authenticatiefactors",
       "xloc": [
         "default.handlebars->23->1197"
@@ -6456,7 +6456,7 @@
     {
       "en": "Install <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.",
       "ja": "インストール<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a>または互換性のあるアプリケーションでバーコードをスキャンするには、<a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>このリンク</a>を使用するか、秘密。次に、現在の6桁のトークンを入力して、2段階ログインを有効にします。",
-      "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci a naskenujte kód, použijte <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte secret. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
+      "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci a naskenujte kód, použijte <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte tajemství. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
       "nl": "Installeer <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> of een compatibele applicatie en scan de streepjescode, gebruik <a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>deze link</a> of voer de link in geheim. Voer vervolgens het huidige 6-cijferige token hieronder in om 2-staps aanmelding te activeren.",
       "xloc": [
         "default.handlebars->23->115"
@@ -6465,7 +6465,7 @@
     {
       "en": "Install <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.",
       "ja": "インストール<a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank> Google Authenticator </a>または互換性のあるアプリケーションの場合、<a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>このリンク</a>を使用するか、下に秘密を入力します。次に、現在の6桁のトークンを入力して、2段階ログインを有効にします。",
-      "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci, použijte <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte secret. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
+      "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci, použijte <a href=\\\"' + message.url + '\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte tajemství. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
       "nl": "Installeer <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> of een compatibele toepassing, gebruik <a href=\\\"' + message.url +'\\\" rel=\\\"noreferrer noopener\\\" target=_blank>deze link</a> of voer hieronder het geheim in. Voer vervolgens het huidige 6-cijferige token in om 2-staps aanmelding te activeren.",
       "xloc": [
         "default-mobile.handlebars->9->14"
@@ -6552,7 +6552,7 @@
       "fr": "Intel AMT détecté",
       "pt": "Intel AMT detectado",
       "ja": "Intel AMTが検出されました",
-      "cs": "Intel AMT detekováno",
+      "cs": "Intel AMT zjištěno",
       "nl": "Intel AMT gedetecteerd",
       "xloc": [
         "default.handlebars->23->150"
@@ -6582,7 +6582,7 @@
       "en": "Intel AMT is setup with TLS network security",
       "pt": "O Intel AMT está configurado com segurança de rede TLS",
       "ja": "Intel AMTはTLSネットワークセキュリティでセットアップされています",
-      "cs": "Intel AMT je nastaveno s TLS bezpečností",
+      "cs": "Intel AMT je nastaveno s TLS zabezpečením",
       "nl": "Intel AMT is ingesteld met TLS-netwerkbeveiliging",
       "xloc": [
         "default.handlebars->23->447"
@@ -6593,7 +6593,7 @@
       "fr": "Intel AMT non détecté",
       "pt": "Intel AMT não detectado",
       "ja": "Intel AMTが検出されません",
-      "cs": "Intel AMT není detekováno",
+      "cs": "Intel AMT není zjištěno",
       "nl": "Intel AMT niet gedetecteerd",
       "xloc": [
         "default.handlebars->23->154"
@@ -6603,7 +6603,7 @@
       "en": "Intel AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:",
       "pt": "A Intel AMT precisará ser configurada com um FQDN confiável na MEBx ou ter uma LAN com fio na rede:",
       "ja": "Intel AMTは、MEBxで信頼できるFQDNを使用して設定するか、ネットワーク上に有線LANが必要です。",
-      "cs": "Intel AMT bude muset být nastaven s důvěryhodným FQDN v MEBx nebo bude třeba drátová LAN:",
+      "cs": "Je třeba, aby Intel AMT bylo nastaveno s důvěryhodným FQDN v MEBx nebo bude třeba drátová LAN síť:",
       "nl": "Intel AMT moet worden ingesteld met een vertrouwd FQDN in MEBx of een bekabeld LAN op het netwerk hebben:",
       "xloc": [
         "default.handlebars->23->245"
@@ -6707,7 +6707,7 @@
       "en": "Intel&reg; AMT desktop and serial events.",
       "pt": "Intel&reg; Área de trabalho AMT e eventos seriais.",
       "ja": "Intel&reg; AMTデスクトップおよびシリアルイベント。",
-      "cs": "Intel&reg; AMT desktop and serial události.",
+      "cs": "Události Intel&reg; AMT desktop a serial.",
       "nl": "Intel&reg; AMT desktop- en seriële gebeurtenissen.",
       "xloc": [
         "default.handlebars->23->897",
@@ -6718,7 +6718,7 @@
       "en": "Intel&reg; AMT detected",
       "pt": "Intel&reg; AMT detectado",
       "ja": "Intel&reg; AMTが検出されました",
-      "cs": "Intel&reg; AMT detekováno",
+      "cs": "Intel&reg; AMT zjištěno",
       "nl": "Intel&reg; AMT gedetecteerd",
       "xloc": [
         "default.handlebars->23->506",
@@ -6730,7 +6730,7 @@
       "en": "Intel&reg; AMT is routable and ready for use.",
       "pt": "Intel&reg; O AMT é roteável e pronto para uso.",
       "ja": "Intel&reg; AMTはルーティング可能であり、すぐに使用できます。",
-      "cs": "Intel&reg; AMT je směrovatelný a připraven k použití.",
+      "cs": "Intel&reg; AMT je směrovatelné a připraveno k použití.",
       "nl": "Intel&reg; AMT is routeerbaar en klaar voor gebruik.",
       "xloc": [
         "default.handlebars->23->470"
@@ -6740,7 +6740,7 @@
       "en": "Intel&reg; AMT is routable.",
       "pt": "Intel&reg; AMT é roteável.",
       "ja": "Intel&reg; AMTはルーティング可能です。",
-      "cs": "Intel&reg; AMT je směrovatelný.",
+      "cs": "Intel&reg; AMT je směrovatelné.",
       "nl": "Intel&reg; AMT is routeerbaar.",
       "xloc": [
         "default.handlebars->23->181",
@@ -6751,7 +6751,7 @@
       "en": "Intel&reg; AMT only",
       "pt": "Intel&reg; Apenas AMT",
       "ja": "Intel&reg; AMTのみ",
-      "cs": "Intel&reg; AMT pouze",
+      "cs": "Pouze Intel&reg; AMT",
       "nl": "Alleen Intel&reg; AMT",
       "xloc": [
         "default-mobile.handlebars->9->56"
@@ -6761,7 +6761,7 @@
       "en": "Intel&reg; AMT only, no agent",
       "pt": "Intel&reg; Apenas AMT, nenhum agente",
       "ja": "Intel&reg; AMTのみ、エージェントなし",
-      "cs": "Intel&reg; AMT pouze, bez agenta",
+      "cs": "Pouze Intel&reg; AMT, bez agenta",
       "nl": "Alleen Intel&reg; AMT, geen agent",
       "xloc": [
         "default.handlebars->23->926",
@@ -6773,7 +6773,7 @@
       "en": "Intel&reg; AMT Policy",
       "pt": "Intel&reg; Política da AMT",
       "ja": "Intel&reg; AMTポリシー",
-      "cs": "Intel&reg; AMT politika",
+      "cs": "Intel&reg; AMT zásada",
       "nl": "Intel&reg; AMT beleid",
       "xloc": [
         "default.handlebars->23->1011"
@@ -6793,7 +6793,7 @@
       "en": "Intel&reg; AMT Tag",
       "pt": "Intel&reg; Tag AMT ",
       "ja": "Intel&reg; AMTタグ",
-      "cs": "Intel&reg; AMT značka",
+      "cs": "Intel&reg; AMT štítek",
       "nl": "Intel&reg; AMT Tag",
       "xloc": [
         "default.handlebars->23->459"
@@ -6852,7 +6852,7 @@
       "en": "Intel® AMT -",
       "pt": "Intel® AMT -",
       "ja": "Intel® AMT -",
-      "cs": "Intel® AMT -",
+      "cs": "Intel® AMT –",
       "nl": "Intel® AMT -",
       "xloc": [
         "default.handlebars->container->column_l->p14->p14title->5"
@@ -6862,7 +6862,7 @@
       "en": "Intel® AMT Hardware KVM",
       "pt": "Intel® AMT Hardware KVM",
       "ja": "Intel® AMTハードウェアKVM",
-      "cs": "Intel® AMT Hardware KVM",
+      "cs": "Intel® AMT hardwarové KVM",
       "nl": "Intel® AMT Hardware KVM",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->1",
@@ -6873,7 +6873,7 @@
       "en": "Intel® AMT Redirection port or KVM feature is disabled",
       "pt": "Intel® Porta de redirecionamento AMT ou recurso KVM desativado",
       "ja": "Intel® AMTリダイレクトポートまたはKVM機能が無効になっています",
-      "cs": "Intel® AMT přesměrování portu nebo KVM vlastnost je vypnuta",
+      "cs": "Funkce Intel® AMT přesměrování portu nebo KVM je vypnutá",
       "nl": "Intel® AMT omleidingspoort of KVM-functie is uitgeschakeld",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3",
@@ -6936,7 +6936,7 @@
     {
       "en": "Invalid email.",
       "ja": "無効なメール。",
-      "cs": "Neplatný email.",
+      "cs": "Neplatný e-mail.",
       "nl": "Ongeldige e-mail.",
       "xloc": [
         "login.handlebars->5->8",
@@ -6967,7 +6967,7 @@
     {
       "en": "Invalid token, try again.",
       "ja": "トークンが無効です。もう一度お試しください。",
-      "cs": "Neplatný token, zkuste znovu.",
+      "cs": "Neplatný token, zkuste to znovu.",
       "nl": "Ongeldig token, probeer het opnieuw.",
       "xloc": [
         "login.handlebars->5->10",
@@ -6976,7 +6976,7 @@
     },
     {
       "en": "Invitation Link ({0})",
-      "cs": "Link pro pozvání ({0})",
+      "cs": "Odkaz na pozvánku ({0})",
       "pt": "Link de convite ({0})",
       "ja": "招待リンク（{0}）",
       "nl": "Uitnodigingslink ({0})",
@@ -7010,7 +7010,7 @@
     },
     {
       "en": "Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \\\"{0}\\\" device group. The link is public and no account for this server is needed.",
-      "cs": "Pozvěte někoho k instalaci agenta pomocí sdíleného odkazu. Tento link obsahuje  instrukce pro instalaci do skupiny  \\\"{0}\\\". Link je veřejný a protistrana nepotřebuje žádný účet na tomto serveru.",
+      "cs": "Pozvěte někoho k instalaci agenta pomocí sdíleného odkazu. Tento odkaz obsahuje  pokyny pro instalaci do skupiny  „{0}“. Odkaz je veřejný a protistrana nepotřebuje žádný účet na tomto serveru.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage en partageant un lien d'invitation. Ce lien renvoie l'utilisateur aux instructions d'installation du groupe de périphériques \\\"{0}\\\". Le lien est public et aucun compte n'est requis pour ce serveur.",
       "pt": "Convide alguém para instalar o agente de malha compartilhando um link de convite.Este link indica ao usuário instruções de instalação para o grupo de dispositivos \\\"{0}\\\". O link é público e nenhuma conta para este servidor é necessária.",
       "ja": "招待リンクを共有して、メッシュエージェントをインストールする人を招待します。このリンクは、ユーザーに\\\"{0}\\\"デバイスグループのインストール手順を示します。リンクは公開されており、このサーバーのアカウントは必要ありません。",
@@ -7033,7 +7033,7 @@
     },
     {
       "en": "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \\\"{0}\\\" device group.",
-      "cs": "Pozvěte někoho k instalaci agenta. Emailem bude zaslán link s adresou agenta pro skupinu \\\"{0}\\\".",
+      "cs": "Pozvěte někoho k instalaci agenta. E-mailem bude zaslán odkaz na instalaci agenta pro skupinu „{0}“.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage. Un email doit être envoyé avec le lien vers l’installation de l’agent de maillage pour le groupe de périphériques \\\"{0}\\\".",
       "pt": "Convide alguém para instalar o agente de malha.Um email será enviado com o link para a instalação do agente de malha para o grupo de dispositivos \\\"{0}\\\".",
       "ja": "メッシュエージェントをインストールする人を招待します。 \\\"{0}\\\"デバイスグループのメッシュエージェントインストールへのリンクが記載されたメール。",
@@ -7193,7 +7193,7 @@
       "fr": "Nom de la clé",
       "pt": "Nome da chave",
       "ja": "キー名",
-      "cs": "Jméno klíče",
+      "cs": "Název klíče",
       "nl": "Sleutelnaam",
       "xloc": [
         "default.handlebars->23->681",
@@ -7577,7 +7577,7 @@
       "en": "Left bar interface",
       "pt": "Interface da barra esquerda",
       "ja": "左バーインターフェイス",
-      "cs": "Rozhraní levé lišty",
+      "cs": "Rozhraní pruhu vlevo",
       "nl": "Linkerbalk interface",
       "xloc": [
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
@@ -7635,7 +7635,7 @@
       "en": "Limited Input",
       "pt": "Entrada limitada",
       "ja": "制限された入力",
-      "cs": "Omezené vstupy",
+      "cs": "Omezený vstup",
       "nl": "Beperkte invoer",
       "xloc": [
         "default.handlebars->23->1086",
@@ -7646,7 +7646,7 @@
       "en": "Limited Input Only",
       "pt": "Somente entrada limitada",
       "ja": "限定入力のみ",
-      "cs": "Pouze omezené vstupy",
+      "cs": "Pouze omezený vstup",
       "nl": "Alleen beperkte invoer",
       "xloc": [
         "default.handlebars->23->1060",
@@ -7778,7 +7778,7 @@
       "en": "Linux only",
       "pt": "Apenas Linux",
       "ja": "Linuxのみ",
-      "cs": "Linux pouze",
+      "cs": "Pouze Linux",
       "nl": "alleen Linux",
       "xloc": [
         "default.handlebars->23->284"
@@ -7851,7 +7851,7 @@
     },
     {
       "en": "Loading...",
-      "cs": "Nahrávání...",
+      "cs": "Načítání…",
       "fr": "Chargement...",
       "pt": "Carregando...",
       "ja": "読み込み中...",
@@ -7960,7 +7960,7 @@
     },
     {
       "en": "Log Event",
-      "cs": "Log udalostí",
+      "cs": "Záznam událostí",
       "pt": "Log de Evento",
       "ja": "ログイベント",
       "nl": "Gebeurtenissenlog",
@@ -7970,7 +7970,7 @@
     },
     {
       "en": "Log In",
-      "cs": "Přihlásit",
+      "cs": "Přihlásit se",
       "pt": "Entrar",
       "ja": "ログイン",
       "nl": "Inloggen",
@@ -8007,7 +8007,7 @@
     {
       "en": "Login failed, check username and password.",
       "ja": "ログインに失敗しました。ユーザー名とパスワードを確認してください。",
-      "cs": "Neplatné přihlášení, zkontrolujte jméno a heslo.",
+      "cs": "Neplatné přihlášení, zkontrolujte uživatelské jméno a heslo.",
       "nl": "Inloggen mislukt, controleer gebruikersnaam en wachtwoord.",
       "xloc": [
         "login.handlebars->5->14",
@@ -8029,7 +8029,7 @@
     },
     {
       "en": "Logout",
-      "cs": "Odhlásit",
+      "cs": "Odhlásit se",
       "fr": "Déconnexion",
       "pt": "Sair",
       "ja": "ログアウト",
@@ -8066,7 +8066,7 @@
       "en": "MacOS",
       "pt": "MacOS",
       "ja": "マックOS",
-      "cs": "MacOS",
+      "cs": "macOS",
       "nl": "MacOS",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tmacostab"
@@ -8076,7 +8076,7 @@
       "en": "MacOS (64bit)",
       "pt": "MacOS (64 bits)",
       "ja": "MacOS（64ビット）",
-      "cs": "MacOS (64bit)",
+      "cs": "macOS (64bit)",
       "nl": "MacOS (64bit)",
       "xloc": [
         "default.handlebars->23->562"
@@ -8086,7 +8086,7 @@
       "en": "MacOS 32bit",
       "pt": "MacOS 32 bits",
       "ja": "MacOS 32ビット",
-      "cs": "MacOS 32bit",
+      "cs": "macOS 32bit",
       "nl": "MacOS 32bit",
       "xloc": [
         "default.handlebars->23->24",
@@ -8097,7 +8097,7 @@
       "en": "MacOS 64bit",
       "pt": "MacOS 64 bits",
       "ja": "MacOS 64ビット",
-      "cs": "MacOS 64bit",
+      "cs": "macOS 64bit",
       "nl": "MacOS 64bit",
       "xloc": [
         "default.handlebars->23->29",
@@ -8146,7 +8146,7 @@
     },
     {
       "en": "Manage authenticator app",
-      "cs": "Spravovat autentizační aplikace",
+      "cs": "Spravovat aplikaci pro ověřování se",
       "pt": "Gerenciar aplicativo autenticador",
       "ja": "認証アプリを管理する",
       "nl": "Beheer authenticator-app",
@@ -8179,7 +8179,7 @@
     },
     {
       "en": "Manage Device Group Computers",
-      "cs": "Správa skupin zařízení",
+      "cs": "Správa počítačů ve skupině zařízení",
       "pt": "Gerenciar computadores do grupo de dispositivos",
       "ja": "デバイスグループコンピューターの管理",
       "nl": "Beheer apparaatgroep computers",
@@ -8250,7 +8250,7 @@
       "fr": "Géré à l'aide d'un agent logiciel",
       "pt": "Gerenciado usando um agente de software",
       "ja": "ソフトウェアエージェントを使用して管理",
-      "cs": "Spravovat pomocí softwarového aenta",
+      "cs": "Spravovat pomocí softwarového agenta",
       "nl": "Beheerd met behulp van een software-agent",
       "xloc": [
         "default.handlebars->23->949",
@@ -8261,7 +8261,7 @@
       "en": "Manager",
       "pt": "Gerenciador",
       "ja": "マネージャー",
-      "cs": "Správce",
+      "cs": "Vedoucí",
       "nl": "Beheerder",
       "xloc": [
         "default.handlebars->23->1179"
@@ -8272,7 +8272,7 @@
       "fr": "Certificat manuel",
       "pt": "Certificado manual",
       "ja": "手動証明書",
-      "cs": "Vlastní certifikát",
+      "cs": "Ručně zadaný certifikát",
       "nl": "Handmatig certificaat",
       "xloc": [
         "default.handlebars->23->254"
@@ -8283,7 +8283,7 @@
       "fr": "Nom d'utilisateur / mot de passe manuel",
       "pt": "Nome de usuário / senha manual",
       "ja": "手動ユーザー名/パスワード",
-      "cs": "Vlastní přihlašovací jméno/heslo",
+      "cs": "Ručně zadané přihlašovací jméno/heslo",
       "nl": "Handmatige gebruikersnaam/wachtwoord",
       "xloc": [
         "default.handlebars->23->253"
@@ -8349,7 +8349,7 @@
     },
     {
       "en": "Megabytes",
-      "cs": "Megabytů",
+      "cs": "Megabajtů",
       "fr": "Mégaoctets",
       "pt": "Megabytes",
       "ja": "メガバイト",
@@ -8415,7 +8415,7 @@
       "en": "Mesh agent is reachable using another agent as relay.",
       "pt": "O agente de malha é alcançável usando outro agente como retransmissão.",
       "ja": "メッシュエージェントは、別のエージェントをリレーとして使用して到達可能です。",
-      "cs": "Mesh agent je dostupný pomocí přesměrování přes jiného agenta.",
+      "cs": "Mesh agent je dostupný pomocí předávání (relay) přes jiného agenta.",
       "nl": "Mesh-agent is bereikbaar met een andere agent als relay.",
       "xloc": [
         "default.handlebars->23->183",
@@ -8427,7 +8427,7 @@
       "en": "Mesh Relay",
       "pt": "Mesh Relay",
       "ja": "メッシュリレー",
-      "cs": "Mesh přesměrování",
+      "cs": "Mesh předávání (relay)",
       "nl": "Mesh Relay",
       "xloc": [
         "default.handlebars->23->473"
@@ -8485,7 +8485,7 @@
       "en": "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server.",
       "pt": "O MeshCentral Router é uma ferramenta do Windows para mapeamento de portas TCP. Você pode, por exemplo, RDP em um dispositivo remoto através deste servidor.",
       "ja": "MeshCentralルーターは、TCPポートマッピング用のWindowsツールです。たとえば、このサーバーを介してRDPをリモートデバイスに接続できます。",
-      "cs": "MeshCentral Router je Windows nástroj pro přemapování portů. Múžete si například přesměrovat vzdálené RDP pomocí tohoto serveru. ",
+      "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Múžete si například přesměrovat vzdálené RDP pomocí tohoto serveru.",
       "nl": "MeshCentral Router is een Windows tool voor het toewijzen van TCP poorten. U kunt RDP bijvoorbeeld via deze server naar een extern apparaat sturen.",
       "xloc": [
         "default.handlebars->23->556"
@@ -8495,7 +8495,7 @@
       "en": "MeshCentral Server Errors",
       "pt": "Erros do servidor MeshCentral",
       "ja": "MeshCentralサーバーエラー",
-      "cs": "MeshCentral Serverové chyby",
+      "cs": "Chyby na MeshCentral serveru",
       "nl": "MeshCentral serverfouten",
       "xloc": [
         "default.handlebars->23->110",
@@ -8526,7 +8526,7 @@
       "en": "MeshCentral Version",
       "pt": "Versão MeshCentral",
       "ja": "MeshCentralバージョン",
-      "cs": "MeshCentral verze",
+      "cs": "Verze MeshCentral",
       "nl": "MeshCentral Versie",
       "xloc": [
         "default.handlebars->23->107",
@@ -8643,7 +8643,7 @@
       "en": "Modify node location",
       "pt": "Modificar localização do nó",
       "ja": "ノードの場所を変更する",
-      "cs": "Upravit umístění nódu",
+      "cs": "Upravit umístění uzlu",
       "nl": "Wijzig knooppuntlocatie",
       "xloc": [
         "default.handlebars->23->399"
@@ -8780,7 +8780,7 @@
       "en": "MQTT Credentials",
       "pt": "Credenciais MQTT",
       "ja": "MQTT資格情報",
-      "cs": "MQTT pověření",
+      "cs": "MQTT přihlašovací údaje",
       "nl": "MQTT referenties",
       "xloc": [
         "default.handlebars->23->170"
@@ -8900,7 +8900,7 @@
       "en": "My Server Plugins",
       "fr": "Mes plugins serveur",
       "ja": "私のサーバープラグイン",
-      "cs": "Moje serverové pluginy",
+      "cs": "Moje serverové zásuvné moduly",
       "nl": "Mijn serverplug-ins",
       "xloc": [
         "default.handlebars->container->column_l->p42->1"
@@ -8910,7 +8910,7 @@
       "en": "My Server Plugins -",
       "fr": "Mes plugins serveur -",
       "ja": "私のサーバープラグイン-",
-      "cs": "Moje serverové pluginy -",
+      "cs": "Moje serverové zásuvné moduly –",
       "nl": "Mijn serverplug-ins -",
       "xloc": [
         "default.handlebars->container->column_l->p43->3"
@@ -8918,7 +8918,7 @@
     },
     {
       "en": "My Server Stats",
-      "cs": "Statistika serveru",
+      "cs": "Statistiky mého serveru",
       "fr": "Statistiques de mon serveur",
       "pt": "Estatísticas do meu servidor",
       "ja": "私のサーバー統計",
@@ -8932,7 +8932,7 @@
       "fr": "Suivi de mon serveur",
       "pt": "Rastreio do meu servidor",
       "ja": "私のサーバートレース",
-      "cs": "Moje serverové trasování",
+      "cs": "Trasování mého serveru",
       "nl": "Mijn server traceren",
       "xloc": [
         "default.handlebars->container->column_l->p41->p41title->0"
@@ -9047,7 +9047,7 @@
     },
     {
       "en": "Network Interfaces",
-      "cs": "Síťové rozhraní",
+      "cs": "Síťová rozhraní",
       "fr": "Interfaces réseau",
       "pt": "Interfaces de rede",
       "ja": "ネットワークインターフェース",
@@ -9081,7 +9081,7 @@
     },
     {
       "en": "New Account...",
-      "cs": "Nový účet...",
+      "cs": "Nový účet…",
       "fr": "Nouveau Compte...",
       "pt": "Nova conta...",
       "ja": "新しいアカウント...",
@@ -9106,7 +9106,7 @@
     },
     {
       "en": "New Folder",
-      "cs": "Nový adresář",
+      "cs": "Nová složka",
       "fr": "Nouveau Dossier",
       "pt": "Nova pasta",
       "ja": "新しいフォルダ",
@@ -9174,7 +9174,7 @@
       "fr": "Aucun groupe d'appareils.",
       "pt": "Nenhum grupo de dispositivos.",
       "ja": "デバイスグループはありません。",
-      "cs": "Žádná skupina zařízení.",
+      "cs": "Žádné skupiny zařízení.",
       "nl": "Geen apparaatgroepen.",
       "xloc": [
         "default.handlebars->container->column_l->p1->NoMeshesPanel->1->1->0->3->getStarted2",
@@ -9184,7 +9184,7 @@
     },
     {
       "en": "No devices",
-      "cs": "Žádné zařízení",
+      "cs": "Žádná zařízení",
       "fr": "Aucun appareil",
       "pt": "Nenhum dispositivo",
       "ja": "デバイスなし",
@@ -9205,7 +9205,7 @@
     },
     {
       "en": "No devices found.",
-      "cs": "Žádné zařízení nalezeno.",
+      "cs": "Nenalezena žádná zařízení.",
       "fr": "Aucun périphérique trouvé.",
       "pt": "Nenhum dispositivo encontrado.",
       "ja": "デバイスが見つかりません。",
@@ -9216,7 +9216,7 @@
     },
     {
       "en": "No devices in this group",
-      "cs": "Žádné zařízení v této skupině",
+      "cs": "Žádná zařízení v této skupině",
       "fr": "Aucun appareil dans ce groupe",
       "pt": "Nenhum dispositivo neste grupo",
       "ja": "このグループにデバイスはありません",
@@ -9231,7 +9231,7 @@
       "fr": "Aucun appareil ne correspond à cette recherche.",
       "pt": "Nenhum dispositivo correspondente a esta pesquisa.",
       "ja": "この検索に一致するデバイスはありません。",
-      "cs": "Žádné zařízení nevyhovuje tomuto vyhledávání.",
+      "cs": "Tomuto vyhledávání nevyhovují žádná zařízení.",
       "nl": "Geen apparaten die overeenkomen met deze zoekopdracht.",
       "xloc": [
         "default.handlebars->23->189"
@@ -9242,7 +9242,7 @@
       "fr": "Aucun événement trouvé",
       "pt": "Nenhum evento encontrado",
       "ja": "イベントが見つかりません",
-      "cs": "Žádné události",
+      "cs": "Nenalezeny žádné události",
       "nl": "Geen gebeurtenissen gevonden",
       "xloc": [
         "default.handlebars->23->657",
@@ -9319,7 +9319,7 @@
     },
     {
       "en": "No Keys Configured",
-      "cs": "Žádný klíč není zkonfigurován",
+      "cs": "Není nastaven žádný klíč",
       "pt": "Nenhuma chave configurada",
       "ja": "キーが設定されていません",
       "nl": "Geen sleutels geconfigureerd",
@@ -9331,7 +9331,7 @@
       "en": "No location found.",
       "pt": "Nenhum local encontrado.",
       "ja": "場所が見つかりません。",
-      "cs": "Žádné umístění.",
+      "cs": "Nenalezeno žádné umístění.",
       "nl": "Geen locatie gevonden.",
       "xloc": [
         "default.handlebars->23->418"
@@ -9341,7 +9341,7 @@
       "en": "No network interface information available for this device.",
       "pt": "Nenhuma informação de interface de rede disponível para este dispositivo.",
       "ja": "このデバイスで利用可能なネットワークインターフェイス情報はありません。",
-      "cs": "Žádné informace k tomuto síťovému rozhraní.",
+      "cs": "Nejsou k dispozici žádné informace o síťovém rozhraní tohoto zařízení.",
       "nl": "geen netwerkinterface informatie beschikbaar voor dit apparaat.",
       "xloc": [
         "default.handlebars->23->81"
@@ -9370,7 +9370,7 @@
     {
       "en": "No plugins on server.",
       "ja": "サーバーにプラグインはありません。",
-      "cs": "Žádný plugin na serveru.",
+      "cs": "Žádné zásuvné moduly na serveru.",
       "nl": "Geen plug-ins op server.",
       "xloc": [
         "default.handlebars->container->column_l->p42->pluginNoneNotice->0"
@@ -9380,7 +9380,7 @@
       "en": "No Policy",
       "pt": "Nenhuma política",
       "ja": "ポリシーなし",
-      "cs": "Žádná politika",
+      "cs": "Žádná zásada",
       "nl": "Geen beleid",
       "xloc": [
         "default.handlebars->23->975",
@@ -9437,7 +9437,7 @@
     },
     {
       "en": "No TLS security",
-      "cs": "Žádné TLS",
+      "cs": "Žádné TLS zabezpečení",
       "fr": "Pas de sécurité TLS",
       "pt": "Sem segurança TLS",
       "ja": "TLSセキュリティなし",
@@ -9460,7 +9460,7 @@
     },
     {
       "en": "No users found.",
-      "cs": "Žádný uživatele nalezen.",
+      "cs": "Nenalezeni žádní uživatelé.",
       "pt": "Usuários não encontrados.",
       "ja": "ユーザが見つかりませんでした。",
       "nl": "Geen gebruikers gevonden",
@@ -9625,7 +9625,7 @@
     },
     {
       "en": "Notification Settings",
-      "cs": "Nastavení notifikací",
+      "cs": "Nastavení upozorňování",
       "pt": "Configurações de notificação",
       "ja": "通知設定",
       "nl": "meldingsinstellingen",
@@ -9639,7 +9639,7 @@
       "en": "Notification sound.",
       "pt": "Som de notificação.",
       "ja": "通知音。",
-      "cs": "Zvuk notifikací",
+      "cs": "Zvuk upozornění",
       "nl": "Meldingsgeluid.",
       "xloc": [
         "default.handlebars->23->893"
@@ -9647,7 +9647,7 @@
     },
     {
       "en": "Notifications",
-      "cs": "Notifikace",
+      "cs": "Upozornění",
       "pt": "Notificações",
       "ja": "通知",
       "nl": "Meldingen",
@@ -9659,7 +9659,7 @@
       "en": "Notify",
       "pt": "Notificar",
       "ja": "通知する",
-      "cs": "Oznámit",
+      "cs": "Upozornit",
       "nl": "Melden",
       "xloc": [
         "default.handlebars->23->1260"
@@ -9670,7 +9670,7 @@
       "fr": "Notifier l'utilisateur",
       "pt": "Notificar usuário",
       "ja": "ユーザーに通知",
-      "cs": "Informovat uživatele",
+      "cs": "Upozornit uživatele",
       "nl": "Gebruiker informeren",
       "xloc": [
         "default.handlebars->23->1037",
@@ -9682,7 +9682,7 @@
       "en": "Notify {0}",
       "pt": "Notificar {0}",
       "ja": "{0}に通知",
-      "cs": "Informovat {0}",
+      "cs": "Upozornit {0}",
       "nl": "Melden {0}",
       "xloc": [
         "default.handlebars->23->1181"
@@ -9703,7 +9703,7 @@
       "fr": "Survenu à {0}",
       "pt": "Ocorreu em {0}",
       "ja": "{0}で発生しました",
-      "cs": "Došlo k {0}",
+      "cs": "Nastalo na {0}",
       "nl": "Heeft plaatsgevonden op {0}",
       "xloc": [
         "default.handlebars->23->1282"
@@ -9753,7 +9753,7 @@
       "en": "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.",
       "pt": "Os tokens únicos podem ser usados como autenticação secundária. Gere um conjunto, imprima-os e mantenha-os em um local seguro.",
       "ja": "ワンタイムトークンは、セカンダリ認証として使用できます。セットを生成して印刷し、安全な場所に保管してください。",
-      "cs": "Jednorázové tokeny lze použít jako sekundární autentizaci. Vytvořte sadu, vytiskněte je a uložte na bezpečném místě.",
+      "cs": "Jednorázové tokeny lze použít jako sekundární ověřování. Vytvořte sadu, vytiskněte je a uložte na bezpečném místě.",
       "nl": "Eenmalige tokens kunnen worden gebruikt als secundaire authenticatie. Genereer een set, druk ze af en bewaar ze op een veilige plaats.",
       "xloc": [
         "default.handlebars->23->127",
@@ -9773,7 +9773,7 @@
     },
     {
       "en": "Only files less than 200k can be edited.",
-      "cs": "Jen soubory menší než 200k mohou být editovány.",
+      "cs": "Upravovat je možné jen soubory, které jsou menší než 200 kilobajtů.",
       "pt": "Somente arquivos com menos de 200k podem ser editados.",
       "ja": "編集できるのは200k未満のファイルのみです。",
       "nl": "Alleen bestanden kleiner dan 200k kunnen worden bewerkt.",
@@ -9811,7 +9811,7 @@
     },
     {
       "en": "Open File...",
-      "cs": "Otevřít soubor...",
+      "cs": "Otevřít soubor…",
       "pt": "Abrir arquivo...",
       "ja": "ファイルを開く...",
       "nl": "Open bestand...",
@@ -9890,7 +9890,7 @@
     },
     {
       "en": "OS Name",
-      "cs": "Jméno operačního systému",
+      "cs": "Název operačního systému",
       "fr": "Nom du système",
       "pt": "Nome do SO",
       "ja": "OS名",
@@ -9926,7 +9926,7 @@
       "fr": "Périmé",
       "pt": "Desatualizado",
       "ja": "時代遅れ",
-      "cs": "Zastaralý",
+      "cs": "Neaktuální",
       "nl": "Verouderd",
       "xloc": [
         "default.handlebars->23->462"
@@ -9958,7 +9958,7 @@
       "fr": "Partiel",
       "pt": "Parcial",
       "ja": "部分的",
-      "cs": "Částečný",
+      "cs": "Částečné",
       "nl": "Gedeeltelijk",
       "xloc": [
         "default.handlebars->23->1180"
@@ -9968,7 +9968,7 @@
       "en": "Partial Rights",
       "pt": "Direitos parciais",
       "ja": "部分的権利",
-      "cs": "Částečné práva",
+      "cs": "Částečná práva",
       "nl": "Gedeeltelijke rechten",
       "xloc": [
         "default.handlebars->23->935",
@@ -9981,7 +9981,7 @@
       "en": "Partial rights",
       "pt": "Direitos parciais",
       "ja": "部分的権利",
-      "cs": "Částečné práva",
+      "cs": "Částečná práva",
       "nl": "Gedeeltelijke rechten",
       "xloc": [
         "default.handlebars->23->1231"
@@ -10021,7 +10021,7 @@
       "en": "Password change requested.",
       "fr": "Changement de mot de passe demandé.",
       "ja": "パスワードの変更が要求されました。",
-      "cs": "Vyžaduje se změna hesla.",
+      "cs": "Je vyžadována změna hesla.",
       "nl": "Wachtwoordwijziging aangevraagd.",
       "xloc": [
         "login.handlebars->5->15",
@@ -10076,7 +10076,7 @@
       "en": "Password mismatch",
       "pt": "Senha incorreta",
       "ja": "パスワード",
-      "cs": "Hesla nejsou stejná",
+      "cs": "Zadání hesla se neshodují",
       "nl": "Wachtwoord komt niet overeen",
       "xloc": [
         "default.handlebars->23->1014"
@@ -10086,7 +10086,7 @@
       "en": "Password Policy",
       "pt": "Política de senha",
       "ja": "パスワードポリシー",
-      "cs": "Politia hesla",
+      "cs": "Zásady pro hesla",
       "nl": "Wachtwoord beleid",
       "xloc": [
         "login.handlebars->5->23",
@@ -10179,7 +10179,7 @@
       "fr": "Pause",
       "pt": "Pausa",
       "ja": "一時停止",
-      "cs": "Pauza",
+      "cs": "Pozastavit",
       "nl": "Pause",
       "xloc": [
         "player.htm->p11->deskarea0->deskarea4->3"
@@ -10187,7 +10187,7 @@
     },
     {
       "en": "Perform Agent Action",
-      "cs": "Akce agenta",
+      "cs": "Provést akci agenta",
       "fr": "Effectuer une action sur l'agent",
       "pt": "Executar ação do agente",
       "ja": "エージェントアクションの実行",
@@ -10210,7 +10210,7 @@
       "en": "Perform Intel AMT admin control mode (ACM) activation.",
       "pt": "Execute a ativação do modo de controle de administração Intel AMT (ACM).",
       "ja": "Intel AMT管理制御モード（ACM）アクティベーションを実行します。",
-      "cs": "Provedení Intel AMT admin control mode (ACM) aktivace.",
+      "cs": "Aktivovat Intel AMT v režimu řízeném správcem (ACM).",
       "nl": "Voer Intel AMT admin control mode (ACM) activering uit.",
       "xloc": [
         "default.handlebars->23->225",
@@ -10221,7 +10221,7 @@
       "en": "Perform Intel AMT client control mode (CCM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
       "pt": "Execute a ativação do modo de controle de cliente Intel AMT (CCM) para agrupar \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
       "ja": "MeshCMDツールをダウンロードして次のように実行することにより、グループ\\\"{0}\\\"にIntel AMTクライアントコントロールモード（CCM）アクティベーションを実行します。",
-      "cs": "Proveďte aktivaci Intel AMT client control mode (CCM) pro skupinu \\\"{0}\\\" stažením MeshCMD nástroje a spuštěním takto:",
+      "cs": "Aktivovujte Intel AMT v režimu řízeném klientem (CCM) pro skupinu „{0}“ a to stažením nástroje MeshCMD a spuštěním takto:",
       "nl": "Voer Intel AMT client control mode (CCM) activering uit naar groep \\\"{0}\\\" door het hulpprogramma MeshCMD te downloaden en als volgt uit te voeren:",
       "xloc": [
         "default.handlebars->23->242"
@@ -10231,7 +10231,7 @@
       "en": "Perform Intel AMT client control mode (CCM) activation.",
       "pt": "Execute a ativação do modo de controle do cliente Intel AMT (CCM).",
       "ja": "Intel AMTクライアント制御モード（CCM）アクティベーションを実行します。",
-      "cs": "Provedení Intel AMT client control mode (CCM) aktivace.",
+      "cs": "Aktivovat Intel AMT v režimu řízeném klientem (CCM).",
       "nl": "Voer Intel AMT client control mode (CCM) activering uit.",
       "xloc": [
         "default.handlebars->23->223",
@@ -10240,7 +10240,7 @@
     },
     {
       "en": "Perform power actions on the device",
-      "cs": "Akce napájení",
+      "cs": "Provést na zařízení akci napájení",
       "fr": "Effectuer des actions d'alimentation sur le périphérique",
       "pt": "Execute ações de energia no dispositivo",
       "ja": "デバイスの電源操作を実行します",
@@ -10291,7 +10291,7 @@
       "en": "Place node here",
       "pt": "Coloque o nó aqui",
       "ja": "ここにノードを配置",
-      "cs": "Umístit nód zde",
+      "cs": "Umístit uzel sem",
       "nl": "Plaats hier een knooppunt",
       "xloc": [
         "default.handlebars->23->411"
@@ -10313,7 +10313,7 @@
       "fr": "Veuillez ajouter un autre facteur. Si le facteur actuel est perdu, il n'y a pas moyen de récupérer ce compte.",
       "pt": "Adicione códigos de backup de dois fatores. Se o fator atual for perdido, não há como recuperar esta conta.",
       "ja": "二要素バックアップコードを追加してください。現在の要因が失われた場合、このアカウントを回復する方法はありません。",
-      "cs": "Prosím přidejte 2-faktorové záložní kódy. Pokud dojde ke ztrátě současných faktorů, není možné tento účet obnovit.",
+      "cs": "Přidejte 2-faktorové záložní kódy. Pokud dojde ke ztrátě stávajícího faktoru, není možné tento účet obnovit.",
       "nl": "Voeg back-upcodes met twee factoren toe. Als de huidige factor verloren gaat, is er geen manier om dit account te herstellen.",
       "xloc": [
         "default.handlebars->23->49"
@@ -10322,7 +10322,7 @@
     {
       "en": "Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something.",
       "ja": "ダウングレードは推奨されないことに注意してください。最近のアップグレードで何かが壊れた場合にのみ行ってください。",
-      "cs": "Mějte prosím na paměti, že downgrade se nedoporučuje. Učiňte tak pouze v případě, že nedávná aktualizace něco poškodila.",
+      "cs": "Mějte na paměti, že návrat ke starší verzi se nedoporučuje. Učiňte tak pouze v případě, že nedávná aktualizace něco pokazila.",
       "nl": "Houd er rekening mee dat downgraden niet wordt aanbevolen. Doe dit alleen als een recente upgrade iets heeft gebroken.",
       "xloc": [
         "default.handlebars->23->172"
@@ -10332,7 +10332,7 @@
       "en": "Please contact the site administrator for terms of use.",
       "pt": "Entre em contato com o administrador do site para obter os termos de uso.",
       "ja": "利用規約については、サイト管理者にお問い合わせください。",
-      "cs": "Prosím kontaktujte správce serveru pro podrobnosti o podmínkách používání.",
+      "cs": "Ohledně podmínek používání se obraťte se na správce.",
       "nl": "Neem contact op met de sitebeheerder voor gebruiksvoorwaarden.",
       "xloc": [
         "terms.handlebars->container->column_l->3",
@@ -10343,7 +10343,7 @@
       "en": "Please wait a few minute to receive the verification.",
       "pt": "Aguarde alguns minutos para receber a verificação.",
       "ja": "確認を受けるまで数分お待ちください。",
-      "cs": "Prosím počkejte pár minut než dojde k verifikaci.",
+      "cs": "Počkejte pár minut než dojde k ověření.",
       "nl": "Wacht enkele minuten om de verificatie te ontvangen.",
       "xloc": [
         "default.handlebars->23->900",
@@ -10353,7 +10353,7 @@
     {
       "en": "Plugin Action",
       "ja": "プラグインアクション",
-      "cs": "Akce pluginu",
+      "cs": "Akce zásuvného modulu",
       "nl": "Plugin Actie",
       "xloc": [
         "default.handlebars->23->171",
@@ -10363,7 +10363,7 @@
     {
       "en": "Plugin Error",
       "ja": "プラグインエラー",
-      "cs": "Chyba pluginu",
+      "cs": "Chyba zásuvného modulu",
       "nl": "Plugin fout",
       "xloc": [
         "default.handlebars->23->173"
@@ -10371,7 +10371,7 @@
     },
     {
       "en": "Plugins",
-      "cs": "Pluginy",
+      "cs": "Zásuvné moduly",
       "pt": "Plugins",
       "ja": "プラグイン",
       "nl": "Plugins",
@@ -10382,7 +10382,7 @@
     },
     {
       "en": "Plugins -",
-      "cs": "Pluginy -",
+      "cs": "Zásuvné moduly –",
       "pt": "Plugins -",
       "ja": "プラグイン-",
       "nl": "Plugins -",
@@ -10393,7 +10393,7 @@
     {
       "en": "Plugins have been altered, this may require agent core update.",
       "ja": "プラグインが変更されたため、エージェントコアの更新が必要になる場合があります。",
-      "cs": "Pluginy byly změněny, může to vyžadovat aktualizaci jádra agenta.",
+      "cs": "Zásuvné moduly byly změněny a to může vyžadovat aktualizaci jádra agenta.",
       "nl": "Plug-ins zijn gewijzigd, dit kan een update van de agent vereisen.",
       "xloc": [
         "default.handlebars->container->column_l->p42->pluginRestartNotice->3->1"
@@ -10415,7 +10415,7 @@
       "fr": "Politique",
       "pt": "Política",
       "ja": "方針",
-      "cs": "Politika",
+      "cs": "Zásada",
       "nl": "Beleid",
       "xloc": [
         "default.handlebars->23->934",
@@ -10464,7 +10464,7 @@
     },
     {
       "en": "Power Actions...",
-      "cs": "Akce napájení",
+      "cs": "Akce napájení…",
       "pt": "Ações de energia (Ligar/Desligar)",
       "ja": "電源アクション...",
       "nl": "Power Actie's...",
@@ -10531,7 +10531,7 @@
       "fr": "Appuyez sur [espace] pour jouer/mettre en pause.",
       "pt": "Pressione [espaço] para reproduzir / pausar.",
       "ja": "[スペース]を押して再生/一時停止します。",
-      "cs": "Zmáčkni [mezerník] pro spuštění/pauzu.",
+      "cs": "Pro pokračování/pozastavení stiskněte [mezerník].",
       "nl": "Druk op [spatie] om te spelen / pauzeren.",
       "xloc": [
         "player.htm->3->16",
@@ -10543,7 +10543,7 @@
       "fr": "Appuyez sur le bouton de la clé maintenant.",
       "pt": "Pressione o botão da tecla agora.",
       "ja": "ここでキーボタンを押します。",
-      "cs": "Stiskni klávesu.",
+      "cs": "Stiskněte klávesu.",
       "nl": "Druk nu op de sleutelknop.",
       "xloc": [
         "default.handlebars->23->145"
@@ -10685,7 +10685,7 @@
       "en": "Rate",
       "pt": "Taxa",
       "ja": "レート",
-      "cs": "Hodnocení",
+      "cs": "Rychlost",
       "nl": "Beoordeel",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->3"
@@ -10696,7 +10696,7 @@
       "fr": "RAW16, très lent",
       "pt": "RAW16, muito lento",
       "ja": "RAW16、非常に遅い",
-      "cs": "RAW16, hodně pomalé",
+      "cs": "RAW16, velmi pomalé",
       "nl": "RAW16, Zeer langzaam",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->7",
@@ -10729,7 +10729,7 @@
       "en": "Reactivate Intel&reg; AMT",
       "pt": "Reativar Intel&reg;AMT",
       "ja": "インテルを再アクティブ化&reg; AMT",
-      "cs": "ReaktivaceIntel&reg; AMT",
+      "cs": "Znovu aktivovat Intel&reg; AMT",
       "nl": "Heractiveer Intel&reg; AMT",
       "xloc": [
         "default.handlebars->23->1016"
@@ -10739,7 +10739,7 @@
       "en": "Realms",
       "pt": "Realms",
       "ja": "レルム",
-      "cs": "Realmy",
+      "cs": "Oblasti",
       "nl": "Realms",
       "xloc": [
         "default.handlebars->23->1214"
@@ -10763,7 +10763,7 @@
       "en": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:",
       "pt": "A redistribuição e uso nas formas de origem e binárias, com ou sem modificação, são permitidas desde que as seguintes condições sejam atendidas:",
       "ja": "ソースおよびバイナリ形式での再配布および使用は、変更の有無にかかわらず、次の条件が満たされている場合に許可されます。",
-      "cs": "Redistribuce a použití ve zdrojové a binární podobě, s úpravou nebo bez ní, jsou povoleny za předpokladu, že jsou splněny následující podmínky:",
+      "cs": "Šíření dál a použití ve zdrojové a binární podobě, s úpravou nebo bez ní, jsou povoleny za předpokladu, že jsou splněny následující podmínky:",
       "nl": "Herdistributie en gebruik in bron- en binaire vorm, met of zonder wijziging, zijn toegestaan mits aan de volgende voorwaarden wordt voldaan:",
       "xloc": [
         "terms.handlebars->container->column_l->13->1",
@@ -10774,7 +10774,7 @@
     },
     {
       "en": "Refresh",
-      "cs": "Obnovit",
+      "cs": "Načíst znovu",
       "fr": "Rafraîchir",
       "pt": "Atualizar",
       "ja": "リフレッシュ",
@@ -10802,7 +10802,7 @@
       "en": "Relay",
       "pt": "Retransmissão",
       "ja": "リレー",
-      "cs": "Přesměrování",
+      "cs": "Předávání (relay)",
       "nl": "Relay",
       "xloc": [
         "default.handlebars->23->184",
@@ -10814,7 +10814,7 @@
       "en": "Relay Sessions",
       "pt": "Retransmissão de sessão ",
       "ja": "中継セッション",
-      "cs": "Přesměrované relace",
+      "cs": "Předávané relace",
       "nl": "Relay Sessies",
       "xloc": [
         "default.handlebars->23->1307",
@@ -10825,7 +10825,7 @@
       "en": "Remember this device for 30 days.",
       "fr": "Rappelez cet appareil pour 30 jours.",
       "ja": "このデバイスを30日間記憶します。",
-      "cs": "Zapamatovat toto zařízení 30 dní.",
+      "cs": "Zapamatovat toto zařízení na 30 dní.",
       "nl": "Onthoud dit apparaat gedurende 30 dagen.",
       "xloc": [
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->2->1->1",
@@ -10834,7 +10834,7 @@
     },
     {
       "en": "Remote",
-      "cs": "Vzdálený",
+      "cs": "Vzdálené",
       "pt": "Remoto",
       "ja": "リモート",
       "nl": "Extern",
@@ -10866,7 +10866,7 @@
     },
     {
       "en": "Remote clipboard is valid for 60 seconds.",
-      "cs": "Vzdálená schránka je platná 60 sekund.",
+      "cs": "Vzdálená schránka je platná po 60 sekund.",
       "fr": "Le presse-papier à distance est valide pendant 60 secondes.",
       "pt": "A área de transferência remota é válida por 60 segundos.",
       "ja": "リモートクリップボードは60秒間有効です。",
@@ -10877,7 +10877,7 @@
     },
     {
       "en": "Remote computer is not powered on, click here to issue a power command.",
-      "cs": "Vzdálený počítač není zapnutý, klikněte zde pro zapnutí.",
+      "cs": "Vzdálený počítač není zapnutý, klikněte sem pro zapnutí.",
       "fr": "L'ordinateur distant n'est pas sous tension, cliquez ici pour émettre une commande d'alimentation.",
       "pt": "O computador remoto não está ligado, clique aqui para emitir um comando de energia.",
       "ja": "リモートコンピューターの電源が入っていません。ここをクリックして電源コマンドを発行してください。",
@@ -10892,7 +10892,7 @@
       "fr": "Télécommande",
       "pt": "Controle remoto",
       "ja": "リモコン",
-      "cs": "Vzdálené ovládání",
+      "cs": "Ovládání na dálku",
       "nl": "Extern beheer",
       "xloc": [
         "default.handlebars->23->1058",
@@ -10919,7 +10919,7 @@
       "fr": "Entrée au clavier à distance",
       "pt": "Entrada remota do teclado",
       "ja": "リモートキーボード入力",
-      "cs": "Vzdálené zadání klávesnice",
+      "cs": "Zadávání z klávesnice na dálku",
       "nl": "Toetsenbordinvoer op afstand",
       "xloc": [
         "default.handlebars->23->583"
@@ -10940,7 +10940,7 @@
       "en": "Remote View Only",
       "pt": "Somente visualização remota",
       "ja": "リモートビューのみ",
-      "cs": "Pouze vzdálené prohlížení",
+      "cs": "Pouze prohlížení na dálku",
       "nl": "Alleen extern meekijken",
       "xloc": [
         "default.handlebars->23->1059",
@@ -10964,7 +10964,7 @@
       "en": "Remove all 2nd factor authentication.",
       "pt": "Remova toda a autenticação do segundo fator.",
       "ja": "すべての2要素認証を削除します。",
-      "cs": "Odstranit celou 2-faktorovou autentizaci.",
+      "cs": "Odstranit celé 2-faktorové ověřování.",
       "nl": "Verwijder alle Tweestapsverificatie.",
       "xloc": [
         "default.handlebars->23->1274"
@@ -10974,7 +10974,7 @@
       "en": "Remove node location",
       "pt": "Remover localização do nó",
       "ja": "ノードの場所を削除",
-      "cs": "Odstranit umístění nódu",
+      "cs": "Odstranit umístění uzlu",
       "nl": "Verwijder knooppuntlocatie",
       "xloc": [
         "default.handlebars->23->400"
@@ -11049,7 +11049,7 @@
       "fr": "Requiert Microsoft ClickOnce dans votre navigateur",
       "pt": "Requer o suporte Microsoft ClickOnce no seu navegador",
       "ja": "ブラウザでMicrosoft ClickOnceサポートが必要です",
-      "cs": "Vyžaduje Microsoft ClickOnce podporu v prohlížeči",
+      "cs": "Vyžaduje podporu pro Microsoft ClickOnce v prohlížeči",
       "nl": "Vereist Microsoft ClickOnce-ondersteuning in uw browser",
       "xloc": [
         "default.handlebars->23->494"
@@ -11060,7 +11060,7 @@
       "fr": "Requiert Microsoft ClickOnce dans votre navigateur.",
       "pt": "Requer o suporte Microsoft ClickOnce no seu navegador.",
       "ja": "ブラウザでMicrosoft ClickOnceサポートが必要です。",
-      "cs": "Vyžaduje Microsoft ClickOnce podporu v prohlížeči.",
+      "cs": "Vyžaduje podporu pro Microsoft ClickOnce v prohlížeči.",
       "nl": "Vereist Microsoft ClickOnce-ondersteuning in uw browser",
       "xloc": [
         "default.handlebars->23->496",
@@ -11120,7 +11120,7 @@
       "fr": "Réinitialiser l'affichage de la carte",
       "pt": "Redefinir visualização de mapa",
       "ja": "マップビューをリセット",
-      "cs": "Reset pohledu",
+      "cs": "Reset mapového pohledu",
       "nl": "Reset kaartweergave",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar"
@@ -11220,7 +11220,7 @@
       "fr": "RLE8, le plus rapide",
       "pt": "RLE8, mais rápido",
       "ja": "RLE8、最速",
-      "cs": "RLE8, Rychlejší",
+      "cs": "RLE8, Nejrychlejší",
       "nl": "RLE8, snelste",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->1",
@@ -11268,7 +11268,7 @@
       "fr": "Certificat Racine",
       "pt": "Certificado raiz",
       "ja": "ルート証明書",
-      "cs": "Root certifikát",
+      "cs": "Kořenový certifikát",
       "nl": "Hoofd certificaat",
       "xloc": [
         "default.handlebars->23->262",
@@ -11280,7 +11280,7 @@
       "fr": "Fichier de Certificate Racine",
       "pt": "Arquivo de certificado raiz",
       "ja": "ルート証明書ファイル",
-      "cs": "Root certifikát soubor",
+      "cs": "Soubor s kořenovým certifikátem",
       "nl": "Hoofd certificaat bestand",
       "xloc": [
         "default.handlebars->23->264",
@@ -11290,7 +11290,7 @@
     {
       "en": "Root Shell",
       "ja": "ルートシェル",
-      "cs": "Root příkazová řádka",
+      "cs": "Příkazový řádek správce",
       "nl": "Root Shell",
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->cxtermnorm->0"
@@ -11356,7 +11356,7 @@
       "fr": "Identique au nom de l'appareil",
       "pt": "Igual ao nome do dispositivo",
       "ja": "デバイス名と同じ",
-      "cs": "Stejné jako jméno zařízení",
+      "cs": "Stejné jako název zařízení",
       "nl": "Hetzelfde als de apparaatnaam",
       "xloc": [
         "default.handlebars->23->234"
@@ -11414,7 +11414,7 @@
     },
     {
       "en": "Save a screenshot of the remote desktop",
-      "cs": "Uložit screenshot vzdáleného počítače",
+      "cs": "Uložit snímek obrazovky vzdáleného počítače",
       "fr": "Enregistrer une capture d'écran du bureau distant",
       "pt": "Salvar uma captura de tela da área de trabalho remota",
       "ja": "リモートデスクトップのスクリーンショットを保存する",
@@ -11428,7 +11428,7 @@
       "fr": "Enregistrer l'emplacement",
       "pt": "Salvar localização do nó",
       "ja": "ノードの場所を保存",
-      "cs": "Uložit umístění nódu",
+      "cs": "Uložit umístění uzlu",
       "nl": "Knooppuntlocatie opslaan",
       "xloc": [
         "default.handlebars->23->401"
@@ -11439,7 +11439,7 @@
       "fr": "Sauver...",
       "pt": "Salvar...",
       "ja": "セーブ...",
-      "cs": "Uložit...",
+      "cs": "Uložit…",
       "nl": "Opslaan...",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
@@ -11495,7 +11495,7 @@
       "fr": "Balayage...",
       "pt": "Escaneando...",
       "ja": "走査...",
-      "cs": "Skenuji...",
+      "cs": "Skenování…",
       "nl": "Scannen van ...",
       "xloc": [
         "default.handlebars->23->251"
@@ -11537,7 +11537,7 @@
     },
     {
       "en": "Security",
-      "cs": "Bezpečnost",
+      "cs": "Zabezpečení",
       "fr": "Sécurité",
       "pt": "Segurança",
       "ja": "セキュリティ",
@@ -11564,7 +11564,7 @@
       "en": "Select a new group for selected devices",
       "pt": "Selecione um novo grupo para dispositivos selecionados",
       "ja": "選択したデバイスの新しいグループを選択します",
-      "cs": "Vybrat novou skupinu pro vybraná zařízení",
+      "cs": "Vybrat novou skupinu pro označená zařízení",
       "nl": "Selecteer een nieuwe groep voor geselecteerde apparaten",
       "xloc": [
         "default.handlebars->23->545"
@@ -11584,7 +11584,7 @@
       "en": "Select a node to place",
       "pt": "Selecione um nó para colocar",
       "ja": "配置するノードを選択します",
-      "cs": "Vybrat kam umístit nód",
+      "cs": "Vybrat kam umístit uzel",
       "nl": "Selecteer een knooppunt om te plaatsen",
       "xloc": [
         "default.handlebars->23->417"
@@ -11620,7 +11620,7 @@
     },
     {
       "en": "Select an operation to perform on this device.",
-      "cs": "Vyber operaci na tomto zařízení.",
+      "cs": "Vyberte operaci na tomto zařízení.",
       "pt": "Selecione uma operação para executar neste dispositivo.",
       "ja": "このデバイスで実行する操作を選択します。",
       "nl": "Selecteer een bewerking die u op dit apparaat wilt uitvoeren.",
@@ -11631,7 +11631,7 @@
     },
     {
       "en": "Select None",
-      "cs": "Vybrat nic",
+      "cs": "Nevybrat nic",
       "fr": "Rien sélectionner",
       "pt": "Selecione nenhum",
       "ja": "なしを選択",
@@ -11684,7 +11684,7 @@
       "fr": "Envoyez une notification à cet utilisateur.",
       "pt": "Envie uma notificação de texto para este usuário.",
       "ja": "このユーザーにテキスト通知を送信します。",
-      "cs": "Poslat textovou notifikaci tomuto uživateli.",
+      "cs": "Poslat tomuto uživateli textové upozornění.",
       "nl": "Stuur een tekstbericht naar deze gebruiker.",
       "xloc": [
         "default.handlebars->23->1182"
@@ -11703,7 +11703,7 @@
     },
     {
       "en": "Send invitation email.",
-      "cs": "Zaslat pozvánku emailem.",
+      "cs": "Zaslat pozvánku e-mailem.",
       "fr": "Envoyer un email d'invitation.",
       "pt": "Enviar email de convite.",
       "ja": "招待メールを送信します。",
@@ -11750,7 +11750,7 @@
       "fr": "Envoyer une notification utilisateur",
       "pt": "Enviar notificação do usuário",
       "ja": "ユーザー通知を送信する",
-      "cs": "Poslat notifikaci uživatelovi",
+      "cs": "Poslat upozornění uživateli",
       "nl": "Stuur gebruikersmelding",
       "xloc": [
         "default.handlebars->23->1261"
@@ -11780,7 +11780,7 @@
       "en": "Server actions",
       "pt": "Ações do servidor",
       "ja": "サーバーアクション",
-      "cs": "Kce serveru",
+      "cs": "Akce serveru",
       "nl": "Server acties",
       "xloc": [
         "default.handlebars->container->column_l->p6->p2ServerActions->1->0"
@@ -11799,7 +11799,7 @@
     {
       "en": "Server Certificate",
       "ja": "サーバー証明書",
-      "cs": "Certifikáty serveru",
+      "cs": "Certifikát serveru",
       "nl": "Server Certificaat",
       "xloc": [
         "default.handlebars->23->1336"
@@ -11844,7 +11844,7 @@
       "en": "Server has no error log.",
       "pt": "O servidor não possui log de erros.",
       "ja": "サーバーにはエラーログがありません。",
-      "cs": "Server nemá žádný chybový log.",
+      "cs": "Server nemá žádný záznam chyb.",
       "nl": "Server heeft geen foutenlogboek.",
       "xloc": [
         "default.handlebars->23->111"
@@ -11854,7 +11854,7 @@
       "en": "Server is recording this session",
       "pt": "O servidor está gravando esta sessão",
       "ja": "サーバーはこのセッションを記録しています",
-      "cs": "Server nahrává toto spojení",
+      "cs": "Server tuto relaci nahrává",
       "nl": "Server neemt deze sessie op",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
@@ -11981,7 +11981,7 @@
       "en": "Service Details",
       "pt": "Detalhes do serviço",
       "ja": "サービスの詳細",
-      "cs": "Detaily serveru",
+      "cs": "Podrobnosti o serveru",
       "nl": "Servicegegevens",
       "xloc": [
         "default.handlebars->23->600"
@@ -12037,7 +12037,7 @@
       "fr": "Fichier de Paramètres",
       "pt": "Arquivo de configurações",
       "ja": "設定ファイル",
-      "cs": "Soubor nastavení",
+      "cs": "Soubor s nastaveními",
       "nl": "Instellingenbestand",
       "xloc": [
         "default.handlebars->23->325"
@@ -12045,7 +12045,7 @@
     },
     {
       "en": "Settings...",
-      "cs": "Nastavení...",
+      "cs": "Nastavení…",
       "fr": "Paramètres...",
       "pt": "Configurações...",
       "ja": "設定...",
@@ -12066,7 +12066,7 @@
     },
     {
       "en": "Setup Method",
-      "cs": "Nastavení",
+      "cs": "Metoda nastavení",
       "pt": "Método de instalação",
       "ja": "設定方法",
       "nl": "Setup methode",
@@ -12079,7 +12079,7 @@
       "fr": "Traitement...",
       "pt": "Configurando...",
       "ja": "セットアップ...",
-      "cs": "Nastavení...",
+      "cs": "Nastavení…",
       "nl": "Setup...",
       "xloc": [
         "default.handlebars->23->10",
@@ -12170,7 +12170,7 @@
       "en": "Show devices operating system name",
       "pt": "Mostrar o nome do sistema operacional dos dispositivos",
       "ja": "デバイスのオペレーティングシステム名を表示する",
-      "cs": "Zobrazit jméno operačního systému",
+      "cs": "Zobrazit název operačního systému",
       "nl": "Toon apparaten besturingssysteemnaam",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->7"
@@ -12223,7 +12223,7 @@
     },
     {
       "en": "Show server error log",
-      "cs": "Zobrazit chyby serveru",
+      "cs": "Zobrazit záznam chyb serveru",
       "fr": "Afficher le journal des erreurs du serveur",
       "pt": "Mostrar log de erros do servidor",
       "ja": "サーバーエラーログを表示",
@@ -12236,7 +12236,7 @@
       "en": "Simple Admin Control Mode (ACM)",
       "pt": "Modo de controle de administrador simples (ACM)",
       "ja": "シンプル管理制御モード（ACM）",
-      "cs": "Jednoduchý Admin Control Mode (ACM)",
+      "cs": "Jednoduchý režim řízený správcem (ACM)",
       "nl": "Simple Admin Control Mode (ACM)",
       "xloc": [
         "default.handlebars->23->978",
@@ -12247,7 +12247,7 @@
       "en": "Simple Client Control Mode (CCM)",
       "pt": "Modo de Controle de Cliente Simples (CCM)",
       "ja": "シンプルクライアントコントロールモード（CCM）",
-      "cs": "Jednoduchý Client Control Mode (CCM)",
+      "cs": "Jednoduchý režim řízený klientem (CCM)",
       "nl": "Simple Client Control Mode (CCM)",
       "xloc": [
         "default.handlebars->23->976",
@@ -12310,7 +12310,7 @@
       "en": "Sleep devices",
       "pt": "Hibernar dispositivo",
       "ja": "スリープデバイス",
-      "cs": "Spící zařízení",
+      "cs": "Uspat zařízení",
       "nl": "Slaap apparaten",
       "xloc": [
         "default.handlebars->23->382"
@@ -12380,7 +12380,7 @@
       "en": "Small Focus",
       "pt": "Foco pequeno",
       "ja": "小焦点",
-      "cs": "malé zaměření",
+      "cs": "Malé zaměření",
       "nl": "Kleine focus",
       "xloc": [
         "default.handlebars->23->580"
@@ -12412,7 +12412,7 @@
       "fr": "Groupe d'agents logiciels",
       "pt": "Grupo de agentes de software",
       "ja": "ソフトウェアエージェントグループ",
-      "cs": "Skupina Software Agent",
+      "cs": "Skupina softwarového agenta",
       "nl": "Software Agent Groep",
       "xloc": [
         "default-mobile.handlebars->9->55"
@@ -12440,7 +12440,7 @@
     },
     {
       "en": "Sort",
-      "cs": "Třídit",
+      "cs": "Řadit",
       "fr": "Trier",
       "pt": "Classificar",
       "ja": "ソート",
@@ -12454,7 +12454,7 @@
       "fr": "Trier par date",
       "pt": "Classificar por data",
       "ja": "日付けで並び替え",
-      "cs": "STřídit podle datumu",
+      "cs": "Seřadit podle data",
       "nl": "Sorteren op datum",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5toolbar->1->2->p5filesubhead->1->p5sortdropdown->5",
@@ -12465,7 +12465,7 @@
     },
     {
       "en": "Sort by name",
-      "cs": "Třídit podle jména",
+      "cs": "Seřadit podle názvu",
       "fr": "Trier par nom",
       "pt": "Classificar por nome",
       "ja": "名前順",
@@ -12484,7 +12484,7 @@
       "fr": "Trier par identifiant de processus",
       "pt": "Classificar por ID do processo",
       "ja": "プロセスIDで並べ替え",
-      "cs": "Třídit podle id procesu",
+      "cs": "Seřadit podle identifikátoru procesu",
       "nl": "Sorteer op proces ID",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader"
@@ -12492,7 +12492,7 @@
     },
     {
       "en": "Sort by size",
-      "cs": "Třídit podle velikosti",
+      "cs": "Seřadit podle velikosti",
       "fr": "Trier par taille",
       "pt": "Classificar por tamanho",
       "ja": "サイズで並べ替え",
@@ -12506,7 +12506,7 @@
     },
     {
       "en": "Sort by state",
-      "cs": "Třídit podle stavu",
+      "cs": "Seřadit podle stavu",
       "fr": "Trier par état",
       "pt": "Classificar por estado",
       "ja": "状態で並べ替え",
@@ -12720,7 +12720,7 @@
       "en": "Special Keys",
       "pt": "Chaves especiais",
       "ja": "特別なキー",
-      "cs": "Speciální klíče",
+      "cs": "Speciální klávesy",
       "nl": "Speciale toetsen",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3",
@@ -12764,7 +12764,7 @@
       "fr": "Statut",
       "pt": "Status",
       "ja": "状態",
-      "cs": "Status",
+      "cs": "Stav",
       "nl": "Status",
       "xloc": [
         "default.handlebars->container->column_l->p42->p42tbl->1->0->7",
@@ -12776,7 +12776,7 @@
       "fr": "Arrêtez",
       "pt": "Pare",
       "ja": "やめる",
-      "cs": "Stop",
+      "cs": "Zastavit",
       "nl": "Stop",
       "xloc": [
         "default.handlebars->23->598"
@@ -12786,7 +12786,7 @@
       "en": "Stop process #{0} \\\"{1}\\\"?",
       "pt": "Parar processo #{0} \\\"{1}\\\"?",
       "ja": "プロセス＃{0} \\\"{1}\\\"を停止しますか？",
-      "cs": "Ukončit proces #{0} \\\"{1}\\\"?",
+      "cs": "Ukončit proces #{0} „{1}“?",
       "nl": "Stop process #{0} \\\"{1}\\\"?",
       "xloc": [
         "default.handlebars->23->603",
@@ -12911,7 +12911,7 @@
     },
     {
       "en": "Tag1, Tag2, Tag3",
-      "cs": "Značka1, Značka2, Značka",
+      "cs": "Štítek1, Štítek2, Štítek3",
       "pt": "Tag1, Tag2, Tag3",
       "ja": "Tag1、Tag2、Tag3",
       "nl": "Tag1, Tag2, Tag3",
@@ -12921,7 +12921,7 @@
     },
     {
       "en": "Tags",
-      "cs": "Tagy",
+      "cs": "Štítky",
       "pt": "Tags",
       "ja": "タグ",
       "nl": "Tags",
@@ -12982,7 +12982,7 @@
       "fr": "Terminal -",
       "pt": "Terminal -",
       "ja": "ターミナル -",
-      "cs": "Terminál -",
+      "cs": "Terminál –",
       "nl": "Terminal -",
       "xloc": [
         "default.handlebars->container->column_l->p12->p12title->3"
@@ -13012,7 +13012,7 @@
       "en": "Terms & Privacy",
       "pt": "Termos & Privacidade",
       "ja": "利用規約とプライバシー",
-      "cs": "Podmínky & soukromí",
+      "cs": "Podmínky a soukromí",
       "nl": "Voorwaarden & Privacy",
       "xloc": [
         "default.handlebars->container->footer->3->3",
@@ -13080,7 +13080,7 @@
       "en": "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
       "pt": "O SOFTWARE É FORNECIDO \"TAL COMO ESTÁ\", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU IMPLÍCITA, INCLUINDO MAS NÃO SE LIMITANDO A GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA E NÃO INFRACÇÃO. EM NENHUM CASO OS AUTORES OU TITULARES DE DIREITOS AUTORAIS RESPONSABILIZARÃO POR QUALQUER REIVINDICAÇÃO, DANOS OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, TORT OU OUTRA FORMA, DECORRENTE DE, FORA OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTROS NEGÓCIOS NO PROGRAMAS.",
       "ja": "本ソフトウェアは、商品性、特定の目的への適合性、および非侵害の保証を含むが、これに限らず、明示または黙示を問わず、いかなる保証もなしに「現状のまま」提供されます。いかなる場合でも、作者または著作権者は、契約、不法行為、またはその他の行為、ソフトウェアまたは使用またはその他の取引に起因する、または関連するいかなる請求、損害またはその他の責任についても責任を負わないものとしますソフトウェア。",
-      "cs": "SOFTWARE JE POSKYTOVÁN \"TAK JAK JE\", BEZ ZÁRUKY, VYJÁDŘENÉ NEBO IMPLIKOVANÉ, VČETNĚ NEJEDNÁVANÝCH ZÁRUK OBCHODOVATELNOSTI, VHODNOSTI PRO URČITÝ ÚČEL A NEZÁVISLOST. V ŽÁDNÉM PŘÍPADĚ NEPOSKYTUJÍ AUTOŘI NEBO DRŽITELÉ AUTORSKÝCH PRÁV ŽÁDNÉ ZÁRUKY, ZA POŠKOZENÍ NEBO OSTATNÍ ODPOVĚDNOST, PŘI ČINNOSTI SMLOUVY, TORTU NEBO JINÉ, VYPLÝVAJÍCÍ ZE SOFTWARU NEBO POUŽITÍ NEBO OSTATNÍCH OBCHODŮ SOFTWARE.",
+      "cs": "SOFTWARE JE POSKYTOVÁN „TAK JAK JE“, BEZ ZÁRUKY, VYJÁDŘENÉ NEBO IMPLIKOVANÉ, VČETNĚ NEJEDNÁVANÝCH ZÁRUK OBCHODOVATELNOSTI, VHODNOSTI PRO URČITÝ ÚČEL A NEZÁVISLOST. V ŽÁDNÉM PŘÍPADĚ NEPOSKYTUJÍ AUTOŘI NEBO DRŽITELÉ AUTORSKÝCH PRÁV ŽÁDNÉ ZÁRUKY, ZA POŠKOZENÍ NEBO OSTATNÍ ODPOVĚDNOST, PŘI ČINNOSTI SMLOUVY, TORTU NEBO JINÉ, VYPLÝVAJÍCÍ ZE SOFTWARU NEBO POUŽITÍ NEBO OSTATNÍCH OBCHODŮ SOFTWARE.",
       "nl": "DE SOFTWARE WORDT \"ALS ZODANIG\" GELEVERD, ZONDER ENIGE VORM VAN GARANTIE, UITDRUKKELIJK OF IMPLICIET, INCLUSIEF MAAR NIET BEPERKT TOT DE GARANTIES VAN VERKOOPBAARHEID, GESCHIKTHEID VOOR EEN BEPAALD DOEL EN NIET-INBREUK. IN GEEN GEVAL ZULLEN DE AUTEURS OF AUTEURSRECHTHOUDERS AANSPRAKELIJK ZIJN VOOR ENIGE CLAIM, SCHADE OF ANDERE AANSPRAKELIJKHEID, OOK IN EEN HANDELING VAN CONTRACT, SCHORT OF ANDERSZINS DIE VOORTVLOEIEN UIT, IN OF IN VERBAND MET DE SOFTWARE OF HET GEBRUIK OF ANDERE HANDELINGEN IN DE SOFTWARE.",
       "xloc": [
         "terms.handlebars->container->column_l->49->1",
@@ -13096,7 +13096,7 @@
       "fr": "Il n'y a actuellement aucune notification",
       "pt": "Atualmente não há notificações",
       "ja": "現在、通知はありません",
-      "cs": "Žádná notifikace",
+      "cs": "V tuto chvíli zde nejsou žádná upozornění",
       "nl": "Er zijn momenteel geen meldingen",
       "xloc": [
         "default.handlebars->23->1281"
@@ -13107,7 +13107,7 @@
       "fr": "Ces fichiers sont partagés publiquement, cliquez sur \"lien\" pour obtenir une URL publique.",
       "pt": "Esses arquivos são compartilhados publicamente, clique em \"link\" para obter o URL público.",
       "ja": "これらのファイルは一般公開されています。「リンク」をクリックして公開URLを取得してください。",
-      "cs": "Tyto soubory jsou veřejné, klikni \"link\" pro získání veřejného url.",
+      "cs": "Tyto soubory jsou veřejné, kliknutím na „odkaz“ získáte veřejnou url adresu.",
       "nl": "Deze bestanden worden openbaar gedeeld, klik op \"link\" om de openbare URL te krijgen.",
       "xloc": [
         "default.handlebars->container->column_l->p5->p5filetable->p5PublicShare->0"
@@ -13117,7 +13117,7 @@
       "en": "These settings can be used to connect MQTT for this device.",
       "pt": "Essas configurações podem ser usadas para conectar o MQTT a este dispositivo.",
       "ja": "これらの設定を使用して、このデバイスのMQTTを接続できます。",
-      "cs": "Tyto nastavení mohou být použity pro MQTT tohoto zařízení.",
+      "cs": "Pro připojení MQTT pro toto zařízení je možné použít tato nastavení.",
       "nl": "Deze instellingen kunnen worden gebruikt om MQTT voor dit apparaat te verbinden.",
       "xloc": [
         "default.handlebars->23->169"
@@ -13138,7 +13138,7 @@
       "en": "This is not a secure policy as agents will be performing activation.",
       "pt": "Esta não é uma política segura, pois os agentes estarão executando a ativação.",
       "ja": "エージェントはアクティベーションを実行するため、これは安全なポリシーではありません。",
-      "cs": "Toto není bezpečná politika, protože agenti budou provádět aktivaci.",
+      "cs": "Toto není bezpečná zásada, protože aktivaci budou provádět agenti.",
       "nl": "Dit is geen veilig beleid omdat agenten activering zullen uitvoeren.",
       "xloc": [
         "default.handlebars->23->1028"
@@ -13159,7 +13159,7 @@
       "en": "This policy will not impact devices with Intel&reg; AMT in ACM mode.",
       "pt": "Esta política não afetará os dispositivos com Intel&reg; AMT no modo ACM.",
       "ja": "このポリシーは、Intel&reg;を搭載したデバイスには影響しません。 ACMモードのAMT。",
-      "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT in ACM módem.",
+      "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT v ACM režimu.",
       "nl": "Dit beleid heeft geen invloed op apparaten met Intel&reg; AMT ACM-modus",
       "xloc": [
         "default.handlebars->23->1027"
@@ -13201,7 +13201,7 @@
       "en": "This software uses code from",
       "pt": "Este software usa código de",
       "ja": "このソフトウェアはからのコードを使用します",
-      "cs": "Tento software využívá kódy z",
+      "cs": "Tento software využívá zdrojové kódy z",
       "nl": "Deze software maakt gebruik van code van",
       "xloc": [
         "terms.handlebars->container->column_l->75->1",
@@ -13212,7 +13212,7 @@
       "en": "This will add an entry to this device\\'s event log.",
       "pt": "Isso adicionará uma entrada ao log de eventos deste dispositivo.",
       "ja": "これにより、このデバイスのイベントログにエントリが追加されます。",
-      "cs": "Tím se přidá položka do tohoto logu událostí zařízení.",
+      "cs": "Tím se přidá položka do tohoto záznamu událostí na zařízení.",
       "nl": "Hiermee wordt een vermelding toegevoegd aan het gebeurtenislogboek van dit apparaat.",
       "xloc": [
         "default.handlebars->23->512"
@@ -13221,7 +13221,7 @@
     {
       "en": "This will not remove the devices from the server, but the devices will not longer be able to connect to the server. All remote access to the devices will be lost. The devices must be connected for this command to work.",
       "ja": "これによりサーバーからデバイスが削除されることはありませんが、デバイスはサーバーに接続できなくなります。デバイスへのすべてのリモートアクセスが失われます。このコマンドが機能するには、デバイスが接続されている必要があります。",
-      "cs": "To neodstraní zařízení ze serveru, ale zařízení se již nebudou moci připojit k serveru. Veškerý vzdálený přístup k zařízením bude ztracen. Aby tento příkaz fungoval, musí být připojena zařízení.",
+      "cs": "To neodstraní zařízení ze serveru, ale ta už se k němu nebudou moci připojit Veškerý vzdálený přístup k zařízením bude ztracen. Aby tento příkaz fungoval, je třeba, aby zařízení byla připojena.",
       "nl": "Hiermee worden de apparaten niet van de server verwijderd, maar kunnen de apparaten geen verbinding meer maken met de server. Alle externe toegang tot de apparaten gaat verloren. De apparaten moeten zijn aangesloten om deze opdracht te laten werken.",
       "xloc": [
         "default.handlebars->23->540"
@@ -13230,7 +13230,7 @@
     {
       "en": "This will not remove this device from the server, but the device will not longer be able to connect to the server. All remote access to the device will be lost. The device must be connect for this command to work.",
       "ja": "このデバイスはサーバーから削除されませんが、デバイスはサーバーに接続できなくなります。デバイスへのすべてのリモートアクセスが失われます。このコマンドが機能するには、デバイスが接続されている必要があります。",
-      "cs": "Toto zařízení ze serveru neodstraní, ale zařízení se již nebude moci připojit k serveru. Veškerý vzdálený přístup k zařízení bude ztracen. Aby mohl tento příkaz fungovat, musí být zařízení připojeno.",
+      "cs": "Toto neodstraní zařízení ze serveru, ale ta už se k němu nebudou moci připojit. Veškerý vzdálený přístup k zařízení bude ztracen. Aby mohl tento příkaz fungovat, je třeba, aby zařízení bylo připojené.",
       "nl": "Hiermee wordt dit apparaat niet van de server verwijderd, maar kan het apparaat geen verbinding meer maken met de server. Alle externe toegang tot het apparaat gaat verloren. Het apparaat moet verbonden zijn om dit commando te laten werken.",
       "xloc": [
         "default.handlebars->23->541"
@@ -13314,7 +13314,7 @@
     },
     {
       "en": "To add a computer to {0} run the following command. Root credentials will be needed.",
-      "cs": "Pro přidání do {0} spusťte následující příkaz. Je třeba spouštět pod rootem.",
+      "cs": "Pro přidání do {0} spusťte následující příkaz. Je třeba spouštět s právy správce systému (root).",
       "pt": "Para adicionar um computador a {0}, execute o seguinte comando.Serão necessárias credenciais raiz.",
       "ja": "{0}にコンピューターを追加するには、次のコマンドを実行します。ルート資格情報が必要になります。",
       "nl": "Voer de volgende opdracht uit om een computer toe te voegen aan {0}. Root gegevens zijn nodig.",
@@ -13324,7 +13324,7 @@
     },
     {
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.",
-      "cs": "Pro přidání nového zařízení do skupiny \\\"{0}\\\", si stáhněte agenta a nainstalujte na zařízení, které chcete spravovat. Tento agent již obsahuje veškeré informace pro připojení na server.",
+      "cs": "Pro přidání nového zařízení do skupiny „{0}“, si stáhněte agenta a nainstalujte na zařízení, které chcete spravovat. Tento agent už obsahuje veškeré informace pro připojení na server.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este agente possui informações de servidor e grupo de dispositivos incorporadas.",
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントには、サーバーとデバイスグループの情報が埋め込まれています。",
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. Deze agent heeft server- en apparaatgroepinformatie erin ingebed.",
@@ -13334,7 +13334,7 @@
     },
     {
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.",
-      "cs": "Pro přidání do skupiny \\\"{0}\\\", si musíte stáhnout agenta a nainstalovat ho na počítači, který chcete spravovat. Tento agent má všechny potřebné informace pro připojení již v sobě.",
+      "cs": "Pro přidání do skupiny „{0}“, je třeba si stáhnout a nainstalovat agenta do počíteače, který chcete spravovat. Tento agent má všechny potřebné informace pro připojení již v sobě.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este instalador do agente possui informações de servidor e grupo de dispositivos incorporadas.",
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントインストーラーには、サーバーとデバイスグループの情報が埋め込まれています。",
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. In dit installatieprogramma van de agent zijn server- en apparaatgroepgegevens ingebed.",
@@ -13346,7 +13346,7 @@
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, baixe os seguintes arquivos de script e use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> para executar o script para configurar computadores.",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\\\"{0}\\\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。",
-      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny \\\"{0}\\\" s CIRA, si musíte stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro konfiguraci počítačů.",
+      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, je třeba si stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro nastavení počítačů.",
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> om het script uit te voeren om computers te configureren.",
       "xloc": [
         "default.handlebars->23->256"
@@ -13356,7 +13356,7 @@
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT",
       "ja": "新しいIntel&reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel AMT内で信頼されたルートとして次の証明書をロード",
-      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny \\\"{0}\\\" s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT",
+      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT",
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT",
       "xloc": [
         "default.handlebars->23->259"
@@ -13366,7 +13366,7 @@
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT, autentique usando um certificado de cliente com o seguinte nome comum e conecte-se ao servidor a seguir.",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してデバイスグループ\\\"{0}\\\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。",
-      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny \\\"{0}\\\" s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT, tímto klientským certifikátem se pak bude autentizovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
+      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server.",
       "xloc": [
         "default.handlebars->23->268"
@@ -13376,7 +13376,7 @@
       "en": "To delete this account, type in the account password in both boxes below and hit ok.",
       "pt": "Para excluir esta conta, digite a senha da conta nas duas caixas abaixo e pressione ok.",
       "ja": "このアカウントを削除するには、下の両方のボックスにアカウントのパスワードを入力して[OK]をクリックします。",
-      "cs": "Chcete-li tento účet smazat, zadejte do obou políček heslo k účtu a stiskněte OK.",
+      "cs": "Pokud chcete tento účet smazat, zadejte do obou kolonek heslo k účtu a stiskněte OK.",
       "nl": "Om dit account te verwijderen, typt u het accountwachtwoord in beide onderstaande vakken en drukt u op OK.",
       "xloc": [
         "default.handlebars->23->904"
@@ -13386,7 +13386,7 @@
       "en": "To get started,",
       "pt": "Para começar,",
       "ja": "始めるには、",
-      "cs": "Začít,",
+      "cs": "Pro začátek,",
       "nl": "om meteen aan de slag te gaan,",
       "xloc": [
         "default.handlebars->container->column_l->p1->NoMeshesPanel->1->1->0->3->getStarted1"
@@ -13394,7 +13394,7 @@
     },
     {
       "en": "To install, cut and paste the following command in a root terminal.",
-      "cs": "Pro instalaci spusťte následující příkaz s právy uživatele root.",
+      "cs": "Pro instalaci spusťte následující příkaz s právy správce (root).",
       "pt": "Para instalar, recorte e cole o seguinte comando em um terminal raiz.",
       "ja": "インストールするには、ルートターミナルで次のコマンドをカットアンドペーストします。",
       "nl": "Om de volgende opdracht te installeren, knippen en plakken in een root-terminal.",
@@ -13404,7 +13404,7 @@
     },
     {
       "en": "To remove a mesh agent, download the file below, run it and click \\\"uninstall\\\".",
-      "cs": "Pro odstranění agenta si stáhněte soubor níže, spusťte tento soubor a zvolte \\\"uninstall\\\".",
+      "cs": "Pro odstranění agenta si stáhněte níže uvedené soubor, spusťte ho a zvolte „uninstall“.",
       "pt": "Para remover um agente de malha, faça o download do arquivo abaixo, execute-o e clique em \\\"uninstall\\\".",
       "ja": "メッシュエージェントを削除するには、以下のファイルをダウンロードして実行し、「アンインストール」をクリックします。",
       "nl": "Om een mesh-agent te verwijderen, download het onderstaande bestand, voer het uit en klik op \\\"deinstalleer \\\".",
@@ -13416,7 +13416,7 @@
       "en": "To remove a mesh agent, run the following command. Root credentials will be needed.",
       "pt": "Para remover um agente de malha, execute o seguinte comando. Serão necessárias credenciais raiz.",
       "ja": "メッシュエージェントを削除するには、次のコマンドを実行します。ルート資格情報が必要になります。",
-      "cs": "Chcete-li odebrat agenta, spusťte následující příkaz. Root přihlašovací údaje budou nutné.",
+      "cs": "Pokud chcete agenta odebrat, spusťte následující příkaz a to s právy správce systému (root).",
       "nl": "Voer de volgende opdracht uit om een mesh-agent te verwijderen. Root gegevens zijn nodig.",
       "xloc": [
         "default.handlebars->23->339"
@@ -13424,7 +13424,7 @@
     },
     {
       "en": "To uninstall, cut and paste the following command as root.",
-      "cs": "Pro odinstalování spustťe tento příkaz pod s uživatelskými právy root.",
+      "cs": "Pro odinstalování spustťe tento příkaz jako správce systému (root).",
       "pt": "Para desinstalar, recorte e cole o seguinte comando como raiz.",
       "ja": "アンインストールするには、次のコマンドをルートとしてカットアンドペーストします。",
       "nl": "Om de installatie ongedaan te maken, knip en plak je de volgende opdracht als root.",
@@ -13436,7 +13436,7 @@
       "en": "Toggle F1 to F10 keys emulation type",
       "pt": "Alterna o tipo de emulação de teclas F1 a F10",
       "ja": "F1からF10キーのエミュレーションタイプを切り替えます",
-      "cs": "Přepněte typ emulace kláves F1 na F10",
+      "cs": "Přepnout typ emulace kláves F1 až F10",
       "nl": "Schakel het emulatietype van F1 naar F10 toetsen",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
@@ -13446,7 +13446,7 @@
       "en": "Toggle focus mode, when active only the region around the mouse is updated",
       "pt": "Alternar modo de foco, quando ativo, apenas a região ao redor do mouse é atualizada",
       "ja": "フォーカスモードを切り替えます。アクティブな場合、マウス周辺の領域のみが更新されます。",
-      "cs": "Přepnout režim zaměření, pokud je aktivní pouze oblast kolem myši",
+      "cs": "Přepnout režim zaměření, kdy je aktualizována pouze oblast kolem myši",
       "nl": "Schakel focusmodus in, indien actief wordt alleen het gebied rond de muis bijgewerkt",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
@@ -13468,7 +13468,7 @@
       "fr": "Basculer mode nuit",
       "pt": "Alternar modo noturno",
       "ja": "ナイトモードを切り替える",
-      "cs": "Přepnout na noční mód",
+      "cs": "Přepnout noční režim",
       "nl": "Wissel nachtmodus",
       "xloc": [
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
@@ -13481,7 +13481,7 @@
     {
       "en": "Toggle remote desktop background",
       "ja": "リモートデスクトップの背景を切り替える",
-      "cs": "Přepnout pozadí vzdálené plochy",
+      "cs": "Vyp/zap. pozadí vzdálené plochy",
       "nl": "Wissel bureaubladachtergrond op afstand in",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -13500,7 +13500,7 @@
     },
     {
       "en": "Toggle tools view",
-      "cs": "Přepnout zobrazení nástrojů",
+      "cs": "Zobraz./nezobrazovat nástroje",
       "pt": "Alternar visualização de ferramentas",
       "ja": "ツールビューの切り替え",
       "nl": "Schakel hulpmiddelenweergave in",
@@ -13523,7 +13523,7 @@
       "en": "Toggle what the return key will send",
       "pt": "Alterne o que a chave de retorno enviará",
       "ja": "リターンキーが送信するものを切り替える",
-      "cs": "Přepnout, co odešle klávesa return",
+      "cs": "Přepnout, co odešle klávesa return (enter)",
       "nl": "Wissel wat de return toets zal verzenden",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
@@ -13600,7 +13600,7 @@
       "en": "Traffic router used to connect to a device thru this server",
       "pt": "Roteador de tráfego usado para conectar-se a um dispositivo através deste servidor",
       "ja": "このサーバーを介してデバイスに接続するために使用されるトラフィックルーター",
-      "cs": "Traffic router je použit k připojení zařízení prostřednictvím tohoto serveru",
+      "cs": "Směrovač provozu, použitý k připojení zařízení prostřednictvím tohoto serveru",
       "nl": "Verkeersrouter gebruikt om verbinding te maken met een apparaat via deze server",
       "xloc": [
         "default.handlebars->23->492"
@@ -13660,7 +13660,7 @@
       "en": "Two factor authentication",
       "pt": "Autenticação de dois fatores",
       "ja": "二要素認証",
-      "cs": "2-faktorová autentizace",
+      "cs": "2-faktorové ověřování se",
       "nl": "Twee-factor authenticatie",
       "xloc": [
         "default.handlebars->23->50"
@@ -13687,7 +13687,7 @@
       "en": "Type in a key name, select the OTP box and press the button on the YubiKey&trade;.",
       "pt": "Digite um nome de chave, selecione a caixa OTP e pressione o botão no YubiKeytrade;.",
       "ja": "キー名を入力し、OTPボックスを選択して、YubiKey＆trade;のボタンを押します。",
-      "cs": "Zadejte název klíče, vyberte pole OTP a stiskněte tlačítko na YubiKey&trade;.",
+      "cs": "Zadejte název klíče, vyberte kolonku OTP a stiskněte tlačítko na YubiKey&trade;.",
       "nl": "Typ een sleutelnaam, selecteer het vak OTP en druk op de knop op de YubiKey™.",
       "xloc": [
         "default.handlebars->23->683"
@@ -13697,7 +13697,7 @@
       "en": "Type in the name of the key to add.",
       "pt": "Digite o nome da chave a ser adicionada.",
       "ja": "追加するキーの名前を入力します。",
-      "cs": "Napište jméno klíče pro přidání.",
+      "cs": "Zadejte název klíče, který přidat.",
       "nl": "Typ de naam van de sleutel die u wilt toevoegen.",
       "xloc": [
         "default.handlebars->23->680"
@@ -13717,7 +13717,7 @@
       "en": "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" tab to change and verify an email address.",
       "pt": "Não foi possível acessar um dispositivo até que um endereço de email seja verificado. Isso é necessário para a recuperação de senha. Vá para a guia \\\"Minha conta\\\" para alterar e verificar um endereço de email.",
       "ja": "メールアドレスが確認されるまでデバイスにアクセスできません。これはパスワードの回復に必要です。 [マイアカウント]タブに移動して、メールアドレスを変更および確認します。",
-      "cs": "Nelze získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Jdi do \\\"Můj účet\\\" pro změnu a ověření emailu.",
+      "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Jděte do „Můj účet“ a změňte si a ověřte e-mailovou adresu.",
       "nl": "Geen toegang tot een apparaat totdat een e-mailadres is geverifieerd. Dit is vereist voor wachtwoordherstel. Ga naar het tabblad \\\"Mijn account\\\" om een e-mailadres te wijzigen en te verifiëren.",
       "xloc": [
         "default.handlebars->23->420",
@@ -13728,7 +13728,7 @@
       "en": "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" to change and verify an email address.",
       "pt": "Não foi possível acessar um dispositivo até que um endereço de email seja verificado. Isso é necessário para a recuperação de senha. Vá para \\\"Minha conta\\\" para alterar e verificar um endereço de email.",
       "ja": "メールアドレスが確認されるまでデバイスにアクセスできません。これはパスワードの回復に必要です。 「マイアカウント」に移動して、メールアドレスを変更および確認します。",
-      "cs": "Nelze získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Jdi do \\\"Můj účet\\\" pro změnu a ověření emailu..",
+      "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Jděte do „Můj účet“ a změ%nte si a ověřte e-mailovou adresu.",
       "nl": "Geen toegang tot een apparaat totdat een e-mailadres is geverifieerd. Dit is vereist voor wachtwoordherstel. Ga naar de \\\"Mijn account\\\" om een e-mailadres te wijzigen en te verifiëren.",
       "xloc": [
         "default-mobile.handlebars->9->50",
@@ -13739,7 +13739,7 @@
       "en": "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" and look at the \\\"Account Security\\\" section.",
       "pt": "Não foi possível acessar um dispositivo até que a autenticação de dois fatores esteja ativada. Isso é necessário para segurança extra. Vá para \\\"Minha conta\\\" e veja a seção \\\"Segurança da conta\\\".",
       "ja": "二要素認証が有効になるまでデバイスにアクセスできません。これは、追加のセキュリティのために必要です。 「マイアカウント」に移動して、「アカウントセキュリティ」セクションを確認します。",
-      "cs": "Nelze získat přístup k zařízení, dokud je 2-faktorová autentizace zapnuta. Toto je pro extra bezpečnost. Jdi do \\\"Můj účet\\\" a podívej se do sekce\\\"Nastavení bezpečnosti\\\".",
+      "cs": "Nedaří se získat přístup k zařízení, dokud není zapnuté 2-faktorové ověřování se. Toto je vyžadováno pro extra zabezpečení. Jděte do „Můj účet“ a podívejte se do sekce „Nastavení zabezpečení“.",
       "nl": "Geen toegang tot een apparaat totdat tweefactorauthenticatie is ingeschakeld. Dit is vereist voor extra beveiliging. Ga naar de \\\"Mijn account\\\" en bekijk het gedeelte \\\"Accountbeveiliging\\\".",
       "xloc": [
         "default-mobile.handlebars->9->52",
@@ -13750,7 +13750,7 @@
       "en": "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" tab and look at the \\\"Account Security\\\" section.",
       "pt": "Não foi possível acessar um dispositivo até que a autenticação de dois fatores esteja ativada. Isso é necessário para segurança extra. Vá para a guia \\\"Minha conta\\\" e consulte a seção \\\"Segurança da conta\\\".",
       "ja": "二要素認証が有効になるまでデバイスにアクセスできません。これは、追加のセキュリティのために必要です。 [マイアカウント]タブに移動して、[アカウントセキュリティ]セクションを確認します。",
-      "cs": "Nelze získat přístup k zařízení, dokud je 2-faktorová autentizace zapnuta. Toto je pro extra bezpečnost. Jdi do \\\"Můj účet\\\" a podívej se do sekce\\\"Nastavení bezpečnosti\\\".",
+      "cs": "Nedaří se získat přístup k zařízení, dokud není zapnutá 2-faktorové ověřování se. Toto je vyžadováno pro extra zabezpečení. Jděte do „Můj účet“ a podívejte se do sekce „Nastavení zabezpečení“.",
       "nl": "Geen toegang tot een apparaat totdat tweefactorauthenticatie is ingeschakeld. Dit is vereist voor extra beveiliging. Ga naar het tabblad \\\"Mijn account\\\" en bekijk het gedeelte \\\"Accountbeveiliging\\\".",
       "xloc": [
         "default.handlebars->23->422",
@@ -13761,7 +13761,7 @@
       "en": "Unable to connect web socket",
       "pt": "Não foi possível conectar o soquete da web",
       "ja": "Webソケットに接続できません",
-      "cs": "Nelze se připojit k web socketu",
+      "cs": "Nedaří se připojit k web socketu",
       "nl": "Kan geen websocket aansluiten",
       "xloc": [
         "default.handlebars->23->48",
@@ -13771,7 +13771,7 @@
     {
       "en": "Unable to create account.",
       "ja": "アカウントを作成できません。",
-      "cs": "Nelze vytvořit účet.",
+      "cs": "Nedaří se vytvořit účet.",
       "nl": "Kan geen account maken.",
       "xloc": [
         "login.handlebars->5->2",
@@ -13780,6 +13780,7 @@
     },
     {
       "en": "Unable to perform authentication",
+      "cs": "Nedaří se ověřit se",
       "pt": "Não foi possível executar a autenticação",
       "ja": "認証を実行できません",
       "nl": "Kan authenticatie niet uitvoeren",
@@ -13790,7 +13791,7 @@
     },
     {
       "en": "Unable to scan this address range.",
-      "cs": "Nelze skenovat tento rozsah.",
+      "cs": "Nedaří se skenovat tento rozsah.",
       "pt": "Não foi possível verificar este intervalo de endereços.",
       "ja": "このアドレス範囲をスキャンできません。",
       "nl": "Kan dit adresbereik niet scannen.",
@@ -13801,7 +13802,7 @@
     {
       "en": "Unable to sent email.",
       "ja": "メールを送信できません。",
-      "cs": "Nelze poslat email.",
+      "cs": "Nedaří se poslat e-mail.",
       "nl": "Kan geen e-mail verzenden.",
       "xloc": [
         "login.handlebars->5->11",
@@ -13844,7 +13845,7 @@
       "fr": "Inconnue",
       "pt": "Desconhecido",
       "ja": "未知の",
-      "cs": "Neznámý",
+      "cs": "Neznámé",
       "nl": "Onbekend",
       "xloc": [
         "default.handlebars->23->13",
@@ -13864,7 +13865,7 @@
       "fr": " #{0} Inconnue",
       "pt": "Desconhecido # {0}",
       "ja": "不明な＃{0}",
-      "cs": "Neznámý #{0}",
+      "cs": "Neznámé č. {0}",
       "nl": "Onbekend #{0}",
       "xloc": [
         "default.handlebars->23->947",
@@ -13888,7 +13889,7 @@
       "fr": "Version et état inconnus",
       "pt": "Estado da versão desconhecida",
       "ja": "不明なバージョンと状態",
-      "cs": "Neznámý stav & verze",
+      "cs": "Neznámý stav a verze",
       "nl": "Onbekende versie en staat",
       "xloc": [
         "default.handlebars->23->442",
@@ -13897,7 +13898,7 @@
     },
     {
       "en": "Unlimited",
-      "cs": "Bez limitu",
+      "cs": "Neomezeno",
       "fr": "Illimité",
       "pt": "Ilimitado",
       "ja": "無制限",
@@ -13926,7 +13927,7 @@
     {
       "en": "Up to date",
       "ja": "最新の",
-      "cs": "Zastaralý",
+      "cs": "Aktuální",
       "nl": "Bijgewerkt",
       "xloc": [
         "default.handlebars->23->1350"
@@ -13960,7 +13961,7 @@
       "en": "Upload default server core",
       "pt": "Carregar núcleo do servidor padrão",
       "ja": "デフォルトのサーバーコアをアップロードする",
-      "cs": "Nahrát defaultní nastavení",
+      "cs": "Nahrát výchozí jádro serveru",
       "nl": "Upload standaard serverkern",
       "xloc": [
         "default.handlebars->23->669"
@@ -14120,7 +14121,7 @@
       "en": "User browser value",
       "pt": "Valor do navegador do usuário",
       "ja": "ユーザーブラウザーの値",
-      "cs": "Hodnota uživatelského prohlížeče",
+      "cs": "Hodnota prohlížeč uživatele",
       "nl": "Browserwaarde gebruiker",
       "xloc": [
         "default.handlebars->23->886",
@@ -14153,7 +14154,7 @@
       "en": "User interface selection",
       "pt": "Seleção da interface do usuário",
       "ja": "ユーザーインターフェイスの選択",
-      "cs": "Výběr rozhraní uživatele",
+      "cs": "Výběr uživatelského rozhraní",
       "nl": "Selectie gebruikersinterface",
       "xloc": [
         "agentinvite.handlebars->container->topbar",
@@ -14175,7 +14176,7 @@
     },
     {
       "en": "User Name",
-      "cs": "Uživatel",
+      "cs": "Uživatelské jméno",
       "fr": "Nom",
       "pt": "Nome de Usuário",
       "ja": "ユーザー名",
@@ -14189,7 +14190,7 @@
       "fr": "Noms",
       "pt": "Nomes de usuário",
       "ja": "ユーザー名",
-      "cs": "Uživatelé",
+      "cs": "Uživatelská jména",
       "nl": "Gebruikersnamen",
       "xloc": [
         "default.handlebars->23->1052"
@@ -14199,7 +14200,7 @@
       "en": "User Sessions",
       "pt": "Sessões de Usuário",
       "ja": "ユーザーセッション",
-      "cs": "Uživatelské spojení",
+      "cs": "Relace uživatele",
       "nl": "Gebruikerssessie",
       "xloc": [
         "default.handlebars->23->1319"
@@ -14209,7 +14210,7 @@
       "en": "User Shell",
       "fr": "Shell utilisateur",
       "ja": "ユーザーシェル",
-      "cs": "Uživatelská přikazová řádka",
+      "cs": "Shell uživatele",
       "nl": "Gebruiker Shell",
       "xloc": [
         "default.handlebars->termShellContextMenu->cxtermunorm",
@@ -14221,7 +14222,7 @@
       "fr": "Identifiant d'utilisateur",
       "pt": "ID do usuário",
       "ja": "ユーザーID",
-      "cs": "Uživatelské ID",
+      "cs": "Identif. uživatele",
       "nl": "GebruikersID",
       "xloc": [
         "player.htm->3->5"
@@ -14251,7 +14252,7 @@
     },
     {
       "en": "Username",
-      "cs": "Uživatel",
+      "cs": "Uživatelské jméno",
       "fr": "Nom d'utilisateur",
       "pt": "Nome de usuário",
       "ja": "ユーザー名",
@@ -14268,7 +14269,7 @@
       "en": "Username already exists.",
       "fr": "Ce nom d'utilisateur existe déjà.",
       "ja": "ユーザー名は既に存在します。",
-      "cs": "Uživatel již existuje.",
+      "cs": "Toto uživatelské jméno už je používáno jiným účtem.",
       "nl": "Gebruikersnaam bestaat al.",
       "xloc": [
         "login.handlebars->5->6",
@@ -14277,7 +14278,7 @@
     },
     {
       "en": "Username:",
-      "cs": "Uživatel:",
+      "cs": "Uživatelské jméno:",
       "fr": "Nom d'utilisateur:",
       "pt": "Nome de usuário:",
       "ja": "ユーザー名：",
@@ -14335,7 +14336,7 @@
     },
     {
       "en": "Verify email",
-      "cs": "Ověřit email",
+      "cs": "Ověřit e-mail",
       "fr": "Vérifier le courriel",
       "pt": "Verificar email",
       "ja": "Eメールを確認します",
@@ -14347,7 +14348,7 @@
     },
     {
       "en": "Verify Email",
-      "cs": "Ověřit email",
+      "cs": "Ověřit e-mail",
       "fr": "Vérifier le Courriel",
       "pt": "Verificar Email",
       "ja": "Eメールを確認します",
@@ -14456,7 +14457,7 @@
     },
     {
       "en": "Waiting for other user...",
-      "cs": "Čekání na ostatní uživatele...",
+      "cs": "Čeká se na druhého uživatele…",
       "pt": "Aguardando outro usuário ...",
       "ja": "他のユーザーを待っています...",
       "nl": "Wachten op de gebruiker ...",
@@ -14510,7 +14511,7 @@
     },
     {
       "en": "WARNING: ",
-      "cs": "UPOZORNĚNÍ: ",
+      "cs": "VAROVÁNÍ: ",
       "fr": "ATTENTION:",
       "ja": "警告：",
       "nl": "Waarschuwing",
@@ -14848,7 +14849,7 @@
       "en": "Windows only",
       "pt": "Apenas Windows",
       "ja": "Windowsのみ",
-      "cs": "Windows pouze",
+      "cs": "Pouze Windows",
       "nl": "alleen Windows",
       "xloc": [
         "default.handlebars->23->282"
@@ -15036,7 +15037,7 @@
     },
     {
       "en": "{0} bytes",
-      "cs": "{0} bytů",
+      "cs": "{0} bajtů",
       "fr": "{0} octets",
       "pt": "{0} bytes",
       "ja": "{0}バイト",
@@ -15051,7 +15052,7 @@
       "fr": "{0} octets restants",
       "pt": "{0} bytes restantes",
       "ja": "残り{0}バイト",
-      "cs": "{0} bytů zbývá",
+      "cs": "{0} bajtů zbývá",
       "nl": "{0} resterende bytes",
       "xloc": [
         "default.handlebars->23->1119"
@@ -15069,7 +15070,7 @@
     },
     {
       "en": "{0} gigabytes remaining",
-      "cs": "{0} gigabytů zbývá",
+      "cs": "{0} gigabajtů zbývá",
       "pt": "{0} gigabytes restantes",
       "ja": "残り{0}ギガバイト",
       "nl": "{0} rsterende gigabytes",
@@ -15109,7 +15110,7 @@
     },
     {
       "en": "{0} kilobytes remaining",
-      "cs": "{0} kilobytů zbývá",
+      "cs": "{0} kilobajtů zbývá",
       "pt": "{0} kilobytes restantes",
       "ja": "残り{0}キロバイト",
       "nl": "{0} resterende kilobytes",
@@ -15150,7 +15151,7 @@
     },
     {
       "en": "{0} megabytes remaining",
-      "cs": "{0} megabytů zbývá",
+      "cs": "{0} megabajtů zbývá",
       "pt": "{0} megabytes restantes",
       "ja": "残り{0}メガバイト",
       "nl": "{0} resterende megabytes",
@@ -15172,7 +15173,7 @@
       "en": "{0} more users not shown, use search box to look for users...",
       "pt": "{0} mais usuários não exibidos, use a caixa de pesquisa para procurar usuários ...",
       "ja": "{0}個のユーザーが表示されていません。検索ボックスを使用してユーザーを検索してください...",
-      "cs": "{0} dalších uživatelů není zobrazeno, použijte hledat uživatele pomocí vyhledávacího pole...",
+      "cs": "{0} dalších uživatelů není zobrazeno, vyhledejte je pomocí kolonky pro vyhledávání…",
       "nl": "{0} meer gebruikers niet getoond, gebruik zoekvak om gebruikers te zoeken ...",
       "xloc": [
         "default.handlebars->23->1168"
@@ -15180,7 +15181,7 @@
     },
     {
       "en": "{0} nodes",
-      "cs": "{0} zařízení",
+      "cs": "{0} uzlů",
       "fr": "{0} appareil",
       "pt": "{0} nós",
       "ja": "{0}ノード",
@@ -15235,7 +15236,7 @@
       "en": "{0} sessions",
       "pt": "{0} sessões",
       "ja": "{0}セッション",
-      "cs": "{0} spojení",
+      "cs": "{0} relací",
       "nl": "{0} sessies",
       "xloc": [
         "default.handlebars->23->1172"
@@ -15442,7 +15443,7 @@
     {
       "en": "Admin Shell",
       "ja": "管理シェル",
-      "cs": "Administrátorská příkazová řádka",
+      "cs": "Shell správce",
       "nl": "Beheerder Shell",
       "xloc": [
         "default.handlebars->termShellContextMenu->cxtermnorm->0"
@@ -15451,7 +15452,7 @@
     {
       "en": "Admin PowerShell",
       "ja": "管理者PowerShell",
-      "cs": "Administrátorský PowerShell",
+      "cs": "PowerShell správce",
       "nl": "Beheerder PowerShell",
       "xloc": [
         "default.handlebars->termShellContextMenu->cxtermps"
@@ -15460,7 +15461,7 @@
     {
       "en": "User PowerShell",
       "ja": "ユーザーPowerShell",
-      "cs": "Uživateský PowerShell",
+      "cs": "PowerShell uživatele",
       "nl": "Gebruiker PowerShell",
       "xloc": [
         "default.handlebars->termShellContextMenu->cxtermups"
@@ -15469,7 +15470,7 @@
     {
       "en": "Help translate MeshCentral",
       "ja": "MeshCentralの翻訳を支援",
-      "cs": "Pomoct přeložit MeshCentral",
+      "cs": "Pomozte MeshCentral přeložit do svého jazyka",
       "nl": "Help bij het vertalen van MeshCentral",
       "xloc": [
         "default.handlebars->23->891"
@@ -15479,7 +15480,7 @@
       "en": "2nd factor authentication enabled",
       "pt": "Autenticação de segundo fator ativada",
       "ja": "二要素認証が有効",
-      "cs": "2-faktorová autentizace povolena",
+      "cs": "2-faktorové ověřování zapnuto",
       "nl": "Tweestapsverificatie ingeschakeld",
       "xloc": [
         "default.handlebars->23->1257"
@@ -15496,7 +15497,7 @@
     },
     {
       "en": "Connect to your home or office devices from anywhere in the world using MeshCentral, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the \"My Devices\" section of this web site and you will be able to monitor them and take control of them.",
-      "cs": "Přihlašte se na různá svá nebo firemní zařízení odkudkoliv z celého světa pomocí technologie MeshCentral. Jednoduchá správa přes web. Jediné co potřebujete je agent na daném zařízení.  Po instalaci uvidíte zařízení v sekci \"Moje zařízení\" a můžete toto zařízení ovládat.",
+      "cs": "Přihlašte se na různá svá nebo firemní zařízení odkudkoliv z celého světa pomocí technologie MeshCentral. Jednoduchá správa přes web. Jediné co potřebujete je agent na daném zařízení.  Po instalaci uvidíte zařízení v sekci „Moje zařízení“ a můžete toto zařízení ovládat.",
       "fr": "Connectez-vous à vos ordinateurs à la maison ou au bureau depuis n'importe où dans le monde avec MeshCentral, le site web open source de surveillance et de gestion d’ordinateur à distance en temps réel. Vous devrez télécharger et installer un agent de gestion sur vos ordinateurs. Une fois installés, les ordinateurs apparaîtront dans la section \"Mes appareils\" de ce site et vous pourrez les surveiller et en prendre le contrôle.",
       "ja": "リアルタイムのオープンソースのリモート監視および管理WebサイトであるMeshCentralを使用して、世界中のどこからでも自宅またはオフィスのデバイスに接続します。コンピューターに管理エージェントをダウンロードしてインストールする必要があります。インストールすると、コンピューターはこのWebサイトの[デバイス]セクションに表示され、コンピューターを監視して制御できるようになります。",
       "nl": "Maak overal ter wereld verbinding met uw thuis- of kantoorapparatuur via MeshCentral, de realtime, open source externe monitoring- en managementwebsite. U moet een beheeragent op uw computers downloaden en installeren. Na installatie verschijnen computers in het gedeelte \"Mijn apparaten\" van deze website en kunt u ze volgen en de controle over hen nemen.",
@@ -15506,6 +15507,7 @@
     },
     {
       "en": "6.Rcarousel - MIT LIcense",
+      "cs": "6. Rcarousel – MIT licence",
       "pt": "6.Rcarousel - License MIT",
       "ja": "6.Rcarousel-MITライセンス",
       "nl": "6.Rcarousel - MIT Licentie",
@@ -15516,6 +15518,7 @@
     },
     {
       "en": "Summary",
+      "cs": "Souhrn",
       "nl": "Samenvatting",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MeshSubMenuSpan->MeshSubMenu->1->0->MeshSummary"
@@ -15523,6 +15526,7 @@
     },
     {
       "en": "Summary -",
+      "en": "Souhrn –",
       "nl": "Samenvatting -",
       "xloc": [
         "default.handlebars->container->column_l->p21->p21title->3"
@@ -15530,6 +15534,7 @@
     },
     {
       "en": "Power States",
+      "cs": "Stavy napájení",
       "nl": "Power Status",
       "xloc": [
         "default.handlebars->container->column_l->p21->3->1->meshPowerChartDiv->1",
@@ -15538,6 +15543,7 @@
     },
     {
       "en": "Agent Types",
+      "cs": "Typy agenta",
       "nl": "Agent Type",
       "xloc": [
         "default.handlebars->container->column_l->p21->3->1->meshOsChartDiv->1",
@@ -15552,6 +15558,7 @@
     },
     {
       "en": "PluginHandler could not event message: ",
+      "cs": "PluginHandler nemohlo zprávu události: ",
       "nl": "PluginHandler kon geen gebeurtenisbericht weergeven: ",
       "xloc": [
         "default.handlebars->23->162"
@@ -15559,6 +15566,7 @@
     },
     {
       "en": "No devices with tags found.",
+      "cs": "Nenalezena žádná zařízení se štítky.",
       "nl": "Geen apparaten tags gevonden.",
       "xloc": [
         "default.handlebars->23->197"
@@ -15578,6 +15586,7 @@
     },
     {
       "en": "Size: 100%",
+      "cs": "Velikost: 100%",
       "nl": "Grootte: 150%",
       "xloc": [
         "default.handlebars->23->649"
@@ -15585,6 +15594,7 @@
     },
     {
       "en": "Size: 125%",
+      "cs": "Velikost: 125%",
       "nl": "Grootte: 150%",
       "xloc": [
         "default.handlebars->23->650"
@@ -15592,6 +15602,7 @@
     },
     {
       "en": "Size: 150%",
+      "cs": "Velikost: 150%",
       "nl": "Grootte: 150%",
       "xloc": [
         "default.handlebars->23->651"
@@ -15599,6 +15610,7 @@
     },
     {
       "en": "Size: 200%",
+      "cs": "Velikost: 200%",
       "nl": "Grootte: 200%",
       "xloc": [
         "default.handlebars->23->652"
@@ -15606,6 +15618,7 @@
     },
     {
       "en": "Display device group name",
+      "cs": "Zobrazit název skupiny zařízení",
       "nl": "Toon apparaatgroepsnaam",
       "xloc": [
         "default.handlebars->23->894"
@@ -15613,6 +15626,7 @@
     },
     {
       "en": "Not Connected",
+      "cs": "Nepřipojeno",
       "nl": "Niet verbonden",
       "xloc": [
         "default.handlebars->23->1103",
@@ -15629,6 +15643,7 @@
     },
     {
       "en": "No devices in this device group.",
+      "cs": "V této skupině nejsou žádná zařízení.",
       "nl": "Geen apparaten in deze apparaatgroep.",
       "xloc": [
         "default.handlebars->23->1114"
@@ -15636,6 +15651,7 @@
     },
     {
       "en": "Toggle footer bar",
+      "cs": "Vyp/zap. lištu zápatí",
       "nl": "Schakel de voettekstbalk in",
       "xloc": [
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu"
@@ -15643,6 +15659,7 @@
     },
     {
       "en": "Remove device on disconnect",
+      "cs": "Při odpojení zařízení odebrat",
       "nl": "Verwijder apparaat bij verbreken",
       "xloc": [
         "default.handlebars->23->1047"
@@ -15650,6 +15667,7 @@
     },
     {
       "en": "Sync server device name to hostname",
+      "cs": "Synchronizovat název zařízení na serveru s názvem stroje",
       "nl": "Synchroniseer serverapparaatnaam met hostnaam",
       "xloc": [
         "default.handlebars->23->1048"
@@ -15657,6 +15675,7 @@
     },
     {
       "en": "Notification settings must also be turned on in account settings.",
+      "cs": "Je třeba, aby nastavení upozorňování byla zapnutá také v nastavení účtu.",
       "nl": "Meldingsinstellingen moeten ook worden ingeschakeld in accountinstellingen.",
       "xloc": [
         "default.handlebars->23->1098"
@@ -15664,6 +15683,7 @@
     },
     {
       "en": "Groups",
+      "cs": "Groups",
       "nl": "Groepen",
       "xloc": [
         "default.handlebars->23->1162"
@@ -15671,6 +15691,7 @@
     },
     {
       "en": "Delete User",
+      "cs": "Smazat uživatele",
       "nl": "Verwijder gebruiker",
       "xloc": [
         "default.handlebars->23->1262"
@@ -15678,6 +15699,7 @@
     },
     {
       "en": "7 Day Login State",
+      "cs": "Stav přihlášení za 7 dnů",
       "nl": "Inlogstatus afgelopen 7 dagen",
       "xloc": [
         "default.handlebars->23->1278"
@@ -15685,6 +15707,7 @@
     },
     {
       "en": "CPU Load",
+      "cs": "Vytížení procesoru",
       "nl": "CPU gebruik",
       "xloc": [
         "default.handlebars->23->1309"
@@ -15692,6 +15715,7 @@
     },
     {
       "en": "Server State",
+      "cs": "Stav serveru",
       "nl": "Server Status",
       "xloc": [
         "default.handlebars->23->1287"
@@ -15699,12 +15723,14 @@
     },
     {
       "en": "Agent Error Counters",
+      "cs": "Počitadla chyb agenta",
       "xloc": [
         "default.handlebars->23->1288"
       ]
     },
     {
       "en": "Unknown Group",
+      "cs": "Neznámá skupina",
       "nl": "Onbekende groep",
       "xloc": [
         "default.handlebars->23->1289"
@@ -15712,6 +15738,7 @@
     },
     {
       "en": "Invalid PKCS signature",
+      "cs": "Neplatný PKCS podpis",
       "nl": "Onjuiste PKCS handtekening",
       "xloc": [
         "default.handlebars->23->1290"
@@ -15719,6 +15746,7 @@
     },
     {
       "en": "Invalid RSA siguature",
+      "cs": "Neplatný RSA podpis",
       "nl": "Ongeldige RSA handtekening",
       "xloc": [
         "default.handlebars->23->1291"
@@ -15726,6 +15754,7 @@
     },
     {
       "en": "Invalid JSON",
+      "cs": "Neplatný JSON",
       "nl": "Onjuiste JSON",
       "xloc": [
         "default.handlebars->23->1292"
@@ -15733,6 +15762,7 @@
     },
     {
       "en": "Unknown Action",
+      "cs": "Neznámá akce",
       "nl": "Onbekende actie",
       "xloc": [
         "default.handlebars->23->1293"
@@ -15740,6 +15770,7 @@
     },
     {
       "en": "Bad Web Certificate",
+      "cs": "Nesprávný certifikát webu",
       "nl": "Onjuist webcertificaat",
       "xloc": [
         "default.handlebars->23->1294"
@@ -15747,6 +15778,7 @@
     },
     {
       "en": "Bad Signature",
+      "cs": "Nesprávný podpis",
       "nl": "Ongeldige handtening",
       "xloc": [
         "default.handlebars->23->1295"
@@ -15754,6 +15786,7 @@
     },
     {
       "en": "Max Sessions Reached",
+      "cs": "Dosaženo maximálního počtu relací",
       "nl": "Max Sessies bereikt",
       "xloc": [
         "default.handlebars->23->1296"
@@ -15761,6 +15794,7 @@
     },
     {
       "en": "Unknown Device Group",
+      "cs": "Neznámá skupina zařízení",
       "nl": "Onbekende apparaatgroep",
       "xloc": [
         "default.handlebars->23->1297"
@@ -15768,6 +15802,7 @@
     },
     {
       "en": "Invalid Device Group Type",
+      "cs": "Neplatný typ skupiny zařízení",
       "nl": "Ongeldige apparaatgroep type",
       "xloc": [
         "default.handlebars->23->1298"
@@ -15775,6 +15810,7 @@
     },
     {
       "en": "Duplicate Agent",
+      "cs": "Duplikovat agenta",
       "nl": "Duplicaat Agent",
       "xloc": [
         "default.handlebars->23->1299"
@@ -15782,6 +15818,7 @@
     },
     {
       "en": "Connected Intel&reg; AMT",
+      "cs": "Připojené Intel&reg; AMT",
       "nl": "Verbonden Intel&reg; AMT",
       "xloc": [
         "default.handlebars->23->1300"
@@ -15789,6 +15826,7 @@
     },
     {
       "en": "Relay Errors",
+      "cs": "Chyby předávání (relay)",
       "nl": "Relay fouten",
       "xloc": [
         "default.handlebars->23->1301"
@@ -15796,6 +15834,7 @@
     },
     {
       "en": "User Accounts",
+      "cs": "Uživatelské účty",
       "nl": "Gebruikersaccounts",
       "xloc": [
         "default.handlebars->23->1302"
@@ -15803,12 +15842,14 @@
     },
     {
       "en": "Agent Sessions",
+      "cs": "Relace agenta",
       "xloc": [
         "default.handlebars->23->1304"
       ]
     },
     {
       "en": "Connected Users",
+      "cs": "Připojení",
       "nl": "Verbonden gebruikers",
       "xloc": [
         "default.handlebars->23->1305"
@@ -15816,6 +15857,7 @@
     },
     {
       "en": "Users Sessions",
+      "cs": "Uživatelské relace",
       "nl": "gebruikers Sessies",
       "xloc": [
         "default.handlebars->23->1306"
@@ -15826,6 +15868,7 @@
     },
     {
       "en": "user:",
+      "cs": "uživatel:",
       "nl": "gebruiker:",
       "xloc": [
         "default.handlebars->23->392"
@@ -15847,6 +15890,7 @@
     },
     {
       "en": "group:",
+      "cs": "skupina:",
       "nl": "groep:",
       "xloc": [
         "default.handlebars->23->395"
@@ -15854,6 +15898,7 @@
     },
     {
       "en": "g:",
+      "cs": "s:",
       "nl": "g:",
       "xloc": [
         "default.handlebars->23->396"
@@ -15861,6 +15906,7 @@
     },
     {
       "en": "External",
+      "cs": "Externí",
       "nl": "Extern",
       "xloc": [
         "default.handlebars->23->1323"
@@ -15889,24 +15935,28 @@
     },
     {
       "en": "tag:",
+      "cs": "štítek:",
       "xloc": [
         "default.handlebars->23->397"
       ]
     },
     {
       "en": "t:",
+      "cs": "š:",
       "xloc": [
         "default.handlebars->23->398"
       ]
     },
     {
       "en": "Remove all previous events for this userid.",
+      "cs": "Remove all previous events for this userid.",
       "xloc": [
         "default.handlebars->23->1208"
       ]
     },
     {
       "en": "Relay Count",
+      "cs": "Počet předávání (relay)",
       "xloc": [
         "default.handlebars->23->1308"
       ]
