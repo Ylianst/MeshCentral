@@ -63,6 +63,8 @@ These are separated into the following categories depending on the type of funct
 `registerPluginTab`: callable when a device is selected in the MeshCentral web interface to register a new tab for plugin data, if required. Accepts an object, or function that returns an object, with the following properties: { tabId: "yourShortNameHere", tabTitle: "Your Display Name"}. A tab and div with the associated ID and title will be created for your use
 `onDesktopDisconnect`: called when a remote desktop session is disconnected
 `onWebUIStartupEnd`: called when the page has loaded for the first time after a login / refresh
+`goPageStart`: called before page changes take effect. Passes 2 arguments (<page number> : int, <event> : Event)
+`goPageEnd`: called after page changes take effect. Passes 2 arguments (<page number> : int, <event> : Event)
 
 #### Exports
 Any function can be exported to the Web UI layer by adding the name of the function to an `exports` array in the plugin object.
