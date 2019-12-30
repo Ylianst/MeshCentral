@@ -1513,7 +1513,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Create the new device group
                         var ugrp = { type: 'ugrp', _id: ugrpid, name: command.name, desc: command.desc, domain: domain.id, links: {} };
                         db.Set(common.escapeLinksFieldName(ugrp));
-                        //parent.meshes[ugrpid] = ugrp;
 
                         // Event the device group creation
                         var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrpid, name: command.name, desc: command.desc, action: 'createusergroup', links: links, msg: 'User group created: ' + command.name, domain: domain.id };
@@ -1544,6 +1543,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     delete xuser.links[group._id];
                                     db.SetUser(xuser);
                                     parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+
+                                    // Notify user change
+                                    var targets = ['*', 'server-users', user._id, xuser._id];
+                                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msg: 'User group membership changed: ' + xuser.name, domain: domain.id };
+                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                    parent.parent.DispatchEvent(targets, obj, event);
                                 }
                             }
                         }
@@ -1571,7 +1576,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((err != null) || (groups.length != 1)) return;
                         var group = common.unEscapeLinksFieldName(groups[0]), change = '';
 
-                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name) && (command.name.indexOf(' ') >= 0)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
+                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name) && (command.name.indexOf(' ') == -1)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
                         if (change != '') {
                             db.Set(common.escapeLinksFieldName(group));
@@ -1609,22 +1614,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var unknownUsers = [], addedCount = 0, failCount = 0;
                         for (var i in command.usernames) {
                             // Check if the user exists
-                            var newuserid = 'user/' + domain.id + '/' + command.usernames[i].toLowerCase(), newuser = parent.users[newuserid];
-                            if (newuser != null) {
+                            var chguserid = 'user/' + domain.id + '/' + command.usernames[i].toLowerCase(), chguser = parent.users[chguserid];
+                            if (chguser != null) {
                                 // Add mesh to user
-                                if (newuser.links == null) { newuser.links = {}; }
-                                newuser.links[group._id] = { rights: 1 };
-                                db.SetUser(newuser);
-                                parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+                                if (chguser.links == null) { chguser.links = {}; }
+                                chguser.links[group._id] = { rights: 1 };
+                                db.SetUser(chguser);
+                                parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+
+                                // Notify user change
+                                var targets = ['*', 'server-users', user._id, chguser._id];
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'User group membership changed: ' + chguser.name, domain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                parent.parent.DispatchEvent(targets, obj, event);
 
                                 // Add a user to the mesh
-                                group.links[newuserid] = { userid: newuser.id, name: newuser.name, rights: 1 };
+                                group.links[chguserid] = { userid: chguser.id, name: chguser.name, rights: 1 };
                                 db.Set(common.escapeLinksFieldName(group));
 
-                                // Notify mesh change
-                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Added user ' + newuser.name + ' to user group ' + group.name, domain: domain.id };
+                                // Notify user group change
+                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Added user ' + chguser.name + ' to user group ' + group.name, domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                parent.parent.DispatchEvent(['*', group._id, user._id, newuserid], obj, event);
+                                parent.parent.DispatchEvent(['*', group._id, user._id, chguserid], obj, event);
                                 addedCount++;
                             } else {
                                 unknownUsers.push(command.usernames[i]);
@@ -1661,27 +1672,42 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     db.Get(command.ugrpid, function (err, groups) {
-                        if ((err != null) || (groups.length != 1)) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'Invalid groupid' })); } catch (ex) { } return; }
-                        var group = common.unEscapeLinksFieldName(groups[0]);
-                        if (group.links == null) { group.links = {}; }
+                        //if ((err != null) || (groups.length != 1)) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'Invalid groupid' })); } catch (ex) { } return; }
+                        var group = null;
+                        if ((err == null) && (groups.length == 1)) { group = common.unEscapeLinksFieldName(groups[0]); }
 
                         // Check if the user exists
-                        newuser = parent.users[command.userid];
-                        if (newuser != null) {
+                        var chguser = parent.users[command.userid];
+                        if (chguser != null) {
                             var change = false;
-                            if ((newuser.links != null) && (newuser.links[command.ugrpid] != null)) { change = true; delete newuser.links[command.ugrpid]; }
-                            db.SetUser(newuser);
-                            parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+                            if ((chguser.links != null) && (chguser.links[command.ugrpid] != null)) {
+                                change = true;
+                                delete chguser.links[command.ugrpid];
 
-                            // Remove the user from the group
-                            if ((group.links != null) && (group.links[command.userid] != null)) { change = true; delete group.links[command.userid]; }
-                            db.Set(common.escapeLinksFieldName(group));
+                                // Notify user change
+                                var targets = ['*', 'server-users', user._id, chguser._id];
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'User group membership changed: ' + chguser.name, domain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                parent.parent.DispatchEvent(targets, obj, event);
 
-                            // Notify mesh change
-                            if (change) {
-                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Removed user ' + newuser.name + ' from user group ' + group.name, domain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                parent.parent.DispatchEvent(['*', group._id, user._id, newuserid], obj, event);
+                                db.SetUser(chguser);
+                                parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+                            }
+
+                            if (group != null) {
+                                // Remove the user from the group
+                                if ((group.links != null) && (group.links[command.userid] != null)) {
+                                    change = true;
+                                    delete group.links[command.userid];
+                                    db.Set(common.escapeLinksFieldName(group));
+
+                                    // Notify user group change
+                                    if (change) {
+                                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: domain.id };
+                                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                        parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
+                                    }
+                                }
                             }
                         }
                     });
@@ -2004,6 +2030,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             delete xuser.links[mesh._id];
                             db.SetUser(xuser);
                             parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+
+                            // Notify user change
+                            var targets = ['*', 'server-users', user._id, xuser._id];
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msg: 'Device group membership changed: ' + xuser.name, domain: domain.id };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
                         }
                     }
 
@@ -2084,6 +2116,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.SetUser(newuser);
                             parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
+                            // Notify user change
+                            var targets = ['*', 'server-users', user._id, newuser._id];
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(newuser), action: 'accountchange', msg: 'Device group membership changed: ' + newuser.name, domain: domain.id };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
+
                             // Add a user to the mesh
                             mesh.links[newuserid] = { userid: newuser.id, name: newuser.name, rights: command.meshadmin };
                             db.Set(common.escapeLinksFieldName(mesh));
@@ -2141,6 +2179,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             delete deluser.links[command.meshid];
                             db.Set(deluser);
                             parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
+
+                            // Notify user change
+                            var targets = ['*', 'server-users', user._id, deluser._id];
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(deluser), action: 'accountchange', msg: 'Device group membership changed: ' + deluser.name, domain: domain.id };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
                         }
                     }
 

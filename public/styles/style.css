@@ -1371,6 +1371,14 @@ a {
     float: left;
 }
 
+.m99 {
+    background: url(../images/meshicon16.png);
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
 .si1 {
     background: url(../images/icons16.png) 0px 0px;
     height: 16px;
