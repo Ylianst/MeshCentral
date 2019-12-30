@@ -16,7 +16,7 @@ function QE(x, y) { try { Q(x).disabled = !y; } catch (x) { } }                 
 function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  // "Q" visible
 function QA(x, y) { Q(x).innerHTML += y; }                                      // "Q" append
 function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
-function QC(x) { try { return Q(x).classList; } catch (x) { } }                     // "Q" class
+function QC(x) { try { return Q(x).classList; } catch (x) { } }                 // "Q" class
 
 // Move cursor to end of input box
 function inputBoxFocus(x) { Q(x).focus(); var v = Q(x).value; Q(x).value = ''; Q(x).value = v; }

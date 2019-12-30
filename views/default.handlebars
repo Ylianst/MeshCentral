@@ -959,6 +959,29 @@
                 </table>
                 <div id="p50groups"></div>
             </div>
+            <div id=p51 style="display:none">
+                <table style="width:100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style=width:auto valign=top>
+                            <div id="p30title">
+                                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                                <h1>User Group - <span id=p51groupName></span></h1>
+                            </div>
+                            <div id=p51group></div>
+                        </td>
+                        <td style=width:20px></td>
+                        <td style=width:200px>
+                            <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
+                                <source type="image/webp" width=200 height=200 srcset="images/webp/group-256.webp" />
+                                <img alt="" width=200 height=200 src=images/group-256.png />
+                            </picture>
+                            <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
+                        </td>
+                    </tr>
+                </table>
+                <div id=p51group2></div>
+                <br />
+            </div>
             <div id=p19 style="display:none">
                 <h1>Plugins - <span id=p19deviceName></span></h1>
                 <div id="p19headers"></div>
@@ -1101,6 +1124,7 @@
         var meshes = {};
         var meshcount = 0;
         var nodes = null;
+        var usergroups = {};
         var filetree = {};
         var userinfo = null;
         var serverinfo = null;
@@ -1272,7 +1296,7 @@
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
-            if (Q('MainDevDesktop').innerHTML != 'Desktop') { QC('body').add('nonenglish'); }
+            if (('{{{lang}}}' != 'en') && ('{{{lang}}}' != '')) { QC('body').add('nonenglish'); }
             var elements = document.getElementsByClassName('topbar_td');
             for (var i in elements) { if (elements[i].innerHTML) { elements[i].innerHTML = elements[i].innerHTML.split(' ').join('&nbsp;'); } }
         }
@@ -1476,6 +1500,7 @@
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'meshes' });
+                meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
@@ -1566,6 +1591,7 @@
                     if (updateNaggleFlags & 1024) { deviceEventsUpdate(); }
                     if (updateNaggleFlags & 2048) { userEventsUpdate(); }
                     if (updateNaggleFlags & 4096) { p20updateMesh(); }
+                    if (updateNaggleFlags & 8192) { updateUserGroups(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
                 }, 150);
@@ -1692,6 +1718,12 @@
                     meshes = {};
                     for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
                     masterUpdate(4 + 128);
+                    break;
+                }
+                case 'usergroups': {
+                    usergroups = {};
+                    for (var i in message.ugroups) { usergroups[message.ugroups[i]._id] = message.ugroups[i]; }
+                    masterUpdate(8192);
                     break;
                 }
                 case 'files': {
@@ -2180,6 +2212,27 @@
                             if (users == null) break;
                             delete users['user/' + domain + '/' + message.event.username.toLowerCase()];
                             updateUsers();
+                            break;
+                        }
+                        case 'createusergroup':
+                        case 'usergroupchange': {
+                            // User group changed
+                            var ugroup = usergroups[message.event.ugrpid];
+                            if (ugroup == null) {
+                                // This is a new user group for us
+                                usergroups[message.event.ugrpid] = { _id: message.event.ugrpid, name: message.event.name, desc: message.event.desc, domain: message.event.domain, links: message.event.links };
+                            } else {
+                                // This is an existing user group
+                                ugroup.name = message.event.name;
+                                ugroup.desc = message.event.desc;
+                                ugroup.links = message.event.links;
+                            }
+                            masterUpdate(8192);
+                            break;
+                        }
+                        case 'deleteusergroup': {
+                            // User group removed
+                            if (usergroups[message.event.ugrpid] != null) { delete usergroups[message.event.ugrpid]; masterUpdate(8192); }
                             break;
                         }
                         case 'createmesh': {
@@ -3720,6 +3773,7 @@
             if (!skipsave) { putstore('sort', sort); }
         }
 
+        function nameSort(a, b) { var aa = a.name.toLowerCase(), bb = b.name.toLowerCase(); if (aa > bb) return 1; if (aa < bb) return -1; return 0; }
         function meshSort(a, b) { if (a.meshnamel > b.meshnamel) return 1; if (a.meshnamel < b.meshnamel) return -1; if (a.meshid == b.meshid) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
         function powerSort(a, b) { var ap = a.pwr?a.pwr:0; var bp = b.pwr?b.pwr:0; if (ap > bp) return -1; if (ap < bp) return 1; if (ap == bp) { if (showRealNames == true) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; } else { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; } } return 0; }
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
@@ -8509,6 +8563,7 @@
                         x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
+                    if (event.etype == 'ugrp') icon = 'm4';
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
 
@@ -8978,7 +9033,33 @@
         //
 
         function updateUserGroups() {
+            // Sort the list of group names
+            var sortedGroups = [];
+            for (var i in usergroups) { sortedGroups.push(usergroups[i]); }
+            sortedGroups.sort(nameSort);
 
+            // Display the groups using the sorted list
+            var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
+            x += '<th>' + "Name" + '<th style=width:80px>' + "Users";
+            for (var i in sortedGroups) { x += addUserGroupHtml(sortedGroups[i]); }
+            x += '</table>';
+
+            if (sortedGroups.length == 0) { x += '<br />' + "No groups found." + '<br />'; }
+            QH('p50groups', x);
+
+            // Update current user panel if needed
+            if ((currentUserGroup != null) && (xxcurrentView == 51)) { gotoUserGroup(encodeURIComponent(currentUserGroup._id), true); }
+        }
+        
+        function addUserGroupHtml(group) {
+            var usercount = 0;
+            if (group.links) { for (var i in group.links) { usercount++; } }
+            var x = '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")>';
+            x += '<div class=bar style=width:100%>';
+            x += '<div class=baricon><div class="m4"></div></div>';
+            x += '<div class=g1></div><div class=g2></div>';
+            x += '<div><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + usercount;
+            return x;
         }
 
         function showCreateUserGroupDialog() {
@@ -8998,6 +9079,178 @@
         function showCreateUserGroupDialogEx() {
             meshserver.send({ action: 'createusergroup', name: Q('p4name').value, desc: Q('p4desc').value });
         }
+
+        //
+        // MY USER GROUP
+        //
+
+        var currentUserGroup = null;
+        function gotoUserGroup(groupid, force) {
+            if (xxdialogMode && !force) return;
+            var group = currentUserGroup = usergroups[decodeURIComponent(groupid)];
+            if (group == null) { if (xxcurrentView == 51) { setDialogMode(0); go(50); } return; }
+            QH('p51groupName', group.name);
+
+            var desc = group.desc;
+            if ((desc == null) || (desc == '')) { desc = '<i>' + "None" + '<i>'; } else { desc = EscapeHtml(desc); }
+
+            var x = '<div style=min-height:80px><table style=width:100%>';
+            if ((userinfo.siteadmin & 256) != 0) {
+                x += addDeviceAttribute("Name", '<span onclick=p51editgroup(1) style=cursor:pointer>' + EscapeHtml(group.name) + ' <img class=hoverButton src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2) style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
+            } else {
+                x += addDeviceAttribute("Name", EscapeHtml(group.name));
+                x += addDeviceAttribute("Description", desc);
+            }
+            x += '</table></div><br />';
+
+            // Setup the panel
+            QH('p51group', x);
+
+            if ((userinfo.siteadmin & 256) != 0) {
+                x = '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Users" + '</a>';
+            }
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Group Members" + '</th><th scope=col style=text-align:left></th></tr>';
+
+            // Sort the users for this mesh
+            var count = 1, sortedusers = [];
+            for (var i in currentUserGroup.links) {
+                var uname = i.split('/')[2];
+                if (currentUserGroup.links[i].name) { uname = currentUserGroup.links[i].name; }
+                if (i == userinfo._id) { uname = userinfo.name; }
+                sortedusers.push({ id: i, name: uname, rights: currentUserGroup.links[i].rights });
+            }
+            sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
+
+            // Display all users for this mesh
+            for (var i in sortedusers) {
+                var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                x += '<tr tabindex=0 onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')" style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                ++count;
+            }
+
+            if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No Members" + '</i><div></div></div></td><td></td></tr>'; }
+
+            x += '</tbody></table>';
+            if ((userinfo.siteadmin & 256) != 0) {
+                x += '<div style=font-size:x-small;text-align:right><span><a href=# onclick=p51showDeleteUserGroupDialog() style=cursor:pointer>' + "Delete User Group" + '</a></span></div>';
+            }
+
+            QH('p51group2', x);
+            go(51);
+        }
+
+        function p51editgroup(focus) {
+            if (xxdialogMode) return;
+            var x = addHtmlValue("Name", '<input id=dp51name style=width:230px maxlength=32 onchange=p51editgroupValidate() onkeyup=p51editgroupValidate(event) />');
+            x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp51desc maxlength=1024 style=width:100%;resize:none></textarea></div>');
+            setDialogMode(2, "Edit User Group", 3, p51editgroupEx, x);
+            Q('dp51name').value = currentUserGroup.name;
+            if (currentUserGroup.desc) Q('dp51desc').value = currentUserGroup.desc;
+            p51editgroupValidate();
+            if (focus == 2) { Q('dp51desc').focus(); } else { Q('dp51name').focus(); }
+        }
+
+        function p51editgroupEx() {
+            meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, name: Q('dp51name').value, desc: Q('dp51desc').value });
+        }
+
+        function p51editgroupValidate(e) {
+            QE('idx_dlgOkButton', (Q('dp51name').value.length > 0) && (Q('dp51name').value.indexOf(' ') == -1));
+            if (e && e.key == 'Enter') { Q('dp51desc').focus(); }
+        }
+
+        function p51showDeleteUserGroupDialog() {
+            if (xxdialogMode) return false;
+            var x = format("Delete user group {0}?", EscapeHtml(currentUserGroup.name)) + '<br /><br />';
+            x += '<label><input id=p51check type=checkbox onchange=p51validateDeleteGroupDialog() />' + "Confirm" + '</label>';
+            setDialogMode(2, "Delete User Group", 3, p51showDeleteUserGroupDialogEx, x);
+            p51validateDeleteGroupDialog();
+            return false;
+        }
+
+        function p51validateDeleteGroupDialog() {
+            QE('idx_dlgOkButton', Q('p51check').checked);
+        }
+
+        function p51showDeleteUserGroupDialogEx(buttons, tag) {
+            meshserver.send({ action: 'deleteusergroup', ugrpid: currentUserGroup._id });
+        }
+
+        function p51deleteUser(e, id) {
+            console.log('p51deleteUser', id);
+        }
+
+
+
+        
+        function p51showAddUserDialog() {
+            if (xxdialogMode) return false;
+            var x = "Allow users to manage this device group and devices in this group.";
+            if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
+            x += '<br /><br /><div style=\'position:relative\'>';
+            x += addHtmlValue("User Names", '<input id=dp51username style=width:230px maxlength=32 onchange=p51validateAddUserDialog() onkeyup=p51validateAddUserDialog() placeholder="user1, user2, user3" />');
+            x += '<div id=dp51usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
+            x += '</div><br>';
+            setDialogMode(2, "Add Users to User Group", 3, p51showAddUserDialogEx, x);
+            Q('dp51username').focus();
+            p51validateAddUserDialog();
+            return false;
+        }
+
+        function p51setname(name) {
+            name = decodeURIComponent(name);
+            var xusers = Q('dp51username').value.split(',');
+            for (var i in xusers) { xusers[i] = xusers[i].trim(); }
+            xusers[xusers.length - 1] = name;
+            Q('dp51username').value = xusers.join(', ');
+            p51validateAddUserDialog();
+            return false;
+        }
+
+        function p51validateAddUserDialog() {
+            var meshrights = GetMeshRights(currentMesh);
+            var ok = true;
+            if (Q('dp51username')) {
+                var xusers = Q('dp51username').value.split(',');
+                for (var i in xusers) {
+                    var xuser = xusers[i] = xusers[i].trim();
+                    if (xuser.length == 0) { ok = false; } else if (xuser.indexOf('"') >= 0) { ok = false; }
+                }
+
+                // Fill the suggestion box
+                var showsuggestbox = false, exactMatch = false;
+                if (users != null) {
+                    var lastuser = xusers[xusers.length - 1].trim(), lastuserl = lastuser.toLowerCase(), matchingUsers = [];
+                    if (lastuser.length > 0) {
+                        for (var i in users) {
+                            if (users[i].name === lastuser) { exactMatch = true; break; }
+                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push(users[i].name); if (matchingUsers.length >= 8) break; }
+                        }
+                        if ((exactMatch == false) && (matchingUsers.length > 0)) {
+                            var x = '';
+                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p51setname("' + encodeURIComponent(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
+                            QH('dp51usersuggest', x);
+                            showsuggestbox = true;
+                        }
+                    }
+                }
+                QV('dp51usersuggest', showsuggestbox);
+            }
+            QE('idx_dlgOkButton', ok);
+        }
+
+        function p51showAddUserDialogEx(b, t) {
+            if (t == null) {
+                var users = Q('dp51username').value.split(','), users2 = [];
+                for (var i in users) { users2.push(users[i].trim()); }
+                meshserver.send({ action: 'addusertousergroup', meshid: currentUserGroup._id, usernames: users2 });
+            } else {
+                meshserver.send({ action: 'addusertousergroup', meshid: currentUserGroup._id, usernames: [ t.split('/')[2] ] });
+            }
+        }
+
+
 
         //
         // MY USER GENERAL
@@ -9050,9 +9303,9 @@
 
             // Administrative Realms
             if ((userinfo.siteadmin == 0xFFFFFFFF) || (userinfo.siteadmin & 2)) {
-                var userGroups = '<i>' + "None" + '</i>';
-                if (user.groups) { userGroups = ''; for (var i in user.groups) { userGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
-                x += addDeviceAttribute("Admin Realms", addLinkConditional(userGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
+                var xuserGroups = '<i>' + "None" + '</i>';
+                if (user.groups) { xuserGroups = ''; for (var i in user.groups) { xuserGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
+                x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
             }
 
             var multiFactor = 0;
@@ -9856,11 +10109,11 @@
             // Set the goback stack, if going to top-level view, clear the stack.
             if ((xxcurrentView < 0) || (x < 10)) { goBackStack = []; } else {
                 // Do not push into the back stack if we are changing tabs at the same level.
-                if (Math.floor(xxcurrentView / 10) != Math.floor(x / 10)) { goBackStack.push(xxcurrentView); }
+                if ((xxcurrentView == 50) || (Math.floor(xxcurrentView / 10) != Math.floor(x / 10))) { goBackStack.push(xxcurrentView); }
             }
 
             // Edit this line when adding a new screen
-            for (var i = 0; i < 51; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 52; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Remove top bar selection
@@ -9896,7 +10149,7 @@
                 // My Events
                 QC('MainMenuMyEvents').add(mainMenuActiveClass);
                 QC('LeftMenuMyEvents').add(leftMenuActiveClass);
-            } else if (x == 4 || (x >= 30 && x < 40) || x == 50) {
+            } else if (x == 4 || (x >= 30 && x < 40) || (x == 50) || (x == 51)) {
                 // My Users
                 QC('MainMenuMyUsers').add(mainMenuActiveClass);
                 QC('LeftMenuMyUsers').add(leftMenuActiveClass);
@@ -9919,7 +10172,7 @@
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
             QV('MainSubMenuSpan', (x >= 10) && (x < 20));
-            QV('UserDummyMenuSpan', (x < 10) && (x != 6) && webPageFullScreen);
+            QV('UserDummyMenuSpan', (x == 51) || ((x < 10) && (x != 6) && webPageFullScreen));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);

@@ -4185,7 +4185,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (fileOptions[acceptLanguages[i]] != null) {
                         // Found a match. If the file no longer exists, default to English.
                         obj.fs.exists(fileOptions[acceptLanguages[i]] + '.handlebars', function (exists) {
-                            if (exists) { res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
+                            if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
                         });
                         return;
                     } 

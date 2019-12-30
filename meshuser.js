@@ -1472,16 +1472,114 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'usergroups':
+                {
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+
+                    // Request a list of all user groups this user as rights to
+                    db.GetAllTypeNoTypeField('ugrp', domain.id, function (err, docs) {
+                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: docs, tag: command.tag })); } catch (ex) { }
+                    });
+                    break;
+                }
             case 'createusergroup':
                 {
-                    // TODO
-                    //console.log(command);
+                    var err = null;
+                    try {
+                        // Check if we have new group restriction
+                        if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
+
+                        // In some situations, we need a verified email address to create a device group.
+                        else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Email verification required'; } // User must verify it's email first.
+
+                        // Create user group
+                        else if (common.validateString(command.name, 1, 64) == false) { err = 'Invalid group name'; } // User group name is between 1 and 64 characters
+                        else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // User group description is between 0 and 1024 characters
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
+
+                    // We only create Agent-less Intel AMT mesh (Type1), or Agent mesh (Type2)
+                    parent.crypto.randomBytes(48, function (err, buf) {
+                        // Create new device group identifier
+                        var ugrpid = 'ugrp/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+
+                        // Create the new device group
+                        var ugrp = { type: 'ugrp', _id: ugrpid, name: command.name, desc: command.desc, domain: domain.id, links: {} };
+                        db.Set(common.escapeLinksFieldName(ugrp));
+                        //parent.meshes[ugrpid] = ugrp;
+
+                        // Event the device group creation
+                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrpid, name: command.name, desc: command.desc, action: 'createusergroup', links: links, msg: 'User group created: ' + command.name, domain: domain.id };
+                        parent.parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
+
+                        try { ws.send(JSON.stringify({ action: 'createusergroup', responseid: command.responseid, result: 'ok', ugrpid: ugrpid, links: links })); } catch (ex) { }
+                    });
                     break;
                 }
             case 'deleteusergroup':
                 {
-                    // TODO
-                    //console.log(command);
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+
+                    // Change the name or description of a user group
+                    if (common.validateString(command.ugrpid, 1, 1024) == false) break; // Check the user group id
+                    var ugroupidsplit = command.ugrpid.split('/');
+                    if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) break;
+
+                    db.Get(command.ugrpid, function (err, groups) {
+                        if ((err != null) || (groups.length != 1)) return;
+                        var group = groups[0];
+                        db.Remove(group._id);
+                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, action: 'deleteusergroup', msg: change, domain: domain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                        parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
+                    });
+                    break;
+                }
+            case 'editusergroup':
+                {
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+
+                    // Change the name or description of a user group
+                    if (common.validateString(command.ugrpid, 1, 1024) == false) break; // Check the user group id
+                    var ugroupidsplit = command.ugrpid.split('/');
+                    if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) break;
+
+                    db.Get(command.ugrpid, function (err, groups) {
+                        if ((err != null) || (groups.length != 1)) return;
+                        var group = groups[0], change = '';
+
+                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
+                        if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
+                        if (change != '') {
+                            db.Set(common.escapeLinksFieldName(group));
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: change, domain: domain.id };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                            parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
+                        }
+                    });
+                    break;
+                }
+            case 'addusertousergroup':
+                {
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+
+                    // Change the name or description of a user group
+                    if (common.validateString(command.ugrpid, 1, 1024) == false) break; // Check the user group id
+                    var ugroupidsplit = command.ugrpid.split('/');
+                    if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) break;
+
+                    db.Get(command.ugrpid, function (err, groups) {
+                        if ((err != null) || (groups.length != 1)) return;
+                        var group = groups[0];
+
+                        // TODO
+                        console.log(command);
+                    });
                     break;
                 }
             case 'changemeshnotify':

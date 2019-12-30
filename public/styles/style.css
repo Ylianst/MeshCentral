@@ -1363,6 +1363,14 @@ a {
     float: left;
 }
 
+.m4 {
+    background: url(../images/images16.png) -128px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
 .si1 {
     background: url(../images/icons16.png) 0px 0px;
     height: 16px;
