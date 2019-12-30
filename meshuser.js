@@ -1199,9 +1199,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var err = null;
                     try {
                         // Broadcast a message to all currently connected users.
-                        if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
-                        else if (common.validateString(command.msg, 1, 512) == false) { err = 'Message is too long'; } // Notification message is between 1 and 256 characters
-                    } catch (ex) { err = 'Validation exception: ' + ex; }
+                        if ((user.siteadmin & 2) == 0) { err = "Permission denied"; }
+                        else if (common.validateString(command.msg, 1, 512) == false) { err = "Message is too long"; } // Notification message is between 1 and 256 characters
+                    } catch (ex) { err = "Validation exception: " + ex; }
 
                     // Handle any errors
                     if (err != null) {
@@ -1210,20 +1210,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Create the notification message
-                    var notification = { action: "msg", type: "notify", domain: domain.id, "value": command.msg, "title": user.name, icon: 0, tag: "broadcast" };
+                    var notification = { action: 'msg', type: 'notify', domain: domain.id, value: command.msg, title: user.name, icon: 0, tag: 'broadcast' };
 
                     // Send the notification on all user sessions for this server
                     for (var i in parent.wssessions2) {
                         try {
                             if (parent.wssessions2[i].domainid == domain.id) {
-                                if ((user.groups == null) || (user.groups.length == 0)) {
-                                    // We are part of no user groups, send to everyone.
-                                    parent.wssessions2[i].send(JSON.stringify(notification));
-                                } else {
-                                    // We are part of user groups, only send to sessions of users in our groups.
-                                    var sessionUser = parent.users[parent.wssessions2[i].userid];
-                                    if ((sessionUser != null) && findOne(sessionUser.groups, user.groups)) {
+                                var sessionUser = parent.users[parent.wssessions2[i].userid];
+                                if ((command.target == null) || ((sessionUser.links) != null && (sessionUser.links[command.target] != null))) {
+                                    if ((user.groups == null) || (user.groups.length == 0)) {
+                                        // We are part of no user groups, send to everyone.
                                         parent.wssessions2[i].send(JSON.stringify(notification));
+                                    } else {
+                                        // We are part of user groups, only send to sessions of users in our groups.
+                                        if ((sessionUser != null) && findOne(sessionUser.groups, user.groups)) {
+                                            parent.wssessions2[i].send(JSON.stringify(notification));
+                                        }
                                     }
                                 }
                             }
@@ -1478,7 +1480,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Request a list of all user groups this user as rights to
                     db.GetAllTypeNoTypeField('ugrp', domain.id, function (err, docs) {
-                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: docs, tag: command.tag })); } catch (ex) { }
+                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: common.unEscapeAllLinksFieldName(docs), tag: command.tag })); } catch (ex) { }
                     });
                     break;
                 }
@@ -1493,7 +1495,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Email verification required'; } // User must verify it's email first.
 
                         // Create user group
-                        else if (common.validateString(command.name, 1, 64) == false) { err = 'Invalid group name'; } // User group name is between 1 and 64 characters
+                        else if ((common.validateString(command.name, 1, 64) == false) || (command.name.indexOf(' ') >= 0)) { err = 'Invalid group name'; } // User group name is between 1 and 64 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // User group description is between 0 and 1024 characters
                     } catch (ex) { err = 'Validation exception: ' + ex; }
 
@@ -1532,8 +1534,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     db.Get(command.ugrpid, function (err, groups) {
                         if ((err != null) || (groups.length != 1)) return;
-                        var group = groups[0];
+                        var group = common.unEscapeLinksFieldName(groups[0]);
+
+                        // Unlink any user that has a link to this group
+                        if (group.links) {
+                            for (var i in group.links) {
+                                var xuser = parent.users[i];
+                                if ((xuser != null) && (xuser.links != null)) {
+                                    delete xuser.links[group._id];
+                                    db.SetUser(xuser);
+                                    parent.parent.DispatchEvent([xuser._id], obj, 'resubscribe');
+                                }
+                            }
+                        }
+
+                        // Remove the user group from the database
                         db.Remove(group._id);
+
+                        // Event the user group being removed
                         var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, action: 'deleteusergroup', msg: change, domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
@@ -1551,9 +1569,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     db.Get(command.ugrpid, function (err, groups) {
                         if ((err != null) || (groups.length != 1)) return;
-                        var group = groups[0], change = '';
+                        var group = common.unEscapeLinksFieldName(groups[0]), change = '';
 
-                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
+                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name) && (command.name.indexOf(' ') >= 0)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
                         if (change != '') {
                             db.Set(common.escapeLinksFieldName(group));
@@ -1566,20 +1584,108 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'addusertousergroup':
                 {
-                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+                    var err = null;
+                    try {
+                        if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
+                        else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
+                        else if (common.validateStrArray(command.usernames, 1, 64) == false) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
+                        else {
+                            var ugroupidsplit = command.ugrpid.split('/');
+                            if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) { err = 'Invalid groupid'; }
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
 
-                    // Change the name or description of a user group
-                    if (common.validateString(command.ugrpid, 1, 1024) == false) break; // Check the user group id
-                    var ugroupidsplit = command.ugrpid.split('/');
-                    if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) break;
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     db.Get(command.ugrpid, function (err, groups) {
-                        if ((err != null) || (groups.length != 1)) return;
-                        var group = groups[0];
+                        if ((err != null) || (groups.length != 1)) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'Invalid groupid' })); } catch (ex) { } return; }
+                        var group = common.unEscapeLinksFieldName(groups[0]);
+                        if (group.links == null) { group.links = {}; }
 
-                        // TODO
-                        console.log(command);
+                        var unknownUsers = [], addedCount = 0, failCount = 0;
+                        for (var i in command.usernames) {
+                            // Check if the user exists
+                            var newuserid = 'user/' + domain.id + '/' + command.usernames[i].toLowerCase(), newuser = parent.users[newuserid];
+                            if (newuser != null) {
+                                // Add mesh to user
+                                if (newuser.links == null) { newuser.links = {}; }
+                                newuser.links[group._id] = { rights: 1 };
+                                db.SetUser(newuser);
+                                parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+
+                                // Add a user to the mesh
+                                group.links[newuserid] = { userid: newuser.id, name: newuser.name, rights: 1 };
+                                db.Set(common.escapeLinksFieldName(group));
+
+                                // Notify mesh change
+                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Added user ' + newuser.name + ' to user group ' + group.name, domain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                parent.parent.DispatchEvent(['*', group._id, user._id, newuserid], obj, event);
+                                addedCount++;
+                            } else {
+                                unknownUsers.push(command.usernames[i]);
+                                failCount++;
+                            }
+                        }
+
+                        if (unknownUsers.length > 0) {
+                            // Send error back, user not found.
+                            displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
+                        }
+
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
                     });
+                    break;
+                }
+            case 'removeuserfromusergroup':
+                {
+                    var err = null;
+                    try {
+                        if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = 'Permission denied'; }
+                        else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = 'Invalid groupid'; }
+                        else if (common.validateString(command.userid, 1, 256) == false) { err = 'Invalid userid'; }
+                        else {
+                            var ugroupidsplit = command.ugrpid.split('/');
+                            if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || (ugroupidsplit[1] != domain.id)) { err = 'Invalid groupid'; }
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
+
+                    db.Get(command.ugrpid, function (err, groups) {
+                        if ((err != null) || (groups.length != 1)) { try { ws.send(JSON.stringify({ action: 'addusertousergroup', responseid: command.responseid, result: 'Invalid groupid' })); } catch (ex) { } return; }
+                        var group = common.unEscapeLinksFieldName(groups[0]);
+                        if (group.links == null) { group.links = {}; }
+
+                        // Check if the user exists
+                        newuser = parent.users[command.userid];
+                        if (newuser != null) {
+                            var change = false;
+                            if ((newuser.links != null) && (newuser.links[command.ugrpid] != null)) { change = true; delete newuser.links[command.ugrpid]; }
+                            db.SetUser(newuser);
+                            parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
+
+                            // Remove the user from the group
+                            if ((group.links != null) && (group.links[command.userid] != null)) { change = true; delete group.links[command.userid]; }
+                            db.Set(common.escapeLinksFieldName(group));
+
+                            // Notify mesh change
+                            if (change) {
+                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Removed user ' + newuser.name + ' from user group ' + group.name, domain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                parent.parent.DispatchEvent(['*', group._id, user._id, newuserid], obj, event);
+                            }
+                        }
+                    });
+
                     break;
                 }
             case 'changemeshnotify':
