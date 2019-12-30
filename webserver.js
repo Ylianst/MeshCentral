@@ -4158,7 +4158,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function render(req, res, filename, args) {
         if ((obj.parent.webViewsOverridePath == null) && (obj.renderPages != null)) {
             // If a user set a localization, use that
-            if (req.session.userid) {
+            if ((req.session != null) && (req.session.userid)) {
                 var user = obj.users[req.session.userid];
                 if ((user != null) && (user.lang != null)) { req.query.lang = user.lang; }
             };

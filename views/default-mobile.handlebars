@@ -705,14 +705,13 @@
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
                     if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} minute{1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} hour{1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} day{1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    else if (seconds < 3600) { var secs = Math.floor(seconds / 60); QH('p2nextPasswordUpdateTime',format((secs == 1)?" - Reset in 1 minute.":" - Reset in {0} minutes.", secs)); }
+                    else if (seconds < 86400) { var hours = Math.floor(seconds / 3600); QH('p2nextPasswordUpdateTime', format((hours == 1) ? " - Reset in 1 hour." : " - Reset in {0} hours.", hours)); }
+                    else { var days = Math.floor(seconds / 86400); QH('p2nextPasswordUpdateTime', format((hours == 1) ? " - Reset in 1 day." : " - Reset in {0} days.", days)); }
                 }
             }
         }
 
-        function addLetterS(x) { return (x > 1) ? 's' : ''; }
         function setSessionActivity() { sessionActivity = Date.now(); }
         function checkIdleSessionTimeout() { var delta = (Date.now() - sessionActivity); if (delta > serverinfo.timeout) { window.location.href = 'logout'; } }
 
