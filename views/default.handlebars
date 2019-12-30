@@ -8851,15 +8851,15 @@
             return false;
         }
 
-        function showUserBroadcastDialog() {
+        function showUserBroadcastDialog(targetid) {
             if (xxdialogMode) return;
             var x = "Broadcast a message to all connected users." + '<textarea id=broadcastMessage value="" maxlength="256"/></textarea>';
-            setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x);
+            setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x, targetid?decodeURIComponent(targetid):null);
             Q('broadcastMessage').focus();
         }
 
-        function showUserBroadcastDialogEx() {
-            meshserver.send({ action: 'userbroadcast', msg: Q('broadcastMessage').value });
+        function showUserBroadcastDialogEx(b, targetid) {
+            meshserver.send({ action: 'userbroadcast', msg: Q('broadcastMessage').value, target: targetid });
         }
 
         function showCreateNewAccountDialog() {
@@ -9104,6 +9104,10 @@
             }
             x += '</table></div><br />';
 
+            if ((userinfo.siteadmin & 256) != 0) {
+                x += '<input type=button value=\"' + "Broadcast" + '\" title=\"' + "Send a notice to all users in this group." + '\" onclick=showUserBroadcastDialog("' + encodeURIComponent(group._id) + '") />';
+            }
+
             // Setup the panel
             QH('p51group', x);
 
@@ -9125,7 +9129,7 @@
             // Display all users for this mesh
             for (var i in sortedusers) {
                 var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                x += '<tr tabindex=0 onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')" style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                 ++count;
             }
 
@@ -9178,12 +9182,20 @@
         }
 
         function p51deleteUser(e, id) {
-            console.log('p51deleteUser', id);
+            haltEvent(e);
+            p51viewuserEx(2, decodeURIComponent(id));
+            return false;
         }
-
-
-
         
+        function p51viewuserEx(button, userid) {
+            if (button != 2) return;
+            var uname = userid.split('/')[2];
+            if (users && users[userid]) { uname = users[userid].name; }
+            if (userinfo._id == userid) { uname = userinfo.name; }
+            setDialogMode(2, "Remote User", 3, p51viewuserEx2, format("Confirm removal of user {0}?", EscapeHtml(decodeURIComponent(uname))), userid);
+        }
+        function p51viewuserEx2(button, userid) { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); }
+
         function p51showAddUserDialog() {
             if (xxdialogMode) return false;
             var x = "Allow users to manage this device group and devices in this group.";
@@ -9244,9 +9256,9 @@
             if (t == null) {
                 var users = Q('dp51username').value.split(','), users2 = [];
                 for (var i in users) { users2.push(users[i].trim()); }
-                meshserver.send({ action: 'addusertousergroup', meshid: currentUserGroup._id, usernames: users2 });
+                meshserver.send({ action: 'addusertousergroup', ugrpid: currentUserGroup._id, usernames: users2 });
             } else {
-                meshserver.send({ action: 'addusertousergroup', meshid: currentUserGroup._id, usernames: [ t.split('/')[2] ] });
+                meshserver.send({ action: 'addusertousergroup', ugrpid: currentUserGroup._id, usernames: [ t.split('/')[2] ] });
             }
         }
 

@@ -149,8 +149,8 @@ module.exports.unEscapeFieldName = function (name) { if (name.indexOf('%') == -1
 // Escape all links
 module.exports.escapeLinksFieldName = function (docx) { var doc = Object.assign({}, docx); if (doc.links != null) { doc.links = Object.assign({}, doc.links); for (var i in doc.links) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.links[ue] = doc.links[i]; delete doc.links[i]; } } } return doc; };
 module.exports.unEscapeLinksFieldName = function (doc) { if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } } return doc; };
-//module.exports.escapeAllLinksFieldName = function (docs) { for (var i in docs) { module.exports.escapeLinksFieldName(docs[i]); } };
-module.exports.unEscapeAllLinksFieldName = function (docs) { for (var i in docs) { docs[i] = module.exports.unEscapeLinksFieldName(docs[i]); } };
+//module.exports.escapeAllLinksFieldName = function (docs) { for (var i in docs) { module.exports.escapeLinksFieldName(docs[i]); } return docs; };
+module.exports.unEscapeAllLinksFieldName = function (docs) { for (var i in docs) { docs[i] = module.exports.unEscapeLinksFieldName(docs[i]); } return docs; };
 
 // Validation methods
 module.exports.validateString = function (str, minlen, maxlen) { return ((str != null) && (typeof str == 'string') && ((minlen == null) || (str.length >= minlen)) && ((maxlen == null) || (str.length <= maxlen))); };
