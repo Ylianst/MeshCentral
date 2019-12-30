@@ -962,7 +962,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                     } else {
                         // Create a filter for device groups
-                        if (obj.user.links == null) return;
+                        if ((obj.user == null) || (obj.user.links == null)) return;
 
                         // All events
                         var exGroupFilter2 = [], filter = [], filter2 = user.subscriptions;

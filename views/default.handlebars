@@ -1627,24 +1627,23 @@
                 else if ((passRequirements != null) && (typeof passRequirements.reset == 'number')) {
                     var seconds = (userinfo.passchange) + (passRequirements.reset * 86400) - Math.floor(Date.now() / 1000);
                     if (seconds < 0) { QH('p2nextPasswordUpdateTime', " - Reset on next login."); }
-                    else if (seconds < 3600) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} minute{1}.", Math.floor(seconds / 60), addLetterS(Math.floor(seconds / 60)))); }
-                    else if (seconds < 86400) { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} hour{1}.", Math.floor(seconds / 3600), addLetterS(Math.floor(seconds / 3600)))); }
-                    else { QH('p2nextPasswordUpdateTime', format(" - Reset in {0} day{1}."), Math.floor(seconds / 86400), addLetterS(Math.floor(seconds / 86400))); }
+                    else if (seconds < 3600) { var secs = Math.floor(seconds / 60); QH('p2nextPasswordUpdateTime',format((secs == 1)?" - Reset in 1 minute.":" - Reset in {0} minutes.", secs)); }
+                    else if (seconds < 86400) { var hours = Math.floor(seconds / 3600); QH('p2nextPasswordUpdateTime', format((hours == 1) ? " - Reset in 1 hour." : " - Reset in {0} hours.", hours)); }
+                    else { var days = Math.floor(seconds / 86400); QH('p2nextPasswordUpdateTime', format((hours == 1) ? " - Reset in 1 day." : " - Reset in {0} days.", days)); }
                 }
             }
         }
 
-        function addLetterS(x) { return (x > 1) ? 's' : ''; }
         function setSessionActivity() { sessionActivity = Date.now(); QH('idleTimeoutNotify', ''); }
         function checkIdleSessionTimeout() {
             var delta = (Date.now() - sessionActivity);
             if (delta > serverinfo.timeout) { window.location.href = 'logout'; } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
                 if (ds <= 60) {
-                    QH('idleTimeoutNotify', '<br />' + format("{0} second{1} until disconnect", ds, addLetterS(ds)));
+                    QH('idleTimeoutNotify', '<br />' + format((ds == 1)?"1 second until disconnect":"{0} seconds until disconnect", ds));
                 } else {
                     ds = Math.round(ds / 60);
-                    if (ds <= 5) { QH('idleTimeoutNotify', '<br />' + format("{0} minute{1} until disconnect", ds, addLetterS(ds))); }
+                    if (ds <= 5) { QH('idleTimeoutNotify', '<br />' + format((ds == 1)?"1 minute until disconnect":"{0} minutes until disconnect", ds)); }
                 }
             }
         }
@@ -2580,7 +2579,7 @@
                         url = 'http://' + servername + portStr + domainUrl + 'agentinvite?c=' + message.cookie;
                     }
                     Q('agentInvitationLink').href = url;
-                    var t = format("{0} hour{1}", message.expire, addLetterS(message.expire));
+                    var t = format((message.expire == 1)?"1 hour":"{0} hours", message.expire);
                     if (message.expire == 24) { t = "1 day"; }
                     if (message.expire == 168) { t = "1 week"; }
                     if (message.expire == 5040) { t = "1 month"; }
@@ -6806,7 +6805,7 @@
                 p13uploadFileContinue(1, files);
             } else {
                 // Otherwise, prompt for confirmation
-                setDialogMode(2, "Upload File", 3, p13uploadFileContinue, format("Upload will overwrite {0} file{1}. Continue?", overWriteCount, addLetterS(overWriteCount)), files);
+                setDialogMode(2, "Upload File", 3, p13uploadFileContinue, format((overWriteCount == 1)?"Upload will overwrite 1 file. Continue?":"Upload will overwrite {0} files. Continue?", overWriteCount), files);
             }
         }
 
@@ -7370,7 +7369,7 @@
         function account_showDeleteAccount() {
             if (xxdialogMode) return false;
             var x = "To delete this account, type in the account password in both boxes below and hit ok." + '<br /><br />';
-            x += '<form method=post><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=" + authCookie + " /><table style=margin-left:80px><tr>';
+            x += '<form method=post><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=' + authCookie + ' /><table style=margin-left:80px><tr>';
             x += '<td align=right>' + "Password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr><tr><td align=right>' + "Password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr></table><br /><div style=padding:10px;margin-bottom:4px>';
@@ -8467,7 +8466,7 @@
                 p5PerformUpload(1, files);
             } else {
                 // Otherwise, prompt for confirmation
-                setDialogMode(2, "Upload File", 3, p5PerformUpload, format("Upload will overwrite {0} file{1}. Continue?", overWriteCount, addLetterS(overWriteCount)), files);
+                setDialogMode(2, "Upload File", 3, p5PerformUpload, format((overWriteCount == 1)?"Upload will overwrite 1 file. Continue?":"Upload will overwrite {0} files. Continue?", overWriteCount), files);
             }
         }
 
