@@ -139,7 +139,7 @@ module.exports.CreateMeshMail = function (parent) {
         if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
 
         // Set all the options.
-        var options = { username: username, accountname: accountname, email: email, servername: domain.title, password: password };
+        var options = { username: username, accountname: accountname, email: email, servername: domain.title ? domain.title : 'MeshCentral', password: password };
 
         // Send the email
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -152,7 +152,7 @@ module.exports.CreateMeshMail = function (parent) {
         if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, no reset possible.
 
         // Set all the options.
-        var options = { username: username, email: email, servername: domain.title };
+        var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
         options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username.toLowerCase(), e: email, a: 1 }, obj.mailCookieEncryptionKey);
 
         // Send the email
@@ -166,7 +166,7 @@ module.exports.CreateMeshMail = function (parent) {
         if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
 
         // Set all the options.
-        var options = { username: username, email: email, servername: domain.title };
+        var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
         options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 }, obj.mailCookieEncryptionKey);
 
         // Send the email
@@ -180,7 +180,7 @@ module.exports.CreateMeshMail = function (parent) {
         if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
 
         // Set all the template replacement options and generate the final email text (both in txt and html formats).
-        var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title };
+        var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral' };
         options.windows = ((os == 0) || (os == 1)) ? 1 : 0;
         options.linux = ((os == 0) || (os == 2)) ? 1 : 0;
         options.osx = ((os == 0) || (os == 3)) ? 1 : 0;
@@ -220,7 +220,10 @@ module.exports.CreateMeshMail = function (parent) {
             if (err == null) {
                 console.log('SMTP mail server ' + parent.config.smtp.host + ' working as expected.');
             } else {
-                console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err));
+                // Remove all non-object types from error to avoid a JSON stringify error.
+                var err2 = {};
+                for (var i in err) { if (typeof (err[i]) != 'object') { err2[i] = err[i]; } }
+                console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err2));
             }
         });
     };
