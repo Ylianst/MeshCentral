@@ -3311,7 +3311,7 @@
       "pt": "Copiar",
       "ja": "コピー",
       "cs": "kopírovat",
-      "nl": "kopie",
+      "nl": "kopieren",
       "xloc": [
         "default.handlebars->23->1155",
         "default-mobile.handlebars->9->89"
@@ -5547,7 +5547,7 @@
       "pt": "Forçar redefinição de senha no próximo login.",
       "ja": "次回ログイン時にパスワードを強制的にリセットします。",
       "cs": "Vynutit reset hesla při dalším přihlášení.",
-      "nl": "Forceer wachtwoord opnieuw instellen bij de volgende aanmelding.",
+      "nl": "Forceer wachtwoord wijziging bij de volgende aanmelding.",
       "xloc": [
         "default.handlebars->23->1217",
         "default.handlebars->23->1315"
@@ -6384,7 +6384,7 @@
       "pt": "Identificador",
       "ja": "識別子",
       "cs": "Identifikátor",
-      "nl": "Identificeren",
+      "nl": "Identifier",
       "xloc": [
         "default.handlebars->23->74"
       ]
@@ -9732,7 +9732,7 @@
       "pt": "Ok",
       "ja": "OK",
       "cs": "OK",
-      "nl": "Oke",
+      "nl": "OK",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar",
         "default.handlebars->23->469",
@@ -9901,7 +9901,7 @@
       "fr": "Nom du système",
       "pt": "Nome do SO",
       "ja": "OS名",
-      "nl": "Naam van het besturingssysteem",
+      "nl": "Besturingssysteem naam",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->7->1"
       ]
@@ -11081,7 +11081,7 @@
       "pt": "Redefinir",
       "ja": "リセットする",
       "cs": "Reset",
-      "nl": "Reset",
+      "nl": "Herstarten",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar",
         "default.handlebars->23->526",
@@ -11779,7 +11779,7 @@
       "pt": "Serial",
       "ja": "シリアル",
       "cs": "Sériový",
-      "nl": "Serieel",
+      "nl": "Serie nummer",
       "xloc": [
         "default.handlebars->23->72"
       ]
@@ -12302,7 +12302,7 @@
       "fr": "Endormir",
       "pt": "Hibernar",
       "ja": "睡眠",
-      "nl": "Slaap",
+      "nl": "Slaapstand",
       "xloc": [
         "default.handlebars->23->2",
         "default.handlebars->23->3",
@@ -13477,7 +13477,7 @@
       "pt": "Alternar modo noturno",
       "ja": "ナイトモードを切り替える",
       "cs": "Přepnout noční režim",
-      "nl": "Wissel nachtmodus",
+      "nl": "Wissel dag/nachtmodus",
       "xloc": [
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu",
@@ -13679,7 +13679,7 @@
       "cs": "Typ",
       "pt": "Tipo",
       "ja": "タイプ",
-      "nl": "Typen",
+      "nl": "Type",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->23->601",
@@ -14161,7 +14161,7 @@
       "pt": "Seleção da interface do usuário",
       "ja": "ユーザーインターフェイスの選択",
       "cs": "Výběr uživatelského rozhraní",
-      "nl": "Selectie gebruikersinterface",
+      "nl": "Wissle gebruikersinterface",
       "xloc": [
         "agentinvite.handlebars->container->topbar",
         "default.handlebars->container->topbar->1->1",
@@ -15525,7 +15525,8 @@
       ]
     },
     {
-      "en": "Souhrn –",
+      "en": "Summary -",
+      "cs": "Souhrn –",
       "nl": "Samenvatting -"
     },
     {
@@ -15576,6 +15577,7 @@
     },
     {
       "en": "Wrap: OFF",
+      "nl": "Wrap: OFF",
       "xloc": [
         "default.handlebars->23->654"
       ]
@@ -15837,6 +15839,7 @@
     },
     {
       "en": "Agent Sessions",
+      "nl": "Agent Sessies",
       "cs": "Relace agenta",
       "xloc": [
         "default.handlebars->23->1366"
@@ -15930,6 +15933,7 @@
     },
     {
       "en": "tag:",
+      "nl": "tag:",
       "cs": "štítek:",
       "xloc": [
         "default.handlebars->23->403"
@@ -15937,6 +15941,7 @@
     },
     {
       "en": "t:",
+      "nl": "t:",
       "cs": "š:",
       "xloc": [
         "default.handlebars->23->404"
@@ -15944,12 +15949,14 @@
     },
     {
       "en": "Remove all previous events for this userid.",
-      "cs": "Remove all previous events for this userid.",
+      "cs": "Odebrat všechny předchozí události pro toto ID uživatele.",
+      "nl": "Verwijder alle eerdere gebeurtenissen voor dit gebruikers-ID.",
       "xloc": [
         "default.handlebars->23->1218"
       ]
     },
     {
+      "en": "Relay Count",
       "en": "Relay Count",
       "cs": "Počet předávání (relay)",
       "xloc": [
@@ -15958,72 +15965,84 @@
     },
     {
       "en": "Intel®AMT",
+      "nl": "Intel®AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
       ]
     },
     {
       "en": "Summary -",
+      "nl": "Samenvatting -",
       "xloc": [
         "default.handlebars->container->column_l->p21->p21title->3"
       ]
     },
     {
       "en": "My User Groups",
+      "nl": "Mijn gebruikersgroepen",
       "xloc": [
         "default.handlebars->container->column_l->p50->p50title->0"
       ]
     },
     {
       "en": "New Group...",
+      "nl": "Nieuwe Groep...",
       "xloc": [
         "default.handlebars->container->column_l->p50->3->1->0->3->3"
       ]
     },
     {
       "en": "Manage User Groups",
+      "nl": "Beheer gebruikersgroepen.",
       "xloc": [
         "default.handlebars->23->1233"
       ]
     },
     {
       "en": "Create User Group",
+      "nl": "Maak een gebruikersgroep.",
       "xloc": [
         "default.handlebars->23->1243"
       ]
     },
     {
       "en": "User Group -",
+      "nl": "Gebruikersgroep.",
       "xloc": [
         "default.handlebars->container->column_l->p51->1->1->0->1->p30title->3"
       ]
     },
     {
       "en": "No groups found.",
+      "nl": "Geen groepen gevonden.",
       "xloc": [
         "default.handlebars->23->1240"
       ]
     },
     {
       "en": "Send a notice to all users in this group.",
+      "nl": "Stuur een bericht naar alle gebruikers in deze groep.",
       "xloc": [
         "default.handlebars->23->1250"
       ]
     },
     {
       "en": "Group Members",
+      "nl": "Groeps leden",
       "xloc": [
         "default.handlebars->23->1252"
       ]
     },
     {
       "en": "No Members",
+      "nl": "Geen leden",
       "xloc": [
         "default.handlebars->23->1255"
       ]
     },
     {
       "en": "Delete User Group",
+      "nl": "Verdwijder de gebruikersgroep",
       "xloc": [
         "default.handlebars->23->1256",
         "default.handlebars->23->1262"
@@ -16031,30 +16050,35 @@
     },
     {
       "en": "Edit User Group",
+      "nl": "Bewerk de gebruikersgroep",
       "xloc": [
         "default.handlebars->23->1259"
       ]
     },
     {
       "en": "Delete user group {0}?",
+      "nl": "Verwijder gebruikersgroep {0}?",
       "xloc": [
         "default.handlebars->23->1260"
       ]
     },
     {
       "en": "Remote User",
+      "nl": "Externe gebruiker",
       "xloc": [
         "default.handlebars->23->1263"
       ]
     },
     {
       "en": "Add Users to User Group",
+      "nl": "Voeg gebruikers toe aan de gebruikersgroep",
       "xloc": [
         "default.handlebars->23->1268"
       ]
     },
     {
       "en": " - Reset in 1 minute.",
+      "nl": " - Herstart in {0} days.",
       "xloc": [
         "default.handlebars->23->53",
         "default-mobile.handlebars->9->11"
@@ -16062,6 +16086,7 @@
     },
     {
       "en": " - Reset in {0} minutes.",
+      "nl": " - Herstart in {0} minuten.",
       "xloc": [
         "default.handlebars->23->54",
         "default-mobile.handlebars->9->12"
@@ -16069,6 +16094,7 @@
     },
     {
       "en": " - Reset in 1 hour.",
+      "nl": " - Herstart in 1 uur.",
       "xloc": [
         "default.handlebars->23->55",
         "default-mobile.handlebars->9->13"
@@ -16076,6 +16102,7 @@
     },
     {
       "en": " - Reset in {0} hours.",
+      "nl": " - Herstart in {0} uren.",
       "xloc": [
         "default.handlebars->23->56",
         "default-mobile.handlebars->9->14"
@@ -16083,6 +16110,7 @@
     },
     {
       "en": " - Reset in 1 day.",
+      "nl": " - Herstart in {0} dag.",
       "xloc": [
         "default.handlebars->23->57",
         "default-mobile.handlebars->9->15"
@@ -16090,6 +16118,7 @@
     },
     {
       "en": " - Reset in {0} days.",
+      "nl": " - Herstart in {0} dagen.",
       "xloc": [
         "default.handlebars->23->58",
         "default-mobile.handlebars->9->16"
@@ -16097,36 +16126,42 @@
     },
     {
       "en": "1 second until disconnect",
+      "nl": "1 seconde totdat de verbinding wordt verbroken",
       "xloc": [
         "default.handlebars->23->59"
       ]
     },
     {
       "en": "{0} seconds until disconnect",
+      "nl": "{0} seconden totdat de verbinding wordt verbroken",
       "xloc": [
         "default.handlebars->23->60"
       ]
     },
     {
       "en": "1 minute until disconnect",
+      "nl": "1 minuut totdat de verbinding wordt verbroken",
       "xloc": [
         "default.handlebars->23->61"
       ]
     },
     {
       "en": "{0} minutes until disconnect",
+      "nl": "{0} minuten totdat de verbinding wordt verbroken",
       "xloc": [
         "default.handlebars->23->62"
       ]
     },
     {
       "en": "{0} hours",
+      "nl": "{0} uur",
       "xloc": [
         "default.handlebars->23->169"
       ]
     },
     {
       "en": "Upload will overwrite 1 file. Continue?",
+      "nl": "Upload overschrijft {0} bestand. Doorgaan?",
       "xloc": [
         "default.handlebars->23->660",
         "default.handlebars->23->1159"
@@ -16134,6 +16169,7 @@
     },
     {
       "en": "Upload will overwrite {0} files. Continue?",
+      "nl": "Upload overschrijft {0} bestanden. Doorgaan?",
       "xloc": [
         "default.handlebars->23->661",
         "default.handlebars->23->1160"
@@ -16141,6 +16177,7 @@
     },
     {
       "en": "Partial Device Group Rights",
+      "nl": "Gedeeltelijke apparaatgroep rechten",
       "xloc": [
         "default.handlebars->23->1004",
         "default.handlebars->23->1321"
@@ -16148,6 +16185,7 @@
     },
     {
       "en": "Full Device Group Administrator",
+      "nl": "Volledige apparaatgroep beheerder",
       "xloc": [
         "default.handlebars->23->1005",
         "default.handlebars->23->1323"
@@ -16155,6 +16193,7 @@
     },
     {
       "en": "Device Group",
+      "nl": "Apparaat Groep",
       "xloc": [
         "default.handlebars->23->1060",
         "default.handlebars->23->1326",
@@ -16163,78 +16202,91 @@
     },
     {
       "en": "Common Device Groups",
+      "nl": "Gemeenschappelijke apparaatgroepen",
       "xloc": [
         "default.handlebars->23->1320"
       ]
     },
     {
       "en": "No device groups in common",
+      "nl": "Geen gemeenschappelijke apparaatgroepen",
       "xloc": [
         "default.handlebars->23->1327"
       ]
     },
     {
       "en": "Add User Group",
+      "nl": "Gebruikersgroep toevoegen",
       "xloc": [
         "default.handlebars->23->1328"
       ]
     },
     {
       "en": "User Group Memberships",
+      "nl": "Gebruikersgroeps lidmaatschap",
       "xloc": [
         "default.handlebars->23->1329"
       ]
     },
     {
       "en": "Unknown User Group",
+      "nl": "Onbekende gebruikersgroep",
       "xloc": [
         "default.handlebars->23->1330"
       ]
     },
     {
       "en": "Remove user group membership",
+      "nl": "Verwijder de groepslidmaatschap",
       "xloc": [
         "default.handlebars->23->1331"
       ]
     },
     {
       "en": "No user group memberships",
+      "nl": "Geen gebruikersgroep lidmaatschap",
       "xloc": [
         "default.handlebars->23->1333"
       ]
     },
     {
       "en": "Remove User",
+      "nl": "Verwijder gebruiker",
       "xloc": [
         "default.handlebars->23->1335"
       ]
     },
     {
       "en": "Confirm removal of group {0}?",
+      "nl": "Bevestig het verwijderen van de groep {0}?",
       "xloc": [
         "default.handlebars->23->1336"
       ]
     },
     {
       "en": "User Group",
+      "nl": "Gebruikers Groep",
       "xloc": [
         "default.handlebars->23->1337"
       ]
     },
     {
       "en": "Add Membership",
+      "nl": "Lidmaatschap toevoegen",
       "xloc": [
         "default.handlebars->23->1338"
       ]
     },
     {
       "en": "Remove Device Group",
+      "nl": "Remove Device Group",
       "xloc": [
         "default.handlebars->23->1339"
       ]
     },
     {
       "en": "Confirm removal of device group {0}?",
+      "nl": "Bevestig het verwijderen van de apparaatgroep {0}?",
       "xloc": [
         "default.handlebars->23->1340"
       ]
