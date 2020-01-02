@@ -951,7 +951,8 @@
                             <div style="float:right">
                             </div>
                             <div>
-                                <input id=NewUserGroupButton type=button style=margin-left:6px onclick=showCreateUserGroupDialog() value="New Group..." />
+                                <input id=NewUserGroupButton type=button style=margin-left:6px onclick=showCreateUserGroupDialog(1) value="New Group..." />
+                                <input id=DuplicateUserGroupButton type=button style=margin-left:6px;display:none onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
                             </div>
                         </td>
                         <td class="h2"></td>
@@ -9093,12 +9094,14 @@
 
             if (sortedGroups.length == 0) {
                 x += '<br />' + "No groups found." + '<br />';
+                QV('DuplicateUserGroupButton', false);
             } else {
                 // Display the groups using the sorted list
                 x += '<table class=p3usersTable cellpadding=0 cellspacing=0>';
                 x += '<th>' + "Name" + '<th style=width:80px>' + "Device Groups" + '<th style=width:80px>' + "Users";
                 for (var i in sortedGroups) { x += addUserGroupHtml(sortedGroups[i]); }
                 x += '</table>';
+                QV('DuplicateUserGroupButton', true);
             }
             QH('p50groups', x);
 
@@ -9111,18 +9114,22 @@
             if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } } }
             var x = '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")>';
             x += '<div class=bar style=width:100%>';
-            x += '<div class=baricon><div class="m4"></div></div>';
+            x += '<div class=baricon><div class=m4></div></div>';
             x += '<div class=g1></div><div class=g2></div>';
             x += '<div><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + meshcount + '<td style=text-align:center>' + usercount;
             return x;
         }
 
-        function showCreateUserGroupDialog() {
+        function showCreateUserGroupDialog(mode) {
             if (xxdialogMode) return;
-            var x = '';
+            var x = '', y = '';
+            if (mode == 2) {
+                for (var i in usergroups) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; }
+                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100%>' + y + '</select></div>');
+            }
             x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
             x += addHtmlValue("Description", '<textarea id=p4desc value="" style=width:230px;height:60px;resize:none maxlength=1024 /></textarea>');
-            setDialogMode(2, "Create User Group", 3, showCreateUserGroupDialogEx, x);
+            setDialogMode(2, (mode == 1)?"Create User Group":"Duplicate User Group", 3, showCreateUserGroupDialogEx, x, mode);
             showCreateUserGroupDialogValidate();
             Q('p4name').focus();
         }
@@ -9131,8 +9138,10 @@
             QE('idx_dlgOkButton', (Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1));
         }
 
-        function showCreateUserGroupDialogEx() {
-            meshserver.send({ action: 'createusergroup', name: Q('p4name').value, desc: Q('p4desc').value });
+        function showCreateUserGroupDialogEx(b, mode) {
+            var x = { action: 'createusergroup', name: Q('p4name').value, desc: Q('p4desc').value };
+            if (mode == 2) { x.clone = decodeURIComponent(Q('dp4groupid').value); }
+            meshserver.send(x);
         }
 
         //
