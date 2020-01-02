@@ -349,19 +349,21 @@ module.exports.CreateDB = function (parent, func) {
                 if (typeof obj.file.watch != 'function') {
                     console.log('WARNING: watch() is not a function, MongoDB ChangeStream not supported.');
                 } else {
-                    obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
+                    obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user', 'ugrp'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
                     obj.fileChangeStream.on('change', function (change) {
                         if (change.operationType == 'update') {
                             switch (change.fullDocument.type) {
                                 case 'node': { dbNodeChange(change, false); break; } // A node has changed
                                 case 'mesh': { dbMeshChange(change, false); break; } // A device group has changed
                                 case 'user': { dbUserChange(change, false); break; } // A user account has changed
+                                case 'ugrp': { dbUGrpChange(change, false); break; } // A user account has changed
                             }
                         } else if (change.operationType == 'insert') {
                             switch (change.fullDocument.type) {
                                 case 'node': { dbNodeChange(change, true); break; } // A node has added
                                 case 'mesh': { dbMeshChange(change, true); break; } // A device group has created
                                 case 'user': { dbUserChange(change, true); break; } // A user account has created
+                                case 'ugrp': { dbUGrpChange(change, true); break; } // A user account has created
                             }
                         } else if (change.operationType == 'delete') {
                             var splitId = change.documentKey._id.split('/');
@@ -372,12 +374,16 @@ module.exports.CreateDB = function (parent, func) {
                                     break;
                                 }
                                 case 'mesh': {
-                                    parent.DispatchEvent(['*', node.meshid], obj, { etype: 'mesh', action: 'deletemesh', meshid: change.documentKey._id, domain: splitId[1] });
+                                    parent.DispatchEvent(['*', change.documentKey._id], obj, { etype: 'mesh', action: 'deletemesh', meshid: change.documentKey._id, domain: splitId[1] });
                                     break;
                                 }
                                 case 'user': {
                                     //Not Good: This is not a perfect user removal because we don't know what groups the user was in.
                                     //parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', action: 'accountremove', userid: change.documentKey._id, domain: splitId[1], username: splitId[2] });
+                                    break;
+                                }
+                                case 'ugrp': {
+                                    parent.DispatchEvent(['*', change.documentKey._id], obj, { etype: 'ugrp', action: 'deleteusergroup', ugrpid: change.documentKey._id, domain: splitId[1] });
                                     break;
                                 }
                             }
@@ -1094,6 +1100,26 @@ module.exports.CreateDB = function (parent, func) {
         var targets = ['*', 'server-users', user._id];
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
         parent.DispatchEvent(targets, obj, { etype: 'user', username: user.name, account: parent.webserver.CloneSafeUser(user), action: (added ? 'accountcreate' : 'accountchange'), domain: user.domain, nolog: 1 });
+    }
+
+    // Called when a user group has changed
+    function dbUGrpChange(ugrpChange, added) {
+        if (parent.webserver == null) return;
+        common.unEscapeLinksFieldName(ugrpChange.fullDocument);
+        const usergroup = ugrpChange.fullDocument;
+
+        // Update the user group object in memory
+        const uusergroup = parent.webserver.usergroups[usergroup._id];
+        for (var i in usergroup) { uusergroup[i] = usergroup[i]; }
+        for (var i in uusergroup) { if (usergroup[i] == null) { delete uusergroup[i]; } }
+
+        // Send the user group update
+        usergroup.action = (added ? 'createusergroup' : 'usergroupchange');
+        usergroup.ugrpid = usergroup._id;
+        usergroup.nolog = 1;
+        delete usergroup.type;
+        delete usergroup._id;
+        parent.DispatchEvent(['*', usergroup.ugrpid], obj, usergroup);
     }
 
     return obj;
