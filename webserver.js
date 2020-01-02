@@ -77,6 +77,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.args = args;
     obj.users = {};                             // UserID --> User
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
+    obj.userGroups = {};                        // UGrpID --> User Group
     obj.userAllowedIp = args.userallowedip;     // List of allowed IP addresses for users
     obj.agentAllowedIp = args.agentallowedip;   // List of allowed IP addresses for agents
     obj.agentBlockedIp = args.agentblockedip;   // List of blocked IP addresses for agents
@@ -211,13 +212,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
-        // Fetch all meshes from the database, keep this in memory
+        // Fetch all device groups (meshes) from the database, keep this in memory
         obj.db.GetAllType('mesh', function (err, docs) {
             obj.common.unEscapeAllLinksFieldName(docs);
             for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } // Get all meshes, including deleted ones.
 
-            // We loaded the users and mesh state, start the server
-            serverStart();
+            // Fetch all user groups from the database, keep this in memory
+            obj.db.GetAllType('ugrp', function (err, docs) {
+                obj.common.unEscapeAllLinksFieldName(docs);
+                for (var i in docs) { obj.userGroups[docs[i]._id] = docs[i]; } // Get all user groups
+
+                // We loaded the users, device groups and suer group state, start the server
+                serverStart();
+            });
         });
     });
 

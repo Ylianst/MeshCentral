@@ -166,8 +166,8 @@
       "ja": " ユーザーは、デバイスグループに追加する前にこのサーバーに1回ログインする必要があります。",
       "nl": " Gebruikers moeten inloggen bij de server voordat ze kunnen worden toegevoegd aan een apparaatgroep.",
       "xloc": [
-        "default.handlebars->23->1058",
-        "default.handlebars->23->1266"
+        "default.handlebars->23->1059",
+        "default.handlebars->23->1287"
       ]
     },
     {
@@ -241,7 +241,7 @@
       "ja": "*空白のままにして、各デバイスにランダムなパスワードを割り当てます。",
       "nl": "* Laat leeg om een willekeurig wachtwoord toe te wijzen aan elk apparaat.",
       "xloc": [
-        "default.handlebars->23->1033"
+        "default.handlebars->23->1034"
       ]
     },
     {
@@ -262,7 +262,7 @@
       "cs": ", ",
       "nl": ", ",
       "xloc": [
-        "default.handlebars->23->1103",
+        "default.handlebars->23->1110",
         "default-mobile.handlebars->9->330"
       ]
     },
@@ -379,8 +379,8 @@
       "nl": "...",
       "xloc": [
         "default.handlebars->23->626",
-        "default.handlebars->23->1125",
-        "default.handlebars->23->1342",
+        "default.handlebars->23->1132",
+        "default.handlebars->23->1363",
         "default-mobile.handlebars->9->67",
         "default-mobile.handlebars->9->243"
       ]
@@ -403,7 +403,7 @@
       "ja": "1つのアクティブなセッション",
       "nl": "1 actieve sessie",
       "xloc": [
-        "default.handlebars->23->1306"
+        "default.handlebars->23->1327"
       ]
     },
     {
@@ -414,7 +414,7 @@
       "ja": "1バイト",
       "nl": "1 byte",
       "xloc": [
-        "default.handlebars->23->1142",
+        "default.handlebars->23->1149",
         "default-mobile.handlebars->9->77",
         "default-mobile.handlebars->9->334"
       ]
@@ -440,7 +440,7 @@
       "ja": "1グループ",
       "nl": "1 groep",
       "xloc": [
-        "default.handlebars->23->1290"
+        "default.handlebars->23->1311"
       ]
     },
     {
@@ -476,7 +476,7 @@
       "ja": "さらに1人のユーザーが表示されていません。検索ボックスを使用してユーザーを検索してください...",
       "nl": "1 gebruiker niet getoond, gebruik de zoekfunctie om gebruikers te vinden...",
       "xloc": [
-        "default.handlebars->23->1177"
+        "default.handlebars->23->1184"
       ]
     },
     {
@@ -498,7 +498,7 @@
       "ja": "1セッション",
       "nl": "1 sessie",
       "xloc": [
-        "default.handlebars->23->1181"
+        "default.handlebars->23->1188"
       ]
     },
     {
@@ -985,7 +985,7 @@
       "ja": "サーバーファイルへのアクセス",
       "nl": "Toegang tot de server bestanden",
       "xloc": [
-        "default.handlebars->23->1271"
+        "default.handlebars->23->1292"
       ]
     },
     {
@@ -1170,8 +1170,8 @@
       "xloc": [
         "default.handlebars->23->230",
         "default.handlebars->23->232",
-        "default.handlebars->23->996",
-        "default.handlebars->23->998"
+        "default.handlebars->23->997",
+        "default.handlebars->23->999"
       ]
     },
     {
@@ -1192,7 +1192,7 @@
       "nl": "Voeg een nieuwe computer toe aan deze mesh door de mesh-agent te installeren.",
       "xloc": [
         "default.handlebars->23->233",
-        "default.handlebars->23->999"
+        "default.handlebars->23->1000"
       ]
     },
     {
@@ -1213,7 +1213,7 @@
       "nl": "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het internet bevind.",
       "xloc": [
         "default.handlebars->23->223",
-        "default.handlebars->23->991"
+        "default.handlebars->23->992"
       ]
     },
     {
@@ -1224,7 +1224,7 @@
       "nl": "Voeg een nieuwe Intel&reg; AMT computer toe welke zich op het lokale netwerk bevind.",
       "xloc": [
         "default.handlebars->23->225",
-        "default.handlebars->23->993"
+        "default.handlebars->23->994"
       ]
     },
     {
@@ -1279,8 +1279,10 @@
       "nl": "Apparaatgroep toevoegen",
       "xloc": [
         "default.handlebars->23->205",
-        "default.handlebars->23->1080",
-        "default.handlebars->23->1319"
+        "default.handlebars->23->1084",
+        "default.handlebars->23->1086",
+        "default.handlebars->23->1266",
+        "default.handlebars->23->1340"
       ]
     },
     {
@@ -1381,7 +1383,7 @@
       "nl": "Gebruikers toevoegen",
       "xloc": [
         "default.handlebars->23->990",
-        "default.handlebars->23->1251"
+        "default.handlebars->23->1261"
       ]
     },
     {
@@ -1391,7 +1393,7 @@
       "ja": "ユーザーをデバイスグループに追加する",
       "nl": "Gebruikers toevoegen aan apparaatgroep",
       "xloc": [
-        "default.handlebars->23->1079"
+        "default.handlebars->23->1083"
       ]
     },
     {
@@ -1441,7 +1443,7 @@
       "ja": "管理レルム",
       "nl": "Beheerdersgebied",
       "xloc": [
-        "default.handlebars->23->1294"
+        "default.handlebars->23->1315"
       ]
     },
     {
@@ -1451,7 +1453,7 @@
       "ja": "管理レルム",
       "nl": "Administratieve gebieden",
       "xloc": [
-        "default.handlebars->23->1226"
+        "default.handlebars->23->1233"
       ]
     },
     {
@@ -1461,7 +1463,7 @@
       "cs": "Správce",
       "nl": "Beheerder",
       "xloc": [
-        "default.handlebars->23->1188"
+        "default.handlebars->23->1195"
       ]
     },
     {
@@ -1485,8 +1487,8 @@
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->1",
         "default.handlebars->23->184",
         "default.handlebars->23->371",
-        "default.handlebars->23->1113",
-        "default.handlebars->23->1119",
+        "default.handlebars->23->1120",
+        "default.handlebars->23->1126",
         "default-mobile.handlebars->9->121",
         "default-mobile.handlebars->9->174",
         "default-mobile.handlebars->9->190"
@@ -1521,7 +1523,7 @@
       "ja": "エージェントコンソール",
       "nl": "Agent console",
       "xloc": [
-        "default.handlebars->23->1087",
+        "default.handlebars->23->1094",
         "default-mobile.handlebars->9->315"
       ]
     },
@@ -1594,7 +1596,7 @@
       "ja": "エージェント",
       "nl": "Agents",
       "xloc": [
-        "default.handlebars->23->1379"
+        "default.handlebars->23->1400"
       ]
     },
     {
@@ -1650,8 +1652,8 @@
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
       "nl": "Gebruikers toestaan deze apparaatgroep en apparaten in deze groep te beheren.",
       "xloc": [
-        "default.handlebars->23->1057",
-        "default.handlebars->23->1265"
+        "default.handlebars->23->1058",
+        "default.handlebars->23->1286"
       ]
     },
     {
@@ -2021,7 +2023,7 @@
       "cs": "Opravdu smazat skupinu {0}? Smazáním skupiny se smažou také všechny informace o zařízeních v této skupině.",
       "nl": "Weet je zeker dat je groep {0} wilt verwijderen? Als u de apparaatgroep verwijdert, wordt ook alle informatie over apparaten binnen deze groep verwijderd.",
       "xloc": [
-        "default.handlebars->23->1037",
+        "default.handlebars->23->1038",
         "default-mobile.handlebars->9->286"
       ]
     },
@@ -2060,7 +2062,7 @@
       "cs": "Opravdu chcete {0} zásuvný modul: {1}",
       "nl": "Weet u zeker dat u de plug-in {0} wilt gebruiken: {1}",
       "xloc": [
-        "default.handlebars->23->1414"
+        "default.handlebars->23->1435"
       ]
     },
     {
@@ -2144,7 +2146,7 @@
       "cs": "Aplikace pro ověřování se",
       "nl": "Verificatie-app",
       "xloc": [
-        "default.handlebars->23->1295"
+        "default.handlebars->23->1316"
       ]
     },
     {
@@ -2336,7 +2338,7 @@
       "cs": "Záložní kódy",
       "nl": "Back-up codes",
       "xloc": [
-        "default.handlebars->23->1297"
+        "default.handlebars->23->1318"
       ]
     },
     {
@@ -2418,7 +2420,7 @@
       "nl": "Uitzending",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->1",
-        "default.handlebars->23->1249"
+        "default.handlebars->23->1259"
       ]
     },
     {
@@ -2428,7 +2430,7 @@
       "cs": "Zaslat hromadnou zprávu všem připojeným uživatelům.",
       "nl": "Verzend een bericht naar alle verbonden gebruikers.",
       "xloc": [
-        "default.handlebars->23->1210"
+        "default.handlebars->23->1217"
       ]
     },
     {
@@ -2439,7 +2441,7 @@
       "cs": "Hromadná zpráva",
       "nl": "Bericht uitzenden",
       "xloc": [
-        "default.handlebars->23->1211"
+        "default.handlebars->23->1218"
       ]
     },
     {
@@ -2470,7 +2472,7 @@
       "cs": "Chyba volání",
       "nl": "Oproepfout",
       "xloc": [
-        "default.handlebars->23->1415"
+        "default.handlebars->23->1436"
       ]
     },
     {
@@ -2560,7 +2562,7 @@
       "ja": "{0}のメールを変更",
       "nl": "Verander e-mail voor {0}",
       "xloc": [
-        "default.handlebars->23->1310"
+        "default.handlebars->23->1331"
       ]
     },
     {
@@ -2583,7 +2585,7 @@
       "nl": "Verander wachtwoord",
       "xloc": [
         "default.handlebars->23->922",
-        "default.handlebars->23->1305",
+        "default.handlebars->23->1326",
         "default-mobile.handlebars->9->49"
       ]
     },
@@ -2605,7 +2607,7 @@
       "cs": "Změnit heslo pro {0}",
       "nl": "Verander wachtwoord voor {0}",
       "xloc": [
-        "default.handlebars->23->1317"
+        "default.handlebars->23->1338"
       ]
     },
     {
@@ -2665,7 +2667,7 @@
       "cs": "Chat",
       "nl": "Chat",
       "xloc": [
-        "default.handlebars->23->1180"
+        "default.handlebars->23->1187"
       ]
     },
     {
@@ -2675,8 +2677,8 @@
       "cs": "Chat a upozornění",
       "nl": "Chat & Melden",
       "xloc": [
-        "default.handlebars->23->1077",
-        "default.handlebars->23->1097",
+        "default.handlebars->23->1081",
+        "default.handlebars->23->1104",
         "default-mobile.handlebars->9->307",
         "default-mobile.handlebars->9->325"
       ]
@@ -2729,7 +2731,7 @@
       "nl": "Controleren...",
       "xloc": [
         "default.handlebars->23->696",
-        "default.handlebars->23->1411"
+        "default.handlebars->23->1432"
       ]
     },
     {
@@ -2812,8 +2814,8 @@
       "xloc": [
         "default.handlebars->23->186",
         "default.handlebars->23->373",
-        "default.handlebars->23->1025",
-        "default.handlebars->23->1030",
+        "default.handlebars->23->1026",
+        "default.handlebars->23->1031",
         "default-mobile.handlebars->9->122"
       ]
     },
@@ -2824,7 +2826,7 @@
       "cs": "CIRA Server",
       "nl": "CIRA Server",
       "xloc": [
-        "default.handlebars->23->1405"
+        "default.handlebars->23->1426"
       ]
     },
     {
@@ -2834,7 +2836,7 @@
       "cs": "příkazy CIRA serveru",
       "nl": "CIRA Server opdrachten",
       "xloc": [
-        "default.handlebars->23->1406"
+        "default.handlebars->23->1427"
       ]
     },
     {
@@ -2860,7 +2862,7 @@
         "default.handlebars->23->647",
         "default.handlebars->23->649",
         "default.handlebars->23->651",
-        "default.handlebars->23->1157",
+        "default.handlebars->23->1164",
         "default-mobile.handlebars->9->28",
         "default-mobile.handlebars->9->91",
         "default-mobile.handlebars->9->262",
@@ -2959,8 +2961,8 @@
       "cs": "Vzdálený přístup iniciováný klientem",
       "nl": "Gebruiker geïnitieerde externe toegang",
       "xloc": [
-        "default.handlebars->23->1024",
-        "default.handlebars->23->1029"
+        "default.handlebars->23->1025",
+        "default.handlebars->23->1030"
       ]
     },
     {
@@ -3004,7 +3006,7 @@
       "cs": "Potvrdit {0} z {1} záznam{2} do tohoto umístění?",
       "nl": "Bevestig {0} van {1} bestand {2} naar deze locatie?",
       "xloc": [
-        "default.handlebars->23->1152",
+        "default.handlebars->23->1159",
         "default-mobile.handlebars->9->86"
       ]
     },
@@ -3018,8 +3020,8 @@
         "default.handlebars->23->396",
         "default.handlebars->23->548",
         "default.handlebars->23->557",
-        "default.handlebars->23->1038",
-        "default.handlebars->23->1261",
+        "default.handlebars->23->1039",
+        "default.handlebars->23->1282",
         "default-mobile.handlebars->9->220",
         "default-mobile.handlebars->9->287"
       ]
@@ -3084,7 +3086,7 @@
       "cs": "Potvrdit přepsání?",
       "nl": "Bevestig overschrijven?",
       "xloc": [
-        "default.handlebars->23->1151"
+        "default.handlebars->23->1158"
       ]
     },
     {
@@ -3105,8 +3107,8 @@
       "cs": "Potvrdit odstranění uživatele {0}?",
       "nl": "Bevestig de verwijdering van gebruiker {0}?",
       "xloc": [
-        "default.handlebars->23->1106",
-        "default.handlebars->23->1264",
+        "default.handlebars->23->1113",
+        "default.handlebars->23->1285",
         "default-mobile.handlebars->9->333"
       ]
     },
@@ -3145,8 +3147,8 @@
       "ja": "サーバーに接続する",
       "nl": "Verbinden met de server",
       "xloc": [
-        "default.handlebars->23->1028",
-        "default.handlebars->23->1032"
+        "default.handlebars->23->1029",
+        "default.handlebars->23->1033"
       ]
     },
     {
@@ -3214,7 +3216,7 @@
       "cs": "Počitadlo připojení",
       "nl": "Aantal verbindingen",
       "xloc": [
-        "default.handlebars->23->1378"
+        "default.handlebars->23->1399"
       ]
     },
     {
@@ -3224,7 +3226,7 @@
       "cs": "Předávání (relay) spojení",
       "nl": "Verbindings Relay",
       "xloc": [
-        "default.handlebars->23->1404"
+        "default.handlebars->23->1425"
       ]
     },
     {
@@ -3247,7 +3249,7 @@
         "default.handlebars->container->column_l->p21->3->1->meshConnChartDiv->1",
         "default.handlebars->23->202",
         "default.handlebars->23->482",
-        "default.handlebars->23->1122",
+        "default.handlebars->23->1129",
         "default-mobile.handlebars->9->195"
       ]
     },
@@ -3290,7 +3292,7 @@
       "cs": "Cookie enkodér",
       "nl": "Cookie encoder",
       "xloc": [
-        "default.handlebars->23->1392"
+        "default.handlebars->23->1413"
       ]
     },
     {
@@ -3313,7 +3315,7 @@
       "cs": "kopírovat",
       "nl": "kopie",
       "xloc": [
-        "default.handlebars->23->1155",
+        "default.handlebars->23->1162",
         "default-mobile.handlebars->9->89"
       ]
     },
@@ -3466,7 +3468,7 @@
       "cs": "Hlavní server",
       "nl": "Core Server",
       "xloc": [
-        "default.handlebars->23->1391"
+        "default.handlebars->23->1412"
       ]
     },
     {
@@ -3486,7 +3488,7 @@
       "cs": "vytížení procesoru v uplynulých 15 minutách",
       "nl": "CPU-belasting in de afgelopen 15 minuten",
       "xloc": [
-        "default.handlebars->23->1374"
+        "default.handlebars->23->1395"
       ]
     },
     {
@@ -3496,7 +3498,7 @@
       "cs": "vyžítení procesoru v uplynulých 5 minutách",
       "nl": "CPU-belasting in de afgelopen 5 minuten",
       "xloc": [
-        "default.handlebars->23->1373"
+        "default.handlebars->23->1394"
       ]
     },
     {
@@ -3506,7 +3508,7 @@
       "ja": "直前のCPU負荷",
       "nl": "CPU-belasting in de laatste minuut",
       "xloc": [
-        "default.handlebars->23->1372"
+        "default.handlebars->23->1393"
       ]
     },
     {
@@ -3548,7 +3550,7 @@
       "cs": "Vytvořit účet",
       "nl": "Account aanmaken",
       "xloc": [
-        "default.handlebars->23->1222",
+        "default.handlebars->23->1229",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->12->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->12->1->1"
       ]
@@ -3570,7 +3572,7 @@
       "cs": "Vytvořit více účtu najednou pomocí importu JSON souboru s následujícím formátem:",
       "nl": "Maak meerdere accounts tegelijk door een JSON-bestand met de volgende indeling te importeren:",
       "xloc": [
-        "default.handlebars->23->1193"
+        "default.handlebars->23->1200"
       ]
     },
     {
@@ -3591,7 +3593,7 @@
       "cs": "Vytváření",
       "nl": "Aanmaken",
       "xloc": [
-        "default.handlebars->23->1283"
+        "default.handlebars->23->1304"
       ]
     },
     {
@@ -3632,8 +3634,8 @@
       "cs": "CSV formát",
       "nl": "CSV Formaat",
       "xloc": [
-        "default.handlebars->23->1163",
-        "default.handlebars->23->1202"
+        "default.handlebars->23->1170",
+        "default.handlebars->23->1209"
       ]
     },
     {
@@ -3768,7 +3770,7 @@
       "cs": "Deaktivace Client Control Mode (CCM)",
       "nl": "Deactiveer Client Control Mode (CCM)",
       "xloc": [
-        "default.handlebars->23->1016"
+        "default.handlebars->23->1017"
       ]
     },
     {
@@ -3793,7 +3795,7 @@
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->container->dialog->idx_dlgButtonBar->5",
         "default.handlebars->23->632",
-        "default.handlebars->23->1146",
+        "default.handlebars->23->1153",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
         "default-mobile.handlebars->9->81",
@@ -3851,8 +3853,8 @@
       "ja": "グループを削除",
       "nl": "Verwijder groep",
       "xloc": [
-        "default.handlebars->23->1009",
-        "default.handlebars->23->1039",
+        "default.handlebars->23->1010",
+        "default.handlebars->23->1040",
         "default-mobile.handlebars->9->285",
         "default-mobile.handlebars->9->288"
       ]
@@ -3886,7 +3888,7 @@
       "nl": "Verwijder geselecteerde item?",
       "xloc": [
         "default.handlebars->23->634",
-        "default.handlebars->23->1148",
+        "default.handlebars->23->1155",
         "default-mobile.handlebars->9->83",
         "default-mobile.handlebars->9->251"
       ]
@@ -3898,7 +3900,7 @@
       "ja": "ユーザーを削除{0}",
       "nl": "Verwijder gebruiker {0}",
       "xloc": [
-        "default.handlebars->23->1318"
+        "default.handlebars->23->1339"
       ]
     },
     {
@@ -3909,7 +3911,7 @@
       "nl": "Verwijder {0} gelecteerde items?",
       "xloc": [
         "default.handlebars->23->633",
-        "default.handlebars->23->1147",
+        "default.handlebars->23->1154",
         "default-mobile.handlebars->9->82",
         "default-mobile.handlebars->9->250"
       ]
@@ -3977,11 +3979,11 @@
         "default.handlebars->23->575",
         "default.handlebars->23->934",
         "default.handlebars->23->958",
-        "default.handlebars->23->1041",
-        "default.handlebars->23->1242",
-        "default.handlebars->23->1246",
-        "default.handlebars->23->1248",
-        "default.handlebars->23->1258",
+        "default.handlebars->23->1042",
+        "default.handlebars->23->1250",
+        "default.handlebars->23->1254",
+        "default.handlebars->23->1256",
+        "default.handlebars->23->1279",
         "default-mobile.handlebars->9->60",
         "default-mobile.handlebars->9->141",
         "default-mobile.handlebars->9->142",
@@ -4010,7 +4012,7 @@
         "default.handlebars->contextMenu->cxdesktop",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevDesktop",
         "default.handlebars->23->409",
-        "default.handlebars->23->1043"
+        "default.handlebars->23->1044"
       ]
     },
     {
@@ -4123,7 +4125,7 @@
       "nl": "Apparaat verbindingen.",
       "xloc": [
         "default.handlebars->23->902",
-        "default.handlebars->23->1108"
+        "default.handlebars->23->1115"
       ]
     },
     {
@@ -4134,7 +4136,7 @@
       "nl": "Apparaat verbroken.",
       "xloc": [
         "default.handlebars->23->903",
-        "default.handlebars->23->1109"
+        "default.handlebars->23->1116"
       ]
     },
     {
@@ -4154,7 +4156,7 @@
       "ja": "デバイスグループユーザー",
       "nl": "Apparaatgroep gebruiker",
       "xloc": [
-        "default.handlebars->23->1104",
+        "default.handlebars->23->1111",
         "default-mobile.handlebars->9->331"
       ]
     },
@@ -4166,8 +4168,10 @@
       "nl": "Apparaatgroepen",
       "xloc": [
         "default.handlebars->container->column_l->p2->9",
-        "default.handlebars->23->1292",
-        "default.handlebars->23->1365",
+        "default.handlebars->23->1246",
+        "default.handlebars->23->1258",
+        "default.handlebars->23->1313",
+        "default.handlebars->23->1386",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->3"
       ]
     },
@@ -4474,7 +4478,7 @@
       "ja": "何もしない",
       "nl": "Doe niets",
       "xloc": [
-        "default.handlebars->23->1022"
+        "default.handlebars->23->1023"
       ]
     },
     {
@@ -4495,8 +4499,8 @@
       "cs": "Nenastavovat",
       "nl": "Niet configureren",
       "xloc": [
-        "default.handlebars->23->1026",
-        "default.handlebars->23->1031"
+        "default.handlebars->23->1027",
+        "default.handlebars->23->1032"
       ]
     },
     {
@@ -4506,7 +4510,7 @@
       "cs": "Nepřipojovat se k serveru",
       "nl": "Maak geen verbinding met de server",
       "xloc": [
-        "default.handlebars->23->1027"
+        "default.handlebars->23->1028"
       ]
     },
     {
@@ -4649,7 +4653,7 @@
       "cs": "Stáhnout si seznam událostí v níže uvedeném formátu.",
       "nl": "Download de lijst met gebeurtenissen in een van de onderstaande bestandsindelingen.",
       "xloc": [
-        "default.handlebars->23->1162"
+        "default.handlebars->23->1169"
       ]
     },
     {
@@ -4659,7 +4663,7 @@
       "cs": "Stáhnout si seznam uživatelů v níže uvedeném formátu.",
       "nl": "Download de lijst met gebruikers in een van de onderstaande bestandsindelingen.",
       "xloc": [
-        "default.handlebars->23->1201"
+        "default.handlebars->23->1208"
       ]
     },
     {
@@ -4720,7 +4724,7 @@
       "cs": "Během aktivace bude mít agent přístup k heslu správce.",
       "nl": "Tijdens activering heeft de agent toegang tot beheerderswachtwoordinformatie.",
       "xloc": [
-        "default.handlebars->23->1036"
+        "default.handlebars->23->1037"
       ]
     },
     {
@@ -4771,9 +4775,9 @@
       "ja": "デバイスグループの編集",
       "nl": "Bewerk apparaatgroep",
       "xloc": [
-        "default.handlebars->23->1042",
-        "default.handlebars->23->1063",
-        "default.handlebars->23->1083",
+        "default.handlebars->23->1043",
+        "default.handlebars->23->1067",
+        "default.handlebars->23->1090",
         "default-mobile.handlebars->9->291",
         "default-mobile.handlebars->9->293",
         "default-mobile.handlebars->9->311"
@@ -4786,7 +4790,7 @@
       "cs": "Upravit vlastnosti skupiny zařízení",
       "nl": "Functies van apparaatgroep bewerken",
       "xloc": [
-        "default.handlebars->23->1056"
+        "default.handlebars->23->1057"
       ]
     },
     {
@@ -4796,7 +4800,7 @@
       "cs": "Upravit souhlas uživatele u skupiny zařízení",
       "nl": "Toestemming gebruikersgroep bewerken",
       "xloc": [
-        "default.handlebars->23->1053"
+        "default.handlebars->23->1054"
       ]
     },
     {
@@ -4806,7 +4810,7 @@
       "ja": "デバイスノートの編集",
       "nl": "Apparaatnotities bewerken",
       "xloc": [
-        "default.handlebars->23->1075",
+        "default.handlebars->23->1079",
         "default-mobile.handlebars->9->305"
       ]
     },
@@ -4831,7 +4835,7 @@
       "cs": "Upravit poznámky",
       "nl": "Notities bewerken",
       "xloc": [
-        "default.handlebars->23->1090",
+        "default.handlebars->23->1097",
         "default-mobile.handlebars->9->318"
       ]
     },
@@ -4852,7 +4856,7 @@
       "cs": "Upravit oprávnění uživatele pro skupinu zařízení",
       "nl": "Gebruikersrechten apparaatgroep bewerken",
       "xloc": [
-        "default.handlebars->23->1081"
+        "default.handlebars->23->1088"
       ]
     },
     {
@@ -4863,10 +4867,10 @@
       "nl": "E-mail",
       "xloc": [
         "default.handlebars->23->283",
-        "default.handlebars->23->1213",
-        "default.handlebars->23->1279",
-        "default.handlebars->23->1280",
-        "default.handlebars->23->1308",
+        "default.handlebars->23->1220",
+        "default.handlebars->23->1300",
+        "default.handlebars->23->1301",
+        "default.handlebars->23->1329",
         "default-mobile.handlebars->9->37"
       ]
     },
@@ -4888,7 +4892,7 @@
       "ja": "メールが確認されました",
       "nl": "E-mail is geverifieerd",
       "xloc": [
-        "default.handlebars->23->1276"
+        "default.handlebars->23->1297"
       ]
     },
     {
@@ -4898,7 +4902,7 @@
       "ja": "メールが確認されました。",
       "nl": "E-mail is geverifieerd.",
       "xloc": [
-        "default.handlebars->23->1219"
+        "default.handlebars->23->1226"
       ]
     },
     {
@@ -4908,7 +4912,7 @@
       "ja": "メールが確認されていません",
       "nl": "E-mail is niet geverifieerd",
       "xloc": [
-        "default.handlebars->23->1277"
+        "default.handlebars->23->1298"
       ]
     },
     {
@@ -5118,7 +5122,7 @@
       "cs": "Zadejte seznam správních oblastí (oddělovaných čárkou).",
       "nl": "Voer een door komma's gescheiden lijst met beheerdersnamen in.",
       "xloc": [
-        "default.handlebars->23->1223"
+        "default.handlebars->23->1230"
       ]
     },
     {
@@ -5251,7 +5255,7 @@
       "cs": "Export seznamu událostí",
       "nl": "Gebeurtenissenlijst exporteren",
       "xloc": [
-        "default.handlebars->23->1167"
+        "default.handlebars->23->1174"
       ]
     },
     {
@@ -5286,8 +5290,8 @@
       "cs": "eventslist.csv",
       "nl": "eventslist.csv",
       "xloc": [
-        "default.handlebars->23->1164",
-        "default.handlebars->23->1169"
+        "default.handlebars->23->1171",
+        "default.handlebars->23->1176"
       ]
     },
     {
@@ -5297,8 +5301,8 @@
       "cs": "eventslist.json",
       "nl": "eventslist.json",
       "xloc": [
-        "default.handlebars->23->1166",
-        "default.handlebars->23->1170"
+        "default.handlebars->23->1173",
+        "default.handlebars->23->1177"
       ]
     },
     {
@@ -5438,7 +5442,7 @@
       "xloc": [
         "default.handlebars->contextMenu->cxfiles",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevFiles",
-        "default.handlebars->23->1050"
+        "default.handlebars->23->1051"
       ]
     },
     {
@@ -5549,8 +5553,8 @@
       "cs": "Vynutit reset hesla při dalším přihlášení.",
       "nl": "Forceer wachtwoord opnieuw instellen bij de volgende aanmelding.",
       "xloc": [
-        "default.handlebars->23->1217",
-        "default.handlebars->23->1315"
+        "default.handlebars->23->1224",
+        "default.handlebars->23->1336"
       ]
     },
     {
@@ -5603,8 +5607,8 @@
       "cs": "Volné",
       "nl": "Vrij",
       "xloc": [
-        "default.handlebars->23->1346",
-        "default.handlebars->23->1348"
+        "default.handlebars->23->1367",
+        "default.handlebars->23->1369"
       ]
     },
     {
@@ -5615,7 +5619,7 @@
       "cs": "volné",
       "nl": "vrij",
       "xloc": [
-        "default.handlebars->23->1376"
+        "default.handlebars->23->1397"
       ]
     },
     {
@@ -5737,8 +5741,8 @@
       "nl": "Volledige beheerder",
       "xloc": [
         "default.handlebars->23->943",
-        "default.handlebars->23->1062",
-        "default.handlebars->23->1228",
+        "default.handlebars->23->1066",
+        "default.handlebars->23->1235",
         "default-mobile.handlebars->9->64",
         "default-mobile.handlebars->9->283",
         "default-mobile.handlebars->9->292",
@@ -5753,7 +5757,7 @@
       "ja": "完全な管理者",
       "nl": "Volledige beheerder",
       "xloc": [
-        "default.handlebars->23->1272"
+        "default.handlebars->23->1293"
       ]
     },
     {
@@ -5764,7 +5768,7 @@
       "ja": "完全な管理者（すべての権利）",
       "nl": "Volledige beheerder (met alle rechten)",
       "xloc": [
-        "default.handlebars->23->1082"
+        "default.handlebars->23->1089"
       ]
     },
     {
@@ -6057,7 +6061,7 @@
       "cs": "Oprávnění skupiny pro uživatele {0}.",
       "nl": "Groepsrechten voor gebruiker {0}.",
       "xloc": [
-        "default.handlebars->23->1061"
+        "default.handlebars->23->1065"
       ]
     },
     {
@@ -6211,7 +6215,7 @@
       "cs": "Drží se {0} zaznamů{1} pro {2}",
       "nl": "Houd {0} item {1} vast voor {2}",
       "xloc": [
-        "default.handlebars->23->1154",
+        "default.handlebars->23->1161",
         "default-mobile.handlebars->9->88"
       ]
     },
@@ -6375,7 +6379,7 @@
       "cs": "identif., jméno, e-mail, vytvoření, poslední přihlášení, skupiny, faktory ověrování",
       "nl": "id, naam, e-mail, aanmaken, laatste inlog, groepen, authenticatiefactors",
       "xloc": [
-        "default.handlebars->23->1207"
+        "default.handlebars->23->1214"
       ]
     },
     {
@@ -6450,7 +6454,7 @@
       "ja": "インストール",
       "nl": "Installeren",
       "xloc": [
-        "default.handlebars->23->1000"
+        "default.handlebars->23->1001"
       ]
     },
     {
@@ -6479,7 +6483,7 @@
       "cs": "Instalace CIRA",
       "nl": "Installeer CIRA",
       "xloc": [
-        "default.handlebars->23->992"
+        "default.handlebars->23->993"
       ]
     },
     {
@@ -6489,7 +6493,7 @@
       "cs": "Lokální instalace",
       "nl": "Installeer lokaal",
       "xloc": [
-        "default.handlebars->23->994"
+        "default.handlebars->23->995"
       ]
     },
     {
@@ -6521,10 +6525,10 @@
       "cs": "Intel AMT",
       "nl": "Intel AMT",
       "xloc": [
-        "default.handlebars->23->1114",
-        "default.handlebars->23->1120",
-        "default.handlebars->23->1383",
-        "default.handlebars->23->1403"
+        "default.handlebars->23->1121",
+        "default.handlebars->23->1127",
+        "default.handlebars->23->1404",
+        "default.handlebars->23->1424"
       ]
     },
     {
@@ -6711,7 +6715,7 @@
       "nl": "Intel&reg; AMT desktop- en seriële gebeurtenissen.",
       "xloc": [
         "default.handlebars->23->904",
-        "default.handlebars->23->1110"
+        "default.handlebars->23->1117"
       ]
     },
     {
@@ -6776,7 +6780,7 @@
       "cs": "Intel&reg; AMT zásada",
       "nl": "Intel&reg; AMT beleid",
       "xloc": [
-        "default.handlebars->23->1018"
+        "default.handlebars->23->1019"
       ]
     },
     {
@@ -6950,8 +6954,8 @@
       "cs": "Neplatný formát JSON souboru.",
       "nl": "Ongeldige JSON-bestandsindeling.",
       "xloc": [
-        "default.handlebars->23->1198",
-        "default.handlebars->23->1200"
+        "default.handlebars->23->1205",
+        "default.handlebars->23->1207"
       ]
     },
     {
@@ -6961,7 +6965,7 @@
       "cs": "Neplatný JSON soubor: {0}.",
       "nl": "Ongeldig JSON-bestand: {0}.",
       "xloc": [
-        "default.handlebars->23->1196"
+        "default.handlebars->23->1203"
       ]
     },
     {
@@ -7005,7 +7009,7 @@
       "xloc": [
         "default.handlebars->23->236",
         "default.handlebars->23->313",
-        "default.handlebars->23->1002"
+        "default.handlebars->23->1003"
       ]
     },
     {
@@ -7028,7 +7032,7 @@
       "nl": "Nodig iemand uit om de mesh-agent op deze mesh te installeren.",
       "xloc": [
         "default.handlebars->23->235",
-        "default.handlebars->23->1001"
+        "default.handlebars->23->1002"
       ]
     },
     {
@@ -7144,8 +7148,8 @@
       "cs": "JSON formát",
       "nl": "JSON-indeling",
       "xloc": [
-        "default.handlebars->23->1165",
-        "default.handlebars->23->1204"
+        "default.handlebars->23->1172",
+        "default.handlebars->23->1211"
       ]
     },
     {
@@ -7427,7 +7431,7 @@
       "cs": "Poslední přístup",
       "nl": "Laatste toegang",
       "xloc": [
-        "default.handlebars->23->1173"
+        "default.handlebars->23->1180"
       ]
     },
     {
@@ -7462,7 +7466,7 @@
       "ja": "最終変更：{0}",
       "nl": "Laatst gewijzigd: {0}",
       "xloc": [
-        "default.handlebars->23->1288"
+        "default.handlebars->23->1309"
       ]
     },
     {
@@ -7495,7 +7499,7 @@
       "cs": "Poslední přihlášení",
       "nl": "Laatste inlog",
       "xloc": [
-        "default.handlebars->23->1284"
+        "default.handlebars->23->1305"
       ]
     },
     {
@@ -7505,7 +7509,7 @@
       "cs": "Poslední přihlášení: {0}",
       "nl": "Laatste inlog: {0}",
       "xloc": [
-        "default.handlebars->23->1183"
+        "default.handlebars->23->1190"
       ]
     },
     {
@@ -7595,7 +7599,7 @@
       "cs": "Méně",
       "nl": "Minder",
       "xloc": [
-        "default.handlebars->23->1417"
+        "default.handlebars->23->1438"
       ]
     },
     {
@@ -7638,7 +7642,7 @@
       "cs": "Omezený vstup",
       "nl": "Beperkte invoer",
       "xloc": [
-        "default.handlebars->23->1095",
+        "default.handlebars->23->1102",
         "default-mobile.handlebars->9->323"
       ]
     },
@@ -7649,7 +7653,7 @@
       "cs": "Pouze omezený vstup",
       "nl": "Alleen beperkte invoer",
       "xloc": [
-        "default.handlebars->23->1068",
+        "default.handlebars->23->1072",
         "default-mobile.handlebars->9->298"
       ]
     },
@@ -7662,7 +7666,7 @@
       "nl": "Link",
       "xloc": [
         "default.handlebars->container->column_l->p42->p42tbl->1->0->4",
-        "default.handlebars->23->1126",
+        "default.handlebars->23->1133",
         "default-mobile.handlebars->9->68"
       ]
     },
@@ -7933,7 +7937,7 @@
       "ja": "アカウントをロック",
       "nl": "Account vergrendelen",
       "xloc": [
-        "default.handlebars->23->1234"
+        "default.handlebars->23->1241"
       ]
     },
     {
@@ -7944,7 +7948,7 @@
       "ja": "ロック済み",
       "nl": "Vergrendeld",
       "xloc": [
-        "default.handlebars->23->1184"
+        "default.handlebars->23->1191"
       ]
     },
     {
@@ -7955,7 +7959,7 @@
       "cs": "Uzamknutý účet",
       "nl": "Vergrendeld account",
       "xloc": [
-        "default.handlebars->23->1269"
+        "default.handlebars->23->1290"
       ]
     },
     {
@@ -8111,7 +8115,7 @@
       "cs": "Zprávy hlavního serveru",
       "nl": "Hoofdserver berichten",
       "xloc": [
-        "default.handlebars->23->1394"
+        "default.handlebars->23->1415"
       ]
     },
     {
@@ -8184,8 +8188,8 @@
       "ja": "デバイスグループコンピューターの管理",
       "nl": "Beheer apparaatgroep computers",
       "xloc": [
-        "default.handlebars->23->1065",
-        "default.handlebars->23->1085",
+        "default.handlebars->23->1069",
+        "default.handlebars->23->1092",
         "default-mobile.handlebars->9->295",
         "default-mobile.handlebars->9->313"
       ]
@@ -8197,8 +8201,8 @@
       "ja": "デバイスグループユーザーの管理",
       "nl": "Beheer apparaatgroep gebruikers",
       "xloc": [
-        "default.handlebars->23->1064",
-        "default.handlebars->23->1084",
+        "default.handlebars->23->1068",
+        "default.handlebars->23->1091",
         "default-mobile.handlebars->9->294",
         "default-mobile.handlebars->9->312"
       ]
@@ -8231,7 +8235,7 @@
       "ja": "ユーザーを管理する",
       "nl": "Beheer gebruikers",
       "xloc": [
-        "default.handlebars->23->1232"
+        "default.handlebars->23->1239"
       ]
     },
     {
@@ -8264,7 +8268,7 @@
       "cs": "Vedoucí",
       "nl": "Beheerder",
       "xloc": [
-        "default.handlebars->23->1189"
+        "default.handlebars->23->1196"
       ]
     },
     {
@@ -8355,7 +8359,7 @@
       "ja": "メガバイト",
       "nl": "Megabytes",
       "xloc": [
-        "default.handlebars->23->1384"
+        "default.handlebars->23->1405"
       ]
     },
     {
@@ -8368,7 +8372,7 @@
       "xloc": [
         "default.handlebars->container->column_l->p40->3->1->p40type->3",
         "default.handlebars->23->75",
-        "default.handlebars->23->1375"
+        "default.handlebars->23->1396"
       ]
     },
     {
@@ -8395,7 +8399,7 @@
       "ja": "メッシュエージェントコンソール",
       "nl": "Mesh Agent Console",
       "xloc": [
-        "default.handlebars->23->1072",
+        "default.handlebars->23->1076",
         "default-mobile.handlebars->9->302"
       ]
     },
@@ -8439,7 +8443,7 @@
       "cs": "MeshAgent provoz",
       "nl": "MeshAgent verkeer",
       "xloc": [
-        "default.handlebars->23->1396"
+        "default.handlebars->23->1417"
       ]
     },
     {
@@ -8448,7 +8452,7 @@
       "cs": "MeshAgent aktualizace",
       "nl": "MeshAgent update",
       "xloc": [
-        "default.handlebars->23->1397"
+        "default.handlebars->23->1418"
       ]
     },
     {
@@ -8509,7 +8513,7 @@
       "cs": "MeshCentral Server Peering",
       "nl": "MeshCentral Server Peering",
       "xloc": [
-        "default.handlebars->23->1395"
+        "default.handlebars->23->1416"
       ]
     },
     {
@@ -8594,7 +8598,7 @@
       "cs": "Odesílatel",
       "nl": "Bericht Dispatcher",
       "xloc": [
-        "default.handlebars->23->1393"
+        "default.handlebars->23->1414"
       ]
     },
     {
@@ -8667,7 +8671,7 @@
       "ja": "もっと",
       "nl": "Meer",
       "xloc": [
-        "default.handlebars->23->1416"
+        "default.handlebars->23->1437"
       ]
     },
     {
@@ -8688,7 +8692,7 @@
       "cs": "přesun",
       "nl": "verplaatsen",
       "xloc": [
-        "default.handlebars->23->1156",
+        "default.handlebars->23->1163",
         "default-mobile.handlebars->9->90"
       ]
     },
@@ -8980,14 +8984,14 @@
         "default.handlebars->23->592",
         "default.handlebars->23->930",
         "default.handlebars->23->957",
-        "default.handlebars->23->1040",
-        "default.handlebars->23->1171",
-        "default.handlebars->23->1212",
-        "default.handlebars->23->1238",
-        "default.handlebars->23->1241",
+        "default.handlebars->23->1041",
+        "default.handlebars->23->1178",
+        "default.handlebars->23->1219",
         "default.handlebars->23->1245",
-        "default.handlebars->23->1247",
-        "default.handlebars->23->1257",
+        "default.handlebars->23->1249",
+        "default.handlebars->23->1253",
+        "default.handlebars->23->1255",
+        "default.handlebars->23->1278",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->1",
         "default-mobile.handlebars->9->56",
         "default-mobile.handlebars->9->135",
@@ -9014,7 +9018,7 @@
       "cs": "Jméno1, Jméno2, Jméno3",
       "nl": "Naam1, Naam2, Naam3",
       "xloc": [
-        "default.handlebars->23->1225"
+        "default.handlebars->23->1232"
       ]
     },
     {
@@ -9120,7 +9124,7 @@
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->23->630",
-        "default.handlebars->23->1144",
+        "default.handlebars->23->1151",
         "default-mobile.handlebars->9->79",
         "default-mobile.handlebars->9->247"
       ]
@@ -9251,8 +9255,8 @@
       "nl": "Geen gebeurtenissen gevonden",
       "xloc": [
         "default.handlebars->23->664",
-        "default.handlebars->23->1161",
-        "default.handlebars->23->1341"
+        "default.handlebars->23->1168",
+        "default.handlebars->23->1362"
       ]
     },
     {
@@ -9263,7 +9267,7 @@
       "cs": "Žádný přístup k souborům",
       "nl": "Geen bestandstoegang",
       "xloc": [
-        "default.handlebars->23->1070",
+        "default.handlebars->23->1074",
         "default-mobile.handlebars->9->300"
       ]
     },
@@ -9275,7 +9279,7 @@
       "cs": "Žádné soubory",
       "nl": "Geen bestanden",
       "xloc": [
-        "default.handlebars->23->1093",
+        "default.handlebars->23->1100",
         "default-mobile.handlebars->9->321"
       ]
     },
@@ -9296,8 +9300,8 @@
       "cs": "Žádné Intel&reg; AMT",
       "nl": "Geen Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->23->1071",
-        "default.handlebars->23->1094",
+        "default.handlebars->23->1075",
+        "default.handlebars->23->1101",
         "default-mobile.handlebars->9->301",
         "default-mobile.handlebars->9->322"
       ]
@@ -9359,7 +9363,7 @@
       "cs": "Žádná nová skupina zařízení",
       "nl": "Geen nieuwe apparaatgroepen",
       "xloc": [
-        "default.handlebars->23->1235"
+        "default.handlebars->23->1242"
       ]
     },
     {
@@ -9389,8 +9393,8 @@
       "nl": "Geen beleid",
       "xloc": [
         "default.handlebars->23->982",
-        "default.handlebars->23->1012",
-        "default.handlebars->23->1015"
+        "default.handlebars->23->1013",
+        "default.handlebars->23->1016"
       ]
     },
     {
@@ -9401,9 +9405,10 @@
       "nl": "Geen rechten",
       "xloc": [
         "default.handlebars->23->944",
-        "default.handlebars->23->1006",
-        "default.handlebars->23->1099",
-        "default.handlebars->23->1324",
+        "default.handlebars->23->1007",
+        "default.handlebars->23->1106",
+        "default.handlebars->23->1271",
+        "default.handlebars->23->1345",
         "default-mobile.handlebars->9->65",
         "default-mobile.handlebars->9->284",
         "default-mobile.handlebars->9->327"
@@ -9416,7 +9421,7 @@
       "cs": "Žádná práva k serveru",
       "nl": "Geen server rechten",
       "xloc": [
-        "default.handlebars->23->1270"
+        "default.handlebars->23->1291"
       ]
     },
     {
@@ -9426,7 +9431,7 @@
       "ja": "ターミナルなし",
       "nl": "Geen terminal",
       "xloc": [
-        "default.handlebars->23->1092",
+        "default.handlebars->23->1099",
         "default-mobile.handlebars->9->320"
       ]
     },
@@ -9437,7 +9442,7 @@
       "cs": "Žádný přístup k terminálu",
       "nl": "Geen terminal toegang",
       "xloc": [
-        "default.handlebars->23->1069",
+        "default.handlebars->23->1073",
         "default-mobile.handlebars->9->299"
       ]
     },
@@ -9461,7 +9466,7 @@
       "ja": "ツールなし（MeshCmd / Router）",
       "nl": "Geen Tools (MeshCmd/Router)",
       "xloc": [
-        "default.handlebars->23->1236"
+        "default.handlebars->23->1243"
       ]
     },
     {
@@ -9471,7 +9476,7 @@
       "ja": "ユーザが見つかりませんでした。",
       "nl": "Geen gebruikers gevonden",
       "xloc": [
-        "default.handlebars->23->1179"
+        "default.handlebars->23->1186"
       ]
     },
     {
@@ -9516,10 +9521,10 @@
         "default.handlebars->23->963",
         "default.handlebars->23->975",
         "default.handlebars->23->980",
-        "default.handlebars->23->1132",
-        "default.handlebars->23->1244",
-        "default.handlebars->23->1289",
-        "default.handlebars->23->1293",
+        "default.handlebars->23->1139",
+        "default.handlebars->23->1252",
+        "default.handlebars->23->1310",
+        "default.handlebars->23->1314",
         "default-mobile.handlebars->9->75",
         "default-mobile.handlebars->9->93",
         "default-mobile.handlebars->9->95",
@@ -9604,7 +9609,7 @@
       "ja": "設定されていません",
       "nl": "Niet ingesteld",
       "xloc": [
-        "default.handlebars->23->1275"
+        "default.handlebars->23->1296"
       ]
     },
     {
@@ -9618,7 +9623,7 @@
         "default.handlebars->23->486",
         "default.handlebars->23->519",
         "default.handlebars->23->988",
-        "default.handlebars->23->1300"
+        "default.handlebars->23->1321"
       ]
     },
     {
@@ -9639,7 +9644,7 @@
       "xloc": [
         "default.handlebars->container->column_l->p2->p2AccountActions->3->8",
         "default.handlebars->23->905",
-        "default.handlebars->23->1111"
+        "default.handlebars->23->1118"
       ]
     },
     {
@@ -9669,7 +9674,7 @@
       "cs": "Upozornit",
       "nl": "Melden",
       "xloc": [
-        "default.handlebars->23->1302"
+        "default.handlebars->23->1323"
       ]
     },
     {
@@ -9680,9 +9685,9 @@
       "cs": "Upozornit uživatele",
       "nl": "Gebruiker informeren",
       "xloc": [
-        "default.handlebars->23->1044",
-        "default.handlebars->23->1048",
-        "default.handlebars->23->1051"
+        "default.handlebars->23->1045",
+        "default.handlebars->23->1049",
+        "default.handlebars->23->1052"
       ]
     },
     {
@@ -9692,7 +9697,7 @@
       "cs": "Upozornit {0}",
       "nl": "Melden {0}",
       "xloc": [
-        "default.handlebars->23->1191"
+        "default.handlebars->23->1198"
       ]
     },
     {
@@ -9713,7 +9718,7 @@
       "cs": "Nastalo na {0}",
       "nl": "Heeft plaatsgevonden op {0}",
       "xloc": [
-        "default.handlebars->23->1344"
+        "default.handlebars->23->1365"
       ]
     },
     {
@@ -9724,7 +9729,7 @@
       "cs": "Nepřipojení uživatelé",
       "nl": "Offline gebruikers",
       "xloc": [
-        "default.handlebars->23->1176"
+        "default.handlebars->23->1183"
       ]
     },
     {
@@ -9775,7 +9780,7 @@
       "ja": "オンラインユーザー",
       "nl": "Online gebruikers",
       "xloc": [
-        "default.handlebars->23->1175"
+        "default.handlebars->23->1182"
       ]
     },
     {
@@ -9968,7 +9973,7 @@
       "cs": "Částečné",
       "nl": "Gedeeltelijk",
       "xloc": [
-        "default.handlebars->23->1190"
+        "default.handlebars->23->1197"
       ]
     },
     {
@@ -9990,7 +9995,7 @@
       "cs": "Částečná práva",
       "nl": "Gedeeltelijke rechten",
       "xloc": [
-        "default.handlebars->23->1273"
+        "default.handlebars->23->1294"
       ]
     },
     {
@@ -10014,12 +10019,12 @@
         "default.handlebars->23->243",
         "default.handlebars->23->272",
         "default.handlebars->23->536",
-        "default.handlebars->23->1214",
-        "default.handlebars->23->1215",
-        "default.handlebars->23->1285",
-        "default.handlebars->23->1287",
-        "default.handlebars->23->1311",
-        "default.handlebars->23->1312",
+        "default.handlebars->23->1221",
+        "default.handlebars->23->1222",
+        "default.handlebars->23->1306",
+        "default.handlebars->23->1308",
+        "default.handlebars->23->1332",
+        "default.handlebars->23->1333",
         "default-mobile.handlebars->9->213"
       ]
     },
@@ -10041,7 +10046,7 @@
       "cs": "Nápověda k heslu",
       "nl": "wachtwoord hint",
       "xloc": [
-        "default.handlebars->23->1313"
+        "default.handlebars->23->1334"
       ]
     },
     {
@@ -10085,7 +10090,7 @@
       "cs": "Zadání hesla se neshodují",
       "nl": "Wachtwoord komt niet overeen",
       "xloc": [
-        "default.handlebars->23->1021"
+        "default.handlebars->23->1022"
       ]
     },
     {
@@ -10121,8 +10126,8 @@
       "ja": "パスワード*",
       "nl": "Wachtwoord*",
       "xloc": [
-        "default.handlebars->23->1019",
-        "default.handlebars->23->1020"
+        "default.handlebars->23->1020",
+        "default.handlebars->23->1021"
       ]
     },
     {
@@ -10162,7 +10167,7 @@
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->23->621",
         "default.handlebars->23->643",
-        "default.handlebars->23->1153",
+        "default.handlebars->23->1160",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->9->87",
@@ -10220,7 +10225,7 @@
       "nl": "Voer Intel AMT admin control mode (ACM) activering uit.",
       "xloc": [
         "default.handlebars->23->231",
-        "default.handlebars->23->997"
+        "default.handlebars->23->998"
       ]
     },
     {
@@ -10241,7 +10246,7 @@
       "nl": "Voer Intel AMT client control mode (CCM) activering uit.",
       "xloc": [
         "default.handlebars->23->229",
-        "default.handlebars->23->995"
+        "default.handlebars->23->996"
       ]
     },
     {
@@ -10266,8 +10271,8 @@
       "ja": "許可",
       "nl": "machtigingen",
       "xloc": [
-        "default.handlebars->23->1102",
-        "default.handlebars->23->1174",
+        "default.handlebars->23->1109",
+        "default.handlebars->23->1181",
         "default-mobile.handlebars->9->329"
       ]
     },
@@ -10363,7 +10368,7 @@
       "nl": "Plugin Actie",
       "xloc": [
         "default.handlebars->23->177",
-        "default.handlebars->23->1413"
+        "default.handlebars->23->1434"
       ]
     },
     {
@@ -10586,9 +10591,9 @@
       "cs": "Výzva k souhlasu uživatele",
       "nl": "Vraag gebruikerstoestemming",
       "xloc": [
-        "default.handlebars->23->1045",
-        "default.handlebars->23->1049",
-        "default.handlebars->23->1052"
+        "default.handlebars->23->1046",
+        "default.handlebars->23->1050",
+        "default.handlebars->23->1053"
       ]
     },
     {
@@ -10610,7 +10615,7 @@
       "ja": "公開リンク",
       "nl": "Publieke link",
       "xloc": [
-        "default.handlebars->23->1139",
+        "default.handlebars->23->1146",
         "default-mobile.handlebars->9->74"
       ]
     },
@@ -10684,7 +10689,7 @@
       "cs": "Náhodné heslo",
       "nl": "Randomiseer het wachtwoord.",
       "xloc": [
-        "default.handlebars->23->1216"
+        "default.handlebars->23->1223"
       ]
     },
     {
@@ -10738,7 +10743,7 @@
       "cs": "Znovu aktivovat Intel&reg; AMT",
       "nl": "Heractiveer Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->23->1023"
+        "default.handlebars->23->1024"
       ]
     },
     {
@@ -10748,7 +10753,7 @@
       "cs": "Oblasti",
       "nl": "Realms",
       "xloc": [
-        "default.handlebars->23->1224"
+        "default.handlebars->23->1231"
       ]
     },
     {
@@ -10760,7 +10765,7 @@
       "nl": "Recursieve verwijdering",
       "xloc": [
         "default.handlebars->23->631",
-        "default.handlebars->23->1145",
+        "default.handlebars->23->1152",
         "default-mobile.handlebars->9->80",
         "default-mobile.handlebars->9->248"
       ]
@@ -10823,8 +10828,8 @@
       "cs": "Předávané relace",
       "nl": "Relay Sessies",
       "xloc": [
-        "default.handlebars->23->1369",
-        "default.handlebars->23->1382"
+        "default.handlebars->23->1390",
+        "default.handlebars->23->1403"
       ]
     },
     {
@@ -10901,8 +10906,8 @@
       "cs": "Ovládání na dálku",
       "nl": "Extern beheer",
       "xloc": [
-        "default.handlebars->23->1066",
-        "default.handlebars->23->1086",
+        "default.handlebars->23->1070",
+        "default.handlebars->23->1093",
         "default-mobile.handlebars->9->296",
         "default-mobile.handlebars->9->314"
       ]
@@ -10938,7 +10943,7 @@
       "cs": "Vzdálený uživatel",
       "nl": "externe Mesh gebruiker",
       "xloc": [
-        "default.handlebars->23->1105",
+        "default.handlebars->23->1112",
         "default-mobile.handlebars->9->332"
       ]
     },
@@ -10949,8 +10954,8 @@
       "cs": "Pouze prohlížení na dálku",
       "nl": "Alleen extern meekijken",
       "xloc": [
-        "default.handlebars->23->1067",
-        "default.handlebars->23->1091",
+        "default.handlebars->23->1071",
+        "default.handlebars->23->1098",
         "default-mobile.handlebars->9->297",
         "default-mobile.handlebars->9->319"
       ]
@@ -10973,7 +10978,7 @@
       "cs": "Odstranit celé 2-faktorové ověřování.",
       "nl": "Verwijder alle Tweestapsverificatie.",
       "xloc": [
-        "default.handlebars->23->1316"
+        "default.handlebars->23->1337"
       ]
     },
     {
@@ -11005,9 +11010,9 @@
       "cs": "Odstranit uživatelská práva pro tuto skupinu zařízení",
       "nl": "Gebruikersrechten voor deze apparaatgroep verwijderen",
       "xloc": [
-        "default.handlebars->23->1007",
-        "default.handlebars->23->1253",
-        "default.handlebars->23->1325"
+        "default.handlebars->23->1008",
+        "default.handlebars->23->1263",
+        "default.handlebars->23->1346"
       ]
     },
     {
@@ -11021,7 +11026,7 @@
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->23->635",
-        "default.handlebars->23->1149",
+        "default.handlebars->23->1156",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
         "default-mobile.handlebars->9->84",
@@ -11047,8 +11052,8 @@
       "cs": "Požadavky: {0}.",
       "nl": "Vereisten: {0}.",
       "xloc": [
-        "default.handlebars->23->1221",
-        "default.handlebars->23->1314",
+        "default.handlebars->23->1228",
+        "default.handlebars->23->1335",
         "default-mobile.handlebars->9->48"
       ]
     },
@@ -11198,7 +11203,7 @@
       "ja": "制限事項",
       "nl": "Beperkingen",
       "xloc": [
-        "default.handlebars->23->1274"
+        "default.handlebars->23->1295"
       ]
     },
     {
@@ -11266,7 +11271,7 @@
       "nl": "Root",
       "xloc": [
         "default.handlebars->23->625",
-        "default.handlebars->23->1124",
+        "default.handlebars->23->1131",
         "default-mobile.handlebars->9->66",
         "default-mobile.handlebars->9->242"
       ]
@@ -11553,7 +11558,7 @@
       "xloc": [
         "default.handlebars->23->244",
         "default.handlebars->23->537",
-        "default.handlebars->23->1298",
+        "default.handlebars->23->1319",
         "default-mobile.handlebars->9->214"
       ]
     },
@@ -11565,7 +11570,7 @@
       "cs": "Bezpečnostní klíč",
       "nl": "Veiligheidssleutel",
       "xloc": [
-        "default.handlebars->23->1296"
+        "default.handlebars->23->1317"
       ]
     },
     {
@@ -11613,7 +11618,7 @@
         "default.handlebars->23->382",
         "default.handlebars->23->627",
         "default.handlebars->23->629",
-        "default.handlebars->23->1141"
+        "default.handlebars->23->1148"
       ]
     },
     {
@@ -11648,7 +11653,7 @@
         "default.handlebars->meshContextMenu->cxselectnone",
         "default.handlebars->23->381",
         "default.handlebars->23->628",
-        "default.handlebars->23->1140"
+        "default.handlebars->23->1147"
       ]
     },
     {
@@ -11670,7 +11675,7 @@
       "cs": "Pouze vlastní události",
       "nl": "Alleen eigen gebeurtenissen",
       "xloc": [
-        "default.handlebars->23->1096",
+        "default.handlebars->23->1103",
         "default-mobile.handlebars->9->324"
       ]
     },
@@ -11695,7 +11700,7 @@
       "cs": "Poslat tomuto uživateli textové upozornění.",
       "nl": "Stuur een tekstbericht naar deze gebruiker.",
       "xloc": [
-        "default.handlebars->23->1192"
+        "default.handlebars->23->1199"
       ]
     },
     {
@@ -11717,7 +11722,7 @@
       "ja": "招待メールを送信します。",
       "nl": "Verzend uitnodigingsmail.",
       "xloc": [
-        "default.handlebars->23->1220"
+        "default.handlebars->23->1227"
       ]
     },
     {
@@ -11761,7 +11766,7 @@
       "cs": "Poslat upozornění uživateli",
       "nl": "Stuur gebruikersmelding",
       "xloc": [
-        "default.handlebars->23->1303"
+        "default.handlebars->23->1324"
       ]
     },
     {
@@ -11801,7 +11806,7 @@
       "cs": "Záloha serveru",
       "nl": "Server Back-up",
       "xloc": [
-        "default.handlebars->23->1229"
+        "default.handlebars->23->1236"
       ]
     },
     {
@@ -11810,7 +11815,7 @@
       "cs": "Certifikát serveru",
       "nl": "Server Certificaat",
       "xloc": [
-        "default.handlebars->23->1398"
+        "default.handlebars->23->1419"
       ]
     },
     {
@@ -11841,9 +11846,9 @@
       "cs": "Soubory serveru",
       "nl": "Serverbestanden",
       "xloc": [
-        "default.handlebars->23->1073",
-        "default.handlebars->23->1088",
-        "default.handlebars->23->1227",
+        "default.handlebars->23->1077",
+        "default.handlebars->23->1095",
+        "default.handlebars->23->1234",
         "default-mobile.handlebars->9->303",
         "default-mobile.handlebars->9->316"
       ]
@@ -11877,8 +11882,8 @@
       "cs": "Oprávnění serveru",
       "nl": "Serverrechten",
       "xloc": [
-        "default.handlebars->23->1185",
-        "default.handlebars->23->1237"
+        "default.handlebars->23->1192",
+        "default.handlebars->23->1244"
       ]
     },
     {
@@ -11888,7 +11893,7 @@
       "cs": "Kvóta serveru",
       "nl": "Serverquotum",
       "xloc": [
-        "default.handlebars->23->1282"
+        "default.handlebars->23->1303"
       ]
     },
     {
@@ -11898,7 +11903,7 @@
       "cs": "Obnova serveru",
       "nl": "Server herstellen",
       "xloc": [
-        "default.handlebars->23->1230"
+        "default.handlebars->23->1237"
       ]
     },
     {
@@ -11909,7 +11914,7 @@
       "cs": "Práva serveru",
       "nl": "Serverrechten",
       "xloc": [
-        "default.handlebars->23->1281"
+        "default.handlebars->23->1302"
       ]
     },
     {
@@ -11931,7 +11936,7 @@
       "cs": "Trasování serveru",
       "nl": "Server traceren",
       "xloc": [
-        "default.handlebars->23->1407"
+        "default.handlebars->23->1428"
       ]
     },
     {
@@ -11942,7 +11947,7 @@
       "cs": "Aktualizace serveru",
       "nl": "Serverupdates",
       "xloc": [
-        "default.handlebars->23->1231"
+        "default.handlebars->23->1238"
       ]
     },
     {
@@ -11972,7 +11977,7 @@
       "cs": "ServerStats.csv",
       "nl": "ServerStats.csv",
       "xloc": [
-        "default.handlebars->23->1390"
+        "default.handlebars->23->1411"
       ]
     },
     {
@@ -11982,7 +11987,7 @@
       "cs": "servertrace.csv",
       "nl": "servertrace.csv",
       "xloc": [
-        "default.handlebars->23->1409"
+        "default.handlebars->23->1430"
       ]
     },
     {
@@ -12151,7 +12156,7 @@
       "cs": "Zobrazit panel nástrojů připojení",
       "nl": "Toon verbindingswerkbalk",
       "xloc": [
-        "default.handlebars->23->1046"
+        "default.handlebars->23->1047"
       ]
     },
     {
@@ -12225,7 +12230,7 @@
       "cs": "Zobrazit pouze vlastní události",
       "nl": "Toon alleen eigen gebeurtenissen",
       "xloc": [
-        "default.handlebars->23->1076",
+        "default.handlebars->23->1080",
         "default-mobile.handlebars->9->306"
       ]
     },
@@ -12248,7 +12253,7 @@
       "nl": "Simple Admin Control Mode (ACM)",
       "xloc": [
         "default.handlebars->23->985",
-        "default.handlebars->23->1010"
+        "default.handlebars->23->1011"
       ]
     },
     {
@@ -12259,8 +12264,8 @@
       "nl": "Simple Client Control Mode (CCM)",
       "xloc": [
         "default.handlebars->23->983",
-        "default.handlebars->23->1013",
-        "default.handlebars->23->1017"
+        "default.handlebars->23->1014",
+        "default.handlebars->23->1018"
       ]
     },
     {
@@ -12776,7 +12781,7 @@
       "nl": "Status",
       "xloc": [
         "default.handlebars->container->column_l->p42->p42tbl->1->0->7",
-        "default.handlebars->23->1309"
+        "default.handlebars->23->1330"
       ]
     },
     {
@@ -12819,7 +12824,7 @@
       "ja": "ストレージ制限を超えています",
       "nl": "Opslaglimiet overschreden",
       "xloc": [
-        "default.handlebars->23->1127"
+        "default.handlebars->23->1134"
       ]
     },
     {
@@ -12982,7 +12987,7 @@
         "default.handlebars->contextMenu->cxterminal",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevTerminal",
         "default.handlebars->23->410",
-        "default.handlebars->23->1047"
+        "default.handlebars->23->1048"
       ]
     },
     {
@@ -13107,7 +13112,7 @@
       "cs": "V tuto chvíli zde nejsou žádná upozornění",
       "nl": "Er zijn momenteel geen meldingen",
       "xloc": [
-        "default.handlebars->23->1343"
+        "default.handlebars->23->1364"
       ]
     },
     {
@@ -13149,7 +13154,7 @@
       "cs": "Toto není bezpečná zásada, protože aktivaci budou provádět agenti.",
       "nl": "Dit is geen veilig beleid omdat agenten activering zullen uitvoeren.",
       "xloc": [
-        "default.handlebars->23->1035"
+        "default.handlebars->23->1036"
       ]
     },
     {
@@ -13170,7 +13175,7 @@
       "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT v ACM režimu.",
       "nl": "Dit beleid heeft geen invloed op apparaten met Intel&reg; AMT ACM-modus",
       "xloc": [
-        "default.handlebars->23->1034"
+        "default.handlebars->23->1035"
       ]
     },
     {
@@ -13272,7 +13277,7 @@
       "cs": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "nl": "tijd, conn.agent, conn.gebruikers, conn.gebruikerssessies, conn.relaysessie, conn.intelamt, mem.extern, mem.heapused, mem.heaptotaal, mem.rss",
       "xloc": [
-        "default.handlebars->23->1389"
+        "default.handlebars->23->1410"
       ]
     },
     {
@@ -13282,7 +13287,7 @@
       "cs": "time, source, message",
       "nl": "tijd, bron, bericht",
       "xloc": [
-        "default.handlebars->23->1408"
+        "default.handlebars->23->1429"
       ]
     },
     {
@@ -13292,7 +13297,7 @@
       "cs": "time, type, action, user, message",
       "nl": "tijd, type, actie, gebruiker, bericht",
       "xloc": [
-        "default.handlebars->23->1168"
+        "default.handlebars->23->1175"
       ]
     },
     {
@@ -13580,7 +13585,7 @@
       "ja": "合計",
       "nl": "totaal",
       "xloc": [
-        "default.handlebars->23->1377"
+        "default.handlebars->23->1398"
       ]
     },
     {
@@ -13685,8 +13690,8 @@
         "default.handlebars->23->601",
         "default.handlebars->23->931",
         "default.handlebars->23->960",
-        "default.handlebars->23->1011",
-        "default.handlebars->23->1014",
+        "default.handlebars->23->1012",
+        "default.handlebars->23->1015",
         "default-mobile.handlebars->9->57",
         "default-mobile.handlebars->9->279"
       ]
@@ -13823,7 +13828,7 @@
       "cs": "Odinstalace",
       "nl": "deinstallatie",
       "xloc": [
-        "default.handlebars->23->1098",
+        "default.handlebars->23->1105",
         "default-mobile.handlebars->9->326"
       ]
     },
@@ -13835,7 +13840,7 @@
       "xloc": [
         "default.handlebars->23->384",
         "default.handlebars->23->529",
-        "default.handlebars->23->1078",
+        "default.handlebars->23->1082",
         "default-mobile.handlebars->9->308"
       ]
     },
@@ -13862,7 +13867,7 @@
         "default.handlebars->23->108",
         "default.handlebars->23->109",
         "default.handlebars->23->380",
-        "default.handlebars->23->1334",
+        "default.handlebars->23->1355",
         "default-mobile.handlebars->9->126",
         "default-mobile.handlebars->9->143",
         "default-mobile.handlebars->9->171",
@@ -13939,7 +13944,7 @@
       "cs": "Aktuální",
       "nl": "Bijgewerkt",
       "xloc": [
-        "default.handlebars->23->1412"
+        "default.handlebars->23->1433"
       ]
     },
     {
@@ -13987,8 +13992,8 @@
         "default.handlebars->23->636",
         "default.handlebars->23->659",
         "default.handlebars->23->662",
-        "default.handlebars->23->1150",
-        "default.handlebars->23->1158",
+        "default.handlebars->23->1157",
+        "default.handlebars->23->1165",
         "default-mobile.handlebars->9->85",
         "default-mobile.handlebars->9->253",
         "default-mobile.handlebars->9->271"
@@ -14070,8 +14075,8 @@
       "ja": "中古",
       "nl": "Gebruikt",
       "xloc": [
-        "default.handlebars->23->1345",
-        "default.handlebars->23->1347"
+        "default.handlebars->23->1366",
+        "default.handlebars->23->1368"
       ]
     },
     {
@@ -14083,9 +14088,9 @@
       "nl": "Gebruiker",
       "xloc": [
         "default.handlebars->23->200",
-        "default.handlebars->23->1008",
-        "default.handlebars->23->1186",
-        "default.handlebars->23->1254",
+        "default.handlebars->23->1009",
+        "default.handlebars->23->1193",
+        "default.handlebars->23->1264",
         "default-mobile.handlebars->9->328"
       ]
     },
@@ -14096,7 +14101,7 @@
       "ja": "ユーザー+ファイル",
       "nl": "Gebruiker + bestanden",
       "xloc": [
-        "default.handlebars->23->1187"
+        "default.handlebars->23->1194"
       ]
     },
     {
@@ -14106,10 +14111,10 @@
       "cs": "Import uživatelských účtů",
       "nl": "Gebruikersaccount importeren",
       "xloc": [
-        "default.handlebars->23->1194",
-        "default.handlebars->23->1195",
-        "default.handlebars->23->1197",
-        "default.handlebars->23->1199"
+        "default.handlebars->23->1201",
+        "default.handlebars->23->1202",
+        "default.handlebars->23->1204",
+        "default.handlebars->23->1206"
       ]
     },
     {
@@ -14119,7 +14124,7 @@
       "cs": "Uživatelská oprávnění",
       "nl": "Gebruikersautorisaties",
       "xloc": [
-        "default.handlebars->23->1003",
+        "default.handlebars->23->1004",
         "default-mobile.handlebars->9->281"
       ]
     },
@@ -14152,8 +14157,8 @@
       "cs": "Identifikátor uživatele",
       "nl": "gebruikersID",
       "xloc": [
-        "default.handlebars->23->1101",
-        "default.handlebars->23->1278"
+        "default.handlebars->23->1108",
+        "default.handlebars->23->1299"
       ]
     },
     {
@@ -14177,7 +14182,7 @@
       "cs": "Export seznamu uživatelů",
       "nl": "Gebruikerslijst exporteren",
       "xloc": [
-        "default.handlebars->23->1206"
+        "default.handlebars->23->1213"
       ]
     },
     {
@@ -14188,7 +14193,7 @@
       "ja": "ユーザー名",
       "nl": "Gebruikersnaam",
       "xloc": [
-        "default.handlebars->23->1100"
+        "default.handlebars->23->1107"
       ]
     },
     {
@@ -14199,8 +14204,8 @@
       "cs": "Uživatelská jména",
       "nl": "Gebruikersnamen",
       "xloc": [
-        "default.handlebars->23->1059",
-        "default.handlebars->23->1267"
+        "default.handlebars->23->1060",
+        "default.handlebars->23->1288"
       ]
     },
     {
@@ -14210,7 +14215,7 @@
       "cs": "Relace uživatele",
       "nl": "Gebruikerssessie",
       "xloc": [
-        "default.handlebars->23->1381"
+        "default.handlebars->23->1402"
       ]
     },
     {
@@ -14242,8 +14247,8 @@
       "cs": "userlist.csv",
       "nl": "userlist.csv",
       "xloc": [
-        "default.handlebars->23->1203",
-        "default.handlebars->23->1208"
+        "default.handlebars->23->1210",
+        "default.handlebars->23->1215"
       ]
     },
     {
@@ -14253,8 +14258,8 @@
       "cs": "userlist.json",
       "nl": "userlist.json",
       "xloc": [
-        "default.handlebars->23->1205",
-        "default.handlebars->23->1209"
+        "default.handlebars->23->1212",
+        "default.handlebars->23->1216"
       ]
     },
     {
@@ -14306,8 +14311,9 @@
       "nl": "Gebruikers",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral",
-        "default.handlebars->23->1239",
-        "default.handlebars->23->1380"
+        "default.handlebars->23->1247",
+        "default.handlebars->23->1257",
+        "default.handlebars->23->1401"
       ]
     },
     {
@@ -14441,7 +14447,7 @@
       "cs": "Zobrazit poznámky o tomto uživateli",
       "nl": "Bekijk opmerkingen over deze gebruiker",
       "xloc": [
-        "default.handlebars->23->1301"
+        "default.handlebars->23->1322"
       ]
     },
     {
@@ -14481,8 +14487,8 @@
       "cs": "Probudit zařízení",
       "nl": "apparaat wekken",
       "xloc": [
-        "default.handlebars->23->1074",
-        "default.handlebars->23->1089",
+        "default.handlebars->23->1078",
+        "default.handlebars->23->1096",
         "default-mobile.handlebars->9->304",
         "default-mobile.handlebars->9->317"
       ]
@@ -14561,8 +14567,8 @@
       "cs": "Webový server",
       "nl": "webserver",
       "xloc": [
-        "default.handlebars->23->1399",
-        "default.handlebars->23->1400"
+        "default.handlebars->23->1420",
+        "default.handlebars->23->1421"
       ]
     },
     {
@@ -14573,7 +14579,7 @@
       "cs": "Požadavky webového serveru",
       "nl": "Webserver Verzoeken",
       "xloc": [
-        "default.handlebars->23->1401"
+        "default.handlebars->23->1422"
       ]
     },
     {
@@ -14584,7 +14590,7 @@
       "cs": "Web Socket Relay",
       "nl": "Web Socket Relay",
       "xloc": [
-        "default.handlebars->23->1402"
+        "default.handlebars->23->1423"
       ]
     },
     {
@@ -14628,7 +14634,7 @@
       "ja": "次回ログイン時に変更されます。",
       "nl": "Wordt bij de volgende aanmelding gewijzigd.",
       "xloc": [
-        "default.handlebars->23->1286"
+        "default.handlebars->23->1307"
       ]
     },
     {
@@ -15031,7 +15037,7 @@
       "cs": "{0} aktivních spojení",
       "nl": "{0} actieve sessies",
       "xloc": [
-        "default.handlebars->23->1307"
+        "default.handlebars->23->1328"
       ]
     },
     {
@@ -15041,7 +15047,7 @@
       "cs": "{0} b",
       "nl": "{0} b",
       "xloc": [
-        "default.handlebars->23->1133"
+        "default.handlebars->23->1140"
       ]
     },
     {
@@ -15052,7 +15058,7 @@
       "ja": "{0}バイト",
       "nl": "{0} bytes",
       "xloc": [
-        "default.handlebars->23->1143",
+        "default.handlebars->23->1150",
         "default-mobile.handlebars->9->78"
       ]
     },
@@ -15064,7 +15070,7 @@
       "cs": "{0} bajtů zbývá",
       "nl": "{0} resterende bytes",
       "xloc": [
-        "default.handlebars->23->1128"
+        "default.handlebars->23->1135"
       ]
     },
     {
@@ -15074,7 +15080,7 @@
       "cs": "{0} Gb",
       "nl": "{0} Gb",
       "xloc": [
-        "default.handlebars->23->1136"
+        "default.handlebars->23->1143"
       ]
     },
     {
@@ -15084,7 +15090,7 @@
       "ja": "残り{0}ギガバイト",
       "nl": "{0} rsterende gigabytes",
       "xloc": [
-        "default.handlebars->23->1131"
+        "default.handlebars->23->1138"
       ]
     },
     {
@@ -15094,7 +15100,7 @@
       "cs": "{0} skupin",
       "nl": "{0} groepen",
       "xloc": [
-        "default.handlebars->23->1291"
+        "default.handlebars->23->1312"
       ]
     },
     {
@@ -15111,7 +15117,7 @@
       "cs": "{0} Kb",
       "nl": "{0} Kb",
       "xloc": [
-        "default.handlebars->23->1134"
+        "default.handlebars->23->1141"
       ]
     },
     {
@@ -15121,7 +15127,7 @@
       "ja": "残り{0}キロバイト",
       "nl": "{0} resterende kilobytes",
       "xloc": [
-        "default.handlebars->23->1129"
+        "default.handlebars->23->1136"
       ]
     },
     {
@@ -15142,7 +15148,7 @@
       "cs": "{0} Mb",
       "nl": "{0} Mb",
       "xloc": [
-        "default.handlebars->23->1135"
+        "default.handlebars->23->1142"
       ]
     },
     {
@@ -15162,7 +15168,7 @@
       "ja": "残り{0}メガバイト",
       "nl": "{0} resterende megabytes",
       "xloc": [
-        "default.handlebars->23->1130"
+        "default.handlebars->23->1137"
       ]
     },
     {
@@ -15179,7 +15185,7 @@
       "cs": "{0} dalších uživatelů není zobrazeno, vyhledejte je pomocí kolonky pro vyhledávání…",
       "nl": "{0} meer gebruikers niet getoond, gebruik zoekvak om gebruikers te zoeken ...",
       "xloc": [
-        "default.handlebars->23->1178"
+        "default.handlebars->23->1185"
       ]
     },
     {
@@ -15239,7 +15245,7 @@
       "cs": "{0} relací",
       "nl": "{0} sessies",
       "xloc": [
-        "default.handlebars->23->1182"
+        "default.handlebars->23->1189"
       ]
     },
     {
@@ -15310,7 +15316,7 @@
       "cs": "{0}k v 1 souboru. {1}k maximum",
       "nl": "{0}k in 1 bestand. {1}k maximum",
       "xloc": [
-        "default.handlebars->23->1138"
+        "default.handlebars->23->1145"
       ]
     },
     {
@@ -15320,7 +15326,7 @@
       "cs": "{0}k v {1} souborech. {2}k maximum",
       "nl": "{0}k in 1 file. {2}k maximum",
       "xloc": [
-        "default.handlebars->23->1137"
+        "default.handlebars->23->1144"
       ]
     },
     {
@@ -15483,7 +15489,7 @@
       "cs": "2-faktorové ověřování zapnuto",
       "nl": "Tweestapsverificatie ingeschakeld",
       "xloc": [
-        "default.handlebars->23->1299"
+        "default.handlebars->23->1320"
       ]
     },
     {
@@ -15492,7 +15498,7 @@
       "cs": "\\\\'",
       "nl": "\\\\'",
       "xloc": [
-        "default.handlebars->23->1410"
+        "default.handlebars->23->1431"
       ]
     },
     {
@@ -15534,7 +15540,7 @@
       "nl": "Power Status",
       "xloc": [
         "default.handlebars->container->column_l->p21->3->1->meshPowerChartDiv->1",
-        "default.handlebars->23->1116"
+        "default.handlebars->23->1123"
       ]
     },
     {
@@ -15543,7 +15549,7 @@
       "nl": "Agent Type",
       "xloc": [
         "default.handlebars->container->column_l->p21->3->1->meshOsChartDiv->1",
-        "default.handlebars->23->1117"
+        "default.handlebars->23->1124"
       ]
     },
     {
@@ -15625,16 +15631,16 @@
       "cs": "Nepřipojeno",
       "nl": "Niet verbonden",
       "xloc": [
-        "default.handlebars->23->1112",
-        "default.handlebars->23->1118"
+        "default.handlebars->23->1119",
+        "default.handlebars->23->1125"
       ]
     },
     {
       "en": "Agent + Intel AMT",
       "nl": "Agent + Intel AMT",
       "xloc": [
-        "default.handlebars->23->1115",
-        "default.handlebars->23->1121"
+        "default.handlebars->23->1122",
+        "default.handlebars->23->1128"
       ]
     },
     {
@@ -15642,7 +15648,7 @@
       "cs": "V této skupině nejsou žádná zařízení.",
       "nl": "Geen apparaten in deze apparaatgroep.",
       "xloc": [
-        "default.handlebars->23->1123"
+        "default.handlebars->23->1130"
       ]
     },
     {
@@ -15658,7 +15664,7 @@
       "cs": "Při odpojení zařízení odebrat",
       "nl": "Verwijder apparaat bij verbreken",
       "xloc": [
-        "default.handlebars->23->1054"
+        "default.handlebars->23->1055"
       ]
     },
     {
@@ -15666,7 +15672,7 @@
       "cs": "Synchronizovat název zařízení na serveru s názvem stroje",
       "nl": "Synchroniseer serverapparaatnaam met hostnaam",
       "xloc": [
-        "default.handlebars->23->1055"
+        "default.handlebars->23->1056"
       ]
     },
     {
@@ -15674,7 +15680,7 @@
       "cs": "Je třeba, aby nastavení upozorňování byla zapnutá také v nastavení účtu.",
       "nl": "Meldingsinstellingen moeten ook worden ingeschakeld in accountinstellingen.",
       "xloc": [
-        "default.handlebars->23->1107"
+        "default.handlebars->23->1114"
       ]
     },
     {
@@ -15683,7 +15689,7 @@
       "nl": "Groepen",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGroups",
-        "default.handlebars->23->1172"
+        "default.handlebars->23->1179"
       ]
     },
     {
@@ -15691,7 +15697,7 @@
       "cs": "Smazat uživatele",
       "nl": "Verwijder gebruiker",
       "xloc": [
-        "default.handlebars->23->1304"
+        "default.handlebars->23->1325"
       ]
     },
     {
@@ -15704,7 +15710,7 @@
       "cs": "Vytížení procesoru",
       "nl": "CPU gebruik",
       "xloc": [
-        "default.handlebars->23->1371"
+        "default.handlebars->23->1392"
       ]
     },
     {
@@ -15712,14 +15718,14 @@
       "cs": "Stav serveru",
       "nl": "Server Status",
       "xloc": [
-        "default.handlebars->23->1349"
+        "default.handlebars->23->1370"
       ]
     },
     {
       "en": "Agent Error Counters",
       "cs": "Počitadla chyb agenta",
       "xloc": [
-        "default.handlebars->23->1350"
+        "default.handlebars->23->1371"
       ]
     },
     {
@@ -15727,7 +15733,7 @@
       "cs": "Neznámá skupina",
       "nl": "Onbekende groep",
       "xloc": [
-        "default.handlebars->23->1351"
+        "default.handlebars->23->1372"
       ]
     },
     {
@@ -15735,7 +15741,7 @@
       "cs": "Neplatný PKCS podpis",
       "nl": "Onjuiste PKCS handtekening",
       "xloc": [
-        "default.handlebars->23->1352"
+        "default.handlebars->23->1373"
       ]
     },
     {
@@ -15743,7 +15749,7 @@
       "cs": "Neplatný RSA podpis",
       "nl": "Ongeldige RSA handtekening",
       "xloc": [
-        "default.handlebars->23->1353"
+        "default.handlebars->23->1374"
       ]
     },
     {
@@ -15751,7 +15757,7 @@
       "cs": "Neplatný JSON",
       "nl": "Onjuiste JSON",
       "xloc": [
-        "default.handlebars->23->1354"
+        "default.handlebars->23->1375"
       ]
     },
     {
@@ -15759,7 +15765,7 @@
       "cs": "Neznámá akce",
       "nl": "Onbekende actie",
       "xloc": [
-        "default.handlebars->23->1355"
+        "default.handlebars->23->1376"
       ]
     },
     {
@@ -15767,7 +15773,7 @@
       "cs": "Nesprávný certifikát webu",
       "nl": "Onjuist webcertificaat",
       "xloc": [
-        "default.handlebars->23->1356"
+        "default.handlebars->23->1377"
       ]
     },
     {
@@ -15775,7 +15781,7 @@
       "cs": "Nesprávný podpis",
       "nl": "Ongeldige handtening",
       "xloc": [
-        "default.handlebars->23->1357"
+        "default.handlebars->23->1378"
       ]
     },
     {
@@ -15783,7 +15789,7 @@
       "cs": "Dosaženo maximálního počtu relací",
       "nl": "Max Sessies bereikt",
       "xloc": [
-        "default.handlebars->23->1358"
+        "default.handlebars->23->1379"
       ]
     },
     {
@@ -15791,8 +15797,9 @@
       "cs": "Neznámá skupina zařízení",
       "nl": "Onbekende apparaatgroep",
       "xloc": [
-        "default.handlebars->23->1322",
-        "default.handlebars->23->1359"
+        "default.handlebars->23->1269",
+        "default.handlebars->23->1343",
+        "default.handlebars->23->1380"
       ]
     },
     {
@@ -15800,7 +15807,7 @@
       "cs": "Neplatný typ skupiny zařízení",
       "nl": "Ongeldige apparaatgroep type",
       "xloc": [
-        "default.handlebars->23->1360"
+        "default.handlebars->23->1381"
       ]
     },
     {
@@ -15808,7 +15815,7 @@
       "cs": "Duplikovat agenta",
       "nl": "Duplicaat Agent",
       "xloc": [
-        "default.handlebars->23->1361"
+        "default.handlebars->23->1382"
       ]
     },
     {
@@ -15816,7 +15823,7 @@
       "cs": "Připojené Intel&reg; AMT",
       "nl": "Verbonden Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->23->1362"
+        "default.handlebars->23->1383"
       ]
     },
     {
@@ -15824,7 +15831,7 @@
       "cs": "Chyby předávání (relay)",
       "nl": "Relay fouten",
       "xloc": [
-        "default.handlebars->23->1363"
+        "default.handlebars->23->1384"
       ]
     },
     {
@@ -15832,14 +15839,14 @@
       "cs": "Uživatelské účty",
       "nl": "Gebruikersaccounts",
       "xloc": [
-        "default.handlebars->23->1364"
+        "default.handlebars->23->1385"
       ]
     },
     {
       "en": "Agent Sessions",
       "cs": "Relace agenta",
       "xloc": [
-        "default.handlebars->23->1366"
+        "default.handlebars->23->1387"
       ]
     },
     {
@@ -15847,7 +15854,7 @@
       "cs": "Připojení",
       "nl": "Verbonden gebruikers",
       "xloc": [
-        "default.handlebars->23->1367"
+        "default.handlebars->23->1388"
       ]
     },
     {
@@ -15855,7 +15862,7 @@
       "cs": "Uživatelské relace",
       "nl": "gebruikers Sessies",
       "xloc": [
-        "default.handlebars->23->1368"
+        "default.handlebars->23->1389"
       ]
     },
     {
@@ -15904,28 +15911,28 @@
       "cs": "Externí",
       "nl": "Extern",
       "xloc": [
-        "default.handlebars->23->1385"
+        "default.handlebars->23->1406"
       ]
     },
     {
       "en": "Heap Used",
       "nl": "Heap gebruikt",
       "xloc": [
-        "default.handlebars->23->1386"
+        "default.handlebars->23->1407"
       ]
     },
     {
       "en": "Heap Total",
       "nl": "Heap Totaal",
       "xloc": [
-        "default.handlebars->23->1387"
+        "default.handlebars->23->1408"
       ]
     },
     {
       "en": "RSS",
       "nl": "RSS",
       "xloc": [
-        "default.handlebars->23->1388"
+        "default.handlebars->23->1409"
       ]
     },
     {
@@ -15946,14 +15953,14 @@
       "en": "Remove all previous events for this userid.",
       "cs": "Remove all previous events for this userid.",
       "xloc": [
-        "default.handlebars->23->1218"
+        "default.handlebars->23->1225"
       ]
     },
     {
       "en": "Relay Count",
       "cs": "Počet předávání (relay)",
       "xloc": [
-        "default.handlebars->23->1370"
+        "default.handlebars->23->1391"
       ]
     },
     {
@@ -15983,13 +15990,13 @@
     {
       "en": "Manage User Groups",
       "xloc": [
-        "default.handlebars->23->1233"
+        "default.handlebars->23->1240"
       ]
     },
     {
       "en": "Create User Group",
       "xloc": [
-        "default.handlebars->23->1243"
+        "default.handlebars->23->1251"
       ]
     },
     {
@@ -16001,56 +16008,56 @@
     {
       "en": "No groups found.",
       "xloc": [
-        "default.handlebars->23->1240"
+        "default.handlebars->23->1248"
       ]
     },
     {
       "en": "Send a notice to all users in this group.",
       "xloc": [
-        "default.handlebars->23->1250"
+        "default.handlebars->23->1260"
       ]
     },
     {
       "en": "Group Members",
       "xloc": [
-        "default.handlebars->23->1252"
+        "default.handlebars->23->1262"
       ]
     },
     {
       "en": "No Members",
       "xloc": [
-        "default.handlebars->23->1255"
+        "default.handlebars->23->1265"
       ]
     },
     {
       "en": "Delete User Group",
       "xloc": [
-        "default.handlebars->23->1256",
-        "default.handlebars->23->1262"
+        "default.handlebars->23->1275",
+        "default.handlebars->23->1283"
       ]
     },
     {
       "en": "Edit User Group",
       "xloc": [
-        "default.handlebars->23->1259"
+        "default.handlebars->23->1280"
       ]
     },
     {
       "en": "Delete user group {0}?",
       "xloc": [
-        "default.handlebars->23->1260"
+        "default.handlebars->23->1281"
       ]
     },
     {
       "en": "Remote User",
       "xloc": [
-        "default.handlebars->23->1263"
+        "default.handlebars->23->1284"
       ]
     },
     {
       "en": "Add Users to User Group",
       "xloc": [
-        "default.handlebars->23->1268"
+        "default.handlebars->23->1289"
       ]
     },
     {
@@ -16129,114 +16136,143 @@
       "en": "Upload will overwrite 1 file. Continue?",
       "xloc": [
         "default.handlebars->23->660",
-        "default.handlebars->23->1159"
+        "default.handlebars->23->1166"
       ]
     },
     {
       "en": "Upload will overwrite {0} files. Continue?",
       "xloc": [
         "default.handlebars->23->661",
-        "default.handlebars->23->1160"
+        "default.handlebars->23->1167"
       ]
     },
     {
       "en": "Partial Device Group Rights",
       "xloc": [
-        "default.handlebars->23->1004",
-        "default.handlebars->23->1321"
+        "default.handlebars->23->1005",
+        "default.handlebars->23->1268",
+        "default.handlebars->23->1342"
       ]
     },
     {
       "en": "Full Device Group Administrator",
       "xloc": [
-        "default.handlebars->23->1005",
-        "default.handlebars->23->1323"
+        "default.handlebars->23->1006",
+        "default.handlebars->23->1270",
+        "default.handlebars->23->1344"
       ]
     },
     {
       "en": "Device Group",
       "xloc": [
-        "default.handlebars->23->1060",
-        "default.handlebars->23->1326",
-        "default.handlebars->23->1332"
+        "default.handlebars->23->1061",
+        "default.handlebars->23->1063",
+        "default.handlebars->23->1273",
+        "default.handlebars->23->1347",
+        "default.handlebars->23->1353"
       ]
     },
     {
       "en": "Common Device Groups",
       "xloc": [
-        "default.handlebars->23->1320"
+        "default.handlebars->23->1267",
+        "default.handlebars->23->1341"
       ]
     },
     {
       "en": "No device groups in common",
       "xloc": [
-        "default.handlebars->23->1327"
+        "default.handlebars->23->1274",
+        "default.handlebars->23->1348"
       ]
     },
     {
       "en": "Add User Group",
       "xloc": [
-        "default.handlebars->23->1328"
+        "default.handlebars->23->991",
+        "default.handlebars->23->1085",
+        "default.handlebars->23->1349"
       ]
     },
     {
       "en": "User Group Memberships",
       "xloc": [
-        "default.handlebars->23->1329"
+        "default.handlebars->23->1350"
       ]
     },
     {
       "en": "Unknown User Group",
       "xloc": [
-        "default.handlebars->23->1330"
+        "default.handlebars->23->1351"
       ]
     },
     {
       "en": "Remove user group membership",
       "xloc": [
-        "default.handlebars->23->1331"
+        "default.handlebars->23->1352"
       ]
     },
     {
       "en": "No user group memberships",
       "xloc": [
-        "default.handlebars->23->1333"
+        "default.handlebars->23->1354"
       ]
     },
     {
       "en": "Remove User",
       "xloc": [
-        "default.handlebars->23->1335"
+        "default.handlebars->23->1356"
       ]
     },
     {
       "en": "Confirm removal of group {0}?",
       "xloc": [
-        "default.handlebars->23->1336"
+        "default.handlebars->23->1357"
       ]
     },
     {
       "en": "User Group",
       "xloc": [
-        "default.handlebars->23->1337"
+        "default.handlebars->23->1062",
+        "default.handlebars->23->1358"
       ]
     },
     {
       "en": "Add Membership",
       "xloc": [
-        "default.handlebars->23->1338"
+        "default.handlebars->23->1359"
       ]
     },
     {
       "en": "Remove Device Group",
       "xloc": [
-        "default.handlebars->23->1339"
+        "default.handlebars->23->1276",
+        "default.handlebars->23->1360"
       ]
     },
     {
       "en": "Confirm removal of device group {0}?",
       "xloc": [
-        "default.handlebars->23->1340"
+        "default.handlebars->23->1277",
+        "default.handlebars->23->1361"
+      ]
+    },
+    {
+      "en": "Group permissions for {0}.",
+      "xloc": [
+        "default.handlebars->23->1064"
+      ]
+    },
+    {
+      "en": "Edit Device Group Permissions",
+      "xloc": [
+        "default.handlebars->23->1087"
+      ]
+    },
+    {
+      "en": "Remove user group rights to this device group",
+      "xloc": [
+        "default.handlebars->23->1272"
       ]
     }
   ]
