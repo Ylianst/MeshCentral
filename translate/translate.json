@@ -4168,7 +4168,7 @@
       "nl": "Apparaatgroepen",
       "xloc": [
         "default.handlebars->container->column_l->p2->9",
-        "default.handlebars->23->1246",
+        "default.handlebars->23->1247",
         "default.handlebars->23->1258",
         "default.handlebars->23->1313",
         "default.handlebars->23->1386",
@@ -8987,7 +8987,7 @@
         "default.handlebars->23->1041",
         "default.handlebars->23->1178",
         "default.handlebars->23->1219",
-        "default.handlebars->23->1245",
+        "default.handlebars->23->1246",
         "default.handlebars->23->1249",
         "default.handlebars->23->1253",
         "default.handlebars->23->1255",
@@ -14311,7 +14311,7 @@
       "nl": "Gebruikers",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral",
-        "default.handlebars->23->1247",
+        "default.handlebars->23->1248",
         "default.handlebars->23->1257",
         "default.handlebars->23->1401"
       ]
@@ -15532,8 +15532,10 @@
     },
     {
       "en": "Summary -",
-      "cs": "Souhrn –",
-      "nl": "Samenvatting -"
+      "nl": "Samenvatting -",
+      "xloc": [
+        "default.handlebars->container->column_l->p21->p21title->3"
+      ]
     },
     {
       "en": "Power States",
@@ -15964,7 +15966,6 @@
     },
     {
       "en": "Relay Count",
-      "en": "Relay Count",
       "cs": "Počet předávání (relay)",
       "xloc": [
         "default.handlebars->23->1391"
@@ -15975,13 +15976,6 @@
       "nl": "Intel®AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
-      ]
-    },
-    {
-      "en": "Summary -",
-      "nl": "Samenvatting -",
-      "xloc": [
-        "default.handlebars->container->column_l->p21->p21title->3"
       ]
     },
     {
@@ -16023,7 +16017,7 @@
       "en": "No groups found.",
       "nl": "Geen groepen gevonden.",
       "xloc": [
-        "default.handlebars->23->1248"
+        "default.handlebars->23->1245"
       ]
     },
     {

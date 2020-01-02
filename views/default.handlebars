@@ -7981,7 +7981,7 @@
 
         function p20validateAddMeshUserDialog() {
             var meshrights = null;
-            if (xxdialogTag === 1) {
+            if ((xxdialogTag === 1) || (xxdialogTag === 3)) {
                 meshrights = GetMeshRights(decodeURIComponent(Q('dp2groupid').value));
             } else {
                 meshrights = GetMeshRights(currentMesh);
@@ -9087,17 +9087,19 @@
 
         function updateUserGroups() {
             // Sort the list of group names
-            var sortedGroups = [];
+            var sortedGroups = [], x = '';
             for (var i in usergroups) { sortedGroups.push(usergroups[i]); }
             sortedGroups.sort(nameSort);
 
-            // Display the groups using the sorted list
-            var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
-            x += '<th>' + "Name" + '<th style=width:80px>' + "Device Groups" + '<th style=width:80px>' + "Users";
-            for (var i in sortedGroups) { x += addUserGroupHtml(sortedGroups[i]); }
-            x += '</table>';
-
-            if (sortedGroups.length == 0) { x += '<br />' + "No groups found." + '<br />'; }
+            if (sortedGroups.length == 0) {
+                x += '<br />' + "No groups found." + '<br />';
+            } else {
+                // Display the groups using the sorted list
+                x += '<table class=p3usersTable cellpadding=0 cellspacing=0>';
+                x += '<th>' + "Name" + '<th style=width:80px>' + "Device Groups" + '<th style=width:80px>' + "Users";
+                for (var i in sortedGroups) { x += addUserGroupHtml(sortedGroups[i]); }
+                x += '</table>';
+            }
             QH('p50groups', x);
 
             // Update current user panel if needed
