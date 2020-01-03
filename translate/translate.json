@@ -15386,7 +15386,7 @@
       "pt": "Seleção da interface do usuário",
       "ja": "ユーザーインターフェイスの選択",
       "cs": "Výběr uživatelského rozhraní",
-      "nl": "Wissle gebruikersinterface",
+      "nl": "Wissel gebruikersinterface",
       "de": "Benutzerinterface-Auswahl",
       "xloc": [
         "agentinvite.handlebars->container->topbar",
@@ -16903,6 +16903,7 @@
     },
     {
       "en": "Wrap On",
+      "nl": "Wrap Aan",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog4"
       ]
@@ -16926,6 +16927,7 @@
     },
     {
       "en": "Wrap: ON",
+      "nl": "Wrap: AAN",
       "de": "Wrap: an",
       "xloc": [
         "default.handlebars->23->653"
@@ -16933,7 +16935,7 @@
     },
     {
       "en": "Wrap: OFF",
-      "nl": "Wrap: OFF",
+      "nl": "Wrap: UIT",
       "de": "Wrap: aus",
       "xloc": [
         "default.handlebars->23->654"
@@ -17093,6 +17095,7 @@
     },
     {
       "en": "Agent Error Counters",
+      "nl": "Agent fout tellers",
       "cs": "Počitadla chyb agenta",
       "de": "Agent-Fehlerzähler",
       "xloc": [
@@ -17356,6 +17359,7 @@
     },
     {
       "en": "Relay Count",
+      "nl": "Relay geteld",
       "cs": "Počet předávání (relay)",
       "de": "Weiterleitungsanzahl",
       "xloc": [
@@ -17712,30 +17716,35 @@
     },
     {
       "en": "Group permissions for {0}.",
+      "nl": "Groepsrechten voor {0}.",
       "xloc": [
         "default.handlebars->23->1064"
       ]
     },
     {
       "en": "Edit Device Group Permissions",
+      "nl": "Bewerk apparaatgroep rechten",
       "xloc": [
         "default.handlebars->23->1087"
       ]
     },
     {
       "en": "Remove user group rights to this device group",
+      "nl": "Verwijder gebruikers groepsrechten van deze apparaatgroep",
       "xloc": [
         "default.handlebars->23->1274"
       ]
     },
     {
       "en": "Duplicate Group...",
+      "nl": "Dupliceer Groep...",
       "xloc": [
         "default.handlebars->container->column_l->p50->3->1->0->3->3"
       ]
     },
     {
       "en": "Duplicate User Group",
+      "nl": "Duplicer Gebruikers Groep",
       "xloc": [
         "default.handlebars->23->1253"
       ]
