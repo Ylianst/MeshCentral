@@ -2693,7 +2693,7 @@
       "pt": "Cancelar",
       "ja": "キャンセル",
       "nl": "Annuleren",
-      "de": "Abbr.",
+      "de": "Abbrechen",
       "xloc": [
         "default.handlebars->container->dialog->idx_dlgButtonBar",
         "default.handlebars->23->946",
