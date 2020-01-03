@@ -1,7 +1,7 @@
 ﻿/**
 * @description MeshCentral letsEncrypt module, uses GreenLock to do all the work.
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2019
+* @copyright Intel Corporation 2018-2020
 * @license Apache-2.0
 * @version v0.0.2
 */
