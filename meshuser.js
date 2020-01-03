@@ -1476,12 +1476,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'usergroups':
                 {
-                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+                    // TODO: Return only groups in the same administrative domain?
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) {
+                        // We are not user group administrator, return a list with limited data.
+                        var groups = {}, groupCount = 0;
+                        for (var i in parent.userGroups) { groupCount++; groups[i] = { name: parent.userGroups[i].name }; }
+                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: groupCount?groups:null, tag: command.tag })); } catch (ex) { }
+                    } else {
+                        // We are user group administrator, return a full user group list.
+                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: parent.userGroups, tag: command.tag })); } catch (ex) { }
+                    }
 
+                    /*
                     // Request a list of all user groups this user as rights to
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
                     db.GetAllTypeNoTypeField('ugrp', domain.id, function (err, docs) {
                         try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: common.unEscapeAllLinksFieldName(docs), tag: command.tag })); } catch (ex) { }
                     });
+                    */
                     break;
                 }
             case 'createusergroup':

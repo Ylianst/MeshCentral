@@ -1723,9 +1723,15 @@
                 }
                 case 'usergroups': {
                     var groupCount = 0;
-                    usergroups = {};
-                    for (var i in message.ugroups) { groupCount++; usergroups[message.ugroups[i]._id] = message.ugroups[i]; }
-                    if (groupCount == 0) { usergroups = null; }
+                    if (Array.isArray(message.ugroups)) {
+                        usergroups = {};
+                        for (var i in message.ugroups) { groupCount++; usergroups[message.ugroups[i]._id] = message.ugroups[i]; }
+                        if (groupCount == 0) { usergroups = null; }
+                    } else {
+                        usergroups = message.ugroups;
+                        for (var i in message.ugroups) { groupCount++; }
+                        if (groupCount == 0) { usergroups = null; }
+                    }
                     masterUpdate(8192);
                     break;
                 }
@@ -2249,7 +2255,7 @@
                             // A new mesh was created
                             if ((meshes[message.event.meshid] == null) && (message.event.links[userinfo._id] != null)) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
-                                masterUpdate(4 + 128);
+                                masterUpdate(4 + 128 + 8192 + 16384);
                                 meshserver.send({ action: 'files' });
                             }
                             break;
@@ -2286,7 +2292,7 @@
                                     if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
                                 }
                             }
-                            masterUpdate(4 + 128);
+                            masterUpdate(4 + 128 + 8192 + 16384);
                             if (currentNode && (currentNode.meshid == message.event.meshid)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
@@ -2306,7 +2312,7 @@
                             var newnodes = [];
                             if (nodes != null) { for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } } }
                             nodes = newnodes;
-                            masterUpdate(4);
+                            masterUpdate(4 + 8192 + 16384);
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
@@ -7660,7 +7666,7 @@
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
                 x += '<a href=# onclick="return p20showAddMeshUserDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Users" + '</a>';
-                if ((usergroups != null) && ((userinfo.siteadmin & 256) != 0)) {
+                if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) { userGroupCount++; if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; } }
                     if ((userGroupCount > 0) && (newUserGroup)) {  x += '<a href=# onclick="return p20showAddMeshUserDialog(2)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
@@ -7898,7 +7904,7 @@
                 for (var i in meshes) { if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(meshes[i].name) + '</option>'; } }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if (userid === 2) {
-                if ((usergroups == null) || ((userinfo.siteadmin & 256) == 0)) return;
+                if (usergroups == null) return;
                 var y = '';
                 for (var i in usergroups) { if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
                 x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
