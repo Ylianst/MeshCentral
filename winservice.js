@@ -1,7 +1,7 @@
 /**
 * @description Windows Service Launcher
 * @author Ylian Saint-Hilaire
-* @copyright Intel Corporation 2018-2019
+* @copyright Intel Corporation 2018-2020
 * @license Apache-2.0
 * @version v0.0.1
 */
