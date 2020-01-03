@@ -600,19 +600,19 @@ body {
 
 #idx_dlgCancelButton {
     float: right;
-    width: 80px;
+    min-width: 80px;
     margin-left: 5px;
 }
 
 #idx_dlgOkButton {
     float: right;
-    width: 80px;
+    min-width: 80px;
     margin-left: 5px;
 }
 
 #idx_dlgDeleteButton {
     float: left;
-    width: 80px;
+    min-width: 80px;
     margin-left: 5px;
 }
 
