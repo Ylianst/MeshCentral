@@ -4079,6 +4079,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return false;
     }
 
+    // Returns a list of displatch targets for a given mesh
+    // We have to target the meshid and all user groups for this mesh, plus any added targets
+    obj.CreateMeshDispatchTargets = function (mesh, addedTargets) {
+        var targets = (addedTargets != null) ? addedTargets : [];
+        if (targets.indexOf('*') == -1) { targets.push('*'); }
+        if (typeof mesh == 'string') { mesh = obj.meshes[mesh]; }
+        if (mesh != null) {
+            targets.push(mesh._id);
+            for (var i in mesh.links) { if (i.startsWith('ugrp/')) { targets.push(i); } }
+        }
+        return targets;
+    }
+
     // Clone a safe version of a user object, remove everything that is secret.
     obj.CloneSafeUser = function (user) {
         if (typeof user != 'object') { return user; }
