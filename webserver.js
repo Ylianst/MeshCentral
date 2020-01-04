@@ -4025,14 +4025,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else return 0;
 
         // Check direct user to device group permissions
+        var rights = 0;
         r = user.links[meshid];
-        if ((r != null) && (r.rights == 0xFFFFFFFF)) { return r.rights; } // If the user has full access thru direct link, stop here.
-        var rights = r.rights;
+        if (r != null) {
+            var rights = r.rights;
+            if (rights == 0xFFFFFFFF) { return rights; } // If the user has full access thru direct link, stop here.
+        }
 
         // Check if we are part of any user groups that would give this user more access.
         for (var i in user.links) {
             if (i.startsWith('ugrp')) {
-                const g = obj.usersGroups[i];
+                const g = obj.userGroups[i];
                 if (g) {
                     r = g.links[meshid];
                     if (r != null) {
@@ -4068,7 +4071,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if we are part of any user groups that would give this user visibility to this device group.
         for (var i in user.links) {
             if (i.startsWith('ugrp')) {
-                const g = obj.usersGroups[i];
+                const g = obj.userGroups[i];
                 if (g && (g.links[meshid] != null)) { return true; } // If the user has a user group link, stop here.
             }
         }

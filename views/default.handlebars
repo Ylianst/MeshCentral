@@ -10539,37 +10539,63 @@
         //
 
         // Get the right of a user on a given device group
-        function GetMeshRights(mesh, user) {
+        function GetMeshRights(mesh, userid) {
             if (mesh == null) { return 0; }
-            if (user == null) { user = userinfo._id; }
+            if (userid == null) { userid = userinfo._id; }
             if (typeof mesh == 'string') { mesh = meshes[mesh] }
             if ((mesh == null) || (mesh.links == null)) { return 0; }
-            var rights = mesh.links[user];
-            if (rights == null) { return 0; }
-            return rights.rights;
+
+            // Check direct link permission
+            var rights = 0, r = mesh.links[userid];
+            if (r != null) {
+                rights = r.rights;
+                if (rights == 0xFFFFFFFF) { return rights; } // User has full rights thru a direct link, stop here.
+            }
+
+            // Check permissions thru user groups
+            var user = null;
+            if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
+            if (user != null) {
+                for (var i in user.links) {
+                    if (i.startsWith('ugrp/')) {
+                        r = mesh.links[i];
+                        if (r != null) {
+                            if (r.rights == 0xFFFFFFFF) { return r.rights; } // User has full rights thru a user group, stop here.
+                            rights |= r.rights; // TODO: Deal with reverse permissions
+                        }
+                    }
+                }
+            }
+
+            return rights;
         }
 
         // Returns true if the user can view the given device group
-        function IsMeshViewable(mesh, user) {
-            if (mesh == null) { return 0; }
-            if (user == null) { user = userinfo._id; }
+        function IsMeshViewable(mesh, userid) {
+            if (mesh == null) { return false; }
+            if (userid == null) { userid = userinfo._id; }
             if (typeof mesh == 'string') { mesh = meshes[mesh] }
             if ((mesh == null) || (mesh.links == null)) { return false; }
-            var rights = mesh.links[user];
-            if (rights == null) { return false; }
-            return true;
+            if (mesh.links[userid] != null) { return true; } // User has visilibity thru a direct link
+
+            // Check permissions thru user groups
+            var user = null;
+            if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
+            if (user != null) {
+                for (var i in user.links) {
+                    if ((i.startsWith('ugrp/')) && (mesh.links[i] != null)) { return true; } // User has visilibity thru a user group
+                }
+            }
+
+            return rights;
         }
 
         // Return the user rights for a given node
-        function GetNodeRights(node, user) {
+        function GetNodeRights(node, userid) {
             if (node == null) { return 0; }
-            if (user == null) { user = userinfo._id; }
+            if (userid == null) { userid = userinfo._id; }
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
-            var mesh = meshes[node.meshid];
-            if ((mesh == null) || (mesh.links == null)) { return 0; }
-            var meshlinks = mesh.links[user];
-            if (meshlinks == null) { return 0; }
-            return meshlinks.rights;
+            return GetMeshRights(node.meshid, userid);
         }
 
         //
