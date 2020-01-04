@@ -117,6 +117,14 @@
             float: left;
         }
 
+        .m4 {
+            background: url(../images/images16.png) -128px 0px;
+            height: 16px;
+            width: 16px;
+            border: none;
+            float: left;
+        }
+
         .gray {
             /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
             filter: gray; /* IE6-9 */
@@ -614,6 +622,7 @@
         var authCookieRenewTimer = null;
         var meshserver = null;
         var xdr = null;
+        var usergroups = null;
         var serverinfo = null;
         var nodes = [];
         var meshes = {};
@@ -670,6 +679,7 @@
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
+                meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes' });
                 meshserver.send({ action: 'files' });
@@ -753,6 +763,20 @@
                     for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
                     updateMeshes();
                     updateDevices();
+                    break;
+                }
+                case 'usergroups': {
+                    var groupCount = 0;
+                    if (Array.isArray(message.ugroups)) {
+                        usergroups = {};
+                        for (var i in message.ugroups) { groupCount++; usergroups[message.ugroups[i]._id] = message.ugroups[i]; }
+                        if (groupCount == 0) { usergroups = null; }
+                    } else {
+                        usergroups = message.ugroups;
+                        for (var i in message.ugroups) { groupCount++; }
+                        if (groupCount == 0) { usergroups = null; }
+                    }
+                    //masterUpdate(8192);
                     break;
                 }
                 case 'files': {
@@ -873,6 +897,34 @@
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
                                 updateSelf();
+                            }
+                            break;
+                        }
+                        case 'createusergroup':
+                        case 'usergroupchange': {
+                            // User group changed
+                            if (usergroups == null) { usergroups = {}; }
+                            var ugroup = usergroups[message.event.ugrpid];
+                            if (ugroup == null) {
+                                // This is a new user group for us
+                                usergroups[message.event.ugrpid] = { _id: message.event.ugrpid, name: message.event.name, desc: message.event.desc, domain: message.event.domain, links: message.event.links };
+                            } else {
+                                // This is an existing user group
+                                ugroup.name = message.event.name;
+                                ugroup.desc = message.event.desc;
+                                ugroup.links = message.event.links;
+                            }
+                            //masterUpdate(8192 + 16384);
+                            break;
+                        }
+                        case 'deleteusergroup': {
+                            // User group removed
+                            if ((usergroups != null) && (usergroups[message.event.ugrpid] != null)) {
+                                delete usergroups[message.event.ugrpid];
+                                var c = 0;
+                                for (var i in usergroups) { c++; }
+                                if (c == 0) { usergroups = null; } // If user groups is empty, set it to null.
+                                //masterUpdate(8192 + 16384);
                             }
                             break;
                         }
@@ -1724,11 +1776,11 @@
                 if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
             }
 
-            // Display all empty meshes, we need to do this because users can add devices to these at any time.
+            // Display all empty device groups, we need to do this because users can add devices to these at any time.
             if (sort == 0) {
                 for (var i in meshes) {
                     var mesh = meshes[i];
-                    if (IsMeshViewable(mesh)) {
+                    if ((displayedMeshes[mesh._id] == null) && (IsMeshViewable(mesh))) {
                         if ((current != '') && (r != '')) { r += '</tr></table>'; }
                         r += '<div><div colspan=3 class=DevSt><span style=float:right>';
                         //r += getMeshActions(mesh, meshrights);
@@ -3135,16 +3187,23 @@
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
-            for (var i in currentMesh.links) { sortedusers.push({ id: i, name: i.split('/')[2], rights: currentMesh.links[i].rights }); }
+            for (var i in currentMesh.links) {
+                var uname = i.split('/')[2];
+                if (currentMesh.links[i].name) { uname = currentMesh.links[i].name; }
+                if (i == userinfo._id) { uname = userinfo.name; }
+                if ((usergroups != null) && (usergroups[i] != null)) { uname = usergroups[i].name; }
+                sortedusers.push({ id: i, name: uname, rights: currentMesh.links[i].rights });
+            }
             sortedusers.sort(function (a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
 
             // Display all users for this mesh
             for (var i in sortedusers) {
-                var trash = '', rights = "Partial Rights", r = sortedusers[i].rights;
+                var trash = '', rights = "Partial Rights", r = sortedusers[i].rights, icon = 2;
                 if (r == 0xFFFFFFFF) rights = "Full Administrator"; else if (r == 0) rights = "No Rights";
                 if ((i != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a onclick=p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '") style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
                 x += '<tr onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") style=height:32px;cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td>';
-                x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
+                x += '<div style=float:right>' + trash + '</div><div style=float:right;padding-right:4px>' + rights + '</div><div class=m' + icon + '></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div>';
                 x += '</td></tr>';
                 ++count;
             }
@@ -3296,7 +3355,14 @@
             setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
         }
 
-        function p20viewuserEx(button, userid) { if (button != 2) return; setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, format("Confirm removal of user {0}?", userid.split('/')[2]), userid); }
+        function p20viewuserEx(button, userid) {
+            if (button != 2) return;
+            var uname = userid.split('/')[2];
+            if (users && users[userid]) { uname = users[userid].name; }
+            if (usergroups && usergroups[userid]) { uname = usergroups[userid].name; }
+            if (userinfo._id == userid) { uname = userinfo.name; }
+            setDialogMode(2, "Remote Mesh User", 3, p20viewuserEx2, format("Confirm removal of user {0}?", uname), userid);
+        }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
 
