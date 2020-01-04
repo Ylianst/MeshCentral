@@ -65,7 +65,7 @@
     },
     "__MaxInvalidLogin": "Time in minutes, max amount of bad logins from a source IP in the time before logins are rejected.",
     "MaxInvalidLogin": { "time": 10, "count": 10, "coolofftime": 10 },
-    "_plugins": {
+    "_Plugins": {
         "enabled": true
     }
   },

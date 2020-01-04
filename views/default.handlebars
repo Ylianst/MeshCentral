@@ -1500,8 +1500,8 @@
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
-                meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'usergroups' });
+                meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
