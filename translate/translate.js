@@ -475,7 +475,7 @@ function translateFromHtml(lang, file, createSubDir) {
     var data = fs.readFileSync(file);
     var { JSDOM } = jsdom;
     const dom = new JSDOM(data, { includeNodeLocations: true });
-    console.log("Translating HTML: " + path.basename(file));
+    console.log("Translating HTML (" + lang + "): " + path.basename(file));
     translateStrings(path.basename(file), dom.window.document.querySelector('body'));
     var out = dom.serialize();
 

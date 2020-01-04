@@ -3923,9 +3923,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check that we have permissions for this node.
         db.Get(nodeid, function (err, nodes) {
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
-            var rights = user.links[nodes[0].meshid];
-            if (rights == null) { func(null, 0, false); return; } // No rights to this mesh
-            func(nodes[0], rights.rights, true);
+
+            // Check direct link
+            var rights = 0, visible = false, r = user.links[nodes[0].meshid];
+            if (r != null) {
+                rights = r.rights;
+                visible = true;
+                if (rights == 0xFFFFFFFF) { func(nodes[0], rights, true); return; } // User has full rights thru a direct link, stop here.
+            }
+
+            // Check user group links
+            for (var i in user.links) {
+                if (i.startsWith('ugrp/')) {
+                    const g = obj.userGroups[i];
+                    if (g && (g.links != null)) {
+                        r = g.links[nodes[0].meshid];
+                        if (r != null) {
+                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], r.rights, true); return; } // User has full rights thru a user group link, stop here.
+                            rights |= r.rights; // TODO: Deal with reverse rights
+                            visible = true;
+                        }
+                    }
+                }
+            }
+
+            // Return the rights we found
+            func(nodes[0], rights, visible);
         });
     }
 
@@ -3934,7 +3957,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (typeof user == 'string') { user = obj.users[user]; }
         if ((user == null) || (user.links == null)) { return []; }
         var r = [];
-        for (var i in user.links) { const m = obj.meshes[i]; if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) { r.push(m); } }
+        for (var i in user.links) {
+            if (i.startsWith('mesh/')) {
+                // Grant access to a device group thru a direct link
+                const m = obj.meshes[i];
+                if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) {
+                    if (r.indexOf(m) == -1) { r.push(m); }
+                }
+            } else if (i.startsWith('ugrp/')) {
+                // Grant access to a device group thru a user group
+                const g = obj.userGroups[i];
+                if (g && (g.links != null) && ((rights == null) || ((g.rights & rights) != 0))) {
+                    for (var j in g.links) {
+                        if (j.startsWith('mesh/')) {
+                            const m = obj.meshes[j];
+                            if ((m) && (m.deleted == null)) {
+                                if (r.indexOf(m) == -1) { r.push(m); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return r;
     }
 
@@ -3943,7 +3987,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (typeof user == 'string') { user = obj.users[user]; }
         if ((user == null) || (user.links == null)) { return []; }
         var r = [];
-        for (var i in user.links) { const m = obj.meshes[i]; if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) { r.push(m._id); } }
+        for (var i in user.links) {
+            if (i.startsWith('mesh/')) {
+                // Grant access to a device group thru a direct link
+                const m = obj.meshes[i];
+                if ((m) && (m.deleted == null) && ((rights == null) || ((m.rights & rights) != 0))) {
+                    if (r.indexOf(m._id) == -1) { r.push(m._id); }
+                }
+            } else if (i.startsWith('ugrp/')) {
+                // Grant access to a device group thru a user group
+                const g = obj.userGroups[i];
+                if (g && (g.links != null) && ((rights == null) || ((g.rights & rights) != 0))) {
+                    for (var j in g.links) {
+                        if (j.startsWith('mesh/')) {
+                            const m = obj.meshes[j];
+                            if ((m) && (m.deleted == null)) {
+                                if (r.indexOf(m._id) == -1) { r.push(m._id); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return r;
     }
 
@@ -3952,10 +4017,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user == null) || (mesh == null)) { return 0; }
         if (typeof user == 'string') { user = obj.users[user]; }
         if ((user == null) || (user.links == null)) { return 0; }
-        var r = 0;
-        if (typeof mesh == 'string') { r = user.links[mesh]; } else { r = user.links[mesh._id]; }
-        if (r == null) { return 0; }
-        return r.rights;
+        var r, meshid;
+        if (typeof mesh == 'string') {
+            meshid = mesh;
+        } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) {
+            meshid = mesh._id;
+        } else return 0;
+
+        // Check direct user to device group permissions
+        r = user.links[meshid];
+        if ((r != null) && (r.rights == 0xFFFFFFFF)) { return r.rights; } // If the user has full access thru direct link, stop here.
+        var rights = r.rights;
+
+        // Check if we are part of any user groups that would give this user more access.
+        for (var i in user.links) {
+            if (i.startsWith('ugrp')) {
+                const g = obj.usersGroups[i];
+                if (g) {
+                    r = g.links[meshid];
+                    if (r != null) {
+                        if (r.rights == 0xFFFFFFFF) {
+                            return r.rights; // If the user hash full access thru a user group link, stop here.
+                        } else {
+                            rights |= r.rights; // Add to existing rights (TODO: Deal with reverse rights)
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return rights;
     }
 
     // Returns true if the user can view the given device group
@@ -3963,10 +4055,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user == null) || (mesh == null)) { return false; }
         if (typeof user == 'string') { user = obj.users[user]; }
         if ((user == null) || (user.links == null)) { return false; }
-        var r = 0;
-        if (typeof mesh == 'string') { r = user.links[mesh]; } else { r = user.links[mesh._id]; }
-        if (r == null) { return false; }
-        return true;
+        var meshid;
+        if (typeof mesh == 'string') {
+            meshid = mesh;
+        } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) {
+            meshid = mesh._id;
+        } else return false;
+
+        // Check direct user to device group permissions
+        if (user.links[meshid] != null) { return true; } // If the user has a direct link, stop here.
+
+        // Check if we are part of any user groups that would give this user visibility to this device group.
+        for (var i in user.links) {
+            if (i.startsWith('ugrp')) {
+                const g = obj.usersGroups[i];
+                if (g && (g.links[meshid] != null)) { return true; } // If the user has a user group link, stop here.
+            }
+        }
+
+        return false;
     }
 
     // Clone a safe version of a user object, remove everything that is secret.
