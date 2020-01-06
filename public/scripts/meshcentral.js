@@ -53,7 +53,7 @@ var MeshServerCreateControl = function (domain, authCookie) {
     
     obj.send = function (x) {
         if (obj.socket != null && obj.connectstate == 1) {
-            if (obj.trace) { console.log('SEND', x); }
+            if (obj.trace && (x.action != 'ping')) { console.log('SEND', x); }
             obj.socket.send(JSON.stringify(x));
         }
     }
