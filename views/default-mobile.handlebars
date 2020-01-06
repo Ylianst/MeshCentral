@@ -915,6 +915,10 @@
                                 ugroup.links = message.event.links;
                             }
                             //masterUpdate(8192 + 16384);
+
+                            // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
+                            meshserver.send({ action: 'meshes' });
+                            meshserver.send({ action: 'nodes' });
                             break;
                         }
                         case 'deleteusergroup': {
@@ -954,7 +958,7 @@
                                 meshes[message.event.meshid].links = message.event.links;
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links[userinfo._id] == null) {
+                                if (IsMeshViewable(message.event.meshid) == false) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
