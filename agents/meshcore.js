@@ -39,6 +39,29 @@ var MESHRIGHT_LIMITEDINPUT = 4096;
 
 function createMeshCore(agent) {
     var obj = {};
+    if (process.platform == 'win32' && require('user-sessions').isRoot())
+    {
+        // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
+        var actualSize = require('fs').statSync(process.execPath).size / 1024;
+        var writtenSize = 0;
+        try
+        {
+            writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize');
+        }
+        catch(x)
+        {
+        }
+        if (writtenSize != actualSize)
+        {
+            try
+            {
+                require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize);
+            }
+            catch (x2)
+            {
+            }
+        }
+    }
 
     if (process.platform == 'darwin' && !process.versions) {
         // This is an older MacOS Agent, so we'll need to check the service definition so that Auto-Update will function correctly
