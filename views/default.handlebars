@@ -2234,8 +2234,8 @@
                             } else {
                                 // This is an existing user group
                                 ugroup.name = message.event.name;
-                                ugroup.desc = message.event.desc;
-                                ugroup.links = message.event.links;
+                                if (message.event.desc) { ugroup.desc = message.event.desc; } else { delete ugroup.desc; }
+                                if (message.event.links) { ugroup.links = message.event.links; } else { delete ugroup.links; }
                             }
                             masterUpdate(8192 + 16384);
                             break;
@@ -2279,7 +2279,7 @@
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
 
                                 // Check if we lost rights to this mesh in this change.
-                                if (meshes[message.event.meshid].links[userinfo._id] == null) {
+                                if (IsMeshViewable(message.event.meshid) == false) {
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
@@ -2319,6 +2319,7 @@
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
                             if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
 
+                            console.log('deletemesh', meshes);
                             break;
                         }
                         case 'addnode': {
