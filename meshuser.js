@@ -269,6 +269,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     for (var i in ids) { if (ids[i].startsWith('user/')) { userTarget = true; } }
                                     if (userTarget == false) { ws.send(JSON.stringify({ action: 'event', event: event })); }
                                 }
+                            } else if (event.ugrpid != null) {
+                                if ((user.siteadmin & SITERIGHT_USERGROUPS) != 0) {
+                                    // If we have the rights to see users in a group, send the group as is.
+                                    ws.send(JSON.stringify({ action: 'event', event: event }));
+                                } else {
+                                    // We don't have the rights to see user groups, remove the links.
+                                    ws.send(JSON.stringify({ action: 'event', event: { ugrpid: event.ugrpid, domain: event.domain, time: event.time, name: event.name, action: event.action, username: event.username, h: event.h } }));
+                                }
                             } else {
                                 // This is not a device group event, we can get this event.
                                 ws.send(JSON.stringify({ action: 'event', event: event }));
@@ -2243,7 +2251,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
-                            var event = { etype: 'mesh', username: newuser.name, userid: command.userid, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id };
+                            var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
                             removedCount++;
