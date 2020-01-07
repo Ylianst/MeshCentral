@@ -1989,7 +1989,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     try { res.sendFile(obj.path.join(__dirname, 'translate', 'translate.json')); } catch (ex) { res.sendStatus(404); }
                 } else { res.sendStatus(404); }
             } else if (data.action == 'setTranslations') {
-                obj.fs.writeFile(obj.path.join(obj.parent.datapath, 'translate.json'), JSON.stringify({ strings: data.strings }), function (err) { if (err == null) { res.send(JSON.stringify({ response: 'ok' })); } else { res.send(JSON.stringify({ response: err })); } });
+                obj.fs.writeFile(obj.path.join(obj.parent.datapath, 'translate.json'), obj.common.translationsToJson({ strings: data.strings }), function (err) { if (err == null) { res.send(JSON.stringify({ response: 'ok' })); } else { res.send(JSON.stringify({ response: err })); } });
             } else if (data.action == 'translateServer') {
                 if (obj.pendingTranslation === true) { res.send(JSON.stringify({ response: 'Server is already performing a translation.' })); return; }
                 const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);

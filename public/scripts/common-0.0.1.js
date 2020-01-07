@@ -90,8 +90,14 @@ function decode_utf8(s) { return decodeURIComponent(escape(s)); }
 function data2blob(data) {
     var bytes = new Array(data.length);
     for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
-    var blob = new Blob([new Uint8Array(bytes)]);
-    return blob;
+    return new Blob([new Uint8Array(bytes)]);
+}
+
+// Convert a UTF8 string into a blob
+function utf2blob(str) {
+    var bytes = [], utf8 = unescape(encodeURIComponent(str));
+    for (var i = 0; i < utf8.length; i++) { bytes.push(utf8.charCodeAt(i)); }
+    return new Blob([new Uint8Array(bytes)]);
 }
 
 // Generate random numbers
