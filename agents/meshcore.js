@@ -1941,7 +1941,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
@@ -1952,6 +1952,42 @@ function createMeshCore(agent) {
                     response = 'Available commands: \r\n' + fin + '.';
                     break;
                 }
+                case 'agentsize':
+                    var actualSize = require('fs').statSync(process.execPath).size / 1024;
+                    if (process.platform == 'win32')
+                    {
+                        // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
+                        var writtenSize = 0;                        
+                        try
+                        {
+                            writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize');
+                        }
+                        catch (x)
+                        {
+                            response = x;
+                        }
+                        if (writtenSize != actualSize)
+                        {
+                            response = 'Size updated from: ' + writtenSize + ' to: ' + actualSize;
+                            try
+                            {
+                                require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize);
+                            }
+                            catch (x2)
+                            {
+                                response = x2;
+                            }
+                        }
+                        else
+                        {
+                            response = 'Agent Size: ' + actualSize + ' kb';
+                        }
+                    }
+                    else
+                    {
+                        response = 'Agent Size: ' + actualSize + ' kb';
+                    }
+                    break;
                 case 'version':
                     response = 'Mesh Agent Version: ' + process.versions.meshAgent;
                     break;
