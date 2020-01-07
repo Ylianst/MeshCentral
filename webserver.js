@@ -4262,16 +4262,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // TODO: Add multi-server support
                 }
             }
-        } else { // Route this command to the mesh
+        } else { // Route this command to all users with MESHRIGHT_AGENTCONSOLE rights to this device group
             command.nodeid = nodeid;
             var cmdstr = JSON.stringify(command);
-            if (obj.GetMeshRights(userid, meshid) == 0) return; // TODO: Check if this is ok
 
-            // Find all connected users for this mesh and send the message
+            // Find all connected user sessions with access to this device
             for (var userid in obj.wssessions) {
                 var xsessions = obj.wssessions[userid];
-                // Send the message to all users on this server
-                for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
+                if (obj.GetMeshRights(userid, meshid) != 0) {
+                    // Send the message to all sessions for this user on this server
+                    for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
+                }
             }
 
             // Send the message to all users of other servers
