@@ -645,7 +645,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         else if ((command.fileop == 'rename') && (common.IsFilenameValid(command.oldname) == true) && (common.IsFilenameValid(command.newname) == true)) {
                             // Rename
-                            try { fs.renameSync(path + "/" + command.oldname, path + "/" + command.newname); } catch (e) { }
+                            try { fs.renameSync(path + '/' + command.oldname, path + '/' + command.newname); } catch (e) { }
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             if (common.validateArray(command.names, 1) == false) return;
