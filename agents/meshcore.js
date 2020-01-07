@@ -42,24 +42,20 @@ function createMeshCore(agent) {
     if (process.platform == 'win32' && require('user-sessions').isRoot())
     {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
-        var actualSize = require('fs').statSync(process.execPath).size / 1024;
+        var actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
         var writtenSize = 0;
         try
         {
             writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize');
         }
-        catch(x)
-        {
-        }
+        catch(x) { }
         if (writtenSize != actualSize)
         {
             try
             {
                 require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize);
             }
-            catch (x2)
-            {
-            }
+            catch (x2) { }
         }
     }
 
@@ -1953,7 +1949,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'agentsize':
-                    var actualSize = require('fs').statSync(process.execPath).size / 1024;
+                    var actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
                     if (process.platform == 'win32')
                     {
                         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
