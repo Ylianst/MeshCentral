@@ -1131,48 +1131,67 @@ function createMeshCore(agent) {
                     };
 
                     // Remote terminal using native pipes
-                    if (process.platform == 'win32') {
-                        try {
+                    if (process.platform == 'win32')
+                    {
+                        try
+                        {
                             if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9)) { throw ('PowerShell is not supported on this version of windows'); }
-                            if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6)) {
+                            if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6))
+                            {
                                 // Admin Terminal
-                                if (require('win-virtual-terminal').supported) {
+                                if (require('win-virtual-terminal').supported)
+                                {
                                     // ConPTY PseudoTerminal
-                                    this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+                                    // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+
+                                    // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
+                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
+                                    this.httprequest._dispatcher.ws = this;
+                                    this.httprequest._dispatcher.on('connection', function (c)
+                                    {
+                                        console.log('client connected');
+                                        this.ws._term = c;
+                                        c.pipe(this.ws, { dataTypeSkip: 1 });
+                                        this.ws.pipe(c, { dataTypeSkip: 1 });
+                                    });
                                 }
-                                else {
+                                else
+                                {
                                     // Legacy Terminal
                                     this.httprequest._term = require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
                                 }
                             }
-                            else {
+                            else
+                            {
                                 // Logged in user
                                 var userPromise = require('user-sessions').enumerateUsers();
                                 userPromise.that = this;
-                                userPromise.then(function (u) {
+                                userPromise.then(function (u)
+                                {
                                     var that = this.that;
-                                    if (u.Active.length > 0) {
+                                    if (u.Active.length > 0)
+                                    {
                                         var username = u.Active[0].Username;
-                                        if (require('win-virtual-terminal').supported) {
+                                        if (require('win-virtual-terminal').supported)
+                                        {
                                             // ConPTY PseudoTerminal
                                             that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
                                         }
-                                        else {
+                                        else
+                                        {
                                             // Legacy Terminal
                                             that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
                                         }
                                         that.httprequest._dispatcher.ws = that;
-                                        that.httprequest._dispatcher.on('connection', function (c) {
+                                        that.httprequest._dispatcher.on('connection', function (c)
+                                        {
                                             console.log('client connected');
                                             this.ws._term = c;
                                             c.pipe(this.ws, { dataTypeSkip: 1 });
-                                            this.ws.pipe(c, { dataTypeSkip: 1, end: false });
-                                            this.ws.prependListener('end', function () {
-                                                if (this.httprequest._term) { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); }
-                                            });
+                                            this.ws.pipe(c, { dataTypeSkip: 1 });
                                         });
                                     }
-                                });
+                                });                       
                             }
                         } catch (e) {
                             MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
@@ -1180,14 +1199,17 @@ function createMeshCore(agent) {
                             this.end();
                             return;
                         }
-                        if (!this.httprequest._dispatcher) {
+                        if (!this.httprequest._dispatcher)
+                        {
                             this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
                             this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
                             this.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
                         }
                     }
-                    else {
-                        try {
+                    else
+                    {
+                        try
+                        {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var script = fs.existsSync('/usr/bin/script') ? '/usr/bin/script' : false;
