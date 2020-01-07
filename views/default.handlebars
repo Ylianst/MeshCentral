@@ -1657,6 +1657,10 @@
                     displayServerTrace();
                     break;
                 }
+                case 'intersession' : {
+                    if (message.subaction == 'removeNotify') { notificationDelete(message.id); }
+                    break;
+                }
                 case 'traceinfo': {
                     if (typeof message.traceSources == 'object') {
                         if ((message.traceSources != null) && (message.traceSources.length > 0)) {
@@ -1865,6 +1869,7 @@
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
                                 var n = { text: message.value, title: message.title, icon: message.icon };
+                                if (message.id != null) { n.id = message.id; }
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
                                 if (message.username != null) { n.username = message.username; }
@@ -1900,6 +1905,7 @@
                     } else {
                         if (message.type == 'notify') { // This is a notification message.
                             var n = { text: message.value, title: message.title, icon: message.icon };
+                            if (message.id != null) { n.id = message.id; }
                             if (message.tag != null) { n.tag = message.tag; }
                             if (message.username != null) { n.username = message.username; }
                             addNotification(n);
@@ -2538,6 +2544,7 @@
                         }
                         case 'notify': {
                             var n = { text: message.event.value, title: message.event.title, icon: message.event.icon };
+                            if (message.id != null) { n.id = message.id; }
                             if (message.event.tag != null) { n.tag = message.event.tag; }
                             addNotification(n);
                             break;
@@ -9881,6 +9888,7 @@
             if (e != null) {
                 for (var i in notifications) { if (notifications[i].id == id) { j = i; } }
                 if (j != -1) {
+                    meshserver.send({ action: 'intersession', subaction: 'removeNotify', id: id }); // Remove the notification in other sessions of the same user.
                     if (notifications[j].notification) { notifications[j].notification.close(); delete notifications[j].notification; }
                     notifications.splice(j, 1);
                     e.parentNode.removeChild(e);

@@ -376,7 +376,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             const lastLoginTime = parent.users[user._id].pastlogin;
             if (lastLoginTime != null) {
                 db.GetFailedLoginCount(user.name, user.domain, new Date(lastLoginTime * 1000), function (count) {
-                    if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', value: "There has been " + count + " failed login attempts on this account since the last login." })); } catch (ex) { } delete user.pastlogin; }
+                    if (count > 0) { try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: "Security Warning", tag: 'ServerNotify', id: Math.random(), value: "There has been " + count + " failed login attempts on this account since the last login." })); } catch (ex) { } delete user.pastlogin; }
                 });
             }
 
@@ -394,6 +394,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         switch (command.action) {
             case 'ping': { try { ws.send(JSON.stringify({ action: 'pong' })); } catch (ex) { } break; }
+            case 'intersession':
+                {
+                    // Sends data between sessions of the same user
+                    var sessions = parent.wssessions[obj.user._id];
+                    if (sessions == null) break;
+
+                    // Create the notification message and send on all sessions except our own (no echo back).
+                    var notification = JSON.stringify(command);
+                    for (var i in sessions) { if (sessions[i] != obj.ws) { try { sessions[i].send(notification); } catch (ex) { } } }
+
+                    // TODO: Send the message of user sessions connected to other servers.
+
+                    break;
+                }
             case 'authcookie':
                 {
                     // Renew the authentication cookie
@@ -1054,7 +1068,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.GetUserWithVerifiedEmail(domain.id, command.email, function (err, docs) {
                             if ((docs != null) && (docs.length > 0)) {
                                 // Notify the duplicate email error
-                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', tag: 'ServerNotify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
+                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', title: 'Account Settings', id: Math.random(), tag: 'ServerNotify', value: 'Failed to change email address, another account already using: <b>' + EscapeHtml(command.email) + '</b>.' })); } catch (ex) { }
                             } else {
                                 // Update the user's email
                                 var oldemail = user.email;
@@ -1218,7 +1232,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Create the notification message
-                    var notification = { action: 'msg', type: 'notify', domain: domain.id, value: command.msg, title: user.name, icon: 0, tag: 'broadcast' };
+                    var notification = { action: 'msg', type: 'notify', domain: domain.id, value: command.msg, title: user.name, icon: 0, tag: 'broadcast', id: Math.random() };
 
                     // Send the notification on all user sessions for this server
                     for (var i in parent.wssessions2) {
@@ -1268,7 +1282,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Account count exceed, do notification
 
                             // Create the notification message
-                            var notification = { action: "msg", type: "notify", value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
+                            var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
 
                             // Get the list of sessions for this user
                             var sessions = parent.wssessions[user._id];
@@ -1356,7 +1370,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
                             } else {
                                 // Create the notification message
-                                var notification = { action: "msg", type: "notify", value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
+                                var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
 
                                 // Get the list of sessions for this user
                                 var sessions = parent.wssessions[user._id];
@@ -1486,22 +1500,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // TODO: Return only groups in the same administrative domain?
                     if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) {
-                        // We are not user group administrator, return a list with limited data.
+                        // We are not user group administrator, return a list with limited data for our domain.
                         var groups = {}, groupCount = 0;
-                        for (var i in parent.userGroups) { groupCount++; groups[i] = { name: parent.userGroups[i].name }; }
+                        for (var i in parent.userGroups) { if (parent.userGroups[i].domain == domain.id) { groupCount++; groups[i] = { name: parent.userGroups[i].name }; } }
                         try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: groupCount?groups:null, tag: command.tag })); } catch (ex) { }
                     } else {
-                        // We are user group administrator, return a full user group list.
-                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: parent.userGroups, tag: command.tag })); } catch (ex) { }
+                        // We are user group administrator, return a full user group list for our domain.
+                        var groups = {}, groupCount = 0;
+                        for (var i in parent.userGroups) { if (parent.userGroups[i].domain == domain.id) { groupCount++; groups[i] = parent.userGroups[i]; } }
+                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: groupCount ? groups : null, tag: command.tag })); } catch (ex) { }
                     }
-
-                    /*
-                    // Request a list of all user groups this user as rights to
-                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
-                    db.GetAllTypeNoTypeField('ugrp', domain.id, function (err, docs) {
-                        try { ws.send(JSON.stringify({ action: 'usergroups', ugroups: common.unEscapeAllLinksFieldName(docs), tag: command.tag })); } catch (ex) { }
-                    });
-                    */
                     break;
                 }
             case 'createusergroup':
@@ -1944,7 +1952,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                     // Create the notification message
-                    var notification = { action: "msg", type: "notify", value: command.msg, title: user.name, icon: 8, userid: user._id, username: user.name };
+                    var notification = { action: 'msg', type: 'notify', id: Math.random(), value: command.msg, title: user.name, icon: 8, userid: user._id, username: user.name };
 
                     // Get the list of sessions for this user
                     var sessions = parent.wssessions[command.userid];
@@ -1969,7 +1977,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Create the notification message
                         var notification = {
-                            "action": "msg", "type": "notify", "value": "Chat Request, Click here to accept.", "title": user.name, "userid": user._id, "username": user.name, "tag": 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id)
+                            'action': 'msg', 'type': 'notify', id: Math.random(), 'value': "Chat Request, Click here to accept.", 'title': user.name, 'userid': user._id, 'username': user.name, 'tag': 'meshmessenger/' + encodeURIComponent(command.userid) + '/' + encodeURIComponent(user._id)
                         };
 
                         // Get the list of sessions for this user
@@ -3442,7 +3450,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Display a notification message for this session only.
-    function displayNotificationMessage(msg, title, tag) { ws.send(JSON.stringify({ "action": "msg", "type": "notify", "value": msg, "title": title, "userid": user._id, "username": user.name, "tag": tag })); }
+    function displayNotificationMessage(msg, title, tag) { ws.send(JSON.stringify({ 'action': 'msg', 'type': 'notify', id: Math.random(), 'value': msg, 'title': title, 'userid': user._id, 'username': user.name, 'tag': tag })); }
 
     // Read the folder and all sub-folders and serialize that into json.
     function readFilesRec(path) {
