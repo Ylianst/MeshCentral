@@ -297,7 +297,7 @@ function fromtext(source, target, lang) {
         }
     }
 
-    fs.writeFileSync(source + '-new', JSON.stringify(sourceLangFileData), { flag: 'w+' });
+    fs.writeFileSync(source + '-new', translationsToJson(sourceLangFileData), { flag: 'w+' });
     console.log('Done.');
 }
 
@@ -332,7 +332,7 @@ function merge(source, target, lang) {
     for (var i in index) { targetData.strings.push(index[i]); }
 
     // Save the target back
-    fs.writeFileSync(target, JSON.stringify(targetData, null, '  '), { flag: 'w+' });
+    fs.writeFileSync(target, translationsToJson(targetData), { flag: 'w+' });
     console.log('Done.');
 }
 
@@ -387,7 +387,7 @@ function extract(langFile, sources) {
         //if ((sourceStrings[i].xloc != null) && (sourceStrings[i].xloc.length > 0)) { output.push(sourceStrings[i]); } // Only save results that have a source location.
         output.push(sourceStrings[i]); // Save all results
     }
-    fs.writeFileSync(langFile, JSON.stringify({ 'strings': output }, null, '  '), { flag: 'w+' });
+    fs.writeFileSync(langFile, translationsToJson({ strings: output }), { flag: 'w+' });
     console.log(format("{0} strings in output file.", count));
     process.exit();
     return;
@@ -653,4 +653,19 @@ function InstallModule(modulename, func, tag1, tag2) {
         func(tag1, tag2);
         return;
     });
+}
+
+// Convert the translations to a standardized JSON we can use in GitHub
+// Strings are sorder by english source and object keys are sorted
+function translationsToJson(t) {
+    var arr2 = [], arr = t.strings;
+    for (var i in arr) {
+        var names = [], el = arr[i], el2 = {};
+        for (var j in el) { names.push(j); }
+        names.sort();
+        for (var j in names) { el2[names[j]] = el[names[j]]; }
+        arr2.push(el2);
+    }
+    arr2.sort(function (a, b) { if (a.en > b.en) return 1; if (a.en < b.en) return -1; return 0; });
+    return JSON.stringify({ strings: arr2 }, null, '  ');
 }

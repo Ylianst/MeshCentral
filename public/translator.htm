@@ -383,8 +383,23 @@
             xdr.send(JSON.stringify({ 'action': 'setTranslations', strings: translations }));
         }
 
+        // Convert the translations to a standardized JSON we can use in GitHub
+        // Strings are sorder by english source and object keys are sorted
+        function translationsToJson(t) {
+            var arr2 = [], arr = t.strings;
+            for (var i in arr) {
+                var names = []; el = arr[i], el2 = {};
+                for (var j in el) { names.push(j); }
+                names.sort();
+                for (var j in names) { el2[names[j]] = el[names[j]]; }
+                arr2.push(el2);
+            }
+            arr2.sort(function (a, b) { if (a.en > b.en) return 1; if (a.en < b.en) return -1; return 0; });
+            return JSON.stringify({ strings: arr2 }, null, '  ');
+        }
+
         function saveToFile() {
-            saveAs(data2blob(JSON.stringify({ strings: translations })), 'translate.json');
+            saveAs(utf2blob(translationsToJson({ strings: translations })), 'translate.json');
         }
 
         function setTranslation() {
