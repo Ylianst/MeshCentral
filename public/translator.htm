@@ -392,6 +392,7 @@
                 for (var j in el) { names.push(j); }
                 names.sort();
                 for (var j in names) { el2[names[j]] = el[names[j]]; }
+                if (el2.xloc != null) { el2.xloc.sort(); }
                 arr2.push(el2);
             }
             arr2.sort(function (a, b) { if (a.en > b.en) return 1; if (a.en < b.en) return -1; return 0; });
@@ -443,7 +444,7 @@
         }
 
         function translateServer() {
-            var x = 'Perform server translation? The MeshCentral server will reset for 10 to 30 seconds to perform this operation.';
+            var x = "Perform server translation? The MeshCentral server will reset for 10 to 30 seconds to perform this operation.";
             setDialogMode(2, "Translate Server", 3, translateServerEx, x);
         }
 
@@ -458,14 +459,14 @@
             xdr.onload = function () {
                 var x = null;
                 try { x = JSON.parse(this.responseText); } catch (ex) { }
-                if ((x == null) || (x.response == null)) { messagebox('Server Translation', 'ERROR: Unable to parse server response.'); return; }
+                if ((x == null) || (x.response == null)) { messagebox("Server Translation", "ERROR: Unable to parse server response."); return; }
                 if (x.response == 'ok') {
-                    messagebox('Server Translation', 'Server translation initiated, this will take a minute or two. Once done, you can refresh the MeshCentral web pages to see the changes.<br /><br />When ready, please mail the file "meshcentral-data/translate.json" to <a href="mailto:ylianst@gmail.com">ylianst@gmail.com</a> for inclusion on the official build.');
+                    messagebox("Server Translation", "Server translation initiated, this will take a minute or two. Once done, you can refresh the MeshCentral web pages to see the changes.<br /><br />When ready, please mail the file \"meshcentral-data/translate.json\" to <a href=\"mailto:ylianst@gmail.com\">ylianst@gmail.com</a> for inclusion on the official build.");
                 } else {
-                    messagebox('Server Translation', 'ERROR: ' + x.response);
+                    messagebox("Server Translation", "ERROR: " + x.response);
                 }
             };
-            xdr.onerror = function () { messagebox('Translations', 'ERROR: Unable to save translations to server.'); };
+            xdr.onerror = function () { messagebox("Translations", "ERROR: Unable to save translations to server."); };
             xdr.send(JSON.stringify({ 'action': 'translateServer', strings: translations }));
         }
 
