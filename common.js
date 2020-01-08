@@ -253,6 +253,7 @@ module.exports.translationsToJson = function(t) {
         for (var j in el) { names.push(j); }
         names.sort();
         for (var j in names) { el2[names[j]] = el[names[j]]; }
+        if (el2.xloc != null) { el2.xloc.sort(); }
         arr2.push(el2);
     }
     arr2.sort(function (a, b) { if (a.en > b.en) return 1; if (a.en < b.en) return -1; return 0; });
