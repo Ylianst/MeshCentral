@@ -200,7 +200,7 @@
       "ja": " ノード",
       "nl": " apparaat",
       "pt": " nó",
-      "ru": " узел",
+      "ru": " устройство",
       "xloc": [
         "default-mobile.handlebars->9->127"
       ]
@@ -213,7 +213,7 @@
       "ja": " ノード",
       "nl": " apparaten",
       "pt": " nós",
-      "ru": " узлы",
+      "ru": " устройства",
       "xloc": [
         "default-mobile.handlebars->9->128"
       ]
@@ -610,7 +610,7 @@
       "ja": "1ノード",
       "nl": "1 knooppunt",
       "pt": "1 nó",
-      "ru": "1 узел",
+      "ru": "1 устройство",
       "xloc": [
         "default.handlebars->23->347"
       ]
@@ -2032,7 +2032,7 @@
       "ja": "接続されたエージェント",
       "nl": "Agent verbonden",
       "pt": "Agente conectado",
-      "ru": "Агент подключился",
+      "ru": "Агент подключен",
       "xloc": [
         "default.handlebars->23->154",
         "default.handlebars->23->508",
@@ -2844,7 +2844,7 @@
       "ja": "背景とインタラクティブ",
       "nl": "Achtergrond & interactief",
       "pt": "Segundo plano e interativo",
-      "ru": "Фон и интерактив",
+      "ru": "Фоновый и интерактивный режимы",
       "xloc": [
         "default.handlebars->23->321"
       ]
@@ -2856,7 +2856,7 @@
       "ja": "背景とインタラクティブ",
       "nl": "Achtergrond en interactief",
       "pt": "Segundo plano e interativo",
-      "ru": "Фон и интерактив",
+      "ru": "Фоновый и интерактивный режимы",
       "xloc": [
         "default.handlebars->23->299"
       ]
@@ -2997,7 +2997,7 @@
       "ja": "放送",
       "nl": "Uitzending",
       "pt": "Broadcast",
-      "ru": "Трансляция (broadcast)",
+      "ru": "Отправить сообщение...",
       "xloc": [
         "default.handlebars->23->1261",
         "default.handlebars->container->column_l->p4->3->1->0->3->1"
@@ -3011,7 +3011,7 @@
       "ja": "同報メッセージ",
       "nl": "Bericht uitzenden",
       "pt": "Mensagem de transmissão",
-      "ru": "Транслировать сообщение",
+      "ru": "Отправить сообщение",
       "xloc": [
         "default.handlebars->23->1218"
       ]
@@ -3023,7 +3023,7 @@
       "ja": "接続されているすべてのユーザーにメッセージをブロードキャストします。",
       "nl": "Verzend een bericht naar alle verbonden gebruikers.",
       "pt": "Transmita uma mensagem para todos os usuários conectados.",
-      "ru": "Транслировать сообщение всем подключенным пользователям.",
+      "ru": "Отправить сообщение всем подключенным пользователям.",
       "xloc": [
         "default.handlebars->23->1217"
       ]
@@ -3379,7 +3379,7 @@
       "ja": "下のボックスに古いパスワードと新しいパスワードを2回入力して、アカウントのパスワードを変更します。",
       "nl": "Wijzig uw wachtwoord door het invoeren van het oude en het nieuwe wachtwoord twee keer in de vakken hieronder.",
       "pt": "Altere a senha da sua conta digitando a senha antiga e a nova senha duas vezes nas caixas abaixo.",
-      "ru": "Измените пароль своей учетной записи, дважды введя старый пароль и новый пароль в поля ниже.",
+      "ru": "Измените пароль своей учетной записи, введя старый пароль и дважды новый пароль в поля ниже.",
       "xloc": [
         "default.handlebars->23->915"
       ]
@@ -5003,7 +5003,7 @@
       "ja": "デスクトップ",
       "nl": "Bureaubladen",
       "pt": "Áreas de trabalho",
-      "ru": "Рабочие столы",
+      "ru": "Крупные значки",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarView->viewselect->5",
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
@@ -5040,7 +5040,7 @@
       "ja": "デバイス",
       "nl": "Apparaat",
       "pt": "Dispositivo",
-      "ru": "Устройство",
+      "ru": "Устройству",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->5"
       ]
@@ -5437,7 +5437,7 @@
       "ja": "切断されました",
       "nl": "Verbroken",
       "pt": "Desconectado",
-      "ru": "Разъединенный",
+      "ru": "Отключен",
       "xloc": [
         "default-mobile.handlebars->9->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3->deskstatus",
@@ -8384,7 +8384,7 @@
       "ja": "インタラクティブのみ",
       "nl": "Alleen interactief",
       "pt": "Apenas interativo",
-      "ru": "undefined",
+      "ru": "Только интерактивный режим",
       "xloc": [
         "default.handlebars->23->301",
         "default.handlebars->23->323"
@@ -8542,6 +8542,7 @@
       "ja": "招待する",
       "nl": "Uitnodigen",
       "pt": "Convite",
+      "ru": "Пригласить",
       "xloc": [
         "default.handlebars->23->1003",
         "default.handlebars->23->236",
@@ -8568,6 +8569,7 @@
       "ja": "このメッシュにメッシュエージェントをインストールするように招待します。",
       "nl": "Nodig iemand uit om de mesh-agent op deze mesh te installeren.",
       "pt": "Convide alguém para instalar o agente de malha nessa malha.",
+      "ru": "Отправить приглашение на установку Mesh Агента",
       "xloc": [
         "default.handlebars->23->1002",
         "default.handlebars->23->235"
@@ -8707,7 +8709,7 @@
       "ja": "キー名",
       "nl": "Sleutelnaam",
       "pt": "Nome da chave",
-      "ru": "Имя ключа / клавишы",
+      "ru": "Имя ключа",
       "xloc": [
         "default.handlebars->23->688",
         "default.handlebars->23->691"
@@ -9600,7 +9602,7 @@
       "ja": "ログイベント",
       "nl": "Gebeurtenissenlog",
       "pt": "Log de Evento",
-      "ru": "Записать/добавить событие",
+      "ru": "Добавить событие",
       "xloc": [
         "default.handlebars->23->488"
       ]
@@ -10184,7 +10186,7 @@
       "ja": "中",
       "nl": "Gemiddeld",
       "pt": "Médio",
-      "ru": "Средний",
+      "ru": "Средне",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->3",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
@@ -10921,7 +10923,7 @@
       "ja": "新しい",
       "nl": "Nieuw",
       "pt": "Novo",
-      "ru": "Новый",
+      "ru": "Создать",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3createMeshLink1->1",
         "default.handlebars->container->column_l->p2->p2createMeshLink1->1"
@@ -10935,7 +10937,7 @@
       "ja": "新しいアカウント...",
       "nl": "Nieuw account...",
       "pt": "Nova conta...",
-      "ru": "Новый пользователь...",
+      "ru": "Создать учетную запись...",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->3"
       ]
@@ -11478,7 +11480,7 @@
       "ja": "なし",
       "nl": "Geen",
       "pt": "Nenhum",
-      "ru": "None",
+      "ru": "Пусто",
       "xloc": [
         "default-mobile.handlebars->9->133",
         "default-mobile.handlebars->9->138",
@@ -12634,7 +12636,7 @@
       "ja": "力",
       "nl": "Power",
       "pt": "Ligar",
-      "ru": "Питание",
+      "ru": "Состоянию питания",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->3"
       ]
@@ -13483,7 +13485,7 @@
       "ja": "リセットする",
       "nl": "Herstarten",
       "pt": "Redefinir",
-      "ru": "Сброс",
+      "ru": "Перезагрузить",
       "xloc": [
         "default-mobile.handlebars->9->208",
         "default.handlebars->23->526",
@@ -13669,7 +13671,7 @@
       "ja": "ルート",
       "nl": "Root",
       "pt": "Raiz",
-      "ru": "Корень",
+      "ru": "Root/Корень",
       "xloc": [
         "default-mobile.handlebars->9->242",
         "default-mobile.handlebars->9->66",
@@ -13685,7 +13687,7 @@
       "ja": "ルート証明書",
       "nl": "Hoofd certificaat",
       "pt": "Certificado raiz",
-      "ru": "Корневой сертификат",
+      "ru": "Root/Корневой сертификат",
       "xloc": [
         "default.handlebars->23->268",
         "default.handlebars->23->275"
@@ -15100,7 +15102,7 @@
       "ja": "ソート",
       "nl": "Sorteer",
       "pt": "Classificar",
-      "ru": "Отсортировать",
+      "ru": "Отсортировать по:",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort"
       ]
@@ -16166,7 +16168,7 @@
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントには、サーバーとデバイスグループの情報が埋め込まれています。",
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. Deze agent heeft server- en apparaatgroepinformatie erin ingebed.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este agente possui informações de servidor e grupo de dispositivos incorporadas.",
-      "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", загрузите mesh агент и установите его для управления компьютером. В этот агент встроена информация о сервере и группе устройств.",
+      "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Aгент и установите его для управления этим компьютером. В этот агент встроена информация о текищем сервере и группе устройств.",
       "xloc": [
         "default.handlebars->23->324"
       ]
@@ -16178,7 +16180,7 @@
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントインストーラーには、サーバーとデバイスグループの情報が埋め込まれています。",
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. In dit installatieprogramma van de agent zijn server- en apparaatgroepgegevens ingebed.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este instalador do agente possui informações de servidor e grupo de dispositivos incorporadas.",
-      "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", загрузите mesh агент и установите его для управления компьютером. В этот установщик агента встроена информация о сервере и группе устройств.",
+      "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Агент и установите его для управления этим компьютером. В этот установщик агента встроена информация о текущем сервере и группе устройств.",
       "xloc": [
         "default.handlebars->23->335"
       ]
@@ -16415,7 +16417,6 @@
       "ja": "トピック",
       "nl": "Onderwerp",
       "pt": "Tema",
-      "ru": "Topic",
       "xloc": [
         "default.handlebars->23->541"
       ]
@@ -16536,7 +16537,7 @@
       "ja": "タイプ",
       "nl": "Type",
       "pt": "Tipo",
-      "ru": "Тип/Ввести",
+      "ru": "Удаленный ввод",
       "xloc": [
         "default-mobile.handlebars->9->279",
         "default-mobile.handlebars->9->57",
@@ -18260,7 +18261,7 @@
       "ja": "ひとつ追加",
       "nl": "Voeg toe",
       "pt": "Adicione um",
-      "ru": "и один",
+      "ru": "добавить",
       "xloc": [
         "default.handlebars->23->197",
         "default.handlebars->23->199"
@@ -18621,7 +18622,7 @@
       "ja": "合計",
       "nl": "totaal",
       "pt": "total",
-      "ru": "всего/итого",
+      "ru": "всего",
       "xloc": [
         "default.handlebars->23->1400"
       ]
@@ -18879,7 +18880,7 @@
       "ja": "{0}ノード",
       "nl": "{0} knooppunten",
       "pt": "{0} nós",
-      "ru": "{0} узлов",
+      "ru": "{0} устройств",
       "xloc": [
         "default.handlebars->23->348"
       ]
@@ -18982,7 +18983,6 @@
       "ja": "{0}大文字",
       "nl": "{0} hoofdletters",
       "pt": "{0} maiúsculas",
-      "ru": "{0} upper case",
       "xloc": [
         "login-mobile.handlebars->5->30",
         "login.handlebars->5->30"
