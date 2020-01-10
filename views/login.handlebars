@@ -321,8 +321,11 @@
             QV('resetpasswordpanelHint', passRequirements.hint === true);
 
             // Display the welcome text
-            if (welcomeText) { QH('welcomeText', welcomeText); }
-            QH('welcomeText', addTextLink('MeshCentral', Q('welcomeText').innerHTML, 'http://www.meshcommander.com/meshcentral2'));
+            if (welcomeText) {
+                QH('welcomeText', welcomeText);
+            } else {
+                QH('welcomeText', addTextLink('MeshCentral', Q('welcomeText').innerHTML, 'http://www.meshcommander.com/meshcentral2'));
+            }
             QV('welcomeText', true);
 
             window.onresize = center;
