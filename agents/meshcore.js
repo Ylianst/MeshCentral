@@ -629,7 +629,7 @@ function createMeshCore(agent) {
                                     //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
                                     var tunnel = http.request(woptions);
                                     tunnel.upgrade = onTunnelUpgrade;
-                                    tunnel.on('error', function (e) { sendConsoleText("ERROR: " + JSON.stringify(e)); });
+                                    tunnel.on('error', function (e) { sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e)); });
                                     tunnel.sessionid = data.sessionid;
                                     tunnel.rights = data.rights;
                                     tunnel.consent = data.consent;
@@ -2428,7 +2428,7 @@ function createMeshCore(agent) {
                         } catch (e) { response = 'Invalid HTTP websocket request'; }
                         if (httprequest != null) {
                             httprequest.upgrade = onWebSocketUpgrade;
-                            httprequest.on('error', function (e) { sendConsoleText('ERROR: ' + JSON.stringify(e)); });
+                            httprequest.on('error', function (e) { sendConsoleText("ERROR: Unable to connect to: " + this.url + ", " + JSON.stringify(e)); });
 
                             var index = 1;
                             while (consoleWebSockets[index]) { index++; }
