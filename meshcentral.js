@@ -129,12 +129,14 @@ function CreateMeshCentralServer(config, args) {
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
-            console.log('MeshCentral v' + getCurrentVerion() + ', a open source remote computer management web portal.');
+            console.log('MeshCentral v' + getCurrentVerion() + ', remote computer management web portal.');
+            console.log('This software is open source under Apache 2.0 licence.');
             console.log('Details at: https://www.meshcommander.com/meshcentral2\r\n');
-            if (obj.platform == 'win32') {
-                console.log('Run as a Windows Service');
-                console.log('   --install/uninstall               Install Meshcentral as a background service.');
-                console.log('   --start/stop/restart              Control Meshcentral background service.');
+            if ((obj.platform == 'win32') || (obj.platform == 'linux')) {
+                console.log('Run as a background service');
+                console.log('   --install/uninstall               Install MeshCentral as a background service.');
+                console.log('   --start/stop/restart              Control MeshCentral background service.');
+                console.log('');
                 console.log('Run standalone, console application');
             }
             console.log('   --notls                           Use HTTP instead of HTTPS for the main web server.');
@@ -150,7 +152,84 @@ function CreateMeshCentralServer(config, args) {
             return;
         }
 
-        if (obj.service != null) {
+        // Linux background service systemd handling
+        if (obj.platform == 'linux') {
+            if (obj.args.install == true) {
+                // Install MeshCentral in Systemd
+                console.log('Installing MeshCentral as background Service...');
+                var userinfo = require('os').userInfo(), systemdConf = null;
+                if (require('fs').existsSync('/etc/systemd/system')) { systemdConf = '/etc/systemd/system/meshcentral.service'; }
+                else if (require('fs').existsSync('/lib/systemd/system')) { systemdConf = '/lib/systemd/system/meshcentral.service'; }
+                else if (require('fs').existsSync('/usr/lib/systemd/system')) { systemdConf = '/usr/lib/systemd/system/meshcentral.service'; }
+                else { console.log('Unable to find systemd configuration folder.'); process.exit(); return; }
+                console.log('Writing config file...');
+                require('child_process').exec('whereis node', {}, function (error, stdout, stderr) {
+                    if ((error != null) || (stdout.startsWith('node: ') == false) || (stdout.indexOf('\n') == -1)) { console.log('ERROR: Unable to get node location: ' + error); process.exit(); return; }
+                    var nodePath = stdout.substring(6, stdout.indexOf('\n'));
+                    var config = '[Unit]\nDescription=MeshCentral Server\n\n[Service]\nType=simple\nLimitNOFILE=1000000\nExecStart=' + nodePath + ' ' + __dirname + '\nWorkingDirectory=' + userinfo.homedir + '\nEnvironment=NODE_ENV=production\nUser=' + userinfo.username + '\nGroup=' + userinfo.username + '\nRestart=always\n# Restart service after 10 seconds if node service crashes\nRestartSec=10\n# Set port permissions capability\nAmbientCapabilities=cap_net_bind_service\n\n[Install]\nWantedBy=multi-user.target\n';
+                    require('child_process').exec('echo -e \"' + config.split('\n').join('\\n') + '\" | sudo tee ' + systemdConf, {}, function (error, stdout, stderr) {
+                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to write config file: ' + error); process.exit(); return; }
+                        console.log('Enabling service...');
+                        require('child_process').exec('sudo systemctl enable meshcentral.service', {}, function (error, stdout, stderr) {
+                            if ((error != null) && (error != '')) { console.log('ERROR: Unable to enable MeshCentral as a service: ' + error); process.exit(); return; }
+                            if (stdout.length > 0) { console.log(stdout); }
+                            console.log('Starting service...');
+                            require('child_process').exec('sudo systemctl start meshcentral.service', {}, function (error, stdout, stderr) {
+                                if ((error != null) && (error != '')) { console.log('ERROR: Unable to start MeshCentral as a service: ' + error); process.exit(); return; }
+                                if (stdout.length > 0) { console.log(stdout); }
+                                console.log('Done.');
+                            });
+                        });
+                    });
+                });
+                return;
+            } else if (obj.args.uninstall == true) {
+                // Uninstall MeshCentral in Systemd
+                console.log('Uninstalling MeshCentral background service...');
+                var systemdConf = null;
+                if (require('fs').existsSync('/etc/systemd/system')) { systemdConf = '/etc/systemd/system/meshcentral.service'; }
+                else if (require('fs').existsSync('/lib/systemd/system')) { systemdConf = '/lib/systemd/system/meshcentral.service'; }
+                else if (require('fs').existsSync('/usr/lib/systemd/system')) { systemdConf = '/usr/lib/systemd/system/meshcentral.service'; }
+                else { console.log('Unable to find systemd configuration folder.'); process.exit(); return; }
+                console.log('Stopping service...');
+                require('child_process').exec('sudo systemctl stop meshcentral.service', {}, function (err, stdout, stderr) {
+                    if ((err != null) && (err != '')) { console.log('ERROR: Unable to stop MeshCentral as a service: ' + err); }
+                    if (stdout.length > 0) { console.log(stdout); }
+                    console.log('Disabling service...');
+                    require('child_process').exec('sudo systemctl disable meshcentral.service', {}, function (err, stdout, stderr) {
+                        if ((err != null) && (err != '')) { console.log('ERROR: Unable to disable MeshCentral as a service: ' + err); }
+                        if (stdout.length > 0) { console.log(stdout); }
+                        console.log('Removing config file...');
+                        require('child_process').exec('sudo rm ' + systemdConf, {}, function (err, stdout, stderr) {
+                            if ((err != null) && (err != '')) { console.log('ERROR: Unable to delete MeshCentral config file: ' + err); }
+                            console.log('Done.');
+                        });
+                    });
+                });
+                return;
+            } else if (obj.args.start == true) {
+                // Start MeshCentral in Systemd
+                require('child_process').exec('sudo systemctl start meshcentral.service', {}, function (err, stdout, stderr) {
+                    if ((err != null) && (err != '')) { console.log('ERROR: Unable to start MeshCentral: ' + err); process.exit(); return; }
+                    console.log('Done.');
+                });
+            } else if (obj.args.stop == true) {
+                // Stop MeshCentral in Systemd
+                require('child_process').exec('sudo systemctl stop meshcentral.service', {}, function (err, stdout, stderr) {
+                    if ((err != null) && (err != '')) { console.log('ERROR: Unable to stop MeshCentral: ' + err); process.exit(); return; }
+                    console.log('Done.');
+                });
+            } else if (obj.args.restart == true) {
+                // Restart MeshCentral in Systemd
+                require('child_process').exec('sudo systemctl restart meshcentral.service', {}, function (err, stdout, stderr) {
+                    if ((err != null) && (err != '')) { console.log('ERROR: Unable to restart MeshCentral: ' + err); process.exit(); return; }
+                    console.log('Done.');
+                });
+            }
+        }
+
+        // Windows background service handling
+        if ((obj.platform == 'win32') && (obj.service != null)) {
             // Check if we need to install, start, stop, remove ourself as a background service
             if (((obj.args.xinstall == true) || (obj.args.xuninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
                 var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'rediraliasport', 'debug'];
