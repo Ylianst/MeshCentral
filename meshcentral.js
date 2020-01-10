@@ -213,18 +213,21 @@ function CreateMeshCentralServer(config, args) {
                     if ((err != null) && (err != '')) { console.log('ERROR: Unable to start MeshCentral: ' + err); process.exit(); return; }
                     console.log('Done.');
                 });
+                return;
             } else if (obj.args.stop == true) {
                 // Stop MeshCentral in Systemd
                 require('child_process').exec('sudo systemctl stop meshcentral.service', {}, function (err, stdout, stderr) {
                     if ((err != null) && (err != '')) { console.log('ERROR: Unable to stop MeshCentral: ' + err); process.exit(); return; }
                     console.log('Done.');
                 });
+                return;
             } else if (obj.args.restart == true) {
                 // Restart MeshCentral in Systemd
                 require('child_process').exec('sudo systemctl restart meshcentral.service', {}, function (err, stdout, stderr) {
                     if ((err != null) && (err != '')) { console.log('ERROR: Unable to restart MeshCentral: ' + err); process.exit(); return; }
                     console.log('Done.');
                 });
+                return;
             }
         }
 
