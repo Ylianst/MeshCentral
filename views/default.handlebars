@@ -7141,7 +7141,7 @@
         function p15consoleReceive(node, data, source) {
             if (node === 'serverconsole') {
                 // Server console data
-                data = '<div>' + data + '</div>'
+                data = '<div>' + EscapeHtml(data) + '</div>'
                 consoleServerText += data;
                 if (consoleNode == 'server') {
                     Q('p15agentConsoleText').innerHTML += data;
@@ -7149,7 +7149,7 @@
                 }
             } else {
                 // Agent console data
-                if (source == 'MQTT') { data = '<div style=color:red>' + "MQTT" + '&gt; ' + EscapeHtml(data) + '<br/></div>'; } else { data = '<div>' + data + '</div>' }
+                if (source == 'MQTT') { data = '<div style=color:red>' + "MQTT" + '&gt; ' + EscapeHtml(data) + '<br/></div>'; } else { data = '<div>' + EscapeHtml(data) + '</div>' }
                 if (node.consoleText == null) { node.consoleText = data; } else { node.consoleText += data; }
                 if (consoleNode == node) {
                     Q('p15agentConsoleText').innerHTML += data;
