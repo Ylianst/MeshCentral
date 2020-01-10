@@ -85,6 +85,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.dnsDomains = {};
     obj.relaySessionCount = 0;
     obj.relaySessionErrorCount = 0;
+    obj.blockedUsers = 0;
+    obj.blockedAgents = 0;
     obj.renderPages = null;
     obj.renderLanguages = [];
 
@@ -247,7 +249,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             sessionsCount: Object.keys(obj.sessionsCount).length,
             wsrelays: Object.keys(obj.wsrelays).length,
             wsPeerRelays: Object.keys(obj.wsPeerRelays).length,
-            tlsSessionStore: Object.keys(tlsSessionStore).length
+            tlsSessionStore: Object.keys(tlsSessionStore).length,
+            blockedUsers: obj.blockedUsers,
+            blockedAgents: obj.blockedAgents
         };
     }
 
@@ -453,6 +457,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var ip;
             if (req.connection) { // HTTP(S) request
                 ip = req.ip;
+
                 if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { res.sendStatus(401); } return true; } } }
                 if (closeIfThis === false) { res.sendStatus(401); }
             } else if (req._socket) { // WebSocket request
@@ -472,21 +477,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Check if the source IP address is allowed, return domain if allowed
     function checkUserIpAddress(req, res) {
-        if ((obj.userBlockedIp != null) && (checkIpAddressEx(req, res, obj.userBlockedIp, true) == true)) { return null; }
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) == false)) { return null; }
+        if ((parent.config.settings.userblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userblockedip, true) == true)) { obj.blockedUsers++; return null; }
+        if ((parent.config.settings.userallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userallowedip, false) == false)) { obj.blockedUsers++; return null; }
         const domain = (req.url ? getDomain(req) : getDomain(res));
-        if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true) == true)) { return null; }
-        if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false) == false)) { return null; }
+        if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true) == true)) { obj.blockedUsers++; return null; }
+        if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false) == false)) { obj.blockedUsers++; return null; }
         return domain;
     }
 
     // Check if the source IP address is allowed, return domain if allowed
     function checkAgentIpAddress(req, res) {
-        if ((obj.agentBlockedIp != null) && (checkIpAddressEx(req, res, obj.agentBlockedIp, null) == true)) { return null; }
-        if ((obj.agentAllowedIp != null) && (checkIpAddressEx(req, res, obj.agentAllowedIp, null) == false)) { return null; }
+        if ((parent.config.settings.agentblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentblockedip, true) == true)) { obj.blockedAgents++; return null; }
+        if ((parent.config.settings.agentallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentallowedip, false) == false)) { obj.blockedAgents++; return null; }
         const domain = (req.url ? getDomain(req) : getDomain(res));
-        if ((domain.agentblockedip != null) && (checkIpAddressEx(req, res, domain.agentblockedip, null) == true)) { return null; }
-        if ((domain.agentallowedip != null) && (checkIpAddressEx(req, res, domain.agentallowedip, null) == false)) { return null; }
+        if ((domain.agentblockedip != null) && (checkIpAddressEx(req, res, domain.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
+        if ((domain.agentallowedip != null) && (checkIpAddressEx(req, res, domain.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
         return domain;
     }
 
