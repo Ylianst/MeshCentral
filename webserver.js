@@ -4414,6 +4414,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
     obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
         if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
+        var splitip = ip.split('.');
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
         if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
         if (typeof obj.badLoginTable[ip] == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return; } }  // Check cooloff period
         if (obj.badLoginTable[ip] == null) { obj.badLoginTable[ip] = [Date.now()]; } else { obj.badLoginTable[ip].push(Date.now()); }
@@ -4423,6 +4425,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
     obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
         if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
+        var splitip = ip.split('.');
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
         var ipTable = obj.badLoginTable[ip];
         if (ipTable == null) return true;

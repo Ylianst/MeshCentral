@@ -2804,6 +2804,7 @@
         "default.handlebars->container->column_l->p15->p15title->p15BackButton",
         "default.handlebars->container->column_l->p16->p16title->p16BackButton",
         "default.handlebars->container->column_l->p17->p17title->p17BackButton",
+        "default.handlebars->container->column_l->p19->p19title->p19BackButton",
         "default.handlebars->container->column_l->p20->p20title->3",
         "default.handlebars->container->column_l->p21->p21title->1",
         "default.handlebars->container->column_l->p30->1->1->0->1->p30title->1",
@@ -12552,7 +12553,7 @@
       "pt": "Plugins -",
       "ru": "Плагины - ",
       "xloc": [
-        "default.handlebars->container->column_l->p19->1"
+        "default.handlebars->container->column_l->p19->p19title->3"
       ]
     },
     {
