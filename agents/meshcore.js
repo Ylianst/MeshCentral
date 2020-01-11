@@ -2173,9 +2173,10 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'ps': {
-                    processManager.getProcesses(function (plist) {
+                    processManager.getProcesses(function (plist)
+                    {
                         var x = '';
-                        for (var i in plist) { x += i + ', ' + plist[i].cmd + ((plist[i].user) ? (', ' + plist[i].user) : '') + '\r\n'; }
+                        for (var i in plist) { x += i + ((plist[i].user) ? (', ' + plist[i].user) : '') + ', ' + plist[i].cmd + '\r\n'; }
                         sendConsoleText(x, sessionid);
                     });
                     break;
