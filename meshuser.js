@@ -699,7 +699,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (typeof parent.badLoginTable[i] == 'number') {
                                     r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
                                 } else {
-                                    r += (i + ' - ' + parent.badLoginTable[i].length + " entries\r\n");
+                                    if (parent.badLoginTable[i].length > 1) {
+                                        r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                                    } else {
+                                        r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                                    }
                                 }
                             }
                             if (badLoginCount == 0) { r += 'No bad logins.'; }

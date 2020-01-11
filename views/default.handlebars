@@ -788,6 +788,14 @@
                 </div>
                 <div id=p17info></div>
             </div>
+            <div id=p19 style="display:none">
+                <div id="p19title">
+                    <div id="p19BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Plugins - <span id=p19deviceName></span></h1>
+                </div>
+                <div id="p19headers"></div>
+                <div id=p19pages></div>
+            </div>
             <div id=p20 style="display:none">
                 <div id="p20title">
                     <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
@@ -983,11 +991,6 @@
                 <div id=p51group2></div>
                 <br />
             </div>
-            <div id=p19 style="display:none">
-                <h1>Plugins - <span id=p19deviceName></span></h1>
-                <div id="p19headers"></div>
-                <div id=p19pages></div>
-            </div>
             <br id="column_l_bottomgap" />
         </div>
         <div id="footer">
@@ -1101,7 +1104,7 @@
         <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name" /><input id=p13fileDragSize name="size" /><input id=p13fileDragType name="type" /><input id=p13fileDragData name="data" /><input id=p13fileDragLink name="link" /><input type=submit id=p13loginSubmit2 style="display:none" /></form>
         <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
     </div>
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="abc">
         'use strict';
 
         // Process server-side web state
