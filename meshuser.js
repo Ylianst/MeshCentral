@@ -1452,8 +1452,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
 
                             // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
-                            var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
-                            if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            if (chguser._id !== user._id) { // We can't change our own siteadmin permissions.
+                                var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
+                                if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            }
 
                             // Went sending a notification about a group change, we need to send to all the previous and new groups.
                             var allTargetGroups = chguser.groups;

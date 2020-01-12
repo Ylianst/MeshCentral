@@ -53,11 +53,11 @@
                                     <table>
                                         <tr>
                                             <td id=loginusername align=right width=100>Username:</td>
-                                            <td><input id=username type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) /></td>
+                                            <td><input id=username type=text autocomplete="username" maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) /></td>
                                         </tr>
                                         <tr>
                                             <td align=right>Password:</td>
-                                            <td><input id=password type=password maxlength=256 name=password autocomplete=off onchange=validateLogin(2) onkeyup=validateLogin(2,event) /></td>
+                                            <td><input id=password type=password autocomplete="current-password" maxlength=256 name=password autocomplete=off onchange=validateLogin(2) onkeyup=validateLogin(2,event) /></td>
                                         </tr>
                                         <tr>
                                             <td><div id=showPassHintLink style=display:none><a onclick=showPassHint() style="cursor:pointer">Show Hint</a></div></td>
@@ -86,19 +86,19 @@
                                         <table>
                                             <tr id="nuUserRow">
                                                 <td align=right width=100>Username:</td>
-                                                <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
+                                                <td><input id=ausername type=text autocomplete="username" name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
                                             </tr>
                                             <tr>
                                                 <td align=right width=100>Email:</td>
-                                                <td><input id=aemail type=text name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
+                                                <td><input id=aemail type=text autocomplete="email" inputmode="email" name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
                                             </tr>
                                             <tr>
                                                 <td align=right>Password:</td>
-                                                <td><input id=apassword1 type=password name=password1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3) onkeyup=validateCreate(3,event) /></td>
+                                                <td><input id=apassword1 type=password autocomplete="current-password" name=password1 maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3) onkeyup=validateCreate(3,event) /></td>
                                             </tr>
                                             <tr>
                                                 <td align=right>Password:</td>
-                                                <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4) onkeyup=validateCreate(4,event) /></td>
+                                                <td><input id=apassword2 type=password autocomplete="current-password" name=password2 maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4) onkeyup=validateCreate(4,event) /></td>
                                             </tr>
                                             <tr id="createPanelHint" style="display:none">
                                                 <td align=right>Pass Hint:</td>
@@ -130,7 +130,7 @@
                                     <table>
                                         <tr>
                                             <td align=right width=100>Email:</td>
-                                            <td><input id=remail type=text name=email maxlength=256 onchange=validateReset() onkeyup=validateReset(event) /></td>
+                                            <td><input id=remail type=text inputmode="email" autocomplete="email" name=email maxlength=256 onchange=validateReset() onkeyup=validateReset(event) /></td>
                                         </tr>
                                         <tr>
                                             <td colspan=2>
@@ -152,7 +152,7 @@
                                         <tr>
                                             <td align=right width=100>Login token:</td>
                                             <td>
-                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) onfocus=checkTokenTimer(1) onblur=checkTokenTimer(0) />
+                                                <input id=tokenInput type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" name=token maxlength=50 onchange=checkToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) onfocus=checkTokenTimer(1) onblur=checkTokenTimer(0) />
                                                 <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                             </td>
                                         </tr>
@@ -172,7 +172,6 @@
                                     <input id=tokenformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
-
                             <div id=resettokenpanel style="background-color:#979797;border-radius:16px;width:260px;padding:16px;text-align:center;display:none;clear:both">
                                 <form method=post autocomplete=off>
                                     <input type=hidden name=action value=resetaccount />
@@ -195,7 +194,6 @@
                                     <input id=resettokenformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
-
                             <div id=resetpasswordpanel style="position:relative;background-color:#979797;border-radius:16px;width:300px;padding:16px;text-align:center;display:none">
                                 <form method=post>
                                     <input type=hidden name=action value=resetpassword />

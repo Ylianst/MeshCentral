@@ -51,11 +51,11 @@
                                     <table>
                                         <tr>
                                             <td id=loginusername align=right width=100>Username:</td>
-                                            <td><input id=username type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) /></td>
+                                            <td><input id=username autocomplete="username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) /></td>
                                         </tr>
                                         <tr>
                                             <td align=right>Password:</td>
-                                            <td><input id=password type=password maxlength=256 name=password autocomplete=off onchange=validateLogin(2) onkeyup=validateLogin(2,event) /></td>
+                                            <td><input id=password autocomplete="current-password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) /></td>
                                         </tr>
                                         <tr>
                                             <td><div id=showPassHintLink style=display:none><a onclick="return showPassHint(event);" href="#" style="cursor:pointer">Show Hint</a></div></td>
@@ -83,19 +83,19 @@
                                     <table>
                                         <tr id="nuUserRow">
                                             <td id="nuUser" align=right width=100>Username:</td>
-                                            <td><input id=ausername type=text name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
+                                            <td><input id=ausername type=text autocomplete="username" name=username onchange=validateCreate(1) maxlength=64 onkeydown=haltReturn(event) onkeyup=validateCreate(1,event) /></td>
                                         </tr>
                                         <tr>
                                             <td id="nuEmail" align=right width=100>Email:</td>
-                                            <td><input id=aemail type=text name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
+                                            <td><input id=aemail type=text autocomplete="email" inputmode="email" name=email onchange=validateCreate(2) maxlength=256 onkeydown=haltReturn(event) onkeyup=validateCreate(2,event) /></td>
                                         </tr>
                                         <tr>
                                             <td id="nuPass1" align=right>Password:</td>
-                                            <td><input id=apassword1 type=password name=password1 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3,event) onkeyup=validateCreate(3,event) /></td>
+                                            <td><input id=apassword1 type=password name=password1 autocomplete="new-password" maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(3,event) onkeyup=validateCreate(3,event) /></td>
                                         </tr>
                                         <tr>
                                             <td id="nuPass2" align=right>Password:</td>
-                                            <td><input id=apassword2 type=password name=password2 autocomplete=off maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4,event) onkeyup=validateCreate(4,event) /></td>
+                                            <td><input id=apassword2 type=password name=password2 autocomplete="new-password" maxlength=256 onkeydown=haltReturn(event) onchange=validateCreate(4,event) onkeyup=validateCreate(4,event) /></td>
                                         </tr>
                                         <tr id="createPanelHint" style="display:none">
                                             <td id="nuHint" align=right>Password Hint:</td>
@@ -126,7 +126,7 @@
                                     <table>
                                         <tr>
                                             <td align=right width=100>Email:</td>
-                                            <td><input id=remail type=text name=email maxlength=256 onchange=validateReset() onkeyup=validateReset(event) /></td>
+                                            <td><input id=remail type=text inputmode="email" name=email maxlength=256 onchange=validateReset() onkeyup=validateReset(event) /></td>
                                         </tr>
                                         <tr>
                                             <td colspan=2>
@@ -148,7 +148,7 @@
                                         <tr>
                                             <td align=right width=100>Login token:</td>
                                             <td>
-                                                <input id=tokenInput type=text name=token maxlength=50 onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
+                                                <input id=tokenInput autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" type=text name=token maxlength=50 onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
                                                 <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                             </td>
                                         </tr>

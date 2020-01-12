@@ -1546,7 +1546,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
             if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
             if (obj.args.clickonce !== false) { features += 0x00000100; } // Enable ClickOnce (Default true)
-            if (obj.args.allowhighqualitydesktop == true) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default false)
+            if (obj.args.allowhighqualitydesktop !== false) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default true)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x00000400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
             if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
@@ -3410,7 +3410,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
                     'X-Content-Type-Options': 'nosniff',
-                    'Content-Security-Policy': "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'; base-url: 'none'; form-action 'self'"
+                    'Content-Security-Policy': "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'" + geourl + selfurl + "; img-src 'self'" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'; form-action 'self'"
                 };
                 if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
                 res.set(headers);
