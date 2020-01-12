@@ -2032,7 +2032,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />Secret<br /><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />Secret<br /><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                         new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
@@ -9036,6 +9036,9 @@
             if (xxdialogMode) return;
             haltEvent(e);
             userid = decodeURIComponent(userid);
+            var user = users[userid.toLowerCase()];
+            if (user == null) return;
+            var uself = (userinfo._id == user._id);
             var x = '<div><div id=d2AdminPermissions>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>' + "Server Files" + '</label>, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>k max, blank for default<br><hr/>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>' + "Full Administrator" + '</label><br>';
@@ -9048,8 +9051,7 @@
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
             x += '</div>';
-            var user = users[userid.toLowerCase()];
-            setDialogMode(2, "Server Permissions", 3, showUserAdminDialogEx, x, user);
+            setDialogMode(2, "Server Permissions", 2 + (uself?0:1), showUserAdminDialogEx, x, user);
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
                 Q('ua_serverbackup').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1) != 0));       // Server Backup
@@ -9062,18 +9064,18 @@
                 Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));        // No Tools (MeshCMD / Router)
                 Q('ua_manageusergroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 256) != 0)); // Manage User Groups
             }
-            QE('ua_fulladmin', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_serverbackup', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_manageusers', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_manageusergroups', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_serverrestore', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_fileaccess', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_fileaccessquota', userinfo.siteadmin == 0xFFFFFFFF);
-            QE('ua_serverupdate', userinfo.siteadmin == 0xFFFFFFFF);
+            QE('ua_fulladmin', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_serverbackup', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_manageusers', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_manageusergroups', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_serverrestore', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_fileaccess', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_fileaccessquota', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_serverupdate', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QV('d2AdminPermissions', userinfo.siteadmin == 0xFFFFFFFF)
-            QE('ua_lockedaccount', (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
-            QE('ua_nonewgroups', (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
-            QE('ua_nomeshcmd', (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_lockedaccount', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_nonewgroups', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_nomeshcmd', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             Q('ua_fileaccessquota').value = (user.quota != null)?(user.quota / 1024):'';
             showUserAdminDialogValidate();
             return false;
@@ -9961,12 +9963,12 @@
             window.serverStatCpu = new Chart(document.getElementById('serverCpuChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
-                options: { responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
+                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
             });
             window.serverStatMemory = new Chart(document.getElementById('serverMemoryChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
-                options: { responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
+                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
             });
         }
 

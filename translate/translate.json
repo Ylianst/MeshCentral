@@ -3390,7 +3390,7 @@
       "de": "Das Ändern der Sprache erfordert eine Aktualisierung der Seite.",
       "en": "Changing the language will require a refresh of the page.",
       "ja": "言語を変更するには、ページを更新する必要があります。",
-      "nl": "Als u de taal wilt wijzigen, moet de pagina worden vernieuwd.",
+      "nl": "Als u de taal wilt wijzigen, moet de pagina worden ververst.",
       "pt": "Alterar o idioma exigirá uma atualização da página.",
       "ru": "Изменение языка потребует обновления страницы.",
       "xloc": [
@@ -3778,7 +3778,7 @@
       "de": "Bestätigen Sie das Kopieren von 1 Eintrag an diesen Ort?",
       "en": "Confirm copy of 1 entrie to this location?",
       "ja": "この場所への1つのエントリのコピーを確認しますか？",
-      "nl": "Bevestig kopie van 1 bestand naar deze locatie?",
+      "nl": "Bevestig kopiëren van 1 bestand naar deze locatie?",
       "pt": "Confirmar cópia de 1 entrada para este local?",
       "ru": "Подтвердить копию 1 записи в это место?",
       "xloc": [
@@ -3791,7 +3791,7 @@
       "de": "Bestätigen Sie das Kopieren von {0} Einträgen an diesen Ort?",
       "en": "Confirm copy of {0} entries's to this location?",
       "ja": "{0}エントリのコピーをこの場所に確認しますか？",
-      "nl": "Bevestig kopieën van {0} bestanden naar deze locatie?",
+      "nl": "Bevestig kopiëren van {0} bestanden naar deze locatie?",
       "pt": "Confirmar cópia de {0} entradas para este local?",
       "ru": "Подтвердить копию {0} записей в этом месте?",
       "xloc": [
@@ -4130,7 +4130,7 @@
       "de": "Kopie",
       "en": "Copy",
       "ja": "コピー",
-      "nl": "Kopie",
+      "nl": "Kopiëren",
       "pt": "Copiar",
       "ru": "Копировать",
       "xloc": [
@@ -4743,7 +4743,7 @@
     {
       "de": "Benutzergruppe löschen",
       "en": "Delete User Group",
-      "nl": "Verdwijder de gebruikersgroep",
+      "nl": "Verwijder de gebruikersgroep",
       "xloc": [
         "default.handlebars->23->1277",
         "default.handlebars->23->1285"
@@ -5788,7 +5788,7 @@
     {
       "de": "Dupliziere Benutzergruppe",
       "en": "Duplicate User Group",
-      "nl": "Duplicer Gebruikers Groep",
+      "nl": "Dupliceer Gebruikers Groep",
       "xloc": [
         "default.handlebars->23->1253"
       ]
@@ -13127,7 +13127,8 @@
       ]
     },
     {
-      "en": "Relay teller"
+      "en": "Relay teller",
+      "nl": "Relay teller"
     },
     {
       "cs": "Zapamatovat toto zařízení na 30 dní.",
@@ -13541,7 +13542,7 @@
       "en": "Reset devices",
       "fr": "Réinitialiser les appareils",
       "ja": "デバイスをリセットする",
-      "nl": "Reset apparaten",
+      "nl": "Herstart apparaten",
       "pt": "Redefinir dispositivos",
       "ru": "Сбросить устройства",
       "xloc": [
@@ -16011,7 +16012,7 @@
       "de": "Diese Seite existiert nicht.",
       "en": "This page does not exist",
       "ja": "このページは存在しません",
-      "nl": "",
+      "nl": "Deze pagina bestaat niet",
       "pt": "Esta página não existe",
       "ru": "Страница не существует",
       "xloc": [
@@ -16191,7 +16192,7 @@
       "de": "Um dieses Konto zu löschen, geben Sie das Konto-Passwort in beide untenstehenden Eingabefelder ein und wählen Sie OK.",
       "en": "To delete this account, type in the account password in both boxes below and hit ok.",
       "ja": "このアカウントを削除するには、下の両方のボックスにアカウントのパスワードを入力して[OK]をクリックします。",
-      "nl": "Om dit account te verwijderen, typt u het accountwachtwoord in beide onderstaande vakken en drukt u op OK.",
+      "nl": "Om dit account te verwijderen, typt u het accountwachtwoord in beide onderstaande vakken en klikt u op OK.",
       "pt": "Para excluir esta conta, digite a senha da conta nas duas caixas abaixo e pressione ok.",
       "ru": "Чтобы удалить эту учетную запись, введите пароль учетной записи в оба поля и нажмите ОК.",
       "xloc": [
@@ -16215,7 +16216,7 @@
       "de": "Zum Installieren, kopieren Sie den folgenden Befehl und führen Sie ihn in einem Root-Terminal aus.",
       "en": "To install, cut and paste the following command in a root terminal.",
       "ja": "インストールするには、ルートターミナルで次のコマンドをカットアンドペーストします。",
-      "nl": "Om de volgende opdracht te installeren, knippen en plakken in een root-terminal.",
+      "nl": "Om te installeren, knip en plak de volgende opdracht in de root-terminal.",
       "pt": "Para instalar, recorte e cole o seguinte comando em um terminal raiz.",
       "ru": "Для установки, вырежьте и вставьте следующую команду в root терминал.",
       "xloc": [
@@ -16239,7 +16240,7 @@
       "de": "Um einen Mesh-Agenten zu entfernen, führen Sie den folgenden Befehl aus. Root-Zugriff wird benötigt.",
       "en": "To remove a mesh agent, run the following command. Root credentials will be needed.",
       "ja": "メッシュエージェントを削除するには、次のコマンドを実行します。ルート資格情報が必要になります。",
-      "nl": "Voer de volgende opdracht uit om een mesh-agent te verwijderen. Root gegevens zijn nodig.",
+      "nl": "Voer de volgende opdracht uit om een mesh-agent te verwijderen. Root rechten zijn nodig.",
       "pt": "Para remover um agente de malha, execute o seguinte comando. Serão necessárias credenciais raiz.",
       "ru": "Для удаления mesh агента, выполните следующую команду. Root учетные данные будут необходимы.",
       "xloc": [
@@ -18333,7 +18334,7 @@
       "de": "kopieren",
       "en": "copy",
       "ja": "コピー",
-      "nl": "kopieren",
+      "nl": "kopiëren",
       "pt": "Copiar",
       "ru": "копировать",
       "xloc": [
