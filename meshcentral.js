@@ -163,11 +163,11 @@ function CreateMeshCentralServer(config, args) {
                 else if (require('fs').existsSync('/usr/lib/systemd/system')) { systemdConf = '/usr/lib/systemd/system/meshcentral.service'; }
                 else { console.log('Unable to find systemd configuration folder.'); process.exit(); return; }
                 console.log('Writing config file...');
-                require('child_process').exec('whereis node', {}, function (error, stdout, stderr) {
-                    if ((error != null) || (stdout.startsWith('node: ') == false) || (stdout.indexOf('\n') == -1)) { console.log('ERROR: Unable to get node location: ' + error); process.exit(); return; }
-                    var nodePath = stdout.substring(6, stdout.indexOf('\n'));
-                    var config = '[Unit]\nDescription=MeshCentral Server\n\n[Service]\nType=simple\nLimitNOFILE=1000000\nExecStart=' + nodePath + ' ' + __dirname + '\nWorkingDirectory=' + userinfo.homedir + '\nEnvironment=NODE_ENV=production\nUser=' + userinfo.username + '\nGroup=' + userinfo.username + '\nRestart=always\n# Restart service after 10 seconds if node service crashes\nRestartSec=10\n# Set port permissions capability\nAmbientCapabilities=cap_net_bind_service\n\n[Install]\nWantedBy=multi-user.target\n';
-                    require('child_process').exec('echo -e \"' + config.split('\n').join('\\n') + '\" | sudo tee ' + systemdConf, {}, function (error, stdout, stderr) {
+                require('child_process').exec('which node', {}, function (error, stdout, stderr) {
+                    if ((error != null) || (stdout.indexOf('\n') == -1)) { console.log('ERROR: Unable to get node location: ' + error); process.exit(); return; }
+                    var nodePath = stdout.substring(0, stdout.indexOf('\n'));
+                    var config = '[Unit]\nDescription=MeshCentral Server\n\n[Service]\nType=simple\nLimitNOFILE=1000000\nExecStart=' + nodePath + ' ' + __dirname + '/meshcentral\nWorkingDirectory=' + userinfo.homedir + '\nEnvironment=NODE_ENV=production\nUser=' + userinfo.username + '\nGroup=' + userinfo.username + '\nRestart=always\n# Restart service after 10 seconds if node service crashes\nRestartSec=10\n# Set port permissions capability\nAmbientCapabilities=cap_net_bind_service\n\n[Install]\nWantedBy=multi-user.target\n';
+                    require('child_process').exec('echo \"' + config.split('\n').join('\\n') + '\" | sudo tee ' + systemdConf, {}, function (error, stdout, stderr) {
                         if ((error != null) && (error != '')) { console.log('ERROR: Unable to write config file: ' + error); process.exit(); return; }
                         console.log('Enabling service...');
                         require('child_process').exec('sudo systemctl enable meshcentral.service', {}, function (error, stdout, stderr) {
