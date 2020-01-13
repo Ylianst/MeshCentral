@@ -5379,11 +5379,11 @@
     },
     {
       "cs": "DeviceCheckbox",
-      "de": "Geräte-Checkbox",
+      "de": "DeviceCheckbox",
       "en": "DeviceCheckbox",
       "ja": "DeviceCheckbox",
-      "nl": "Apparaat Checkbox",
-      "pt": "Caixa de seleção do dispositivo",
+      "nl": "DeviceCheckbox",
+      "pt": "DeviceCheckbox",
       "ru": "DeviceCheckbox",
       "xloc": [
         "default.handlebars->23->394"
