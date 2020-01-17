@@ -4585,7 +4585,7 @@
     },
     {
       "cs": "Datový kanál",
-      "de": "Datenkanal",
+      "de": "DataChannel",
       "en": "DataChannel",
       "ja": "データチャネル",
       "nl": "Data kanaal",
@@ -14664,7 +14664,7 @@
     },
     {
       "cs": "SharedProcess",
-      "de": "Gemeinsamer Prozess",
+      "de": "Geteilter Prozess",
       "en": "SharedProcess",
       "ja": "SharedProcess",
       "nl": "Gedeeld proces",
@@ -15036,7 +15036,7 @@
     },
     {
       "cs": "Jemné odpojení agenta",
-      "de": "Agent sanft trennen",
+      "de": "Agenten sanft trennen",
       "en": "Soft disconnect agent",
       "ja": "ソフト切断エージェント",
       "nl": "Softwarematig verbreken agent",
