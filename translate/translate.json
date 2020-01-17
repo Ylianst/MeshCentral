@@ -5354,7 +5354,7 @@
     },
     {
       "cs": "Zařízení je přítomno, ale nedaří se zjistit stav napájení",
-      "de": "Gerät ist vorhanden, aber der Energiezustand kann nicht ermittelt werden",
+      "de": "Gerät ist präsent, aber der Energiezustand kann nicht ermittelt werden",
       "en": "Device is present, but power state cannot be determined",
       "ja": "デバイスは存在しますが、電源状態を判別できません",
       "nl": "Apparaat is aanwezig, maar de status kan niet worden bepaald",
