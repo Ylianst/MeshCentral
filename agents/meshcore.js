@@ -1191,14 +1191,14 @@ function createMeshCore(agent) {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var script = false;
-                            if (require('linux-gnome-helpers').scriptVersion)
-                            {
-                                if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
-                                    (require('linux-gnome-helpers').scriptVersion.major == 2 && require('linux-gnome-helpers').scriptVersion.minor >= 25))
-                                {
-                                    script = '/usr/bin/script';
+                            try {
+                                if (require('linux-gnome-helpers').scriptVersion) {
+                                    if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
+                                        (require('linux-gnome-helpers').scriptVersion.major == 2 && require('linux-gnome-helpers').scriptVersion.minor >= 25)) {
+                                        script = '/usr/bin/script';
+                                    }
                                 }
-                            }
+                            } catch (ex) { }
 
                             var python = fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
                             var shell = bash || sh;

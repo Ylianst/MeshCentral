@@ -220,11 +220,71 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         return obj.m.ProcessData(data);
     }
 
+    // TODO: Optimize this
+    function toUTF8Array(str) {
+        var utf8 = [];
+        for (var i = 0; i < str.length; i++) {
+            var charcode = str.charCodeAt(i);
+            if (charcode < 0x80) utf8.push(charcode);
+            else if (charcode < 0x800) {
+                utf8.push(0xc0 | (charcode >> 6),
+                    0x80 | (charcode & 0x3f));
+            }
+            else if (charcode < 0xd800 || charcode >= 0xe000) {
+                utf8.push(0xe0 | (charcode >> 12),
+                    0x80 | ((charcode >> 6) & 0x3f),
+                    0x80 | (charcode & 0x3f));
+            }
+            // surrogate pair
+            else {
+                i++;
+                charcode = ((charcode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff)
+                utf8.push(0xf0 | (charcode >> 18),
+                    0x80 | ((charcode >> 12) & 0x3f),
+                    0x80 | ((charcode >> 6) & 0x3f),
+                    0x80 | (charcode & 0x3f));
+            }
+        }
+
+        var ret = new Uint8Array(utf8.length);
+        for (i = 0; i < utf8.length; ++i) {
+            ret[i] = utf8[i];
+        }
+        return ret;
+    }
+
     obj.sendText = function (x) {
         if (typeof x != 'string') { x = JSON.stringify(x); } // Turn into a string if needed
         obj.send(encode_utf8(x)); // Encode UTF8 correctly
     }
 
+    // TODO: Optimize this
+    obj.send = function (x) {
+        //obj.debug('Agent Redir Send(' + obj.webRtcActive + ', ' + x.length + '): ' + rstr2hex(x));
+        //console.log('Agent Redir Send(' + obj.webRtcActive + ', ' + x.length + '): ' + ((typeof x == 'string')?x:rstr2hex(x)));
+        if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirSend', typeof x, x.length, (x[0] == '{') ? x : rstr2hex(x).substring(0, 64)); }
+        try {
+            if (obj.socket != null && obj.socket.readyState == WebSocket.OPEN) {
+                if (typeof x == 'string') {
+                    if (obj.debugmode == 1) {
+                        var b = new Uint8Array(x.length), c = [];
+                        for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); c.push(x.charCodeAt(i)); }
+                        if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(toUTF8Array(x));/*obj.socket.send(b.buffer);*/ }
+                        //console.log('Send', c);
+                    } else {
+                        var b = new Uint8Array(x.length);
+                        for (var i = 0; i < x.length; ++i) { b[i] = x.charCodeAt(i); }
+                        if (obj.webRtcActive == true) { obj.webchannel.send(b.buffer); } else { obj.socket.send(toUTF8Array(x)); /*obj.socket.send(b.buffer); */ }
+                    }
+                } else {
+                    //if (obj.debugmode == 1) { console.log('Send', x); }
+                    if (obj.webRtcActive == true) { obj.webchannel.send(x); } else { obj.socket.send(toUTF8Array(x)); /*obj.socket.send(x);*/ }
+                }
+            }
+        } catch (ex) { }
+    }
+
+    /*
     obj.send = function (x) {
         //obj.debug('Agent Redir Send(' + obj.webRtcActive + ', ' + x.length + '): ' + rstr2hex(x));
         //console.log('Agent Redir Send(' + obj.webRtcActive + ', ' + x.length + '): ' + ((typeof x == 'string')?x:rstr2hex(x)));
@@ -249,6 +309,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             }
         } catch (ex) { }
     }
+    */
 
     obj.xxOnSocketClosed = function () {
         //obj.debug('Agent Redir Socket Closed');

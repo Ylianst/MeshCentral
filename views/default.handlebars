@@ -5273,12 +5273,12 @@
             y += '</select>';
 
             var x = '';
-            if (mode == 0) { x += '<div>MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials.<br /><br />'; }
-            if (mode == 1) { x += '<div>Download "meshcmd" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.<br /><br />'; }
-            x += addHtmlValue('Operating System', y);
-            x += addHtmlValue('MeshCmd', '<a id=meshcmddownloadid href="meshagents?meshcmd=3" download></a>');
-            if (mode == 0) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=generic" download>MeshAction (.txt)</a>'); }
-            if (mode == 1) { x += addHtmlValue('Action File', '<a href="meshagents?meshaction=route&nodeid=' + nodeid + '" download>MeshAction (.txt)</a>'); }
+            if (mode == 0) { x += '<div>' + "MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials." + '<br /><br />'; }
+            if (mode == 1) { x += '<div>' + "Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed." + '<br /><br />'; }
+            x += addHtmlValue("Operating System", y);
+            x += addHtmlValue("MeshCmd", '<a id=meshcmddownloadid href="meshagents?meshcmd=3" download></a>');
+            if (mode == 0) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=generic" download>' + "MeshAction (.txt)" + '</a>'); }
+            if (mode == 1) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=route&nodeid=' + nodeid + '" download>' + "MeshAction (.txt)" + '</a>'); }
             x += '</div>';
             setDialogMode(2, [ "Download MeshCmd", "Network Router" ][mode], 9, null, x, 'fileDownload');
             meshCmdOsClick();
@@ -5287,12 +5287,12 @@
         function meshCmdOsClick() {
             var os = Q('aginsSelect').value, osn = '', osurl = '';
             //Q('meshcmddownloadid').href = 'meshagents?meshcmd=' + os;
-            if (os == 3) { osn = 'MeshCmd (Win32 executable)'; }
-            if (os == 4) { osn = 'MeshCmd (Win64 executable)'; }
-            if (os == 5) { osn = 'MeshCmd (Linux x86, 32bit)'; }
-            if (os == 6) { osn = 'MeshCmd (Linux x86, 64bit)'; }
-            if (os == 16) { osn = 'MeshCmd (MacOS, 64bit)'; }
-            if (os == 25) { osn = 'MeshCmd (Linux ARM, 32bit)'; }
+            if (os == 3) { osn = "MeshCmd (Win32 executable)"; }
+            if (os == 4) { osn = "MeshCmd (Win64 executable)"; }
+            if (os == 5) { osn = "MeshCmd (Linux x86, 32bit)"; }
+            if (os == 6) { osn = "MeshCmd (Linux x86, 64bit)"; }
+            if (os == 16) { osn = "MeshCmd (MacOS, 64bit)"; }
+            if (os == 25) { osn = "MeshCmd (Linux ARM, 32bit)"; }
             QH('meshcmddownloadid', osn);
             Q('meshcmddownloadid').setAttribute('href', 'meshagents?meshcmd=' + os);
         }
