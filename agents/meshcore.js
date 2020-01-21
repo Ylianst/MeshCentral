@@ -39,11 +39,17 @@ var MESHRIGHT_LIMITEDINPUT = 4096;
 
 function createMeshCore(agent) {
     var obj = {};
-    if (process.platform == 'win32' && require('user-sessions').isRoot()) {
+    if (process.platform == 'win32' && require('user-sessions').isRoot())
+    {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
         var writtenSize = 0, actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
         try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize'); } catch (x) { }
         if (writtenSize != actualSize) { try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize); } catch (x2) { } }
+
+        // Check to see if we are the Installed Mesh Agent Service, if we are, make sure we can run in Safe Mode
+        var meshCheck = false;
+        try { meshCheck = require('service-manager').manager.getService('Mesh Agent').isMe(); } catch (mce) { }
+        if (meshCheck && require('win-bcd').isSafeModeService && !require('win-bcd').isSafeModeService('Mesh Agent')) { require('win-bcd').enableSafeModeService('Mesh Agent'); }
     }
 
     if (process.platform == 'darwin' && !process.versions) {
