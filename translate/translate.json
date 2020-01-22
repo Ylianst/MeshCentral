@@ -5629,6 +5629,7 @@
     },
     {
       "en": "Download \\\"meshcmd\\\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.",
+      "nl": "Download \\\"meshcmd\\\" met het actiebestand om verkeer via deze server naar dit apparaat te leiden. Zorg ervoor dat u meshaction.txt bewerkt en uw accountwachtwoord toevoegt of breng de nodige wijzigingen aan.",
       "xloc": [
         "default.handlebars->23->572"
       ]
@@ -10305,6 +10306,7 @@
     },
     {
       "en": "MeshAction (.txt)",
+      "nl": "MeshAction (.txt)",
       "xloc": [
         "default.handlebars->23->576",
         "default.handlebars->23->578"
@@ -10446,42 +10448,49 @@
     },
     {
       "en": "MeshCmd (Linux ARM, 32bit)",
+      "nl": "MeshCmd (Linux ARM, 32bit)",
       "xloc": [
         "default.handlebars->23->586"
       ]
     },
     {
       "en": "MeshCmd (Linux x86, 32bit)",
+      "nl": "MeshCmd (Linux x86, 32bit)",
       "xloc": [
         "default.handlebars->23->583"
       ]
     },
     {
       "en": "MeshCmd (Linux x86, 64bit)",
+      "nl": "MeshCmd (Linux x86, 64bit)",
       "xloc": [
         "default.handlebars->23->584"
       ]
     },
     {
       "en": "MeshCmd (MacOS, 64bit)",
+      "nl": "MeshCmd (MacOS, 64bit)",
       "xloc": [
         "default.handlebars->23->585"
       ]
     },
     {
       "en": "MeshCmd (Win32 executable)",
+      "nl": "MeshCmd (Win32 executable)",
       "xloc": [
         "default.handlebars->23->581"
       ]
     },
     {
       "en": "MeshCmd (Win64 executable)",
+      "nl": "MeshCmd (Win64 executable)",
       "xloc": [
         "default.handlebars->23->582"
       ]
     },
     {
       "en": "MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials.",
+      "nl": "MeshCmd is een opdrachtregelprogramma dat veel verschillende bewerkingen uitvoert. Het actiebestand is optioneel, en kan worden gedownload en bewerkt om serverinformatie en referenties te verstrekken.",
       "xloc": [
         "default.handlebars->23->571"
       ]
