@@ -19,6 +19,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const path = require('path');
     const common = parent.common;
 
+    // User Consent Flags
+    const USERCONSENT_DesktopNotifyUser = 1;
+    const USERCONSENT_TerminalNotifyUser = 2;
+    const USERCONSENT_FilesNotifyUser = 4;
+    const USERCONSENT_DesktopPromptUser = 8;
+    const USERCONSENT_TerminalPromptUser = 16;
+    const USERCONSENT_FilesPromptUser = 32;
+    const USERCONSENT_ShowConnectionToolbar = 64;
+
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
     const MESHRIGHT_MANAGEUSERS = 2;

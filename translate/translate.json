@@ -366,7 +366,7 @@
       "pt": ", Soft-KVM",
       "ru": ", Soft-KVM",
       "xloc": [
-        "default.handlebars->23->594"
+        "default.handlebars->23->595"
       ]
     },
     {
@@ -380,7 +380,7 @@
       "xloc": [
         "default-mobile.handlebars->9->228",
         "default-mobile.handlebars->9->238",
-        "default.handlebars->23->595",
+        "default.handlebars->23->596",
         "default.handlebars->23->626",
         "default.handlebars->23->638"
       ]
@@ -1066,7 +1066,7 @@
       "pt": "Estado de energia de 7 dias",
       "ru": "7-дневная статистика работы",
       "xloc": [
-        "default.handlebars->23->534"
+        "default.handlebars->23->535"
       ]
     },
     {
@@ -1454,8 +1454,8 @@
     {
       "en": "Action File",
       "xloc": [
-        "default.handlebars->23->574",
-        "default.handlebars->23->576"
+        "default.handlebars->23->575",
+        "default.handlebars->23->577"
       ]
     },
     {
@@ -1580,7 +1580,7 @@
       "pt": "Adicionar evento do dispositivo",
       "ru": "Добавить событие к устройству",
       "xloc": [
-        "default.handlebars->23->517"
+        "default.handlebars->23->518"
       ]
     },
     {
@@ -2042,8 +2042,8 @@
       "ru": "Агент подключен",
       "xloc": [
         "default.handlebars->23->154",
-        "default.handlebars->23->508",
-        "default.handlebars->23->509"
+        "default.handlebars->23->509",
+        "default.handlebars->23->510"
       ]
     },
     {
@@ -2142,9 +2142,9 @@
       "pt": "All Focus",
       "ru": "Фокусирование всех",
       "xloc": [
-        "default.handlebars->23->596",
-        "default.handlebars->23->598",
-        "default.handlebars->23->599"
+        "default.handlebars->23->597",
+        "default.handlebars->23->599",
+        "default.handlebars->23->600"
       ]
     },
     {
@@ -2588,7 +2588,7 @@
       "pt": "Tem certeza de que deseja excluir o nó {0}?",
       "ru": "Вы уверенны, что хотите удалить узел {0}?",
       "xloc": [
-        "default.handlebars->23->556"
+        "default.handlebars->23->557"
       ]
     },
     {
@@ -2599,7 +2599,7 @@
       "nl": "Weet u zeker dat u de geselecteerde agent wilt verwijderen?",
       "ru": "Вы уверенны, что хотите деинсталировать избранного агента?",
       "xloc": [
-        "default.handlebars->23->545"
+        "default.handlebars->23->546"
       ]
     },
     {
@@ -2610,7 +2610,7 @@
       "nl": "Weet u zeker dat u de geselecteerde {0} agenten wilt verwijderen?",
       "ru": "Вы уверенны, что хотите деинсталировать избранных {0} агентов?",
       "xloc": [
-        "default.handlebars->23->544"
+        "default.handlebars->23->545"
       ]
     },
     {
@@ -3288,8 +3288,8 @@
       "ru": "Смена группы",
       "xloc": [
         "default.handlebars->23->491",
-        "default.handlebars->23->553",
-        "default.handlebars->23->554"
+        "default.handlebars->23->554",
+        "default.handlebars->23->555"
       ]
     },
     {
@@ -3724,7 +3724,7 @@
         "default-mobile.handlebars->9->26",
         "default.handlebars->23->134",
         "default.handlebars->23->142",
-        "default.handlebars->23->616"
+        "default.handlebars->23->617"
       ]
     },
     {
@@ -3776,8 +3776,8 @@
         "default.handlebars->23->1053",
         "default.handlebars->23->1298",
         "default.handlebars->23->396",
-        "default.handlebars->23->548",
-        "default.handlebars->23->557"
+        "default.handlebars->23->549",
+        "default.handlebars->23->558"
       ]
     },
     {
@@ -4599,7 +4599,7 @@
       "pt": "DataChannel",
       "ru": "DataChannel",
       "xloc": [
-        "default.handlebars->23->593"
+        "default.handlebars->23->594"
       ]
     },
     {
@@ -4623,7 +4623,7 @@
       "pt": "Dia",
       "ru": "День",
       "xloc": [
-        "default.handlebars->23->532"
+        "default.handlebars->23->533"
       ]
     },
     {
@@ -4723,7 +4723,7 @@
       "ru": "Удалить Узел",
       "xloc": [
         "default-mobile.handlebars->9->218",
-        "default.handlebars->23->558"
+        "default.handlebars->23->559"
       ]
     },
     {
@@ -4910,7 +4910,7 @@
         "default.handlebars->23->1295",
         "default.handlebars->23->440",
         "default.handlebars->23->441",
-        "default.handlebars->23->589",
+        "default.handlebars->23->590",
         "default.handlebars->23->948",
         "default.handlebars->23->95",
         "default.handlebars->23->972",
@@ -4924,10 +4924,7 @@
       "ja": "DeskControl",
       "nl": "Besturing",
       "pt": "DeskControl",
-      "ru": "Управление рабочего стола",
-      "xloc": [
-        "default.handlebars->23->621"
-      ]
+      "ru": "Управление рабочего стола"
     },
     {
       "cs": "Plocha",
@@ -5063,7 +5060,7 @@
       "ru": "Действие устройства",
       "xloc": [
         "default-mobile.handlebars->9->211",
-        "default.handlebars->23->531"
+        "default.handlebars->23->532"
       ]
     },
     {
@@ -5117,7 +5114,7 @@
       "pt": "Localização do dispositivo",
       "ru": "Местонахождение устройства",
       "xloc": [
-        "default.handlebars->23->559"
+        "default.handlebars->23->560"
       ]
     },
     {
@@ -5131,7 +5128,7 @@
       "xloc": [
         "default-mobile.handlebars->9->222",
         "default.handlebars->23->238",
-        "default.handlebars->23->587",
+        "default.handlebars->23->588",
         "player.htm->3->9"
       ]
     },
@@ -5144,7 +5141,7 @@
       "pt": "Notificação de dispositivo",
       "ru": "Уведомление устройства",
       "xloc": [
-        "default.handlebars->23->522"
+        "default.handlebars->23->523"
       ]
     },
     {
@@ -5194,7 +5191,7 @@
       "pt": "As notas do grupo de dispositivos podem ser visualizadas e alteradas por outros administradores do grupo de dispositivos.",
       "ru": "Примечания группы устройств могут быть просмотрены и изменены другими администраторами группы устройств.",
       "xloc": [
-        "default.handlebars->23->520"
+        "default.handlebars->23->521"
       ]
     },
     {
@@ -5490,7 +5487,7 @@
       "pt": "Mostrar nome",
       "ru": "Показать имя",
       "xloc": [
-        "default.handlebars->23->607"
+        "default.handlebars->23->608"
       ]
     },
     {
@@ -5604,7 +5601,7 @@
       "pt": "Baixar MeshCmd",
       "ru": "Скачать MeshCmd",
       "xloc": [
-        "default.handlebars->23->578"
+        "default.handlebars->23->579"
       ]
     },
     {
@@ -5633,7 +5630,7 @@
     {
       "en": "Download \\\"meshcmd\\\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.",
       "xloc": [
-        "default.handlebars->23->571"
+        "default.handlebars->23->572"
       ]
     },
     {
@@ -5681,7 +5678,7 @@
       "pt": "Download de eventos de energia",
       "ru": "Скачать события состояния питания",
       "xloc": [
-        "default.handlebars->23->533"
+        "default.handlebars->23->534"
       ]
     },
     {
@@ -5914,7 +5911,7 @@
       "ru": "Редактировать устройство",
       "xloc": [
         "default-mobile.handlebars->9->227",
-        "default.handlebars->23->592"
+        "default.handlebars->23->593"
       ]
     },
     {
@@ -5991,7 +5988,7 @@
         "default-mobile.handlebars->9->217",
         "default.handlebars->23->455",
         "default.handlebars->23->458",
-        "default.handlebars->23->540"
+        "default.handlebars->23->541"
       ]
     },
     {
@@ -6377,7 +6374,7 @@
       "pt": "Digite o texto e clique em OK para digitá-lo remotamente usando um teclado em inglês dos EUA.Certifique-se de colocar o cursor remoto na posição correta antes de continuar.",
       "ru": "Для удаленного набора введите текст, используя английскую раскладку и нажмите OK. Перед продолжением убедитесь, что дистанционный курсор установлен в правильное положение.",
       "xloc": [
-        "default.handlebars->23->602"
+        "default.handlebars->23->603"
       ]
     },
     {
@@ -6676,7 +6673,7 @@
       "pt": "Driver do sistema de arquivos",
       "ru": "Драйвер файловой системы",
       "xloc": [
-        "default.handlebars->23->610"
+        "default.handlebars->23->611"
       ]
     },
     {
@@ -7280,7 +7277,7 @@
       "pt": "Obtenha credenciais de login do MQTT para este dispositivo.",
       "ru": "Получить MQTT учетные данные для этого устройства.",
       "xloc": [
-        "default.handlebars->23->506"
+        "default.handlebars->23->507"
       ]
     },
     {
@@ -7663,7 +7660,7 @@
         "default.handlebars->23->435",
         "default.handlebars->23->436",
         "default.handlebars->23->438",
-        "default.handlebars->23->588"
+        "default.handlebars->23->589"
       ]
     },
     {
@@ -7774,7 +7771,7 @@
       "ru": "Выбор иконки",
       "xloc": [
         "default-mobile.handlebars->9->221",
-        "default.handlebars->23->586"
+        "default.handlebars->23->587"
       ]
     },
     {
@@ -8192,8 +8189,8 @@
       "ru": "Intel&reg; AMT подключен",
       "xloc": [
         "default-mobile.handlebars->9->201",
-        "default.handlebars->23->510",
-        "default.handlebars->23->511"
+        "default.handlebars->23->511",
+        "default.handlebars->23->512"
       ]
     },
     {
@@ -8219,8 +8216,8 @@
       "ru": "Intel&reg; AMT обнаружен",
       "xloc": [
         "default-mobile.handlebars->9->202",
-        "default.handlebars->23->512",
-        "default.handlebars->23->513"
+        "default.handlebars->23->513",
+        "default.handlebars->23->514"
       ]
     },
     {
@@ -8388,7 +8385,7 @@
       "pt": "Interativo",
       "ru": "undefined",
       "xloc": [
-        "default.handlebars->23->611"
+        "default.handlebars->23->612"
       ]
     },
     {
@@ -8414,7 +8411,7 @@
       "pt": "Interfaces",
       "ru": "Интерфейсы",
       "xloc": [
-        "default.handlebars->23->495"
+        "default.handlebars->23->496"
       ]
     },
     {
@@ -8712,7 +8709,7 @@
       "pt": "KernelDriver",
       "ru": "Драйвер ядра",
       "xloc": [
-        "default.handlebars->23->612"
+        "default.handlebars->23->613"
       ]
     },
     {
@@ -8865,7 +8862,7 @@
       "pt": "Foco grande",
       "ru": "Большой Фокус",
       "xloc": [
-        "default.handlebars->23->601"
+        "default.handlebars->23->602"
       ]
     },
     {
@@ -9113,7 +9110,7 @@
       "pt": "Visto pela última vez:",
       "ru": "Последнее посещение:",
       "xloc": [
-        "default.handlebars->23->516",
+        "default.handlebars->23->517",
         "default.handlebars->23->83"
       ]
     },
@@ -9362,7 +9359,7 @@
       "pt": "Linux ARM, Raspberry Pi (32 bits)",
       "ru": "Linux ARM, Raspberry Pi (32bit)",
       "xloc": [
-        "default.handlebars->23->569"
+        "default.handlebars->23->570"
       ]
     },
     {
@@ -9438,7 +9435,7 @@
       "pt": "Linux x86 (32 bits)",
       "ru": "Linux x86 (32bit)",
       "xloc": [
-        "default.handlebars->23->566"
+        "default.handlebars->23->567"
       ]
     },
     {
@@ -9450,7 +9447,7 @@
       "pt": "Linux x86 (64 bits)",
       "ru": "Linux x86 (64bit)",
       "xloc": [
-        "default.handlebars->23->567"
+        "default.handlebars->23->568"
       ]
     },
     {
@@ -9491,7 +9488,7 @@
       "ru": "Загрузка...",
       "xloc": [
         "default-mobile.handlebars->9->31",
-        "default.handlebars->23->561",
+        "default.handlebars->23->562",
         "default.handlebars->23->698",
         "default.handlebars->23->964",
         "default.handlebars->23->966"
@@ -9555,7 +9552,7 @@
       "pt": "Localização",
       "ru": "Местонахождение",
       "xloc": [
-        "default.handlebars->23->497"
+        "default.handlebars->23->498"
       ]
     },
     {
@@ -9798,7 +9795,7 @@
       "pt": "Login do MQTT",
       "ru": "MQTT Вход",
       "xloc": [
-        "default.handlebars->23->507"
+        "default.handlebars->23->508"
       ]
     },
     {
@@ -9811,7 +9808,7 @@
       "ru": "Подключен MQTT канал",
       "xloc": [
         "default-mobile.handlebars->9->203",
-        "default.handlebars->23->515"
+        "default.handlebars->23->516"
       ]
     },
     {
@@ -9824,7 +9821,7 @@
       "ru": "Подключен MQTT",
       "xloc": [
         "default.handlebars->23->157",
-        "default.handlebars->23->514"
+        "default.handlebars->23->515"
       ]
     },
     {
@@ -9874,7 +9871,7 @@
       "pt": "MacOS (64 bits)",
       "ru": "MacOS (64-разрядная)",
       "xloc": [
-        "default.handlebars->23->568"
+        "default.handlebars->23->569"
       ]
     },
     {
@@ -10309,8 +10306,8 @@
     {
       "en": "MeshAction (.txt)",
       "xloc": [
-        "default.handlebars->23->575",
-        "default.handlebars->23->577"
+        "default.handlebars->23->576",
+        "default.handlebars->23->578"
       ]
     },
     {
@@ -10368,7 +10365,7 @@
       "pt": "MeshCentral Router",
       "ru": "MeshCentral Маршрутизатор",
       "xloc": [
-        "default.handlebars->23->563"
+        "default.handlebars->23->564"
       ]
     },
     {
@@ -10380,7 +10377,7 @@
       "pt": "O MeshCentral Router é uma ferramenta do Windows para mapeamento de portas TCP. Você pode, por exemplo, RDP em um dispositivo remoto através deste servidor.",
       "ru": "MeshCentral Маршрутизатор это инструмент Windows для сопоставления портов TCP. Например, через этот сервер вы можете установить RDP к удаленному устройство.",
       "xloc": [
-        "default.handlebars->23->562"
+        "default.handlebars->23->563"
       ]
     },
     {
@@ -10444,49 +10441,49 @@
       "ru": "MeshCmd",
       "xloc": [
         "default.handlebars->23->207",
-        "default.handlebars->23->573"
+        "default.handlebars->23->574"
       ]
     },
     {
       "en": "MeshCmd (Linux ARM, 32bit)",
       "xloc": [
-        "default.handlebars->23->585"
+        "default.handlebars->23->586"
       ]
     },
     {
       "en": "MeshCmd (Linux x86, 32bit)",
       "xloc": [
-        "default.handlebars->23->582"
+        "default.handlebars->23->583"
       ]
     },
     {
       "en": "MeshCmd (Linux x86, 64bit)",
       "xloc": [
-        "default.handlebars->23->583"
+        "default.handlebars->23->584"
       ]
     },
     {
       "en": "MeshCmd (MacOS, 64bit)",
       "xloc": [
-        "default.handlebars->23->584"
+        "default.handlebars->23->585"
       ]
     },
     {
       "en": "MeshCmd (Win32 executable)",
       "xloc": [
-        "default.handlebars->23->580"
+        "default.handlebars->23->581"
       ]
     },
     {
       "en": "MeshCmd (Win64 executable)",
       "xloc": [
-        "default.handlebars->23->581"
+        "default.handlebars->23->582"
       ]
     },
     {
       "en": "MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials.",
       "xloc": [
-        "default.handlebars->23->570"
+        "default.handlebars->23->571"
       ]
     },
     {
@@ -10536,7 +10533,7 @@
       "ru": "Сообщение",
       "xloc": [
         "default.handlebars->23->302",
-        "default.handlebars->23->542"
+        "default.handlebars->23->543"
       ]
     },
     {
@@ -10877,7 +10874,7 @@
         "default.handlebars->23->1269",
         "default.handlebars->23->1271",
         "default.handlebars->23->1294",
-        "default.handlebars->23->606",
+        "default.handlebars->23->607",
         "default.handlebars->23->71",
         "default.handlebars->23->80",
         "default.handlebars->23->94",
@@ -10963,7 +10960,7 @@
       "pt": "Interfaces de rede",
       "ru": "Сетевые интерфейсы",
       "xloc": [
-        "default.handlebars->23->560"
+        "default.handlebars->23->561"
       ]
     },
     {
@@ -10976,7 +10973,7 @@
       "pt": "Roteador de rede",
       "ru": "Сетевой маршрутизатор",
       "xloc": [
-        "default.handlebars->23->579"
+        "default.handlebars->23->580"
       ]
     },
     {
@@ -11017,7 +11014,7 @@
       "ru": "Новая группа устройств",
       "xloc": [
         "default-mobile.handlebars->9->50",
-        "default.handlebars->23->552",
+        "default.handlebars->23->553",
         "default.handlebars->23->937",
         "default.handlebars->23->949"
       ]
@@ -11264,7 +11261,7 @@
       "xloc": [
         "default-mobile.handlebars->9->215",
         "default.handlebars->23->245",
-        "default.handlebars->23->538"
+        "default.handlebars->23->539"
       ]
     },
     {
@@ -11465,7 +11462,7 @@
       "pt": "Não existe outro grupo de dispositivos do mesmo tipo.",
       "ru": "Других групп устройств такого же типа не существует.",
       "xloc": [
-        "default.handlebars->23->555"
+        "default.handlebars->23->556"
       ]
     },
     {
@@ -11687,7 +11684,7 @@
         "default.handlebars->23->1002",
         "default.handlebars->23->1337",
         "default.handlebars->23->486",
-        "default.handlebars->23->519"
+        "default.handlebars->23->520"
       ]
     },
     {
@@ -11932,7 +11929,7 @@
       "pt": "Abrir página no dispositivo",
       "ru": "Открыть страницу на устройстве",
       "xloc": [
-        "default.handlebars->23->521"
+        "default.handlebars->23->522"
       ]
     },
     {
@@ -11972,7 +11969,7 @@
         "default.handlebars->23->285",
         "default.handlebars->23->314",
         "default.handlebars->23->466",
-        "default.handlebars->23->572",
+        "default.handlebars->23->573",
         "default.handlebars->23->79"
       ]
     },
@@ -11988,7 +11985,7 @@
       "xloc": [
         "default-mobile.handlebars->9->210",
         "default.handlebars->23->386",
-        "default.handlebars->23->530"
+        "default.handlebars->23->531"
       ]
     },
     {
@@ -12076,7 +12073,7 @@
       "pt": "Processo próprio",
       "ru": "Собственный процесс",
       "xloc": [
-        "default.handlebars->23->613"
+        "default.handlebars->23->614"
       ]
     },
     {
@@ -12089,7 +12086,7 @@
       "ru": "PID",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->0",
-        "default.handlebars->23->609",
+        "default.handlebars->23->610",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader->1"
       ]
     },
@@ -12186,7 +12183,7 @@
         "default.handlebars->23->1349",
         "default.handlebars->23->243",
         "default.handlebars->23->272",
-        "default.handlebars->23->536"
+        "default.handlebars->23->537"
       ]
     },
     {
@@ -12490,6 +12487,12 @@
       ]
     },
     {
+      "en": "Place link to this device in the clipboard",
+      "xloc": [
+        "default.handlebars->23->494"
+      ]
+    },
+    {
       "cs": "Umístit uzel sem",
       "de": "Knoten hier ablegen",
       "en": "Place node here",
@@ -12741,7 +12744,7 @@
       "xloc": [
         "default-mobile.handlebars->9->105",
         "default-mobile.handlebars->9->209",
-        "default.handlebars->23->527",
+        "default.handlebars->23->528",
         "default.handlebars->23->6"
       ]
     },
@@ -12931,7 +12934,7 @@
       "pt": "Putty",
       "ru": "Putty",
       "xloc": [
-        "default.handlebars->23->503"
+        "default.handlebars->23->504"
       ]
     },
     {
@@ -12997,7 +13000,7 @@
       "pt": "RDP",
       "ru": "RDP",
       "xloc": [
-        "default.handlebars->23->501"
+        "default.handlebars->23->502"
       ]
     },
     {
@@ -13242,7 +13245,7 @@
       "pt": "Área de transferência remota",
       "ru": "Удаленный буфер обмена",
       "xloc": [
-        "default.handlebars->23->605"
+        "default.handlebars->23->606"
       ]
     },
     {
@@ -13273,7 +13276,7 @@
       "xloc": [
         "default-mobile.handlebars->9->229",
         "default.handlebars->23->222",
-        "default.handlebars->23->597"
+        "default.handlebars->23->598"
       ]
     },
     {
@@ -13286,7 +13289,7 @@
       "pt": "Entrada remota do teclado",
       "ru": "Ввод с удаленной клавиатуры",
       "xloc": [
-        "default.handlebars->23->603"
+        "default.handlebars->23->604"
       ]
     },
     {
@@ -13335,7 +13338,7 @@
       "pt": "A área de transferência remota é válida por 60 segundos.",
       "ru": "Удаленный буфер обмена действителен в течении 60 секунд.",
       "xloc": [
-        "default.handlebars->23->604"
+        "default.handlebars->23->605"
       ]
     },
     {
@@ -13526,7 +13529,7 @@
       "pt": "Requer o suporte Microsoft ClickOnce no seu navegador",
       "ru": "В вашем браузере требуется поддержка Microsoft ClickOnce",
       "xloc": [
-        "default.handlebars->23->500"
+        "default.handlebars->23->501"
       ]
     },
     {
@@ -13539,8 +13542,8 @@
       "pt": "Requer o suporte Microsoft ClickOnce no seu navegador.",
       "ru": "В вашем браузере требуется поддержка Microsoft ClickOnce.",
       "xloc": [
-        "default.handlebars->23->502",
-        "default.handlebars->23->504"
+        "default.handlebars->23->503",
+        "default.handlebars->23->505"
       ]
     },
     {
@@ -13554,7 +13557,7 @@
       "ru": "Перезагрузить",
       "xloc": [
         "default-mobile.handlebars->9->208",
-        "default.handlebars->23->526",
+        "default.handlebars->23->527",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar"
       ]
     },
@@ -13636,7 +13639,7 @@
       "pt": "Reiniciar",
       "ru": "Перезагрузка",
       "xloc": [
-        "default.handlebars->23->619",
+        "default.handlebars->23->620",
         "player.htm->p11->deskarea0->deskarea4->3"
       ]
     },
@@ -13820,7 +13823,7 @@
       "ru": "Маршрутизатор",
       "xloc": [
         "default.handlebars->23->209",
-        "default.handlebars->23->499"
+        "default.handlebars->23->500"
       ]
     },
     {
@@ -14080,7 +14083,7 @@
         "default-mobile.handlebars->9->214",
         "default.handlebars->23->1335",
         "default.handlebars->23->244",
-        "default.handlebars->23->537"
+        "default.handlebars->23->538"
       ]
     },
     {
@@ -14141,7 +14144,7 @@
       "pt": "Selecione um novo grupo para dispositivos selecionados",
       "ru": "Выберите новую группу для избранных устройств",
       "xloc": [
-        "default.handlebars->23->551"
+        "default.handlebars->23->552"
       ]
     },
     {
@@ -14153,7 +14156,7 @@
       "pt": "Selecione um novo grupo para este dispositivo",
       "ru": "Выберите новую группу для этого устройства",
       "xloc": [
-        "default.handlebars->23->550"
+        "default.handlebars->23->551"
       ]
     },
     {
@@ -14190,7 +14193,7 @@
       "ru": "Выберите действие для осуществления на этом устройстве.",
       "xloc": [
         "default-mobile.handlebars->9->205",
-        "default.handlebars->23->523"
+        "default.handlebars->23->524"
       ]
     },
     {
@@ -14246,7 +14249,7 @@
       "ru": "Отправить MQTT Сообщение",
       "xloc": [
         "default.handlebars->23->383",
-        "default.handlebars->23->528"
+        "default.handlebars->23->529"
       ]
     },
     {
@@ -14259,7 +14262,7 @@
       "pt": "Enviar mensagem MQTT",
       "ru": "Отправить MQTT сообщение",
       "xloc": [
-        "default.handlebars->23->543"
+        "default.handlebars->23->544"
       ]
     },
     {
@@ -14590,7 +14593,7 @@
       "pt": "Detalhes do serviço",
       "ru": "Детайли сервиса",
       "xloc": [
-        "default.handlebars->23->620"
+        "default.handlebars->23->621"
       ]
     },
     {
@@ -14735,7 +14738,7 @@
       "pt": "Processo compartilhado",
       "ru": "Общий процесс",
       "xloc": [
-        "default.handlebars->23->614"
+        "default.handlebars->23->615"
       ]
     },
     {
@@ -14842,7 +14845,7 @@
       "pt": "Mostrar informações de localizações do dispositivo",
       "ru": "Показать информацию о расположении устройства",
       "xloc": [
-        "default.handlebars->23->496"
+        "default.handlebars->23->497"
       ]
     },
     {
@@ -14854,7 +14857,7 @@
       "pt": "Mostrar informações da interface de rede do dispositivo",
       "ru": "Показать информацию о сетевом интерфейсе устройства",
       "xloc": [
-        "default.handlebars->23->494"
+        "default.handlebars->23->495"
       ]
     },
     {
@@ -15001,7 +15004,7 @@
         "default.handlebars->23->2",
         "default.handlebars->23->3",
         "default.handlebars->23->4",
-        "default.handlebars->23->525"
+        "default.handlebars->23->526"
       ]
     },
     {
@@ -15095,7 +15098,7 @@
       "pt": "Foco pequeno",
       "ru": "Малая фокусировка",
       "xloc": [
-        "default.handlebars->23->600"
+        "default.handlebars->23->601"
       ]
     },
     {
@@ -15513,7 +15516,7 @@
       "pt": "Start",
       "ru": "Старт",
       "xloc": [
-        "default.handlebars->23->617"
+        "default.handlebars->23->618"
       ]
     },
     {
@@ -15525,7 +15528,7 @@
       "pt": "Estado",
       "ru": "Состояние",
       "xloc": [
-        "default.handlebars->23->608",
+        "default.handlebars->23->609",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->1"
       ]
     },
@@ -15565,7 +15568,7 @@
       "pt": "Pare",
       "ru": "Стоп",
       "xloc": [
-        "default.handlebars->23->618"
+        "default.handlebars->23->619"
       ]
     },
     {
@@ -15798,7 +15801,7 @@
       "xloc": [
         "default-mobile.handlebars->9->216",
         "default.handlebars->23->246",
-        "default.handlebars->23->539"
+        "default.handlebars->23->540"
       ]
     },
     {
@@ -15821,7 +15824,7 @@
       "pt": "Tag1, Tag2, Tag3",
       "ru": "Тег1, Тег2, Тег3",
       "xloc": [
-        "default.handlebars->23->591"
+        "default.handlebars->23->592"
       ]
     },
     {
@@ -15836,7 +15839,7 @@
         "default-mobile.handlebars->9->197",
         "default-mobile.handlebars->9->198",
         "default-mobile.handlebars->9->225",
-        "default.handlebars->23->590",
+        "default.handlebars->23->591",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->7"
       ]
     },
@@ -16129,7 +16132,7 @@
       "pt": "Isso adicionará uma entrada ao log de eventos deste dispositivo.",
       "ru": "Это добавит запись в журнал событий данного устройства.",
       "xloc": [
-        "default.handlebars->23->518"
+        "default.handlebars->23->519"
       ]
     },
     {
@@ -16140,7 +16143,7 @@
       "nl": "Hiermee worden de apparaten niet van de server verwijderd, maar kunnen de apparaten geen verbinding meer maken met de server. Alle externe toegang tot de apparaten gaat verloren. De apparaten moeten zijn aangesloten om deze opdracht te laten werken.",
       "ru": "Это не приведет к удалению устройств с сервера, но они больше не смогут подключаться к серверу. Весь удаленный доступ к устройствам будет потерян. Устройства должны быть подключены, чтобы эта команда работала.",
       "xloc": [
-        "default.handlebars->23->546"
+        "default.handlebars->23->547"
       ]
     },
     {
@@ -16151,7 +16154,7 @@
       "nl": "Hiermee wordt dit apparaat niet van de server verwijderd, maar kan het apparaat geen verbinding meer maken met de server. Alle externe toegang tot het apparaat gaat verloren. Het apparaat moet verbonden zijn om dit commando te laten werken.",
       "ru": "Это не приведет к удалению этого устройства с сервера, но оно больше не сможет подключаться к серверу. Весь удаленный доступ к устройству будет потерян. Для работы этой команды устройство должно быть подключено.",
       "xloc": [
-        "default.handlebars->23->547"
+        "default.handlebars->23->548"
       ]
     },
     {
@@ -16484,7 +16487,7 @@
       "nl": "Onderwerp",
       "pt": "Tema",
       "xloc": [
-        "default.handlebars->23->541"
+        "default.handlebars->23->542"
       ]
     },
     {
@@ -16521,7 +16524,7 @@
       "pt": "Roteador de tráfego usado para conectar-se a um dispositivo através deste servidor",
       "ru": "Для подключению в устройству был использован траффик маршрутизатор через этот сервер.",
       "xloc": [
-        "default.handlebars->23->498"
+        "default.handlebars->23->499"
       ]
     },
     {
@@ -16609,7 +16612,7 @@
         "default-mobile.handlebars->9->57",
         "default.handlebars->23->1026",
         "default.handlebars->23->1029",
-        "default.handlebars->23->615",
+        "default.handlebars->23->616",
         "default.handlebars->23->945",
         "default.handlebars->23->974",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3"
@@ -16801,7 +16804,7 @@
         "default-mobile.handlebars->9->308",
         "default.handlebars->23->1096",
         "default.handlebars->23->384",
-        "default.handlebars->23->529"
+        "default.handlebars->23->530"
       ]
     },
     {
@@ -16812,7 +16815,7 @@
       "nl": "deinstallatie agent",
       "ru": "Удаление агента",
       "xloc": [
-        "default.handlebars->23->549"
+        "default.handlebars->23->550"
       ]
     },
     {
@@ -17382,7 +17385,7 @@
         "default-mobile.handlebars->9->212",
         "default.handlebars->23->241",
         "default.handlebars->23->271",
-        "default.handlebars->23->535",
+        "default.handlebars->23->536",
         "player.htm->3->4"
       ]
     },
@@ -17658,7 +17661,7 @@
       "ru": "Разбудить",
       "xloc": [
         "default-mobile.handlebars->9->206",
-        "default.handlebars->23->524"
+        "default.handlebars->23->525"
       ]
     },
     {
@@ -17916,7 +17919,7 @@
       "pt": "WinSCP",
       "ru": "WinSCP",
       "xloc": [
-        "default.handlebars->23->505"
+        "default.handlebars->23->506"
       ]
     },
     {
@@ -17953,7 +17956,7 @@
       "pt": "Windows (32 Bits)",
       "ru": "Windows (32bit)",
       "xloc": [
-        "default.handlebars->23->564"
+        "default.handlebars->23->565"
       ]
     },
     {
@@ -17965,7 +17968,7 @@
       "pt": "Windows (64 Bits)",
       "ru": "Windows (64bit)",
       "xloc": [
-        "default.handlebars->23->565"
+        "default.handlebars->23->566"
       ]
     },
     {

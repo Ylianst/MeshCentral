@@ -4793,6 +4793,7 @@
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title=\"' + "Remove this device" + '\">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
+                x += '<img title=\"' + "Place link to this device in the clipboard" + '\" src="images/link1.png" style=cursor:pointer onclick=p10deviceLinkToClipboard() />&nbsp;';
                 if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
                 if (((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
@@ -5260,6 +5261,10 @@
         // Request MQTT login credentials
         function p10showMqttLoginDialog(nodeid) { meshserver.send({ action: 'getmqttlogin', nodeid: nodeid }); }
 
+        function p10deviceLinkToClipboard() {
+            copyTextToClip2(document.URL.split('?')[0].split('#')[0] + '?node=' + currentNode._id.split('/')[2] + '&viewmode=10');
+        }
+
         // Show MeshCmd dialog
         function p10showMeshCmdDialog(mode, nodeid) {
             if (xxdialogMode) return;
@@ -5443,6 +5448,8 @@
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
             if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
+            QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red';
+
             if (online == false) QV('DeskTools', false);
         }
 
@@ -6114,7 +6121,7 @@
         }
 
         // Toggle mouse and keyboard input
-        function toggleKvmControl() { putstore('DeskControl', (Q("DeskControl").checked?1:0)); }
+        function toggleKvmControl() { putstore('DeskControl', (Q('DeskControl').checked?1:0)); QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red'; }
 
         // Save the desktop image to file
         function deskSaveImage() {
