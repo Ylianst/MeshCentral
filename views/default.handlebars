@@ -5261,9 +5261,8 @@
         // Request MQTT login credentials
         function p10showMqttLoginDialog(nodeid) { meshserver.send({ action: 'getmqttlogin', nodeid: nodeid }); }
 
-        function p10deviceLinkToClipboard() {
-            copyTextToClip2(document.URL.split('?')[0].split('#')[0] + '?node=' + currentNode._id.split('/')[2] + '&viewmode=10');
-        }
+        // Place a device link URL in the clipboard
+        function p10deviceLinkToClipboard() { copyTextToClip2(document.URL.split('?')[0].split('#')[0] + '?node=' + currentNode._id.split('/')[2] + '&viewmode=10'); }
 
         // Show MeshCmd dialog
         function p10showMeshCmdDialog(mode, nodeid) {
