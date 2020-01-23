@@ -33,11 +33,47 @@ var meshCentralSourceFiles = [
 ];
 
 // Check NodeJS version
-if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 8) { console.log("Translate.js requires Node v8 or above, current version is " + process.version + "."); return; }
+const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+if (NodeJSVer < 8) { log("Translate.js requires Node v8 or above, current version is " + process.version + "."); return; }
 
 // node translate.json CHECK ../meshcentral/views/default.handlebars
 // node translate.json EXTRACT bob.json ../meshcentral/views/default.handlebars
 // node translate.js TRANSLATE fr test2.json ../meshcentral/views/default.handlebars
+
+var worker = null;
+function log() {
+    if (worker == null) {
+        console.log(...arguments);
+    } else {
+        worker.parentPort.postMessage({ msg: arguments[0] })
+    }
+}
+
+if (NodeJSVer >= 12) {
+    const xworker = require('worker_threads');
+    try {
+        if (xworker.isMainThread == false) {
+            // We are being called to do some work
+            worker = xworker;
+            const op = worker.workerData.op;
+            const args = worker.workerData.args;
+
+            // Get things setup
+            jsdom = require('jsdom');
+            esprima = require('esprima'); // https://www.npmjs.com/package/esprima
+            if (minifyLib == 1) { minify = require('minify-js'); }
+            if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
+
+            switch (op) {
+                case 'translate': {
+                    translateSingleThreaded(args[0], args[1], args[2], args[3]);
+                    break;
+                }
+            }
+            return;
+        }
+    } catch (ex) { log(ex); }
+}
 
 var libs = ['jsdom', 'esprima', 'minify-js'];
 if (minifyLib == 1) { libs.push('minify-js'); }
@@ -55,37 +91,37 @@ function start() {
     if (process.argv.length > 2) { command = process.argv[2].toLowerCase(); }
     if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext'].indexOf(command) == -1) { command = null; }
 
-    console.log('MeshCentral web site translator');
+    log('MeshCentral web site translator');
     if (command == null) {
-        console.log('Usage "node translate.js [command] [options]');
-        console.log('Possible commands:');
-        console.log('');
-        console.log('  CHECK [files]');
-        console.log('    Check will pull string out of a web page and display a report.');
-        console.log('');
-        console.log('  EXTRACT [languagefile] [files]');
-        console.log('    Extract strings from web pages and generate a language (.json) file.');
-        console.log('');
-        console.log('  EXTRACTALL');
-        console.log('    Extract all MeshCentral strings from web pages and generate the languages.json file.');
-        console.log('');
-        console.log('  TRANSLATE [language] [languagefile] [files]');
-        console.log('    Use a language (.json) file to translate web pages to a give language.');
-        console.log('');
-        console.log('  TRANSLATEALL (languagefile) (language code)');
-        console.log('    Translate all MeshCentral strings using the languages.json file.');
-        console.log('');
-        console.log('  MINIFYALL');
-        console.log('    Minify the main MeshCentral english web pages.');
-        console.log('');
-        console.log('  MERGE [sourcefile] [targetfile] [language code]');
-        console.log('    Merge a language from a translation file into another translation file.');
-        console.log('');
-        console.log('  TOTEXT [translationfile] [textfile] [language code]');
-        console.log('    Save a text for with all strings of a given language.');
-        console.log('');
-        console.log('  FROMTEXT [translationfile] [textfile] [language code]');
-        console.log('    Import raw text string as translations for a language code.');
+        log('Usage "node translate.js [command] [options]');
+        log('Possible commands:');
+        log('');
+        log('  CHECK [files]');
+        log('    Check will pull string out of a web page and display a report.');
+        log('');
+        log('  EXTRACT [languagefile] [files]');
+        log('    Extract strings from web pages and generate a language (.json) file.');
+        log('');
+        log('  EXTRACTALL');
+        log('    Extract all MeshCentral strings from web pages and generate the languages.json file.');
+        log('');
+        log('  TRANSLATE [language] [languagefile] [files]');
+        log('    Use a language (.json) file to translate web pages to a give language.');
+        log('');
+        log('  TRANSLATEALL (languagefile) (language code)');
+        log('    Translate all MeshCentral strings using the languages.json file.');
+        log('');
+        log('  MINIFYALL');
+        log('    Minify the main MeshCentral english web pages.');
+        log('');
+        log('  MERGE [sourcefile] [targetfile] [language code]');
+        log('    Merge a language from a translation file into another translation file.');
+        log('');
+        log('  TOTEXT [translationfile] [textfile] [language code]');
+        log('    Save a text for with all strings of a given language.');
+        log('');
+        log('  FROMTEXT [translationfile] [textfile] [language code]');
+        log('    Import raw text string as translations for a language code.');
         process.exit();
         return;
     }
@@ -93,34 +129,34 @@ function start() {
     // Extract strings from web pages and display a report
     if (command == 'check') {
         var sources = [];
-        for (var i = 3; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { console.log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
-        if (sources.length == 0) { console.log('No source files specified.'); process.exit(); return; }
+        for (var i = 3; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
+        if (sources.length == 0) { log('No source files specified.'); process.exit(); return; }
         performCheck = true;
         sourceStrings = {};
         for (var i = 0; i < sources.length; i++) { extractFromHtml(sources[i]); }
         var count = 0;
         for (var i in sourceStrings) { count++; }
-        console.log('Extracted ' + count + ' strings.');
+        log('Extracted ' + count + ' strings.');
         process.exit();
         return;
     }
 
     // Extract strings from web pages
     if (command == 'extract') {
-        if (process.argv.length < 4) { console.log('No language file specified.'); process.exit(); return; }
+        if (process.argv.length < 4) { log('No language file specified.'); process.exit(); return; }
         var sources = [];
-        for (var i = 4; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { console.log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
-        if (sources.length == 0) { console.log('No source files specified.'); process.exit(); return; }
+        for (var i = 4; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
+        if (sources.length == 0) { log('No source files specified.'); process.exit(); return; }
         extract(process.argv[3], sources);
     }
 
     // Save a text file with all the strings for a given language
     if (command == 'totext') {
         if ((process.argv.length == 6)) {
-            if (fs.existsSync(process.argv[3]) == false) { console.log('Unable to find: ' + process.argv[3]); return; }
+            if (fs.existsSync(process.argv[3]) == false) { log('Unable to find: ' + process.argv[3]); return; }
             totext(process.argv[3], process.argv[4], process.argv[5]);
         } else {
-            console.log('Usage: TOTEXT [translationfile] [textfile] [language code]');
+            log('Usage: TOTEXT [translationfile] [textfile] [language code]');
         }
         return;
     }
@@ -128,11 +164,11 @@ function start() {
     // Read a text file and use it as translation for a given language
     if (command == 'fromtext') {
         if ((process.argv.length == 6)) {
-            if (fs.existsSync(process.argv[3]) == false) { console.log('Unable to find: ' + process.argv[3]); return; }
-            if (fs.existsSync(process.argv[4]) == false) { console.log('Unable to find: ' + process.argv[4]); return; }
+            if (fs.existsSync(process.argv[3]) == false) { log('Unable to find: ' + process.argv[3]); return; }
+            if (fs.existsSync(process.argv[4]) == false) { log('Unable to find: ' + process.argv[4]); return; }
             fromtext(process.argv[3], process.argv[4], process.argv[5]);
         } else {
-            console.log('Usage: FROMTEXT [translationfile] [textfile] [language code]');
+            log('Usage: FROMTEXT [translationfile] [textfile] [language code]');
         }
         return;
     }
@@ -140,11 +176,11 @@ function start() {
     // Merge one language from a language file into another language file.
     if (command == 'merge') {
         if ((process.argv.length == 6)) {
-            if (fs.existsSync(process.argv[3]) == false) { console.log('Unable to find: ' + process.argv[3]); return; }
-            if (fs.existsSync(process.argv[4]) == false) { console.log('Unable to find: ' + process.argv[4]); return; }
+            if (fs.existsSync(process.argv[3]) == false) { log('Unable to find: ' + process.argv[3]); return; }
+            if (fs.existsSync(process.argv[4]) == false) { log('Unable to find: ' + process.argv[4]); return; }
             merge(process.argv[3], process.argv[4], process.argv[5]);
         } else {
-            console.log('Usage: MERGE [sourcefile] [tartgetfile] [language code]');
+            log('Usage: MERGE [sourcefile] [tartgetfile] [language code]');
         }
         return;
     }
@@ -158,13 +194,13 @@ function start() {
         if (process.argv.length > 4) { lang = process.argv[4].toLowerCase(); }
         if (process.argv.length > 3) {
             if (fs.existsSync(process.argv[3]) == false) {
-                console.log('Unable to find: ' + process.argv[3]);
+                log('Unable to find: ' + process.argv[3]);
             } else {
                 translate(lang, process.argv[3], meshCentralSourceFiles, 'translations');
             }
         } else {
             if (fs.existsSync('translate.json') == false) {
-                console.log('Unable to find translate.json.');
+                log('Unable to find translate.json.');
             } else {
                 translate(lang, 'translate.json', meshCentralSourceFiles, 'translations');
             }
@@ -174,15 +210,15 @@ function start() {
 
     // Translate web pages to a given language given a language file
     if (command == 'translate') {
-        if (process.argv.length < 4) { console.log("No language specified."); process.exit(); return; }
-        if (process.argv.length < 5) { console.log("No language file specified."); process.exit(); return; }
+        if (process.argv.length < 4) { log("No language specified."); process.exit(); return; }
+        if (process.argv.length < 5) { log("No language file specified."); process.exit(); return; }
         var lang = process.argv[3].toLowerCase();
         var langFile = process.argv[4];
-        if (fs.existsSync(langFile) == false) { console.log("Missing language file: " + langFile); process.exit(); return; }
+        if (fs.existsSync(langFile) == false) { log("Missing language file: " + langFile); process.exit(); return; }
 
         var sources = [];
-        for (var i = 5; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { console.log("Missing file: " + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
-        if (sources.length == 0) { console.log("No source files specified."); process.exit(); return; }
+        for (var i = 5; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { log("Missing file: " + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
+        if (sources.length == 0) { log("No source files specified."); process.exit(); return; }
 
         translate(lang, langFile, sources, false);
     }
@@ -200,7 +236,7 @@ function start() {
             } else {
                 outnamemin = (outname, outname + '.min');
             }
-            console.log('Generating ' + outnamemin + '...');
+            log('Generating ' + outnamemin + '...');
 
             // Minify the file
             if (minifyLib = 2) {
@@ -231,9 +267,9 @@ function totext(source, target, lang) {
     // Load the source language file
     var sourceLangFileData = null;
     try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
-    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { console.log("Invalid source language file."); process.exit(); return; }
+    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { log("Invalid source language file."); process.exit(); return; }
 
-    console.log('Writing ' + lang + '...');
+    log('Writing ' + lang + '...');
 
     // Generate raw text
     var output = [];
@@ -261,14 +297,14 @@ function totext(source, target, lang) {
     if (splitOutputPtr == 1) {
         // Save the target back
         fs.writeFileSync(target + '-' + lang + '.txt', output.join('\r\n'), { flag: 'w+' });
-        console.log('Done.');
+        log('Done.');
     } else {
         // Save the text in 1000 string bunches
         for (var i in splitOutput) {
-            console.log('Writing ' + target + '-' + lang + '-' + i + '.txt...');
+            log('Writing ' + target + '-' + lang + '-' + i + '.txt...');
             fs.writeFileSync(target + '-' + lang + '-' + i + '.txt', splitOutput[i].join('\r\n'), { flag: 'w+' });
         }
-        console.log('Done.');
+        log('Done.');
     }
 }
 
@@ -276,18 +312,18 @@ function fromtext(source, target, lang) {
     // Load the source language file
     var sourceLangFileData = null;
     try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
-    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { console.log("Invalid source language file."); process.exit(); return; }
+    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { log("Invalid source language file."); process.exit(); return; }
 
-    console.log('Updating ' + lang + '...');
+    log('Updating ' + lang + '...');
 
     // Read raw text
     var rawText = fs.readFileSync(target).toString('utf8');
     var rawTextArray = rawText.split('\r\n');
     var rawTextPtr = 0;
 
-    console.log('Translation file: ' + sourceLangFileData.strings.length + ' string(s)');
-    console.log('Text file: ' + rawTextArray.length + ' string(s)');
-    if (sourceLangFileData.strings.length != rawTextArray.length) { console.log('String count mismatch, unable to import.'); process.exit(1); return; }
+    log('Translation file: ' + sourceLangFileData.strings.length + ' string(s)');
+    log('Text file: ' + rawTextArray.length + ' string(s)');
+    if (sourceLangFileData.strings.length != rawTextArray.length) { log('String count mismatch, unable to import.'); process.exit(1); return; }
 
     var output = [];
     var splitOutput = [];
@@ -298,21 +334,21 @@ function fromtext(source, target, lang) {
     }
 
     fs.writeFileSync(source + '-new', translationsToJson(sourceLangFileData), { flag: 'w+' });
-    console.log('Done.');
+    log('Done.');
 }
 
 function merge(source, target, lang) {
     // Load the source language file
     var sourceLangFileData = null;
     try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
-    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { console.log("Invalid source language file."); process.exit(); return; }
+    if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { log("Invalid source language file."); process.exit(); return; }
 
     // Load the target language file
     var targetLangFileData = null;
     try { targetLangFileData = JSON.parse(fs.readFileSync(target)); } catch (ex) { }
-    if ((targetLangFileData == null) || (targetLangFileData.strings == null)) { console.log("Invalid target language file."); process.exit(); return; }
+    if ((targetLangFileData == null) || (targetLangFileData.strings == null)) { log("Invalid target language file."); process.exit(); return; }
 
-    console.log('Merging ' + lang + '...');
+    log('Merging ' + lang + '...');
 
     // Index the target file
     var index = {};
@@ -333,14 +369,40 @@ function merge(source, target, lang) {
 
     // Save the target back
     fs.writeFileSync(target, translationsToJson(targetData), { flag: 'w+' });
-    console.log('Done.');
+    log('Done.');
 }
 
 function translate(lang, langFile, sources, createSubDir) {
+    if ((NodeJSVer >= 12) && (lang == null)) {
+        // Multi threaded translation
+        log("Multi-threaded translation.");
+
+        // Load the language file
+        var langFileData = null;
+        try { langFileData = JSON.parse(fs.readFileSync(langFile)); } catch (ex) { }
+        if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
+
+        langs = {};
+        for (var i in langFileData.strings) { var entry = langFileData.strings[i]; for (var j in entry) { if ((j != 'en') && (j != 'xloc') && (j != '*')) { langs[j.toLowerCase()] = true; } } }
+        for (var i in langs) {
+            const { Worker } = require('worker_threads')
+            const worker = new Worker('./translate.js', { stdout: true, workerData: { op: 'translate', args: [i, langFile, sources, createSubDir] } });
+            worker.stdout.on('data', function (msg) { console.log('wstdio:', msg.toString()); });
+            worker.on('message', function (message) { console.log(message.msg); });
+            worker.on('error', function (error) { console.log('error', error); });
+            worker.on('exit', function (code) { /*console.log('exit', code);*/ })
+        }
+    } else {
+        // Single threaded translation
+        translateSingleThreaded(lang, langFile, sources, createSubDir);
+    }
+}
+
+function translateSingleThreaded(lang, langFile, sources, createSubDir) {
     // Load the language file
     var langFileData = null;
     try { langFileData = JSON.parse(fs.readFileSync(langFile)); } catch (ex) { }
-    if ((langFileData == null) || (langFileData.strings == null)) { console.log("Invalid language file."); process.exit(); return; }
+    if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
 
     if (lang != null) {
         // Translate a single language
@@ -373,7 +435,7 @@ function extract(langFile, sources) {
     if (fs.existsSync(langFile) == true) {
         var langFileData = null;
         try { langFileData = JSON.parse(fs.readFileSync(langFile)); } catch (ex) { }
-        if ((langFileData == null) || (langFileData.strings == null)) { console.log("Invalid language file."); process.exit(); return; }
+        if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
         for (var i in langFileData.strings) {
             sourceStrings[langFileData.strings[i]['en']] = langFileData.strings[i];
             delete sourceStrings[langFileData.strings[i]['en']].xloc;
@@ -388,7 +450,7 @@ function extract(langFile, sources) {
         output.push(sourceStrings[i]); // Save all results
     }
     fs.writeFileSync(langFile, translationsToJson({ strings: output }), { flag: 'w+' });
-    console.log(format("{0} strings in output file.", count));
+    log(format("{0} strings in output file.", count));
     process.exit();
     return;
 }
@@ -397,7 +459,7 @@ function extractFromHtml(file) {
     var data = fs.readFileSync(file);
     var { JSDOM } = jsdom;
     const dom = new JSDOM(data, { includeNodeLocations: true });
-    console.log("Processing HTML: " + path.basename(file));
+    log("Processing HTML: " + path.basename(file));
     getStrings(path.basename(file), dom.window.document.querySelector('body'));
 }
 
@@ -441,7 +503,7 @@ function getStrings(name, node) {
             var nodeValue = subnode.nodeValue.trim().split('\\r').join('').split('\\n').join('').trim();
             if ((nodeValue.length > 0) && (subnode.nodeType == 3)) {
                 if ((node.tagName != 'SCRIPT') && (node.tagName != 'STYLE') && (nodeValue.length < 8000) && (nodeValue.startsWith('{{{') == false) && (nodeValue != ' ')) {
-                    if (performCheck) { console.log('  "' + nodeValue + '"'); }
+                    if (performCheck) { log('  "' + nodeValue + '"'); }
                     // Add a new string to the list
                     if (sourceStrings[nodeValue] == null) { sourceStrings[nodeValue] = { en: nodeValue, xloc: [name] }; } else { if (sourceStrings[nodeValue].xloc == null) { sourceStrings[nodeValue].xloc = []; } sourceStrings[nodeValue].xloc.push(name); }
                 } else if (node.tagName == 'SCRIPT') {
@@ -454,14 +516,14 @@ function getStrings(name, node) {
 }
 
 function getStringFromJavaScript(name, script) {
-    if (performCheck) { console.log(format('Processing JavaScript of {0} bytes: {1}', script.length, name)); }
+    if (performCheck) { log(format('Processing JavaScript of {0} bytes: {1}', script.length, name)); }
     var tokenScript = esprima.tokenize(script), count = 0;
     for (var i in tokenScript) {
         var token = tokenScript[i];
         if ((token.type == 'String') && (token.value.length > 2) && (token.value[0] == '"')) {
             var str = token.value.substring(1, token.value.length - 1);
-            //if (performCheck) { console.log('  ' + name + '->' + (++count), token.value); }
-            if (performCheck) { console.log('  ' + token.value); }
+            //if (performCheck) { log('  ' + name + '->' + (++count), token.value); }
+            if (performCheck) { log('  ' + token.value); }
             if (sourceStrings[str] == null) { sourceStrings[str] = { en: str, xloc: [name + '->' + (++count)] }; } else { if (sourceStrings[str].xloc == null) { sourceStrings[str].xloc = []; } sourceStrings[str].xloc.push(name + '->' + (++count)); }
         }
     }
@@ -475,7 +537,7 @@ function translateFromHtml(lang, file, createSubDir) {
     var data = fs.readFileSync(file);
     var { JSDOM } = jsdom;
     const dom = new JSDOM(data, { includeNodeLocations: true });
-    console.log("Translating HTML (" + lang + "): " + path.basename(file));
+    log("Translating HTML (" + lang + "): " + path.basename(file));
     translateStrings(path.basename(file), dom.window.document.querySelector('body'));
     var out = dom.serialize();
 
@@ -503,8 +565,8 @@ function translateFromHtml(lang, file, createSubDir) {
             file: outname,
             dist: outnamemin
         }, (e, compress) => {
-            if (e) { console.log('ERROR ', e); return done(); }
-            compress.run((e) => { e ? console.log('Minification fail', e) : console.log('Minification sucess'); minifyDone(); });
+            if (e) { log('ERROR ', e); return done(); }
+            compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
         }
         );
     }
@@ -531,7 +593,7 @@ function translateFromHtml(lang, file, createSubDir) {
     }
 }
 
-function minifyDone() { console.log('Completed minification.'); }
+function minifyDone() { log('Completed minification.'); }
 
 function translateStrings(name, node) {
     for (var i = 0; i < node.childNodes.length; i++) {
@@ -591,7 +653,7 @@ function translateStrings(name, node) {
 }
 
 function translateStringsFromJavaScript(name, script) {
-    if (performCheck) { console.log(format('Translating JavaScript of {0} bytes: {1}', script.length, name)); }
+    if (performCheck) { log(format('Translating JavaScript of {0} bytes: {1}', script.length, name)); }
     var tokenScript = esprima.tokenize(script, { range: true }), count = 0;
     var output = [], ptr = 0;
     for (var i in tokenScript) {
@@ -634,7 +696,7 @@ function InstallModules(modules, func) {
 
 // Check if a module is present and install it if missing
 function InstallModule(modulename, func, tag1, tag2) {
-    console.log('Installing ' + modulename + '...');
+    log('Installing ' + modulename + '...');
     var child_process = require('child_process');
     var parentpath = __dirname;
 
@@ -645,7 +707,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if ((error != null) && (error != '')) {
-            console.log('ERROR: Unable to install required module "' + modulename + '". May not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
+            log('ERROR: Unable to install required module "' + modulename + '". May not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
             return;
         }
