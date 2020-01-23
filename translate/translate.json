@@ -15,6 +15,7 @@
       ]
     },
     {
+      "cs": " - Resetovat za 1 den.",
       "de": " - Zurücksetzen in 1 Tag.",
       "en": " - Reset in 1 day.",
       "nl": " - Herstart in {0} dag.",
@@ -24,6 +25,7 @@
       ]
     },
     {
+      "cs": " - Resetovat za 1 hodinu.",
       "de": " - Zurücksetzen in 1 Stunde.",
       "en": " - Reset in 1 hour.",
       "nl": " - Herstart in 1 uur.",
@@ -33,6 +35,7 @@
       ]
     },
     {
+      "cs": " - Resetovat za 1 minutu.",
       "de": " - Zurücksetzen in 1 Minute.",
       "en": " - Reset in 1 minute.",
       "nl": " - Herstart in {0} days.",
@@ -42,6 +45,7 @@
       ]
     },
     {
+      "cs": " - Resetovat za {0} dnů.",
       "de": " - Zurücksetzen in {0} Tagen.",
       "en": " - Reset in {0} days.",
       "nl": " - Herstart in {0} dagen.",
@@ -61,6 +65,7 @@
       "ru": " - Сброс через {0} дней{1}."
     },
     {
+      "cs": " - Resetovat za {0} hodin.",
       "de": " - Zurücksetzen in {0} Stunden.",
       "en": " - Reset in {0} hours.",
       "nl": " - Herstart in {0} uren.",
@@ -80,6 +85,7 @@
       "ru": " - Сброс через {0} часов{1}."
     },
     {
+      "cs": " - Resetovat za {0} minut.",
       "de": " - Zurücksetzen in {0} Minuten.",
       "en": " - Reset in {0} minutes.",
       "nl": " - Herstart in {0} minuten.",
@@ -89,7 +95,7 @@
       ]
     },
     {
-      "cs": " - Reset v {0} minut{1}.",
+      "cs": " - Resetovat za {0} minut{1}.",
       "de": " - Zurücksetzen in {0} Minute{1}.",
       "en": " - Reset in {0} minute{1}.",
       "fr": " - Réinitialisation en {0} minute {1}.",
@@ -99,7 +105,7 @@
       "ru": " - Сброс через {0} минут{1}."
     },
     {
-      "cs": " - Reset při příštím přihlášení.",
+      "cs": " - Resetovat při příštím přihlášení.",
       "de": " - Beim nächsten Anmelden zurücksetzen.",
       "en": " - Reset on next login.",
       "fr": " - Réinitialiser à la prochaine connexion.",
@@ -153,7 +159,7 @@
       ]
     },
     {
-      "cs": " Než budou moci být přidáni do skupiny zařízení, je třeba aby se uživatelé alespoň jednou k tomuto serveru přihlásili.",
+      "cs": " Než budou moci být přiřazeni ke skupině zařízení, je třeba aby se uživatelé alespoň jednou k tomuto serveru přihlásili.",
       "de": " Benutzer müssen sich an diesem Server anmelden, bevor sie einer Gerätegruppe hinzugefügt werden können.",
       "en": " Users need to login to this server once before they can be added to a device group.",
       "fr": " Les utilisateurs doivent se connecter une fois sur ce serveur avant de pouvoir être ajoutés à un groupe de périphériques..",
@@ -167,7 +173,7 @@
       ]
     },
     {
-      "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a hesla.",
+      "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a libovolného hesla.",
       "de": " und gegenüber dem Server authentifizieren mittels dieses Benutzernamens und eines beliebigen Passworts.",
       "en": " and authenticate to the server using this username and any password.",
       "fr": " et vous authentifier sur le serveur en utilisant ce nom d'utilisateur et n'importe quel mot de passe.",
@@ -295,7 +301,7 @@
       ]
     },
     {
-      "cs": "* Pro vytvoření náhodných hesel pro každé ze zařízení, ponechte nevyplněné.",
+      "cs": "* Pro přiřazení náhodného hesla každému ze zařízení, ponechte nevyplněné.",
       "de": "* Frei lassen, um jedem Gerät ein zufälliges Passwort zuzuweisen.",
       "en": "* Leave blank to assign a random password to each device.",
       "ja": "*空白のままにして、各デバイスにランダムなパスワードを割り当てます。",
@@ -333,7 +339,7 @@
       ]
     },
     {
-      "cs": ", Pouze Intel&reg; AMT",
+      "cs": ", Pouze Intel® AMT",
       "de": ", nur Intel&reg; AMT",
       "en": ", Intel&reg; AMT only",
       "ja": "、Intel&reg; AMTのみ",
@@ -570,6 +576,7 @@
       ]
     },
     {
+      "cs": "1 minuta do odpojení",
       "de": "1 Minute bis zur Trennung",
       "en": "1 minute until disconnect",
       "nl": "1 minuut totdat de verbinding wordt verbroken",
@@ -618,6 +625,7 @@
       ]
     },
     {
+      "cs": "1 sekunda do odpojení",
       "de": "1 Sekunde bis zur Trennung",
       "en": "1 second until disconnect",
       "nl": "1 seconde totdat de verbinding wordt verbroken",
@@ -654,7 +662,7 @@
       ]
     },
     {
-      "cs": "1.AJAX Control Toolkit – Nová BSD Licence",
+      "cs": "1. AJAX Control Toolkit – Nová BSD licence",
       "en": "1.AJAX Control Toolkit - New BSD License",
       "ja": "1.AJAX Control Toolkit-新しいBSDライセンス",
       "nl": "1.AJAX Control Toolkit - Nieuwe BSD Licentie",
@@ -769,7 +777,7 @@
       ]
     },
     {
-      "cs": "odstranění 2-faktorového přihlašování se nezdařila.",
+      "cs": "odstranění 2-faktorového přihlašování se nezdařilo.",
       "de": "Entfernung der Aktivierung der Zweifaktor-Anmeldung fehlgeschlagen.",
       "en": "2-step login activation removal failed.",
       "ja": "2段階ログインアクティベーションの削除に失敗しました。",
@@ -793,7 +801,7 @@
       ]
     },
     {
-      "cs": "2. Šíření dál ve zkompiloavné podobě musí reprodukovat výše uvedené oznámení o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti v dokumentaci a / nebo jiných materiálech dodávaných s distribucí.",
+      "cs": "2. Šíření dál ve zkompilované podobě musí reprodukovat výše uvedené oznámení o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti v dokumentaci a / nebo jiných materiálech dodávaných s distribucí.",
       "en": "2.Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
       "ja": "2.バイナリ形式での再配布では、上記の著作権表示、この条件リスト、および以下の免責事項を、配布物とともに提供されるドキュメントおよび/またはその他の資料に複製する必要があります。",
       "nl": "2.Herdistributies in binaire vorm moeten de bovenstaande copyright kennisgeving, deze lijst met voorwaarden en de volgende disclaimer reproduceren in de documentatie en / of andere materialen die bij de distributie worden geleverd.",
@@ -1184,7 +1192,7 @@
       ]
     },
     {
-      "cs": "<b style=color:red>2-faktorové přihlášení se nezdařilo</b>. Vymažte tajemství z aplikace a zkuste to znovu. Na zadání správného kódu už vám zbývá jen pár minut.",
+      "cs": "<b style=color:red>zapnutí 2-faktorového přihlášení se nezdařilo</b>. Vymažte tajemství z aplikace a zkuste to znovu. Na zadání správného kódu máte jen pár minut.",
       "de": "<b style=color:red>Aktivierung der Zweifaktor-Anmeldung fehlgeschlagen</b>. Entfernen Sie das Geheimnis aus der Applikation und versuchen Sie es erneut. Sie haben nur wenige Minuten Zeit, um einen gültigen Code einzugeben.",
       "en": "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.",
       "ja": "<b style = color：red> 2段階ログインの有効化に失敗しました</ b>。アプリケーションから秘密をクリアして、再試行してください。適切なコードを入力するのに数分しかかかりません。",
@@ -1196,7 +1204,7 @@
       ]
     },
     {
-      "cs": "<b style=color:red>Odstranění 2-faktorového přihlášení se nezdařilo</b>. Zkuste znovu.",
+      "cs": "<b style=color:red>Odstranění 2-faktorového přihlašování se nezdařilo</b>. Zkuste znovu.",
       "de": "<b style=color:red>Entfernen der Aktivierung der Zweifaktor-Anmeldung fehlgeschlagen</b>. Versuchen Sie es erneut.",
       "en": "<b style=color:red>2-step login activation removal failed</b>. Try again.",
       "ja": "<b style = color：red> 2段階のログインアクティベーションの削除に失敗しました</ b>。再試行する。",
@@ -1603,7 +1611,7 @@
       ]
     },
     {
-      "cs": "Přidat Intel&reg; AMT CIRA zařízení",
+      "cs": "Přidat Intel® AMT CIRA zařízení",
       "de": "Intel&reg;-AMT-CIRA-Gerät hinzufügen",
       "en": "Add Intel&reg; AMT CIRA device",
       "ja": "Intel&reg;を追加AMT CIRAデバイス",
@@ -1615,7 +1623,7 @@
       ]
     },
     {
-      "cs": "Přidat Intel&reg; AMT zařízení",
+      "cs": "Přidat Intel® AMT zařízení",
       "de": "Intel&reg;-AMT-Gerät hinzufügen",
       "en": "Add Intel&reg; AMT device",
       "ja": "Intel&reg;を追加AMTデバイス",
@@ -1651,6 +1659,7 @@
       ]
     },
     {
+      "cs": "Přidat členství",
       "de": "Mitgliedschaft hinzufügen",
       "en": "Add Membership",
       "nl": "Lidmaatschap toevoegen",
@@ -1689,6 +1698,7 @@
       ]
     },
     {
+      "cs": "Přidat skupinu uživatelů",
       "de": "Benutzergruppe hinzufügen",
       "en": "Add User Group",
       "nl": "Gebruikersgroep toevoegen",
@@ -1738,6 +1748,7 @@
       ]
     },
     {
+      "cs": "Přidat uživatele do skupiny",
       "de": "Benutzer zu Benutzergruppe hinzufügen",
       "en": "Add Users to User Group",
       "nl": "Voeg gebruikers toe aan de gebruikersgroep",
@@ -1746,7 +1757,7 @@
       ]
     },
     {
-      "cs": "Přidat YubiKey&reg; OTP",
+      "cs": "Přidat YubiKey™ OTP",
       "de": "YubiKey&reg; OTP hinzufügen",
       "en": "Add YubiKey&reg; OTP",
       "ja": "YubiKey&reg;を追加OTP",
@@ -1758,7 +1769,7 @@
       ]
     },
     {
-      "cs": "Přidat nový Intel&reg; AMT počítač pomocí skenu lokální sítě.",
+      "cs": "Přidat nový Intel® AMT počítač pomocí skenu lokální sítě.",
       "de": "Füge einen neuen Intel&reg;-AMT-Rechner durch Scannen des lokalen Netzwerks hinzu.",
       "en": "Add a new Intel&reg; AMT computer by scanning the local network.",
       "ja": "新しいIntel&reg;を追加しますローカルネットワークをスキャンしてAMTコンピューター。",
@@ -1770,7 +1781,7 @@
       ]
     },
     {
-      "cs": "Přidat nový Intel&reg; AMT počítač, který je umístěn v síti Internet.",
+      "cs": "Přidat nový Intel® AMT počítač, který je umístěn v síti Internet.",
       "de": "Füge einen neuen Intel&reg;-AMT-Rechner hinzu, der sich im Internet befindet.",
       "en": "Add a new Intel&reg; AMT computer that is located on the internet.",
       "ja": "新しいIntel&reg;を追加しますインターネット上にあるAMTコンピューター。",
@@ -1783,7 +1794,7 @@
       ]
     },
     {
-      "cs": "Přidat nový Intel&reg; AMT počítač, který je umístěn v lokální síti.",
+      "cs": "Přidat nový Intel® AMT počítač, který je umístěn v lokální síti.",
       "de": "Füge einen neuen Intel&reg;-AMT-Rechner hinzu, der sich im lokalen Netzwerk befindet.",
       "en": "Add a new Intel&reg; AMT computer that is located on the local network.",
       "ja": "新しいIntel&reg;を追加しますローカルネットワーク上にあるAMTコンピューター。",
@@ -1796,7 +1807,7 @@
       ]
     },
     {
-      "cs": "Přidat nové Intel&reg; AMT zařízení do skupiny „{0}“.",
+      "cs": "Přidat nové Intel® AMT zařízení do skupiny „{0}“.",
       "de": "Füge ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" hinzu.",
       "en": "Add a new Intel&reg; AMT device to device group \\\"{0}\\\".",
       "ja": "新しいIntel&reg;を追加しますAMTデバイスからデバイスグループ\\\"{0}\\\"へ。",
@@ -1935,6 +1946,7 @@
       ]
     },
     {
+      "cs": "Agent + Intel AMT",
       "de": "Agent + Intel AMT",
       "en": "Agent + Intel AMT",
       "nl": "Agent + Intel AMT",
@@ -2627,7 +2639,7 @@
       ]
     },
     {
-      "cs": "Armenian",
+      "cs": "arménština",
       "de": "Armenisch",
       "en": "Armenian",
       "ja": "アルメニア人",
@@ -2639,7 +2651,7 @@
       ]
     },
     {
-      "cs": "Assamese",
+      "cs": "asámština",
       "de": "Assamesisch",
       "en": "Assamese",
       "ja": "アッサム語",
@@ -2651,7 +2663,7 @@
       ]
     },
     {
-      "cs": "Asturian",
+      "cs": "asturština",
       "de": "Asturisch",
       "en": "Asturian",
       "ja": "アストゥリアス",
@@ -2772,7 +2784,7 @@
       ]
     },
     {
-      "cs": "Azerbaijani",
+      "cs": "azerbájdžánština",
       "de": "Aserbaidschanisch",
       "en": "Azerbaijani",
       "ja": "アゼルバイジャン語",
@@ -2848,7 +2860,7 @@
       ]
     },
     {
-      "cs": "Na pozadí a interaktivní",
+      "cs": "Bezobslužná a interaktivní",
       "de": "Hintergrund & interaktiv",
       "en": "Background & interactive",
       "ja": "背景とインタラクティブ",
@@ -2860,7 +2872,7 @@
       ]
     },
     {
-      "cs": "Na pozadí a interaktivní",
+      "cs": "Bezobslužná a interaktivní",
       "de": "Hintergrund und interaktiv",
       "en": "Background and interactive",
       "ja": "背景とインタラクティブ",
@@ -2872,7 +2884,7 @@
       ]
     },
     {
-      "cs": "Pouze na pozadí",
+      "cs": "Pouze bezobslužná",
       "de": "Nur Hintergrund",
       "en": "Background only",
       "ja": "背景のみ",
@@ -2928,7 +2940,7 @@
       ]
     },
     {
-      "cs": "Basque",
+      "cs": "baskičtina",
       "de": "Baskisch",
       "en": "Basque",
       "ja": "バスク",
@@ -2952,7 +2964,7 @@
       ]
     },
     {
-      "cs": "Belarusian",
+      "cs": "běloruština",
       "de": "Belarussisch",
       "en": "Belarusian",
       "ja": "ベラルーシ語",
@@ -2964,7 +2976,7 @@
       ]
     },
     {
-      "cs": "Bengali",
+      "cs": "bengálština",
       "de": "Bengali",
       "en": "Bengali",
       "ja": "ベンガル語",
@@ -2976,7 +2988,7 @@
       ]
     },
     {
-      "cs": "Bosnian",
+      "cs": "bosenština",
       "de": "Bosnisch",
       "en": "Bosnian",
       "ja": "ボスニア語",
@@ -2988,7 +3000,7 @@
       ]
     },
     {
-      "cs": "Breton",
+      "cs": "bretonština",
       "de": "Bretonisch",
       "en": "Breton",
       "ja": "ブルトン",
@@ -3039,7 +3051,7 @@
       ]
     },
     {
-      "cs": "Bulgarian",
+      "cs": "bulharština",
       "de": "Bulgarisch",
       "en": "Bulgarian",
       "ja": "ブルガリア語",
@@ -3051,7 +3063,7 @@
       ]
     },
     {
-      "cs": "Burmese",
+      "cs": "barmština",
       "de": "Birmanisch",
       "en": "Burmese",
       "ja": "ビルマ語",
@@ -3137,7 +3149,7 @@
       ]
     },
     {
-      "cs": "vyžítení procesoru v uplynulých 5 minutách",
+      "cs": "vytížení procesoru v uplynulých 5 minutách",
       "de": "CPU-Auslastung der vergangenen 5 Minuten",
       "en": "CPU load in the last 5 minutes",
       "ja": "過去5分間のCPU負荷",
@@ -3233,7 +3245,7 @@
       ]
     },
     {
-      "cs": "Catalan",
+      "cs": "katalánština",
       "de": "Katalanisch",
       "en": "Catalan",
       "ja": "カタロニア語",
@@ -3258,7 +3270,7 @@
       ]
     },
     {
-      "cs": "Chamorro",
+      "cs": "chamorro",
       "de": "Chamorro",
       "en": "Chamorro",
       "ja": "チャモロ",
@@ -3435,7 +3447,7 @@
       ]
     },
     {
-      "cs": "Chechen",
+      "cs": "čečenština",
       "de": "Tschetschenisch",
       "en": "Chechen",
       "ja": "チェチェン",
@@ -3471,7 +3483,7 @@
       ]
     },
     {
-      "cs": "Zkontrolovat verzi serveru",
+      "cs": "Zjistit dostupnost případné novější verze",
       "de": "Server auf Aktualisierung überprüfen",
       "en": "Check server version",
       "ja": "サーバーのバージョンを確認する",
@@ -3496,7 +3508,7 @@
       ]
     },
     {
-      "cs": "Chinese",
+      "cs": "čínština",
       "de": "Chinesisch",
       "en": "Chinese",
       "ja": "中国語",
@@ -3508,7 +3520,7 @@
       ]
     },
     {
-      "cs": "Chinese (Hong Kong)",
+      "cs": "čínština (Hong Kong)",
       "de": "Chinesisch (Hong Kong)",
       "en": "Chinese (Hong Kong)",
       "ja": "中国語（香港）",
@@ -3520,7 +3532,7 @@
       ]
     },
     {
-      "cs": "Chinese (PRC)",
+      "cs": "čínština (PRC)",
       "de": "Chinesisch (VR China)",
       "en": "Chinese (PRC)",
       "ja": "中国語（PRC）",
@@ -3532,7 +3544,7 @@
       ]
     },
     {
-      "cs": "Chinese (Singapore)",
+      "cs": "čínština (Singapur)",
       "de": "Chinesisch (Singapur)",
       "en": "Chinese (Singapore)",
       "ja": "中国語（シンガポール）",
@@ -3544,7 +3556,7 @@
       ]
     },
     {
-      "cs": "Chinese (Taiwan)",
+      "cs": "čínština (Taiwan)",
       "de": "Chinesisch (Taiwan)",
       "en": "Chinese (Taiwan)",
       "ja": "中国語（台湾）",
@@ -3569,7 +3581,7 @@
       ]
     },
     {
-      "cs": "Chuvash",
+      "cs": "čuvaština",
       "de": "Tschuwaschisch",
       "en": "Chuvash",
       "ja": "チュヴァシュ",
@@ -3744,6 +3756,7 @@
       ]
     },
     {
+      "cs": "Společné skupiny zařízení",
       "de": "Gemeinsame Gerätegruppen",
       "en": "Common Device Groups",
       "nl": "Gemeenschappelijke apparaatgroepen",
@@ -3872,6 +3885,7 @@
       ]
     },
     {
+      "cs": "Potvrdit odebrání skupiny zařízení {0}?",
       "de": "Bestätigen Sie das Löschen der Gerätegruppe {0}?",
       "en": "Confirm removal of device group {0}?",
       "nl": "Bevestig het verwijderen van de apparaatgroep {0}?",
@@ -3881,6 +3895,7 @@
       ]
     },
     {
+      "cs": "Potvrdit odebrání skupiny {0}?",
       "de": "Bestätigen Sie das Löschen der Gruppe {0}?",
       "en": "Confirm removal of group {0}?",
       "nl": "Bevestig het verwijderen van de groep {0}?",
@@ -3949,7 +3964,7 @@
       ]
     },
     {
-      "cs": "Přihlašte se na různá svá nebo firemní zařízení odkudkoliv z celého světa pomocí technologie MeshCentral. Jednoduchá správa přes web. Jediné co potřebujete je agent na daném zařízení.  Po instalaci uvidíte zařízení v sekci „Moje zařízení“ a můžete toto zařízení ovládat.",
+      "cs": "Připojujte se na svá domácí nebo firemní zařízení odkudkoliv z celého světa pomocí MeshCentral, open source nástroje pro dohledování a správu na dálku – to vše přes webové rozhraní. Na své počítače je třeba si nainstalovat agenta pro správu. Po jeho instalaci se počítače zobrazí v sekci „Moje zařízení“ tohoto webového rozhraní a budete je odsud moci dohledovat a ovládat.",
       "de": "Verbinden Sie sich von überall in der Welt zu Ihren Heim- oder Büro-Geräten mittels MeshCentral, der Echtzeit-, Open-Source-Fernüberwachungs- und -verwaltungs-Webapplikation. Sie müssen einen Verwaltungsagenten herunterladen und auf Ihren Computern installieren. Nach der Installation werden Ihre Computer im Bereich \"Meine Geräte\" erscheinen und Sie werden Sie überwachen und fernbedienen können.",
       "en": "Connect to your home or office devices from anywhere in the world using MeshCentral, the real time, open source remote monitoring and management web site. You will need to download and install a management agent on your computers. Once installed, computers will show up in the \"My Devices\" section of this web site and you will be able to monitor them and take control of them.",
       "fr": "Connectez-vous à vos ordinateurs à la maison ou au bureau depuis n'importe où dans le monde avec MeshCentral, le site web open source de surveillance et de gestion d’ordinateur à distance en temps réel. Vous devrez télécharger et installer un agent de gestion sur vos ordinateurs. Une fois installés, les ordinateurs apparaîtront dans la section \"Mes appareils\" de ce site et vous pourrez les surveiller et en prendre le contrôle.",
@@ -3987,7 +4002,7 @@
       ]
     },
     {
-      "cs": "Připojené Intel&reg; AMT",
+      "cs": "Připojené Intel® AMT",
       "de": "Verbinden per Intel&reg; AMT",
       "en": "Connected Intel&reg; AMT",
       "nl": "Verbonden Intel&reg; AMT",
@@ -4244,7 +4259,7 @@
       ]
     },
     {
-      "cs": "Copyright (C) 2011 Joel Martin This Source Code Form podléhá podmínkám  Mozilla Public licence, v. 2.0. Pokud kopie tohoto MPL nebyla distribuována s tímto souborem, můžete si ji pořídit na adrese http://mozilla.org/MPL/2.0/.",
+      "cs": "Autorská práva © 2011 Joel Martin Tato podoba ve formě zdrojových kódů podléhá podmínkám Mozilla Public licence, v. 2.0. Pokud jste společně s tímto souborem neobdrželi kopii licence, je k dispozici na adrese http://mozilla.org/MPL/2.0/",
       "en": "Copyright (C) 2011 Joel Martin This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.",
       "ja": "Copyright（C）2011 Joel Martinこのソースコードフォームには、Mozilla Public License v。2.0の条件が適用されます。 MPLのコピーがこのファイルとともに配布されていない場合は、http：//mozilla.org/MPL/2.0/から入手できます。",
       "nl": "Copyright (C) 2011 Joel Martin Dit broncodeformulier is onderworpen aan de voorwaarden van de Mozilla Public License, v. 2.0. Als een kopie van de MPL niet met dit bestand is verspreid, kunt u er een verkrijgen op http://mozilla.org/MPL/2.0/.",
@@ -4256,7 +4271,7 @@
       ]
     },
     {
-      "cs": "Copyright (c) 1998-2011 The OpenSSL Project. Všechna práva vyhrazena.",
+      "cs": "Autorská práva © 1998-2011 The OpenSSL Project. Všechna práva vyhrazena.",
       "en": "Copyright (c) 1998-2011 The OpenSSL Project. All rights reserved.",
       "ja": "Copyright（c）1998-2011 The OpenSSL Project。全著作権所有。",
       "nl": "Copyright (c) 1998-2011 The OpenSSL Project. Alle rechten voorbehouden.",
@@ -4268,7 +4283,7 @@
       ]
     },
     {
-      "cs": "Copyright (c) 2009, CodePlex Foundation. Všechna práva vyhrazena.",
+      "cs": "Autorská práva © 2009, CodePlex Foundation. Všechna práva vyhrazena.",
       "en": "Copyright (c) 2009, CodePlex Foundation. All rights reserved.",
       "ja": "Copyright（c）2009、CodePlex Foundation。全著作権所有。",
       "nl": "Copyright (c) 2009, CodePlex Foundation. Alle rechten voorbehouden.",
@@ -4280,7 +4295,7 @@
       ]
     },
     {
-      "cs": "Copyright (c) 2010 Wojciech 'RRH' Ryrych",
+      "cs": "Autorská práva © 2010 Wojciech „RRH“ Ryrych",
       "en": "Copyright (c) 2010 Wojciech 'RRH' Ryrych",
       "ja": "Copyright（c）2010 Wojciech 'RRH' Ryrych",
       "nl": "Copyright (c) 2010 Wojciech 'RRH' Ryrych",
@@ -4292,7 +4307,7 @@
       ]
     },
     {
-      "cs": "Copyright 2013 jQuery Foundation a ostatní přispěvatelé",
+      "cs": "Autorská práva © 2013 nadace jQuery Foundation a ostatní přispěvatelé",
       "en": "Copyright 2013 jQuery Foundation and other contributors",
       "ja": "Copyright 2013 jQuery Foundationおよびその他の貢献者",
       "nl": "Copyright 2013 jQuery Foundation en andere bijdragers",
@@ -4304,7 +4319,7 @@
       ]
     },
     {
-      "cs": "Copyright 2013 jQuery Foundation a ostatní přispěvatelé,",
+      "cs": "Autorská práva © 2013 nadace jQuery Foundation a ostatní přispěvatelé,",
       "en": "Copyright 2013 jQuery Foundation and other contributors,",
       "ja": "Copyright 2013 jQuery Foundationおよびその他の貢献者、",
       "nl": "Copyright 2013 jQuery Foundation en andere bijdragers,",
@@ -4328,7 +4343,7 @@
       ]
     },
     {
-      "cs": "Corsican",
+      "cs": "korsičtina",
       "de": "Korsisch",
       "en": "Corsican",
       "ja": "コルシカ",
@@ -4366,6 +4381,7 @@
       ]
     },
     {
+      "cs": "Vytvořit skupinu uživatelů",
       "de": "Benutzergruppe erstellen",
       "en": "Create User Group",
       "nl": "Maak een gebruikersgroep.",
@@ -4448,7 +4464,7 @@
       ]
     },
     {
-      "cs": "Cree",
+      "cs": "kríjština",
       "de": "Cree",
       "en": "Cree",
       "ja": "クリー語",
@@ -4460,7 +4476,7 @@
       ]
     },
     {
-      "cs": "Croatian",
+      "cs": "chorvatština",
       "de": "Kroatisch",
       "en": "Croatian",
       "ja": "クロアチア語",
@@ -4534,7 +4550,7 @@
       ]
     },
     {
-      "cs": "Aktuální verze",
+      "cs": "Nainstalovaná verze",
       "de": "Aktuelle Version",
       "en": "Current Version",
       "ja": "現行版",
@@ -4585,7 +4601,7 @@
       ]
     },
     {
-      "cs": "Danish",
+      "cs": "dánština",
       "de": "Dänisch",
       "en": "Danish",
       "ja": "デンマーク語",
@@ -4633,7 +4649,7 @@
       ]
     },
     {
-      "cs": "Deaktivace Client Control Mode (CCM)",
+      "cs": "Deaktivovat klientem řízený řetim (CCM)",
       "de": "Client Control Mode (CCM) deaktivieren",
       "en": "Deactivate Client Control Mode (CCM)",
       "ja": "クライアント制御モード（CCM）を無効にする",
@@ -4721,7 +4737,7 @@
       ]
     },
     {
-      "cs": "Smazat nod",
+      "cs": "Smazat uzel",
       "de": "Knoten löschen",
       "en": "Delete Node",
       "ja": "ノードを削除",
@@ -4755,6 +4771,7 @@
       ]
     },
     {
+      "cs": "Smazat skupinu uživatelů",
       "de": "Benutzergruppe löschen",
       "en": "Delete User Group",
       "nl": "Verwijder de gebruikersgroep",
@@ -4816,6 +4833,7 @@
       ]
     },
     {
+      "cs": "Smazat skupinu uživatlů {0}?",
       "de": "Benutzergruppe {0} löschen?",
       "en": "Delete user group {0}?",
       "nl": "Verwijder gebruikersgroep {0}?",
@@ -4866,7 +4884,7 @@
       ]
     },
     {
-      "cs": "Sestupně podle jména",
+      "cs": "Sestupně podle názvu",
       "de": "Nach Name absteigend",
       "en": "Descend by name",
       "ja": "名前で降順",
@@ -5071,6 +5089,7 @@
       ]
     },
     {
+      "cs": "Skupina zařízení",
       "de": "Gerätegruppe",
       "en": "Device Group",
       "nl": "Apparaat Groep",
@@ -5614,7 +5633,7 @@
       ]
     },
     {
-      "cs": "Stáhnout si MeshCmd – nástroj pro příkazový řádek s mnoha funkcemi.",
+      "cs": "Stáhnout si MeshCmd – nástroj s mnoha funkcemi, určený pro příkazový řádek.",
       "de": "MeshCmd herunterladen, ein Befehlszeilenprogramm, das viele Aufgaben ausführt.",
       "en": "Download MeshCmd, a command line tool that performs many functions.",
       "ja": "多くの機能を実行するコマンドラインツール、MeshCmdをダウンロードします。",
@@ -5716,7 +5735,7 @@
       ]
     },
     {
-      "cs": "Stáhnout si seznam událostí v níže uvedeném formátu.",
+      "cs": "Stáhněte si seznam událostí v níže uvedeném formátu.",
       "de": "Die Ereignisliste in einem der folgenden Dateiformate herunterladen.",
       "en": "Download the list of events with one of the file formats below.",
       "ja": "以下のファイル形式のいずれかでイベントのリストをダウンロードします。",
@@ -5728,7 +5747,7 @@
       ]
     },
     {
-      "cs": "Stáhnout si seznam uživatelů v níže uvedeném formátu.",
+      "cs": "Stáhněte si seznam uživatelů v níže uvedeném formátu.",
       "de": "Die Benutzerliste in einem der folgenden Dateiformate herunterladen.",
       "en": "Download the list of users with one of the file formats below.",
       "ja": "以下のファイル形式のいずれかでユーザーのリストをダウンロードします。",
@@ -5765,7 +5784,7 @@
       ]
     },
     {
-      "cs": "Stáhnout si informace o uživateli",
+      "cs": "Stáhnout si informace o uživatelích",
       "de": "Benutzerinformationen herunterladen",
       "en": "Download user information",
       "ja": "ユーザー情報をダウンロードする",
@@ -5798,6 +5817,7 @@
       ]
     },
     {
+      "cs": "Duplikovat skupinu…",
       "de": "Dupliziere Gruppe...",
       "en": "Duplicate Group...",
       "nl": "Dupliceer Groep...",
@@ -5806,6 +5826,7 @@
       ]
     },
     {
+      "cs": "Duplikovat skupinu uživatelů",
       "de": "Dupliziere Benutzergruppe",
       "en": "Duplicate User Group",
       "nl": "Dupliceer Gebruikers Groep",
@@ -5838,7 +5859,7 @@
       ]
     },
     {
-      "cs": "Dutch (Belgian)",
+      "cs": "nizozemština (Belgie)",
       "de": "Niederländisch (Belgisch)",
       "en": "Dutch (Belgian)",
       "ja": "オランダ語（ベルギー）",
@@ -5850,7 +5871,7 @@
       ]
     },
     {
-      "cs": "Dutch (Standard)",
+      "cs": "nizozemština (standardní)",
       "de": "Niederländisch (Standard)",
       "en": "Dutch (Standard)",
       "ja": "オランダ語（標準）",
@@ -5954,6 +5975,7 @@
       ]
     },
     {
+      "cs": "Upravit oprávnění na skupinu zařízení",
       "de": "Gerätegruppenberechtigungen bearbeiten",
       "en": "Edit Device Group Permissions",
       "nl": "Bewerk apparaatgroep rechten",
@@ -5987,7 +6009,7 @@
       ]
     },
     {
-      "cs": "Upravit přihlašovací údaje k Intel&reg; AMT",
+      "cs": "Upravit přihlašovací údaje k Intel® AMT",
       "de": "Zugangsdaten für Intel&reg; AMT bearbeiten",
       "en": "Edit Intel&reg; AMT credentials",
       "ja": "Intelを編集&reg; AMTクレデンシャル",
@@ -6028,6 +6050,7 @@
       ]
     },
     {
+      "cs": "Upravit skupinu uživatelů",
       "de": "Benutzergruppe bearbeiten",
       "en": "Edit User Group",
       "nl": "Bewerk de gebruikersgroep",
@@ -6180,7 +6203,7 @@
       ]
     },
     {
-      "cs": "English",
+      "cs": "angličtina",
       "de": "Englisch",
       "en": "English",
       "ja": "英語",
@@ -6192,7 +6215,7 @@
       ]
     },
     {
-      "cs": "English (Australia)",
+      "cs": "angličtina (Austrálie)",
       "de": "Englisch (Australien)",
       "en": "English (Australia)",
       "ja": "英語（オーストラリア）",
@@ -6204,7 +6227,7 @@
       ]
     },
     {
-      "cs": "English (Belize)",
+      "cs": "angličtina (Belize)",
       "de": "Englisch (Belize)",
       "en": "English (Belize)",
       "ja": "英語（ベリーズ）",
@@ -6216,7 +6239,7 @@
       ]
     },
     {
-      "cs": "English (Canada)",
+      "cs": "angličtina (Kanada)",
       "de": "Englisch (Kanada)",
       "en": "English (Canada)",
       "ja": "英語（カナダ）",
@@ -6228,7 +6251,7 @@
       ]
     },
     {
-      "cs": "English (Ireland)",
+      "cs": "angličtina (Irsko)",
       "de": "Englisch (Irland)",
       "en": "English (Ireland)",
       "ja": "英語（アイルランド）",
@@ -6240,7 +6263,7 @@
       ]
     },
     {
-      "cs": "English (Jamaica)",
+      "cs": "angličtina (Jamajka)",
       "de": "Englisch (Jamaika)",
       "en": "English (Jamaica)",
       "ja": "英語（ジャマイカ）",
@@ -6252,7 +6275,7 @@
       ]
     },
     {
-      "cs": "English (New Zealand)",
+      "cs": "angličtina (Nový Zéland)",
       "de": "Englisch (Neuseeland)",
       "en": "English (New Zealand)",
       "ja": "英語（ニュージーランド）",
@@ -6264,7 +6287,7 @@
       ]
     },
     {
-      "cs": "English (Philippines)",
+      "cs": "angličtina (Filipíny)",
       "de": "Englisch (Philippinen)",
       "en": "English (Philippines)",
       "ja": "英語（フィリピン）",
@@ -6276,7 +6299,7 @@
       ]
     },
     {
-      "cs": "English (South Africa)",
+      "cs": "angličtina (Jihoafrická Republika)",
       "de": "Englisch (Südafrika)",
       "en": "English (South Africa)",
       "ja": "英語（南アフリカ）",
@@ -6288,7 +6311,7 @@
       ]
     },
     {
-      "cs": "English (Trinidad & Tobago)",
+      "cs": "angličtina (Trinidad a Tobago)",
       "de": "Englisch (Trinidad Tobago)",
       "en": "English (Trinidad & Tobago)",
       "ja": "英語（トリニダードトバゴ）",
@@ -6300,7 +6323,7 @@
       ]
     },
     {
-      "cs": "English (United Kingdom)",
+      "cs": "angličtina (Velká Británie)",
       "de": "Englisch (Vereinigtes Königreich)",
       "en": "English (United Kingdom)",
       "fr": "Anglais (Royaume Uni)",
@@ -6313,7 +6336,7 @@
       ]
     },
     {
-      "cs": "English (United States)",
+      "cs": "angličtina (Spojené státy americké)",
       "de": "Englisch (USA)",
       "en": "English (United States)",
       "fr": "Anglais (États Unis)",
@@ -6326,7 +6349,7 @@
       ]
     },
     {
-      "cs": "English (Zimbabwe)",
+      "cs": "angličtina (Zimbabwe)",
       "de": "Englisch (Simbabwe)",
       "en": "English (Zimbabwe)",
       "fr": "Anglais (Zimbabwe)",
@@ -6437,7 +6460,7 @@
       ]
     },
     {
-      "cs": "Esperanto",
+      "cs": "esperanto",
       "de": "Esperanto",
       "en": "Esperanto",
       "ja": "エスペラント",
@@ -6449,7 +6472,7 @@
       ]
     },
     {
-      "cs": "Estonian",
+      "cs": "estonština",
       "de": "Estnisch",
       "en": "Estonian",
       "ja": "エストニア語",
@@ -6559,7 +6582,7 @@
       ]
     },
     {
-      "cs": "FYRO Macedonian",
+      "cs": "FYRO makedonština",
       "de": "Mazedonisch (EJRM)",
       "en": "FYRO Macedonian",
       "fr": "ARY Macédonien",
@@ -6572,7 +6595,7 @@
       ]
     },
     {
-      "cs": "Faeroese",
+      "cs": "faerština",
       "de": "Färöisch",
       "en": "Faeroese",
       "ja": "フェロー語",
@@ -6597,7 +6620,7 @@
       ]
     },
     {
-      "cs": "Farsi (Persian)",
+      "cs": "Farsi (perština)",
       "de": "Persisch",
       "en": "Farsi (Persian)",
       "fr": "Farsi (Persan)",
@@ -6636,7 +6659,7 @@
       ]
     },
     {
-      "cs": "Fijian",
+      "cs": "fidžijština",
       "de": "Fidschianisch",
       "en": "Fijian",
       "ja": "フィジー人",
@@ -6753,7 +6776,7 @@
       ]
     },
     {
-      "cs": "Finnish",
+      "cs": "finština",
       "de": "Finnisch",
       "en": "Finnish",
       "fr": "Finlandais",
@@ -6899,7 +6922,7 @@
       ]
     },
     {
-      "cs": "French (Belgium)",
+      "cs": "francouzština (Belgie)",
       "de": "Französisch (Belgien)",
       "en": "French (Belgium)",
       "fr": "Français (Belgique)",
@@ -6912,7 +6935,7 @@
       ]
     },
     {
-      "cs": "French (Canada)",
+      "cs": "francouzština (Kanada)",
       "de": "Französisch (Kanada)",
       "en": "French (Canada)",
       "fr": "Français (Canada)",
@@ -6925,7 +6948,7 @@
       ]
     },
     {
-      "cs": "French (France)",
+      "cs": "francouzština (Francie)",
       "de": "Französisch (Frankreich)",
       "en": "French (France)",
       "fr": "Français (France)",
@@ -6938,7 +6961,7 @@
       ]
     },
     {
-      "cs": "French (Luxembourg)",
+      "cs": "francouzština (Lucembursko)",
       "de": "Französisch (Luxemburg)",
       "en": "French (Luxembourg)",
       "fr": "Français (Luxembourg)",
@@ -6951,7 +6974,7 @@
       ]
     },
     {
-      "cs": "French (Monaco)",
+      "cs": "francouzština (Monako)",
       "de": "Französisch (Monaco)",
       "en": "French (Monaco)",
       "fr": "Français (Monaco)",
@@ -6964,7 +6987,7 @@
       ]
     },
     {
-      "cs": "French (Standard)",
+      "cs": "francouzština (standardní)",
       "de": "Französisch (Standard)",
       "en": "French (Standard)",
       "fr": "Français (standard)",
@@ -6977,7 +7000,7 @@
       ]
     },
     {
-      "cs": "French (Switzerland)",
+      "cs": "francouzština (Švýcarsko)",
       "de": "Französisch (Schweiz)",
       "en": "French (Switzerland)",
       "fr": "Français (Suisse)",
@@ -6990,7 +7013,7 @@
       ]
     },
     {
-      "cs": "Frisian",
+      "cs": "fríština",
       "de": "Friesisch",
       "en": "Frisian",
       "fr": "Frison",
@@ -7003,7 +7026,7 @@
       ]
     },
     {
-      "cs": "Friulian",
+      "cs": "furlanština",
       "de": "Friaulisch",
       "en": "Friulian",
       "fr": "Frioulan",
@@ -7048,6 +7071,7 @@
       ]
     },
     {
+      "cs": "Správce celé skupiny zařízení",
       "de": "Gesamt-Gerätegruppenadministrator",
       "en": "Full Device Group Administrator",
       "nl": "Volledige apparaatgroep beheerder",
@@ -7085,7 +7109,7 @@
       ]
     },
     {
-      "cs": "Gaelic (Irish)",
+      "cs": "gaelština (irská)",
       "de": "Gälisch (Irisch)",
       "en": "Gaelic (Irish)",
       "fr": "Gaélique (irlandais)",
@@ -7098,7 +7122,7 @@
       ]
     },
     {
-      "cs": "Gaelic (Scots)",
+      "cs": "gaelština (skotská)",
       "de": "Gälisch (Schottisch)",
       "en": "Gaelic (Scots)",
       "fr": "Gaélique (écossais)",
@@ -7111,7 +7135,7 @@
       ]
     },
     {
-      "cs": "Galacian",
+      "cs": "galicijština",
       "de": "Galicisch",
       "en": "Galacian",
       "fr": "Galicien",
@@ -7194,7 +7218,7 @@
       ]
     },
     {
-      "cs": "Georgian",
+      "cs": "gruzínština",
       "de": "georgisch",
       "en": "Georgian",
       "fr": "Géorgien",
@@ -7207,7 +7231,7 @@
       ]
     },
     {
-      "cs": "German (Austria)",
+      "cs": "němčina (Rakousko)",
       "de": "Deutsch (Österreich)",
       "en": "German (Austria)",
       "ja": "ドイツ語（オーストリア）",
@@ -7219,7 +7243,7 @@
       ]
     },
     {
-      "cs": "German (Germany)",
+      "cs": "němčina (Německo)",
       "de": "Deutsch (Deutschland)",
       "en": "German (Germany)",
       "ja": "ドイツ語（ドイツ）",
@@ -7231,7 +7255,7 @@
       ]
     },
     {
-      "cs": "German (Liechtenstein)",
+      "cs": "němčina (Lichtenštejnsko)",
       "de": "Deutsch (Liechtenstein)",
       "en": "German (Liechtenstein)",
       "ja": "ドイツ語（リヒテンシュタイン）",
@@ -7243,7 +7267,7 @@
       ]
     },
     {
-      "cs": "German (Luxembourg)",
+      "cs": "němčina (Lucembursko)",
       "de": "Deutsch (Luxemburg)",
       "en": "German (Luxembourg)",
       "ja": "ドイツ語（ルクセンブルグ）",
@@ -7255,7 +7279,7 @@
       ]
     },
     {
-      "cs": "German (Standard)",
+      "cs": "němčina (standardní)",
       "de": "Deutsch (Standard)",
       "en": "German (Standard)",
       "ja": "ドイツ語（標準）",
@@ -7267,7 +7291,7 @@
       ]
     },
     {
-      "cs": "German (Switzerland)",
+      "cs": "němčina (Švýcarsko)",
       "de": "Deutsch (Schweiz)",
       "en": "German (Switzerland)",
       "ja": "ドイツ語（スイス）",
@@ -7348,7 +7372,7 @@
       ]
     },
     {
-      "cs": "Greek",
+      "cs": "řečtina",
       "de": "Griechisch",
       "en": "Greek",
       "fr": "Grec",
@@ -7390,6 +7414,7 @@
       ]
     },
     {
+      "cs": "Členové skupiny",
       "de": "Gruppenmitglieder",
       "en": "Group Members",
       "nl": "Groeps leden",
@@ -7411,6 +7436,7 @@
       ]
     },
     {
+      "cs": "Oprávnění skupiny na {0}.",
       "de": "Gruppenberechtigungen für {0}.",
       "en": "Group permissions for {0}.",
       "nl": "Groepsrechten voor {0}.",
@@ -7432,7 +7458,7 @@
       ]
     },
     {
-      "cs": "Groups",
+      "cs": "Skupiny",
       "de": "Gruppen",
       "en": "Groups",
       "nl": "Groepen",
@@ -7442,7 +7468,7 @@
       ]
     },
     {
-      "cs": "Gujurati",
+      "cs": "gudžarátština",
       "de": "Gujurati",
       "en": "Gujurati",
       "fr": "Gujarati",
@@ -7470,7 +7496,7 @@
       ]
     },
     {
-      "cs": "Haitian",
+      "cs": "haitština",
       "de": "Haitianisch",
       "en": "Haitian",
       "fr": "Haïtien",
@@ -7509,6 +7535,7 @@
       ]
     },
     {
+      "cs": "Halda celkem",
       "de": "Heap gesamt",
       "en": "Heap Total",
       "nl": "Heap Totaal",
@@ -7517,6 +7544,7 @@
       ]
     },
     {
+      "cs": "Halda využito",
       "de": "Heap verwendet",
       "en": "Heap Used",
       "nl": "Heap gebruikt",
@@ -7525,7 +7553,7 @@
       ]
     },
     {
-      "cs": "Hebrew",
+      "cs": "hebrejština",
       "de": "Hebräisch",
       "en": "Hebrew",
       "ja": "ヘブライ語",
@@ -7564,7 +7592,7 @@
       ]
     },
     {
-      "cs": "Hindi",
+      "cs": "hindština",
       "de": "Hindi",
       "en": "Hindi",
       "ja": "ヒンディー語",
@@ -7576,7 +7604,7 @@
       ]
     },
     {
-      "cs": "Vydržte, email je na cestě.",
+      "cs": "Vydržte, e-mail je na cestě.",
       "de": "Bitte warten, Rücksetz-E-Mail gesendet.",
       "en": "Hold on, reset mail sent.",
       "fr": "Attends, le courrier est envoyé.",
@@ -7686,7 +7714,7 @@
       ]
     },
     {
-      "cs": "Hungarian",
+      "cs": "maďarština",
       "de": "Ungarisch",
       "en": "Hungarian",
       "ja": "ハンガリー語",
@@ -7710,7 +7738,7 @@
       ]
     },
     {
-      "cs": "IP adresa blokována, zkuste to později.",
+      "cs": "IP adresa blokována, zkuste to znovu později.",
       "de": "IP-Adresse gesperrt, versuchen Sie es später erneut.",
       "en": "IP address blocked, try again later.",
       "ja": "IPアドレスがブロックされています。しばらくしてからもう一度お試しください。",
@@ -7758,7 +7786,7 @@
       ]
     },
     {
-      "cs": "Icelandic",
+      "cs": "islandština",
       "de": "Isländisch",
       "en": "Icelandic",
       "fr": "Islandais",
@@ -7810,7 +7838,7 @@
       ]
     },
     {
-      "cs": "Indonesian",
+      "cs": "indonézština",
       "de": "Indonesisch",
       "en": "Indonesian",
       "ja": "インドネシア人",
@@ -8070,7 +8098,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT",
+      "cs": "Intel® AMT",
       "de": "Intel&reg; AMT",
       "en": "Intel&reg; AMT",
       "ja": "Intel&reg; AMT",
@@ -8089,7 +8117,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT CIRA",
+      "cs": "Intel® AMT CIRA",
       "de": "Intel&reg; AMT CIRA",
       "en": "Intel&reg; AMT CIRA",
       "ja": "Intel&reg; AMT CIRA",
@@ -8102,7 +8130,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT CIRA je připojeno a připraveno k použití.",
+      "cs": "Intel® AMT CIRA je připojeno a připraveno k použití.",
       "de": "Intel&reg; AMT CIRA ist verbunden und einsatzbereit.",
       "en": "Intel&reg; AMT CIRA is connected and ready for use.",
       "ja": "Intel&reg; AMT CIRAが接続され、使用できる状態になりました。",
@@ -8116,7 +8144,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT připojeno",
+      "cs": "Intel® AMT připojeno",
       "de": "Intel&reg; AMT verbunden",
       "en": "Intel&reg; AMT Connected",
       "ja": "Intel&reg;接続されたAMT",
@@ -8130,7 +8158,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT zásada",
+      "cs": "Intel® AMT zásada",
       "de": "Intel&reg; AMT Regelwerk",
       "en": "Intel&reg; AMT Policy",
       "ja": "Intel&reg; AMTポリシー",
@@ -8142,7 +8170,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT přesměrování",
+      "cs": "Intel® AMT přesměrování",
       "de": "Intel&reg; AMT Umleitung",
       "en": "Intel&reg; AMT Redirection",
       "ja": "Intel&reg; AMTリダイレクト",
@@ -8154,7 +8182,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT štítek",
+      "cs": "Intel® AMT štítek",
       "de": "Intel&reg; AMT Kennzeichen",
       "en": "Intel&reg; AMT Tag",
       "ja": "Intel&reg; AMTタグ",
@@ -8166,7 +8194,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT WSMAN",
+      "cs": "Intel® AMT WSMAN",
       "de": "Intel&reg; AMT WSMAN",
       "en": "Intel&reg; AMT WSMAN",
       "ja": "Intel&reg; AMT WSMAN",
@@ -8178,7 +8206,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT aktivace",
+      "cs": "Intel® AMT aktivace",
       "de": "Intel&reg; AMT Aktivierung",
       "en": "Intel&reg; AMT activation",
       "ja": "Intel&reg; AMTアクティベーション",
@@ -8191,7 +8219,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT připojeno",
+      "cs": "Intel® AMT připojeno",
       "de": "Intel&reg; AMT verbunden",
       "en": "Intel&reg; AMT connected",
       "ja": "Intel&reg;接続されたAMT",
@@ -8218,7 +8246,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT zjištěno",
+      "cs": "Intel® AMT zjištěno",
       "de": "Intel&reg; AMT erkannt",
       "en": "Intel&reg; AMT detected",
       "ja": "Intel&reg; AMTが検出されました",
@@ -8232,7 +8260,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT je směrovatelné a připraveno k použití.",
+      "cs": "Intel® AMT je směrovatelné a připraveno k použití.",
       "de": "Intel&reg; AMT ist routebar und einsatzbereit.",
       "en": "Intel&reg; AMT is routable and ready for use.",
       "ja": "Intel&reg; AMTはルーティング可能であり、すぐに使用できます。",
@@ -8244,7 +8272,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; AMT je směrovatelné.",
+      "cs": "Intel® AMT je směrovatelné.",
       "de": "Intel&reg; AMT ist routebar.",
       "en": "Intel&reg; AMT is routable.",
       "ja": "Intel&reg; AMTはルーティング可能です。",
@@ -8257,7 +8285,7 @@
       ]
     },
     {
-      "cs": "Pouze Intel&reg; AMT",
+      "cs": "Pouze Intel® AMT",
       "de": "Nur Intel&reg; AMT",
       "en": "Intel&reg; AMT only",
       "ja": "Intel&reg; AMTのみ",
@@ -8269,7 +8297,7 @@
       ]
     },
     {
-      "cs": "Pouze Intel&reg; AMT, bez agenta",
+      "cs": "Pouze Intel® AMT, bez agenta",
       "de": "Nur Intel&reg; AMT, kein Agent",
       "en": "Intel&reg; AMT only, no agent",
       "ja": "Intel&reg; AMTのみ、エージェントなし",
@@ -8283,7 +8311,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; Active Management Technology",
+      "cs": "Intel® Active Management Technology",
       "de": "Intel&reg; Active Management Technology",
       "en": "Intel&reg; Active Management Technology",
       "ja": "Intel&reg;アクティブ管理テクノロジー",
@@ -8295,7 +8323,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; ME",
+      "cs": "Intel® ME",
       "de": "Intel&reg; ME",
       "en": "Intel&reg; ME",
       "ja": "Intel&reg;私",
@@ -8308,7 +8336,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; SM",
+      "cs": "Intel® SM",
       "de": "Intel&reg; SM",
       "en": "Intel&reg; SM",
       "ja": "Intel&reg; SM",
@@ -8321,7 +8349,7 @@
       ]
     },
     {
-      "cs": "Intel&reg; Standard Manageability",
+      "cs": "Intel® Standard Manageability",
       "de": "Intel&reg; Standard Manageability",
       "en": "Intel&reg; Standard Manageability",
       "ja": "Intel&reg;標準の管理性",
@@ -8380,6 +8408,7 @@
       ]
     },
     {
+      "cs": "Intel®AMT",
       "de": "Intel® AMT",
       "en": "Intel®AMT",
       "nl": "Intel®AMT",
@@ -8426,7 +8455,7 @@
       ]
     },
     {
-      "cs": "Inuktitut",
+      "cs": "inuktitutština",
       "de": "Inuktitut",
       "en": "Inuktitut",
       "fr": "Inuktitut",
@@ -8572,7 +8601,7 @@
       ]
     },
     {
-      "cs": "Pozvěte někoho k instalaci agenta pomocí sdíleného odkazu. Tento odkaz obsahuje  pokyny pro instalaci do skupiny  „{0}“. Odkaz je veřejný a protistrana nepotřebuje žádný účet na tomto serveru.",
+      "cs": "Pozvěte někoho k instalaci agenta tím, že mu nasdílíte odkaz. Tento odkaz obsahuje pokyny pro zařazení do skupiny zařízení „{0}“. Odkaz je veřejný a protistrana nepotřebuje žádný účet na tomto serveru.",
       "de": "Laden Sie jemanden ein, den Mesh-Agenten zu installieren, indem Sie einen Einladungslink freigeben. Dieser Link verweist den Benutzer auf Installationsanweisungen für die Gerätegruppe \\\"{0}\\\". Der Link ist öffentlich und es wird kein Konto für diesen Server benötigt.",
       "en": "Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \\\"{0}\\\" device group. The link is public and no account for this server is needed.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage en partageant un lien d'invitation. Ce lien renvoie l'utilisateur aux instructions d'installation du groupe de périphériques \\\"{0}\\\". Le lien est public et aucun compte n'est requis pour ce serveur.",
@@ -8610,7 +8639,7 @@
       ]
     },
     {
-      "cs": "Irish",
+      "cs": "irština",
       "de": "Irisch",
       "en": "Irish",
       "fr": "Irlandais",
@@ -8623,7 +8652,7 @@
       ]
     },
     {
-      "cs": "Italian (Standard)",
+      "cs": "italština (standardní)",
       "de": "Italienisch (Standard)",
       "en": "Italian (Standard)",
       "fr": "Italien (standard)",
@@ -8636,7 +8665,7 @@
       ]
     },
     {
-      "cs": "Italian (Switzerland)",
+      "cs": "italština (Švýcarsko)",
       "de": "Italienisch (Schweiz)",
       "en": "Italian (Switzerland)",
       "fr": "Italien (Suisse)",
@@ -8663,7 +8692,7 @@
       ]
     },
     {
-      "cs": "Japanese",
+      "cs": "japonština",
       "de": "Japanisch",
       "en": "Japanese",
       "fr": "Japonais",
@@ -8676,7 +8705,7 @@
       ]
     },
     {
-      "cs": "Kannada",
+      "cs": "kannadština",
       "de": "Kannada",
       "en": "Kannada",
       "ja": "カンナダ語",
@@ -8688,7 +8717,7 @@
       ]
     },
     {
-      "cs": "Kashmiri",
+      "cs": "kašmírština",
       "de": "Kashmiri",
       "en": "Kashmiri",
       "ja": "カシミール",
@@ -8700,7 +8729,7 @@
       ]
     },
     {
-      "cs": "Kazakh",
+      "cs": "kazaština",
       "de": "Kasachisch",
       "en": "Kazakh",
       "ja": "カザフ",
@@ -8751,7 +8780,7 @@
       ]
     },
     {
-      "cs": "Khmer",
+      "cs": "khmerština",
       "de": "Khmer",
       "en": "Khmer",
       "ja": "クメール",
@@ -8763,7 +8792,7 @@
       ]
     },
     {
-      "cs": "Kirghiz",
+      "cs": "kyrgyzština",
       "de": "Kirgisisch",
       "en": "Kirghiz",
       "ja": "キルギス",
@@ -8775,7 +8804,7 @@
       ]
     },
     {
-      "cs": "Klingon",
+      "cs": "klingonština",
       "de": "Klingonisch",
       "en": "Klingon",
       "ja": "クリンゴン",
@@ -8787,7 +8816,7 @@
       ]
     },
     {
-      "cs": "Korean",
+      "cs": "korejština",
       "de": "Koreanisch",
       "en": "Korean",
       "fr": "Coréen",
@@ -8800,7 +8829,7 @@
       ]
     },
     {
-      "cs": "Korean (North Korea)",
+      "cs": "korejština (Severní Korea)",
       "de": "Koreanisch (Nordkorea)",
       "en": "Korean (North Korea)",
       "fr": "Coréen (Corée du Nord)",
@@ -8813,7 +8842,7 @@
       ]
     },
     {
-      "cs": "Korean (South Korea)",
+      "cs": "korejština (Jižní Korea)",
       "de": "Koreanisch (Südkorea)",
       "en": "Korean (South Korea)",
       "fr": "Coréen (Corée du Sud)",
@@ -8937,7 +8966,7 @@
       ]
     },
     {
-      "cs": "Poslední 3 hodiny",
+      "cs": "Předešlé 3 hodiny",
       "de": "Letzte 3 Stunden",
       "en": "Last 3 hours",
       "fr": "3 dernières heures",
@@ -8950,7 +8979,7 @@
       ]
     },
     {
-      "cs": "Posledních 30 dní",
+      "cs": "Předchozích 30 dnů",
       "de": "Letzte 30 Tage",
       "en": "Last 30 days",
       "fr": "30 derniers jours",
@@ -8994,7 +9023,7 @@
       ]
     },
     {
-      "cs": "Posledních 8 hodin",
+      "cs": "Předchozích 8 hodin",
       "de": "Letzte 8 Stunden",
       "en": "Last 8 hours",
       "fr": "8 dernières heures",
@@ -9074,7 +9103,7 @@
       ]
     },
     {
-      "cs": "Poslední den",
+      "cs": "Předchozí den",
       "de": "Letzter Tag",
       "en": "Last day",
       "fr": "Dernier jour",
@@ -9126,7 +9155,7 @@
       ]
     },
     {
-      "cs": "Poslední týden",
+      "cs": "Předchozí týden",
       "de": "Letzte Woche",
       "en": "Last week",
       "fr": "Dernière semaine",
@@ -9139,7 +9168,7 @@
       ]
     },
     {
-      "cs": "Poslední",
+      "cs": "Nejnovější",
       "de": "Neueste",
       "en": "Latest",
       "fr": "Dernier",
@@ -9151,7 +9180,7 @@
       ]
     },
     {
-      "cs": "Poslední verze",
+      "cs": "Nejnovější vydaná verze",
       "de": "Neueste Version",
       "en": "Latest Version",
       "fr": "Dernière version",
@@ -9164,7 +9193,7 @@
       ]
     },
     {
-      "cs": "Latin",
+      "cs": "latina",
       "de": "Latein",
       "en": "Latin",
       "fr": "Latin",
@@ -9177,7 +9206,7 @@
       ]
     },
     {
-      "cs": "Latvian",
+      "cs": "lotyština",
       "de": "Lettisch",
       "en": "Latvian",
       "ja": "ラトビア",
@@ -9189,7 +9218,7 @@
       ]
     },
     {
-      "cs": "Rozhraní pruhu vlevo",
+      "cs": "Rozhraní s lištou vlevo",
       "de": "Oberfläche mit Leiste links",
       "en": "Left bar interface",
       "ja": "左バーインターフェイス",
@@ -9311,7 +9340,7 @@
       ]
     },
     {
-      "cs": "Linux / BSD (Odinstalace)",
+      "cs": "Linux / BSD (odinstalace)",
       "de": "Linux / BSD (Deinstallation)",
       "en": "Linux / BSD (UnInstall)",
       "ja": "Linux / BSD（アンインストール）",
@@ -9476,7 +9505,7 @@
       ]
     },
     {
-      "cs": "Lithuanian",
+      "cs": "lotyština",
       "de": "Litauisch",
       "en": "Lithuanian",
       "fr": "Lituanien",
@@ -9714,7 +9743,7 @@
       ]
     },
     {
-      "cs": "Luxembourgish",
+      "cs": "lucemburština",
       "de": "Luxemburgisch",
       "en": "Luxembourgish",
       "fr": "Luxembourgeois",
@@ -9924,7 +9953,7 @@
       ]
     },
     {
-      "cs": "Malay",
+      "cs": "malajština",
       "de": "Malaiisch",
       "en": "Malay",
       "ja": "マレー語",
@@ -9936,7 +9965,7 @@
       ]
     },
     {
-      "cs": "Malayalam",
+      "cs": "malajálamština",
       "de": "Malayalam",
       "en": "Malayalam",
       "ja": "マラヤーラム語",
@@ -9948,7 +9977,7 @@
       ]
     },
     {
-      "cs": "Maltese",
+      "cs": "maltština",
       "de": "Maltesisch",
       "en": "Maltese",
       "ja": "マルタ語",
@@ -9973,7 +10002,7 @@
       ]
     },
     {
-      "cs": "Správa počítačů ve skupině zařízení",
+      "cs": "Spravovat počítače ve skupině zařízení",
       "de": "Gerätegruppen-Rechner verwalten",
       "en": "Manage Device Group Computers",
       "ja": "デバイスグループコンピューターの管理",
@@ -10003,7 +10032,7 @@
       ]
     },
     {
-      "cs": "Spravovat bezpečnostní klíče",
+      "cs": "Spravovat klíče zabezpečení",
       "de": "Sicherheitsschlüssel verwalten",
       "en": "Manage Security Keys",
       "ja": "セキュリティキーを管理する",
@@ -10015,6 +10044,7 @@
       ]
     },
     {
+      "cs": "Spravovat skupiny uživatelů",
       "de": "Benutzergruppen verwalten",
       "en": "Manage User Groups",
       "nl": "Beheer gebruikersgroepen.",
@@ -10023,7 +10053,7 @@
       ]
     },
     {
-      "cs": "Správa uživatelů",
+      "cs": "Spravovat uživatele",
       "de": "Benutzer verwalten",
       "en": "Manage Users",
       "fr": "Gérer les utilisateurs",
@@ -10062,7 +10092,7 @@
       ]
     },
     {
-      "cs": "Spravovat bezpečnostní klíče",
+      "cs": "Spravovat klíče zabezpečení",
       "de": "Sicherheitsschlüssel verwalten",
       "en": "Manage security keys",
       "ja": "セキュリティキーを管理する",
@@ -10139,7 +10169,7 @@
       ]
     },
     {
-      "cs": "Maori",
+      "cs": "maorština",
       "de": "Maori",
       "en": "Maori",
       "ja": "マオリ",
@@ -10165,7 +10195,7 @@
       ]
     },
     {
-      "cs": "Marathi",
+      "cs": "maráthština",
       "de": "Marathi",
       "en": "Marathi",
       "fr": "Marathi",
@@ -10229,7 +10259,7 @@
       ]
     },
     {
-      "cs": "Paměť",
+      "cs": "Operační paměť",
       "de": "Speicher",
       "en": "Memory",
       "fr": "Mémoire",
@@ -10301,7 +10331,7 @@
       ]
     },
     {
-      "cs": "Mesh agent je dostupný pomocí předávání (relay) přes jiného agenta.",
+      "cs": "Agent je dostupný pomocí předávání (relay) přes jiného agenta.",
       "de": "Mesh Agent ist erreichbar mittels eines anderen Agenten als Vermittler.",
       "en": "Mesh agent is reachable using another agent as relay.",
       "ja": "メッシュエージェントは、別のエージェントをリレーとして使用して到達可能です。",
@@ -10323,7 +10353,7 @@
       ]
     },
     {
-      "cs": "MeshAgent provoz",
+      "cs": "Provoz MeshAgenta",
       "de": "Mesh-Agent-Datenverkehr",
       "en": "MeshAgent traffic",
       "ja": "MeshAgentトラフィック",
@@ -10334,7 +10364,7 @@
       ]
     },
     {
-      "cs": "MeshAgent aktualizace",
+      "cs": "Aktualizace MeshAgenta",
       "de": "Mesh-Agent-Aktualisierung",
       "en": "MeshAgent update",
       "ja": "MeshAgentの更新",
@@ -10345,7 +10375,7 @@
       ]
     },
     {
-      "cs": "MeshCentral plocha",
+      "cs": "Plocha MeshCentral",
       "de": "MeshCentral-Desktop",
       "en": "MeshCentral Desktop",
       "ja": "MeshCentralデスクトップ",
@@ -10357,7 +10387,7 @@
       ]
     },
     {
-      "cs": "MeshCentral chyby",
+      "cs": "Chyby MeshCentral",
       "de": "MeshCentral-Fehler",
       "en": "MeshCentral Errors",
       "ja": "MeshCentralエラー",
@@ -10381,7 +10411,7 @@
       ]
     },
     {
-      "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Múžete si například přesměrovat vzdálené RDP pomocí tohoto serveru.",
+      "cs": "MeshCentral Router je Windows nástroj pro mapování TCP portů. Prostřednictvím tohoto serveru můžete například vzdáleně přistupovat na RDP vzdálenou plochu jiného počítače.",
       "de": "MeshCentral Router ist ein Windows-Werkzeug für die TCP-Portweiterleitung. Sie können beispielsweise über diesen Server in ein Remote-Gerät per RDP erreichen.",
       "en": "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server.",
       "ja": "MeshCentralルーターは、TCPポートマッピング用のWindowsツールです。たとえば、このサーバーを介してRDPをリモートデバイスに接続できます。",
@@ -10617,7 +10647,7 @@
       ]
     },
     {
-      "cs": "Moldavian",
+      "cs": "moldavština",
       "de": "Moldawisch",
       "en": "Moldavian",
       "ja": "モルダビア",
@@ -10771,7 +10801,7 @@
       ]
     },
     {
-      "cs": "Moje serverová konzole",
+      "cs": "Konzole mého serveru",
       "de": "Meine Server-Konsole",
       "en": "My Server Console",
       "fr": "Console de mon serveur",
@@ -10834,6 +10864,7 @@
       ]
     },
     {
+      "cs": "Moje uživatelské skupiny",
       "de": "Meine Benutzergruppen",
       "en": "My User Groups",
       "nl": "Mijn gebruikersgroepen",
@@ -10871,7 +10902,7 @@
       ]
     },
     {
-      "cs": "Jméno",
+      "cs": "Jméno/název",
       "de": "Name",
       "en": "Name",
       "fr": "Nom",
@@ -10931,7 +10962,7 @@
       ]
     },
     {
-      "cs": "Navajo",
+      "cs": "navažština",
       "de": "Navajo",
       "en": "Navajo",
       "fr": "Navajo",
@@ -10944,7 +10975,7 @@
       ]
     },
     {
-      "cs": "Ndonga",
+      "cs": "ndondština",
       "de": "Ndonga",
       "en": "Ndonga",
       "fr": "Ndonga",
@@ -10957,7 +10988,7 @@
       ]
     },
     {
-      "cs": "Nepali",
+      "cs": "nepálština",
       "de": "Nepali",
       "en": "Nepali",
       "fr": "Népalais",
@@ -11057,6 +11088,7 @@
       ]
     },
     {
+      "cs": "Nová skupina…",
       "de": "Neue Gruppe...",
       "en": "New Group...",
       "nl": "Nieuwe Groep...",
@@ -11165,7 +11197,7 @@
       ]
     },
     {
-      "cs": "Žádné Intel&reg; AMT",
+      "cs": "Žádné Intel® AMT",
       "de": "Kein Intel&reg; AMT",
       "en": "No Intel&reg; AMT",
       "ja": "Intel&reg;なしAMT",
@@ -11180,7 +11212,7 @@
       ]
     },
     {
-      "cs": "Žádné Intel&reg; AMT zařízení v této skupině",
+      "cs": "Žádné Intel® AMT zařízení v této skupině",
       "de": "Keine Intel&reg;-AMT-Geräte in dieser Gruppe",
       "en": "No Intel&reg; AMT devices in this group",
       "ja": "Intel&reg;なしこのグループのAMTデバイス",
@@ -11192,7 +11224,7 @@
       ]
     },
     {
-      "cs": "Žádné Intel&reg; AMT zařízení",
+      "cs": "Žádné Intel® AMT zařízení",
       "de": "Keine Intel&reg;-AMT-Geräte in diesem Mesh",
       "en": "No Intel&reg; AMT devices in this mesh",
       "ja": "Intel&reg;なしこのメッシュのAMTデバイス",
@@ -11216,6 +11248,7 @@
       ]
     },
     {
+      "cs": "Žádní členové",
       "de": "Keine Mitglieder",
       "en": "No Members",
       "nl": "Geen leden",
@@ -11322,6 +11355,7 @@
       ]
     },
     {
+      "cs": "Žádné společné skupiny zařízení",
       "de": "Keine gemeinsamen Gerätegruppen",
       "en": "No device groups in common",
       "nl": "Geen gemeenschappelijke apparaatgroepen",
@@ -11359,7 +11393,7 @@
       ]
     },
     {
-      "cs": "Žádné zařízení není v žádné skupině, klikněte na Vytvořit nebo Přidat skupinu zařízení.",
+      "cs": "Zařízení nejsou zařazena do žádných skupin – u konkrétního zařízení vždy klikněte na „Skupiny“ a přidejte ho do nějaké.",
       "de": "Keine Geräte in beliebigen Gruppen enthalten, klicken Sie auf \\\"Gruppen\\\" innerhalb eines Geräts, um eine Gruppe hinzuzufügen.",
       "en": "No devices are included in any groups, click on a device\\'s \\\"Groups\\\" to add to a group.",
       "ja": "どのグループにもデバイスは含まれていません。デバイスの\\\"グループ\\\"をクリックしてグループに追加してください。",
@@ -11393,7 +11427,7 @@
       ]
     },
     {
-      "cs": "Žádná zařízení v této skupině",
+      "cs": "V této skupině nejsou žádná zařízení",
       "de": "Keine Geräte in dieser Gruppe",
       "en": "No devices in this group",
       "fr": "Aucun appareil dans ce groupe",
@@ -11429,6 +11463,7 @@
       ]
     },
     {
+      "cs": "Nenalezeny žádné skupiny.",
       "de": "Keine Gruppen gefunden.",
       "en": "No groups found.",
       "nl": "Geen groepen gevonden.",
@@ -11473,7 +11508,7 @@
       ]
     },
     {
-      "cs": "Žádná další podobná skupina zařízení.",
+      "cs": "Žádná další podobná skupina zařízení neexistuje.",
       "de": "Es existiert keine andere Gerätegruppe des selben Typs.",
       "en": "No other device group of same type exists.",
       "ja": "同じタイプの他のデバイスグループは存在しません。",
@@ -11508,6 +11543,7 @@
       ]
     },
     {
+      "cs": "Žádné členství ve skupinách",
       "de": "Keine Benutzergruppenmitgliedschaften",
       "en": "No user group memberships",
       "nl": "Geen gebruikersgroep lidmaatschap",
@@ -11528,7 +11564,7 @@
       ]
     },
     {
-      "cs": "NodeID",
+      "cs": "Identif. uzlu",
       "de": "NodeID",
       "en": "NodeID",
       "ja": "NodeID",
@@ -11604,7 +11640,7 @@
       ]
     },
     {
-      "cs": "Norwegian",
+      "cs": "norština",
       "de": "Norwegisch",
       "en": "Norwegian",
       "fr": "Norvégien",
@@ -11617,7 +11653,7 @@
       ]
     },
     {
-      "cs": "Norwegian (Bokmal)",
+      "cs": "norština (bokmål)",
       "de": "Norwegisch (Bokmal)",
       "en": "Norwegian (Bokmal)",
       "fr": "Norvégien (Bokmal)",
@@ -11630,7 +11666,7 @@
       ]
     },
     {
-      "cs": "Norwegian (Nynorsk)",
+      "cs": "norština (nynorsk)",
       "de": "Norwegisch (Nynorsk)",
       "en": "Norwegian (Nynorsk)",
       "fr": "Norvégien (Nynorsk)",
@@ -11643,7 +11679,7 @@
       ]
     },
     {
-      "cs": "Neaktivováno",
+      "cs": "Neaktivováno (v)",
       "de": "Nicht aktiviert (In)",
       "en": "Not Activated (In)",
       "ja": "アクティブ化されていない（イン）",
@@ -11741,7 +11777,7 @@
       ]
     },
     {
-      "cs": "Zvuk upozornění",
+      "cs": "Zvuk upozornění.",
       "de": "Benachrichtigungston.",
       "en": "Notification sound.",
       "ja": "通知音。",
@@ -11837,7 +11873,7 @@
       ]
     },
     {
-      "cs": "Occitan",
+      "cs": "okcitánština",
       "de": "Okzitanisch",
       "en": "Occitan",
       "ja": "オクシタン",
@@ -11875,7 +11911,7 @@
       ]
     },
     {
-      "cs": "Staré heslo:",
+      "cs": "Dosavadní heslo:",
       "de": "Altes Passwort:",
       "en": "Old password:",
       "fr": "Ancien mot de passe:",
@@ -11902,7 +11938,7 @@
       ]
     },
     {
-      "cs": "Online uživatelů",
+      "cs": "Připojených uživatelů",
       "de": "Benutzer online",
       "en": "Online Users",
       "fr": "Utilisateurs en ligne",
@@ -11959,7 +11995,7 @@
       ]
     },
     {
-      "cs": "Otevřít webovou adresu na vzdáleném zařízení",
+      "cs": "Otevřít webovou adresu na vzdáleném počítači",
       "de": "Eine Web-Adresse auf dem entfernten Rechner öffnen",
       "en": "Open a web address on the remote computer",
       "ja": "リモートコンピューターでWebアドレスを開く",
@@ -12028,7 +12064,7 @@
       ]
     },
     {
-      "cs": "Oriya",
+      "cs": "urijština",
       "de": "Oriya",
       "en": "Oriya",
       "ja": "オリヤ",
@@ -12040,7 +12076,7 @@
       ]
     },
     {
-      "cs": "Oromo",
+      "cs": "oromština",
       "de": "Oromo",
       "en": "Oromo",
       "ja": "オロモ",
@@ -12103,7 +12139,7 @@
       ]
     },
     {
-      "cs": "PID",
+      "cs": "identif. procesu (PID)",
       "de": "PID",
       "en": "PID",
       "ja": "PID",
@@ -12143,6 +12179,7 @@
       ]
     },
     {
+      "cs": "Částečná práva na skupině zařízení",
       "de": "Partielle Gerätegruppenrechte",
       "en": "Partial Device Group Rights",
       "nl": "Gedeeltelijke apparaatgroep rechten",
@@ -12420,7 +12457,7 @@
       ]
     },
     {
-      "cs": "Proveďte aktivaci Intel AMT admin control mode (ACM) pro skupinu \\\"{0}\\\" stažením MeshCMD nástroje a spuštěním takto:",
+      "cs": "Proveďte na strojích ze skupiny „{0}“ aktivaci Intel AMT v režimu řízeném správcem (ACM) a to tak, že si na ně stáhněte nástroj MeshCMD a spustíte s parametry jako:",
       "de": "Aktivierung von Intel AMT im Admin Control Mode (ACM) in Gruppe \\\"{0}\\\" durchführen durch Herunterladen des MeshCMD-Werkzeugs und Ausführen wie folgt:",
       "en": "Perform Intel AMT admin control mode (ACM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
       "ja": "MeshCMDツールをダウンロードして次のように実行することにより、グループ\\\"{0}\\\"にIntel AMT管理制御モード（ACM）アクティベーションを実行します。",
@@ -12445,7 +12482,7 @@
       ]
     },
     {
-      "cs": "Aktivovujte Intel AMT v režimu řízeném klientem (CCM) pro skupinu „{0}“ a to stažením nástroje MeshCMD a spuštěním takto:",
+      "cs": "Proveďte na strojích ze skupiny „{0}“ aktivaci Intel AMT v režimu řízeném klientem (CCM) a to tak, že si na ně stáhnete nástroj MeshCMD a spustíte ho s parametry jako:",
       "de": "Aktivierung von Intel AMT im Client Control Mode (CCM) in Gruppe \\\"{0}\\\" durchführen durch Herunterladen des MeshCMD-Werkzeugs und Ausführen wie folgt:",
       "en": "Perform Intel AMT client control mode (CCM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
       "ja": "MeshCMDツールをダウンロードして次のように実行することにより、グループ\\\"{0}\\\"にIntel AMTクライアントコントロールモード（CCM）アクティベーションを実行します。",
@@ -12501,7 +12538,7 @@
       ]
     },
     {
-      "cs": "Persian/Iran",
+      "cs": "perština/Írán",
       "de": "Persisch (Iran)",
       "en": "Persian/Iran",
       "ja": "ペルシャ語/イラン",
@@ -12568,7 +12605,7 @@
       ]
     },
     {
-      "cs": "Ohledně podmínek používání se obraťte se na správce.",
+      "cs": "Ohledně pravidel při používání se obraťte na správce systémů.",
       "de": "Bitte wenden Sie sich bezüglich der Nutzungsbedingungen an den Site-Administrator.",
       "en": "Please contact the site administrator for terms of use.",
       "ja": "利用規約については、サイト管理者にお問い合わせください。",
@@ -12688,7 +12725,7 @@
       ]
     },
     {
-      "cs": "Polish",
+      "cs": "polština",
       "de": "Polnisch",
       "en": "Polish",
       "ja": "研磨",
@@ -12700,7 +12737,7 @@
       ]
     },
     {
-      "cs": "Portuguese",
+      "cs": "portugalština",
       "de": "Portugiesisch",
       "en": "Portuguese",
       "ja": "ポルトガル語",
@@ -12712,7 +12749,7 @@
       ]
     },
     {
-      "cs": "Portuguese (Brazil)",
+      "cs": "portugalština (Brazílie)",
       "de": "Portugiesisch (Brasilien)",
       "en": "Portuguese (Brazil)",
       "ja": "ポルトガル語（ブラジル）",
@@ -12916,7 +12953,7 @@
       ]
     },
     {
-      "cs": "Punjabi",
+      "cs": "paňdžábština",
       "de": "Punjabi",
       "en": "Punjabi",
       "ja": "パンジャブ語",
@@ -12928,7 +12965,7 @@
       ]
     },
     {
-      "cs": "Punjabi (India)",
+      "cs": "paňdžábština (Indie)",
       "de": "Punjabi (Indien)",
       "en": "Punjabi (India)",
       "ja": "パンジャブ語（インド）",
@@ -12940,7 +12977,7 @@
       ]
     },
     {
-      "cs": "Punjabi (Pakistan)",
+      "cs": "paňdžábština (Pákistán)",
       "de": "Punjabi (Pakistan)",
       "en": "Punjabi (Pakistan)",
       "ja": "パンジャブ語（パキスタン）",
@@ -12978,7 +13015,7 @@
       ]
     },
     {
-      "cs": "Quechua",
+      "cs": "kečuánština",
       "de": "Quechua",
       "en": "Quechua",
       "ja": "ケチュア",
@@ -13058,6 +13095,7 @@
       ]
     },
     {
+      "cs": "RSS",
       "de": "RSS",
       "en": "RSS",
       "nl": "RSS",
@@ -13066,7 +13104,7 @@
       ]
     },
     {
-      "cs": "Náhodné heslo",
+      "cs": "Vytvořit náhodné heslo.",
       "de": "Das Passwort randomisieren.",
       "en": "Randomize the password.",
       "fr": "Mot de passe aléatoire.",
@@ -13091,7 +13129,7 @@
       ]
     },
     {
-      "cs": "Znovu aktivovat Intel&reg; AMT",
+      "cs": "Znovu aktivovat Intel® AMT",
       "de": "Intel&reg; AMT reaktivieren",
       "en": "Reactivate Intel&reg; AMT",
       "ja": "インテルを再アクティブ化&reg; AMT",
@@ -13131,7 +13169,7 @@
       ]
     },
     {
-      "cs": "Šíření dál a použití ve zdrojové a binární podobě, s úpravou nebo bez ní, jsou povoleny za předpokladu, že jsou splněny následující podmínky:",
+      "cs": "Šíření dál a použití ve formě zdrojových kódů nebo zkompilované binární podobě, ať už tak jak je, nebo s úpravami, je povoleno za předpokladu, že jsou splněny následující podmínky:",
       "en": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:",
       "ja": "ソースおよびバイナリ形式での再配布および使用は、変更の有無にかかわらず、次の条件が満たされている場合に許可されます。",
       "nl": "Herdistributie en gebruik in bron- en binaire vorm, met of zonder wijziging, zijn toegestaan mits aan de volgende voorwaarden wordt voldaan:",
@@ -13220,6 +13258,7 @@
       ]
     },
     {
+      "cs": "Sdělovač předávání (relay)",
       "en": "Relay teller",
       "nl": "Relay teller"
     },
@@ -13332,6 +13371,7 @@
       ]
     },
     {
+      "cs": "Uživatel na protějšku",
       "de": "Entfernter Benutzer",
       "en": "Remote User",
       "nl": "Externe gebruiker",
@@ -13355,7 +13395,7 @@
       ]
     },
     {
-      "cs": "Vzdálená schránka je platná po 60 sekund.",
+      "cs": "Obsah vzdálené schránky je uchováván po dobu dobu 60 sekund.",
       "de": "Entfernte Zwischenablage ist für 60 Sekunden gültig.",
       "en": "Remote clipboard is valid for 60 seconds.",
       "fr": "Le presse-papier à distance est valide pendant 60 secondes.",
@@ -13395,6 +13435,7 @@
       ]
     },
     {
+      "cs": "Odebrat skupinu zařízení",
       "de": "Gerätegruppe entfernen",
       "en": "Remove Device Group",
       "nl": "Remove Device Group",
@@ -13404,6 +13445,7 @@
       ]
     },
     {
+      "cs": "Odebrat uživatele",
       "de": "Benutzer entfernen",
       "en": "Remove User",
       "nl": "Verwijder gebruiker",
@@ -13424,7 +13466,7 @@
       ]
     },
     {
-      "cs": "Odebrat všechny předchozí události pro toto ID uživatele.",
+      "cs": "Odebrat všechny předchozí události pro tento identifikátor uživatele.",
       "de": "Alle vorhergehenden Ereignisse für diese Benutzer-ID entfernen.",
       "en": "Remove all previous events for this userid.",
       "nl": "Verwijder alle eerdere gebeurtenissen voor dit gebruikers-ID.",
@@ -13467,6 +13509,7 @@
       ]
     },
     {
+      "cs": "Odebrat členství uživatele ve skupině",
       "de": "Benutzergruppenmitgliedschaft entfernen",
       "en": "Remove user group membership",
       "nl": "Verwijder de groepslidmaatschap",
@@ -13475,6 +13518,7 @@
       ]
     },
     {
+      "cs": "Odebrat práva skupiny uživatelů na tuto skupinu zařízení",
       "de": "Benutzergruppenrechte an dieser Gerätegruppe entfernen",
       "en": "Remove user group rights to this device group",
       "nl": "Verwijder gebruikers groepsrechten van deze apparaatgroep",
@@ -13483,7 +13527,7 @@
       ]
     },
     {
-      "cs": "Odstranit uživatelská práva pro tuto skupinu zařízení",
+      "cs": "Odebrat práva uživatele na tuto skupinu zařízení",
       "de": "Entferne Benutzerrechte an dieser Gerätegruppe",
       "en": "Remove user rights to this device group",
       "fr": "Supprimer les droits d'utilisateur sur ce groupe de périphériques",
@@ -13683,7 +13727,7 @@
       ]
     },
     {
-      "cs": "Obnova serveru se zálohou",
+      "cs": "Obnovit server ze zálohy",
       "de": "Server aus Datensicherung wiederherstellen",
       "en": "Restore server with backup",
       "fr": "Restaurer le serveur avec sauvegarde",
@@ -13696,7 +13740,7 @@
       ]
     },
     {
-      "cs": "Obnova serveru ze zálohy, <span style=color:red>smaže všechny uživatele a data na tomto serveru.</span>. Udělejte to, pouze pokud víte, co děláte.",
+      "cs": "Obnova serveru ze zálohy <span style=color:red>nahradí všechny stávající uživatele a data na tomto serveru těmi ze zálohy</span> (tj. je smaže). Udělejte to, pouze pokud víte, co děláte (tj. že přijdete o vše, co bylo vytvořeno po pořízení zálohy, ze které obnovujete).",
       "de": "Server unter Verwendung einer Sicherungskopie wiederherstellen, <span style=color:red>Dies wird die existierenden Server-Daten löschen</span>. Fahren Sie nur fort, wenn Sie wissen, was Sie tun.",
       "en": "Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing.",
       "ja": "バックアップを使用してサーバーを復元します。<span style = color：red>これにより既存のサーバーデータが削除されます</ span>。あなたが何をしているかを知っている場合にのみ、これを行ってください。",
@@ -13721,7 +13765,7 @@
       ]
     },
     {
-      "cs": "Rhaeto-Romanic",
+      "cs": "rétorománština",
       "de": "Rätoromanisch",
       "en": "Rhaeto-Romanic",
       "ja": "Rhaeto-Romanic",
@@ -13733,7 +13777,7 @@
       ]
     },
     {
-      "cs": "Romanian",
+      "cs": "rumunština",
       "de": "Rumänisch",
       "en": "Romanian",
       "fr": "Roumain",
@@ -13746,7 +13790,7 @@
       ]
     },
     {
-      "cs": "Romanian (Moldavia)",
+      "cs": "rumunština (Moldavsko)",
       "de": "Rumänisch (Moldawien)",
       "en": "Romanian (Moldavia)",
       "fr": "Roumain (Moldavie)",
@@ -13853,7 +13897,7 @@
       ]
     },
     {
-      "cs": "Russian",
+      "cs": "ruština",
       "de": "Russisch",
       "en": "Russian",
       "fr": "Russe",
@@ -13866,7 +13910,7 @@
       ]
     },
     {
-      "cs": "Russian (Moldavia)",
+      "cs": "ruština (Moldavsko)",
       "de": "Russisch (Moldawien)",
       "en": "Russian (Moldavia)",
       "fr": "Russe (Moldavie)",
@@ -13892,7 +13936,7 @@
       ]
     },
     {
-      "cs": "Sami (Lappish)",
+      "cs": "sámština (Lulejská)",
       "de": "Sami (Lappisch)",
       "en": "Sami (Lappish)",
       "ja": "サミ（ラップ語）",
@@ -13916,7 +13960,7 @@
       ]
     },
     {
-      "cs": "Sango",
+      "cs": "sanžština",
       "de": "Sango",
       "en": "Sango",
       "ja": "サンゴ",
@@ -13928,7 +13972,7 @@
       ]
     },
     {
-      "cs": "Sanskrit",
+      "cs": "sanskrt",
       "de": "Sanskrit",
       "en": "Sanskrit",
       "ja": "サンスクリット",
@@ -13940,7 +13984,7 @@
       ]
     },
     {
-      "cs": "Sardinian",
+      "cs": "sardinština",
       "de": "Sardisch",
       "en": "Sardinian",
       "ja": "サルデーニャ",
@@ -14031,7 +14075,7 @@
       ]
     },
     {
-      "cs": "Hledat Intel&reg; AMT zařízení",
+      "cs": "Hledat Intel® AMT zařízení",
       "de": "Nach Intel&reg;-AMT-Geräten suchen",
       "en": "Scan for Intel&reg; AMT devices",
       "fr": "Rechercher des périphériques Intel&reg; AMT",
@@ -14113,7 +14157,7 @@
       ]
     },
     {
-      "cs": "Bezpečnostní klíč",
+      "cs": "Klíč zabezpečení",
       "de": "Sicherheitsschlüssel",
       "en": "Security Key",
       "fr": "Clef de sécurité",
@@ -14292,6 +14336,7 @@
       ]
     },
     {
+      "cs": "Odeslat upozornění všem uživatelům v této skupině.",
       "de": "Sende eine Mitteilung an alle Benutzer in dieser Gruppe.",
       "en": "Send a notice to all users in this group.",
       "nl": "Stuur een bericht naar alle gebruikers in deze groep.",
@@ -14364,7 +14409,7 @@
       ]
     },
     {
-      "cs": "Serbian",
+      "cs": "srbština",
       "de": "Serbisch",
       "en": "Serbian",
       "ja": "セルビア語",
@@ -14574,7 +14619,7 @@
       ]
     },
     {
-      "cs": "Server nemá žádný záznam chyb.",
+      "cs": "Zatím na serveru nebyly zaznamenány žádné chyby.",
       "de": "Server besitzt kein Fehlerprotokoll.",
       "en": "Server has no error log.",
       "ja": "サーバーにはエラーログがありません。",
@@ -14649,7 +14694,7 @@
       ]
     },
     {
-      "cs": "SessionID",
+      "cs": "Identif. relace",
       "de": "Sitzungs-ID",
       "en": "SessionID",
       "fr": "ID de session",
@@ -14900,7 +14945,7 @@
       ]
     },
     {
-      "cs": "Zobrazit záznam chyb serveru",
+      "cs": "Zobrazit záznam chyb na serveru",
       "de": "Server-Fehlerprotokoll anzeigen",
       "en": "Show server error log",
       "fr": "Afficher le journal des erreurs du serveur",
@@ -14940,7 +14985,7 @@
       ]
     },
     {
-      "cs": "Sindhi",
+      "cs": "sindhština",
       "de": "Sindhi",
       "en": "Sindhi",
       "fr": "Sindhi",
@@ -14953,7 +14998,7 @@
       ]
     },
     {
-      "cs": "Singhalese",
+      "cs": "sinhálština",
       "de": "Singhalesisch",
       "en": "Singhalese",
       "fr": "Cingalais",
@@ -15063,7 +15108,7 @@
       ]
     },
     {
-      "cs": "Slovak",
+      "cs": "slovenština",
       "de": "Slowakisch",
       "en": "Slovak",
       "fr": "Slovaque",
@@ -15076,7 +15121,7 @@
       ]
     },
     {
-      "cs": "Slovenian",
+      "cs": "slovinština",
       "de": "Slowenisch",
       "en": "Slovenian",
       "fr": "Slovène",
@@ -15179,7 +15224,7 @@
       ]
     },
     {
-      "cs": "Sorbian",
+      "cs": "lužická srbština",
       "de": "Sorbisch",
       "en": "Sorbian",
       "ja": "ソルビアン",
@@ -15238,7 +15283,7 @@
       ]
     },
     {
-      "cs": "Seřadit podle identifikátoru procesu",
+      "cs": "Seřadit podle identif. procesu",
       "de": "Nach Prozess-ID sortieren",
       "en": "Sort by process id",
       "fr": "Trier par identifiant de processus",
@@ -15280,7 +15325,7 @@
       ]
     },
     {
-      "cs": "Spanish",
+      "cs": "španělština",
       "de": "Spanisch",
       "en": "Spanish",
       "fr": "Espagnol",
@@ -15293,7 +15338,7 @@
       ]
     },
     {
-      "cs": "Spanish (Argentina)",
+      "cs": "španělština (Argentina)",
       "de": "Spanisch (Argentinien)",
       "en": "Spanish (Argentina)",
       "ja": "スペイン語（アルゼンチン）",
@@ -15305,7 +15350,7 @@
       ]
     },
     {
-      "cs": "Spanish (Bolivia)",
+      "cs": "španělština (Bolívie)",
       "de": "Spanisch (Bolivien)",
       "en": "Spanish (Bolivia)",
       "ja": "スペイン語（ボリビア）",
@@ -15317,7 +15362,7 @@
       ]
     },
     {
-      "cs": "Spanish (Chile)",
+      "cs": "španělština (Chile)",
       "de": "Spanisch (Chile)",
       "en": "Spanish (Chile)",
       "ja": "スペイン語（チリ）",
@@ -15329,7 +15374,7 @@
       ]
     },
     {
-      "cs": "Spanish (Colombia)",
+      "cs": "španělština (Kolumbie)",
       "de": "Spanisch (Kolumbien)",
       "en": "Spanish (Colombia)",
       "ja": "スペイン語（コロンビア）",
@@ -15341,7 +15386,7 @@
       ]
     },
     {
-      "cs": "Spanish (Costa Rica)",
+      "cs": "španělština (Kostarika)",
       "de": "Spanisch (Costa Rica)",
       "en": "Spanish (Costa Rica)",
       "ja": "スペイン語（コスタリカ）",
@@ -15353,7 +15398,7 @@
       ]
     },
     {
-      "cs": "Spanish (Dominican Republic)",
+      "cs": "španělština (Dominikánská republika)",
       "de": "Spanisch (Dominikanische Republik)",
       "en": "Spanish (Dominican Republic)",
       "ja": "スペイン語（ドミニカ共和国）",
@@ -15365,7 +15410,7 @@
       ]
     },
     {
-      "cs": "Spanish (Ecuador)",
+      "cs": "španělština (Ekvádor)",
       "de": "Spanisch (Ecuador)",
       "en": "Spanish (Ecuador)",
       "ja": "スペイン語（エクアドル）",
@@ -15377,7 +15422,7 @@
       ]
     },
     {
-      "cs": "Spanish (El Salvador)",
+      "cs": "španělština (Salvador)",
       "de": "Spanisch (El Salvador)",
       "en": "Spanish (El Salvador)",
       "ja": "スペイン語（エルサルバドル）",
@@ -15389,7 +15434,7 @@
       ]
     },
     {
-      "cs": "Spanish (Guatemala)",
+      "cs": "španělština (Guatemala)",
       "de": "Spanisch (Guatemala)",
       "en": "Spanish (Guatemala)",
       "ja": "スペイン語（グアテマラ）",
@@ -15401,7 +15446,7 @@
       ]
     },
     {
-      "cs": "Spanish (Honduras)",
+      "cs": "španělština (Honduras)",
       "de": "Spanisch (Honduras)",
       "en": "Spanish (Honduras)",
       "ja": "スペイン語（ホンジュラス）",
@@ -15413,7 +15458,7 @@
       ]
     },
     {
-      "cs": "Spanish (Mexico)",
+      "cs": "španělština (Mexiko)",
       "de": "Spanisch (Mexiko)",
       "en": "Spanish (Mexico)",
       "ja": "スペイン語（メキシコ）",
@@ -15425,7 +15470,7 @@
       ]
     },
     {
-      "cs": "Spanish (Nicaragua)",
+      "cs": "španělština (Nikaragua)",
       "de": "Spanisch (Nicaragua)",
       "en": "Spanish (Nicaragua)",
       "ja": "スペイン語（ニカラグア）",
@@ -15437,7 +15482,7 @@
       ]
     },
     {
-      "cs": "Spanish (Panama)",
+      "cs": "španělština (Panama)",
       "de": "Spanisch (Panama)",
       "en": "Spanish (Panama)",
       "ja": "スペイン語（パナマ）",
@@ -15449,7 +15494,7 @@
       ]
     },
     {
-      "cs": "Spanish (Paraguay)",
+      "cs": "španělština (Paraguay)",
       "de": "Spanisch (Paraguay)",
       "en": "Spanish (Paraguay)",
       "ja": "スペイン語（パラグアイ）",
@@ -15461,7 +15506,7 @@
       ]
     },
     {
-      "cs": "Spanish (Peru)",
+      "cs": "španělština (Peru)",
       "de": "Spanisch (Peru)",
       "en": "Spanish (Peru)",
       "ja": "スペイン語（ペルー）",
@@ -15473,7 +15518,7 @@
       ]
     },
     {
-      "cs": "Spanish (Puerto Rico)",
+      "cs": "španělština (Portoriko)",
       "de": "Spanisch (Puerto Rico)",
       "en": "Spanish (Puerto Rico)",
       "ja": "スペイン語（プエルトリコ）",
@@ -15485,7 +15530,7 @@
       ]
     },
     {
-      "cs": "Spanish (Spain)",
+      "cs": "španělština (Španělsko)",
       "de": "Spanisch (Spanien)",
       "en": "Spanish (Spain)",
       "ja": "スペイン語（スペイン）",
@@ -15497,7 +15542,7 @@
       ]
     },
     {
-      "cs": "Spanish (Uruguay)",
+      "cs": "španělština (Uruguay)",
       "de": "Spanisch (Uruguay)",
       "en": "Spanish (Uruguay)",
       "ja": "スペイン語（ウルグアイ）",
@@ -15509,7 +15554,7 @@
       ]
     },
     {
-      "cs": "Spanish (Venezuela)",
+      "cs": "španělština (Venezuela)",
       "de": "Spanisch (Venezuela)",
       "en": "Spanish (Venezuela)",
       "ja": "スペイン語（ベネズエラ）",
@@ -15599,7 +15644,7 @@
       ]
     },
     {
-      "cs": "Ukončit proces #{0} „{1}“?",
+      "cs": "Ukončit proces č. {0} „{1}“?",
       "de": "Prozess #{0} \\\"{1}\\\" beenden?",
       "en": "Stop process #{0} \\\"{1}\\\"?",
       "ja": "プロセス＃{0} \\\"{1}\\\"を停止しますか？",
@@ -15687,6 +15732,7 @@
       ]
     },
     {
+      "cs": "Souhrn -",
       "de": "Zusammenfassung -",
       "en": "Summary -",
       "nl": "Samenvatting -",
@@ -15707,7 +15753,7 @@
       ]
     },
     {
-      "cs": "Swahili",
+      "cs": "svahilština",
       "de": "Suaheli",
       "en": "Swahili",
       "ja": "スワヒリ語",
@@ -15719,7 +15765,7 @@
       ]
     },
     {
-      "cs": "Swedish",
+      "cs": "švédština",
       "de": "Schwedisch",
       "en": "Swedish",
       "ja": "スウェーデンの",
@@ -15731,7 +15777,7 @@
       ]
     },
     {
-      "cs": "Swedish (Finland)",
+      "cs": "švédština (Finsko)",
       "de": "Schwedisch (Finnland)",
       "en": "Swedish (Finland)",
       "ja": "スウェーデン語（フィンランド）",
@@ -15743,7 +15789,7 @@
       ]
     },
     {
-      "cs": "Swedish (Sweden)",
+      "cs": "švédština (Švédsko)",
       "de": "Schwedisch (Schweden)",
       "en": "Swedish (Sweden)",
       "ja": "スウェーデン語（スウェーデン）",
@@ -15792,6 +15838,7 @@
       ]
     },
     {
+      "cs": "TENTO SOFTWARE JE POSKYTOVÁN PROJEKTEM OpenSSL „TAK JAK JE“, BEZ JAKÝCHKOLI ZÁRUK, VYJÁDŘENÝCH NEBO IMPLIKOVANÝCH, VČETNĚ (ALE NEJEN) ZÁRUK OBCHODOVATELNOSTI, VHODNOSTI PRO URČITÝ ÚČEL. OpenSSL NEBO PŘISPĚVATELÉ DO NĚJ V ŽÁDNÉM PŘÍPADĚ NEJSOU ODPOVĚDNÍ ZA ŽÁDNÉ PŘÍMÉ, NEPŘÍMÉ, NÁHODNÉ, KONKRÉTNÍ, EXEMPLÁRNÍ NEBO VYPLÝVAJÍCÍ ŠKODY (VČETNĚ, ALE ALE NIKOLI POUZE PROCUREMENT NÁHRADNÍHO ZBOŽÍ NEBO SLUŽEB; ZTRÁTY POUŽITÍ, DAT NEBO ZISKŮ; NEBO PŘERUŠENÍ PODNIKÁNI) NICMÉNĚ ZPŮSOBENÉ A ANI ZA JAKOUKOLI TEORII ODPOVĚDNOSTI AUTOŘI NEBO DRŽITELÉ AUTORSKÝCH PRÁV NEDRŽÍ ŽÁDNÉ ZÁRUKY, AŤ UŽ VE SMLOUVĚ, STRIKTNÍ ODPOVĚDNOSTI, NEBO PŘEČINU (VČETNĚ NEDBALOSTI ČI JINAK), MAJÍCÍ PŘÍČINU V POUŽITÍ TOHOTO SOFTWARE, A TO ANI I KDYBY NA MOŽNOST TAKOVÉ ŠKODY BYLI UPOZORNĚNI.",
       "en": "THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE OpenSSL PROJECT OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.",
       "ja": "このソフトウェアは、OpenSSLプロジェクトによって「現状のまま」提供され、商品性および特定の目的への適合性の黙示的な保証を含むがこれに限定されない、明示的または黙示的な保証は放棄されます。いかなる場合も、OpenSSLプロジェクトまたはその貢献者は、直接的、間接的、偶発的、特別、例示的、または結果的損害（責任を含むが、特別損害、例示的損害、または結果的損害を含む）の責任を負いませんまたはサービス、使用、データ、または利益の損失、またはビジネス中断）、契約、厳格な責任、または不法行為（過失またはその他を含む）このような損害の可能性について通知された場合でも、ソフトウェア。",
       "nl": "DEZE SOFTWARE WORDT GELEVERD DOOR HET OpenSSL-PROJECT `` ZOALS HET IS '' EN ELKE UITDRUKKELIJKE OF IMPLICIETE GARANTIES, INCLUSIEF MAAR NIET BEPERKT TOT DE IMPLICIETE GARANTIES VAN VERKOOPBAARHEID EN GESCHIKTHEID VOOR EEN BEPAALD DOEL WORDEN AFGEWEZEN. IN GEEN GEVAL ZAL HET PROJECT VAN DE OpenSSL OF HAAR BIJDRAGERS AANSPRAKELIJK ZIJN VOOR ENIGE DIRECTE, INDIRECTE, INCIDENTELE, SPECIALE, UITZONDERLIJKE OF GEVOLGSCHADE (INCLUSIEF, MAAR SPECIALE, UITZONDERLIJKE OF GEVOLGSCHADE (INCLUSIEF, MAAR NIET BEPERKT TOT SCHULDEN) OF DIENSTEN; VERLIES VAN GEBRUIK, GEGEVENS OF WINST; OF ONDERBREKING VAN HET BEDRIJF) EVENWEL OORZAAKT EN OP ENIGE AANSPRAAK VAN AANSPRAKELIJKHEID, OF IN CONTRACT, STRIKTE AANSPRAKELIJKHEID, OF TORT (INCLUSIEF NALATIGHEID OF ANDERSZINS) DIE OP ENIGE MANIER UIT DE GEBRUIKSVOORWAARDEN ONTSTAAN SOFTWARE, ZELFS INDIEN GEADVISEERD DOOR DE MOGELIJKHEID VAN DERGELIJKE SCHADE.",
@@ -15871,7 +15918,7 @@
       ]
     },
     {
-      "cs": "Tamil",
+      "cs": "tamilština",
       "de": "Tamil",
       "en": "Tamil",
       "ja": "タミル語",
@@ -15883,7 +15930,7 @@
       ]
     },
     {
-      "cs": "Tatar",
+      "cs": "tatarština",
       "de": "Tatar",
       "en": "Tatar",
       "ja": "タタール",
@@ -15895,7 +15942,7 @@
       ]
     },
     {
-      "cs": "Teluga",
+      "cs": "telugština",
       "de": "Teluga",
       "en": "Teluga",
       "ja": "テルガ",
@@ -15960,7 +16007,7 @@
       ]
     },
     {
-      "cs": "Podmínky a soukromí",
+      "cs": "Pravidla a ochrana soukromí",
       "de": "Nutzungsbedingungen & Datenschutz",
       "en": "Terms & Privacy",
       "ja": "利用規約とプライバシー",
@@ -15976,7 +16023,7 @@
       ]
     },
     {
-      "cs": "Podmínky používání",
+      "cs": "Pravidla při používání",
       "de": "Nutzungsbedingungen",
       "en": "Terms of use",
       "fr": "Conditions d'utilisation",
@@ -15990,7 +16037,7 @@
       ]
     },
     {
-      "cs": "Thai",
+      "cs": "thajština",
       "de": "Thai",
       "en": "Thai",
       "ja": "タイ語",
@@ -16115,7 +16162,7 @@
       ]
     },
     {
-      "cs": "Tato zásada nebude mít vliv na zařízení s Intel&reg; AMT v ACM režimu.",
+      "cs": "Tato zásada nebude mít vliv na zařízení s Intel® AMT v ACM režimu.",
       "de": "Diese Richtlinie hat keine Wirkung auf Intel&reg;-AMT-Geräte im ACM-Modus.",
       "en": "This policy will not impact devices with Intel&reg; AMT in ACM mode.",
       "ja": "このポリシーは、Intel&reg;を搭載したデバイスには影響しません。 ACMモードのAMT。",
@@ -16210,7 +16257,7 @@
       ]
     },
     {
-      "cs": "Pro přidání do {0} spusťte následující příkaz. Je třeba spouštět s právy správce systému (root).",
+      "cs": "Pro přidání nového zařízení do skupiny „{0}“, na něm spusťte následující příkaz. Je třeba spouštět s právy správce systému (root).",
       "de": "Um einen Rechner zu {0} hinzuzufügen, führe den folgenden Befehl aus. Root-Zugriff wird benötigt.",
       "en": "To add a computer to {0} run the following command. Root credentials will be needed.",
       "ja": "{0}にコンピューターを追加するには、次のコマンドを実行します。ルート資格情報が必要になります。",
@@ -16222,7 +16269,7 @@
       ]
     },
     {
-      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, je třeba si stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro nastavení počítačů.",
+      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, je třeba si stáhnout následující skript <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> a spustit pro nastavení počítačů.",
       "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie die folgenden Script-Dateien herunter und verwenden Sie <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>, um das Script auf den zu konfigurierenden Rechnern auszuführen.",
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\\\"{0}\\\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。",
@@ -16234,7 +16281,7 @@
       ]
     },
     {
-      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT",
+      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT",
       "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel AMT",
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT",
       "ja": "新しいIntel&reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel AMT内で信頼されたルートとして次の証明書をロード",
@@ -16246,7 +16293,7 @@
       ]
     },
     {
-      "cs": "Pro přidání nového Intel&reg; AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
+      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
       "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel AMT, authentifizieren Sie sich mittels eines Clientzertifikats mit dem folgenden Common Name und verbinden Sie sich zu folgendem Server.",
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してデバイスグループ\\\"{0}\\\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。",
@@ -16270,7 +16317,7 @@
       ]
     },
     {
-      "cs": "Pro přidání do skupiny „{0}“, je třeba si stáhnout a nainstalovat agenta do počíteače, který chcete spravovat. Tento agent má všechny potřebné informace pro připojení již v sobě.",
+      "cs": "Pro přidání nového zařízení do skupiny „{0}“, je třeba si do počítače, který chcete spravovat, stáhnout a nainstalovat agenta. Ten už obsahuje potřebné pro připojení na server.",
       "de": "Um einen neuen Rechner zur Gerätegruppe \\\"{0}\\\" hinzuzufügen, laden Sie den Mesh-Agenten herunter und installieren Sie ihn auf dem zu verwaltenden Rechner. In dieses Agenten-Installationsprogramm sind Server- und Gerätegruppen-Informationen bereits eingebettet.",
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.",
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントインストーラーには、サーバーとデバイスグループの情報が埋め込まれています。",
@@ -16294,7 +16341,7 @@
       ]
     },
     {
-      "cs": "Pro začátek,",
+      "cs": "Začněte",
       "de": "Um loszulegen,",
       "en": "To get started,",
       "ja": "始めるには、",
@@ -16318,7 +16365,7 @@
       ]
     },
     {
-      "cs": "Pro odstranění agenta si stáhněte níže uvedené soubor, spusťte ho a zvolte „uninstall“.",
+      "cs": "Pro odebrání agenta si stáhněte níže uvedené soubor, spusťte ho a klikněte na „uninstall“.",
       "de": "Um den Mesh-Agenten zu entfernen, laden Sie die untenstehende Datei herunter, führen Sie sie aus und klicken Sie auf \\\"Deinstallieren\\\".",
       "en": "To remove a mesh agent, download the file below, run it and click \\\"uninstall\\\".",
       "ja": "メッシュエージェントを削除するには、以下のファイルをダウンロードして実行し、「アンインストール」をクリックします。",
@@ -16379,7 +16426,7 @@
       ]
     },
     {
-      "cs": "Přepnout režim zaměření, kdy je aktualizována pouze oblast kolem myši",
+      "cs": "Vyp/zap. režim zaměření, kdy je aktualizována pouze oblast kolem myši",
       "de": "Fokusmodus ein-/ausschalten; wenn aktiv, wird nur die Region um die Maus aktualisiert",
       "en": "Toggle focus mode, when active only the region around the mouse is updated",
       "ja": "フォーカスモードを切り替えます。アクティブな場合、マウス周辺の領域のみが更新されます。",
@@ -16413,7 +16460,7 @@
       ]
     },
     {
-      "cs": "Přepnout noční režim",
+      "cs": "Vyp/zap. noční režim",
       "de": "Nachtmodus ein-/ausschalten",
       "en": "Toggle night mode",
       "fr": "Basculer mode nuit",
@@ -16491,7 +16538,7 @@
       ]
     },
     {
-      "cs": "Rozhraní horní lišty",
+      "cs": "Rozhraní s lištou nahoře",
       "de": "Oberfläche mit Leiste oben",
       "en": "Top bar interface",
       "ja": "トップバーインターフェース",
@@ -16579,7 +16626,7 @@
       ]
     },
     {
-      "cs": "Tswana",
+      "cs": "setswanština",
       "de": "Tswana",
       "en": "Tswana",
       "ja": "ツワナ",
@@ -16591,7 +16638,7 @@
       ]
     },
     {
-      "cs": "Turkish",
+      "cs": "turečtina",
       "de": "Türkisch",
       "en": "Turkish",
       "ja": "トルコ語",
@@ -16603,7 +16650,7 @@
       ]
     },
     {
-      "cs": "Turkmen",
+      "cs": "turkmenština",
       "de": "Turkmenisch",
       "en": "Turkmen",
       "ja": "トルクメン",
@@ -16646,7 +16693,7 @@
       ]
     },
     {
-      "cs": "Zadejte název klíče, vyberte kolonku OTP a stiskněte tlačítko na YubiKey&trade;.",
+      "cs": "Zadejte název klíče, vyberte kolonku OTP a stiskněte tlačítko na YubiKey™.",
       "de": "Geben Sie einen Schlüsselnamen ein, wählen Sie OTP und drücken Sie die Taste an Ihrem YubiKey&trade;.",
       "en": "Type in a key name, select the OTP box and press the button on the YubiKey&trade;.",
       "ja": "キー名を入力し、OTPボックスを選択して、YubiKey＆trade;のボタンを押します。",
@@ -16670,7 +16717,7 @@
       ]
     },
     {
-      "cs": "UTF8 Terminál",
+      "cs": "UTF8 terminál",
       "de": "UTF8-Terminal",
       "en": "UTF8 Terminal",
       "fr": "Terminal UTF8",
@@ -16683,7 +16730,7 @@
       ]
     },
     {
-      "cs": "Ukrainian",
+      "cs": "ukrajinština",
       "de": "Ukrainisch",
       "en": "Ukrainian",
       "ja": "ウクライナ語",
@@ -16695,7 +16742,7 @@
       ]
     },
     {
-      "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Jděte do „Můj účet“ a změňte si a ověřte e-mailovou adresu.",
+      "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Přejděte na panel „Můj účet“ a změňte si a ověřte e-mailovou adresu.",
       "de": "Auf Geräte kann nicht zugegriffen werden, bis die E-Mail-Adresse verifiziert wurde. Dies wird für eine Passwort-Wiederherstellung benötigt. Gehen Sie auf den \\\"Mein Konto\\\"-Tab, um Ihre E-Mail-Adresse zu ändern und zu verifizieren.",
       "en": "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" tab to change and verify an email address.",
       "ja": "メールアドレスが確認されるまでデバイスにアクセスできません。これはパスワードの回復に必要です。 [マイアカウント]タブに移動して、メールアドレスを変更および確認します。",
@@ -16708,7 +16755,7 @@
       ]
     },
     {
-      "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Jděte do „Můj účet“ a změ%nte si a ověřte e-mailovou adresu.",
+      "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Přejděte do „Můj účet“ a změňte si a ověřte e-mailovou adresu.",
       "de": "Auf Geräte kann nicht zugegriffen werden, bis die E-Mail-Adresse verifiziert wurde. Dies wird für eine Passwort-Wiederherstellung benötigt. Gehen Sie auf \\\"Mein Konto\\\", um Ihre E-Mail-Adresse zu ändern und zu verifizieren.",
       "en": "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" to change and verify an email address.",
       "ja": "メールアドレスが確認されるまでデバイスにアクセスできません。これはパスワードの回復に必要です。 「マイアカウント」に移動して、メールアドレスを変更および確認します。",
@@ -16721,7 +16768,7 @@
       ]
     },
     {
-      "cs": "Nedaří se získat přístup k zařízení, dokud není zapnuté 2-faktorové ověřování se. Toto je vyžadováno pro extra zabezpečení. Jděte do „Můj účet“ a podívejte se do sekce „Nastavení zabezpečení“.",
+      "cs": "Nedaří se získat přístup k zařízení, dokud není zapnuté 2-faktorové ověřování se. Toto je vyžadováno pro extra zabezpečení. Přejděte do „Můj účet“ a podívejte se do sekce „Zabezpečení účtu“.",
       "de": "Auf Geräte kann nicht zugegriffen werden, bis Zweifaktor-Authentifizierung eingeschaltet wurde. Dies wird als Sicherheitsmaßnahme vorausgesetzt. Gehen Sie auf \\\"Mein Konto\\\" und sehen Sie sich die \\\"Kontosicherheit\\\"-Sektion an.",
       "en": "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" and look at the \\\"Account Security\\\" section.",
       "ja": "二要素認証が有効になるまでデバイスにアクセスできません。これは、追加のセキュリティのために必要です。 「マイアカウント」に移動して、「アカウントセキュリティ」セクションを確認します。",
@@ -16734,7 +16781,7 @@
       ]
     },
     {
-      "cs": "Nedaří se získat přístup k zařízení, dokud není zapnutá 2-faktorové ověřování se. Toto je vyžadováno pro extra zabezpečení. Jděte do „Můj účet“ a podívejte se do sekce „Nastavení zabezpečení“.",
+      "cs": "Nedaří se získat přístup k zařízení, dokud není zapnuté 2-faktorové ověřování se. Toto je vyžadováno pro extra zabezpečení. Přejděte na panel „Můj účet“ a podívejte se do sekce „Zabezpečení účtu“.",
       "de": "Auf Geräte kann nicht zugegriffen werden, bis Zweifaktor-Authentifizierung eingeschaltet wurde. Dies wird als Sicherheitsmaßnahme vorausgesetzt. Gehen Sie auf den \\\"Mein Konto\\\"-Tab und sehen Sie sich die \\\"Kontosicherheit\\\"-Sektion an.",
       "en": "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" tab and look at the \\\"Account Security\\\" section.",
       "ja": "二要素認証が有効になるまでデバイスにアクセスできません。これは、追加のセキュリティのために必要です。 [マイアカウント]タブに移動して、[アカウントセキュリティ]セクションを確認します。",
@@ -16926,6 +16973,7 @@
       ]
     },
     {
+      "cs": "Neznámá skupina uživatelů",
       "de": "Unbekannte Benutzergruppe",
       "en": "Unknown User Group",
       "nl": "Onbekende gebruikersgroep",
@@ -17075,6 +17123,7 @@
       ]
     },
     {
+      "cs": "Nahrání přepíše 1 soubor. Pokračovat?",
       "de": "Das Hochladen wird 1 Datei überschreiben. Fortfahren?",
       "en": "Upload will overwrite 1 file. Continue?",
       "nl": "Upload overschrijft {0} bestand. Doorgaan?",
@@ -17084,6 +17133,7 @@
       ]
     },
     {
+      "cs": "Nahrání přepíše {0} soubory. Pokračovat?",
       "de": "Das Hochladen wird {0} Dateien überschreiben. Fortfahren?",
       "en": "Upload will overwrite {0} files. Continue?",
       "nl": "Upload overschrijft {0} bestanden. Doorgaan?",
@@ -17102,7 +17152,7 @@
       "ru": "Загрузка перезапишет {0} файлом {1}. Продолжить?"
     },
     {
-      "cs": "Upper Sorbian",
+      "cs": "hornolužická srbština",
       "de": "Obersorbisch",
       "en": "Upper Sorbian",
       "ja": "上ソルビア語",
@@ -17114,7 +17164,7 @@
       ]
     },
     {
-      "cs": "Urdu",
+      "cs": "urdština",
       "de": "Urdu",
       "en": "Urdu",
       "ja": "ウルドゥー語",
@@ -17244,6 +17294,7 @@
       ]
     },
     {
+      "cs": "Skupina uživatelů",
       "de": "Benutzergruppe",
       "en": "User Group",
       "nl": "Gebruikers Groep",
@@ -17254,6 +17305,7 @@
       ]
     },
     {
+      "cs": "Skupina uživatelů -",
       "de": "Benutzergruppe -",
       "en": "User Group -",
       "nl": "Gebruikersgroep.",
@@ -17262,6 +17314,7 @@
       ]
     },
     {
+      "cs": "Členství ve skupinách uživatelů",
       "de": "Benutzergruppenmitgliedschaft",
       "en": "User Group Memberships",
       "nl": "Gebruikersgroeps lidmaatschap",
@@ -17358,7 +17411,7 @@
       ]
     },
     {
-      "cs": "Hodnota prohlížeč uživatele",
+      "cs": "Převzít z webového prohlížeče",
       "de": "Browsereinstellung des Benutzers",
       "en": "User browser value",
       "ja": "ユーザーブラウザーの値",
@@ -17566,7 +17619,7 @@
       ]
     },
     {
-      "cs": "Vietnamese",
+      "cs": "vietnamština",
       "de": "Vietnamesisch",
       "en": "Vietnamese",
       "fr": "Vietnamien",
@@ -17616,7 +17669,7 @@
       ]
     },
     {
-      "cs": "Zobrazit poznámky o tomto uživateli",
+      "cs": "Zobrazit poznámky k tomto uživateli",
       "de": "Zeige Notizen zu diesem Benutzer",
       "en": "View notes about this user",
       "ja": "このユーザーに関するメモを表示",
@@ -17628,7 +17681,7 @@
       ]
     },
     {
-      "cs": "Volapuk",
+      "cs": "volapük",
       "de": "Volapuk",
       "en": "Volapuk",
       "ja": "ヴォラプク",
@@ -17704,7 +17757,7 @@
       ]
     },
     {
-      "cs": "Walloon",
+      "cs": "valonština",
       "de": "Wallonisch",
       "en": "Walloon",
       "ja": "ワロン",
@@ -17810,7 +17863,7 @@
       ]
     },
     {
-      "cs": "Welsh",
+      "cs": "velština",
       "de": "Walisisch",
       "en": "Welsh",
       "fr": "Gallois",
@@ -17999,7 +18052,7 @@
       ]
     },
     {
-      "cs": "Windows (Odinstalace)",
+      "cs": "Windows (odinstalace)",
       "de": "Windows (Deinstallation)",
       "en": "Windows (UnInstall)",
       "ja": "Windows（アンインストール）",
@@ -18138,6 +18191,7 @@
       ]
     },
     {
+      "cs": "Zalamování",
       "de": "Umbruch an",
       "en": "Wrap On",
       "nl": "Wrap Aan",
@@ -18146,6 +18200,7 @@
       ]
     },
     {
+      "cs": "Zalamování: vypnuto",
       "de": "Umbruch: aus",
       "en": "Wrap: OFF",
       "nl": "Wrap: UIT",
@@ -18154,6 +18209,7 @@
       ]
     },
     {
+      "cs": "Zalamování: zapnuto",
       "de": "Umbruch: an",
       "en": "Wrap: ON",
       "nl": "Wrap: AAN",
@@ -18162,7 +18218,7 @@
       ]
     },
     {
-      "cs": "Napište událost pro toto zařízení",
+      "cs": "Zapsat událost pro toto zařízení",
       "de": "Schreibe ein Ereignis für dieses Gerät",
       "en": "Write an event for this device",
       "fr": "Écrire un événement pour ce périphérique",
@@ -18209,7 +18265,7 @@
       ]
     },
     {
-      "cs": "Xhosa",
+      "cs": "xhoština",
       "de": "Xhosa",
       "en": "Xhosa",
       "ja": "コーサ",
@@ -18221,7 +18277,7 @@
       ]
     },
     {
-      "cs": "Yiddish",
+      "cs": "jidiš",
       "de": "Jiddisch",
       "en": "Yiddish",
       "ja": "イディッシュ語",
@@ -18270,7 +18326,7 @@
       ]
     },
     {
-      "cs": "YubiKey&trade; OTP",
+      "cs": "YubiKey™ OTP",
       "de": "YubiKey&trade; OTP",
       "en": "YubiKey&trade; OTP",
       "ja": "YubiKey＆trade; OTP",
@@ -18320,7 +18376,7 @@
       ]
     },
     {
-      "cs": "Zulu",
+      "cs": "zuluština",
       "de": "Zulu",
       "en": "Zulu",
       "ja": "ズールー",
@@ -18356,7 +18412,7 @@
       ]
     },
     {
-      "cs": "přidat",
+      "cs": "přidejte nějaké",
       "de": "eines hinzufügen",
       "en": "add one",
       "fr": "ajoute un",
@@ -18394,7 +18450,7 @@
       ]
     },
     {
-      "cs": "pro vytvoření skupiny zařízení klikněte sem",
+      "cs": "vytvořením skupiny zařízení a to kliknutím sem",
       "de": "hier klicken, um eine Gerätegruppe zu erstellen",
       "en": "click here to create a device group",
       "ja": "ここをクリックしてデバイスグループを作成します",
@@ -18605,6 +18661,7 @@
       ]
     },
     {
+      "cs": "ip:",
       "en": "ip:",
       "nl": "ip:",
       "xloc": [
@@ -18624,7 +18681,7 @@
       ]
     },
     {
-      "cs": "přesun",
+      "cs": "přesunout",
       "de": "verschieben",
       "en": "move",
       "ja": "動く",
@@ -18717,7 +18774,7 @@
       ]
     },
     {
-      "cs": "celkově",
+      "cs": "celkem",
       "de": "gesamt",
       "en": "total",
       "fr": "total",
@@ -18730,6 +18787,7 @@
       ]
     },
     {
+      "cs": "u:",
       "en": "u:",
       "nl": "u:",
       "xloc": [
@@ -18893,6 +18951,7 @@
       ]
     },
     {
+      "cs": "{0} hodin",
       "de": "{0} Stunden",
       "en": "{0} hours",
       "nl": "{0} uur",
@@ -18946,6 +19005,7 @@
       ]
     },
     {
+      "cs": "{0} minut do odpojení",
       "de": "{0} Minuten bis zur Trennung",
       "en": "{0} minutes until disconnect",
       "nl": "{0} minuten totdat de verbinding wordt verbroken",
@@ -19014,6 +19074,7 @@
       ]
     },
     {
+      "cs": "{0} sekund do odpojení",
       "de": "{0} Sekunden bis zur Trennung",
       "en": "{0} seconds until disconnect",
       "nl": "{0} seconden totdat de verbinding wordt verbroken",
