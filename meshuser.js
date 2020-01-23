@@ -2858,8 +2858,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (rights == 0) return;
 
                         // Add an event for this device
-                        var targets = ['*', 'server-users', user._id, nodes[0].meshid];
-                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: nodes[0]._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
+                        var targets = ['*', 'server-users', user._id, node.meshid];
+                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
                         parent.parent.DispatchEvent(targets, obj, event);
                     });
                     break;
