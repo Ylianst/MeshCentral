@@ -1695,6 +1695,39 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return '';
     }
 
+    // Serve the xterm page
+    function handleXTermRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { parent.debug('web', 'handleXTermRequest: Bad domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+
+        parent.debug('web', 'handleXTermRequest: sending xterm');
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+        if (req.session && req.session.userid) {
+            if (req.session.domainid != domain.id) { res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
+            var user = obj.users[req.session.userid];
+            if ((user == null) || (req.query.nodeid == null)) { res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the user exists
+
+            // Check permissions
+            obj.GetNodeWithRights(domain, user, req.query.nodeid, function (node, rights, visible) {
+                if ((node == null) || ((rights & 8) == 0) || ((rights != 0xFFFFFFFF) && ((rights & 512) != 0))) { res.redirect(domain.url + getQueryPortion(req)); return; }
+
+                var logoutcontrols = { name: user.name };
+                var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
+
+                // Create a authentication cookie
+                const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
+                const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
+                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                render(req, res, getRenderPage('xterm', req), getRenderArgs({ serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: JSON.stringify(logoutcontrols), name: EscapeHtml(node.name) }, domain));
+            });
+        } else {
+            res.redirect(domain.url + getQueryPortion(req));
+            return;
+        }
+    }
+
     // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3447,6 +3480,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'backup.zip', handleBackupRequest);
             obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest);
             obj.app.get(url + 'terms', handleTermsRequest);
+            obj.app.get(url + 'xterm', handleXTermRequest);
             obj.app.post(url + 'login', handleLoginRequest);
             obj.app.post(url + 'tokenlogin', handleLoginRequest);
             obj.app.get(url + 'logout', handleLogoutRequest);

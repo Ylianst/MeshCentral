@@ -27,6 +27,7 @@ var meshCentralSourceFiles = [
     "../views/login-mobile.handlebars",
     "../views/terms.handlebars",
     "../views/terms-mobile.handlebars",
+    "../views/xterm.handlebars",
     "../views/message.handlebars",
     "../views/messenger.handlebars",
     "../public/player.htm"

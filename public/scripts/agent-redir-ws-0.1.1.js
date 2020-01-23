@@ -148,34 +148,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             return;
         }
 
-        /*
-        if (typeof e.data == 'object') {
-            var f = new FileReader();
-            if (f.readAsBinaryString) {
-                // Chrome & Firefox (Draft)
-                f.onload = function (e) { obj.xxOnSocketData(e.target.result); }
-                f.readAsBinaryString(new Blob([e.data]));
-            } else if (f.readAsArrayBuffer) {
-                // Chrome & Firefox (Spec)
-                f.onloadend = function (e) { obj.xxOnSocketData(e.target.result); }
-                f.readAsArrayBuffer(e.data);
-            } else {
-                // IE10, readAsBinaryString does not exist, use an alternative.
-                var binary = '';
-                var bytes = new Uint8Array(e.data);
-                var length = bytes.byteLength;
-                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
-                obj.xxOnSocketData(binary);
-            }
-        } else {
-            // If we get a string object, it maybe the WebRTC confirm. Ignore it.
-            obj.xxOnSocketData(e.data);
-        }
-        */
-
         if (typeof e.data == 'object') {
             if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
-            if (fileReader.readAsBinaryString) {
+            if (fileReader.readAsBinaryString && (obj.m.ProcessBinaryData == null)) {
                 // Chrome & Firefox (Draft)
                 fileReaderInuse = true;
                 fileReader.readAsBinaryString(new Blob([e.data]));
@@ -209,6 +184,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.xxOnSocketData = function (data) {
         if (!data || obj.connectstate == -1) return;
         if (typeof data === 'object') {
+            if (obj.m.ProcessBinaryData) { return obj.m.ProcessBinaryData(data); }
             // This is an ArrayBuffer, convert it to a string array (used in IE)
             var binary = '', bytes = new Uint8Array(data), length = bytes.byteLength;
             for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
