@@ -1214,8 +1214,9 @@ function createMeshCore(agent) {
                             var shell = bash || sh;
 
                             var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: { HISTCONTROL: 'ignoreboth', TERM: 'xterm' } };
-                            var setupcommands = ' alias ls=\'ls --color=auto\'\n';
-                            if (shell == sh) setupcommands += 'stty erase ^H\n'
+                            var setupcommands = 'alias ls=\'ls --color=auto\'\n';
+                            if (shell == sh) setupcommands += 'stty erase ^H\n';
+                            setupcommands += 'clear\n';
 
                             if (script && shell && process.platform == 'linux') {
                                 this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
