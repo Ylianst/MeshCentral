@@ -1772,11 +1772,27 @@
                     masterUpdate(1 | 2 | 4 | 64);
 
                     if (xxcurrentView == -1) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
-                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',parseInt('{{viewmode}}'));}
+                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}', parseInt('{{viewmode}}'));}
                     else if (args.gotonode != null) {
                         goBackStack.push(1);
                         gotoDevice('node/' + domain + '/' + args.gotonode, parseInt('{{viewmode}}'));
-                        delete args.gotonode; }
+                    } else if (args.gotomesh != null) {
+                        goBackStack.push(2);
+                        gotoMesh('mesh/' + domain + '/' + args.gotomesh);
+                        go(parseInt('{{viewmode}}'));
+                    } else if (args.gotouser != null) {
+                        goBackStack.push(4);
+                        gotoUser('user/' + domain + '/' + args.gotouser);
+                        go(parseInt('{{viewmode}}'));
+                    } else if (args.gotougrp != null) {
+                        goBackStack.push(50);
+                        gotoUserGroup('ugrp/' + domain + '/' + args.gotougrp);
+                        go(parseInt('{{viewmode}}'));
+                    }
+                    delete args.gotonode;
+                    delete args.gotomesh;
+                    delete args.gotouser;
+                    delete args.gotougrp;
                     break;
                 }
                 case 'powertimeline': {
@@ -4805,7 +4821,6 @@
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title=\"' + "Remove this device" + '\">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
-                //x += '<img title=\"' + "Place link to this device in the clipboard" + '\" src="images/link1.png" style=cursor:pointer onclick=p10deviceLinkToClipboard() />&nbsp;';
                 if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
                 if ((terminalAccess) && ((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
@@ -5275,9 +5290,6 @@
 
         // Request MQTT login credentials
         function p10showMqttLoginDialog(nodeid) { meshserver.send({ action: 'getmqttlogin', nodeid: nodeid }); }
-
-        // Place a device link URL in the clipboard
-        //function p10deviceLinkToClipboard() { copyTextToClip2(document.URL.split('?')[0].split('#')[0] + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=10'); }
 
         // Open XTerm
         function p10openxterm(e, nodeid) {
@@ -7767,6 +7779,13 @@
             if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a href=# onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
 
             QH('p20info', x);
+
+            // Change the URL
+            var urlviewmode = '';
+            if ((xxcurrentView >= 20) && (xxcurrentView <= 29) && (currentMesh != null)) {
+                urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2];
+                try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
+            }
         }
 
         function p20editMeshAmt() {
@@ -9301,6 +9320,13 @@
 
             QH('p51group2', x);
             go(51);
+
+            // Change the URL
+            var urlviewmode = '';
+            if ((xxcurrentView >= 51) && (xxcurrentView <= 59) && (currentUserGroup != null)) {
+                urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2];
+                try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
+            }
         }
 
         function p51removeMeshFromUserGroup(e, meshid) {
@@ -9535,6 +9561,13 @@
             // Update user events (TODO: do this only if we change users)
             QH('p31events', '');
             refreshUsersEvents();
+
+            // Change the URL
+            var urlviewmode = '';
+            if ((xxcurrentView >= 30) && (xxcurrentView <= 39) && (currentUser != null)) {
+                urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2];
+                try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
+            }
         }
 
         // Display the user's email change dialog box
@@ -10338,8 +10371,14 @@
             // Change the URL
             if (xxcurrentView > 0) {
                 var urlviewmode = '';
-                if ((xxcurrentView >= 10) && (xxcurrentView <= 19)) {
+                if ((xxcurrentView >= 10) && (xxcurrentView <= 19)) { // Device Link
                     if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2]; }
+                } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
+                    if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
+                } else if ((xxcurrentView >= 30) && (xxcurrentView <= 39)) { // User Link
+                    if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2]; }
+                } else if ((xxcurrentView >= 51) && (xxcurrentView <= 59)) { // User Group Link
+                    if (currentUserGroup != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
                 } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
