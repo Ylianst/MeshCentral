@@ -1212,11 +1212,15 @@ function createMeshCore(agent) {
 
                             var python = fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
                             var shell = bash || sh;
-
-                            var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: { HISTCONTROL: 'ignoreboth', TERM: 'xterm' } };
-                            var setupcommands = 'alias ls=\'ls --color=auto\'\n';
-                            if (shell == sh) setupcommands += 'stty erase ^H\n';
-                            setupcommands += 'clear\n';
+                            var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' }; // LINES: '100', COLUMNS: '100'
+                            if (this.httprequest.xoptions) {
+                                if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
+                                if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
+                            }
+                            var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
+                            var setupcommands = ' alias ls=\'ls --color=auto\'\n';
+                            if (shell == sh) setupcommands += ' stty erase ^H\n';
+                            setupcommands += ' clear\n';
 
                             if (script && shell && process.platform == 'linux') {
                                 this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
@@ -1760,94 +1764,119 @@ function createMeshCore(agent) {
             return;
         }
 
-        if (obj.type == 'options') {
-            // These are additional connection options passed in the control channel.
-            //sendConsoleText('options: ' + JSON.stringify(obj));
-            delete obj.type;
-            ws.httprequest.xoptions = obj;
-        } else if (obj.type == 'close') {
-            // We received the close on the websocket
-            //sendConsoleText('Tunnel #' + ws.tunnel.index + ' WebSocket control close');
-            try { ws.close(); } catch (e) { }
-        } else if (obj.type == 'webrtc0') { // Browser indicates we can start WebRTC switch-over.
-            if (ws.httprequest.protocol == 1) { // Terminal
-                // This is a terminal data stream, unpipe the terminal now and indicate to the other side that terminal data will no longer be received over WebSocket
-                if (process.platform == 'win32') {
-                    ws.httprequest._term.unpipe(ws);
-                }
-                else {
-                    ws.httprequest.process.stdout.unpipe(ws);
-                    ws.httprequest.process.stderr.unpipe(ws);
-                }
-            } else if (ws.httprequest.protocol == 2) { // Desktop
-                // This is a KVM data stream, unpipe the KVM now and indicate to the other side that KVM data will no longer be received over WebSocket
-                ws.httprequest.desktop.kvm.unpipe(ws);
-            } else {
-                // Switch things around so all WebRTC data goes to onTunnelData().
-                ws.rtcchannel.httprequest = ws.httprequest;
-                ws.rtcchannel.removeAllListeners('data');
-                ws.rtcchannel.on('data', onTunnelData);
+        switch (obj.type) {
+            case 'options': {
+                // These are additional connection options passed in the control channel.
+                //sendConsoleText('options: ' + JSON.stringify(obj));
+                delete obj.type;
+                ws.httprequest.xoptions = obj;
+                break;
             }
-            ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // End of data marker
-        } else if (obj.type == 'webrtc1') {
-            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
-                // Switch the user input from websocket to webrtc at this point.
-                if (process.platform == 'win32') {
-                    ws.unpipe(ws.httprequest._term);
-                    ws.rtcchannel.pipe(ws.httprequest._term, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                }
-                else {
-                    ws.unpipe(ws.httprequest.process.stdin);
-                    ws.rtcchannel.pipe(ws.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                }
-                ws.resume(); // Resume the websocket to keep receiving control data
-            } else if (ws.httprequest.protocol == 2) { // Desktop
-                // Switch the user input from websocket to webrtc at this point.
-                ws.unpipe(ws.httprequest.desktop.kvm);
-                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
-                ws.resume(); // Resume the websocket to keep receiving control data
+            case 'close': {
+                // We received the close on the websocket
+                //sendConsoleText('Tunnel #' + ws.tunnel.index + ' WebSocket control close');
+                try { ws.close(); } catch (e) { }
+                break;
             }
-            ws.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}'); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
-        } else if (obj.type == 'webrtc2') {
-            // Other side received websocket end of data marker, start sending data on WebRTC channel
-            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
-                if (process.platform == 'win32') {
-                    ws.httprequest._term.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                }
-                else {
-                    ws.httprequest.process.stdout.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                    ws.httprequest.process.stderr.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                }
-            } else if (ws.httprequest.protocol == 2) { // Desktop
-                ws.httprequest.desktop.kvm.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-            }
-        } else if (obj.type == 'offer') {
-            // This is a WebRTC offer.
-            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) return; // TODO: Terminal is currently broken with WebRTC. Reject WebRTC upgrade for now.
-            ws.webrtc = rtc.createConnection();
-            ws.webrtc.websocket = ws;
-            ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
-            ws.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
-            ws.webrtc.on('dataChannel', function (rtcchannel) {
-                //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
-                rtcchannel.xrtc = this;
-                rtcchannel.websocket = this.websocket;
-                this.rtcchannel = rtcchannel;
-                this.websocket.rtcchannel = rtcchannel;
-                this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
-                this.websocket.rtcchannel.on('end', function () {
-                    // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
-                    //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
-                    if (this.websocket.desktop && this.websocket.desktop.kvm) {
-                        this.unpipe(this.websocket.desktop.kvm);
-                        this.websocket.httprequest.desktop.kvm.unpipe(this);
+            case 'termsize': {
+                if (ws.httprequest.protocol == 1) { // Terminal
+                    // Indicates a change in terminal size
+                    if (process.platform == 'win32') {
+                        if (ws.httprequest._term == null) return;
+                        //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
+                        // TODO
+                    } else {
+                        if (ws.httprequest.process == null) return;
+                        //sendConsoleText('Linux-TermSize: ' + obj.cols + 'x' + obj.rows);
+                        // TODO
                     }
+                }
+                break;
+            }
+            case 'webrtc0': { // Browser indicates we can start WebRTC switch-over.
+                if (ws.httprequest.protocol == 1) { // Terminal
+                    // This is a terminal data stream, unpipe the terminal now and indicate to the other side that terminal data will no longer be received over WebSocket
+                    if (process.platform == 'win32') {
+                        ws.httprequest._term.unpipe(ws);
+                    } else {
+                        ws.httprequest.process.stdout.unpipe(ws);
+                        ws.httprequest.process.stderr.unpipe(ws);
+                    }
+                } else if (ws.httprequest.protocol == 2) { // Desktop
+                    // This is a KVM data stream, unpipe the KVM now and indicate to the other side that KVM data will no longer be received over WebSocket
+                    ws.httprequest.desktop.kvm.unpipe(ws);
+                } else {
+                    // Switch things around so all WebRTC data goes to onTunnelData().
+                    ws.rtcchannel.httprequest = ws.httprequest;
+                    ws.rtcchannel.removeAllListeners('data');
+                    ws.rtcchannel.on('data', onTunnelData);
+                }
+                ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // End of data marker
+                break;
+            }
+            case 'webrtc1': {
+                if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
+                    // Switch the user input from websocket to webrtc at this point.
+                    if (process.platform == 'win32') {
+                        ws.unpipe(ws.httprequest._term);
+                        ws.rtcchannel.pipe(ws.httprequest._term, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    } else {
+                        ws.unpipe(ws.httprequest.process.stdin);
+                        ws.rtcchannel.pipe(ws.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                    }
+                    ws.resume(); // Resume the websocket to keep receiving control data
+                } else if (ws.httprequest.protocol == 2) { // Desktop
+                    // Switch the user input from websocket to webrtc at this point.
+                    ws.unpipe(ws.httprequest.desktop.kvm);
+                    try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (e) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
+                    ws.resume(); // Resume the websocket to keep receiving control data
+                }
+                ws.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}'); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
+                break;
+            }
+            case 'webrtc2': {
+                // Other side received websocket end of data marker, start sending data on WebRTC channel
+                if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
+                    if (process.platform == 'win32') {
+                        ws.httprequest._term.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                    } else {
+                        ws.httprequest.process.stdout.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                        ws.httprequest.process.stderr.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
+                    }
+                } else if (ws.httprequest.protocol == 2) { // Desktop
+                    ws.httprequest.desktop.kvm.pipe(ws.webrtc.rtcchannel, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
+                }
+                break;
+            }
+            case 'offer': {
+                // This is a WebRTC offer.
+                if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) return; // TODO: Terminal is currently broken with WebRTC. Reject WebRTC upgrade for now.
+                ws.webrtc = rtc.createConnection();
+                ws.webrtc.websocket = ws;
+                ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
+                ws.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
+                ws.webrtc.on('dataChannel', function (rtcchannel) {
+                    //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+                    rtcchannel.xrtc = this;
+                    rtcchannel.websocket = this.websocket;
+                    this.rtcchannel = rtcchannel;
+                    this.websocket.rtcchannel = rtcchannel;
+                    this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
+                    this.websocket.rtcchannel.on('end', function () {
+                        // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
+                        //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
+                        if (this.websocket.desktop && this.websocket.desktop.kvm) {
+                            this.unpipe(this.websocket.desktop.kvm);
+                            this.websocket.httprequest.desktop.kvm.unpipe(this);
+                        }
+                    });
+                    this.websocket.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}'); // Indicate we are ready for WebRTC switch-over.
                 });
-                this.websocket.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}'); // Indicate we are ready for WebRTC switch-over.
-            });
-            var sdp = null;
-            try { sdp = ws.webrtc.setOffer(obj.sdp); } catch (ex) { }
-            if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
+                var sdp = null;
+                try { sdp = ws.webrtc.setOffer(obj.sdp); } catch (ex) { }
+                if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
+                break;
+            }
         }
     }
 

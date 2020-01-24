@@ -18,7 +18,7 @@
 </head>
 <body style="overflow:hidden;background-color:black">
     <div id=p11 class="noselect" style="overflow:hidden">
-        <div id=deskarea0>
+        <div id=deskarea0 style="position:relative">
             <div id=deskarea1 class="areaHead">
                 <div class="toright2">
                 </div>
@@ -36,7 +36,7 @@
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
                 <div id=terminal style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);"></div>
-                <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
+                <div id=TermConsoleMsg style="cursor:pointer;z-index:10;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
             <div id=deskarea4 class="areaHead">
                 <div class="toright2">
@@ -75,6 +75,7 @@
         var authRelayCookie = '{{{authRelayCookie}}}';
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
+        var resizeTimer = null;
 
         function start() {
             // Parse any URL arguments
@@ -123,6 +124,12 @@
             return obj;
         }
 
+        // Send the new terminal size to the agent
+        function sendResize() {
+            resizeTimer = null;
+            if ((term != null) && (tunnel != null)) { tunnel.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: term.cols, rows: term.rows })); }
+        }
+
         // Called when the connect/disconnect button is pressed
         function connectButton() {
             if (!tunnel) {
@@ -133,17 +140,15 @@
                 if (termfit) { term.loadAddon(termfit); }
                 term.open(Q('terminal'));
                 term.onData(function (data) { if (tunnel != null) { tunnel.sendText(data); } })
-                term.onResize(function (size) {
-                    //console.log('Resize', size);
-                    //term.resize(size.cols, size.rows);
-                    //if (tunnel != null) { tunnel.send(String.fromCharCode(27) + '[8;' + size.cols + ';' + size.rows + 't') }
-                });
+                term.onResize(function (size) { if (resizeTimer == null) { resizeTimer = setTimeout(sendResize, 200); } });
                 if (termfit) { termfit.fit(); }
 
                 // Setup a terminal tunnel to the agent
                 tunnel = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                tunnel.options = { cols: term.cols, rows: term.rows };
                 tunnel.Start(args.nodeid);
                 tunnel.onStateChanged = onTunnelStateChange;
+                tunnel.onConsoleMessageChange = function (server, msg) { setConsoleMsg(msg); };
             } else {
                 tunnel.Stop();
             }
@@ -162,9 +167,7 @@
                 case 0:
                     // Disconnected, clear the terminal
                     term.dispose();
-                    term = null;
-                    termfit = null;
-                    tunnel = null;
+                    term = termfit = tunnel = null;
                     break;
                 case 3:
                     // Connected
@@ -176,6 +179,11 @@
             }
             updateButtons();
         }
+
+        // Console messages
+        var termConsoleMsgTimer = null;
+        function clearConsoleMsg() { QV('TermConsoleMsg', false); if (termConsoleMsgTimer) { clearTimeout(termConsoleMsgTimer); termConsoleMsgTimer = null; } }
+        function setConsoleMsg(msg) { QH('TermConsoleMsg', EscapeHtml(msg).split('\n').join('<br />')); QV('TermConsoleMsg', true); termConsoleMsgTimer = setTimeout(clearConsoleMsg, 8000); }
 
         //
         // POPUP DIALOG
