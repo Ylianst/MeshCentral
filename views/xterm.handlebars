@@ -36,7 +36,7 @@
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
                 <div id=terminal style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);"></div>
-                <div id=TermConsoleMsg style="cursor:pointer;z-index:10;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
+                <div id=TermConsoleMsg style="display:none;cursor:pointer;z-index:10;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
             <div id=deskarea4 class="areaHead">
                 <div class="toright2">
@@ -89,7 +89,10 @@
             meshserver.Start();
 
             // When the user resizes the window, re-fit
-            window.onresize = function () { if (termfit != null) { termfit.fit(); } }
+            window.onresize = function () {
+                if (termfit != null) { termfit.fit(); }
+                if (resizeTimer == null) { resizeTimer = setTimeout(sendResize, 200); }
+            }
 
             // Update the terminal status and buttons
             QH('termstatus', StatusStrs[0]);
@@ -154,7 +157,13 @@
             }
         }
 
-        function tunnelUpdate(data) { if (typeof data == 'string') { term.writeUtf8(data); } else { term.writeUtf8(new Uint8Array(data)); } }
+        function tunnelUpdate(data) {
+            if (typeof data == 'string') {
+                term.writeUtf8(data);
+            } else {
+                term.writeUtf8(new Uint8Array(data));
+            }
+        }
 
         // Called when the terminal state changes
         function onTunnelStateChange(xterminal, state) {
