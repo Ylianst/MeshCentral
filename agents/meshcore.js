@@ -1143,19 +1143,24 @@ function createMeshCore(agent) {
                     // Remote terminal using native pipes
                     if (process.platform == 'win32') {
                         try {
+                            var cols = 80, rows = 25;
+                            if (this.httprequest.xoptions) {
+                                if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
+                                if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
+                            }
+
                             if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9)) { throw ('PowerShell is not supported on this version of windows'); }
                             if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6)) {
                                 // Admin Terminal
                                 if (require('win-virtual-terminal').supported) {
                                     // ConPTY PseudoTerminal
-                                    this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+                                    this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows);
                                 }
                                 else {
                                     // Legacy Terminal
-                                    this.httprequest._term = require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+                                    this.httprequest._term = require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows);
                                 }
-                            }
-                            else {
+                            } else {
                                 // Logged in user
                                 var userPromise = require('user-sessions').enumerateUsers();
                                 userPromise.that = this;
@@ -1165,11 +1170,10 @@ function createMeshCore(agent) {
                                         var username = u.Active[0].Username;
                                         if (require('win-virtual-terminal').supported) {
                                             // ConPTY PseudoTerminal
-                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
-                                        }
-                                        else {
+                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                        } else {
                                             // Legacy Terminal
-                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [80, 25] } });
+                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                         }
                                         that.httprequest._dispatcher.ws = that;
                                         that.httprequest._dispatcher.on('connection', function (c) {
@@ -1212,7 +1216,7 @@ function createMeshCore(agent) {
 
                             var python = fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
                             var shell = bash || sh;
-                            var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' }; // LINES: '100', COLUMNS: '100'
+                            var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
                             if (this.httprequest.xoptions) {
                                 if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
                                 if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }

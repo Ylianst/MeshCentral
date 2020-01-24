@@ -5297,7 +5297,7 @@
             var url = '/xterm?nodeid=' + encodeURIComponent(nodeid) + '&auto=1';
             var node = getNodeFromId(nodeid);
             if (node == null) return;
-            if ([1, 2, 3, 4, 21, 22].indexOf(node.agent.id) >= 0) { url += '&fixsize=1'; }
+            //if ([1, 2, 3, 4, 21, 22].indexOf(node.agent.id) >= 0) { url += '&fixsize=1'; }
             window.open(url, 'xterm:' + nodeid);
             return false;
         }
