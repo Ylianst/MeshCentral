@@ -1199,6 +1199,9 @@
             QV('autoconnectbutton1', debugmode); // Desktop
             //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
+            // Clean up the URL
+            try { window.history.replaceState({}, document.title, window.location.pathname); } catch (ex) { }
+
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; }
             toggleFullScreen();
 
@@ -1770,7 +1773,10 @@
 
                     if (xxcurrentView == -1) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
                     if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}',parseInt('{{viewmode}}'));}
-                    else if (args.gotonode != null) { goBackStack.push(1); gotoDevice('node/' + domain + '/' + args.gotonode,parseInt('{{viewmode}}')); delete args.gotonode; }
+                    else if (args.gotonode != null) {
+                        goBackStack.push(1);
+                        gotoDevice('node/' + domain + '/' + args.gotonode, parseInt('{{viewmode}}'));
+                        delete args.gotonode; }
                     break;
                 }
                 case 'powertimeline': {
@@ -4799,7 +4805,7 @@
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title=\"' + "Remove this device" + '\">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
-                x += '<img title=\"' + "Place link to this device in the clipboard" + '\" src="images/link1.png" style=cursor:pointer onclick=p10deviceLinkToClipboard() />&nbsp;';
+                //x += '<img title=\"' + "Place link to this device in the clipboard" + '\" src="images/link1.png" style=cursor:pointer onclick=p10deviceLinkToClipboard() />&nbsp;';
                 if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
                 if ((terminalAccess) && ((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
@@ -4903,6 +4909,13 @@
                     pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event); 
                     var lastTab = getstore('_curPluginPage', null);
                     if (lastTab != null && Q('p19ph-' + lastTab) != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
+                }
+
+                // Change the URL
+                var urlviewmode = '';
+                if ((xxcurrentView >= 10) && (xxcurrentView <= 19) && (currentNode != null)) {
+                    urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2];
+                    try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
                 }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
@@ -5264,7 +5277,7 @@
         function p10showMqttLoginDialog(nodeid) { meshserver.send({ action: 'getmqttlogin', nodeid: nodeid }); }
 
         // Place a device link URL in the clipboard
-        function p10deviceLinkToClipboard() { copyTextToClip2(document.URL.split('?')[0].split('#')[0] + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=10'); }
+        //function p10deviceLinkToClipboard() { copyTextToClip2(document.URL.split('?')[0].split('#')[0] + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=10'); }
 
         // Open XTerm
         function p10openxterm(e, nodeid) {
@@ -10321,6 +10334,15 @@
             // Edit this line when adding a new screen
             for (var i = 0; i < 52; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
+
+            // Change the URL
+            if (xxcurrentView > 0) {
+                var urlviewmode = '';
+                if ((xxcurrentView >= 10) && (xxcurrentView <= 19)) {
+                    if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2]; }
+                } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
+                try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
+            }
 
             // Remove top bar selection
             var mainBarItems = ['MainMenuMyDevices', 'MainMenuMyAccount', 'MainMenuMyEvents', 'MainMenuMyFiles', 'MainMenuMyUsers', 'MainMenuMyServer'];
