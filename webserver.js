@@ -3403,7 +3403,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
             obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
             obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
-            obj.tlsServer.on('error', function () { console.log('tlsServer error'); });
+            obj.tlsServer.on('error', function (err) { console.log('tlsServer error', err); });
+            //obj.tlsServer.on('tlsClientError', function (err) { console.log('tlsClientError', err); });
             obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
             obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
             obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
