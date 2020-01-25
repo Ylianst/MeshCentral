@@ -2168,20 +2168,27 @@ function getConfig(createSampleConfig) {
 function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
+        var dependencies = require("./package.json").dependencies;
         for (var i in modules) {
             // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
-            var moduleName = modules[i].split("@", 1)[0];
+            var moduleInfo = modules[i].split("@", 2);
+            var moduleName = moduleInfo[0];
+            var moduleVersion = moduleInfo[1];
             try {
-                if (moduleName == 'greenlock') {
-                    // Check if we have GreenLock v3
-                    delete require.cache[require.resolve('greenlock')]; // Clear the require cache
-                    if (typeof require('greenlock').challengeType == 'string') { missingModules.push(modules[i]); }
-                } else {
+                // Does the module need a specific version?
+                if (moduleVersion) {
+                    if (require(`${moduleName}/package.json`).version != moduleVersion)
+                        throw new Error();
+                }
+                else {
                     // For all other modules, do the check here.
+                    // Is the module in package.json? Install exact version.
+                    if (typeof dependencies[moduleName] != undefined)
+                        moduleVersion = dependencies[moduleName];
                     require(moduleName);
                 }
             } catch (e) {
-                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
+                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(`${moduleName}${moduleVersion ? `@${moduleVersion}` : ""}`); }
             }
         }
         if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
@@ -2197,7 +2204,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(`npm install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(`npm install --no-save --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
