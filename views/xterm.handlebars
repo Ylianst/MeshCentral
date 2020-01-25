@@ -91,7 +91,6 @@
             // When the user resizes the window, re-fit
             window.onresize = function () {
                 if (termfit != null) { termfit.fit(); }
-                if (resizeTimer == null) { resizeTimer = setTimeout(sendResize, 200); }
             }
 
             // Update the terminal status and buttons
@@ -143,8 +142,12 @@
                 if (termfit) { term.loadAddon(termfit); }
                 term.open(Q('terminal'));
                 term.onData(function (data) { if (tunnel != null) { tunnel.sendText(data); } })
-                term.onResize(function (size) { if (resizeTimer == null) { resizeTimer = setTimeout(sendResize, 200); } });
                 if (termfit) { termfit.fit(); }
+                term.onResize(function (size) { 
+                    // Despam resize
+                    if (resizeTimer) clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(sendResize, 200); 
+                });
 
                 // Setup a terminal tunnel to the agent
                 tunnel = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
