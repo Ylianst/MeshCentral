@@ -1793,9 +1793,9 @@ function createMeshCore(agent) {
                 } else {
                     if (ws.httprequest.process == null || !ws.httprequest.process.pty) return;
                     // ILibDuktape_ChildProcess kill doesn't support sending signals
-                    if (fs.existsSync("/bin/kill")) {
+                    if (fs.existsSync('/bin/kill')) {
                         // We need to send signal to the child of the process, since the child is the shell
-                        childProcess.execFile('/bin/bash', ['bash', "-c", "kill -SIGWINCH $(pgrep -P " + ws.httprequest.process.pid + ")"]);
+                        childProcess.execFile('/bin/bash', ['bash', '-c', 'kill -SIGWINCH $(pgrep -P ' + ws.httprequest.process.pid + ')']);
                     }
                 }
                 break;
