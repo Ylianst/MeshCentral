@@ -39,7 +39,8 @@ var MESHRIGHT_LIMITEDINPUT = 4096;
 
 function createMeshCore(agent) {
     var obj = {};
-    if (process.platform == 'win32' && require('user-sessions').isRoot()) {
+    if (process.platform == 'win32' && require('user-sessions').isRoot())
+    {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
         try {
             var writtenSize = 0, actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
@@ -1198,8 +1199,7 @@ function createMeshCore(agent) {
                             this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
                             this.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
                         }
-                    }
-                    else {
+                    } else {
                         try {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
@@ -1223,28 +1223,21 @@ function createMeshCore(agent) {
                             var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
                             var setupcommands = ' alias ls=\'ls --color=auto\'\n';
                             if (shell == sh) setupcommands += ' stty erase ^H\n';
+                            setupcommands += ' clear\n';
 
                             if (script && shell && process.platform == 'linux') {
                                 this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
-                                // Is child process the shell? Needed for resizing. 
-                                this.httprequest.process.isChildShell = true;
                                 this.httprequest.process.stdin.write(setupcommands);
                             } else if (python && shell) {
                                 this.httprequest.process = childProcess.execFile(python, ['python', '-c', 'import pty; pty.spawn(["' + shell + '"])'], options); // Start as active user
-                                // Is child process the shell? Needed for resizing. 
-                                this.httprequest.process.isChildShell = true;
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
                             } else if (bash) {
                                 options.type = childProcess.SpawnTypes.TERM;
                                 this.httprequest.process = childProcess.execFile(bash, ['bash', '-i'], options); // Start as active user
-                                // Is child process the shell? Needed for resizing. 
-                                this.httprequest.process.isChildShell = false;
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
                             } else if (sh) {
                                 options.type = childProcess.SpawnTypes.TERM;
                                 this.httprequest.process = childProcess.execFile(sh, ['sh'], options); // Start as active user
-                                // Is child process the shell? Needed for resizing. 
-                                this.httprequest.process.isChildShell = false;
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands + "PS1='$ '\n"); }
                             } else {
                                 MeshServerLog("Failed to start remote terminal session, no shell found");
@@ -1797,15 +1790,8 @@ function createMeshCore(agent) {
                         // TODO
                     } else {
                         if (ws.httprequest.process == null) return;
-                        // ILibDuktape_ChildProcess kill doesn't support sending signals
-                        if (fs.existsSync("/bin/kill"))
-                        {
-                            if (ws.httprequest.process.isChildShell)
-                                // We need to send signal to the child of the process, since the child is the shell
-                                childProcess.execFile('/bin/bash', ['bash', "-c", "kill -SIGWINCH $(pgrep -P " + ws.httprequest.process.pid + ")"]);
-                            else
-                                childProcess.execFile('/bin/bash', ['bash', "-c", "kill -SIGWINCH " + ws.httprequest.process.pid]);
-                        }
+                        //sendConsoleText('Linux-TermSize: ' + obj.cols + 'x' + obj.rows);
+                        // TODO
                     }
                 }
                 break;
@@ -2239,7 +2225,8 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'ps': {
-                    processManager.getProcesses(function (plist) {
+                    processManager.getProcesses(function (plist)
+                    {
                         var x = '';
                         for (var i in plist) { x += i + ((plist[i].user) ? (', ' + plist[i].user) : '') + ', ' + plist[i].cmd + '\r\n'; }
                         sendConsoleText(x, sessionid);

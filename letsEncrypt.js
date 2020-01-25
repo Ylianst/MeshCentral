@@ -14,6 +14,8 @@
 /*jshint esversion: 6 */
 'use strict';
 
+var globalLetsEncrypt = null;
+
 module.exports.CreateLetsEncrypt = function (parent) {
     try {
         // Get the GreenLock version
@@ -40,6 +42,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
         // Get GreenLock setup and running.
         const greenlock = require('greenlock');
         var obj = {};
+        globalLetsEncrypt = obj;
         obj.parent = parent;
         obj.path = require('path');
         obj.redirWebServerHooked = false;
@@ -258,7 +261,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
 // GreenLock v3 Manager
 module.exports.create = function (options) {
-    var manager = { parent: options.parent };
+    var manager = { parent: globalLetsEncrypt };
     manager.find = async function (options) {
         //console.log('LE-FIND', options);
         return Promise.resolve([{ subject: options.servername, altnames: options.altnames }]);
