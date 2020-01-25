@@ -2171,24 +2171,22 @@ function InstallModules(modules, func) {
         var dependencies = require("./package.json").dependencies;
         for (var i in modules) {
             // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
-            var moduleInfo = modules[i].split("@", 2);
+            var moduleNameAndVersion = modules[i];
+            var moduleInfo = moduleNameAndVersion.split("@", 2);
             var moduleName = moduleInfo[0];
             var moduleVersion = moduleInfo[1];
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {
-                    if (require(`${moduleName}/package.json`).version != moduleVersion)
-                        throw new Error();
-                }
-                else {
+                    if (require(`${moduleName}/package.json`).version != moduleVersion) { throw new Error(); }
+                } else {
                     // For all other modules, do the check here.
                     // Is the module in package.json? Install exact version.
-                    if (typeof dependencies[moduleName] != undefined)
-                        moduleVersion = dependencies[moduleName];
+                    if (typeof dependencies[moduleName] != undefined) { moduleVersion = dependencies[moduleName]; }
                     require(moduleName);
                 }
             } catch (e) {
-                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(`${moduleName}${moduleVersion ? `@${moduleVersion}` : ""}`); }
+                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(moduleNameAndVersion); }
             }
         }
         if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }

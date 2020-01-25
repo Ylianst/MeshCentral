@@ -288,6 +288,7 @@
     <Content Include="views\messenger.handlebars" />
     <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
+    <Content Include="views\xterm.handlebars" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="agents\" />
