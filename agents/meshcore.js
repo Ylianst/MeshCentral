@@ -39,8 +39,7 @@ var MESHRIGHT_LIMITEDINPUT = 4096;
 
 function createMeshCore(agent) {
     var obj = {};
-    if (process.platform == 'win32' && require('user-sessions').isRoot())
-    {
+    if (process.platform == 'win32' && require('user-sessions').isRoot()) {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
         try {
             var writtenSize = 0, actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
@@ -1212,9 +1211,10 @@ function createMeshCore(agent) {
                                     }
                                 }
                             } catch (ex) { }
-
                             var python = fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
                             var shell = bash || sh;
+                            var pty = python || script;
+
                             var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
                             if (this.httprequest.xoptions) {
                                 if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
@@ -1223,7 +1223,8 @@ function createMeshCore(agent) {
                             var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
                             var setupcommands = ' alias ls=\'ls --color=auto\'\n';
                             if (shell == sh) setupcommands += ' stty erase ^H\n';
-                            setupcommands += ' clear\n';
+                            // Dynamic resizing is only supported in PTYs
+                            if (pty) setupcommands += ' mcresize() { old=$(stty -g);stty raw -echo min 0 time 5;printf \'\\0337\\033[r\\033[999;999H\\033[6n\\0338\' > /dev/tty;IFS=\'[;R\' read -r _ rows cols _ < /dev/tty;stty "$old";stty cols "$cols" rows "$rows"; };trap mcresize SIGWINCH;\n'
 
                             if (script && shell && process.platform == 'linux') {
                                 this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
@@ -1249,8 +1250,10 @@ function createMeshCore(agent) {
                             this.end();
                             return;
                         }
+                        this.httprequest.process.pty = pty;
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
+                        this.httprequest.process.stdin.write(" clear\n");
                         this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
                         this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                         this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
@@ -1782,16 +1785,17 @@ function createMeshCore(agent) {
                 break;
             }
             case 'termsize': {
-                if (ws.httprequest.protocol == 1) { // Terminal
-                    // Indicates a change in terminal size
-                    if (process.platform == 'win32') {
-                        if (ws.httprequest._term == null) return;
-                        //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
-                        // TODO
-                    } else {
-                        if (ws.httprequest.process == null) return;
-                        //sendConsoleText('Linux-TermSize: ' + obj.cols + 'x' + obj.rows);
-                        // TODO
+                // Indicates a change in terminal size
+                if (process.platform == 'win32') {
+                    if (ws.httprequest._term == null) return;
+                    //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
+                    // TODO
+                } else {
+                    if (ws.httprequest.process == null || !ws.httprequest.process.pty) return;
+                    // ILibDuktape_ChildProcess kill doesn't support sending signals
+                    if (fs.existsSync("/bin/kill")) {
+                        // We need to send signal to the child of the process, since the child is the shell
+                        childProcess.execFile('/bin/bash', ['bash', "-c", "kill -SIGWINCH $(pgrep -P " + ws.httprequest.process.pid + ")"]);
                     }
                 }
                 break;
@@ -2225,8 +2229,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'ps': {
-                    processManager.getProcesses(function (plist)
-                    {
+                    processManager.getProcesses(function (plist) {
                         var x = '';
                         for (var i in plist) { x += i + ((plist[i].user) ? (', ' + plist[i].user) : '') + ', ' + plist[i].cmd + '\r\n'; }
                         sendConsoleText(x, sessionid);
