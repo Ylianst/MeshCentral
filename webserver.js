@@ -535,7 +535,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
                     var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // 30 day timeout
-                    if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
+                    if ((twoFactorCookie != null) && (obj.args.cookieipcheck !== false) && ((twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
                 }
             }
         }
@@ -1434,7 +1434,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.ip = req.ip; // Bind this session to the IP address of the request
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-            //if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
+            //if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
             if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
                 // If a login cookie was provided, setup the session here.
                 parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
@@ -2169,7 +2169,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -2205,7 +2205,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -3005,7 +3005,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -3428,7 +3428,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
-            parent.debug('webrequest', req.url);
+            parent.debug('webrequest', '(' + cleanRemoteAddr(req.ip) + ') ' + req.url);
             res.removeHeader('X-Powered-By');
             var domain = req.xdomain = getDomain(req);
 
@@ -3685,13 +3685,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
                 if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 240); } // Try the server key
-                if ((cookie != null) && (cookie.ip != null) && (cookie.ip != cleanRemoteAddr(req.ip) && (cookie.ip != req.ip))) { cookie = null; } // If the cookie if binded to an IP address, check here.
+                if ((obj.args.cookieipcheck !== false) && (cookie != null) && (cookie.ip != null) && (cookie.ip != cleanRemoteAddr(req.ip) && (cookie.ip != req.ip))) { // If the cookie if binded to an IP address, check here.
+                    parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.ip) + '\".');
+                    cookie = null;
+                }
                 if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
                     // Valid cookie, we are authenticated
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
                 } else {
                     // This is a bad cookie, keep going anyway, maybe we have a active session that will save us.
-                    parent.debug('web', 'ERR: Websocket bad cookie auth: ' + req.query.auth);
+                    if ((cookie != null) && (cookie.domainid != domain.id)) { parent.debug('web', 'ERR: Invalid domain, got \"' + cookie.domainid + '\", expected \"' + domain.id + '\".'); }
+                    parent.debug('web', 'ERR: Websocket bad cookie auth (Cookie:' + (cookie != null) + '): ' + req.query.auth);
                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
                 }
                 return;
