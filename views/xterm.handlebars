@@ -16,7 +16,18 @@
     <script type="text/javascript" src="scripts/xterm-addon-fit.js"></script>
     <title>{{{name}}}</title>
 </head>
-<body style="overflow:hidden;background-color:black">
+<body style="overflow:hidden;background-color:black" oncontextmenu="handleContextMenu(event)">
+    <!-- right click menu -->
+    <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Admin Shell</b></div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(6,event)">Admin PowerShell</div>
+        <div id="cxtermunorm" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
+        <div id="cxtermups" class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
+    </div>
+    <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
+    </div>
     <div id=p11 class="noselect" style="overflow:hidden">
         <div id=deskarea0 style="position:relative">
             <div id=deskarea1 class="areaHead">
@@ -89,9 +100,10 @@
             meshserver.Start();
 
             // When the user resizes the window, re-fit
-            window.onresize = function () {
-                if (termfit != null) { termfit.fit(); }
-            }
+            window.onresize = function () { if (termfit != null) { termfit.fit(); } }
+
+            // Hide the context menu
+            document.onclick = function (e) { hideContextMenu(); }
 
             // Update the terminal status and buttons
             QH('termstatus', StatusStrs[0]);
@@ -117,8 +129,9 @@
         function onMessage(server, message) { }
 
         // Handles a tunnel to a remote shell
-        function CreateRemoteTunnel(onTunnelUpdate) {
+        function CreateRemoteTunnel(onTunnelUpdate, options) {
             var obj = { protocol: 1 };
+            if ((options != null) && (typeof options.protocol == 'number')) { obj.protocol = options.protocol; }
             obj.onTunnelUpdate = onTunnelUpdate;
             obj.xxStateChange = function (state) { }
             obj.ProcessBinaryData = function (data) { obj.onTunnelUpdate(data); }
@@ -133,7 +146,7 @@
         }
 
         // Called when the connect/disconnect button is pressed
-        function connectButton() {
+        function connectButton(options) {
             if (!tunnel) {
                 // Setup the terminal with auto-fit
                 if (term != null) { term.dispose(); }
@@ -150,7 +163,7 @@
                 });
 
                 // Setup a terminal tunnel to the agent
-                tunnel = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                tunnel = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 tunnel.options = { cols: term.cols, rows: term.rows };
                 tunnel.Start(args.nodeid);
                 tunnel.onStateChanged = onTunnelStateChange;
@@ -196,6 +209,52 @@
         var termConsoleMsgTimer = null;
         function clearConsoleMsg() { QV('TermConsoleMsg', false); if (termConsoleMsgTimer) { clearTimeout(termConsoleMsgTimer); termConsoleMsgTimer = null; } }
         function setConsoleMsg(msg) { QH('TermConsoleMsg', EscapeHtml(msg).split('\n').join('<br />')); QV('TermConsoleMsg', true); termConsoleMsgTimer = setTimeout(clearConsoleMsg, 8000); }
+
+        //
+        // CONTEXT MENU
+        //
+
+        var contextelement = null;
+        function handleContextMenu(event) {
+            hideContextMenu();
+            var scrollLeft = (window.pageXOffset !== null) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+            var scrollTop = (window.pageYOffset !== null) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+            var elem = document.elementFromPoint(event.pageX - scrollLeft, event.pageY - scrollTop);
+            if (elem && elem != null && elem.id == 'ConnectButton') {
+                contextelement = elem;
+                var contextmenudiv;
+                if (args.os == 'win') {
+                    contextmenudiv = document.getElementById('termShellContextMenu');
+                } else {
+                    contextmenudiv = document.getElementById('termShellContextMenuLinux');
+                }
+                showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
+            }
+            return haltEvent(event);
+        }
+
+        function showContextMenuDiv(element, x, y) {
+            var clientRect = document.documentElement.getBoundingClientRect();
+            var docHeight = clientRect.height;
+            var docWidth = clientRect.width;
+            element.style.left = element.style.right = element.style.top = element.style.bottom = null;
+            if (x > (docWidth / 2)) { element.style.right = (docWidth - event.pageX) + 'px'; } else { element.style.left = event.pageX + 'px'; }
+            if (y > (docHeight / 2)) { element.style.bottom = (docHeight - event.pageY) + 'px'; } else { element.style.top = event.pageY + 'px'; }
+            element.style.display = 'block';
+        }
+
+        function cmtermaction(action) {
+            //console.log('cmtermaction', action);
+            connectButton({ protocol: action })
+            //connectTerminal(null, 1, { protocol: action });
+        }
+
+        function hideContextMenu() {
+            QV('contextMenu', false);
+            QV('termShellContextMenu', false);
+            QV('termShellContextMenuLinux', false);
+            contextelement = null;
+        }
 
         //
         // POPUP DIALOG
