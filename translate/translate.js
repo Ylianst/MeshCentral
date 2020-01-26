@@ -33,9 +33,12 @@ var meshCentralSourceFiles = [
     "../public/player.htm"
 ];
 
+// True is this module is run directly using NodeJS
+var directRun = (require.main === module);
+
 // Check NodeJS version
 const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-if (NodeJSVer < 8) { log("Translate.js requires Node v8 or above, current version is " + process.version + "."); return; }
+if (directRun && (NodeJSVer < 8)) { log("Translate.js requires Node v8 or above, current version is " + process.version + "."); return; }
 
 // node translate.json CHECK ../meshcentral/views/default.handlebars
 // node translate.json EXTRACT bob.json ../meshcentral/views/default.handlebars
@@ -50,7 +53,7 @@ function log() {
     }
 }
 
-if (NodeJSVer >= 12) {
+if (directRun && (NodeJSVer >= 12)) {
     const xworker = require('worker_threads');
     try {
         if (xworker.isMainThread == false) {
@@ -76,12 +79,18 @@ if (NodeJSVer >= 12) {
     } catch (ex) { log(ex); }
 }
 
-var libs = ['jsdom', 'esprima', 'minify-js'];
-if (minifyLib == 1) { libs.push('minify-js'); }
-if (minifyLib == 2) { libs.push('html-minifier'); }
-InstallModules(libs, start);
+if (directRun) { setup(); }
 
-function start() {
+function setup() {
+    var libs = ['jsdom', 'esprima', 'minify-js'];
+    if (minifyLib == 1) { libs.push('minify-js'); }
+    if (minifyLib == 2) { libs.push('html-minifier'); }
+    InstallModules(libs, start);
+}
+
+function start() { startEx(process.argv); }
+
+function startEx(argv) {
     // Load dependencies
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
@@ -89,10 +98,10 @@ function start() {
     if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
 
     var command = null;
-    if (process.argv.length > 2) { command = process.argv[2].toLowerCase(); }
+    if (argv.length > 2) { command = argv[2].toLowerCase(); }
     if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext'].indexOf(command) == -1) { command = null; }
 
-    log('MeshCentral web site translator');
+    if (directRun) { log('MeshCentral web site translator'); }
     if (command == null) {
         log('Usage "node translate.js [command] [options]');
         log('Possible commands:');
@@ -130,7 +139,7 @@ function start() {
     // Extract strings from web pages and display a report
     if (command == 'check') {
         var sources = [];
-        for (var i = 3; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
+        for (var i = 3; i < argv.length; i++) { if (fs.existsSync(argv[i]) == false) { log('Missing file: ' + argv[i]); process.exit(); return; } sources.push(argv[i]); }
         if (sources.length == 0) { log('No source files specified.'); process.exit(); return; }
         performCheck = true;
         sourceStrings = {};
@@ -144,18 +153,18 @@ function start() {
 
     // Extract strings from web pages
     if (command == 'extract') {
-        if (process.argv.length < 4) { log('No language file specified.'); process.exit(); return; }
+        if (argv.length < 4) { log('No language file specified.'); process.exit(); return; }
         var sources = [];
-        for (var i = 4; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { log('Missing file: ' + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
+        for (var i = 4; i < argv.length; i++) { if (fs.existsSync(argv[i]) == false) { log('Missing file: ' + argv[i]); process.exit(); return; } sources.push(argv[i]); }
         if (sources.length == 0) { log('No source files specified.'); process.exit(); return; }
-        extract(process.argv[3], sources);
+        extract(argv[3], sources);
     }
 
     // Save a text file with all the strings for a given language
     if (command == 'totext') {
-        if ((process.argv.length == 6)) {
-            if (fs.existsSync(process.argv[3]) == false) { log('Unable to find: ' + process.argv[3]); return; }
-            totext(process.argv[3], process.argv[4], process.argv[5]);
+        if ((argv.length == 6)) {
+            if (fs.existsSync(argv[3]) == false) { log('Unable to find: ' + argv[3]); return; }
+            totext(argv[3], argv[4], argv[5]);
         } else {
             log('Usage: TOTEXT [translationfile] [textfile] [language code]');
         }
@@ -164,10 +173,10 @@ function start() {
 
     // Read a text file and use it as translation for a given language
     if (command == 'fromtext') {
-        if ((process.argv.length == 6)) {
-            if (fs.existsSync(process.argv[3]) == false) { log('Unable to find: ' + process.argv[3]); return; }
-            if (fs.existsSync(process.argv[4]) == false) { log('Unable to find: ' + process.argv[4]); return; }
-            fromtext(process.argv[3], process.argv[4], process.argv[5]);
+        if ((argv.length == 6)) {
+            if (fs.existsSync(argv[3]) == false) { log('Unable to find: ' + argv[3]); return; }
+            if (fs.existsSync(argv[4]) == false) { log('Unable to find: ' + argv[4]); return; }
+            fromtext(argv[3], argv[4], argv[5]);
         } else {
             log('Usage: FROMTEXT [translationfile] [textfile] [language code]');
         }
@@ -176,10 +185,10 @@ function start() {
 
     // Merge one language from a language file into another language file.
     if (command == 'merge') {
-        if ((process.argv.length == 6)) {
-            if (fs.existsSync(process.argv[3]) == false) { log('Unable to find: ' + process.argv[3]); return; }
-            if (fs.existsSync(process.argv[4]) == false) { log('Unable to find: ' + process.argv[4]); return; }
-            merge(process.argv[3], process.argv[4], process.argv[5]);
+        if ((argv.length == 6)) {
+            if (fs.existsSync(argv[3]) == false) { log('Unable to find: ' + argv[3]); return; }
+            if (fs.existsSync(argv[4]) == false) { log('Unable to find: ' + argv[4]); return; }
+            merge(argv[3], argv[4], argv[5]);
         } else {
             log('Usage: MERGE [sourcefile] [tartgetfile] [language code]');
         }
@@ -192,12 +201,12 @@ function start() {
         if (fs.existsSync('../views/translations') == false) { fs.mkdirSync('../views/translations'); }
         if (fs.existsSync('../public/translations') == false) { fs.mkdirSync('../public/translations'); }
         var lang = null;
-        if (process.argv.length > 4) { lang = process.argv[4].toLowerCase(); }
-        if (process.argv.length > 3) {
-            if (fs.existsSync(process.argv[3]) == false) {
-                log('Unable to find: ' + process.argv[3]);
+        if (argv.length > 4) { lang = argv[4].toLowerCase(); }
+        if (argv.length > 3) {
+            if (fs.existsSync(argv[3]) == false) {
+                log('Unable to find: ' + argv[3]);
             } else {
-                translate(lang, process.argv[3], meshCentralSourceFiles, 'translations');
+                translate(lang, argv[3], meshCentralSourceFiles, 'translations');
             }
         } else {
             if (fs.existsSync('translate.json') == false) {
@@ -211,14 +220,14 @@ function start() {
 
     // Translate web pages to a given language given a language file
     if (command == 'translate') {
-        if (process.argv.length < 4) { log("No language specified."); process.exit(); return; }
-        if (process.argv.length < 5) { log("No language file specified."); process.exit(); return; }
-        var lang = process.argv[3].toLowerCase();
-        var langFile = process.argv[4];
+        if (argv.length < 4) { log("No language specified."); process.exit(); return; }
+        if (argv.length < 5) { log("No language file specified."); process.exit(); return; }
+        var lang = argv[3].toLowerCase();
+        var langFile = argv[4];
         if (fs.existsSync(langFile) == false) { log("Missing language file: " + langFile); process.exit(); return; }
 
         var sources = [];
-        for (var i = 5; i < process.argv.length; i++) { if (fs.existsSync(process.argv[i]) == false) { log("Missing file: " + process.argv[i]); process.exit(); return; } sources.push(process.argv[i]); }
+        for (var i = 5; i < argv.length; i++) { if (fs.existsSync(argv[i]) == false) { log("Missing file: " + argv[i]); process.exit(); return; } sources.push(argv[i]); }
         if (sources.length == 0) { log("No source files specified."); process.exit(); return; }
 
         translate(lang, langFile, sources, false);
@@ -374,7 +383,7 @@ function merge(source, target, lang) {
 }
 
 function translate(lang, langFile, sources, createSubDir) {
-    if ((NodeJSVer >= 12) && (lang == null)) {
+    if (directRun && (NodeJSVer >= 12) && (lang == null)) {
         // Multi threaded translation
         log("Multi-threaded translation.");
 
@@ -733,3 +742,6 @@ function translationsToJson(t) {
     arr2.sort(function (a, b) { if (a.en > b.en) return 1; if (a.en < b.en) return -1; return 0; });
     return JSON.stringify({ strings: arr2 }, null, '  ');
 }
+
+// Export table
+module.exports.startEx = startEx;
