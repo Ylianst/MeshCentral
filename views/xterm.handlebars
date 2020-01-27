@@ -229,8 +229,8 @@
                     contextmenudiv = document.getElementById('termShellContextMenuLinux');
                 }
                 showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
+                return haltEvent(event);
             }
-            return haltEvent(event);
         }
 
         function showContextMenuDiv(element, x, y) {

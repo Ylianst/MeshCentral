@@ -685,7 +685,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths';
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) {
                                 if (f.length > 80) { fin += (f + ',\r\n'); f = ''; }
@@ -808,18 +808,48 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'usersessions': {
+                            var userSessionCount = 0;
+                            var filter = null;
+                            var arg = cmdargs['_'][0];
+                            if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
                             for (var i in parent.wssessions) {
-                                r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 'a' : '') + '.<br />');
-                                for (var j in parent.wssessions[i]) {
-                                    var addr = parent.wssessions[i][j]._socket.remoteAddress;
-                                    if (addr.startsWith('::ffff:')) { addr = addr.substring(7); }
-                                    r += '    ' + addr + ' --> ' + parent.wssessions[i][j].sessionId + '.<br />';
+                                if ((filter == null) || (filter == i)) {
+                                    userSessionCount++;
+                                    r += (i + ', ' + parent.wssessions[i].length + ' session' + ((parent.wssessions[i].length > 1) ? 's' : '') + '.\r\n');
+                                    for (var j in parent.wssessions[i]) {
+                                        var addr = parent.wssessions[i][j]._socket.remoteAddress;
+                                        if (addr.startsWith('::ffff:')) { addr = addr.substring(7); }
+                                        r += '    ' + addr + ' --> ' + parent.wssessions[i][j].sessionId + '\r\n';
+                                    }
                                 }
+                            }
+                            if (userSessionCount == 0) { r = 'None.'; }
+                            break;
+                        }
+                        case 'closeusersessions': {
+                            var userSessionCount = 0;
+                            var filter = null;
+                            var arg = cmdargs['_'][0];
+                            if (typeof arg == 'string') { if (arg.indexOf('/') >= 0) { filter = arg; } else { filter = ('user/' + domain.id + '/' + arg); } }
+                            if (filter == null) {
+                                r += "Usage: closeusersessions <username>";
+                            } else {
+                                r += "Closing user sessions for: " + filter + '\r\n';
+                                for (var i in parent.wssessions) {
+                                    if (filter == i) {
+                                        userSessionCount++;
+                                        for (var j in parent.wssessions[i]) {
+                                            parent.wssessions[i][j].send(JSON.stringify({ action: 'stopped', msg: "Administrator forced disconnection" }));
+                                            parent.wssessions[i][j].close();
+                                        }
+                                    }
+                                }
+                                if (userSessionCount < 2) { r += 'Disconnected ' + userSessionCount + ' session.'; } else { r += 'Disconnected ' + userSessionCount + ' sessions.'; };
                             }
                             break;
                         }
                         case 'resetserver': {
-                            console.log('Server restart...');
+                            console.log("Server restart...");
                             process.exit(0);
                             break;
                         }
@@ -827,12 +857,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.taskLimiter != null) {
                                 //var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
                                 const tl = parent.parent.taskLimiter;
-                                r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '<br />';
-                                r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '<br />';
+                                r += 'MaxTasks: ' + tl.maxTasks + ', NextTaskId: ' + tl.nextTaskId + '\r\n';
+                                r += 'MaxTaskTime: ' + (tl.maxTaskTime / 1000) + ' seconds, Timer: ' + (tl.timer != null) + '\r\n';
                                 var c = [];
                                 for (var i in tl.current) { c.push(i); }
-                                r += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']<br />';
-                                r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '<br />';
+                                r += 'Current (' + tl.currentCount + '): [' + c.join(', ') + ']\r\n';
+                                r += 'Pending (High/Med/Low): ' + tl.pending[0].length + ', ' + tl.pending[1].length + ', ' + tl.pending[2].length + '\r\n';
                             }
                             break;
                         }
@@ -846,7 +876,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'cores': {
-                            if (parent.parent.defaultMeshCores != null) { for (var i in parent.parent.defaultMeshCores) { r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes<br />'; } }
+                            if (parent.parent.defaultMeshCores != null) { for (var i in parent.parent.defaultMeshCores) { r += i + ': ' + parent.parent.defaultMeshCores[i].length + ' bytes\r\n'; } }
                             break;
                         }
                         case 'showpaths': {
@@ -924,7 +954,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 r += 'id: ' + i + ', state: ' + parent.wsrelays[i].state;
                                 if (parent.wsrelays[i].peer1 != null) { r += ', peer1: ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.ip); }
                                 if (parent.wsrelays[i].peer2 != null) { r += ', peer2: ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.ip); }
-                                r += '<br />';
+                                r += '\r\n';
                             }
                             if (r == '') { r = 'No relays.'; }
                             break;
