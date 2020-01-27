@@ -65,6 +65,9 @@
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
     </div>
+    <div id="altPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxaltport" class="cmtext" onclick="cmaltportaction(1,event)"><b>Alternate Port</b></div>
+    </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxclose" class="cmtext" onclick="pluginTabClose(event)">Close Tab</div>
@@ -2153,16 +2156,18 @@
                     var publicKey = message.request;
                     message.request.challenge = Uint8Array.from(atob(message.request.challenge), function (c) { return c.charCodeAt(0) })
                     message.request.user.id = Uint8Array.from(atob(message.request.user.id), function (c) { return c.charCodeAt(0) })
-                    navigator.credentials.create({ publicKey: publicKey })
-                        .then(function(newCredentialInfo) {
-                            // Public key credential
-                            var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
-                            meshserver.send({ action: 'webauthn-endregister', response: r });
-                            setDialogMode(0);
-                        }, function(error) {
-                            // Error
-                            setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
-                        });
+                    setTimeout(function() {
+                        navigator.credentials.create({ publicKey: publicKey })
+                            .then(function(newCredentialInfo) {
+                                // Public key credential
+                                var r = { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type };
+                                meshserver.send({ action: 'webauthn-endregister', response: r });
+                                setDialogMode(0);
+                            }, function(error) {
+                                // Error
+                                setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
+                            });
+                    }, 100);
                     break;
                 }
                 case 'event': {
@@ -3051,13 +3056,13 @@
                         var i = groupNames[j];
                         if (view == 2) {
                             r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px>';
-                            var collapsed = CollapsedGroups['tag:' + i];
-                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + i + '\",2)></img>'; // Collapse action
+                            var collapsed = CollapsedGroups['tag:' + encodeURIComponent(i)];
+                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + encodeURIComponent(i) + '\",2)></img>'; // Collapse action
                             r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
                         } else {
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span>';
-                            var collapsed = CollapsedGroups['tag:' + i];
-                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + i + '\")></img>'; // Collapse action
+                            var collapsed = CollapsedGroups['tag:' + encodeURIComponent(i)];
+                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + encodeURIComponent(i) + '\")></img>'; // Collapse action
                             r += '<span>' + i + '</span></div>';
                             r += '<div id=DevxCol' + tagDeviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                             r += groups[i];
@@ -3895,7 +3900,12 @@
             var scrollLeft = (window.pageXOffset !== null) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
             var scrollTop = (window.pageYOffset !== null) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
             var elem = document.elementFromPoint(event.pageX - scrollLeft, event.pageY - scrollTop);
-            if (elem && elem != null && elem.id == 'connectbutton2' && currentNode && currentNode.agent && (currentNode.agent.id > 0) && (currentNode.agent.id < 5)) {
+
+            if (elem && elem != null && elem.id == 'rdpClickOnceLink' && currentNode && currentNode.agent && (currentNode.agent.id > 0) && (currentNode.agent.id < 5)) {
+                contextelement = elem;
+                var contextmenudiv = document.getElementById('altPortContextMenu');
+                showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
+            } else if (elem && elem != null && elem.id == 'connectbutton2' && currentNode && currentNode.agent && (currentNode.agent.id > 0) && (currentNode.agent.id < 5)) {
                 contextelement = elem;
                 var contextmenudiv = document.getElementById('termShellContextMenu');
                 showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
@@ -3936,7 +3946,6 @@
                 QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
                 QV('cxconsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
             }
-
             return haltEvent(event);
         }
 
@@ -3990,6 +3999,16 @@
             connectTerminal(null, 1, { protocol: action });
         }
 
+        function cmaltportaction(action) {
+            if (xxdialogMode) return;
+            var x = "RDP remote connection port:" + '<br /><br /><input type=text placeholder="3389" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" maxlength=5 id=d10rdpport type=text>';
+            setDialogMode(2, "RDP Connection", 3, function() {
+                setDialogMode(0);
+                if (currentNode != null) { p10clickOnce(currentNode._id, "RDP2", ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389)); }
+            }, x, currentNode);
+            Q('d10rdpport').focus();
+        }
+
         /*
         function pluginTabClose() {
             var pluginTab = contextelement;
@@ -4007,6 +4026,7 @@
             QV('meshContextMenu', false);
             QV('termShellContextMenu', false);
             QV('termShellContextMenuLinux', false);
+            QV('altPortContextMenu', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
         }
@@ -4828,7 +4848,7 @@
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
-                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# onclick=p10clickOnce("' + node._id + '","RDP2",3389) title=\"' + "Requires Microsoft ClickOnce support in your browser" + '.\">' + "RDP" + '</a>&nbsp;'; }
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2",3389) title=\"' + "Requires Microsoft ClickOnce support in your browser" + '.\">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
                         x += '<a href=# onclick=p10clickOnce("' + node._id + '","PSSH",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "Putty" + '</a>&nbsp;';
                         x += '<a href=# onclick=p10clickOnce("' + node._id + '","WSCP",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "WinSCP" + '</a>&nbsp;';
