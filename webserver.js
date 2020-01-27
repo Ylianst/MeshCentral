@@ -3177,7 +3177,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc + '</td>';
                 response += '<td><a download href="' + req.originalUrl + '?id=' + agentinfo.id + '">' + agentinfo.rname + '</a></td>';
-                response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hash + '</td>';
+                response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hashhex + '</td>';
                 response += '<td><a download href="' + req.originalUrl + '?meshcmd=' + agentinfo.id + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table></body></html>';

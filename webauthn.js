@@ -35,7 +35,7 @@ module.exports.CreateWebAuthnModule = function () {
 
         const response = { 'verified': false };
 
-        if (ctapMakeCredResp.fmt === 'none') {
+        if ((ctapMakeCredResp.fmt === 'none') || (ctapMakeCredResp.fmt === 'fido-u2f')) {
             if (!(authrDataStruct.flags & 0x01)) { throw new Error('User was NOT presented during authentication!'); } // U2F_USER_PRESENTED
 
             const publicKey = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey);

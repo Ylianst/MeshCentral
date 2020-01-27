@@ -1894,6 +1894,7 @@ function CreateMeshCentralServer(config, args) {
                 hashStream.archid = archid;
                 hashStream.on('data', function (data) {
                     obj.meshAgentBinaries[this.archid].hash = data.toString('binary');
+                    obj.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
                     if ((--archcount == 0) && (func != null)) { func(); }
                 });
                 var options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
