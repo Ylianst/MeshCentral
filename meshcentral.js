@@ -154,19 +154,52 @@ function CreateMeshCentralServer(config, args) {
 
         // Perform web site translations into different languages
         if (obj.args.translate) {
-            // Check if translate.json is in the "meshcentral-data" folder, if so use that and translate default pages.
-            // TODO
+            // Check NodeJS version
+            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+            if (NodeJSVer < 8) { console.log("Translation feature requires Node v8 or above, current version is " + process.version + "."); process.exit(); return; }
 
+            // Check if translate.json is in the "meshcentral-data" folder, if so use that and translate default pages.
+            var translationFile = null, customTranslation = false;
+            if (require('fs').existsSync(obj.path.join(obj.datapath, 'translate.json'))) { translationFile = obj.path.join(obj.datapath, 'translate.json'); console.log("Using translate.json in meshentral-data."); customTranslation = true; }
+            if (translationFile == null) { if (require('fs').existsSync(obj.path.join(__dirname, 'translate', 'translate.json'))) { translationFile = obj.path.join(__dirname, 'translate', 'translate.json'); console.log("Using default translate.json."); } }
+            if (translationFile == null) { console.log("Unable to find translate.json."); process.exit(); return; }
+
+            // Perform translation operations
+            var didSomething = false;
             process.chdir('./translate');
             var translateEngine = require('./translate/translate.js')
-            translateEngine.startEx(['', '', 'minifyall']);
-            translateEngine.startEx(['', '', 'translateall']);
-            translateEngine.startEx(['', '', 'extractall']);
-            process.exit();
+            if (customTranslation == true) {
+                // Translate all of the default files using custom translation file
+                translateEngine.startEx(['', '', 'minifyall']);
+                translateEngine.startEx(['', '', 'translateall', translationFile]);
+                translateEngine.startEx(['', '', 'extractall', translationFile]);
+                didSomething = true;
+            }
 
             // Check is "meshcentral-web" exists, if so, translate all pages in that folder.
-            // TODO
+            if (obj.webViewsOverridePath != null) {
+                didSomething = true;
+                var files = obj.fs.readdirSync(obj.webViewsOverridePath);
+                for (var i in files) {
+                    var file = obj.path.join(obj.webViewsOverridePath, files[i]);
+                    if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
+                        translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
+                    }
+                }
+            }
+            if (obj.webPublicOverridePath != null) {
+                didSomething = true;
+                var files = obj.fs.readdirSync(obj.webPublicOverridePath);
+                for (var i in files) {
+                    var file = obj.path.join(obj.webPublicOverridePath, files[i]);
+                    if (file.endsWith('.htm') && !file.endsWith('-min.htm')) {
+                        translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
+                    }
+                }
+            }
 
+            if (didSomething == false) { console.log("Nothing to do."); }
+            process.exit();
             return;
         }
 

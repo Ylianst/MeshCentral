@@ -4332,7 +4332,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Render a page using the proper language
     function render(req, res, filename, args) {
-        if ((obj.parent.webViewsOverridePath == null) && (obj.renderPages != null)) {
+        if (obj.renderPages != null) {
             // If a user set a localization, use that
             if ((req.query.lang == null) && (req.session != null) && (req.session.userid)) {
                 var user = obj.users[req.session.userid];
@@ -4375,6 +4375,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Get the list of pages with different languages that can be rendered
     function getRenderList() {
+        // Fetch default rendeing pages
         var translateFolder = null;
         if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
         if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
@@ -4392,6 +4393,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
                         obj.renderPages[xname[0]][xname[1]] = obj.path.join(translateFolder, name);
                         if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                    }
+                }
+            }
+
+            // See if there are any custom rending pages that will override the default ones
+            if (obj.parent.webViewsOverridePath != null) {
+                translateFolder = null;
+                if (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations'))) { translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations'); }
+                var files = obj.fs.readdirSync(translateFolder);
+                for (var i in files) {
+                    var name = files[i];
+                    if (name.endsWith('.handlebars')) {
+                        name = name.substring(0, name.length - 11);
+                        var xname = name.split('_');
+                        if (xname.length == 2) {
+                            if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
+                            obj.renderPages[xname[0]][xname[1]] = obj.path.join(translateFolder, name);
+                            if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                        }
                     }
                 }
             }
