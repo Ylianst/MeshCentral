@@ -1140,117 +1140,160 @@ function createMeshCore(agent) {
                     };
 
                     // Remote terminal using native pipes
-                    if (process.platform == 'win32') {
-                        try {
+                    if (process.platform == 'win32')
+                    {
+                        try
+                        {
                             var cols = 80, rows = 25;
-                            if (this.httprequest.xoptions) {
+                            if (this.httprequest.xoptions)
+                            {
                                 if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
                                 if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
                             }
 
                             if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9)) { throw ('PowerShell is not supported on this version of windows'); }
-                            if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6)) {
+                            if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6))
+                            {
                                 // Admin Terminal
-                                if (require('win-virtual-terminal').supported) {
+                                if (require('win-virtual-terminal').supported)
+                                {
                                     // ConPTY PseudoTerminal
-                                    this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows);
+                                    // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+
+                                    // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
+                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                    this.httprequest._dispatcher.ws = this;
+                                    this.httprequest._dispatcher.on('connection', function (c)
+                                    {
+                                        console.log('client connected');
+                                        this.ws._term = c;
+                                        c.pipe(this.ws, { dataTypeSkip: 1 });
+                                        this.ws.pipe(c, { dataTypeSkip: 1 });
+                                    });
                                 }
-                                else {
+                                else
+                                {
                                     // Legacy Terminal
                                     this.httprequest._term = require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows);
                                 }
-                            } else {
+                            }
+                            else
+                            {
                                 // Logged in user
                                 var userPromise = require('user-sessions').enumerateUsers();
                                 userPromise.that = this;
-                                userPromise.then(function (u) {
+                                userPromise.then(function (u)
+                                {
                                     var that = this.that;
-                                    if (u.Active.length > 0) {
+                                    if (u.Active.length > 0)
+                                    {
                                         var username = u.Active[0].Username;
-                                        if (require('win-virtual-terminal').supported) {
+                                        if (require('win-virtual-terminal').supported)
+                                        {
                                             // ConPTY PseudoTerminal
                                             that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
-                                        } else {
+                                        }
+                                        else
+                                        {
                                             // Legacy Terminal
                                             that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                         }
                                         that.httprequest._dispatcher.ws = that;
-                                        that.httprequest._dispatcher.on('connection', function (c) {
+                                        that.httprequest._dispatcher.on('connection', function (c)
+                                        {
                                             console.log('client connected');
                                             this.ws._term = c;
                                             c.pipe(this.ws, { dataTypeSkip: 1 });
-                                            this.ws.pipe(c, { dataTypeSkip: 1, end: false });
-                                            this.ws.prependListener('end', function () {
-                                                if (this.httprequest._term) { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); }
-                                            });
+                                            this.ws.pipe(c, { dataTypeSkip: 1 });
                                         });
                                     }
-                                });
+                                });                       
                             }
-                        } catch (e) {
+                        } catch (e)
+                        {
                             MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             this.end();
                             return;
                         }
-                        if (!this.httprequest._dispatcher) {
+                        if (!this.httprequest._dispatcher)
+                        {
                             this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
                             this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
                             this.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
                         }
-                    } else {
-                        try {
+                    }
+                    else
+                    {
+                        try
+                        {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var script = false;
-                            try {
-                                if (require('linux-gnome-helpers').scriptVersion) {
-                                    if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
-                                        (require('linux-gnome-helpers').scriptVersion.major == 2 && require('linux-gnome-helpers').scriptVersion.minor >= 25)) {
-                                        script = '/usr/bin/script';
+                            if (this.httprequest.xoptions.script)
+                            {
+                                try
+                                {
+                                    if (require('linux-gnome-helpers').scriptVersion)
+                                    {
+                                        if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
+                                            (require('linux-gnome-helpers').scriptVersion.major == 2 && require('linux-gnome-helpers').scriptVersion.minor >= 25))
+                                        {
+                                            script = '/usr/bin/script';
+                                        }
                                     }
-                                }
-                            } catch (ex) { }
-                            var python = fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
+                                } catch (ex) { }
+                            }
+                            var python = (this.httprequest.xoptions.python && fs.existsSync('/usr/bin/python')) ? '/usr/bin/python' : false;
                             var shell = bash || sh;
-                            var pty = python || script;
 
                             var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
-                            if (this.httprequest.xoptions) {
+                            if (this.httprequest.xoptions)
+                            {
                                 if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
                                 if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
                             }
                             var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
                             var setupcommands = ' alias ls=\'ls --color=auto\'\n';
                             if (shell == sh) setupcommands += ' stty erase ^H\n';
-                            // Dynamic resizing is only supported in PTYs
-                            if (pty) setupcommands += ' mcresize() { old=$(stty -g);stty raw -echo min 0 time 5;printf \'\\0337\\033[r\\033[999;999H\\033[6n\\0338\' > /dev/tty;IFS=\'[;R\' read -r _ rows cols _ < /dev/tty;stty "$old";stty cols "$cols" rows "$rows"; };trap mcresize SIGWINCH;\n'
 
-                            if (script && shell && process.platform == 'linux') {
+                            if (script && shell && process.platform == 'linux')
+                            {
                                 this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
                                 this.httprequest.process.stdin.write(setupcommands);
-                            } else if (python && shell) {
+                            }
+                            else if (python && shell)
+                            {
                                 this.httprequest.process = childProcess.execFile(python, ['python', '-c', 'import pty; pty.spawn(["' + shell + '"])'], options); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
-                            } else if (bash) {
+                            }
+                            else if (bash)
+                            {
                                 options.type = childProcess.SpawnTypes.TERM;
                                 this.httprequest.process = childProcess.execFile(bash, ['bash', '-i'], options); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
-                            } else if (sh) {
+                            }
+                            else if (sh)
+                            {
                                 options.type = childProcess.SpawnTypes.TERM;
                                 this.httprequest.process = childProcess.execFile(sh, ['sh'], options); // Start as active user
                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands + "PS1='$ '\n"); }
-                            } else {
+                            }
+                            else
+                            {
                                 MeshServerLog("Failed to start remote terminal session, no shell found");
                                 return;
                             }
-                        } catch (e) {
+                        } catch (e)
+                        {
                             MeshServerLog("Failed to start remote terminal session, " + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             this.end();
                             return;
                         }
-                        this.httprequest.process.pty = pty;
+
+                        if (this.httprequest.process.tcsetsize && this.httprequest.xoptions) { this.httprequest.process.tcsetsize(this.httprequest.xoptions.rows, this.httprequest.xoptions.cols); }
+
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
                         this.httprequest.process.stdin.write(" clear\n");
@@ -1786,17 +1829,17 @@ function createMeshCore(agent) {
             }
             case 'termsize': {
                 // Indicates a change in terminal size
-                if (process.platform == 'win32') {
+                if (process.platform == 'win32')
+                {
                     if (ws.httprequest._term == null) return;
                     //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
                     // TODO
-                } else {
-                    if (ws.httprequest.process == null || !ws.httprequest.process.pty) return;
-                    // ILibDuktape_ChildProcess kill doesn't support sending signals
-                    if (fs.existsSync('/bin/kill')) {
-                        // We need to send signal to the child of the process, since the child is the shell
-                        childProcess.execFile('/bin/bash', ['bash', '-c', 'kill -SIGWINCH $(pgrep -P ' + ws.httprequest.process.pid + ')']);
-                    }
+                } else
+                {
+                    if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
+                    //sendConsoleText('Linux Resize: ' + obj.cols + 'x' + obj.rows);
+
+                    if (ws.httprequest.process.tcsetsize) { ws.httprequest.process.tcsetsize(obj.rows, obj.cols); }
                 }
                 break;
             }
