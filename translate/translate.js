@@ -112,7 +112,7 @@ function startEx(argv) {
         log('  EXTRACT [languagefile] [files]');
         log('    Extract strings from web pages and generate a language (.json) file.');
         log('');
-        log('  EXTRACTALL');
+        log('  EXTRACTALL (languagefile)');
         log('    Extract all MeshCentral strings from web pages and generate the languages.json file.');
         log('');
         log('  TRANSLATE [language] [languagefile] [files]');
@@ -196,7 +196,15 @@ function startEx(argv) {
     }
 
     // Extract or translate all MeshCentral strings
-    if (command == 'extractall') { extract("translate.json", meshCentralSourceFiles); }
+    if (command == 'extractall') {
+        if (argv.length > 4) { lang = argv[4].toLowerCase(); }
+        var translationFile = 'translate.json';
+        if (argv.length > 3) {
+            if (fs.existsSync(argv[3]) == false) { log('Unable to find: ' + argv[3]); return; } else { translationFile = argv[3]; }
+        }
+        extract(translationFile, meshCentralSourceFiles, translationFile);
+    }
+
     if (command == 'translateall') {
         if (fs.existsSync('../views/translations') == false) { fs.mkdirSync('../views/translations'); }
         if (fs.existsSync('../public/translations') == false) { fs.mkdirSync('../public/translations'); }
@@ -226,11 +234,16 @@ function startEx(argv) {
         var langFile = argv[4];
         if (fs.existsSync(langFile) == false) { log("Missing language file: " + langFile); process.exit(); return; }
 
-        var sources = [];
-        for (var i = 5; i < argv.length; i++) { if (fs.existsSync(argv[i]) == false) { log("Missing file: " + argv[i]); process.exit(); return; } sources.push(argv[i]); }
+        var sources = [], subdir = null;
+        for (var i = 5; i < argv.length; i++) {
+            if (argv[i].startsWith('--subdir:')) {
+                subdir = argv[i].substring(9);
+            } else {
+                if (fs.existsSync(argv[i]) == false) { log("Missing file: " + argv[i]); process.exit(); return; } sources.push(argv[i]);
+            }
+        }
         if (sources.length == 0) { log("No source files specified."); process.exit(); return; }
-
-        translate(lang, langFile, sources, false);
+        translate(lang, langFile, sources, subdir);
     }
 
     if (command == 'minifyall') {
@@ -414,7 +427,7 @@ function translateSingleThreaded(lang, langFile, sources, createSubDir) {
     try { langFileData = JSON.parse(fs.readFileSync(langFile)); } catch (ex) { }
     if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
 
-    if (lang != null) {
+    if ((lang != null) && (lang != '*')) {
         // Translate a single language
         translateEx(lang, langFileData, sources, createSubDir);
     } else {
@@ -553,7 +566,11 @@ function translateFromHtml(lang, file, createSubDir) {
 
     var outname = file;
     var outnamemin = null;
-    if (createSubDir != null) { outname = path.join(path.dirname(file), createSubDir, path.basename(file)); }
+    if (createSubDir != null) {
+        var outfolder = path.join(path.dirname(file), createSubDir);
+        if (fs.existsSync(outfolder) == false) { fs.mkdirSync(outfolder); }
+        outname = path.join(path.dirname(file), createSubDir, path.basename(file));
+    }
     if (outname.endsWith('.handlebars')) {
         outnamemin = (outname.substring(0, outname.length - 11) + '-min_' + lang + '.handlebars');
         outname = (outname.substring(0, outname.length - 11) + '_' + lang + '.handlebars');
