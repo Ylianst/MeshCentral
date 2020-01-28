@@ -3029,7 +3029,7 @@
                             for (var j in node.tags) {
                                 var tag = node.tags[j];
                                 var collapsed = CollapsedGroups['tag:' + tag];
-                                var r2 = r.replace('**xx**xx*TaG*xx**xx**', tag + (collapsed?' style=display:none':''));
+                                var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponent(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
                                 if (view == 3) break;
                             }
