@@ -161,6 +161,7 @@
                     if (resizeTimer) clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(sendResize, 200); 
                 });
+                term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
 
                 // Setup a terminal tunnel to the agent
                 tunnel = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
