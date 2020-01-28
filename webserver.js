@@ -4398,9 +4398,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // See if there are any custom rending pages that will override the default ones
-            if (obj.parent.webViewsOverridePath != null) {
-                translateFolder = null;
-                if (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations'))) { translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations'); }
+            if ((obj.parent.webViewsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations')))) {
+                translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations');
                 var files = obj.fs.readdirSync(translateFolder);
                 for (var i in files) {
                     var name = files[i];
