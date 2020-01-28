@@ -1203,6 +1203,7 @@ function createMeshCore(agent) {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var script = false;
+                            /*
                             try {
                                 if (require('linux-gnome-helpers').scriptVersion) {
                                     if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
@@ -1211,7 +1212,8 @@ function createMeshCore(agent) {
                                     }
                                 }
                             } catch (ex) { }
-                            var python = fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
+                            */
+                            var python = false; //fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
                             var shell = bash || sh;
                             var pty = python || script;
 
