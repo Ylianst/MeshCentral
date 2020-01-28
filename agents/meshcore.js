@@ -1230,19 +1230,6 @@ function createMeshCore(agent) {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var script = false;
-<<<<<<< HEAD
-                            /*
-                            try {
-                                if (require('linux-gnome-helpers').scriptVersion) {
-                                    if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
-                                        (require('linux-gnome-helpers').scriptVersion.major == 2 && require('linux-gnome-helpers').scriptVersion.minor >= 25)) {
-                                        script = '/usr/bin/script';
-                                    }
-                                }
-                            } catch (ex) { }
-                            */
-                            var python = false; //fs.existsSync('/usr/bin/python') ? '/usr/bin/python' : false;
-=======
                             if (this.httprequest.xoptions.script)
                             {
                                 try
@@ -1258,7 +1245,6 @@ function createMeshCore(agent) {
                                 } catch (ex) { }
                             }
                             var python = (this.httprequest.xoptions.python && fs.existsSync('/usr/bin/python')) ? '/usr/bin/python' : false;
->>>>>>> d44a88113778814efbc291357c3fe6cf1330bca5
                             var shell = bash || sh;
 
                             var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
