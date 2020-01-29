@@ -1230,7 +1230,7 @@ function createMeshCore(agent) {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var script = false;
-                            if (this.httprequest.xoptions.script)
+                            if (this.httprequest.xoptions && this.httprequest.xoptions.script)
                             {
                                 try
                                 {
@@ -1244,7 +1244,7 @@ function createMeshCore(agent) {
                                     }
                                 } catch (ex) { }
                             }
-                            var python = (this.httprequest.xoptions.python && fs.existsSync('/usr/bin/python')) ? '/usr/bin/python' : false;
+                            var python = (this.httprequest.xoptions && this.httprequest.xoptions.python && fs.existsSync('/usr/bin/python')) ? '/usr/bin/python' : false;
                             var shell = bash || sh;
 
                             var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
