@@ -973,6 +973,7 @@ module.exports.CreateDB = function (parent, func) {
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
+            const dburl = parent.args.mongodb;
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
             const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
@@ -985,7 +986,8 @@ module.exports.CreateDB = function (parent, func) {
                 var mongoDumpPath = 'mongodump';
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
-                const cmd = '\"' + mongoDumpPath + '\" --db \"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+                const cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --url=\"' + dburl + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"'; }
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
                         backupProcess = null;
