@@ -2281,6 +2281,10 @@ function mainStart() {
     // Check the NodeJS is version 6 or better.
     if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 6) { console.log("MeshCentral requires Node v6 or above, current version is " + process.version + "."); return; }
 
+    // If running within the node_modules folder, move working directory back to parent.
+    if (process.cwd().endsWith('\\node_modules\\meshcentral') || process.cwd().endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(process.cwd(), '..', '..')); }
+    if (process.cwd().endsWith('\\node_modules') || process.cwd().endsWith('/node_modules')) { process.chdir(require('path').join(process.cwd(), '..')); }
+
     // Check for any missing modules.
     InstallModules(['minimist'], function () {
         // Parse inbound arguments
