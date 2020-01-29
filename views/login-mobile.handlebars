@@ -263,7 +263,7 @@
         var newAccount = '{{{newAccount}}}';
         var passhint = '{{{passhint}}}';
         var newAccountPass = parseInt('{{{newAccountPass}}}');
-        var emailCheck = ('{{{emailcheck}}}' == 'true');
+        var emailCheck = '{{{emailcheck}}}';
         var features = parseInt('{{{features}}}');
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); } else { passRequirements = {}; }
@@ -322,8 +322,8 @@
             QV('newAccountDiv', (newAccount === '1') || (newAccount === 'true')); // If new accounts are not allowed, don't display the new account link.
             if ((passRequirements.hint === true) && (passhint != null) && (passhint.length > 0)) { QV('showPassHintLink', true); }
             QV('newAccountPass', (newAccountPass == 1));
-            QV('resetAccountDiv', (emailCheck == true));
-            QV('hrAccountDiv', (emailCheck == true) || (newAccountPass == 1));
+            QV('resetAccountDiv', (emailCheck == 'true'));
+            QV('hrAccountDiv', (emailCheck == 'true') || (newAccountPass == 1));
 
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }

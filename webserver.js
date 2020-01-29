@@ -4250,7 +4250,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         } else {
             xargs.title1 = domain.title1 ? domain.title1 : '';
-            xargs.title2 = (args.title1 && domain.title2) ? domain.title2 : '';
+            xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
         }
         xargs.extitle = encodeURIComponent(xargs.title);
         xargs.domainurl = domain.url;
