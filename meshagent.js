@@ -119,7 +119,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     ws.on('message', function (msg) {
         if (msg.length < 2) return;
         if (typeof msg == 'object') { msg = msg.toString('binary'); } // TODO: Could change this entire method to use Buffer instead of binary string
-
         if (obj.authenticated == 2) { // We are authenticated
             if ((obj.agentUpdate == null) && (msg.charCodeAt(0) == 123)) { processAgentData(msg); } // Only process JSON messages if meshagent update is not in progress
             if (msg.length < 2) return;
@@ -372,6 +371,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 ChangeAgentTag(tag);
             }
         } else if (obj.authenticated < 2) { // We are not authenticated
+            // Check if this is a un-authenticated JSON
+            if (msg.charCodeAt(0) == 123) {
+                var str = msg.toString('utf8'), command = null;
+                if (str[0] == '{') {
+                    try { command = JSON.parse(str); } catch (ex) { } // If the command can't be parsed, ignore it.
+                    if ((command != null) && (command.action === 'agentName') && (typeof command.value == 'string') && (command.value.length > 0) && (command.value.length < 256)) { obj.agentName = command.value; }
+                }
+                return;
+            }
             const cmd = common.ReadShort(msg, 0);
             if (cmd == 1) {
                 // Agent authentication request
@@ -447,7 +455,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
             else if (cmd == 3) {
                 // Agent meshid
-                if ((msg.length < 72) || ((obj.receivedCommands & 4) != 0)) return;
+                if ((msg.length < 70) || ((obj.receivedCommands & 4) != 0)) return;
                 obj.receivedCommands += 4; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
                 // Set the meshid
@@ -464,8 +472,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
                 //console.log('MeshID', obj.meshid);
                 obj.agentInfo.capabilities = common.ReadInt(msg, 66);
-                const computerNameLen = common.ReadShort(msg, 70);
-                obj.agentInfo.computerName = Buffer.from(msg.substring(72, 72 + computerNameLen), 'binary').toString('utf8');
+                if (msg.length > 70) {
+                    const computerNameLen = common.ReadShort(msg, 70);
+                    obj.agentInfo.computerName = Buffer.from(msg.substring(72, 72 + computerNameLen), 'binary').toString('utf8');
+                    //console.log('computerName', msg.length, computerNameLen, obj.agentInfo.computerName);
+                } else {
+                    obj.agentInfo.computerName = '';
+                    //console.log('computerName-none');
+                }
                 obj.dbMeshKey = 'mesh/' + domain.id + '/' + obj.meshid;
                 completeAgentConnection();
             } else if (cmd == 4) {
@@ -760,7 +774,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport, cause: 1 });
 
         // This node does not exist, create it.
-        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: obj.agentInfo.computerName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
+        var agentName = obj.agentName ? obj.agentName : obj.agentInfo.computerName;
+        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: agentName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
         db.Set(device);
 
         // Event the new node
