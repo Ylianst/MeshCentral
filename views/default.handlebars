@@ -1116,7 +1116,7 @@
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
         if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
-        var args;
+        var args, urlargs;
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
@@ -1192,6 +1192,14 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
+            // Fetch URL arguments
+            urlargs = parseUriArgs();
+            delete urlargs.viewmode;
+            delete urlargs.gotonode;
+            delete urlargs.gotomesh;
+            delete urlargs.gotouser;
+            delete urlargs.gotougrp;
+
             // Check if we are in debug mode
             args = parseUriArgs();
             if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
@@ -1201,9 +1209,6 @@
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
             //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
-
-            // Clean up the URL
-            try { window.history.replaceState({}, document.title, window.location.pathname); } catch (ex) { }
 
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; }
             toggleFullScreen();
@@ -4955,6 +4960,7 @@
                 var urlviewmode = '';
                 if ((xxcurrentView >= 10) && (xxcurrentView <= 19) && (currentNode != null)) {
                     urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2];
+                    for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                     try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
                 }
             }
@@ -7809,6 +7815,7 @@
             var urlviewmode = '';
             if ((xxcurrentView >= 20) && (xxcurrentView <= 29) && (currentMesh != null)) {
                 urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2];
+                for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
         }
@@ -9350,6 +9357,7 @@
             var urlviewmode = '';
             if ((xxcurrentView >= 51) && (xxcurrentView <= 59) && (currentUserGroup != null)) {
                 urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2];
+                for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
         }
@@ -9591,6 +9599,7 @@
             var urlviewmode = '';
             if ((xxcurrentView >= 30) && (xxcurrentView <= 39) && (currentUser != null)) {
                 urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2];
+                for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
         }
@@ -10405,6 +10414,7 @@
                 } else if ((xxcurrentView >= 51) && (xxcurrentView <= 59)) { // User Group Link
                     if (currentUserGroup != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
                 } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
+                for (var i in urlargs) { urlviewmode += (((urlviewmode == '')?'?':'&') + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
 

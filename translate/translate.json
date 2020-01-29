@@ -1579,8 +1579,8 @@
     },
     {
       "en": "Action File",
-      "nl": "Actie bestand",
       "es": "Archivo de acción",
+      "nl": "Actie bestand",
       "xloc": [
         "default.handlebars->25->579",
         "default.handlebars->25->581"
@@ -13425,8 +13425,8 @@
     },
     {
       "en": "Place link to this device in the clipboard",
-      "nl": "Plaats de link naar dit apparaat op het klembord",
       "es": "Coloque el enlace a este dispositivo en el portapapeles",
+      "nl": "Plaats de link naar dit apparaat op het klembord"
     },
     {
       "cs": "Umístit uzel sem",
