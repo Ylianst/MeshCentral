@@ -987,7 +987,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
                 const cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
-                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --url=\"' + dburl + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"'; }
+                if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\" --archive=\"' + newBackupPath + '.archive\"'; }
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
                         backupProcess = null;
