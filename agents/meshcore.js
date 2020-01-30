@@ -1201,7 +1201,6 @@ function createMeshCore(agent) {
                                         that.httprequest._dispatcher.ws = that;
                                         that.httprequest._dispatcher.on('connection', function (c)
                                         {
-                                            console.log('client connected');
                                             this.ws._term = c;
                                             c.pipe(this.ws, { dataTypeSkip: 1 });
                                             this.ws.pipe(c, { dataTypeSkip: 1 });
@@ -1831,9 +1830,9 @@ function createMeshCore(agent) {
                 // Indicates a change in terminal size
                 if (process.platform == 'win32')
                 {
-                    if (ws.httprequest._term == null) return;
+                    if (ws.httprequest._dispatcher == null) return;
                     //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
-                    // TODO
+                    if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
                 } else
                 {
                     if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
