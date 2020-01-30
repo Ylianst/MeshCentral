@@ -945,9 +945,17 @@
                         case 'meshchange': {
                             // Update mesh information
                             if (meshes[message.event.meshid] == null) {
+                                // Check if we have any access to this device group
+                                var add = false;
+                                if (message.event.links[userinfo._id] != null) { add = true; }
+                                if (userinfo.links[message.event.meshid] != null) { add = true; }
+                                for (var i in userinfo.links) { if ((i.startsWith('ugrp/')) && (message.event.links[i] != null)) { add = true; } }
+
                                 // This is a new mesh for us
-                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
-                                meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                                if (add) {
+                                    meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                                    meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                                }
                             } else {
                                 // This is an existing mesh
                                 if (meshes[message.event.meshid].name != message.event.name) {
@@ -3477,7 +3485,7 @@
                 }
             }
 
-            return rights;
+            return false;
         }
 
         // Return the user rights for a given node
