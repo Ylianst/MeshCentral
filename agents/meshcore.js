@@ -1165,7 +1165,6 @@ function createMeshCore(agent) {
                                     this.httprequest._dispatcher.ws = this;
                                     this.httprequest._dispatcher.on('connection', function (c)
                                     {
-                                        console.log('client connected');
                                         this.ws._term = c;
                                         c.pipe(this.ws, { dataTypeSkip: 1 });
                                         this.ws.pipe(c, { dataTypeSkip: 1 });

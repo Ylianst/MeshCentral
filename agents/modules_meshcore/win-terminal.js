@@ -146,6 +146,10 @@ function windows_terminal() {
 
     this.StartEx = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT, terminalTarget)
     {
+        // The older windows terminal does not support 
+        CONSOLE_SCREEN_WIDTH = 80;
+        CONSOLE_SCREEN_HEIGHT = 25;
+
         if (this._stream != null)
         {
             throw ('Concurrent terminal sessions are not supported on Windows.');
