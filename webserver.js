@@ -1657,7 +1657,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.end("Not Found"); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.end("Not Found"); return; } // Check 3FA URL key
         parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
-       
+
         switch (req.body.action) {
             case 'login': { handleLoginRequest(req, res, true); break; }
             case 'tokenlogin': {
@@ -1677,7 +1677,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return true if it looks like we are using a real TLS certificate.
-    obj.isTrustedCert = function(domain) {
+    obj.isTrustedCert = function (domain) {
         if (obj.args.notls == true) return false; // We are not using TLS, so not trusted cert.
         if ((domain != null) && (typeof domain.trustedcert == 'boolean')) return domain.trustedcert; // If the status of the cert specified, use that.
         if (typeof obj.args.trustedcert == 'boolean') return obj.args.trustedcert; // If the status of the cert specified, use that.
@@ -2261,8 +2261,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
                             try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
 
-                            obj.fs.rename(file.path, fpath, function () {
-                                obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
+                            // Rename the file
+                            obj.fs.rename(file.path, fpath, function (err) {
+                                if (err && (err.code === 'EXDEV') && fs.copyFile) {
+                                    // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
+                                    obj.common.copyFile(file.path, fpath, function (err) {
+                                        obj.fs.unlink(file.path, function (err) {
+                                            obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
+                                        });
+                                    });
+                                } else {
+                                    obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
+                                }
                             });
                         } else {
                             try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
@@ -3440,7 +3450,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 // Use default security headers
                 var geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host)); 
+                var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host));
                 var headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
@@ -3621,7 +3631,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.use(function (req, res, next) {
                 parent.debug('web', '404 Error ' + req.url);
                 var domain = getDomain(req);
-                res.status(404).render(getRenderPage('error404', req), getRenderArgs({ }, domain));
+                res.status(404).render(getRenderPage('error404', req), getRenderArgs({}, domain));
             });
         }
 
@@ -4364,7 +4374,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
                         });
                         return;
-                    } 
+                    }
                 }
             }
         }
