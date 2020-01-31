@@ -11682,7 +11682,6 @@
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->1",
         "default.handlebars->25->1059",
         "default.handlebars->25->1196",
-        "default.handlebars->25->1237",
         "default.handlebars->25->1264",
         "default.handlebars->25->1268",
         "default.handlebars->25->1273",
@@ -18695,6 +18694,7 @@
       "ru": "Имя пользователя",
       "xloc": [
         "default-mobile.handlebars->9->212",
+        "default.handlebars->25->1237",
         "default.handlebars->25->241",
         "default.handlebars->25->271",
         "default.handlebars->25->540",

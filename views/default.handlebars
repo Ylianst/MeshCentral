@@ -9043,7 +9043,7 @@
         function showCreateNewAccountDialog() {
             if (xxdialogMode) return;
             var x = '';
-            if ((features & 0x200000) == 0) { x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
+            if ((features & 0x200000) == 0) { x += addHtmlValue("Username", '<input id=p4name maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
             x += addHtmlValue("Email", '<input id=p4email maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue("Password", '<input id=p4pass1 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue("Password", '<input id=p4pass2 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
