@@ -1161,7 +1161,7 @@ function createMeshCore(agent) {
                                     // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
 
                                     // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
-                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                     this.httprequest._dispatcher.ws = this;
                                     this.httprequest._dispatcher.on('connection', function (c)
                                     {
