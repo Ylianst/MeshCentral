@@ -816,6 +816,7 @@ function CreateMeshCentralServer(config, args) {
                             }
 
                             // Grad some of the values from the original config.json file if present.
+                            config2['mariadb'] = config['mariadb'];
                             config2['mongodb'] = config['mongodb'];
                             config2['mongodbcol'] = config['mongodbcol'];
                             config2['dbencryptkey'] = config['dbencryptkey'];
@@ -2319,6 +2320,7 @@ function mainStart() {
         if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
+        if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) {  modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
