@@ -4980,6 +4980,7 @@
         function writeDeviceEvent(nodeid) {
             if (xxdialogMode) return;
             setDialogMode(2, "Add Device Event", 3, writeDeviceEventEx, '<textarea id=d2devEvent style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>' + "This will add an entry to this device\'s event log." + '<span>', nodeid);
+            Q('d2devEvent').focus();
         }
 
         function writeDeviceEventEx(buttons, tag) { meshserver.send({ action: 'setDeviceEvent', nodeid: decodeURIComponent(tag), msg: encodeURIComponent(Q('d2devEvent').value) }); }
