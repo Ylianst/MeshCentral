@@ -991,6 +991,17 @@ function createMeshCore(agent) {
         s.end = onTunnelClosed;
         s.tunnel = this;
 
+        if (require('MeshAgent').idleTimeout != null)
+        {
+            s.setTimeout(require('MeshAgent').idleTimeout * 1000);
+            s.on('timeout', function ()
+            {
+                this.ping();
+                this.setTimeout(require('MeshAgent').idleTimeout * 1000);
+            });
+        }
+
+
         //sendConsoleText('onTunnelUpgrade - ' + this.tcpport + ' - ' + this.udpport);
 
         if (this.tcpport != null) {
