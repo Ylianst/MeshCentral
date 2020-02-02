@@ -343,7 +343,8 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE INDEX ndxpowernodeidtime ON meshcentral.power (nodeid, time)',
                     'CREATE TABLE meshcentral.smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxsmbiostime ON meshcentral.smbios (time)',
-                    'CREATE INDEX ndxsmbiosexpire ON meshcentral.smbios (expire)'
+                    'CREATE INDEX ndxsmbiosexpire ON meshcentral.smbios (expire)',
+                    'CREATE TABLE meshcentral.plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
                 ], function (err) { if (err != null) { console.log(err); } setupFunctions(func); });
         });
     } else if (parent.args.mongodb) {
@@ -759,7 +760,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { console.log('TODO:GetAllEvents'); };
-            obj.StoreEvent = function (event) { console.log('TODO:StoreEvent'); };
+            obj.StoreEvent = function (event) { console.log('TODO:StoreEvent', event); };
             obj.GetEvents = function (ids, domain, func) { console.log('TODO:GetEvents'); };
             obj.GetEventsWithLimit = function (ids, domain, limit, func) { console.log('TODO:GetEventsWithLimit'); };
             obj.GetUserEvents = function (ids, domain, username, func) { console.log('TODO:GetUserEvents'); };
@@ -811,11 +812,24 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
             
-            // Get database information
-            obj.getDbStats = function (func) { console.log('TODO:getDbStats'); }
+            // Get database information (TODO: Complete this)
+            obj.getDbStats = function (func) {
+                obj.stats = { c: 4 };
+                mariaDbExec('SELECT COUNT(id) FROM meshcentral.main', null, function (err, response) { obj.stats.meshcentral = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                mariaDbExec('SELECT COUNT(time) FROM meshcentral.serverstats', null, function (err, response) { obj.stats.serverstats = response['COUNT(time)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                mariaDbExec('SELECT COUNT(id) FROM meshcentral.power', null, function (err, response) { obj.stats.power = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                mariaDbExec('SELECT COUNT(id) FROM meshcentral.smbios', null, function (err, response) { obj.stats.smbios = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+            }
 
             // Plugin operations
-            //if (parent.config.settings.plugins != null) {}
+            if (parent.config.settings.plugins != null) {
+                obj.addPlugin = function (plugin, func) { mariaDbQuery('INSERT INTO meshcentral.plugin VALUE (?, ?)', [null, JSON.stringify(value)], func); }; // Add a plugin
+                obj.getPlugins = function (func) { mariaDbQuery('SELECT doc FROM meshcentral.plugin', null, func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { mariaDbQuery('SELECT doc FROM meshcentral.plugin WHERE id = ?', [id], func); }; // Get plugin
+                obj.deletePlugin = function (id, func) { mariaDbQuery('DELETE FROM meshcentral.plugin WHERE id = ?', [id], func); }; // Delete plugin
+                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if (docs.length == 1) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; mariaDbQuery('REPLACE INTO meshcentral.plugin VALUE (?, ?)', [id, JSON.stringify(args)], func); };
+            }
         } else if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
             obj.Set = function (data, func) { obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
@@ -940,8 +954,8 @@ module.exports.CreateDB = function (parent, func) {
 
             // Plugin operations
             if (parent.config.settings.plugins != null) {
-                obj.addPlugin = function (plugin, func) { plugin.type = "plugin"; obj.pluginsfile.insertOne(plugin, func); }; // Add a plugin
-                obj.getPlugins = function (func) { obj.pluginsfile.find({ "type": "plugin" }).project({ "type": 0 }).sort({ name: 1 }).toArray(func); }; // Get all plugins
+                obj.addPlugin = function (plugin, func) { plugin.type = 'plugin'; obj.pluginsfile.insertOne(plugin, func); }; // Add a plugin
+                obj.getPlugins = function (func) { obj.pluginsfile.find({ type: 'plugin' }).project({ type: 0 }).sort({ name: 1 }).toArray(func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
