@@ -338,7 +338,12 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE INDEX ndxextraex ON meshcentral.main (extraex)',
                     'CREATE TABLE meshcentral.serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxserverstattime ON meshcentral.serverstats (time)',
-                    'CREATE INDEX ndxserverstatexpire ON meshcentral.serverstats (expire)'
+                    'CREATE INDEX ndxserverstatexpire ON meshcentral.serverstats (expire)',
+                    'CREATE TABLE meshcentral.power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE INDEX ndxpowernodeidtime ON meshcentral.power (nodeid, time)',
+                    'CREATE TABLE meshcentral.smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE INDEX ndxsmbiostime ON meshcentral.smbios (time)',
+                    'CREATE INDEX ndxsmbiosexpire ON meshcentral.smbios (expire)'
                 ], function (err) { if (err != null) { console.log(err); } setupFunctions(func); });
         });
     } else if (parent.args.mongodb) {
@@ -536,13 +541,13 @@ module.exports.CreateDB = function (parent, func) {
                     obj.eventsfile.createIndex({ username: 1 }, { sparse: 1, name: 'Username1' });
                     obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
                     obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                    obj.eventsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                    obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                 });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
                 // Reset the timeout index
                 console.log("Resetting events expire index...");
                 obj.eventsfile.dropIndex('ExpireTime1', function (err) {
-                    obj.eventsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                    obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                 });
             }
         });
@@ -767,17 +772,17 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetFailedLoginCount = function (username, domainid, lastlogin, func) { console.log('TODO:GetFailedLoginCount'); }
 
             // Database actions on the power collection
-            obj.getAllPower = function (func) { console.log('TODO:getAllPower'); };
-            obj.storePowerEvent = function (event, multiServer, func) { console.log('TODO:storePowerEvent'); };
-            obj.getPowerTimeline = function (nodeid, func) { console.log('TODO:getPowerTimeline'); };
-            obj.removeAllPowerEvents = function () { console.log('TODO:removeAllPowerEvents'); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { console.log('TODO:removeAllPowerEventsForNode'); };
+            obj.getAllPower = function (func) { mariaDbQuery('SELECT doc FROM meshcentral.power', null, func); };
+            obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } mariaDbQuery('INSERT INTO meshcentral.power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
+            obj.getPowerTimeline = function (nodeid, func) { mariaDbQuery('SELECT doc FROM meshcentral.power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time', [nodeid], func); };
+            obj.removeAllPowerEvents = function () { mariaDbQuery('DELETE FROM meshcentral.power', null, function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { mariaDbQuery('DELETE FROM meshcentral.power WHERE nodeid = ?', [nodeid], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
-            obj.GetAllSMBIOS = function (func) { console.log('TODO:GetAllSMBIOS'); };
-            obj.SetSMBIOS = function (smbios, func) { console.log('TODO:SetSMBIOS'); };
-            obj.RemoveSMBIOS = function (id) { console.log('TODO:RemoveSMBIOS'); };
-            obj.GetSMBIOS = function (id, func) { console.log('TODO:GetSMBIOS'); };
+            obj.GetAllSMBIOS = function (func) { mariaDbQuery('SELECT doc FROM meshcentral.smbios', null, func); };
+            obj.SetSMBIOS = function (smbios, func) { var expire = new Date(smbios.time); expire.setMonth(expire.getMonth() + 6); mariaDbQuery('REPLACE INTO meshcentral.smbios VALUE (?, ?, ?, ?)', [smbios._id, smbios.time, expire, JSON.stringify(smbios)], func); };
+            obj.RemoveSMBIOS = function (id) { mariaDbQuery('DELETE FROM meshcentral.smbios WHERE id = ?', [id], function (err, docs) { }); };
+            obj.GetSMBIOS = function (id, func) { mariaDbQuery('SELECT doc FROM meshcentral.smbios WHERE id = ?', [id], func); };
 
             // Database actions on the Server Stats collection
             obj.SetServerStats = function (data, func) { mariaDbQuery('REPLACE INTO meshcentral.serverstats VALUE (?, ?, ?)', [data.time, data.expire, JSON.stringify(data)], func); };
