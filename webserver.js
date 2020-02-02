@@ -2263,7 +2263,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                             // Rename the file
                             obj.fs.rename(file.path, fpath, function (err) {
-                                if (err && (err.code === 'EXDEV') && fs.copyFile) {
+                                if (err && (err.code === 'EXDEV')) {
                                     // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
                                     obj.common.copyFile(file.path, fpath, function (err) {
                                         obj.fs.unlink(file.path, function (err) {
