@@ -332,18 +332,28 @@ module.exports.CreateDB = function (parent, func) {
             if (err == null) { setupFunctions(func); } else
                 mariaDbBatchExec([
                     'CREATE DATABASE meshcentral',
+                    // Main table
                     'CREATE TABLE meshcentral.main (id VARCHAR(256) NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxtypedomainextra ON meshcentral.main (type, domain, extra)',
                     'CREATE INDEX ndxextra ON meshcentral.main (extra)',
                     'CREATE INDEX ndxextraex ON meshcentral.main (extraex)',
+                    // Events table
+                    'CREATE TABLE meshcentral.events (id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE INDEX ndxeventstime ON meshcentral.events (time)',
+                    'CREATE INDEX ndxeventsusername ON meshcentral.events (domain, userid, time)',
+                    'CREATE INDEX ndxeventsdomainnodeidtime ON meshcentral.events (domain, nodeid, time)',
+                    // Server stats table
                     'CREATE TABLE meshcentral.serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxserverstattime ON meshcentral.serverstats (time)',
                     'CREATE INDEX ndxserverstatexpire ON meshcentral.serverstats (expire)',
+                    // Power events table
                     'CREATE TABLE meshcentral.power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxpowernodeidtime ON meshcentral.power (nodeid, time)',
+                    // SMBIOS table
                     'CREATE TABLE meshcentral.smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxsmbiostime ON meshcentral.smbios (time)',
                     'CREATE INDEX ndxsmbiosexpire ON meshcentral.smbios (expire)',
+                    // Plugins table
                     'CREATE TABLE meshcentral.plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
                 ], function (err) { if (err != null) { console.log(err); } setupFunctions(func); });
         });
@@ -438,13 +448,13 @@ module.exports.CreateDB = function (parent, func) {
                         obj.eventsfile.createIndex({ username: 1 }, { sparse: 1, name: 'Username1' });
                         obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
                         obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                        obj.eventsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                        obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                     });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
                     // Reset the timeout index
                     console.log("Resetting events expire index...");
                     obj.eventsfile.dropIndex('ExpireTime1', function (err) {
-                        obj.eventsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                        obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                     });
                 }
             });
@@ -759,23 +769,23 @@ module.exports.CreateDB = function (parent, func) {
             obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { mariaDbExec('SELECT COUNT(id) FROM meshcentral.main WHERE domain = ? AND type = ?', [domainid, type], function (err, response) { func((response['COUNT(id)'] == null) || (response['COUNT(id)'] > max), response['COUNT(id)']) }); } }
 
             // Database actions on the events collection
-            obj.GetAllEvents = function (func) { console.log('TODO:GetAllEvents'); };
-            obj.StoreEvent = function (event) { console.log('TODO:StoreEvent', event); };
-            obj.GetEvents = function (ids, domain, func) { console.log('TODO:GetEvents'); };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) { console.log('TODO:GetEventsWithLimit'); };
-            obj.GetUserEvents = function (ids, domain, username, func) { console.log('TODO:GetUserEvents'); };
-            obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) { console.log('TODO:GetUserEventsWithLimit'); };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { console.log('TODO:GetNodeEventsWithLimit'); };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { console.log('TODO:GetNodeEventsSelfWithLimit'); };
-            obj.RemoveAllEvents = function (domain) { console.log('TODO:RemoveAllEvents'); };
-            obj.RemoveAllNodeEvents = function (domain, nodeid) { console.log('TODO:RemoveAllNodeEvents'); };
-            obj.RemoveAllUserEvents = function (domain, userid) { console.log('TODO:RemoveAllUserEvents'); };
-            obj.GetFailedLoginCount = function (username, domainid, lastlogin, func) { console.log('TODO:GetFailedLoginCount'); }
+            obj.GetAllEvents = function (func) { mariaDbQuery('SELECT doc FROM meshcentral.events', null, func); };
+            obj.StoreEvent = function (event) { mariaDbQuery('INSERT INTO meshcentral.events VALUE (?, ?, ?, ?, ?, ?, ?)', [null, event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)], function (err, docs) { }); };
+            obj.GetEvents = function (ids, domain, func) { console.log('TODO:GetEvents'); func(null, []); };
+            obj.GetEventsWithLimit = function (ids, domain, limit, func) { console.log('TODO:GetEventsWithLimit'); func(null, []); };
+            obj.GetUserEvents = function (ids, domain, username, func) { console.log('TODO:GetUserEvents'); func(null, []); };
+            obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) { console.log('TODO:GetUserEventsWithLimit'); func(null, []); };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (nodeid = ?) AND (domain = ?) ORDER BY time DESC LIMIT ?', [nodeid, domain, limit], func); };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (nodeid = ?) AND (domain = ?) AND ((userid = ?) OR (userid IS NULL)) ORDER BY time DESC LIMIT ?', [nodeid, domain, userid, limit], func); };
+            obj.RemoveAllEvents = function (domain) { mariaDbQuery('DELETE FROM meshcentral.events', null, function (err, docs) { }); };
+            obj.RemoveAllNodeEvents = function (domain, nodeid) { mariaDbQuery('DELETE FROM meshcentral.events WHERE domain = ? AND nodeid = ?', [domain, nodeid], function (err, docs) { }); };
+            obj.RemoveAllUserEvents = function (domain, userid) { mariaDbQuery('DELETE FROM meshcentral.events WHERE domain = ? AND userid = ?', [domain, userid], function (err, docs) { }); };
+            obj.GetFailedLoginCount = function (username, domainid, lastlogin, func) { mariaDbExec('SELECT COUNT(id) FROM meshcentral.events WHERE action = "authfail" AND domain = ? AND userid = ? AND time > ?', [domainid, 'user/' + domainid + '/' + username.toLowerCase(), lastlogin], function (err, response) { obj.stats.meshcentral = response['COUNT(id)']; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }); }
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { mariaDbQuery('SELECT doc FROM meshcentral.power', null, func); };
             obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } mariaDbQuery('INSERT INTO meshcentral.power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
-            obj.getPowerTimeline = function (nodeid, func) { mariaDbQuery('SELECT doc FROM meshcentral.power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time', [nodeid], func); };
+            obj.getPowerTimeline = function (nodeid, func) { mariaDbQuery('SELECT doc FROM meshcentral.power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time DESC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { mariaDbQuery('DELETE FROM meshcentral.power', null, function (err, docs) { }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { mariaDbQuery('DELETE FROM meshcentral.power WHERE nodeid = ?', [nodeid], function (err, docs) { }); };
 
