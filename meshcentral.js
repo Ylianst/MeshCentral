@@ -1993,7 +1993,7 @@ function CreateMeshCentralServer(config, args) {
             o.time = Math.floor(Date.now() / 1000); // Add the cookie creation time
             const iv = Buffer.from(obj.crypto.randomBytes(12), 'binary'), cipher = obj.crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), iv);
             const crypted = Buffer.concat([cipher.update(JSON.stringify(o), 'utf8'), cipher.final()]);
-            var r = Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+            var r = Buffer.concat([iv, cipher.getAuthTag(), crypted]).toString(obj.args.cookieencoding ? obj.args.cookieencoding : 'base64').replace(/\+/g, '@').replace(/\//g, '$');
             obj.debug('cookie', 'Encoded AESGCM cookie: ' + JSON.stringify(o));
             return r;
         } catch (ex) { obj.debug('cookie', 'ERR: Failed to encode AESGCM cookie due to exception: ' + ex); return null; }
@@ -2003,6 +2003,10 @@ function CreateMeshCentralServer(config, args) {
     obj.decodeCookie = function (cookie, key, timeout) {
         var r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
+        if ((r == null) && (obj.args.cookieencoding == null) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
+            obj.debug('cookie', 'Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
+            console.log('Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
+        }
         if ((r != null) && (typeof r.once == 'string') && (r.once.length > 0)) {
             // This cookie must only be used once.
             if (timeout == null) { timeout = 2; }
@@ -2033,7 +2037,7 @@ function CreateMeshCentralServer(config, args) {
     obj.decodeCookieAESGCM = function (cookie, key, timeout) {
         try {
             if (key == null) { key = obj.serverKey; }
-            cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), obj.args.cookieencoding ? obj.args.cookieencoding : 'base64');
             const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), cookie.slice(0, 12));
             decipher.setAuthTag(cookie.slice(12, 16));
             const o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
@@ -2059,7 +2063,7 @@ function CreateMeshCentralServer(config, args) {
         try {
             if (key == null) { key = obj.serverKey; }
             if (key.length < 80) { return null; }
-            cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64');
+            cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), obj.args.cookieencoding ? obj.args.cookieencoding : 'base64');
             const decipher = obj.crypto.createDecipheriv('aes-256-cbc', key.slice(48, 80), cookie.slice(0, 16));
             const rawmsg = decipher.update(cookie.slice(16), 'binary', 'binary') + decipher.final('binary');
             const hmac = obj.crypto.createHmac('sha384', key.slice(0, 48));
