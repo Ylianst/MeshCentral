@@ -1011,7 +1011,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var limit = 10000;
                             if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
 
-                            if ((rights & MESHRIGHT_LIMITEVENTS) != 0) {
+                            if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != 0xFFFFFFFF)) {
                                 // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
                                 db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, function (err, docs) {
                                     if (err != null) return;
