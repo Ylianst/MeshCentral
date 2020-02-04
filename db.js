@@ -323,6 +323,42 @@ module.exports.CreateDB = function (parent, func) {
         obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsdecryptkey).digest("raw").slice(0, 32);
     }
 
+/*
+CREATE DATABASE xmeshcentral;
+CREATE TABLE xmeshcentral.main(id VARCHAR(256) NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)));
+CREATE INDEX ndxtypedomainextra ON xmeshcentral.main(type, domain, extra);
+CREATE INDEX ndxextra ON xmeshcentral.main(extra);
+CREATE INDEX ndxextraex ON xmeshcentral.main(extraex);
+
+CREATE TABLE xmeshcentral.events(id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)));
+CREATE INDEX ndxeventstime ON xmeshcentral.events(time);
+CREATE INDEX ndxeventsusername ON xmeshcentral.events(domain, userid, time);
+CREATE INDEX ndxeventsdomainnodeidtime ON xmeshcentral.events(domain, nodeid, time);
+
+CREATE TABLE xmeshcentral.eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT);
+CREATE INDEX ndxeventids ON xmeshcentral.eventids(target);
+
+CREATE TABLE xmeshcentral.serverstats(time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK(json_valid(doc)));
+CREATE INDEX ndxserverstattime ON xmeshcentral.serverstats(time);
+CREATE INDEX ndxserverstatexpire ON xmeshcentral.serverstats(expire);
+CREATE TABLE xmeshcentral.power(id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)));
+CREATE INDEX ndxpowernodeidtime ON xmeshcentral.power(nodeid, time);
+CREATE TABLE xmeshcentral.smbios(id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)));
+CREATE INDEX ndxsmbiostime ON xmeshcentral.smbios(time);
+CREATE INDEX ndxsmbiosexpire ON xmeshcentral.smbios(expire);
+CREATE TABLE xmeshcentral.plugin(id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)));
+
+INSERT INTO xmeshcentral.events VALUE (null, null, '', 'tstaction', 'nodeid', 'userid', '{ "a":1, "b":2 }');
+INSERT INTO xmeshcentral.eventids VALUE (LAST_INSERT_ID(), 'target1');
+INSERT INTO xmeshcentral.eventids VALUE (LAST_INSERT_ID(), 'target2');
+
+show tables;
+select * from events;
+select * from eventids;
+
+SELECT doc FROM xmeshcentral.events JOIN eventids ON id = fkid WHERE target IN ("target3") GROUP BY id;
+*/
+
     if (parent.args.mariadb) {
         // Use MariaDB
         obj.databaseType = 4;
@@ -338,10 +374,13 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE INDEX ndxextra ON meshcentral.main (extra)',
                     'CREATE INDEX ndxextraex ON meshcentral.main (extraex)',
                     // Events table
-                    'CREATE TABLE meshcentral.events (id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE INDEX ndxeventstime ON meshcentral.events (time)',
-                    'CREATE INDEX ndxeventsusername ON meshcentral.events (domain, userid, time)',
-                    'CREATE INDEX ndxeventsdomainnodeidtime ON meshcentral.events (domain, nodeid, time)',
+                    'CREATE TABLE meshcentral.events(id INT NOT NULL AUTO_INCREMENT, time DATETIME, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK(json_valid(doc)))',
+                    'CREATE INDEX ndxeventstime ON meshcentral.events(time)',
+                    'CREATE INDEX ndxeventsusername ON meshcentral.events(domain, userid, time)',
+                    'CREATE INDEX ndxeventsdomainnodeidtime ON meshcentral.events(domain, nodeid, time)',
+                    // Events ID table
+                    'CREATE TABLE meshcentral.eventids(fkid INT NOT NULL, target CHAR(255), CONSTRAINT fk_eventid FOREIGN KEY (fkid) REFERENCES events (id) ON DELETE CASCADE ON UPDATE RESTRICT)',
+                    'CREATE INDEX ndxeventids ON meshcentral.eventids(target)',
                     // Server stats table
                     'CREATE TABLE meshcentral.serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE INDEX ndxserverstattime ON meshcentral.serverstats (time)',
@@ -706,8 +745,8 @@ module.exports.CreateDB = function (parent, func) {
                         for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt(JSON.parse(rows[i].doc))); } }
                         if (func) try { func(null, docs); } catch (ex) { console.log(ex); }
                     })
-                    .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log(ex); } });
-            }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
+                    .catch(function (err) { conn.release(); if (func) try { console.log(err); func(err); } catch (ex) { console.log(ex); } });
+            }).catch(function (err) { if (func) { try { console.log(err); func(err); } catch (ex) { console.log(ex); } } });
     }
 
     // Exec on the database
@@ -719,8 +758,8 @@ module.exports.CreateDB = function (parent, func) {
                         conn.release();
                         if (func) try { func(null, rows[0]); } catch (ex) { console.log(ex); }
                     })
-                    .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log(ex); } });
-            }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
+                    .catch(function (err) { conn.release(); if (func) try { console.log(err); func(err); } catch (ex) { console.log(ex); } });
+            }).catch(function (err) { if (func) { try { console.log(err); func(err); } catch (ex) { console.log(ex); } } });
     }
 
     // Execute a batch of commands on the database
@@ -728,12 +767,12 @@ module.exports.CreateDB = function (parent, func) {
         Datastore.getConnection()
             .then(function (conn) {
                 var Promises = [];
-                for (var i in queries) { Promises.push(conn.query(queries[i])); }
+                for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(conn.query(queries[i])); } else { Promises.push(conn.query(queries[i][0], queries[i][1])); } }
                 Promise.all(Promises)
                     .then(function (rows) { conn.release(); if (func) { try { func(null); } catch (ex) { console.log(ex); } } })
-                    .catch(function (err) { conn.release(); if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
+                    .catch(function (err) { conn.release(); if (func) { try { console.log(err); func(err); } catch (ex) { console.log(ex); } } });
             })
-            .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
+            .catch(function (err) { if (func) { try { console.log(err); func(err); } catch (ex) { console.log(ex); } } });
     }
 
     function setupFunctions(func) {
@@ -770,11 +809,41 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { mariaDbQuery('SELECT doc FROM meshcentral.events', null, func); };
-            obj.StoreEvent = function (event) { mariaDbQuery('INSERT INTO meshcentral.events VALUE (?, ?, ?, ?, ?, ?, ?)', [null, event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)], function (err, docs) { }); };
-            obj.GetEvents = function (ids, domain, func) { console.log('TODO:GetEvents'); func(null, []); };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) { console.log('TODO:GetEventsWithLimit'); func(null, []); };
-            obj.GetUserEvents = function (ids, domain, username, func) { console.log('TODO:GetUserEvents'); func(null, []); };
-            obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) { console.log('TODO:GetUserEventsWithLimit'); func(null, []); };
+            obj.StoreEvent = function (event) {
+                var batchQuery = [['INSERT INTO meshcentral.events VALUE (?, ?, ?, ?, ?, ?, ?)', [null, event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)]]];
+                for (var i in event.ids) { if (event.ids[i] != '*') { batchQuery.push(['INSERT INTO meshcentral.eventids VALUE (LAST_INSERT_ID(), ?)', [event.ids[i]]]); } }
+                mariaDbBatchExec(batchQuery, function (err, docs) { });
+            };
+            obj.GetEvents = function (ids, domain, func) {
+                if (ids.indexOf('*') >= 0) {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (domain = ?) ORDER BY time DESC', [domain], func);
+                } else {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND target IN (?)) GROUP BY id ORDER BY time DESC', [domain, ids], func);
+                }
+            };
+            obj.GetEventsWithLimit = function (ids, domain, limit, func) {
+                if (ids.indexOf('*') >= 0) {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (domain = ?) ORDER BY time DESC LIMIT ?', [domain, limit], func);
+                } else {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND target IN (?)) GROUP BY id ORDER BY time DESC LIMIT ?', [domain, ids, limit], func);
+                }
+            };
+            obj.GetUserEvents = function (ids, domain, username, func) {
+                const userid = 'user/' + domain + '/' + username.toLowerCase();
+                if (ids.indexOf('*') >= 0) {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (domain = ? AND userid = ?) ORDER BY time DESC', [domain, userid], func);
+                } else {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC', [domain, userid, ids, limit], func);
+                }
+            };
+            obj.GetUserEventsWithLimit = function (ids, domain, username, limit, func) {
+                const userid = 'user/' + domain + '/' + username.toLowerCase();
+                if (ids.indexOf('*') >= 0) {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (domain = ? AND userid = ?) ORDER BY time DESC LIMIT ?', [domain, userid, limit], func);
+                } else {
+                    mariaDbQuery('SELECT doc FROM meshcentral.events JOIN meshcentral.eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC LIMIT ?', [domain, userid, ids, limit], func);
+                }
+            };
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (nodeid = ?) AND (domain = ?) ORDER BY time DESC LIMIT ?', [nodeid, domain, limit], func); };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { mariaDbQuery('SELECT doc FROM meshcentral.events WHERE (nodeid = ?) AND (domain = ?) AND ((userid = ?) OR (userid IS NULL)) ORDER BY time DESC LIMIT ?', [nodeid, domain, userid, limit], func); };
             obj.RemoveAllEvents = function (domain) { mariaDbQuery('DELETE FROM meshcentral.events', null, function (err, docs) { }); };
