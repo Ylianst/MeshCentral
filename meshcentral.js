@@ -816,6 +816,7 @@ function CreateMeshCentralServer(config, args) {
                             }
 
                             // Grad some of the values from the original config.json file if present.
+                            config2['mysql'] = config['mysql'];
                             config2['mariadb'] = config['mariadb'];
                             config2['mongodb'] = config['mongodb'];
                             config2['mongodbcol'] = config['mongodbcol'];
@@ -2323,6 +2324,7 @@ function mainStart() {
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
+        if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
