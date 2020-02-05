@@ -73,7 +73,7 @@ var CreateAmtRemoteTerminal = function (divid, options) {
     }
 
     obj.xxStateChange = function (newstate) {
-        //if ((newstate == 3) && (options != null) && (options.xterm == true)) { obj.TermSendKeys(' stty rows ' + obj.height + ' cols ' + obj.width + '\n clear\n'); }
+        //if ((newstate == 3) && (options != null) && (options.xterm == true)) { obj.TermSendKeys(' stty rows ' + obj.height + ' cols ' + obj.width + ';clear\n'); }
     }
 
     obj.ProcessData = function (str) {
@@ -805,6 +805,6 @@ var CreateAmtRemoteTerminal = function (divid, options) {
 
     obj.heightLock = 0;
     obj.DivElement.style['height'] = '';
-    if ((options != null) && (options.width != null) && (options.height != null)) { obj.Init(options.width, options.height); } else { obj.Init(); }
+    if ((options != null) && (options.cols != null) && (options.rows != null)) { obj.Init(options.cols, options.rows); } else { obj.Init(); }
     return obj;
 }
