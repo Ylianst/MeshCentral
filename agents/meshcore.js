@@ -1238,6 +1238,7 @@ function createMeshCore(agent) {
                         {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
+                            var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
 
                             var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
                             if (this.httprequest.xoptions)
@@ -1248,31 +1249,20 @@ function createMeshCore(agent) {
                             var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
                             if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
                             {
-                                if (process.platform == 'linux')
-                                {
-                                    if (!require('fs').existsSync('/bin/login')) { throw ('Unable to spawn login process'); }
-                                    this.httprequest.process = childProcess.execFile('/bin/login', ['login'], options); // Start login shell
-                                }
-                                else
-                                {
-                                    throw ('Login Shell only supported on Linux at this time');
-                                }
+                                if (!require('fs').existsSync(login)) { throw ('Unable to spawn login process'); }
+                                this.httprequest.process = childProcess.execFile(login, ['login'], options); // Start login shell
                             }
                             else if (bash)
                             {
-                                this.httprequest.process = childProcess.execFile(bash, ['bash'], options); // Start as active user
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\'\nclear\n'); }
+                                this.httprequest.process = childProcess.execFile(bash, ['bash'], options); // Start bash
+                                // Spaces at the beginning of lines are needed to hide commands from the command history
+                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                             }
                             else if (sh)
                             {
-                                this.httprequest.process = childProcess.execFile(sh, ['sh'], options); // Start as active user
-                                if (process.platform == 'linux')
-                                {
-                                    this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\'\n');
-                                    this.httprequest.process.stdin.write(' stty erase ^H\n');
-                                    this.httprequest.process.stdin.write("PS1='$ '\n");
-                                    this.httprequest.process.stdin.write(" clear\n");
-                                }
+                                this.httprequest.process = childProcess.execFile(sh, ['sh'], options); // Start sh
+                                // Spaces at the beginning of lines are needed to hide commands from the command history
+                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                             }
                             else
                             {
