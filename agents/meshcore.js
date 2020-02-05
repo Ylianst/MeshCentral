@@ -1238,23 +1238,6 @@ function createMeshCore(agent) {
                         {
                             var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
-                            var script = false;
-                            if (this.httprequest.xoptions && this.httprequest.xoptions.script)
-                            {
-                                try
-                                {
-                                    if (require('linux-gnome-helpers').scriptVersion)
-                                    {
-                                        if (require('linux-gnome-helpers').scriptVersion.major > 2 ||
-                                            (require('linux-gnome-helpers').scriptVersion.major == 2 && require('linux-gnome-helpers').scriptVersion.minor >= 25))
-                                        {
-                                            script = '/usr/bin/script';
-                                        }
-                                    }
-                                } catch (ex) { }
-                            }
-                            var python = (this.httprequest.xoptions && this.httprequest.xoptions.python && fs.existsSync('/usr/bin/python')) ? '/usr/bin/python' : false;
-                            var shell = bash || sh;
 
                             var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
                             if (this.httprequest.xoptions)
@@ -1262,31 +1245,27 @@ function createMeshCore(agent) {
                                 if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
                                 if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
                             }
-                            var options = { uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
-                            var setupcommands = ' alias ls=\'ls --color=auto\'\n';
-                            if (shell == sh) setupcommands += ' stty erase ^H\n';
-
-                            if (script && shell && process.platform == 'linux')
+                            var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
+                            if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
                             {
-                                this.httprequest.process = childProcess.execFile(script, ['script', '--return', '--quiet', '-c', '"' + shell + '"', '/dev/null'], options); // Start as active user
-                                this.httprequest.process.stdin.write(setupcommands);
-                            }
-                            else if (python && shell)
-                            {
-                                this.httprequest.process = childProcess.execFile(python, ['python', '-c', 'import pty; pty.spawn(["' + shell + '"])'], options); // Start as active user
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
+                                if (!require('fs').existsSync('/bin/login')) { throw ('Unable to spawn login process'); }
+                                this.httprequest.process = childProcess.execFile('/bin/login', ['login'], options); // Start login shell
                             }
                             else if (bash)
                             {
-                                options.type = childProcess.SpawnTypes.TERM;
-                                this.httprequest.process = childProcess.execFile(bash, ['bash', '-i'], options); // Start as active user
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands); }
+                                this.httprequest.process = childProcess.execFile(bash, ['bash'], options); // Start as active user
+                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\'\nclear\n'); }
                             }
                             else if (sh)
                             {
-                                options.type = childProcess.SpawnTypes.TERM;
                                 this.httprequest.process = childProcess.execFile(sh, ['sh'], options); // Start as active user
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(setupcommands + "PS1='$ '\n"); }
+                                if (process.platform == 'linux')
+                                {
+                                    this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\'\n');
+                                    this.httprequest.process.stdin.write(' stty erase ^H\n');
+                                    this.httprequest.process.stdin.write("PS1='$ '\n");
+                                    this.httprequest.process.stdin.write(" clear\n");
+                                }
                             }
                             else
                             {
@@ -1301,11 +1280,8 @@ function createMeshCore(agent) {
                             return;
                         }
 
-                        if (this.httprequest.process.tcsetsize && this.httprequest.xoptions) { this.httprequest.process.tcsetsize(this.httprequest.xoptions.rows, this.httprequest.xoptions.cols); }
-
                         this.httprequest.process.tunnel = this;
                         this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
-                        this.httprequest.process.stdin.write(" clear\n");
                         this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
                         this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                         this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
