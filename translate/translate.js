@@ -30,7 +30,7 @@ var meshCentralSourceFiles = [
     "../views/xterm.handlebars",
     "../views/message.handlebars",
     "../views/messenger.handlebars",
-    "../public/player.htm"
+    "../views/player.handlebars"
 ];
 
 // True is this module is run directly using NodeJS

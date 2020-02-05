@@ -8,7 +8,7 @@
     <meta name="format-detection" content="telephone=no" />
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
-    <title>{{{title}}} - Agent Installation</title>
+    <title>Agent Installation</title>
     <style>
         .tab {
             overflow: hidden;
@@ -71,7 +71,7 @@
             </div>
         </div>
         <div id="column_l" style="max-height:calc(100vh - 135px);overflow-y:auto">
-            <h1>Remote Agent Installation<span id="groupname"></span></h1>
+            <h1><span id="groupname">Remote Agent Installation</span></h1>
             <p>
                 You have been invited to install a software that will allow a remote operator to fully access your computer remotely including the desktop and files.
                 Only follow the instructions below if this invitation was expected and you know who will be accessing your computer.
@@ -139,12 +139,18 @@
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var meshid = '{{{meshid}}}';
+        var title = '{{{title}}}';
         var serverPort = '{{{serverport}}}';
         var serverHttps = '{{{serverhttps}}}';
         var serverNoProxy = '{{{servernoproxy}}}';
         var installFlags = '{{{installflags}}}';
         var groupName = decodeURIComponent('{{{meshname}}}');
-        if (groupName != '') { QH('groupname', ' for ' + groupName); }
+        if (groupName != '') {
+            QH('groupname', format("Remote Agent Installation for {0}", groupName));
+            document.title = format("{0} - Agent Installation");
+        } else {
+            document.title = "Agent Installation";
+        }
         userInterfaceSelectMenu();
         setup();
 

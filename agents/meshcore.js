@@ -2654,10 +2654,10 @@ function createMeshCore(agent) {
                     if (mesh.ExecPowerState == undefined) {
                         response = 'Power command not supported on this agent.';
                     } else {
-                        if ((args['_'].length == 0) || (typeof args['_'][0] != 'number')) {
+                        if ((args['_'].length == 0) || isNaN(Number(args['_'][0]))) {
                             response = 'Proper usage: power (actionNumber), where actionNumber is:\r\n  LOGOFF = 1\r\n  SHUTDOWN = 2\r\n  REBOOT = 3\r\n  SLEEP = 4\r\n  HIBERNATE = 5\r\n  DISPLAYON = 6\r\n  KEEPAWAKE = 7\r\n  BEEP = 8\r\n  CTRLALTDEL = 9\r\n  VIBRATE = 13\r\n  FLASH = 14'; // Display correct command usage
                         } else {
-                            var r = mesh.ExecPowerState(args['_'][0], args['_'][1]);
+                            var r = mesh.ExecPowerState(Number(args['_'][0]), Number(args['_'][1]));
                             response = 'Power action executed with return code: ' + r + '.';
                         }
                     }
