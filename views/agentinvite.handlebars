@@ -147,7 +147,7 @@
         var groupName = decodeURIComponent('{{{meshname}}}');
         if (groupName != '') {
             QH('groupname', format("Remote Agent Installation for {0}", groupName));
-            document.title = format("{0} - Agent Installation");
+            document.title = format("{0} - Agent Installation", groupName);
         } else {
             document.title = "Agent Installation";
         }
@@ -296,6 +296,7 @@
         function copyToClipLinuxInstall() { copyTextToClip(linuxInstall); }
         function copyToClipLinuxUnInstall() { copyTextToClip(linuxUnInstall); }
         function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 
     </script>
 </body>

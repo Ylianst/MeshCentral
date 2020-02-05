@@ -140,7 +140,7 @@
   },
   "_letsencrypt": {
     "__comment__": "Requires NodeJS 10.12 or better, Go to https://letsdebug.net/ first before trying Let's Encrypt.",
-    "email": "myemail@myserver.com ",
+    "email": "myemail@myserver.com",
     "names": "myserver.com,customer1.myserver.com",
     "rsaKeySize": 3072,
     "production": false
