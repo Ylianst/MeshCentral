@@ -1248,8 +1248,15 @@ function createMeshCore(agent) {
                             var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
                             if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
                             {
-                                if (!require('fs').existsSync('/bin/login')) { throw ('Unable to spawn login process'); }
-                                this.httprequest.process = childProcess.execFile('/bin/login', ['login'], options); // Start login shell
+                                if (process.platform == 'linux')
+                                {
+                                    if (!require('fs').existsSync('/bin/login')) { throw ('Unable to spawn login process'); }
+                                    this.httprequest.process = childProcess.execFile('/bin/login', ['login'], options); // Start login shell
+                                }
+                                else
+                                {
+                                    throw ('Login Shell only supported on Linux at this time');
+                                }
                             }
                             else if (bash)
                             {
