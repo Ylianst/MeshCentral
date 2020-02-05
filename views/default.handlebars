@@ -8786,6 +8786,7 @@
 
         function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
+            console.log('p3showDownloadEventsDialog');
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + "eventslist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + "eventslist.json" + '</a>');
@@ -8809,7 +8810,7 @@
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { r.push(events[i]); }
-            saveAs(new Blob([JSON.stringify(r)], { type: 'application/octet-stream' }), "eventslist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "eventslist.json");
             return false;
         }
 
@@ -9036,7 +9037,7 @@
         function p4downloadUserInfoJSON() {
             var r = []
             for (var i in users) { r.push(users[i]); }
-            saveAs(new Blob([JSON.stringify(r)], { type: 'application/octet-stream' }), "userlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "userlist.json");
             return false;
         }
 
