@@ -64,6 +64,7 @@
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(100,event)">Login Shell</div>
     </div>
     <div id="altPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxaltport" class="cmtext" onclick="cmaltportaction(1,event)"><b>Alternate Port</b></div>
@@ -4014,7 +4015,11 @@
         }
 
         function cmtermaction(action) {
-            connectTerminal(null, 1, { protocol: action });
+            if (action < 100) {
+                connectTerminal(null, 1, { protocol: action });
+            } else if (action == 100) {
+                connectTerminal(null, 1, { protocol: 1, requireLogin: true });
+            }
         }
 
         function cmaltportaction(action) {
@@ -6343,6 +6348,7 @@
                 } else {
                     // Setup a mesh agent terminal
                     var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
+                    if (options && options.requireLogin) { termoptions.requireLogin = true; }
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
                         if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; termoptions.xterm = true; }
                         if (Q('termSizeList').value == 3) {
@@ -6363,6 +6369,7 @@
                     }
 
                     terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                    terminal.options = termoptions;
                     terminal.debugmode = debugmode;
                     terminal.m.debugmode = debugmode;
                     terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
