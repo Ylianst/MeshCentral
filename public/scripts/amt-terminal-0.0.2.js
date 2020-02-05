@@ -73,7 +73,7 @@ var CreateAmtRemoteTerminal = function (divid, options) {
     }
 
     obj.xxStateChange = function (newstate) {
-        //if ((newstate == 3) && (options != null) && (options.xterm == true)) { obj.TermSendKeys(' stty rows ' + obj.height + ' cols ' + obj.width + '\n clear\n'); }
+        if ((newstate == 3) && (options != null) && (options.xterm == true)) { obj.TermSendKeys(' stty rows ' + obj.height + ' cols ' + obj.width + ';clear\n'); }
     }
 
     obj.ProcessData = function (str) {
