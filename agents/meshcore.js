@@ -1240,7 +1240,7 @@ function createMeshCore(agent) {
                             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                             var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
 
-                            var env = { HISTCONTROL: 'ignoreboth', TERM: 'xterm' };
+                            var env = { HISTCONTROL: 'ignoreboth' };
                             if (this.httprequest.xoptions)
                             {
                                 if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
