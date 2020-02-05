@@ -166,7 +166,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Perform translation operations
             var didSomething = false;
-            process.chdir('./translate');
+            process.chdir(obj.path.join(__dirname, 'translate'));
             var translateEngine = require('./translate/translate.js')
             if (customTranslation == true) {
                 // Translate all of the default files using custom translation file
@@ -2341,6 +2341,7 @@ function mainStart() {
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
+        if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
 
         // If running NodeJS < 8, install "util.promisify"
         if (nodeVersion < 8) { modules.push('util.promisify'); }
