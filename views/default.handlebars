@@ -6350,11 +6350,11 @@
                     var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
                     if (options && options.requireLogin) { termoptions.requireLogin = true; }
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
-                        if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; termoptions.xterm = true; }
+                        if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
                         if (Q('termSizeList').value == 3) {
                             // TODO: Try to improve terminal auto-size.
-                            termoptions.width = Math.floor((Q('column_l').clientWidth - 60) / 10);
-                            termoptions.height = Math.floor((Q('column_l').clientHeight - 120) / 20);
+                            termoptions.cols = Math.floor((Q('column_l').clientWidth - 60) / 10);
+                            termoptions.rows = Math.floor((Q('column_l').clientHeight - 120) / 20);
                             termoptions.xterm = true;
                         }
                     }
