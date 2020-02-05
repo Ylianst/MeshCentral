@@ -80,8 +80,9 @@
                         <option value="es">Spanish (es)</option>
                     </select> 
                     <input id="searchInput" type="text" placeholder="Search" onchange="onSearchChanged()" onkeyup="onSearchChanged()">
-                    <input id="showLocCheck" type="checkbox" onchange="onLocChanged()"> Show Location
-                </div>
+                    <label><input id="showLocCheck" type="checkbox" onchange="onLocChanged()"> Show Location</label>
+                    <label><input id="showNoTransOnlyCheck" type="checkbox" onchange="onSearchChanged(true)">Show No Translations Only</label>
+            </div>
             </div>
             <div id=deskarea2 style="">
                 <div class="areaProgress"><div id="progressbar" style="background-color:blue"></div></div>
@@ -257,6 +258,7 @@
             }
             QH('masterListArea', x.join(''));
             updateButtons();
+            onSearchChanged(true);
         }
 
         function select(i, scroll, nofocus) {
@@ -306,15 +308,17 @@
 
         var currentSearchFilter = '';
         function onSearchChanged(force) {
+            var showNoTranslationOnly = Q('showNoTransOnlyCheck').checked;
             if ((force != true) && (currentSearchFilter == Q('searchInput').value)) return;
             currentSearchFilter = Q('searchInput').value;
             var currentSearchFilterLower = currentSearchFilter.toLowerCase();
             if (translations != null) {
                 for (var i in translations) {
+                    var show = (!showNoTranslationOnly) || (translations[i][selectedLanguage] == null) || (translations[i][selectedLanguage] == '');
                     if (currentSearchFilter == '') {
-                        QV('nx' + i, true);
+                        QV('nx' + i, show);
                     } else {
-                        QV('nx' + i, ((translations[i][selectedLanguage] != null) && (translations[i][selectedLanguage].toLowerCase().indexOf(currentSearchFilterLower) >= 0)) || (translations[i]['en'].toLowerCase().indexOf(currentSearchFilterLower) >= 0));
+                        QV('nx' + i, show && (((translations[i][selectedLanguage] != null) && (translations[i][selectedLanguage].toLowerCase().indexOf(currentSearchFilterLower) >= 0)) || (translations[i]['en'].toLowerCase().indexOf(currentSearchFilterLower) >= 0)));
                     }
                 }
             }

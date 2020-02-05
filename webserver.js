@@ -2087,6 +2087,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Server the player page
+    function handlePlayerRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
+
+        parent.debug('web', 'handlePlayerRequest: sending player');
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+        render(req, res, getRenderPage('player', req), getRenderArgs({}, domain));
+    }
+
     // Handle domain redirection
     obj.handleDomainRedirect = function (req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3525,6 +3535,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.post(url + 'translations', handleTranslationsRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
+            obj.app.get(url + 'player.htm', handlePlayerRequest);
+            obj.app.get(url + 'player', handlePlayerRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
             if (parent.pluginHandler != null) {
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);

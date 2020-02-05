@@ -3863,13 +3863,13 @@
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null;
-            if (x.startsWith("user:")) { userSearch = x.substring(5); }
-            else if (x.startsWith("u:")) { userSearch = x.substring(2); }
-            else if (x.startsWith("ip:")) { ipSearch = x.substring(3); }
-            else if (x.startsWith("group:")) { groupSearch = x.substring(6); }
-            else if (x.startsWith("g:")) { groupSearch = x.substring(2); }
-            else if (x.startsWith("tag:")) { tagSearch = Q('SearchInput').value.trim().substring(4); }
-            else if (x.startsWith("t:")) { tagSearch = Q('SearchInput').value.trim().substring(2); }
+            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
+            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
+            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
+            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
+            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
+            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("tag:".length); }
+            else if (x.startsWith("t:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("t:".length); }
 
             if (x == '') {
                 // No search
