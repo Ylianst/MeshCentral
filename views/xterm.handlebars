@@ -27,6 +27,7 @@
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
         <div id="cxtermps" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
+        <div id="cxtermps" class="cmtext" onclick="cmtermaction(100,event)">Login Shell</div>
     </div>
     <div id=p11 class="noselect" style="overflow:hidden">
         <div id=deskarea0 style="position:relative">
@@ -161,11 +162,12 @@
                     if (resizeTimer) clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(sendResize, 200); 
                 });
-                term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
+                //term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
 
                 // Setup a terminal tunnel to the agent
                 tunnel = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 tunnel.options = { cols: term.cols, rows: term.rows };
+                if (options && options.requireLogin) { tunnel.options.requireLogin = true; }
                 tunnel.Start(args.nodeid);
                 tunnel.onStateChanged = onTunnelStateChange;
                 tunnel.onConsoleMessageChange = function (server, msg) { setConsoleMsg(msg); };
@@ -245,9 +247,11 @@
         }
 
         function cmtermaction(action) {
-            //console.log('cmtermaction', action);
-            connectButton({ protocol: action })
-            //connectTerminal(null, 1, { protocol: action });
+            if (action < 100) {
+                connectButton({ protocol: action })
+            } else if (action == 100) {
+                connectButton({ protocol: 1, requireLogin: true })
+            }
         }
 
         function hideContextMenu() {

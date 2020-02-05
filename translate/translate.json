@@ -10435,6 +10435,13 @@
       ]
     },
     {
+      "en": "Login Shell",
+      "xloc": [
+        "default.handlebars->termShellContextMenuLinux->cxtermps",
+        "xterm.handlebars->termShellContextMenuLinux->cxtermps"
+      ]
+    },
+    {
       "cs": "Neplatné přihlášení, zkontrolujte uživatelské jméno a heslo.",
       "de": "Anmeldung fehlgeschlagen, Benutzername und Passwort prüfen.",
       "en": "Login failed, check username and password.",
