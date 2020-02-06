@@ -207,7 +207,7 @@ function startEx(argv) {
 
     if (command == 'translateall') {
         if (fs.existsSync('../views/translations') == false) { fs.mkdirSync('../views/translations'); }
-        if (fs.existsSync('../public/translations') == false) { fs.mkdirSync('../public/translations'); }
+        //if (fs.existsSync('../public/translations') == false) { fs.mkdirSync('../public/translations'); }
         var lang = null;
         if (argv.length > 4) { lang = argv[4].toLowerCase(); }
         if (argv.length > 3) {

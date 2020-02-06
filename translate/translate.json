@@ -2167,6 +2167,7 @@
     },
     {
       "en": "Agent Installation",
+      "ru": "Установка агента",
       "xloc": [
         "agentinvite.handlebars->3->3"
       ]
@@ -6224,7 +6225,7 @@
       "ja": "ここからソフトウェアをダウンロードしてください",
       "nl": "Download de software hier",
       "pt": "Faça o download do software aqui",
-      "ru": "Скачайте программное обеспечение здесь",
+      "ru": "Скачайте программу по этой ссылке",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab32->3->win32url",
         "agentinvite.handlebars->container->column_l->5->wintab64->3->win64url"
@@ -14348,6 +14349,7 @@
     },
     {
       "en": "Remote Agent Installation for {0}",
+      "ru": "Установка агента для {0}",
       "xloc": [
         "agentinvite.handlebars->3->1"
       ]
@@ -20003,7 +20005,7 @@
       "en": "g:",
       "es": "g:",
       "nl": "g:",
-      "ru": "g:",
+      "ru": "г:",
       "xloc": [
         "default.handlebars->25->406",
         "default.handlebars->25->407"
@@ -20015,7 +20017,7 @@
       "en": "group:",
       "es": "grupo:",
       "nl": "groep:",
-      "ru": "group:",
+      "ru": "группа:",
       "xloc": [
         "default.handlebars->25->404",
         "default.handlebars->25->405"
@@ -20203,7 +20205,7 @@
       "en": "t:",
       "es": "t:",
       "nl": "t:",
-      "ru": "t:",
+      "ru": "т:",
       "xloc": [
         "default.handlebars->25->410",
         "default.handlebars->25->411"
@@ -20214,7 +20216,7 @@
       "en": "tag:",
       "es": "etiqueta:",
       "nl": "tag:",
-      "ru": "tag:",
+      "ru": "тег:",
       "xloc": [
         "default.handlebars->25->408",
         "default.handlebars->25->409"
@@ -20271,7 +20273,7 @@
       "en": "u:",
       "es": "u:",
       "nl": "u:",
-      "ru": "u:",
+      "ru": "п:",
       "xloc": [
         "default.handlebars->25->400",
         "default.handlebars->25->401"
@@ -20282,7 +20284,7 @@
       "en": "user:",
       "es": "usuario:",
       "nl": "gebruiker:",
-      "ru": "user:",
+      "ru": "пользователь:",
       "xloc": [
         "default.handlebars->25->398",
         "default.handlebars->25->399"
@@ -20322,6 +20324,7 @@
     },
     {
       "en": "{0} - Agent Installation",
+      "ru": "{0} - установка агента",
       "xloc": [
         "agentinvite.handlebars->3->2"
       ]
