@@ -20250,10 +20250,7 @@
       "ja": "時間、タイプ、アクション、ユーザー、メッセージ",
       "nl": "tijd, type, actie, gebruiker, bericht",
       "pt": "hora, tipo, ação, usuário, mensagem",
-      "ru": "time, type, action, user, message",
-      "xloc": [
-        "default.handlebars->25->1200"
-      ]
+      "ru": "time, type, action, user, message"
     },
     {
       "cs": "celkem",
@@ -20315,6 +20312,12 @@
       "xloc": [
         "default.handlebars->25->1237",
         "default.handlebars->25->1241"
+      ]
+    },
+    {
+      "en": "utc, time, type, action, user, device, message",
+      "xloc": [
+        "default.handlebars->25->1200"
       ]
     },
     {
