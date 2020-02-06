@@ -1253,7 +1253,11 @@ function CreateMeshCentralServer(config, args) {
                     try {
                         var nodepath = process.argv[0];
                         var npmpath = obj.path.join(obj.path.dirname(process.argv[0]), 'npm');
-                        if (obj.fs.existsSync(nodepath) && obj.fs.existsSync(npmpath)) { obj.args.npmpath = (nodepath + ' ' + npmpath); }
+                        if (obj.fs.existsSync(nodepath) && obj.fs.existsSync(npmpath)) {
+                            if (nodepath.indexOf(' ') >= 0) { nodepath = '"' + nodepath + '"'; }
+                            if (npmpath.indexOf(' ') >= 0) { npmpath = '"' + npmpath + '"'; }
+                            if (obj.platform == 'win32') { obj.args.npmpath = npmpath; } else { obj.args.npmpath = (nodepath + ' ' + npmpath); }
+                        }
                     } catch (ex) { }
                 }
             });
