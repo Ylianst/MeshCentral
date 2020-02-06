@@ -99,7 +99,7 @@ function startEx(argv) {
 
     var command = null;
     if (argv.length > 2) { command = argv[2].toLowerCase(); }
-    if (['check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext'].indexOf(command) == -1) { command = null; }
+    if (['minify', 'check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext'].indexOf(command) == -1) { command = null; }
 
     if (directRun) { log('MeshCentral web site translator'); }
     if (command == null) {
@@ -281,6 +281,42 @@ function startEx(argv) {
                 });
                 fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
             }
+        }
+    }
+
+    if (command == 'minify') {
+        var outname = argv[3];
+        var outnamemin = null;
+        if (outname.endsWith('.handlebars')) {
+            outnamemin = (outname.substring(0, outname.length - 11) + '-min.handlebars');
+        } else if (outname.endsWith('.html')) {
+            outnamemin = (outname.substring(0, outname.length - 5) + '-min.html');
+        } else if (outname.endsWith('.htm')) {
+            outnamemin = (outname.substring(0, outname.length - 4) + '-min.htm');
+        } else {
+            outnamemin = (outname, outname + '.min');
+        }
+        log('Generating ' + path.basename(outnamemin) + '...');
+
+        // Minify the file
+        if (minifyLib = 2) {
+            var minifiedOut = minify(fs.readFileSync(outname).toString(), {
+                collapseBooleanAttributes: true,
+                collapseInlineTagWhitespace: false, // This is not good.
+                collapseWhitespace: true,
+                minifyCSS: true,
+                minifyJS: true,
+                removeComments: true,
+                removeOptionalTags: true,
+                removeEmptyAttributes: true,
+                removeAttributeQuotes: true,
+                removeRedundantAttributes: true,
+                removeScriptTypeAttributes: true,
+                removeTagWhitespace: true,
+                preserveLineBreaks: false,
+                useShortDoctype: true
+            });
+            fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
         }
     }
 }
@@ -474,7 +510,7 @@ function extract(langFile, sources) {
     }
     fs.writeFileSync(langFile, translationsToJson({ strings: output }), { flag: 'w+' });
     log(format("{0} strings in output file.", count));
-    process.exit();
+    //process.exit();
     return;
 }
 

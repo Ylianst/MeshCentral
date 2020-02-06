@@ -183,10 +183,18 @@ function CreateMeshCentralServer(config, args) {
                 for (var i in files) {
                     var file = obj.path.join(obj.webViewsOverridePath, files[i]);
                     if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
+                        translateEngine.startEx(['', '', 'minify', file]);
+                    }
+                }
+                files = obj.fs.readdirSync(obj.webViewsOverridePath);
+                for (var i in files) {
+                    var file = obj.path.join(obj.webViewsOverridePath, files[i]);
+                    if (file.endsWith('.handlebars') || file.endsWith('-min.handlebars')) {
                         translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
                     }
                 }
             }
+            /*
             if (obj.webPublicOverridePath != null) {
                 didSomething = true;
                 var files = obj.fs.readdirSync(obj.webPublicOverridePath);
@@ -197,6 +205,7 @@ function CreateMeshCentralServer(config, args) {
                     }
                 }
             }
+            */
 
             if (didSomething == false) { console.log("Nothing to do."); }
             process.exit();
