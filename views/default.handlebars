@@ -8786,7 +8786,6 @@
 
         function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
-            console.log('p3showDownloadEventsDialog');
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + "eventslist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + "eventslist.json" + '</a>');
@@ -8798,8 +8797,12 @@
             if (mode == 1) { eventList = currentDeviceEvents; }
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
-            csv = "time, type, action, user, message" + '\r\n';
-            for (var i in eventList) { csv += '\"' + eventList[i].time + '\",\"' + eventList[i].etype + '\",\"' + ((eventList[i].action != null) ? eventList[i].action : '') + '\",\"' + ((eventList[i].username != null) ? eventList[i].username : '') + '\",\"' + ((eventList[i].msg != null) ? eventList[i].msg : '') + '\"\r\n'; }
+            csv = "utc, time, type, action, user, device, message" + '\r\n';
+            for (var i in eventList) {
+                var nodename = '';
+                if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
+                csv += '\"' + eventList[i].time + '\",\"' + printDateTime(new Date(eventList[i].time)) + '\",\"' + eventList[i].etype + '\",\"' + ((eventList[i].action != null) ? eventList[i].action : '') + '\",\"' + ((eventList[i].username != null) ? eventList[i].username : '') + '\",\"' + EscapeHtml(nodename) + '\",\"' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '\"\r\n';
+            }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "eventslist.csv");
             return false;
         }
