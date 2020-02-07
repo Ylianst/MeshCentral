@@ -627,14 +627,15 @@ body {
     resize: none;
 }
 
-#idx_deskFullBtn2 {
+#idx_deskFullBtn2, #idx_termFullBtn2 {
     float: left;
     font-size: 16px;
     cursor: pointer;
     display: none;
+    margin-right: 5px;
 }
 
-.fulldesk #idx_deskFullBtn2 {
+.fulldesk #idx_deskFullBtn2, .fulldesk #idx_termFullBtn2 {
     display: block;
 }
 
@@ -2282,6 +2283,14 @@ a {
     padding: 0px;
     padding: 0px;
     margin-top: 0px;
+}
+
+.fulldesk #termTable {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 #termarea3x {

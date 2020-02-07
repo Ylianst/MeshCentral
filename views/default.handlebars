@@ -10,6 +10,7 @@
     <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0.js"></script>
@@ -26,6 +27,8 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
+    <script type="text/javascript" src="scripts/xterm.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-fit.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.js"></script>
@@ -576,6 +579,7 @@
             <div id=p12 style="display:none">
                 <div id="p12title">
                     <div id="p12BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <div id="devListToolbarViewIcons2" style="float:right"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
                     <h1>Terminal - <span id=p12deviceName></span></h1>
                 </div>
                 <div id="p12warning" onclick=showFeaturesDlg()>
@@ -595,6 +599,7 @@
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                 </div>
                                 <div>
+                                    <div id="idx_termFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                                     <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
                                     <span id="connectbutton2span"><input type="button" id="connectbutton2" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                     <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
@@ -610,6 +615,7 @@
                         </tr>
                         <tr>
                             <td id="termarea3x">
+                                <div id="termarea3xdiv" style="width:100%;height:100%"></div>
                                 <pre id="Term"></pre>
                             </td>
                         </tr>
@@ -622,19 +628,21 @@
                                         <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
                                         <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()" />
                                     </span>
-                                    <span id="terminalSizeDropDown">
+                                    <span id="terminalSizeDropDown" style="display:none">
                                         <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option><option value="3" selected>Auto</option></select>
                                     </span>
-                                    <select id="specialkeylist" onkeypress="return false"></select>
-                                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
+                                    <span id="specialKeyDropDown">
+                                        <select id="specialkeylist" onkeypress="return false"></select>
+                                        <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
+                                    </span>
                                 </div>
                                 <div>
                                     &nbsp;
                                     <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" style="display:none" />
+                                    <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" style="display:none" />
                                 </div>
                             </td>
                         </tr>
@@ -1179,6 +1187,9 @@
         var goBackStack = [];
         var CollapsedGroups = {};
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
+        var xterm = null;
+        var xtermfit = null;
+        var xtermResizeTimer = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1239,7 +1250,11 @@
             document.onkeyup = ondockeyup;
             //window.addEventListener('focus', ondocfocus, false);
             window.addEventListener('blur', ondocblur, false);
-            window.onresize = function () { hideContextMenu(); masterUpdate(512); }
+            window.onresize = function () {
+                hideContextMenu();
+                masterUpdate(512);
+                if (xtermfit != null) { xtermfit.fit(); }
+            }
             setTimeout(function() { masterUpdate(512); }, 200);
 
             // Connect to the mesh server
@@ -1318,6 +1333,14 @@
             if (('{{{lang}}}' != 'en') && ('{{{lang}}}' != '')) { QC('body').add('nonenglish'); }
             var elements = document.getElementsByClassName('topbar_td');
             for (var i in elements) { if (elements[i].innerHTML) { elements[i].innerHTML = elements[i].innerHTML.split(' ').join('&nbsp;'); } }
+
+            // Display extra buttons on legacy terminal
+            if (args.xterm === 0) {
+                QV('termarea3xdiv', false);
+                QV('bsbutton', true);
+                QV('pastebutton', true);
+                QV('terminalSizeDropDown', true);
+            }
         }
 
         function adjustPanels() {
@@ -1380,11 +1403,21 @@
                 QS('deskarea3x')['max-height'] = null;
                 QS('p14iframe')['height'] = null;
                 QS('p14iframe')['max-height'] = null;
+                if (args.xterm !== 0) {
+                    QS('termarea3x')['height'] = 'calc(100vh - 55px)';
+                    QS('termarea3xdiv')['height'] = 'calc(100vh - 55px)';
+                    QS('termarea3x')['max-width'] = 'calc(1px)';
+                }
             } else {
                 QS('deskarea3x')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
                 QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
                 QS('p14iframe')['height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
                 QS('p14iframe')['max-height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
+                if (args.xterm !== 0) {
+                    QS('termarea3x')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
+                    QS('termarea3xdiv')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
+                    QS('termarea3x')['max-width'] = 'calc(1px)';
+                }
             }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
@@ -2757,7 +2790,7 @@
                 }
                 return desktop.m.handleKeys(e);
             }
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeys(e); }
+            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3 && xterm == null) { return terminal.m.TermHandleKeys(e); }
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) return agentConsoleHandleKeys(e);
             if (!xxdialogMode && xxcurrentView == 4) {
                 if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
@@ -2816,7 +2849,7 @@
                 }
                 return desktop.m.handleKeyDown(e);
             }
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { terminal.m.TermHandleKeyDown(e); if ((e.keyCode >= 37) && (e.keyCode <= 40)) { haltEvent(e); } }
+            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3 && xterm == null) { terminal.m.TermHandleKeyDown(e); if ((e.keyCode >= 37) && (e.keyCode <= 40)) { haltEvent(e); } }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) { return agentConsoleHandleKeys(e); }
             if (!xxdialogMode && xxcurrentView == 4) {
@@ -2850,7 +2883,7 @@
                 }
                 return desktop.m.handleKeyUp(e);
             }
-            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3) { return terminal.m.TermHandleKeyUp(e); }
+            if (!xxdialogMode && xxcurrentView == 12 && terminal && terminal.State == 3 && xterm == null) { return terminal.m.TermHandleKeyUp(e); }
             if (!xxdialogMode && xxcurrentView == 13 && e.keyCode == 116 && p13filetree != null) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
             if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
@@ -4867,7 +4900,7 @@
                 if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
                 if ((terminalAccess) && ((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
-                if ((mesh.mtype == 2) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
+                //if ((mesh.mtype == 2) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
@@ -5825,8 +5858,21 @@
                 QC('body').add('fulldesk');
                 QS('deskarea3x')['height'] = '100%';
                 QS('deskarea3x')['max-height'] = '100%';
+                if (args.xterm !== 0) {
+                    // XTerm terminal
+                    QS('termTable')['position'] = 'absolute';
+                    QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = '0';
+                } else {
+                    // Legacy terminal
+                    QS('termTable')['height'] = '100%';
+                    QS('termTable')['max-height'] = '100%';
+                }
+
                 // If shift is pressed, enter browser full screen.
-                if (e.shiftKey == true) { enterBrowserFullscreen(Q('deskarea0')); browserfullscreen = true; }
+                if (e.shiftKey == true) {
+                    if (xxcurrentView == 12) { enterBrowserFullscreen(Q('termTable')); } else { enterBrowserFullscreen(Q('deskarea0')); }
+                    browserfullscreen = true;
+                }
             } else {
                 QC('body').remove('fulldesk');
                 var hide = args.hide;
@@ -5834,11 +5880,23 @@
                 var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
                 QS('deskarea3x')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
                 QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                if (args.xterm !== 0) {
+                    // XTerm terminal
+                    QS('termTable')['position'] = null;
+                    QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = null;
+                } else {
+                    // Legacy terminal
+                    QS('termTable')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                    QS('termTable')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
+                }
                 if (browserfullscreen == true) { exitBrowserFullscreen(); browserfullscreen = false; }
             }
             deskAdjust();
             updateDesktopButtons();
             adjustPanels();
+            //setTimeout(adjustPanels, 10);
+            //setTimeout(function() { xtermfit.fit(); }, 10);
+            if (xterm != null) { xtermfit.fit(); if (xxcurrentView == 12) { xterm.focus(); } }
         }
 
         function deskToggleFocus() {
@@ -6307,8 +6365,13 @@
                     QE('termSizeList', true);
                     QH('termtitle', '');
                     QV('termRecordIcon', false);
-                    xterminal.m.TermResetScreen();
-                    xterminal.m.TermDraw();
+                    if (xterm == null) {
+                        xterminal.m.TermResetScreen();
+                        xterminal.m.TermDraw();
+                    } else {
+                        xterm.dispose();
+                        xterm = xtermfit = null;
+                    }
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
                 case 3:
@@ -6316,6 +6379,7 @@
                     if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
                     terminal.startTime = new Date();
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
+                    if (xterm != null) { xterm.focus(); }
                     break;
                 default:
                     QE('termSizeList', false);
@@ -6329,6 +6393,25 @@
         var autoConnectTerminalTimer = null;
         function autoConnectTerminal(e) { if (autoConnectTerminalTimer == null) { autoConnectTerminalTimer = setInterval(connectTerminal, 100); } else { clearInterval(autoConnectTerminalTimer); autoConnectTerminalTimer = null; } }
 
+        // Handles a tunnel to a remote shell
+        function CreateRemoteTunnel(onTunnelUpdate, options) {
+            var obj = { protocol: 1 };
+            if ((options != null) && (typeof options.protocol == 'number')) { obj.protocol = options.protocol; }
+            obj.onTunnelUpdate = onTunnelUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessBinaryData = function (data) { obj.onTunnelUpdate(data); }
+            obj.ProcessData = function (data) { obj.onTunnelUpdate(data); }
+            return obj;
+        }
+
+        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+
+        // Send the new terminal size to the agent
+        function xTermSendResize() {
+            xtermResizeTimer = null;
+            if ((xterm != null) && (terminal != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
+        }
+
         function connectTerminal(e, contype, options) {
             p12clearConsoleMsg();
             if (!terminal) {
@@ -6337,16 +6420,45 @@
                     if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal, 2); return; }
                     var termoptions = {};
                     if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; }
-                    terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term', termoptions), authCookie);
-                    terminal.debugmode = debugmode;
-                    terminal.m.debugmode = debugmode;
-                    terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
-                    terminal.onStateChanged = onTerminalStateChange;
-                    terminal.Start(terminalNode._id, 16994, '*', '*', 0);
-                    terminal.contype = 2;
-                    Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+
+                    if (args.xterm !== 0) {
+                        // Setup a mesh agent xterm terminal
+                        
+                        // Setup the terminal with auto-fit
+                        if (xterm != null) { xterm.dispose(); }
+                        xtermfit = new FitAddon.FitAddon();
+                        xterm = new Terminal();
+                        if (xtermfit) { xterm.loadAddon(xtermfit); }
+                        xterm.open(Q('termarea3xdiv')); // termarea3x
+                        xterm.onData(function (data) { if (terminal != null) { terminal.send(data); } })
+                        if (xtermfit) { xtermfit.fit(); }
+                        xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
+                        xterm.onResize(function (size) {
+                            // Despam resize
+                            if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
+                            xtermResizeTimer = setTimeout(xTermSendResize, 200); 
+                        });
+
+                        // Setup a terminal tunnel to the agent
+                        terminal = CreateAmtRedirect(CreateRemoteTunnel(tunnelUpdate, termoptions), authCookie);
+                        terminal.debugmode = debugmode;
+                        terminal.m.debugmode = debugmode;
+                        terminal.Start(terminalNode._id, 16994, '*', '*', 0);
+                        terminal.onStateChanged = onTerminalStateChange;
+                        terminal.contype = 2;
+                    } else {
+                        // Setup a mesh agent legacy terminal
+                        terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term', termoptions), authCookie);
+                        terminal.debugmode = debugmode;
+                        terminal.m.debugmode = debugmode;
+                        terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
+                        terminal.onStateChanged = onTerminalStateChange;
+                        terminal.Start(terminalNode._id, 16994, '*', '*', 0);
+                        terminal.contype = 2;
+                        Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+                    }
                 } else {
-                    // Setup a mesh agent terminal
+                    // Terminal setup
                     var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
                     if (options && options.requireLogin) { termoptions.requireLogin = true; }
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
@@ -6368,32 +6480,72 @@
                         }
                     }
 
-                    terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                    terminal.options = termoptions;
-                    terminal.debugmode = debugmode;
-                    terminal.m.debugmode = debugmode;
-                    terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
-                    terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
-                    terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
-                    terminal.onStateChanged = onTerminalStateChange;
-                    terminal.onConsoleMessageChange = function () {
-                        p12clearConsoleMsg();
-                        if (terminal.consoleMessage) {
-                            QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
-                            QV('p12TermConsoleMsg', true);
-                            p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                    if (args.xterm !== 0) {
+                        // Setup a mesh agent xterm terminal
+                        
+                        // Setup the terminal with auto-fit
+                        if (xterm != null) { xterm.dispose(); }
+                        xtermfit = new FitAddon.FitAddon();
+                        xterm = new Terminal();
+                        if (xtermfit) { xterm.loadAddon(xtermfit); }
+                        xterm.open(Q('termarea3xdiv')); // termarea3x
+                        xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
+                        if (xtermfit) { xtermfit.fit(); }
+                        xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
+                        xterm.onResize(function (size) {
+                            // Despam resize
+                            if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
+                            xtermResizeTimer = setTimeout(xTermSendResize, 200); 
+                        });
+
+                        // Setup a terminal tunnel to the agent
+                        terminal = CreateAgentRedirect(meshserver, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                        terminal.debugmode = debugmode;
+                        terminal.m.debugmode = debugmode;
+                        terminal.options = { cols: xterm.cols, rows: xterm.rows };
+                        if (options && options.requireLogin) { terminal.options.requireLogin = true; }
+                        terminal.Start(terminalNode._id);
+                        terminal.onStateChanged = onTerminalStateChange;
+                        terminal.contype = 1;
+                        terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
+                        terminal.onConsoleMessageChange = function (server, msg) {
+                            p12clearConsoleMsg();
+                            if (terminal.consoleMessage) {
+                                QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
+                                QV('p12TermConsoleMsg', true);
+                                p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                            }
+                        };
+                    } else {
+                        // Setup a mesh agent legacy terminal
+                        terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                        terminal.options = termoptions;
+                        terminal.debugmode = debugmode;
+                        terminal.m.debugmode = debugmode;
+                        terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
+                        terminal.m.lineFeed = ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) >= 0) ? '\r\n' : '\r'; // On windows, send \r\n, on Linux only \r
+                        terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
+                        terminal.onStateChanged = onTerminalStateChange;
+                        terminal.onConsoleMessageChange = function () {
+                            p12clearConsoleMsg();
+                            if (terminal.consoleMessage) {
+                                QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
+                                QV('p12TermConsoleMsg', true);
+                                p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                            }
                         }
+                        terminal.Start(terminalNode._id);
+                        terminal.contype = 1;
+                        terminal.m.terminalEmulation = 0;
+                        terminal.m.fxEmulation = 0;
+                        Q('id_ttypebutton').value = terminalEmulations[0];
                     }
-                    terminal.Start(terminalNode._id);
-                    terminal.contype = 1;
-                    terminal.m.terminalEmulation = 0;
-                    terminal.m.fxEmulation = 0;
-                    Q('id_ttypebutton').value = terminalEmulations[0];
                 }
             } else {
                 //QH('Term', '');
                 terminal.Stop();
                 terminal = null;
+                if (fullscreen) { deskToggleFull(); }
             }
             Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
         }
@@ -6422,8 +6574,13 @@
 
         function termSendKey(key, id) {
             if (!terminal || xxdialogMode) return;
-            terminal.m.TermSendKey(key);
-            Q(id).blur(); // Deselect the connect button so the button does not get key presses.
+            if (xterm != null) {
+                terminal.sendText(String.fromCharCode(key));
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(key);
+                Q(id).blur(); // Deselect the connect button so the button does not get key presses.
+            }
         }
 
         function showTermPasteDialog() {
@@ -6440,9 +6597,14 @@
 
         // Send special key
         function sendSpecialKey() {
-            terminal.m.TermSendKey(Q('specialkeylist').value);
-            Q('specialkeylist').blur();
-            Q('specialkeylistinput').blur();
+            if (xterm != null) {
+                terminal.sendText(String.fromCharCode(Q('specialkeylist').value));
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(Q('specialkeylist').value);
+                Q('specialkeylist').blur();
+                Q('specialkeylistinput').blur();
+            }
         }
 
         //
@@ -10425,6 +10587,9 @@
             for (var i = 0; i < 52; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
+            // Get out of fullscreen if needed
+            if (fullscreen) { deskToggleFull(); }
+
             // Change the URL
             if (xxcurrentView > 0) {
                 var urlviewmode = '';
@@ -10539,6 +10704,9 @@
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
             if (pluginHandler != null) pluginHandler.callHook('goPageEnd', x, event);
+
+            // Some panels must not have scroll bars
+            QS('column_l')['overflow'] = ([11,12].indexOf(x)>= 0)?'hidden':null;
         }
 
         //
