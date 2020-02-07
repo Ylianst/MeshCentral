@@ -32,9 +32,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.firstUpKeys = [];
     obj.stopInput = false;
     obj.localKeyMap = true;
-    obj.altPressed = false;
-    obj.ctrlPressed = false;
-    obj.shiftPressed = false;
+    obj.pressedKeys = [];
 
     obj.sessionid = 0;
     obj.username;
@@ -421,7 +419,15 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         //console.log('SendKeyMsgKC', action, kc);
         if (obj.State != 3) return;
         if (typeof action == 'object') { for (var i in action) { obj.SendKeyMsgKC(action[i][0], action[i][1]); } }
-        else { obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc)); }
+        else {
+            if (action == 1) { // Key Down
+                if (obj.pressedKeys.indexOf(kc) == -1) { obj.pressedKeys.unshift(kc); } // Add key press to start of array
+            } else if (action == 2) { // Key Up
+                var i = obj.pressedKeys.indexOf(kc);
+                if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
+            }
+            obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
+        }
     }
 
     obj.sendcad = function() { obj.SendCtrlAltDelMsg(); }
@@ -547,25 +553,17 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             obj.firstUpKeys.push(e.keyCode);
             if ((obj.firstUpKeys.length == 5)) { var j = obj.firstUpKeys.join(','); if ((j == '16,17,91,91,16') || (j == '16,17,18,91,92')) { obj.stopInput = true; } }
         }
-        if (e.keyCode == 16) { obj.shiftPressed = false; }
-        if (e.keyCode == 17) { obj.ctrlPressed = false; }
-        if (e.keyCode == 18) { obj.altPressed = false; }
         return obj.xxKeyUp(e);
     }
     obj.handleKeyDown = function (e) {
         if (obj.stopInput == true || desktop.State != 3) return false;
-        if (e.keyCode == 16) { obj.shiftPressed = true; }
-        if (e.keyCode == 17) { obj.ctrlPressed = true; }
-        if (e.keyCode == 18) { obj.altPressed = true; }
         return obj.xxKeyDown(e);
     }
 
     // Release the CTRL, ALT, SHIFT keys if they are pressed.
     obj.handleReleaseKeys = function () {
-        if (obj.shiftPressed) { obj.SendKeyMsgKC(obj.KeyAction.UP, 16); } // Shift
-        if (obj.ctrlPressed) { obj.SendKeyMsgKC(obj.KeyAction.UP, 17); } // Ctrl
-        if (obj.altPressed) { obj.SendKeyMsgKC(obj.KeyAction.UP, 18); } // Alt
-        obj.shiftPressed = obj.ctrlPressed = obj.altPressed = false;
+        var p = JSON.parse(JSON.stringify(obj.pressedKeys)); // Clone the pressed array
+        for (var i in p) { obj.SendKeyMsgKC(obj.KeyAction.UP, p[i]); } // Release all keys
     }
 
     // Mouse handlers
