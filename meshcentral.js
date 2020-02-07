@@ -1050,6 +1050,10 @@ function CreateMeshCentralServer(config, args) {
             const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
             if ((nodeVersion < 8) || (require('crypto').generateKeyPair == null) || (obj.config.letsencrypt == null) || (obj.redirserver == null)) {
                 obj.StartEx3(certs); // Just use the configured certificates
+            } else if ((obj.config.letsencrypt != null) && (obj.config.letsencrypt.nochecks == true)) {
+                // Use Let's Encrypt with no checking
+                obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt(obj);
+                obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt with no checking, use at your own risk.
             } else {
                 // Check Let's Encrypt settings
                 var leok = true;
