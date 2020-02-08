@@ -4900,7 +4900,7 @@
                 if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
                 if ((terminalAccess) && ((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
-                //if ((mesh.mtype == 2) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
+                if ((args.xterm === 0) && (mesh.mtype == 2) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
