@@ -2167,6 +2167,7 @@
     },
     {
       "en": "Agent Installation",
+      "nl": "Agent Installatie",
       "ru": "Установка агента",
       "xloc": [
         "agentinvite.handlebars->3->3"
@@ -5540,6 +5541,7 @@
     },
     {
       "en": "Device Information Export",
+      "nl": "Apparaat informatie export",
       "xloc": [
         "default.handlebars->25->404"
       ]
@@ -6199,6 +6201,7 @@
     },
     {
       "en": "Download the list of devices with one of the file formats below.",
+      "nl": "Download de lijst met apparaten in een van de onderstaande bestandsindelingen.",
       "xloc": [
         "default.handlebars->25->399"
       ]
@@ -7074,6 +7077,7 @@
     },
     {
       "en": "Export device information",
+      "nl": "Exporteer apparaat informatie",
       "xloc": [
         "default.handlebars->25->391"
       ]
@@ -10457,6 +10461,7 @@
     },
     {
       "en": "Login Shell",
+      "nl": "Login Shell",
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->cxtermps",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
@@ -14244,7 +14249,7 @@
       "es": "Actualizar",
       "fr": "Rafraîchir",
       "ja": "リフレッシュ",
-      "nl": "Ververs",
+      "nl": "Verversen",
       "pt": "Atualizar",
       "ru": "Обновить",
       "xloc": [
@@ -14369,6 +14374,7 @@
     },
     {
       "en": "Remote Agent Installation for {0}",
+      "nl": "Externe Agent Installatie voor {0}",
       "ru": "Установка агента для {0}",
       "xloc": [
         "agentinvite.handlebars->3->1"
@@ -19970,6 +19976,7 @@
     },
     {
       "en": "devicelist.csv",
+      "nl": "devicelist.csv",
       "xloc": [
         "default.handlebars->25->401",
         "default.handlebars->25->406"
@@ -19977,6 +19984,7 @@
     },
     {
       "en": "devicelist.json",
+      "nl": "devicelist.json",
       "xloc": [
         "default.handlebars->25->403",
         "default.handlebars->25->407"
@@ -20164,6 +20172,7 @@
     },
     {
       "en": "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr",
+      "nl": "id, naam, rname, host, icoon, ip, osdesc, status, groepsnaam, conn, pwr",
       "xloc": [
         "default.handlebars->25->405"
       ]
@@ -20358,12 +20367,14 @@
     },
     {
       "en": "utc, time, type, action, user, device, message",
+      "nl": "utc, tiid, type, actie, bebruiker, apparaat, bericht",
       "xloc": [
         "default.handlebars->25->1210"
       ]
     },
     {
       "en": "{0} - Agent Installation",
+      "nl": "{0} - Agent Installatie",
       "ru": "{0} - установка агента",
       "xloc": [
         "agentinvite.handlebars->3->2"
