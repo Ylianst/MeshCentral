@@ -212,6 +212,19 @@ function CreateMeshCentralServer(config, args) {
             return;
         }
 
+        // Setup the Node+NPM path if possible, this makes it possible to update the server even if NodeJS and NPM are not in default paths.
+        if (obj.args.npmpath == null) {
+            try {
+                var nodepath = process.argv[0];
+                var npmpath = obj.path.join(obj.path.dirname(process.argv[0]), 'npm');
+                if (obj.fs.existsSync(nodepath) && obj.fs.existsSync(npmpath)) {
+                    if (nodepath.indexOf(' ') >= 0) { nodepath = '"' + nodepath + '"'; }
+                    if (npmpath.indexOf(' ') >= 0) { npmpath = '"' + npmpath + '"'; }
+                    if (obj.platform == 'win32') { obj.args.npmpath = npmpath; } else { obj.args.npmpath = (nodepath + ' ' + npmpath); }
+                }
+            } catch (ex) { }
+        }
+
         // Linux background service systemd handling
         if (obj.platform == 'linux') {
             if (obj.args.install == true) {
@@ -1259,19 +1272,6 @@ function CreateMeshCentralServer(config, args) {
                 // Setup auto-backup timer
                 if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupintervalhours == 'number')) {
                     setInterval(obj.db.performBackup, obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000);
-                }
-
-                // Setup the Node+NPM path if possible, this makes it possible to update the server even if NodeJS and NPM are not in default paths.
-                if (obj.args.npmpath == null) {
-                    try {
-                        var nodepath = process.argv[0];
-                        var npmpath = obj.path.join(obj.path.dirname(process.argv[0]), 'npm');
-                        if (obj.fs.existsSync(nodepath) && obj.fs.existsSync(npmpath)) {
-                            if (nodepath.indexOf(' ') >= 0) { nodepath = '"' + nodepath + '"'; }
-                            if (npmpath.indexOf(' ') >= 0) { npmpath = '"' + npmpath + '"'; }
-                            if (obj.platform == 'win32') { obj.args.npmpath = npmpath; } else { obj.args.npmpath = (nodepath + ' ' + npmpath); }
-                        }
-                    } catch (ex) { }
                 }
             });
         });
