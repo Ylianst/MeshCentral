@@ -166,7 +166,8 @@ module.exports.CreateAmtScanner = function (parent) {
             if (err == null && docs.length > 0) {
                 for (var i in docs) {
                     var doc = docs[i], host = doc.host.toLowerCase();
-                    if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost')) {
+                    var cira = obj.parent.mpsserver.ciraConnections[doc._id]
+                    if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost') && (cira==null || cira==undefined)) {
                         var scaninfo = obj.scanTable[doc._id];
                         if (scaninfo == undefined) {
                             var tag = obj.nextTag++;
