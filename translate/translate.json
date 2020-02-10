@@ -2972,8 +2972,7 @@
       "pt": "Auto",
       "ru": "Автоматически",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->5",
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->2"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar->5"
       ]
     },
     {
