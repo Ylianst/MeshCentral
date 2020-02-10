@@ -3832,7 +3832,7 @@
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=102>' + "Move to device group" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option><option value=102>' + "Move to device group" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -3863,10 +3863,38 @@
             } else if (op == 104) {
                 // Uninstall agent
                 p10showSendUninstallAgentDialog(getCheckedDevices());
+            } else if (op == 105) {
+                // Export device information
+                p2downloadDeviceInfo();
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
             }
+        }
+
+        function p2downloadDeviceInfo() {
+            if (xxdialogMode) return;
+            var x = "Download the list of devices with one of the file formats below." + '<br /><br />';
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
+            setDialogMode(2, "Device Information Export", 1, null, x);
+        }
+
+        function p2downloadDeviceInfoCSV() {
+            var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr" + '\r\n', chkNodeIds = getCheckedDevices(), r = [];
+            for (var i in chkNodeIds) {
+                var n = getNodeFromId(chkNodeIds[i]);
+                csv += '\"' + n._id.split(',').join('') + '\",\"' + n.name.split(',').join('') + '\",\"' + (n.rname?(n.rname.split(',').join('')):'') + '\",\"' + n.host.split(',').join('') + '\",\"' + n.icon + '\",\"' + (n.ip?n.ip:'') + '\",\"' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '\",\"' + n.state + '\",\"' + meshes[n.meshid].name.split(',').join('') + '\",\"' + (n.conn?n.conn:'') + '\",\"' + (n.pwr?n.pwr:'') + '\"\r\n';
+            }
+            saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
+            return false;
+        }
+
+        function p2downloadDeviceInfoJSON() {
+            var chkNodeIds = getCheckedDevices(), r = [];
+            for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+            return false;
         }
 
         function d2groupActionFunctionDelEx() { QE('idx_dlgOkButton', Q('d2check').checked); }
