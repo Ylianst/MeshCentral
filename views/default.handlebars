@@ -3884,7 +3884,7 @@
             var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr" + '\r\n', chkNodeIds = getCheckedDevices(), r = [];
             for (var i in chkNodeIds) {
                 var n = getNodeFromId(chkNodeIds[i]);
-                csv += '\"' + n._id.split(',').join('') + '\",\"' + n.name.split(',').join('') + '\",\"' + (n.rname?(n.rname.split(',').join('')):'') + '\",\"' + n.host.split(',').join('') + '\",\"' + n.icon + '\",\"' + (n.ip?n.ip:'') + '\",\"' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '\",\"' + n.state + '\",\"' + meshes[n.meshid].name.split(',').join('') + '\",\"' + (n.conn?n.conn:'') + '\",\"' + (n.pwr?n.pwr:'') + '\"\r\n';
+                csv += '\"' + n._id.split(',').join('') + '\",\"' + n.name.split(',').join('') + '\",\"' + (n.rname?(n.rname.split(',').join('')):'') + '\",\"' + (n.host?(n.host.split(',').join('')):'') + '\",\"' + n.icon + '\",\"' + (n.ip?n.ip:'') + '\",\"' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '\",\"' + n.state + '\",\"' + meshes[n.meshid].name.split(',').join('') + '\",\"' + (n.conn?n.conn:'') + '\",\"' + (n.pwr?n.pwr:'') + '\"\r\n';
             }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
             return false;
