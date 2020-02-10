@@ -629,7 +629,7 @@
                                         <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()" />
                                     </span>
                                     <span id="terminalSizeDropDown" style="display:none">
-                                        <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option><option value="3" selected>Auto</option></select>
+                                        <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option></select>
                                     </span>
                                     <span id="specialKeyDropDown">
                                         <select id="specialkeylist" onkeypress="return false"></select>
@@ -1333,14 +1333,6 @@
             if (('{{{lang}}}' != 'en') && ('{{{lang}}}' != '')) { QC('body').add('nonenglish'); }
             var elements = document.getElementsByClassName('topbar_td');
             for (var i in elements) { if (elements[i].innerHTML) { elements[i].innerHTML = elements[i].innerHTML.split(' ').join('&nbsp;'); } }
-
-            // Display extra buttons on legacy terminal
-            if (args.xterm === 0) {
-                QV('termarea3xdiv', false);
-                QV('bsbutton', true);
-                QV('pastebutton', true);
-                QV('terminalSizeDropDown', true);
-            }
         }
 
         function adjustPanels() {
@@ -1398,12 +1390,13 @@
             QS('p15agentConsole')['max-height'] = 'calc(100vh - ' + (84 + xh + xh2) + 'px)';
             QS('p15agentConsoleText')['height'] = 'calc(100vh - ' + (81 + xh + xh2) + 'px)';
             QS('p15agentConsoleText')['max-height'] = 'calc(100vh - ' + (81 + xh + xh2) + 'px)';
+            var xtermActive = !((args.xterm === 0) || ((terminal != null) && (xterm == null)));
             if (fullscreen) {
                 QS('deskarea3x')['height'] = null;
                 QS('deskarea3x')['max-height'] = null;
                 QS('p14iframe')['height'] = null;
                 QS('p14iframe')['max-height'] = null;
-                if (args.xterm !== 0) {
+                if (xtermActive) {
                     QS('termarea3x')['height'] = 'calc(100vh - 55px)';
                     QS('termarea3xdiv')['height'] = 'calc(100vh - 55px)';
                     QS('termarea3x')['max-width'] = 'calc(1px)';
@@ -1413,7 +1406,7 @@
                 QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
                 QS('p14iframe')['height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
                 QS('p14iframe')['max-height'] = 'calc(100vh - ' + (23 + xh + xh2) + 'px)';
-                if (args.xterm !== 0) {
+                if (xtermActive) {
                     QS('termarea3x')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
                     QS('termarea3xdiv')['height'] = 'calc(100vh - ' + (74 + xh + xh2) + 'px)';
                     QS('termarea3x')['max-width'] = 'calc(1px)';
@@ -5853,12 +5846,13 @@
         var fullscreen = false;
         var browserfullscreen = false;
         function deskToggleFull(e) {
+            var xtermActive = !((args.xterm === 0) || ((terminal != null) && (xterm == null)));
             fullscreen = !fullscreen;
             if (fullscreen) {
                 QC('body').add('fulldesk');
                 QS('deskarea3x')['height'] = '100%';
                 QS('deskarea3x')['max-height'] = '100%';
-                if (args.xterm !== 0) {
+                if (xtermActive) {
                     // XTerm terminal
                     QS('termTable')['position'] = 'absolute';
                     QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = '0';
@@ -5880,7 +5874,7 @@
                 var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
                 QS('deskarea3x')['height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
                 QS('deskarea3x')['max-height'] = 'calc(100vh - ' + (75 + xh) + 'px)';
-                if (args.xterm !== 0) {
+                if (xtermActive) {
                     // XTerm terminal
                     QS('termTable')['position'] = null;
                     QS('termTable')['top'] = QS('termTable')['bottom'] = QS('termTable')['left'] = QS('termTable')['right'] = null;
@@ -6327,6 +6321,7 @@
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (mesh.mtype == 2) && (currentNode.agent.caps & 2));
             QV('connectbutton2hspan', (termState == false) && ((terminalNode.intelamt != null) && (mesh.mtype == 1 || terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('terminalSizeDropDown', (termState == false) && ((terminalNode.intelamt != null) && (mesh.mtype == 1 || terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
@@ -6350,6 +6345,15 @@
                 Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
                 Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n')?"CR+LF":"LF";
             }
+
+            // Display extra buttons on legacy terminal
+            var xtermActive = !((args.xterm === 0) || ((terminal != null) && (xterm == null)));
+            QV('termarea3xdiv', xtermActive);
+            QV('Term', !xtermActive);
+            QV('bsbutton', !xtermActive);
+            QV('pastebutton', !xtermActive);
+            QV('devListToolbarViewIcons2', xtermActive);
+            QE('termSizeList', terminal == null);
         }
 
         // Called when the terminal state changes
@@ -6362,7 +6366,6 @@
             switch (state) {
                 case 0:
                     // Disconnected, clear the terminal
-                    QE('termSizeList', true);
                     QH('termtitle', '');
                     QV('termRecordIcon', false);
                     if (xterm == null) {
@@ -6375,14 +6378,12 @@
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
                 case 3:
-                    QE('termSizeList', false);
                     if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
                     terminal.startTime = new Date();
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
                     if (xterm != null) { xterm.focus(); }
                     break;
                 default:
-                    QE('termSizeList', false);
                     //console.log('Unhandled onTerminalStateChange state', state);
                     break;
             }
@@ -6401,6 +6402,9 @@
             obj.xxStateChange = function (state) { }
             obj.ProcessBinaryData = function (data) { obj.onTunnelUpdate(data); }
             obj.ProcessData = function (data) { obj.onTunnelUpdate(data); }
+            obj.terminalEmulation = 1;
+            obj.fxEmulation = 0;
+            obj.lineFeed = '\r\n';
             return obj;
         }
 
@@ -6409,7 +6413,7 @@
         // Send the new terminal size to the agent
         function xTermSendResize() {
             xtermResizeTimer = null;
-            if ((xterm != null) && (terminal != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
+            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
         }
 
         function connectTerminal(e, contype, options) {
@@ -6419,51 +6423,31 @@
                     // Setup the Intel AMT terminal
                     if ((terminalNode.intelamt.user == null) || (terminalNode.intelamt.user == '')) { editDeviceAmtSettings(terminalNode._id, connectTerminal, 2); return; }
                     var termoptions = {};
-                    if (Q('termSizeList').value == 2) { termoptions.width = 100; termoptions.height = 30; }
+                    if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; }
+                    else if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; }
 
-                    if (args.xterm !== 0) {
-                        // Setup a mesh agent xterm terminal
-                        
-                        // Setup the terminal with auto-fit
-                        if (xterm != null) { xterm.dispose(); }
-                        xtermfit = new FitAddon.FitAddon();
-                        xterm = new Terminal();
-                        if (xtermfit) { xterm.loadAddon(xtermfit); }
-                        xterm.open(Q('termarea3xdiv')); // termarea3x
-                        xterm.onData(function (data) { if (terminal != null) { terminal.send(data); } })
-                        if (xtermfit) { xtermfit.fit(); }
-                        xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
-                        xterm.onResize(function (size) {
-                            // Despam resize
-                            if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
-                            xtermResizeTimer = setTimeout(xTermSendResize, 200); 
-                        });
+                    // Get out of full screen
+                    if (fullscreen) { deskToggleFull(); }
 
-                        // Setup a terminal tunnel to the agent
-                        terminal = CreateAmtRedirect(CreateRemoteTunnel(tunnelUpdate, termoptions), authCookie);
-                        terminal.debugmode = debugmode;
-                        terminal.m.debugmode = debugmode;
-                        terminal.Start(terminalNode._id, 16994, '*', '*', 0);
-                        terminal.onStateChanged = onTerminalStateChange;
-                        terminal.contype = 2;
-                    } else {
-                        // Setup a mesh agent legacy terminal
-                        terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term', termoptions), authCookie);
-                        terminal.debugmode = debugmode;
-                        terminal.m.debugmode = debugmode;
-                        terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
-                        terminal.onStateChanged = onTerminalStateChange;
-                        terminal.Start(terminalNode._id, 16994, '*', '*', 0);
-                        terminal.contype = 2;
-                        Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
-                    }
+                    // Setup legacy terminal
+                    QV('termarea3xdiv', false);
+                    QV('Term', true);
+                    terminal = CreateAmtRedirect(CreateAmtRemoteTerminal('Term', termoptions), authCookie);
+                    terminal.debugmode = debugmode;
+                    terminal.m.debugmode = debugmode;
+                    terminal.m.onTitleChange = function (sender, title) { QH('termtitle', ' - ' + EscapeHtml(title)); }
+                    terminal.onStateChanged = onTerminalStateChange;
+                    terminal.Start(terminalNode._id, 16994, '*', '*', 0);
+                    terminal.contype = 2;
+                    Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
                 } else {
                     // Terminal setup
                     var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number'))?options.protocol:1 };
                     if (options && options.requireLogin) { termoptions.requireLogin = true; }
                     if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
-                        if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
-                        if (Q('termSizeList').value == 3) {
+                        if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; termoptions.xterm = true; }
+                        else if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
+                        else if (Q('termSizeList').value == 3) {
                             // TODO: Try to improve terminal auto-size.
                             termoptions.cols = Math.floor((Q('column_l').clientWidth - 60) / 10);
                             termoptions.rows = Math.floor((Q('column_l').clientHeight - 120) / 20);
@@ -6482,7 +6466,9 @@
 
                     if (args.xterm !== 0) {
                         // Setup a mesh agent xterm terminal
-                        
+                        QV('termarea3xdiv', true);
+                        QV('Term', false);
+
                         // Setup the terminal with auto-fit
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
@@ -6517,6 +6503,9 @@
                             }
                         };
                     } else {
+                        QV('termarea3xdiv', false);
+                        QV('Term', true);
+
                         // Setup a mesh agent legacy terminal
                         terminal = CreateAgentRedirect(meshserver, CreateAmtRemoteTerminal('Term', termoptions), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                         terminal.options = termoptions;
@@ -6575,7 +6564,13 @@
         function termSendKey(key, id) {
             if (!terminal || xxdialogMode) return;
             if (xterm != null) {
-                terminal.sendText(String.fromCharCode(key));
+                if (terminal.sendText) {
+                    // MeshAgent
+                    terminal.sendText(String.fromCharCode(key));
+                } else {
+                    // CIRA
+                    terminal.send(String.fromCharCode(key));
+                }
                 xterm.focus();
             } else if (terminal != null) {
                 terminal.m.TermSendKey(key);

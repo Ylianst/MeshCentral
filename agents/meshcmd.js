@@ -591,10 +591,11 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
-        if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { if (mescriptJSON != '') { settings.scriptjson = mescriptJSON; } else { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; } }
+        //if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { if (mescriptJSON != '') { settings.scriptjson = mescriptJSON; } else { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; } }
+        if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; }
         startMeScript();
     } else if (settings.action == 'amtuuid') {
-        // Start running 
+        // Start running
         if (settings.hostname != null) {
             if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
             if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }

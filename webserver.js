@@ -1843,6 +1843,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Server name is an IPv4 address
             obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
                 if (err != null) { func(null); return; }
+
+                // Randomize the environement detection
+                var randomDnsName;
+                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
+                while (data.indexOf('aabbccddeeffgg') >= 0) { data = data.replace('aabbccddeeffgg', randomDnsName); }
                 var scriptFile = JSON.parse(data);
 
                 // Change a few things in the script
@@ -1862,19 +1867,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
                 scriptFile.scriptText = runscript;
 
-                // Randomize the environement detection
-                var randomDnsName;
-                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
-                var text = JSON.stringify(scriptFile, null, ' ');
-                for (var i = 0; i < 5; i++) { text = text.replace('aabbccddeeffgg', randomDnsName); }
-
                 // Send the script
-                func(Buffer.from(text));
+                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
             });
         } else {
             // Server name is a hostname
             obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
                 if (err != null) { res.sendStatus(404); return; }
+
+                // Randomize the environement detection
+                var randomDnsName;
+                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
+                while (data.indexOf('aabbccddeeffgg') >= 0) { data = data.replace('aabbccddeeffgg', randomDnsName); }
                 var scriptFile = JSON.parse(data);
 
                 // Change a few things in the script
@@ -1893,14 +1897,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
                 scriptFile.scriptText = runscript;
 
-                // Randomize the environement detection
-                var randomDnsName;
-                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
-                var text = JSON.stringify(scriptFile, null, ' ');
-                for (var i = 0; i < 5; i++) { text = text.replace('aabbccddeeffgg', randomDnsName); }
-
                 // Send the script
-                func(Buffer.from(text));
+                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
             });
         }
     }
