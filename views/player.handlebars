@@ -60,6 +60,8 @@
                         <option value=0.25>4x Speed</option>
                         <option value=0.1>10x Speed</option>
                     </select>
+                    <input id="SeekBackwardButton" type=button value="<<" disabled="disabled" onclick="seekBackward()">
+                    <input id="SeekForwardButton" type=button value=">>" disabled="disabled" onclick="seekForward()">
                 </div>
             </div>
         </div>
@@ -91,6 +93,7 @@
         var recFileEndTime = 0;
         var recFileMetadata = null;
         var recFileProtocol = 0;
+        var recFileIndexBasePtr = null;
         var agentDesktop = null;
         var amtDesktop = null;
         var playing = false;
@@ -138,6 +141,22 @@
             }
         }
 
+        function readBlockAt(ptr, func) {
+            var fr = new FileReader();
+            fr.onload = function () {
+                var type = ReadShort(this.result, 0);
+                var flags = ReadShort(this.result, 2);
+                var size = ReadInt(this.result, 4);
+                var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
+                if ((ptr + 16 + size) > recFile.size) { func(-1); } else {
+                    var fr2 = new FileReader();
+                    fr2.onload = function () { func(type, flags, time, this.result); };
+                    fr2.readAsBinaryString(recFile.slice(ptr + 16, ptr + 16 + size));
+                }
+            };
+            fr.readAsBinaryString(recFile.slice(ptr, ptr + 16));
+        }
+
         function readLastBlock(func) {
             if (recFile.size < 32) { func(-1); } else {
                 var fr = new FileReader();
@@ -180,6 +199,12 @@
                 else if (p == 100) { p = "Intel&reg; AMT WSMAN"; }
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
                 x += addInfoNoEsc("Protocol", p);
+            }
+            if (recFileMetadata.indexInterval) {
+                recFileIndexBasePtr = recFilePtr;
+                x += addInfoNoEsc("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
+                QE('SeekBackwardButton', true);
+                QE('SeekForwardButton', true);
             }
             QV('DeskParent', true);
             QV('TermParent', false);
@@ -235,8 +260,8 @@
             }
         }
 
-        function processBlockEx(type, flags, time, data) {
-            if (playing == false) return;
+        function processBlockEx(type, flags, time, data, forced) {
+            if ((playing == false) && (forced !== true)) return;
             var flagBinary = (flags & 1) != 0, flagUser = (flags & 2) != 0;
 
             // Update the clock
@@ -298,6 +323,8 @@
             QE('PlayButton', false);
             QE('PauseButton', false);
             QE('RestartButton', false);
+            QE('SeekBackwardButton', false);
+            QE('SeekForwardButton', false);
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
@@ -489,6 +516,42 @@
                 QS('Desk')['margin-top'] = null;
                 QS('DeskParent').overflow = 'hidden';
             }
+        }
+
+        function seekBackward() {
+            //console.log('seekBackward');
+            seek(5);
+        }
+
+        function seekForward() {
+            //console.log('seekForward');
+            seek(10);
+        }
+
+
+        var SeekIndex;
+        var SeekIndexPtr;
+        function seek(indexNumber) {
+            //console.log('seek', indexNumber);
+            if ((recFileMetadata.indexes == null) || (recFileMetadata.indexes[indexNumber] == null)) return null;
+            restart();
+            //pause();
+            if (agentDesktop) { agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height); }
+            SeekIndex = recFileMetadata.indexes[indexNumber];
+            SeekIndexPtr = 3;
+            var ptr = SeekIndex[0];
+            var width = SeekIndex[1];
+            var height = SeekIndex[2];
+            seekFetchNext();
+        }
+
+        function seekFetchNext() {
+            if (SeekIndex[SeekIndexPtr] == null) { return; }
+            readBlockAt(recFileIndexBasePtr + SeekIndex[SeekIndexPtr], function (type, flags, time, data) {
+                SeekIndexPtr++;
+                processBlockEx(type, flags, time, data, true);
+                seekFetchNext();
+            });
         }
 
         //
