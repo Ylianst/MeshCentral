@@ -1640,6 +1640,7 @@
                     if (updateNaggleFlags & 16384) { updateUsers(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
+                    gotoStartViewPage();
                 }, 150);
             }
         }
@@ -1755,6 +1756,7 @@
                 case 'users': {
                     users = {};
                     for (var m in message.users) { users[message.users[m]._id] = message.users[m]; }
+                    if (currentUser != null) { currentUser = users[currentUser._id]; }
                     masterUpdate(16384);
                     break;
                 }
@@ -1766,6 +1768,7 @@
                 case 'meshes': {
                     meshes = {};
                     for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
+                    if (currentMesh != null) { currentMesh = meshes[currentMesh._id]; }
                     masterUpdate(4 + 128);
                     break;
                 }
@@ -1808,29 +1811,6 @@
                         }
                     }
                     masterUpdate(1 | 2 | 4 | 64);
-
-                    if (xxcurrentView == -1) { if ('{{viewmode}}' != '') { go(parseInt('{{viewmode}}')); } else { setDialogMode(0); go(1); } }
-                    if ('{{currentNode}}' != '') { gotoDevice('{{currentNode}}', parseInt('{{viewmode}}'));}
-                    else if (args.gotonode != null) {
-                        goBackStack.push(1);
-                        gotoDevice('node/' + domain + '/' + args.gotonode, parseInt('{{viewmode}}'));
-                    } else if (args.gotomesh != null) {
-                        goBackStack.push(2);
-                        gotoMesh('mesh/' + domain + '/' + args.gotomesh);
-                        go(parseInt('{{viewmode}}'));
-                    } else if (args.gotouser != null) {
-                        goBackStack.push(4);
-                        gotoUser('user/' + domain + '/' + args.gotouser);
-                        go(parseInt('{{viewmode}}'));
-                    } else if (args.gotougrp != null) {
-                        goBackStack.push(50);
-                        gotoUserGroup('ugrp/' + domain + '/' + args.gotougrp);
-                        go(parseInt('{{viewmode}}'));
-                    }
-                    delete args.gotonode;
-                    delete args.gotomesh;
-                    delete args.gotouser;
-                    delete args.gotougrp;
                     break;
                 }
                 case 'powertimeline': {
@@ -2067,10 +2047,18 @@
                 }
                 case 'getcookie': {
                     if (message.tag == 'clickonce') {
-                        var basicPort = '{{{serverRedirPort}}}' == '' ? '{{{serverPublicPort}}}' : '{{{serverRedirPort}}}';
-                        var rdpurl = 'http://' + window.location.hostname + ':' + basicPort + '/clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
-                        var newWindow = window.open(rdpurl, '_blank');
-                        newWindow.opener = null;
+                        if (message.trustedCert == true) {
+                            // Trusted certificate, use HTTPS port.
+                            var rdpurl = window.location.origin + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
+                            var newWindow = window.open(rdpurl, '_blank');
+                            newWindow.opener = null;
+                        } else {
+                            // Not a trusted certificate, use HTTP port.
+                            var basicPort = '{{{serverRedirPort}}}' == '' ? '{{{serverPublicPort}}}' : '{{{serverRedirPort}}}';
+                            var rdpurl = 'http://' + window.location.hostname + ':' + basicPort  + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
+                            var newWindow = window.open(rdpurl, '_blank');
+                            newWindow.opener = null;
+                        }
                     }
                     break;
                 }
@@ -2315,7 +2303,9 @@
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
-                            meshserver.send({ action: 'nodes' });
+                            //meshserver.send({ action: 'nodes' });
+                            //meshserver.send({ action: 'usergroups' });
+                            //meshserver.send({ action: 'users' });
                             break;
                         }
                         case 'deleteusergroup': {
@@ -2747,6 +2737,43 @@
                     //console.log('Unknown message.action', message.action);
                     break;
             }
+        }
+
+        // Go tot he correct starting view page
+        function gotoStartViewPage() {
+            if (xxcurrentView != -1) return;
+            if ('{{currentNode}}' != '') {
+                if (getNodeFromId('{{currentNode}}') == null) return; // This node is not loaded yet
+                gotoDevice('{{currentNode}}', parseInt('{{viewmode}}'));
+            } else if (args.gotonode != null) {
+                if (getNodeFromId('node/' + domain + '/' + args.gotonode) == null) return; // This node is not loaded yet
+                gotoDevice('node/' + domain + '/' + args.gotonode, parseInt('{{viewmode}}'));
+                goBackStack.push(1);
+            } else if (args.gotomesh != null) {
+                if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
+                gotoMesh('mesh/' + domain + '/' + args.gotomesh);
+                go(parseInt('{{viewmode}}'));
+                goBackStack.push(2);
+            } else if (args.gotouser != null) {
+                if (users['user/' + domain + '/' + args.gotouser] == null) return; // This user is not loaded yet
+                gotoUser('user/' + domain + '/' + args.gotouser);
+                go(parseInt('{{viewmode}}'));
+                goBackStack.push(4);
+            } else if (args.gotougrp != null) {
+                if (usergroups['ugrp/' + domain + '/' + args.gotougrp] == null) return; // This user group is not loaded yet
+                gotoUserGroup('ugrp/' + domain + '/' + args.gotougrp);
+                go(parseInt('{{viewmode}}'));
+                goBackStack.push(50);
+            } else if ('{{viewmode}}' != '') {
+                go(parseInt('{{viewmode}}'));
+            } else {
+                setDialogMode(0);
+                go(1);
+            }
+            delete args.gotonode;
+            delete args.gotomesh;
+            delete args.gotouser;
+            delete args.gotougrp;
         }
 
         //
@@ -4738,6 +4765,7 @@
 
             //disconnectAllKvmFunction();
             var node = getNodeFromId(nodeid);
+            if (node == null) return;
             var mesh = meshes[node.meshid];
             var meshrights = GetNodeRights(node);
             if (!currentNode || currentNode._id != node._id || refresh == true) {
