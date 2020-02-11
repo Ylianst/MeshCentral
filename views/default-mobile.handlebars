@@ -750,6 +750,7 @@
                 case 'users': {
                     users = {};
                     for (var m in message.users) { users[message.users[m]._id] = message.users[m]; }
+                    if (currentUser != null) { currentUser = users[currentUser._id]; }
                     updateUsers();
                     break;
                 }
@@ -761,6 +762,7 @@
                 case 'meshes': {
                     meshes = {};
                     for (var m in message.meshes) { meshes[message.meshes[m]._id] = message.meshes[m]; }
+                    if (currentMesh != null) { currentMesh = meshes[currentMesh._id]; }
                     updateMeshes();
                     updateDevices();
                     break;
