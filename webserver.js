@@ -2088,7 +2088,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Server the player page
     function handlePlayerRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
+        if (domain == null) { res.sendStatus(404); return; }
 
         parent.debug('web', 'handlePlayerRequest: sending player');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
