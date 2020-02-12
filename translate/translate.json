@@ -146,6 +146,7 @@
       "nl": " / ",
       "pt": " / ",
       "ru": " / ",
+      "fr": " / ",
       "xloc": [
         "default-mobile.handlebars->9->94"
       ]
@@ -284,6 +285,7 @@
       "es": "(",
       "ja": "（",
       "nl": "(",
+      "fr": "(",
       "pt": "(",
       "ru": "(",
       "xloc": [
@@ -313,6 +315,7 @@
       "nl": ")",
       "pt": ")",
       "ru": ")",
+      "fr": ")",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3createMeshLink1",
         "default.handlebars->container->column_l->p2->p2createMeshLink1"
@@ -353,6 +356,7 @@
       "nl": ",",
       "pt": ",",
       "ru": ",",
+      "fr": ",",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message",
         "default.handlebars->container->column_l->p0->p0message"
@@ -367,6 +371,7 @@
       "nl": ", ",
       "pt": ", ",
       "ru": ", ",
+      "fr": ", ",
       "xloc": [
         "default-mobile.handlebars->9->330",
         "default.handlebars->25->1145"
@@ -408,6 +413,7 @@
       "nl": ", Soft-KVM",
       "pt": ", Soft-KVM",
       "ru": ", Soft-KVM",
+      "fr": ", Soft-KVM",
       "xloc": [
         "default.handlebars->25->616"
       ]
@@ -421,6 +427,7 @@
       "nl": ", WebRTC",
       "pt": ", WebRTC",
       "ru": ", WebRTC",
+      "fr": ", WebRTC",
       "xloc": [
         "default-mobile.handlebars->9->228",
         "default-mobile.handlebars->9->238",
@@ -480,6 +487,7 @@
       "nl": "-",
       "pt": "-",
       "ru": "-",
+      "fr": "-",
       "xloc": [
         "default-mobile.handlebars->9->231",
         "xterm.handlebars->p11->deskarea0->deskarea1->3"
@@ -494,6 +502,7 @@
       "nl": ".",
       "pt": ".",
       "ru": ".",
+      "fr": ".",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p0->1->p0message",
         "default.handlebars->container->column_l->p0->p0message",
@@ -515,6 +524,7 @@
       "nl": "...",
       "pt": "...",
       "ru": "...",
+      "fr": "...",
       "xloc": [
         "default-mobile.handlebars->9->243",
         "default-mobile.handlebars->9->67",
@@ -532,6 +542,7 @@
       "nl": "0",
       "pt": "0",
       "ru": "0",
+      "fr": "0",
       "xloc": [
         "default-mobile.handlebars->9->232",
         "default.handlebars->container->masthead->7->notificationCount"
@@ -546,6 +557,7 @@
       "nl": "00:00:00",
       "pt": "00:00:00",
       "ru": "00:00:00",
+      "fr": "00:00:00",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->1->timespan"
       ]
@@ -786,6 +798,7 @@
       "nl": "100%",
       "pt": "100%",
       "ru": "100%",
+      "fr": "100%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1"
@@ -800,6 +813,7 @@
       "nl": "100x30",
       "pt": "100x30",
       "ru": "100x30",
+      "fr": "100x30",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->1"
       ]
@@ -827,6 +841,7 @@
       "nl": "12.5%",
       "pt": "12.5%",
       "ru": "12.5%",
+      "fr": "12.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->15",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15"
@@ -895,6 +910,7 @@
       "nl": "25%",
       "pt": "25%",
       "ru": "25%",
+      "fr": "25%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->13",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13"
@@ -936,6 +952,7 @@
       "nl": "3",
       "pt": "3",
       "ru": "3",
+      "fr": "3",
       "xloc": [
         "default-mobile.handlebars->9->269"
       ]
@@ -1002,6 +1019,7 @@
       "nl": "37.5%",
       "pt": "37..5%",
       "ru": "37.5%",
+      "fr": "37.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->11",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11"
@@ -1041,6 +1059,7 @@
       "nl": "404",
       "pt": "404",
       "ru": "404",
+      "fr": "404",
       "xloc": [
         "error404-mobile.handlebars->container->page_content->column_l->1->0",
         "error404.handlebars->container->column_l->1->0"
@@ -1094,6 +1113,7 @@
       "nl": "50%",
       "pt": "50%",
       "ru": "50%",
+      "fr": "50%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->9",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9"
@@ -1134,6 +1154,7 @@
       "nl": "62.5%",
       "pt": "62.5%",
       "ru": "62.5%",
+      "fr": "62.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7"
@@ -1196,6 +1217,7 @@
       "nl": "75%",
       "pt": "75%",
       "ru": "75%",
+      "fr": "75%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5"
@@ -1225,6 +1247,7 @@
       "nl": "80x25",
       "pt": "80x25",
       "ru": "80x25",
+      "fr": "80x25",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->0"
       ]
@@ -1238,6 +1261,7 @@
       "nl": "87.5%",
       "pt": "87.5%",
       "ru": "87.5%",
+      "fr": "87.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3"
@@ -1252,12 +1276,21 @@
       "nl": ":",
       "pt": ":",
       "ru": ":",
+      "fr": ":",
       "xloc": [
         "agentinvite.handlebars->3->4"
       ]
     },
     {
       "en": "<<",
+      "nl": "<<",
+      "cs": "<<",
+      "es": "<<",
+      "ja": "<<",
+      "pt": "<<",
+      "ru": "<<",
+      "de": "<<",
+      "fr": "<<",
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
@@ -1329,6 +1362,14 @@
     },
     {
       "en": ">>",
+      "nl": ">>",
+      "cs": ">>",
+      "es": ">>",
+      "ja": ">>",
+      "pt": ">>",
+      "ru": ">>",
+      "de": ">>", 
+      "fr": ">>", 
       "xloc": [
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
@@ -1342,6 +1383,7 @@
       "nl": "ACM",
       "pt": "ACM",
       "ru": "ACM",
+      "fr": "ACM",
       "xloc": [
         "default-mobile.handlebars->9->182",
         "default.handlebars->25->472"
@@ -1356,6 +1398,7 @@
       "nl": "AMT",
       "pt": "AMT",
       "ru": "AMT",
+      "fr": "AMT",
       "xloc": [
         "default.handlebars->25->188",
         "default.handlebars->25->375"
@@ -1384,6 +1427,7 @@
       "nl": "ARMv6l / ARMv7l",
       "pt": "ARMv6l / ARMv7l",
       "ru": "ARMv6l / ARMv7l",
+      "fr": "ARMv6l / ARMv7l",
       "xloc": [
         "default-mobile.handlebars->9->168",
         "default.handlebars->25->38"
@@ -1398,6 +1442,7 @@
       "nl": "ARMv6l / ARMv7l / NoKVM",
       "pt": "ARMv6l / ARMv7l / NoKVM",
       "ru": "ARMv6l / ARMv7l / NoKVM",
+      "fr": "ARMv6l / ARMv7l / NoKVM",
       "xloc": [
         "default-mobile.handlebars->9->170",
         "default.handlebars->25->40"
@@ -1412,6 +1457,7 @@
       "nl": "ARMv8 64bit",
       "pt": "ARMv8 64bit",
       "ru": "ARMv8 64bit",
+      "fr": "ARMv8 64bit",
       "xloc": [
         "default-mobile.handlebars->9->169",
         "default.handlebars->25->39"
@@ -2397,6 +2443,7 @@
       "nl": "Alt-F4",
       "pt": "Alt-F4",
       "ru": "Alt-F4",
+      "fr": "Alt-F4",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->19",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->17"
@@ -2411,6 +2458,7 @@
       "nl": "Alt-Tab",
       "pt": "Alt-Tab",
       "ru": "Alt-Tab",
+      "fr": "Alt-Tab",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->23",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->21"
@@ -2473,6 +2521,7 @@
       "nl": "Android APK",
       "pt": "Android APK",
       "ru": "Android APK",
+      "fr": "Android APK",
       "xloc": [
         "default-mobile.handlebars->9->157",
         "default.handlebars->25->27"
@@ -2487,6 +2536,7 @@
       "nl": "Android ARM",
       "pt": "Android ARM",
       "ru": "Android ARM",
+      "fr": "Android ARM",
       "xloc": [
         "default-mobile.handlebars->9->152",
         "default.handlebars->25->22"
@@ -2501,6 +2551,7 @@
       "nl": "Android x86",
       "pt": "Android x86",
       "ru": "Android x86",
+      "fr": "Android x86",
       "xloc": [
         "default-mobile.handlebars->9->155",
         "default.handlebars->25->25"
@@ -2542,6 +2593,7 @@
       "nl": "Apple MacOS",
       "pt": "Apple MacOS",
       "ru": "Apple MacOS",
+      "fr": "Apple MacOS",
       "xloc": [
         "default.handlebars->25->317"
       ]
@@ -2568,6 +2620,7 @@
       "nl": "Apple™ MacOS",
       "pt": "Apple™ MacOS",
       "ru": "Apple™ MacOS",
+      "fr": "Apple™ MacOS",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->macostab->1"
       ]
@@ -3052,6 +3105,7 @@
       "nl": "BIOS",
       "pt": "BIOS",
       "ru": "BIOS",
+      "fr": "BIOS",
       "xloc": [
         "default.handlebars->25->66"
       ]
@@ -3347,6 +3401,7 @@
       "nl": "CCM",
       "pt": "CCM",
       "ru": "CCM",
+      "fr": "CCM",
       "xloc": [
         "default-mobile.handlebars->9->181",
         "default.handlebars->25->470"
@@ -3361,6 +3416,7 @@
       "nl": "CIRA",
       "pt": "CIRA",
       "ru": "CIRA",
+      "fr": "CIRA",
       "xloc": [
         "default-mobile.handlebars->9->122",
         "default.handlebars->25->1061",
@@ -3454,6 +3510,7 @@
       "nl": "CR+LF",
       "pt": "CR + LF",
       "ru": "CR+LF",
+      "fr": "CR+LF",
       "xloc": [
         "default.handlebars->25->645",
         "default.handlebars->25->654",
@@ -3877,6 +3934,7 @@
       "nl": "ChromeOS",
       "pt": "ChromeOS",
       "ru": "ChromeOS",
+      "fr": "ChromeOS",
       "xloc": [
         "default-mobile.handlebars->9->160",
         "default.handlebars->25->30"
@@ -4865,6 +4923,7 @@
       "nl": "Ctl-C",
       "pt": "CTRL-C",
       "ru": "Ctl-C",
+      "fr": "Ctl-C",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
       ]
@@ -4878,6 +4937,7 @@
       "nl": "Ctl-X",
       "pt": "CTRL-X",
       "ru": "Ctl-X",
+      "fr": "Ctl-X",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
       ]
@@ -4891,6 +4951,7 @@
       "nl": "Ctrl",
       "pt": "CTRL",
       "ru": "Ctrl",
+      "fr": "Ctrl",
       "xloc": [
         "default.handlebars->25->46"
       ]
@@ -4904,6 +4965,7 @@
       "nl": "Ctrl+Alt+Del",
       "pt": "CTRL+ALT+DEL",
       "ru": "Ctrl+Alt+Del",
+      "fr": "Ctrl+Alt+Del",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->1",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->1"
@@ -4918,6 +4980,7 @@
       "nl": "Ctrl-W",
       "pt": "CTRL-W",
       "ru": "Ctrl-W",
+      "fr": "Ctrl-W",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->21",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->19"
@@ -6417,6 +6480,7 @@
       "nl": "ESC",
       "pt": "ESC",
       "ru": "ESC",
+      "fr": "ESC",
       "xloc": [
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
       ]
@@ -7488,6 +7552,7 @@
       "nl": "FreeBSD x86-64",
       "pt": "FreeBSD x86-64",
       "ru": "FreeBSD x86-64",
+      "fr": "FreeBSD x86-64",
       "xloc": [
         "default-mobile.handlebars->9->173",
         "default.handlebars->25->43"
@@ -8450,6 +8515,7 @@
     },
     {
       "en": "Illegal invocation",
+      "nl": "Ongeldige aanroep",
       "xloc": [
         "default.handlebars->25->1474"
       ]
@@ -8469,6 +8535,7 @@
     },
     {
       "en": "Indexed every {0} seconds",
+      "nl": "Geïndexeerd om de {0} seconden",
       "xloc": [
         "player.handlebars->3->17"
       ]
@@ -8751,6 +8818,7 @@
       "nl": "Intel ASCII",
       "pt": "Intel ASCII",
       "ru": "Intel ASCII",
+      "fr": "Intel ASCII",
       "xloc": [
         "default.handlebars->25->650"
       ]
@@ -8764,6 +8832,7 @@
       "nl": "Intel&reg; AMT",
       "pt": "Intel&reg; AMT",
       "ru": "Intel&reg; AMT",
+      "fr": "Intel&reg; AMT",
       "xloc": [
         "default-mobile.handlebars->9->123",
         "default-mobile.handlebars->9->187",
@@ -8784,6 +8853,7 @@
       "nl": "Intel&reg; AMT CIRA",
       "pt": "Intel&reg; AMT CIRA",
       "ru": "Intel&reg; AMT CIRA",
+      "fr": "Intel&reg; AMT CIRA",
       "xloc": [
         "default-mobile.handlebars->9->191",
         "default.handlebars->25->495"
@@ -9020,6 +9090,7 @@
       "nl": "Intel&reg; SM",
       "pt": "Intel&reg; SM",
       "ru": "Intel&reg; SM",
+      "fr": "Intel&reg; SM",
       "xloc": [
         "default-mobile.handlebars->9->188",
         "default.handlebars->25->483"
@@ -9047,6 +9118,7 @@
       "nl": "Intel® AMT",
       "pt": "Intel® AMT",
       "ru": "Intel® AMT"
+      "fr": "Intel® AMT"
     },
     {
       "cs": "Intel® AMT –",
@@ -9057,6 +9129,7 @@
       "nl": "Intel® AMT -",
       "pt": "Intel® AMT -",
       "ru": "Intel® AMT -",
+      "ru": "Intel® AMT -"
       "xloc": [
         "default.handlebars->container->column_l->p14->p14title->5"
       ]
@@ -9070,6 +9143,7 @@
       "nl": "Intel® AMT Hardware KVM",
       "pt": "Intel® AMT Hardware KVM",
       "ru": "Intel® AMT Hardware KVM",
+      "fr": "Intel® AMT Hardware KVM",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->1"
@@ -9096,6 +9170,7 @@
       "es": "Intel®AMT",
       "nl": "Intel®AMT",
       "ru": "Intel®AMT",
+      "fr": "Intel®AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
       ]
@@ -9580,7 +9655,9 @@
       "ja": "LF",
       "nl": "LF",
       "pt": "LF",
+      "de": "LF",
       "ru": "LF",
+      "fr": "LF",
       "xloc": [
         "default.handlebars->25->646",
         "default.handlebars->25->655"
@@ -10076,6 +10153,7 @@
       "nl": "Linux",
       "pt": "Linux",
       "ru": "Linux",
+      "fr": "Linux",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tlinuxtab",
         "agentinvite.handlebars->container->column_l->5->linuxtab->1"
@@ -10090,6 +10168,7 @@
       "nl": "Linux / BSD",
       "pt": "Linux / BSD",
       "ru": "Linux / BSD",
+      "fr": "Linux / BSD",
       "xloc": [
         "default.handlebars->25->316"
       ]
@@ -10116,6 +10195,7 @@
       "nl": "Linux 32bit",
       "pt": "Linux 32 bits",
       "ru": "Linux 32bit",
+      "fr": "Linux 32bit",
       "xloc": [
         "default-mobile.handlebars->9->148",
         "default.handlebars->25->18"
@@ -10130,6 +10210,7 @@
       "nl": "Linux 64bit",
       "pt": "Linux 64 bits",
       "ru": "Linux 64bit",
+      "fr": "Linux 64bit",
       "xloc": [
         "default-mobile.handlebars->9->149",
         "default.handlebars->25->19"
@@ -10144,6 +10225,7 @@
       "nl": "Linux ARM",
       "pt": "Linux ARM",
       "ru": "Linux ARM",
+      "fr": "Linux ARM",
       "xloc": [
         "default-mobile.handlebars->9->153",
         "default.handlebars->25->23"
@@ -10158,6 +10240,7 @@
       "nl": "Linux ARM, Raspberry Pi (32bit)",
       "pt": "Linux ARM, Raspberry Pi (32 bits)",
       "ru": "Linux ARM, Raspberry Pi (32bit)",
+      "fr": "Linux ARM, Raspberry Pi (32bit)",
       "xloc": [
         "default.handlebars->25->591"
       ]
@@ -10171,6 +10254,7 @@
       "nl": "Linux NoKVM x86-32bit",
       "pt": "Linux NoKVM x86-32 bits",
       "ru": "Linux NoKVM x86-32bit",
+      "fr": "Linux NoKVM x86-32bit",
       "xloc": [
         "default-mobile.handlebars->9->162",
         "default.handlebars->25->32"
@@ -10185,6 +10269,7 @@
       "nl": "Linux NoKVM x86-64bit",
       "pt": "Linux NoKVM x86-64 bits",
       "ru": "Linux NoKVM x86-64bit",
+      "fr": "Linux NoKVM x86-64bit",
       "xloc": [
         "default-mobile.handlebars->9->163",
         "default.handlebars->25->33"
@@ -10199,6 +10284,7 @@
       "nl": "Linux Poky x86-32bit",
       "pt": "Linux Poky x86-32 bits",
       "ru": "Linux Poky x86-32bit",
+      "fr": "Linux Poky x86-32bit",
       "xloc": [
         "default-mobile.handlebars->9->158",
         "default.handlebars->25->28"
@@ -10213,6 +10299,7 @@
       "nl": "Linux Poky x86-64bit",
       "pt": "Linux Poky x86-64 bits",
       "ru": "Linux Poky x86-64bit",
+      "fr": "Linux Poky x86-64bit",
       "xloc": [
         "default-mobile.handlebars->9->161",
         "default.handlebars->25->31"
@@ -10240,6 +10327,7 @@
       "nl": "Linux x86 (32bit)",
       "pt": "Linux x86 (32 bits)",
       "ru": "Linux x86 (32bit)",
+      "fr": "Linux x86 (32bit)",
       "xloc": [
         "default.handlebars->25->588"
       ]
@@ -10253,6 +10341,7 @@
       "nl": "Linux x86 (64bit)",
       "pt": "Linux x86 (64 bits)",
       "ru": "Linux x86 (64bit)",
+      "fr": "Linux x86 (64bit)",
       "xloc": [
         "default.handlebars->25->589"
       ]
@@ -10463,6 +10552,7 @@
       "nl": "Log-X",
       "pt": "Log-X",
       "ru": "Log-X",
+      "fr": "Log-X",
       "xloc": [
         "default.handlebars->container->column_l->p40->3->3->3"
       ]
@@ -10573,6 +10663,7 @@
       "nl": "MIPS",
       "pt": "MIPS",
       "ru": "MIPS",
+      "fr": "MIPS",
       "xloc": [
         "default-mobile.handlebars->9->150",
         "default.handlebars->25->20"
@@ -10602,6 +10693,7 @@
       "nl": "MQTT",
       "pt": "MQTT",
       "ru": "MQTT",
+      "fr": "MQTT",
       "xloc": [
         "default-mobile.handlebars->9->125",
         "default-mobile.handlebars->9->194",
@@ -10704,6 +10796,7 @@
       "nl": "MacOS",
       "pt": "MacOS",
       "ru": "MacOS",
+      "fr": "MacOS",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tmacostab"
       ]
@@ -10717,6 +10810,7 @@
       "nl": "MacOS (64bit)",
       "pt": "MacOS (64 bits)",
       "ru": "MacOS (64bit)",
+      "fr": "MacOS (64bit)",
       "xloc": [
         "default.handlebars->25->590"
       ]
@@ -11187,6 +11281,7 @@
       "es": "MeshAction (.txt)",
       "nl": "MeshAction (.txt)",
       "ru": "MeshAction (.txt)",
+      "fr": "MeshAction (.txt)",
       "xloc": [
         "default.handlebars->25->597",
         "default.handlebars->25->599"
@@ -11332,6 +11427,7 @@
       "nl": "MeshCmd",
       "pt": "MeshCmd",
       "ru": "MeshCmd",
+      "fr": "MeshCmd",
       "xloc": [
         "default.handlebars->25->207",
         "default.handlebars->25->595"
@@ -11342,6 +11438,9 @@
       "es": "MeshCmd (Linux ARM, 32bit)",
       "nl": "MeshCmd (Linux ARM, 32bit)",
       "ru": "MeshCmd (Linux ARM, 32bit)",
+      "cs": "MeshCmd (Linux ARM, 32bit)",
+      "de": "MeshCmd (Linux ARM, 32bit)",
+      "fr": "MeshCmd (Linux ARM, 32bit)",
       "xloc": [
         "default.handlebars->25->607"
       ]
@@ -11351,6 +11450,10 @@
       "es": "MeshCmd (Linux x86, 32bit)",
       "nl": "MeshCmd (Linux x86, 32bit)",
       "ru": "MeshCmd (Linux x86, 32bit)",
+      "cs": "MeshCmd (Linux x86, 32bit)",
+      "pt": "MeshCmd (Linux x86, 32bit)",
+      "de": "MeshCmd (Linux x86, 32bit)",
+      "fr": "MeshCmd (Linux x86, 32bit)",      
       "xloc": [
         "default.handlebars->25->604"
       ]
@@ -11360,6 +11463,10 @@
       "es": "MeshCmd (Linux x86, 64bit)",
       "nl": "MeshCmd (Linux x86, 64bit)",
       "ru": "MeshCmd (Linux x86, 64bit)",
+      "cs": "MeshCmd (Linux x86, 64bit)",
+      "pt": "MeshCmd (Linux x86, 64bit)",
+      "de": "MeshCmd (Linux x86, 64bit)",
+      "fr": "MeshCmd (Linux x86, 64bit)",
       "xloc": [
         "default.handlebars->25->605"
       ]
@@ -11369,6 +11476,10 @@
       "es": "MeshCmd (MacOS, 64bit)",
       "nl": "MeshCmd (MacOS, 64bit)",
       "ru": "MeshCmd (MacOS, 64bit)",
+      "cs": "MeshCmd (MacOS, 64bit)",
+      "de": "MeshCmd (MacOS, 64bit)",
+      "pt": "MeshCmd (MacOS, 64bit)",
+      "fr": "MeshCmd (MacOS, 64bit)",
       "xloc": [
         "default.handlebars->25->606"
       ]
@@ -11422,6 +11533,7 @@
       "nl": "MeshMessenger",
       "pt": "MeshMessenger",
       "ru": "MeshMessenger",
+      "fr": "MeshMessenger",
       "xloc": [
         "messenger.handlebars->13->1",
         "messenger.handlebars->13->2",
@@ -11436,6 +11548,7 @@
       "nl": "MeshServerRootCert.cer",
       "pt": "MeshServerRootCert.cer",
       "ru": "MeshServerRootCert.cer",
+      "fr": "MeshServerRootCert.cer",
       "xloc": [
         "default.handlebars->25->269"
       ]
@@ -11476,6 +11589,7 @@
       "nl": "Microsoft™ Windows 32bit",
       "pt": "Microsoft™ Windows 32 bits",
       "ru": "Microsoft™ Windows 32-разрядная",
+      "fr": "Microsoft™ Windows 32bit",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab32->1"
       ]
@@ -11489,6 +11603,7 @@
       "nl": "Microsoft™ Windows 64bit",
       "pt": "Microsoft™ Windows 64 bits",
       "ru": "Microsoft™ Windows 64-разрядная",
+      "fr": "Microsoft™ Windows 64bit",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab64->1"
       ]
@@ -12811,6 +12926,7 @@
       "nl": "OK",
       "pt": "Ok",
       "ru": "ОК",
+      "fr": "ОК",
       "xloc": [
         "default-mobile.handlebars->9->42",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
@@ -14043,6 +14159,7 @@
       "nl": "Putty",
       "pt": "Putty",
       "ru": "Putty",
+      "fr": "Putty",
       "xloc": [
         "default.handlebars->25->525"
       ]
@@ -14112,6 +14229,8 @@
       "nl": "RDP",
       "pt": "RDP",
       "ru": "RDP",
+      "fr": "RDP",
+      "es": "RDP",
       "xloc": [
         "default.handlebars->25->523"
       ]
@@ -14135,6 +14254,13 @@
     {
       "en": "RDP2",
       "nl": "RDP2",
+      "cs": "RDP2",
+      "de": "RDP2",
+      "es": "RDP2",
+      "ru": "RDP2",
+      "fr": "RDP2",
+      "ja": "RDP2",
+      "pt": "RDP2",
       "ru": "RDP2",
       "xloc": [
         "default.handlebars->25->424"
@@ -14177,6 +14303,8 @@
       "es": "RSS",
       "nl": "RSS",
       "ru": "RSS",
+      "fr": "RSS",
+      "pt": "RSS",
       "xloc": [
         "default.handlebars->25->1446"
       ]
@@ -15343,6 +15471,7 @@
     },
     {
       "en": "Seeking",
+      "nl": "Op zoek naar",
       "xloc": [
         "player.handlebars->3->16"
       ]
@@ -19473,6 +19602,7 @@
       "nl": "Windows",
       "pt": "Windows",
       "ru": "Windows",
+      "fr": "Windows",
       "xloc": [
         "default.handlebars->25->315"
       ]
@@ -19486,6 +19616,7 @@
       "nl": "Windows (.exe)",
       "pt": "Windows (.exe)",
       "ru": "Windows (.exe)",
+      "fr": "Windows (.exe)",
       "xloc": [
         "default.handlebars->25->327",
         "default.handlebars->25->341"
@@ -19500,6 +19631,7 @@
       "nl": "Windows (32bit)",
       "pt": "Windows (32 Bits)",
       "ru": "Windows (32bit)",
+      "fr": "Windows (32bit)",
       "xloc": [
         "default.handlebars->25->586"
       ]
@@ -19513,6 +19645,7 @@
       "nl": "Windows (64bit)",
       "pt": "Windows (64 Bits)",
       "ru": "Windows (64bit)",
+      "fr": "Windows (64bit)",
       "xloc": [
         "default.handlebars->25->587"
       ]
@@ -19539,6 +19672,7 @@
       "nl": "Windows 32bit",
       "pt": "Windows 32 Bits",
       "ru": "Windows 32bit",
+      "fr": "Windows 32bit",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->twintab32"
       ]
@@ -19580,6 +19714,7 @@
       "nl": "Windows 64bit",
       "pt": "Windows 64 Bits",
       "ru": "Windows 64bit",
+      "fr": "Windows 64bit",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->twintab64"
       ]
@@ -19662,6 +19797,7 @@
       "nl": "Windows x64 (.exe)",
       "pt": "Windows x64 (.exe)",
       "ru": "Windows x64 (.exe)",
+      "fr": "Windows x64 (.exe)",
       "xloc": [
         "default.handlebars->25->330",
         "default.handlebars->25->344"
@@ -19722,6 +19858,7 @@
       "nl": "X",
       "pt": "X",
       "ru": "X",
+      "fr": "X",
       "xloc": [
         "default-mobile.handlebars->dialog->1->id_dialogclose->0",
         "default.handlebars->container->column_l->p1->xdevicesmap->xmapSearchResultsDlg->xmapSearchResultsBck->xmapSearchClose->0",
@@ -19738,6 +19875,7 @@
       "nl": "XENx86",
       "pt": "XENx86",
       "ru": "XENx86",
+      "fr": "XENx86",
       "xloc": [
         "default-mobile.handlebars->9->151",
         "default.handlebars->25->21"
@@ -19747,6 +19885,11 @@
       "en": "XTerm",
       "nl": "XTerm",
       "ru": "XTerm",
+      "es": "XTerm",
+      "cs": "XTerm",
+      "pt": "XTerm",
+      "de": "XTerm",
+      "fr": "XTerm",
       "xloc": [
         "default.handlebars->25->521"
       ]
@@ -19826,6 +19969,7 @@
       "nl": "YubiKey&trade; OTP",
       "pt": "YubiKey&trade; OTP",
       "ru": "YubiKey&trade; OTP",
+      "fr": "YubiKey&trade; OTP",
       "xloc": [
         "default.handlebars->25->728"
       ]
@@ -19892,6 +20036,8 @@
       "ja": "\\\\",
       "nl": "\\\\",
       "ru": "\\\\",
+      "fr": "\\\\",
+      "pt": "\\\\",
       "xloc": [
         "default-mobile.handlebars->9->239",
         "default-mobile.handlebars->9->240",
@@ -19906,6 +20052,8 @@
       "ja": "\\\\'",
       "nl": "\\\\'",
       "ru": "\\\\'",
+      "fr": "\\\\'",
+      "pt": "\\\\'",
       "xloc": [
         "default.handlebars->25->1468"
       ]
@@ -19986,6 +20134,7 @@
       "nl": "console.txt",
       "pt": "console.txt",
       "ru": "console.txt",
+      "fr": "console.txt",      
       "xloc": [
         "default.handlebars->25->708"
       ]
@@ -20007,6 +20156,12 @@
     {
       "en": "devicelist.csv",
       "nl": "devicelist.csv",
+      "cs": "devicelist.csv",
+      "es": "devicelist.csv",
+      "fr": "devicelist.csv",
+      "ru": "devicelist.csv",
+      "pt": "devicelist.csv",
+      "de": "devicelist.csv",
       "xloc": [
         "default.handlebars->25->401",
         "default.handlebars->25->406"
@@ -20015,6 +20170,12 @@
     {
       "en": "devicelist.json",
       "nl": "devicelist.json",
+      "es": "devicelist.json",
+      "cs": "devicelist.json",
+      "de": "devicelist.json",
+      "fr": "devicelist.json",
+      "ru": "devicelist.json",
+      "pt": "devicelist.json",
       "xloc": [
         "default.handlebars->25->403",
         "default.handlebars->25->407"
@@ -20022,6 +20183,7 @@
     },
     {
       "en": "encoding",
+      "nl": "codering",
       "xloc": [
         "default.handlebars->25->1473"
       ]
@@ -20034,6 +20196,8 @@
       "nl": "eventslist.csv",
       "pt": "eventslist.csv",
       "ru": "eventslist.csv",
+      "fr": "eventslist.csv",
+      "de": "eventslist.csv",
       "xloc": [
         "default.handlebars->25->1206",
         "default.handlebars->25->1211"
@@ -20047,6 +20211,8 @@
       "nl": "eventslist.json",
       "pt": "eventslist.json",
       "ru": "eventslist.csv",
+      "fr": "eventslist.csv",
+      "de": "eventslist.csv",
       "xloc": [
         "default.handlebars->25->1208",
         "default.handlebars->25->1212"
@@ -20084,6 +20250,9 @@
       "es": "g:",
       "nl": "g:",
       "ru": "г:",
+      "de": "g:",
+      "pt": "g:",
+      "fr": "g:",
       "xloc": [
         "default.handlebars->25->416",
         "default.handlebars->25->417"
@@ -20122,6 +20291,8 @@
       "nl": "http://jquery.com/",
       "pt": "http://jquery.com/",
       "ru": "http://jquery.com/",
+      "fr": "http://jquery.com/",
+      "de": "http://jquery.com/",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->47->1->1",
         "terms.handlebars->container->column_l->47->1->1"
@@ -20135,6 +20306,8 @@
       "nl": "http://jqueryui.com/",
       "pt": "http://jqueryui.com/",
       "ru": "http://jqueryui.com/",
+      "fr": "http://jqueryui.com/",
+      "de": "http://jqueryui.com/",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->53->1->1",
         "terms.handlebars->container->column_l->53->1->1"
@@ -20148,6 +20321,8 @@
       "nl": "http://www.openssl.org/source/license.html",
       "pt": "http://www.openssl.org/source/license.html",
       "ru": "http://www.openssl.org/source/license.html",
+      "fr": "http://www.openssl.org/source/license.html",
+      "de": "http://www.openssl.org/source/license.html",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->25->1->0",
         "terms.handlebars->container->column_l->25->1->0"
@@ -20161,6 +20336,8 @@
       "nl": "http://www.webtoolkit.info/javascript-base64.html",
       "pt": "http://www.webtoolkit.info/javascript-base64.html",
       "ru": "http://www.webtoolkit.info/javascript-base64.html",
+      "fr": "http://www.webtoolkit.info/javascript-base64.html",
+      "de": "http://www.webtoolkit.info/javascript-base64.html",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->75->1->1",
         "terms-mobile.handlebars->container->page_content->column_l->75->1->5",
@@ -20176,6 +20353,8 @@
       "nl": "https://github.com/kanaka/noVNC/blob/master/LICENSE.txt",
       "pt": "https://github.com/kanaka/noVNC/blob/master/LICENSE.txt",
       "ru": "https://github.com/kanaka/noVNC/blob/master/LICENSE.txt",
+      "fr": "https://github.com/kanaka/noVNC/blob/master/LICENSE.txt",
+      "de": "https://github.com/kanaka/noVNC/blob/master/LICENSE.txt",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->61->1->0",
         "terms.handlebars->container->column_l->61->1->0"
@@ -20189,6 +20368,8 @@
       "nl": "https://github.com/ryrych/rcarousel/blob/master/widget/license",
       "pt": "https://github.com/ryrych/rcarousel/blob/master/widget/license",
       "ru": "https://github.com/ryrych/rcarousel/blob/master/widget/license",
+      "fr": "https://github.com/ryrych/rcarousel/blob/master/widget/license",
+      "de": "https://github.com/ryrych/rcarousel/blob/master/widget/license",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->67->1->0",
         "terms.handlebars->container->column_l->67->1->0"
@@ -20219,6 +20400,9 @@
       "es": "IP:",
       "nl": "ip:",
       "ru": "ip:",
+      "fr": "ip:",
+      "pt": "ip:",
+      "de": "ip:",
       "xloc": [
         "default.handlebars->25->412",
         "default.handlebars->25->413"
@@ -20269,6 +20453,8 @@
       "nl": "servererrors.txt",
       "pt": "servererrors.txt",
       "ru": "servererrors.txt",
+      "fr": "servererrors.txt",
+      "de": "servererrors.txt",      
       "xloc": [
         "default.handlebars->25->988"
       ]
@@ -20281,6 +20467,8 @@
       "nl": "servertrace.csv",
       "pt": "servertrace.csv",
       "ru": "servertrace.csv",
+      "fr": "servertrace.csv",
+      "de": "servertrace.csv",
       "xloc": [
         "default.handlebars->25->1467"
       ]
@@ -20290,6 +20478,9 @@
       "en": "t:",
       "es": "t:",
       "nl": "t:",
+      "fr": "t:",
+      "pt": "t:",
+      "de": "t:",
       "ru": "т:",
       "xloc": [
         "default.handlebars->25->420",
@@ -20366,6 +20557,7 @@
     },
     {
       "en": "undefined",
+      "nl": "onbepaald",
       "xloc": [
         "default.handlebars->25->1475"
       ]
@@ -20873,6 +21065,7 @@
     },
     {
       "cs": "↺",
+      "fr": "↺",
       "de": "↺",
       "en": "↺",
       "es": "↺",
@@ -20886,6 +21079,7 @@
     },
     {
       "cs": "↻",
+      "fr": "↻",
       "de": "↻",
       "en": "↻",
       "es": "↻",
@@ -20899,6 +21093,7 @@
     },
     {
       "cs": "⇲",
+      "fr": "⇲",
       "de": "⇲",
       "en": "⇲",
       "es": "⇲",
@@ -20913,6 +21108,7 @@
     },
     {
       "cs": "◀",
+      "fr": "◀",
       "de": "◀",
       "en": "◀",
       "es": "◀",
@@ -20929,6 +21125,7 @@
     },
     {
       "cs": "♦",
+      "fr": "♦",
       "de": "♦",
       "en": "♦",
       "es": "♦",
@@ -20946,6 +21143,7 @@
     },
     {
       "cs": "✓",
+      "fr": "✓",
       "de": "✓",
       "en": "✓",
       "es": "✓",
@@ -20965,6 +21163,7 @@
     },
     {
       "cs": "✖",
+      "fr": "✖",
       "de": "✖",
       "en": "✖",
       "es": "✖",
@@ -20982,6 +21181,7 @@
     },
     {
       "cs": "✗",
+      "fr": "✗",
       "de": "✗",
       "en": "✗",
       "es": "✗",
