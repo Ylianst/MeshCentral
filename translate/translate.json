@@ -1257,6 +1257,12 @@
       ]
     },
     {
+      "en": "<<",
+      "xloc": [
+        "player.handlebars->p11->deskarea0->deskarea4->3"
+      ]
+    },
+    {
       "cs": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardwarové klíče</a> jsou použity jako druhý faktor ověřování.",
       "de": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardware-Schlüssel</a> werden für Zweifaktor-Anmeldung verwendet.",
       "en": "<a href=\\\"https://www.yubico.com/\\\" rel=\\\"noreferrer noopener\\\" target=\\\"_blank\\\">Hardware keys</a> are used as secondary login authentication.",
@@ -1319,6 +1325,12 @@
       "ru": "<b style=color:red>Удаление активации двухэтапного входа не удалось</b>. Попытайтесь снова.",
       "xloc": [
         "default-mobile.handlebars->9->23"
+      ]
+    },
+    {
+      "en": ">>",
+      "xloc": [
+        "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
     {
@@ -6282,7 +6294,7 @@
       "pt": "Arraste e solte um arquivo .mcrec ou clique em \\\"Abrir arquivo...\\\"",
       "ru": "Перетащите .mcrec файл или нажмите \\\"Открыть файл ... \\\"",
       "xloc": [
-        "player.handlebars->3->18"
+        "player.handlebars->3->20"
       ]
     },
     {
@@ -8447,6 +8459,12 @@
       "ru": "Кодировка изображения",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->1"
+      ]
+    },
+    {
+      "en": "Indexed every {0} seconds",
+      "xloc": [
+        "player.handlebars->3->17"
       ]
     },
     {
@@ -12920,7 +12938,7 @@
       "pt": "Abrir arquivo...",
       "ru": "Открыть файл...",
       "xloc": [
-        "player.handlebars->3->19",
+        "player.handlebars->3->21",
         "player.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -13882,8 +13900,8 @@
       "pt": "Pressione [espaço] para reproduzir / pausar.",
       "ru": "Нажмите [пробел] для проигрывания/паузы.",
       "xloc": [
-        "player.handlebars->3->16",
-        "player.handlebars->3->17"
+        "player.handlebars->3->18",
+        "player.handlebars->3->19"
       ]
     },
     {
@@ -15315,6 +15333,12 @@
       "ru": "Ключ безопасности",
       "xloc": [
         "default.handlebars->25->1354"
+      ]
+    },
+    {
+      "en": "Seeking",
+      "xloc": [
+        "player.handlebars->3->16"
       ]
     },
     {
