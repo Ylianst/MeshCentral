@@ -10977,6 +10977,45 @@
         // Generic methods
         //
 
+        // Converts string to UTF8 byte array, polyfill for IE.
+        if (typeof TextEncoder === 'undefined') {
+            window.TextEncoder=function TextEncoder(){};
+            TextEncoder.prototype.encode = function encode(str) {
+                'use strict';
+                var Len = str.length, resPos = -1;
+                var resArr = typeof Uint8Array === 'undefined' ? new Array(Len * 1.5) : new Uint8Array(Len * 3);
+                for (var point=0, nextcode=0, i = 0; i !== Len; ) {
+                    point = str.charCodeAt(i), i += 1;
+                    if (point >= 0xD800 && point <= 0xDBFF) {
+                        if (i === Len) { resArr[resPos += 1] = 0xef; resArr[resPos += 1] = 0xbf; resArr[resPos += 1] = 0xbd; break; }
+                        nextcode = str.charCodeAt(i);
+                        if (nextcode >= 0xDC00 && nextcode <= 0xDFFF) {
+                            point = (point - 0xD800) * 0x400 + nextcode - 0xDC00 + 0x10000;
+                            i += 1;
+                            if (point > 0xffff) { resArr[resPos += 1] = (0x1e<<3) | (point>>>18); resArr[resPos += 1] = (0x2<<6) | ((point>>>12)&0x3f); resArr[resPos += 1] = (0x2<<6) | ((point>>>6)&0x3f); resArr[resPos += 1] = (0x2<<6) | (point&0x3f); continue; }
+                        } else { resArr[resPos += 1] = 0xef; resArr[resPos += 1] = 0xbf; resArr[resPos += 1] = 0xbd; continue; }
+                    }
+                    if (point <= 0x007f) {
+                        resArr[resPos += 1] = (0x0<<7) | point;
+                    } else if (point <= 0x07ff) {
+                        resArr[resPos += 1] = (0x6<<5) | (point>>>6); resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                    } else {
+                        resArr[resPos += 1] = (0xe<<4) | (point>>>12); resArr[resPos += 1] = (0x2<<6) | ((point>>>6)&0x3f); resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                    }
+                }
+                if (typeof Uint8Array !== 'undefined') return resArr.subarray(0, resPos + 1);
+                resArr.length = resPos + 1;
+                return resArr;
+            };
+            TextEncoder.prototype.toString = function(){return '[object TextEncoder]'};
+            try {
+                Object.defineProperty(TextEncoder.prototype,"encoding",{
+                    get:function(){ if(TextEncoder.prototype.isPrototypeOf(this)) return'utf-8'; else throw TypeError("Illegal invocation"); }
+                });
+            } catch(e) { TextEncoder.prototype.encoding = 'utf-8'; }
+            if (typeof Symbol!=="undefined")TextEncoder.prototype[Symbol.toStringTag]='TextEncoder';
+        }
+
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function putstore(name, val) {
             try {
