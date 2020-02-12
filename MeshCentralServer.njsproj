@@ -104,6 +104,7 @@
     <Compile Include="apfserver.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="letsencrypt.js" />
+    <Compile Include="mcrec.js" />
     <Compile Include="meshaccelerator.js" />
     <Compile Include="meshctrl.js" />
     <Compile Include="meshmail.js" />

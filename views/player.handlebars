@@ -29,9 +29,9 @@
                 </div>
             </div>
             <div id=deskarea2 style="">
-                <div class="areaProgress"><div id="progressbar" style=""></div></div>
+                <div class="areaProgress" style="cursor:pointer" onclick="progressBarSeek(event)"><div id="progressbar" style="height:6px;cursor:pointer"></div></div>
             </div>
-            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);" onclick="togglePause()">
+            <div id=deskarea3x style="max-height:calc(100vh - 58px);height:calc(100vh - 58px);" onclick="togglePause()">
                 <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
@@ -203,8 +203,13 @@
             if (recFileMetadata.indexInterval) {
                 recFileIndexBasePtr = recFilePtr;
                 x += addInfoNoEsc("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
+                QV('SeekBackwardButton', true);
+                QV('SeekForwardButton', true);
                 QE('SeekBackwardButton', true);
                 QE('SeekForwardButton', true);
+            } else {
+                QV('SeekBackwardButton', false);
+                QV('SeekForwardButton', false);
             }
             QV('DeskParent', true);
             QV('TermParent', false);
@@ -247,6 +252,7 @@
             QV('metadatadiv', true);
             QH('metadatadiv', x);
             QH('deskstatus', recFile.name);
+            QS('progressbar').width = '0px';
         }
 
         function processBlock(type, flags, time, data) {
@@ -256,7 +262,7 @@
                 processBlockEx(type, flags, time, data);
             } else {
                 waitTimerArgs = [type, flags, time, data]
-                waitTimer = setTimeout(function () { waitTimer = null; processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]); }, waitTime);
+                waitTimer = setTimeout(function () { waitTimer = null; if (waitTimerArgs) { processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]); } }, waitTime);
             }
         }
 
@@ -267,13 +273,12 @@
             // Update the clock
             var deltaTimeTotalSec = Math.floor((time - recFileStartTime) / 1000);
             if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
+                // Hours, minutes and seconds
                 currentDeltaTimeTotalSec = deltaTimeTotalSec;
-                var deltaTimeHours = Math.floor(deltaTimeTotalSec / 3600);
-                deltaTimeTotalSec -= (deltaTimeHours * 3600)
-                var deltaTimeMinutes = Math.floor(deltaTimeTotalSec / 60);
-                deltaTimeTotalSec -= (deltaTimeHours * 60)
-                var deltaTimeSeconds = Math.floor(deltaTimeTotalSec);
-                QH('timespan', pad2(deltaTimeHours) + ':' + pad2(deltaTimeMinutes) + ':' + pad2(deltaTimeSeconds))
+                var hrs = Math.floor(deltaTimeTotalSec / 3600);
+                var mins = Math.floor((deltaTimeTotalSec % 3600) / 60);
+                var secs = Math.floor(deltaTimeTotalSec % 60);
+                QH('timespan', pad2(hrs) + ':' + pad2(mins) + ':' + pad2(secs))
             }
 
             if ((type == 2) && flagBinary && !flagUser) {
@@ -519,38 +524,66 @@
         }
 
         function seekBackward() {
-            //console.log('seekBackward');
-            seek(5);
+            var ndxNumber = Math.round(currentDeltaTimeTotalSec / recFileMetadata.indexInterval);
+            if (ndxNumber < 2) {
+                pause(); restart();
+            } else {
+                if (recFileMetadata.indexes[ndxNumber - 2] != null) { seek(ndxNumber - 2); }
+            }
         }
 
         function seekForward() {
-            //console.log('seekForward');
-            seek(10);
+            var ndxNumber = Math.round(currentDeltaTimeTotalSec / recFileMetadata.indexInterval);
+            if (recFileMetadata.indexes[ndxNumber] != null) { seek(ndxNumber); }
         }
 
+        function progressBarSeek(event) {
+            var ndxNumber = Math.round((event.clientX / document.body.offsetWidth) * (recFileMetadata.indexes.length + 1)) - 1;
+            if (ndxNumber == -1) { pause(); restart(); } else { seek(ndxNumber); }
+        }
 
         var SeekIndex;
         var SeekIndexPtr;
+        var SeekIndexTime;
+        var SeekPlayState;
         function seek(indexNumber) {
             //console.log('seek', indexNumber);
             if ((recFileMetadata.indexes == null) || (recFileMetadata.indexes[indexNumber] == null)) return null;
+            SeekPlayState = playing;
+            pause();
             restart();
-            //pause();
-            if (agentDesktop) { agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height); }
             SeekIndex = recFileMetadata.indexes[indexNumber];
             SeekIndexPtr = 3;
-            var ptr = SeekIndex[0];
+            recFileLastTime = SeekIndexTime = recFileStartTime + ((1 + indexNumber) * recFileMetadata.indexInterval * 1000);
+            recFilePtr = recFileIndexBasePtr + SeekIndex[0];
             var width = SeekIndex[1];
             var height = SeekIndex[2];
-            seekFetchNext();
+
+            if (recFileEndTime == 0) {
+                // File pointer progress bar
+                QS('progressbar').width = Math.floor(100 * (recFilePtr / recFile.size)) + '%';
+            } else {
+                // Time progress bar
+                QS('progressbar').width = Math.floor(((recFileLastTime - recFileStartTime) / (recFileEndTime - recFileStartTime)) * 100) + '%';
+            }
+
+            if (agentDesktop) {
+                agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
+                agentDesktop.ProcessScreenMsg(width, height);
+            }
+
+            QV('metadatadiv', false);
+            QV('Desk', false);
+
+            seekFetchNext(function () { QV('Desk', true); if (SeekPlayState) { play(); } });
         }
 
-        function seekFetchNext() {
-            if (SeekIndex[SeekIndexPtr] == null) { return; }
+        function seekFetchNext(func) {
+            if (SeekIndex[SeekIndexPtr] == null) { func(); return; }
             readBlockAt(recFileIndexBasePtr + SeekIndex[SeekIndexPtr], function (type, flags, time, data) {
                 SeekIndexPtr++;
-                processBlockEx(type, flags, time, data, true);
-                seekFetchNext();
+                processBlockEx(type, flags, SeekIndexTime, data, true);
+                seekFetchNext(func);
             });
         }
 
