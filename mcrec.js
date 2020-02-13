@@ -35,15 +35,17 @@ function startEx(argv) {
     state.recFileSize = fs.statSync(infile).size;
     if (state.recFileSize < 32) { log("Invalid file: " + infile); return; }
     log("Processing file: " + infile + ", " + state.recFileSize + " bytes.");
-    state.recFile = fs.openSync(infile, 'r');
+    state.recFile = fs.openSync(infile, 'r+');
     state.indexTime = 10; // Interval between indexes in seconds
     state.lastIndex = 0; // Last time an index was writen in seconds
     state.indexes = [];
     state.width = 0;
     state.height = 0;
     state.basePtr = null;
-    readLastBlock(state, function (state, result) {
+    readLastBlock(state, function (state, result, time, extras) {
         if (result == false) { log("Invalid file: " + infile); return; }
+        if (extras != null) { log("File already indexed: " + infile); return; }
+        state.lastTimeStamp = time;
         readNextBlock(state, processBlock);
     });
 }
@@ -62,7 +64,7 @@ function createIndex(state, ptr) {
 }
 
 function processBlock(state, block) {
-    if (block == null) { writeIndexedFile(state, function () { log("Done."); }); return; }
+    if (block == null) { writeIndex(state, function () { log("Done."); }); return; }
     var elapseMilliSeconds = 0;
     if (state.startTime != null) { elapseMilliSeconds = (block.time - state.startTime); }
     var flagBinary = (block.flags & 1) != 0;
@@ -164,29 +166,21 @@ function processBlock(state, block) {
     readNextBlock(state, processBlock);
 }
 
-function writeIndexedFile(state, func) {
-    var outfile = state.recFileName;
-    if (outfile.endsWith('.mcrec')) { outfile = outfile.substring(0, outfile.length - 6) + '-ndx.mcrec'; } else { outfile += '-ndx.mcrec'; }
-    if (fs.existsSync(outfile)) { log("File already exists: " + outfile); return; }
-    log("Writing file: " + outfile);
-    state.writeFile = fs.openSync(outfile, 'w');
-    state.metadata.indexInterval = state.indexTime;
-    state.metadata.indexStartTime = state.startTime;
-    state.metadata.indexes = state.indexes;
-    var firstBlock = JSON.stringify(state.metadata);
-    recordingEntry(state.writeFile, 1, state.metadataFlags, state.metadataTime, firstBlock, function (state) {
-        var len = 0, buffer = Buffer.alloc(4096), ptr = state.dataStartPtr;
-        while (ptr < state.recFileSize) {
-            len = fs.readSync(state.recFile, buffer, 0, 4096, ptr);
-            fs.writeSync(state.writeFile, buffer, 0, len);
-            ptr += len;
-        }
-        func(state);
-    }, state);
+function writeIndex(state, func) {
+    // Add the new indexes in extra metadata at the end of the file.
+    var extraMetadata = {};
+    extraMetadata.indexInterval = state.indexTime;
+    extraMetadata.indexStartTime = state.startTime;
+    extraMetadata.indexes = state.indexes;
+    recordingEntry(state.recFile, 4, 0, state.lastTimeStamp, JSON.stringify(extraMetadata), function (state) {
+        recordingEntry(state.recFile, 3, 0, state.recFileSize - 32, 'MeshCentralMCNDX', function (state) {
+            func(state);
+        }, state);
+    }, state, state.recFileSize - 32);
 }
 
 // Record a new entry in a recording log
-function recordingEntry(fd, type, flags, time, data, func, tag) {
+function recordingEntry(fd, type, flags, time, data, func, tag, position) {
     try {
         if (typeof data == 'string') {
             // String write
@@ -196,7 +190,11 @@ function recordingEntry(fd, type, flags, time, data, func, tag) {
             header.writeInt32BE(blockData.length, 4); // Size
             header.writeIntBE(time, 10, 6); // Time
             var block = Buffer.concat([header, blockData]);
-            fs.write(fd, block, 0, block.length, function () { func(tag); });
+            if (typeof position == 'number') {
+                fs.write(fd, block, 0, block.length, position, function () { func(tag); });
+            } else {
+                fs.write(fd, block, 0, block.length, function () { func(tag); });
+            }
         } else {
             // Binary write
             var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
@@ -205,7 +203,11 @@ function recordingEntry(fd, type, flags, time, data, func, tag) {
             header.writeInt32BE(data.length, 4); // Size
             header.writeIntBE(time, 10, 6); // Time
             var block = Buffer.concat([header, data]);
-            fs.write(fd, block, 0, block.length, function () { func(tag); });
+            if (typeof position == 'number') {
+                fs.write(fd, block, 0, block.length, position, function () { func(tag); });
+            } else {
+                fs.write(fd, block, 0, block.length, function () { func(tag); });
+            }
         }
     } catch (ex) { console.log(ex); func(state, tag); }
 }
@@ -218,7 +220,24 @@ function readLastBlock(state, func) {
         var size = buf.readInt32BE(4);
         var time = (buf.readInt32BE(8) << 32) + buf.readInt32BE(12);
         var magic = buf.toString('utf8', 16, 32);
-        func(state, (type == 3) && (size == 16) && (magic == 'MeshCentralMCREC'));
+        if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCNDX')) {
+            // Extra metadata present, lets read it.
+            extraMetadata = null;
+            var buf2 = Buffer.alloc(16);
+            fs.read(state.recFile, buf2, 0, 16, time, function (err, bytesRead, buf2) {
+                var xtype = buf2.readInt16BE(0);
+                var xflags = buf2.readInt16BE(2);
+                var xsize = buf2.readInt32BE(4);
+                var xtime = (buf2.readInt32BE(8) << 32) + buf.readInt32BE(12);
+                var buf3 = Buffer.alloc(xsize);
+                fs.read(state.recFile, buf3, 0, xsize, time + 16, function (err, bytesRead, buf3) {
+                    func(state, true, xtime, JSON.parse(buf3.toString()));
+                });
+            });
+        } else {
+            // No extra metadata or fail
+            func(state, (type == 3) && (size == 16) && (magic == 'MeshCentralMCREC'), time, null);
+        }
     });
 }
 

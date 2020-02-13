@@ -28,9 +28,6 @@
                     <span id="deskstatus"></span>
                 </div>
             </div>
-            <div id=deskarea2 style="">
-                <div class="areaProgress" style="cursor:pointer" onclick="progressBarSeek(event)"><div id="progressbar" style="height:6px;cursor:pointer"></div></div>
-            </div>
             <div id=deskarea3x style="max-height:calc(100vh - 58px);height:calc(100vh - 58px);" onclick="togglePause()">
                 <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
@@ -42,6 +39,9 @@
                     <pre id=Term></pre>
                 </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
+            </div>
+            <div id=deskarea2 style="">
+                <div class="areaProgress" style="cursor:pointer" onclick="progressBarSeek(event)"><div id="progressbar" style="height:6px;cursor:pointer"></div></div>
             </div>
             <div id=deskarea4 class="areaFoot">
                 <div class="toright2">
@@ -165,7 +165,24 @@
                     var flags = ReadShort(this.result, 2);
                     var size = ReadInt(this.result, 4);
                     var time = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
-                    if ((type == 3) && (size == 16) && (this.result.substring(16, 32) == 'MeshCentralMCREC')) { func(type, flags, time); } else { func(-1); }
+                    var magic = this.result.substring(16, 32);
+                    if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCNDX')) {
+                        // Extra metadata present, lets read it.
+                        var fr2 = new FileReader();
+                        fr2.onload = function () {
+                            var xtype = ReadShort(this.result, 0);
+                            var xflags = ReadShort(this.result, 2);
+                            var xsize = ReadInt(this.result, 4);
+                            var xtime = (ReadInt(this.result, 8) << 32) + ReadInt(this.result, 12);
+                            var extras = JSON.parse(this.result.substring(16));
+                            func(type, flags, xtime, extras); // Include extra metadata
+                        }
+                        fr2.readAsBinaryString(recFile.slice(time, recFile.size - 32));
+                    } else if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCREC')) {
+                        func(type, flags, time); // No extra metadata
+                    } else {
+                        func(-1); // Fail
+                    }
                 };
                 fr.readAsBinaryString(recFile.slice(recFile.size - 32, recFile.size));
             }
@@ -183,6 +200,7 @@
             if ((type != 1) || (flags != 0)) { cleanup(); return; }
             try { recFileMetadata = JSON.parse(data) } catch (ex) { cleanup(); return; }
             if ((recFileMetadata == null) || (recFileMetadata.magic != 'MeshCentralRelaySession') || (recFileMetadata.ver != 1)) { cleanup(); return; }
+            if (recFileExtras) { for (var i in recFileExtras) { recFileMetadata[i] = recFileExtras[i]; } }
             var x = '';
             x += addInfo("Time", recFileMetadata.time);
             if (recFileEndTime != 0) { var secs = Math.floor((recFileEndTime - time) / 1000); x += addInfo("Duration", format("{0} second{1}", secs, (secs > 1) ? 's' : '')); }
@@ -355,8 +373,17 @@
             cleanup();
             recFile = files[0];
             recFilePtr = 0;
-            readNextBlock(processFirstBlock);
-            readLastBlock(function (type, flags, time) { if (type == 3) { recFileEndTime = time; } else { recFileEndTime = 0; } });
+            readLastBlock(function (type, flags, time, extras) {
+                if (type == 3) {
+                    // File is ok
+                    recFileEndTime = time;
+                    recFileExtras = extras;
+                    readNextBlock(processFirstBlock);
+                } else {
+                    // This is not a good file
+                    recFileEndTime = 0;
+                }
+            });
         }
 
         var dragtimer = null;
@@ -399,7 +426,17 @@
             recFile = files[0];
             recFilePtr = 0;
             readNextBlock(processFirstBlock);
-            readLastBlock(function (type, flags, time) { if (type == 3) { recFileEndTime = time; } else { recFileEndTime = 0; } });
+            readLastBlock(function (type, flags, time) {
+                if (type == 3) {
+                    // File is ok
+                    recFileEndTime = time;
+                    recFileExtras = extras;
+                    readNextBlock(processFirstBlock);
+                } else {
+                    // This is not a good file
+                    recFileEndTime = 0;
+                }
+            });
             Q('OpenFileButton').blur();
         }
 

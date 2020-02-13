@@ -10978,6 +10978,7 @@
         //
 
         // Converts string to UTF8 byte array, polyfill for IE.
+        // Following method is code from Mozilla: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder
         if (typeof TextEncoder === 'undefined') {
             window.TextEncoder=function TextEncoder(){};
             TextEncoder.prototype.encode = function encode(str) {
