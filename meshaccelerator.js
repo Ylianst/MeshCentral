@@ -21,7 +21,10 @@ var certStore = null;
 process.on('disconnect', function () { process.exit(); });
 
 // Handle parent messages
-process.on('message', function (message) {
+process.on('message', function (message) { module.exports.processMessage(message); });
+
+// Process an incoming message
+module.exports.processMessage = function(message) {
     switch (message.action) {
         case 'sign': {
             if (typeof message.key == 'number') { message.key = certStore[message.key].key; }
@@ -36,9 +39,14 @@ process.on('message', function (message) {
             certStore = message.certs;
             break;
         }
+        case 'indexMcRec': {
+            //console.log('indexMcRec', message.data);
+            require(require('path').join(__dirname, 'mcrec.js')).indexFile(message.data);
+            break;
+        }
         default: {
             console.log('Unknown accelerator action: ' + message.action + '.');
             break;
         }
     }
-});
+}

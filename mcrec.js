@@ -12,24 +12,24 @@ var path = require('path');
 var worker = null;
 const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
 var directRun = (require.main === module);
-function log() { if (directRun) { console.log(...arguments); } else { if (worker != null) { worker.parentPort.postMessage({ msg: arguments[0] }); } } }
+function log() { if (directRun) { console.log(...arguments); } /*else { if (worker != null) { worker.parentPort.postMessage({ msg: arguments[0] }); } } */ }
 if (directRun && (NodeJSVer >= 12)) { const xworker = require('worker_threads'); try { if (xworker.isMainThread == false) { worker = xworker; } } catch (ex) { log(ex); } }
 function start() { startEx(process.argv); }
 if (directRun) { setup(); }
 
 function setup() { InstallModules(['image-size'], start); }
 function start() { startEx(process.argv); }
-
 function startEx(argv) {
-    var state = { recFileName: null, recFile: null, recFileSize: 0, recFilePtr: 0 };
-    var infile = null;
-    if (argv.length > 2) { infile = argv[2]; } else {
-        log('MeshCentral Session Recodings Processor');
-        log('This tool will index a .mcrec file so that the player can seek thru the file.');
-        log('');
-        log('  Usage: node mcrec [file]');
-        return;
+    if (argv.length > 2) { indexFile(argv[2]); } else {
+        log("MeshCentral Session Recodings Processor");
+        log("This tool will index a .mcrec file so that the player can seek thru the file.");
+        log("");
+        log("  Usage: node mcrec [file]");
     }
+}
+
+function indexFile(infile) {
+    var state = { recFileName: null, recFile: null, recFileSize: 0, recFilePtr: 0 };
     if (fs.existsSync(infile) == false) { log("Missing file: " + infile); return; }
     state.recFileName = infile;
     state.recFileSize = fs.statSync(infile).size;
@@ -64,7 +64,16 @@ function createIndex(state, ptr) {
 }
 
 function processBlock(state, block) {
-    if (block == null) { writeIndex(state, function () { log("Done."); }); return; }
+    if (block == null) {
+        // We are done, close this file.
+        writeIndex(state, function () {
+            fs.close(state.recFile, function () {
+                for (var i in state) { delete state[i]; } // Clear the state.
+                log("Done.");
+            });
+        });
+        return;
+    }
     var elapseMilliSeconds = 0;
     if (state.startTime != null) { elapseMilliSeconds = (block.time - state.startTime); }
     var flagBinary = (block.flags & 1) != 0;
@@ -311,3 +320,4 @@ function InstallModule(modulename, func, tag1, tag2) {
 
 // Export table
 module.exports.startEx = startEx;
+module.exports.indexFile = indexFile;

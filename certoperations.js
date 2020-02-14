@@ -803,7 +803,7 @@ module.exports.CertificateOperations = function (parent) {
             accelerator.accid = acceleratorCreateCount;
             accelerator.on('message', function (message) {
                 acceleratorMessage++;
-                this.x.func(this.x.tag, message);
+                if (this.x.func) { this.x.func(this.x.tag, message); }
                 delete this.x;
                 if (pendingAccelerator.length > 0) { this.send(this.x = pendingAccelerator.shift()); } else { freeAccelerators.push(this); }
             });
@@ -846,6 +846,25 @@ module.exports.CertificateOperations = function (parent) {
                 // Send to accelerator now
                 acceleratorPerformSignatureRunFuncCall++;
                 acc.send(acc.x = { action: 'sign', key: privatekey, data: data, tag: tag, func: func });
+            }
+        }
+    };
+
+    // Perform any general operation
+    obj.acceleratorPerformOperation = function (operation, data, tag, func) {
+        if (acceleratorTotalCount <= 1) {
+            // No accelerators available
+            program.processMessage({ action: operation, data: data, tag: tag, func: func });
+        } else {
+            var acc = obj.getAccelerator();
+            if (acc == null) {
+                // Add to pending accelerator workload
+                acceleratorPerformSignaturePushFuncCall++;
+                pendingAccelerator.push({ action: operation, data: data, tag: tag, func: func });
+            } else {
+                // Send to accelerator now
+                acceleratorPerformSignatureRunFuncCall++;
+                acc.send(acc.x = { action: operation, data: data, tag: tag, func: func });
             }
         }
     };
