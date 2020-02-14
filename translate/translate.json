@@ -1031,7 +1031,7 @@
       "fr": "37.5%",
       "ja": "37.5％",
       "nl": "37.5%",
-      "pt": "37..5%",
+      "pt": "37.5%",
       "ru": "37.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->11",
@@ -1136,7 +1136,7 @@
       "cs": "6. Rcarousel – MIT licence",
       "en": "6.Rcarousel - MIT LIcense",
       "es": "6.Rcarousel - Licencia MIT",
-      "ja": "6.Rcarousel-MITライセンス",
+      "ja": "6.Rcarousel - MITライセンス",
       "nl": "6.Rcarousel - MIT Licentie",
       "pt": "6.Rcarousel - License MIT",
       "ru": "6.Rcarousel - MIT Лицензия",
@@ -3601,7 +3601,7 @@
       "fr": "CR+LF",
       "ja": "CR + LF",
       "nl": "CR+LF",
-      "pt": "CR + LF",
+      "pt": "CR+LF",
       "ru": "CR+LF",
       "xloc": [
         "default.handlebars->27->650",
@@ -8991,7 +8991,7 @@
       "de": "Intel (F10 = ESC+[OM)",
       "en": "Intel (F10 = ESC+[OM)",
       "es": "Intel (F10 = ESC+[OM)",
-      "ja": "Intel（F10 = ESC + [OM）",
+      "ja": "Intel（F10 = ESC+[OM）",
       "nl": "Intel (F10 = ESC+[OM)",
       "pt": "Intel (F10 = ESC+[OM)",
       "ru": "Intel (F10 = ESC+[OM)",
@@ -9009,6 +9009,7 @@
       "nl": "Intel AMT",
       "pt": "Intel AMT",
       "ru": "Intel AMT",
+      "fr": "Intel AMT",
       "xloc": [
         "default.handlebars->27->1161",
         "default.handlebars->27->1167",
@@ -9254,6 +9255,7 @@
       "nl": "Intel&reg; AMT WSMAN",
       "pt": "Intel&reg; AMT WSMAN",
       "ru": "Intel&reg; AMT WSMAN",
+      "fr": "Intel&reg; AMT WSMAN",
       "xloc": [
         "player.handlebars->3->13"
       ]
@@ -9395,6 +9397,7 @@
       "nl": "Intel&reg; ME",
       "pt": "Intel&reg; ME",
       "ru": "Intel&reg; ME",
+      "fr": "Intel&reg; ME",
       "xloc": [
         "default-mobile.handlebars->9->186",
         "default.handlebars->27->484"
@@ -9437,7 +9440,8 @@
       "ja": "Intel® AMT",
       "nl": "Intel® AMT",
       "pt": "Intel® AMT",
-      "ru": "Intel® AMT"
+      "ru": "Intel® AMT",
+      "fr": "Intel® AMT",
     },
     {
       "cs": "Intel® AMT –",
@@ -9483,13 +9487,14 @@
       ]
     },
     {
-      "cs": "Intel®AMT",
+      "cs": "Intel® AMT",
       "de": "Intel® AMT",
-      "en": "Intel®AMT",
-      "es": "Intel®AMT",
-      "fr": "Intel®AMT",
-      "nl": "Intel®AMT",
-      "ru": "Intel®AMT",
+      "en": "Intel® AMT",
+      "es": "Intel® AMT",
+      "nl": "Intel® AMT",
+      "ru": "Intel® AMT",
+      "fr": "Intel® AMT",
+      "pr": "Intel® AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
       ]
@@ -10512,6 +10517,7 @@
       "nl": "Linux / BSD (de-installeren)",
       "pt": "Linux / BSD (desinstalação)",
       "ru": "Linux / BSD (Удаление)",
+      "fr": "Linux / BSD (désinstaller)",
       "xloc": [
         "default.handlebars->27->319"
       ]
@@ -11165,6 +11171,7 @@
       "nl": "MacOS 32bit",
       "pt": "MacOS 32 bits",
       "ru": "MacOS 32bit",
+      "fr": "MacOS 32bit",
       "xloc": [
         "default-mobile.handlebars->9->154",
         "default.handlebars->27->24"
@@ -11179,6 +11186,7 @@
       "nl": "MacOS 64bit",
       "pt": "MacOS 64 bits",
       "ru": "MacOS 64bit",
+      "fr": "MacOS 64bit",
       "xloc": [
         "default-mobile.handlebars->9->159",
         "default.handlebars->27->29"
@@ -11557,6 +11565,7 @@
       "nl": "Mesh Agent",
       "pt": "Mesh Agent",
       "ru": "Mesh Agent",
+      "fr": "Mesh Agent",
       "xloc": [
         "default-mobile.handlebars->9->200",
         "default.handlebars->27->325",
@@ -11627,11 +11636,16 @@
       ]
     },
     {
+      "cs": "MeshAction (.txt)",
       "en": "MeshAction (.txt)",
       "es": "MeshAction (.txt)",
       "fr": "MeshAction (.txt)",
       "nl": "MeshAction (.txt)",
+      "ja": "MeshAction (.txt)",
+      "pt": "MeshAction (.txt)",
       "ru": "MeshAction (.txt)",
+      "de": "MeshAction (.txt)",
+      "fr": "MeshAction (.txt)",
       "xloc": [
         "default.handlebars->27->602",
         "default.handlebars->27->604"
@@ -12994,6 +13008,7 @@
       "nl": "NodeID",
       "pt": "NodeID",
       "ru": "NodeID",
+      "fr": "NodeID",
       "xloc": [
         "player.handlebars->3->10"
       ]
@@ -13007,6 +13022,7 @@
       "nl": "NodeJS",
       "pt": "NodeJS",
       "ru": "NodeJS",
+      "fr": "NodeJS",
       "xloc": [
         "default-mobile.handlebars->9->166",
         "default.handlebars->27->36"
@@ -13618,6 +13634,7 @@
       "nl": "PID",
       "pt": "PID",
       "ru": "PID",
+      "fr": "PID",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->0",
         "default.handlebars->27->636",
@@ -14683,10 +14700,12 @@
       "de": "RSS",
       "en": "RSS",
       "es": "RSS",
+      "ja": "RSS",
+      "nl": "RSS",
+      "ru": "RSS",
       "fr": "RSS",
       "nl": "RSS",
       "pt": "RSS",
-      "ru": "RSS",
       "xloc": [
         "default.handlebars->27->1451"
       ]
@@ -17726,6 +17745,7 @@
       "nl": "Tab",
       "pt": "Tab",
       "ru": "Tab",
+      "fr": "Tab",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->3"
       ]
@@ -19909,7 +19929,7 @@
       "de": "Win+Runter",
       "en": "Win+Down",
       "es": "Win+Down",
-      "ja": "Win + Down",
+      "ja": "Win+Down",
       "nl": "Win+pijl naar omlaag",
       "pt": "Win+Down",
       "ru": "Win+Вниз",
@@ -19923,7 +19943,7 @@
       "de": "Win+L",
       "en": "Win+L",
       "es": "Win+L",
-      "ja": "Win + L",
+      "ja": "Win+L",
       "nl": "Win+L",
       "pt": "Win+L",
       "ru": "Win+L",
@@ -19937,7 +19957,7 @@
       "de": "Win+Links",
       "en": "Win+Left",
       "es": "Win+Left",
-      "ja": "Win +左",
+      "ja": "Win+左",
       "nl": "Win+pijl Links",
       "pt": "Win+Left",
       "ru": "Win+Влево",
@@ -19950,7 +19970,7 @@
       "de": "Win+M",
       "en": "Win+M",
       "es": "Win+M",
-      "ja": "Win + M",
+      "ja": "Win+M",
       "nl": "Win+M",
       "pt": "Win+M",
       "ru": "Win+M",
@@ -19964,7 +19984,7 @@
       "de": "Win+R",
       "en": "Win+R",
       "es": "Win+R",
-      "ja": "Win + R",
+      "ja": "Win+R",
       "nl": "Win+R",
       "pt": "Win+R",
       "ru": "Win+R",
@@ -20579,6 +20599,7 @@
     },
     {
       "cs": "devicelist.csv",
+      "ja": "devicelist.csv",
       "de": "devicelist.csv",
       "en": "devicelist.csv",
       "es": "devicelist.csv",
@@ -20592,12 +20613,13 @@
       ]
     },
     {
+      "en": "devicelist.json",
+      "nl": "devicelist.json",
+      "es": "devicelist.json",
+      "ja": "devicelist.json",
       "cs": "devicelist.json",
       "de": "devicelist.json",
-      "en": "devicelist.json",
-      "es": "devicelist.json",
       "fr": "devicelist.json",
-      "nl": "devicelist.json",
       "pt": "devicelist.json",
       "ru": "devicelist.json",
       "xloc": [
@@ -20629,14 +20651,16 @@
     },
     {
       "cs": "eventslist.json",
-      "de": "eventslist.csv",
+      "de": "eventslist.json",
       "en": "eventslist.json",
       "es": "eventslist.json",
-      "fr": "eventslist.csv",
+      "fr": "eventslist.json",
       "ja": "eventslist.json",
       "nl": "eventslist.json",
       "pt": "eventslist.json",
-      "ru": "eventslist.csv",
+      "ru": "eventslist.json",
+      "fr": "eventslist.json",
+      "de": "eventslist.json",
       "xloc": [
         "default.handlebars->27->1213",
         "default.handlebars->27->1217"
@@ -20650,6 +20674,8 @@
       "nl": "voorbeeld@email.nl",
       "pt": "example@email.com",
       "ru": "example@email.com",
+      "de": "example@email.com",
+      "fr": "example@email.com",
       "xloc": [
         "default.handlebars->27->284"
       ]
@@ -20702,6 +20728,8 @@
       "nl": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "pt": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "ru": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
+      "de": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
+      "fr": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->75->1->3",
         "terms.handlebars->container->column_l->75->1->3"
@@ -20820,6 +20848,7 @@
     },
     {
       "cs": "ip:",
+      "ja": "ip:",
       "de": "ip:",
       "en": "ip:",
       "es": "IP:",
@@ -20908,6 +20937,7 @@
       "nl": "t:",
       "pt": "t:",
       "ru": "т:",
+      "ja": "т:",
       "xloc": [
         "default.handlebars->27->420",
         "default.handlebars->27->421"
@@ -20972,9 +21002,13 @@
     },
     {
       "cs": "u:",
+      "de": "u:",
+      "fr": "u:",
       "en": "u:",
       "es": "u:",
       "nl": "u:",
+      "pt": "u:",
+      "ja": "u:",
       "ru": "п:",
       "xloc": [
         "default.handlebars->27->410",
@@ -21001,6 +21035,8 @@
     },
     {
       "cs": "userlist.csv",
+      "de": "userlist.csv",
+      "fr": "userlist.csv",
       "en": "userlist.csv",
       "es": "userlist.csv",
       "ja": "userlist.csv",
@@ -21018,6 +21054,8 @@
       "es": "userlist.json",
       "ja": "userlist.json",
       "nl": "userlist.json",
+      "de": "userlist.json",
+      "fr": "userlist.json",
       "pt": "Lista de usuários.json",
       "ru": "userlist.json",
       "xloc": [
@@ -21048,6 +21086,7 @@
       "ja": "{0} Gb",
       "nl": "{0} Gb",
       "pt": "{0} Gb",
+      "fr": "{0} Gb",
       "ru": "{0} Гб",
       "xloc": [
         "default.handlebars->27->1183"
@@ -21061,6 +21100,7 @@
       "ja": "{0} Kb",
       "nl": "{0} Kb",
       "pt": "{0} Kb",
+      "fr": "{0} Kb",
       "ru": "{0} Kб",
       "xloc": [
         "default.handlebars->27->1181"
@@ -21075,6 +21115,7 @@
       "nl": "{0} Mb",
       "pt": "{0} Mb",
       "ru": "{0} Mб",
+      "fr": "{0} Mб",
       "xloc": [
         "default.handlebars->27->1182"
       ]
@@ -21087,6 +21128,7 @@
       "ja": "{0} Mb、{1} Mhz",
       "nl": "{0} Mb, {1} Mhz",
       "pt": "{0} Mb, {1} Mhz",
+      "fr": "{0} Mb, {1} Mhz",
       "ru": "{0} Мб, {1} Мгц",
       "xloc": [
         "default.handlebars->27->77"
@@ -21114,6 +21156,7 @@
       "ja": "{0} b",
       "nl": "{0} b",
       "pt": "{0} b",
+      "fr": "{0} b",
       "ru": "{0} байт",
       "xloc": [
         "default.handlebars->27->1180"
