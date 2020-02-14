@@ -228,7 +228,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
                                     recordingEntry(fd, 1, ((obj.req.query.browser) ? 2 : 0), firstBlock, function () {
-                                        try { relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false }; } catch (ex) {
+                                        try { relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false, filename: recFullFilename }; } catch (ex) {
                                             try { ws.send('c'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
                                             try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                                             return;
@@ -331,7 +331,15 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
 
                     // Close the recording file
-                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) { parent.parent.fs.close(fd); tag.ws.logfile = null; tag.pws.logfile = null; }, { ws: ws, pws: peer.ws }); }
+                    if (ws.logfile != null) {
+                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) {
+                            parent.parent.fs.close(fd);
+                            tag.ws.logfile = null;
+                            tag.pws.logfile = null;
+                            // Now that the recording file is closed, check if we need to index this file.
+                            if (domain.sessionrecording.index == true) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+                        }, { ws: ws, pws: peer.ws, logfile: ws.logfile });
+                    }
 
                     // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
