@@ -2333,12 +2333,14 @@ function mainStart() {
         var ldap = false;
         var allsspi = true;
         var yubikey = false;
+        var recordingIndex = false;
         var domainCount = 0;
         if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
+            if ((config.domains[i].sessionrecording != null) && (config.domains[i].sessionrecording.index == true)) { recordingIndex = true; }
         }
 
         // Get the current node version
@@ -2348,6 +2350,7 @@ function mainStart() {
         var modules = ['ws', 'cbor', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
+        if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.
