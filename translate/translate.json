@@ -9005,11 +9005,11 @@
       "de": "Intel AMT",
       "en": "Intel AMT",
       "es": "Intel AMT",
+      "fr": "Intel AMT",
       "ja": "Intel AMT",
       "nl": "Intel AMT",
       "pt": "Intel AMT",
       "ru": "Intel AMT",
-      "fr": "Intel AMT",
       "xloc": [
         "default.handlebars->27->1161",
         "default.handlebars->27->1167",
@@ -9140,7 +9140,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT",
+      "cs": "Intel&reg; AMT",
       "de": "Intel&reg; AMT",
       "en": "Intel&reg; AMT",
       "es": "Intel&reg; AMT",
@@ -9251,11 +9251,11 @@
       "de": "Intel&reg; AMT WSMAN",
       "en": "Intel&reg; AMT WSMAN",
       "es": "Intel&reg; AMT WSMAN",
+      "fr": "Intel&reg; AMT WSMAN",
       "ja": "Intel&reg; AMT WSMAN",
       "nl": "Intel&reg; AMT WSMAN",
       "pt": "Intel&reg; AMT WSMAN",
       "ru": "Intel&reg; AMT WSMAN",
-      "fr": "Intel&reg; AMT WSMAN",
       "xloc": [
         "player.handlebars->3->13"
       ]
@@ -9393,11 +9393,11 @@
       "de": "Intel&reg; ME",
       "en": "Intel&reg; ME",
       "es": "Intel&reg; ME",
+      "fr": "Intel&reg; ME",
       "ja": "Intel&reg;私",
       "nl": "Intel&reg; ME",
       "pt": "Intel&reg; ME",
       "ru": "Intel&reg; ME",
-      "fr": "Intel&reg; ME",
       "xloc": [
         "default-mobile.handlebars->9->186",
         "default.handlebars->27->484"
@@ -9437,11 +9437,9 @@
       "en": "Intel® AMT",
       "es": "Intel® AMT",
       "fr": "Intel® AMT",
-      "ja": "Intel® AMT",
       "nl": "Intel® AMT",
-      "pt": "Intel® AMT",
-      "ru": "Intel® AMT",
-      "fr": "Intel® AMT",
+      "pr": "Intel® AMT",
+      "ru": "Intel® AMT"
     },
     {
       "cs": "Intel® AMT –",
@@ -9487,14 +9485,7 @@
       ]
     },
     {
-      "cs": "Intel® AMT",
-      "de": "Intel® AMT",
-      "en": "Intel® AMT",
-      "es": "Intel® AMT",
-      "nl": "Intel® AMT",
-      "ru": "Intel® AMT",
-      "fr": "Intel® AMT",
-      "pr": "Intel® AMT",
+      "en": "Intel®AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
       ]
@@ -10513,11 +10504,11 @@
       "de": "Linux / BSD (Deinstallation)",
       "en": "Linux / BSD (UnInstall)",
       "es": "Linux / BSD (UnInstall)",
+      "fr": "Linux / BSD (désinstaller)",
       "ja": "Linux / BSD（アンインストール）",
       "nl": "Linux / BSD (de-installeren)",
       "pt": "Linux / BSD (desinstalação)",
       "ru": "Linux / BSD (Удаление)",
-      "fr": "Linux / BSD (désinstaller)",
       "xloc": [
         "default.handlebars->27->319"
       ]
@@ -11167,11 +11158,11 @@
       "de": "MacOS 32bit",
       "en": "MacOS 32bit",
       "es": "MacOS 32bit",
+      "fr": "MacOS 32bit",
       "ja": "MacOS 32ビット",
       "nl": "MacOS 32bit",
       "pt": "MacOS 32 bits",
       "ru": "MacOS 32bit",
-      "fr": "MacOS 32bit",
       "xloc": [
         "default-mobile.handlebars->9->154",
         "default.handlebars->27->24"
@@ -11182,11 +11173,11 @@
       "de": "MacOS 64bit",
       "en": "MacOS 64bit",
       "es": "MacOS 64bit",
+      "fr": "MacOS 64bit",
       "ja": "MacOS 64ビット",
       "nl": "MacOS 64bit",
       "pt": "MacOS 64 bits",
       "ru": "MacOS 64bit",
-      "fr": "MacOS 64bit",
       "xloc": [
         "default-mobile.handlebars->9->159",
         "default.handlebars->27->29"
@@ -11561,11 +11552,11 @@
       "de": "Mesh Agent",
       "en": "Mesh Agent",
       "es": "Agente Mesh",
+      "fr": "Mesh Agent",
       "ja": "メッシュエージェント",
       "nl": "Mesh Agent",
       "pt": "Mesh Agent",
       "ru": "Mesh Agent",
-      "fr": "Mesh Agent",
       "xloc": [
         "default-mobile.handlebars->9->200",
         "default.handlebars->27->325",
@@ -11637,15 +11628,14 @@
     },
     {
       "cs": "MeshAction (.txt)",
+      "de": "MeshAction (.txt)",
       "en": "MeshAction (.txt)",
       "es": "MeshAction (.txt)",
       "fr": "MeshAction (.txt)",
-      "nl": "MeshAction (.txt)",
       "ja": "MeshAction (.txt)",
+      "nl": "MeshAction (.txt)",
       "pt": "MeshAction (.txt)",
       "ru": "MeshAction (.txt)",
-      "de": "MeshAction (.txt)",
-      "fr": "MeshAction (.txt)",
       "xloc": [
         "default.handlebars->27->602",
         "default.handlebars->27->604"
@@ -13004,11 +12994,11 @@
       "de": "NodeID",
       "en": "NodeID",
       "es": "ID de Nodo",
+      "fr": "NodeID",
       "ja": "NodeID",
       "nl": "NodeID",
       "pt": "NodeID",
       "ru": "NodeID",
-      "fr": "NodeID",
       "xloc": [
         "player.handlebars->3->10"
       ]
@@ -13018,11 +13008,11 @@
       "de": "NodeJS",
       "en": "NodeJS",
       "es": "NodeJS",
+      "fr": "NodeJS",
       "ja": "NodeJS",
       "nl": "NodeJS",
       "pt": "NodeJS",
       "ru": "NodeJS",
-      "fr": "NodeJS",
       "xloc": [
         "default-mobile.handlebars->9->166",
         "default.handlebars->27->36"
@@ -13630,11 +13620,11 @@
       "de": "PID",
       "en": "PID",
       "es": "PID",
+      "fr": "PID",
       "ja": "PID",
       "nl": "PID",
       "pt": "PID",
       "ru": "PID",
-      "fr": "PID",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->0",
         "default.handlebars->27->636",
@@ -14700,12 +14690,11 @@
       "de": "RSS",
       "en": "RSS",
       "es": "RSS",
+      "fr": "RSS",
       "ja": "RSS",
       "nl": "RSS",
-      "ru": "RSS",
-      "fr": "RSS",
-      "nl": "RSS",
       "pt": "RSS",
+      "ru": "RSS",
       "xloc": [
         "default.handlebars->27->1451"
       ]
@@ -17741,11 +17730,11 @@
       "de": "Tab",
       "en": "Tab",
       "es": "Tab",
+      "fr": "Tab",
       "ja": "タブ",
       "nl": "Tab",
       "pt": "Tab",
       "ru": "Tab",
-      "fr": "Tab",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->3"
       ]
@@ -20599,11 +20588,11 @@
     },
     {
       "cs": "devicelist.csv",
-      "ja": "devicelist.csv",
       "de": "devicelist.csv",
       "en": "devicelist.csv",
       "es": "devicelist.csv",
       "fr": "devicelist.csv",
+      "ja": "devicelist.csv",
       "nl": "devicelist.csv",
       "pt": "devicelist.csv",
       "ru": "devicelist.csv",
@@ -20613,13 +20602,13 @@
       ]
     },
     {
-      "en": "devicelist.json",
-      "nl": "devicelist.json",
-      "es": "devicelist.json",
-      "ja": "devicelist.json",
       "cs": "devicelist.json",
       "de": "devicelist.json",
+      "en": "devicelist.json",
+      "es": "devicelist.json",
       "fr": "devicelist.json",
+      "ja": "devicelist.json",
+      "nl": "devicelist.json",
       "pt": "devicelist.json",
       "ru": "devicelist.json",
       "xloc": [
@@ -20659,8 +20648,6 @@
       "nl": "eventslist.json",
       "pt": "eventslist.json",
       "ru": "eventslist.json",
-      "fr": "eventslist.json",
-      "de": "eventslist.json",
       "xloc": [
         "default.handlebars->27->1213",
         "default.handlebars->27->1217"
@@ -20668,14 +20655,14 @@
     },
     {
       "cs": "e-mail@example.com",
+      "de": "example@email.com",
       "en": "example@email.com",
       "es": "ejemplo@email.com",
+      "fr": "example@email.com",
       "ja": "example@email.com",
       "nl": "voorbeeld@email.nl",
       "pt": "example@email.com",
       "ru": "example@email.com",
-      "de": "example@email.com",
-      "fr": "example@email.com",
       "xloc": [
         "default.handlebars->27->284"
       ]
@@ -20722,14 +20709,14 @@
     },
     {
       "cs": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
+      "de": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "en": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "es": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
+      "fr": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "ja": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "nl": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "pt": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "ru": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
-      "de": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
-      "fr": "http://creativecommons.org/licenses/by/2.0/uk/legalcode",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->75->1->3",
         "terms.handlebars->container->column_l->75->1->3"
@@ -20848,11 +20835,11 @@
     },
     {
       "cs": "ip:",
-      "ja": "ip:",
       "de": "ip:",
       "en": "ip:",
       "es": "IP:",
       "fr": "ip:",
+      "ja": "ip:",
       "nl": "ip:",
       "pt": "ip:",
       "ru": "ip:",
@@ -20934,10 +20921,10 @@
       "en": "t:",
       "es": "t:",
       "fr": "t:",
+      "ja": "т:",
       "nl": "t:",
       "pt": "t:",
       "ru": "т:",
-      "ja": "т:",
       "xloc": [
         "default.handlebars->27->420",
         "default.handlebars->27->421"
@@ -21003,12 +20990,12 @@
     {
       "cs": "u:",
       "de": "u:",
-      "fr": "u:",
       "en": "u:",
       "es": "u:",
+      "fr": "u:",
+      "ja": "u:",
       "nl": "u:",
       "pt": "u:",
-      "ja": "u:",
       "ru": "п:",
       "xloc": [
         "default.handlebars->27->410",
@@ -21036,9 +21023,9 @@
     {
       "cs": "userlist.csv",
       "de": "userlist.csv",
-      "fr": "userlist.csv",
       "en": "userlist.csv",
       "es": "userlist.csv",
+      "fr": "userlist.csv",
       "ja": "userlist.csv",
       "nl": "userlist.csv",
       "pt": "Lista de usuários.csv",
@@ -21050,12 +21037,12 @@
     },
     {
       "cs": "userlist.json",
+      "de": "userlist.json",
       "en": "userlist.json",
       "es": "userlist.json",
+      "fr": "userlist.json",
       "ja": "userlist.json",
       "nl": "userlist.json",
-      "de": "userlist.json",
-      "fr": "userlist.json",
       "pt": "Lista de usuários.json",
       "ru": "userlist.json",
       "xloc": [
@@ -21083,10 +21070,10 @@
       "de": "{0} GB",
       "en": "{0} Gb",
       "es": "{0} Gb",
+      "fr": "{0} Gb",
       "ja": "{0} Gb",
       "nl": "{0} Gb",
       "pt": "{0} Gb",
-      "fr": "{0} Gb",
       "ru": "{0} Гб",
       "xloc": [
         "default.handlebars->27->1183"
@@ -21097,10 +21084,10 @@
       "de": "{0} kB",
       "en": "{0} Kb",
       "es": "{0} Kb",
+      "fr": "{0} Kb",
       "ja": "{0} Kb",
       "nl": "{0} Kb",
       "pt": "{0} Kb",
-      "fr": "{0} Kb",
       "ru": "{0} Kб",
       "xloc": [
         "default.handlebars->27->1181"
@@ -21111,11 +21098,11 @@
       "de": "{0} MB",
       "en": "{0} Mb",
       "es": "{0} Mb",
+      "fr": "{0} Mб",
       "ja": "{0} Mb",
       "nl": "{0} Mb",
       "pt": "{0} Mb",
       "ru": "{0} Mб",
-      "fr": "{0} Mб",
       "xloc": [
         "default.handlebars->27->1182"
       ]
@@ -21125,10 +21112,10 @@
       "de": "{0} MB, {1} MHz",
       "en": "{0} Mb, {1} Mhz",
       "es": "{0} Mb, {1} Mhz",
+      "fr": "{0} Mb, {1} Mhz",
       "ja": "{0} Mb、{1} Mhz",
       "nl": "{0} Mb, {1} Mhz",
       "pt": "{0} Mb, {1} Mhz",
-      "fr": "{0} Mb, {1} Mhz",
       "ru": "{0} Мб, {1} Мгц",
       "xloc": [
         "default.handlebars->27->77"
@@ -21153,10 +21140,10 @@
       "de": "{0} B",
       "en": "{0} b",
       "es": "{0} b",
+      "fr": "{0} b",
       "ja": "{0} b",
       "nl": "{0} b",
       "pt": "{0} b",
-      "fr": "{0} b",
       "ru": "{0} байт",
       "xloc": [
         "default.handlebars->27->1180"
