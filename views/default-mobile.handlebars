@@ -1060,6 +1060,7 @@
                                 node.gpsloc = message.event.node.gpsloc;
                                 node.tags = message.event.node.tags;
                                 node.userloc = message.event.node.userloc;
+                                node.rdpport = message.event.node.rdpport;
                                 if (message.event.node.agent != null) {
                                     if (node.agent == null) node.agent = {};
                                     if (message.event.node.agent.ver != null) { node.agent.ver = message.event.node.agent.ver; }

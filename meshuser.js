@@ -2740,6 +2740,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
                         if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
                         if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
+                        if ((typeof command.rdpport == 'number') && (command.rdpport > 0) && (command.rdpport < 65536)) {
+                            if ((command.rdpport == 3389) && (node.rdpport != null)) {
+                                delete node.rdpport; change = 1; changes.push('rdpport'); // Delete the RDP port
+                            } else {
+                                node.rdpport = command.rdpport; change = 1; changes.push('rdpport'); // Set the RDP port
+                            }
+                        }
                         if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
                             change = 1;
                             if ((command.userloc.length == 0) && (node.userloc)) {

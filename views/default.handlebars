@@ -2456,6 +2456,7 @@
                                 node.gpsloc = message.event.node.gpsloc;
                                 node.tags = message.event.node.tags;
                                 node.userloc = message.event.node.userloc;
+                                node.rdpport = message.event.node.rdpport;
                                 if (message.event.node.agent != null) {
                                     if (node.agent == null) node.agent = {};
                                     if (message.event.node.agent.ver != null) { node.agent.ver = message.event.node.agent.ver; }
@@ -4001,6 +4002,7 @@
         function handleContextMenu(event) {
             // When called, we look for elements with "cmenu=xxx" and show the right context menu for that element.
             hideContextMenu();
+            if (xxdialogMode) return;
             var scrollLeft = (window.pageXOffset !== null) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
             var scrollTop = (window.pageYOffset !== null) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
             var elem = document.elementFromPoint(event.pageX - scrollLeft, event.pageY - scrollTop);
@@ -4112,9 +4114,13 @@
             var x = "RDP remote connection port:" + '<br /><br /><input type=text placeholder="3389" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" maxlength=5 id=d10rdpport type=text>';
             setDialogMode(2, "RDP Connection", 3, function() {
                 setDialogMode(0);
-                if (currentNode != null) { p10clickOnce(currentNode._id, "RDP2", ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389)); }
+                // Save the new RDP port to the server
+                var rdpport = ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389);
+                meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdpport: rdpport });
+                if (currentNode != null) { p10clickOnce(currentNode._id, 'RDP2', rdpport); }
             }, x, currentNode);
             Q('d10rdpport').focus();
+            if (currentNode.rdpport != null) { Q('d10rdpport').value = currentNode.rdpport; }
         }
 
         function cmfilesaction(action) {
@@ -4980,7 +4986,7 @@
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
-                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2",3389) title=\"' + "Requires Microsoft ClickOnce support in your browser" + '.\">' + "RDP" + '</a>&nbsp;'; }
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2") title=\"' + "Requires Microsoft ClickOnce support in your browser" + '.\">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
                         x += '<a href=# onclick=p10clickOnce("' + node._id + '","PSSH",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "Putty" + '</a>&nbsp;';
                         x += '<a href=# onclick=p10clickOnce("' + node._id + '","WSCP",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "WinSCP" + '</a>&nbsp;';
@@ -5374,6 +5380,7 @@
         }
 
         function p10clickOnce(nodeid, protocol, port) {
+            if ((protocol == 'RDP2') && (port == null)) { if (currentNode.rdpport != null) { port = currentNode.rdpport; } else { port = 3389; } }
             meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'clickonce', protocol: protocol });
             return false;
         }
