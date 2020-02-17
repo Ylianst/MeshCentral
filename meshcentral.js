@@ -1280,6 +1280,10 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupintervalhours == 'number')) {
                     setInterval(obj.db.performBackup, obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000);
                 }
+
+                // Setup users that can see all device groups
+                obj.config.settings.managealldevicegroups = [];
+                for (i in obj.config.domains) { if (Array.isArray(obj.config.domains[i].managealldevicegroups)) { for (var j in obj.config.domains[i].managealldevicegroups) { if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') { obj.config.settings.managealldevicegroups.push('user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j]); } } } }
             });
         });
     };

@@ -936,7 +936,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if (message.event.links[userinfo._id] != null) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if ((meshes[message.event.meshid] == null) && ((userinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 updateMeshes();
                                 updateDevices();
@@ -3445,6 +3445,9 @@
             if (typeof mesh == 'string') { mesh = meshes[mesh] }
             if ((mesh == null) || (mesh.links == null)) { return 0; }
 
+            // Check if user user
+            if (userinfo.manageAllDeviceGroups) return 0xFFFFFFFF;
+
             // Check direct link permission
             var rights = 0, r = mesh.links[userid];
             if (r != null) {
@@ -3477,6 +3480,9 @@
             if (typeof mesh == 'string') { mesh = meshes[mesh] }
             if ((mesh == null) || (mesh.links == null)) { return false; }
             if (mesh.links[userid] != null) { return true; } // User has visilibity thru a direct link
+
+            // Check if user user
+            if (userinfo.manageAllDeviceGroups) return true;
 
             // Check permissions thru user groups
             var user = null;

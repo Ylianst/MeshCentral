@@ -214,7 +214,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // Command 10, ask mesh agent to clear the core
                         } else {
                             // Update new core
-                            if (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].amt == true) {
+                            if ((parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId] != null) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].amt == true)) {
                                 obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + parent.parent.defaultMeshCoreHash + parent.parent.defaultMeshCore); // Command 10, ask mesh agent to set the core (with MEI support)
                             } else {
                                 obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + parent.parent.defaultMeshCoreNoMeiHash + parent.parent.defaultMeshCoreNoMei); // Command 10, ask mesh agent to set the core (No MEI)

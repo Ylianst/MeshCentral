@@ -4031,7 +4031,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.GetAllMeshWithRights = function (user, rights) {
         if (typeof user == 'string') { user = obj.users[user]; }
         if ((user == null) || (user.links == null)) { return []; }
+
         var r = [];
+        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) {
+            // This is a super user that can see all device groups for a given domain
+            var meshStartStr = 'mesh/' + user.domain + '/';
+            for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]); } }
+            return r;
+        }
         for (var i in user.links) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
@@ -4062,6 +4069,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (typeof user == 'string') { user = obj.users[user]; }
         if ((user == null) || (user.links == null)) { return []; }
         var r = [];
+        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) {
+            // This is a super user that can see all device groups for a given domain
+            var meshStartStr = 'mesh/' + user.domain + '/';
+            for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]._id); } }
+            return r;
+        }
         for (var i in user.links) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
@@ -4098,6 +4111,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) {
             meshid = mesh._id;
         } else return 0;
+
+        // Check if this is a super user that can see all device groups for a given domain
+        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return 0xFFFFFFFF; }
 
         // Check direct user to device group permissions
         var rights = 0;
@@ -4139,6 +4155,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) {
             meshid = mesh._id;
         } else return false;
+
+        // Check if this is a super user that can see all device groups for a given domain
+        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
 
         // Check direct user to device group permissions
         if (user.links[meshid] != null) { return true; } // If the user has a direct link, stop here.
