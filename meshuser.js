@@ -370,7 +370,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
 
             // Send user information to web socket, this is the first thing we send
-            try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
+            try {
+                var xuserinfo = parent.CloneSafeUser(parent.users[user._id]);
+                if ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) { xuserinfo.manageAllDeviceGroups = true; }
+                ws.send(JSON.stringify({ action: 'userinfo', userinfo: xuserinfo }));
+            } catch (ex) { }
 
             if (user.siteadmin == 0xFFFFFFFF) {
                 // Send server tracing information
