@@ -37,6 +37,7 @@
     "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
     "_AgentAllowedIP": "192.168.0.100/24",
     "_AgentBlockedIP": "127.0.0.1,::1",
+    "_AuthLog": "c:\\temp\\auth.log",
     "_LocalDiscovery": {
       "name": "Local server name",
       "info": "Information about this server"

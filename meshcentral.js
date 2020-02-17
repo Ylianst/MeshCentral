@@ -861,6 +861,13 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx1b = function () {
         var i;
 
+        // Linux format /var/log/auth.log
+        if (obj.config.settings.authlog != null) {
+            obj.fs.open(obj.config.settings.authlog, 'a', function (err, fd) {
+                if (err == null) { obj.authlog = fd; } else { console.log('ERROR: Unable to open: ' + obj.config.settings.authlog); }
+            })
+        }
+
         // Check if self update is allowed. If running as a Windows service, self-update is not possible.
         if (obj.fs.existsSync(obj.path.join(__dirname, 'daemon'))) { obj.serverSelfWriteAllowed = false; }
 
@@ -2180,6 +2187,15 @@ function CreateMeshCentralServer(config, args) {
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
     obj.getServerWarnings = function () { return serverWarnings; }
     obj.addServerWarning = function(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
+
+    // auth.log functions
+    obj.authLog = function(server, msg) {
+        if (obj.authlog == null) return;
+        var d = new Date();
+        var month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+        var msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(),2) + ':' + obj.common.zeroPad(d.getMinutes(),2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32')?'\r\n':'\n');
+        obj.fs.write(obj.authlog, msg, function (err, written, string) { });
+    }
 
     // Return the path of a file into the meshcentral-data path
     obj.getConfigFilePath = function (filename) {
