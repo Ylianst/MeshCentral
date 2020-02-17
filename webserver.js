@@ -695,6 +695,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
                                 req.session.messageid = 108; // Invalid token, try again.
+                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.port); }
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
                                 obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
                                 obj.setbadLogin(req);
@@ -717,6 +718,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }
 
                             // Login successful
+                            if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
                             parent.debug('web', 'handleLoginRequest: successful 2FA login');
                             completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
                         }
@@ -725,10 +727,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
 
                 // Login successful
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleLoginRequest: successful login');
                 completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
             } else {
-                // Login failed, wait a random delay
+                // Login failed, log the error
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+
+                // Wait a random delay
                 setTimeout(function () {
                     // If the account is locked, display that.
                     if (typeof xusername == 'string') {
@@ -1377,16 +1383,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Login using SSPI
             domain.sspi.authenticate(req, res, function (err) {
                 if ((err != null) || (req.connection.user == null)) {
+                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
                     parent.debug('web', 'handleRootRequest: SSPI auth required.');
                     res.end('Authentication Required...');
                 } else {
+                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted SSPI-auth for ' + req.connection.user + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
                     parent.debug('web', 'handleRootRequest: SSPI auth ok.');
                     handleRootRequestEx(req, res, domain, direct);
                 }
             });
         } else if (req.query.user && req.query.pass) {
-            // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is not good security... but people are requesting this option.
+            // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + req.connection.user + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
@@ -3804,6 +3813,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
+            if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
             obj.parent.updateServerState('https-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('https-aliasport', args.aliasport); }
         } else {
