@@ -337,7 +337,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                             tag.ws.logfile = null;
                             tag.pws.logfile = null;
                             // Now that the recording file is closed, check if we need to index this file.
-                            if (domain.sessionrecording.index == true) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+                            if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
                         }, { ws: ws, pws: peer.ws, logfile: ws.logfile });
                     }
 

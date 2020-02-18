@@ -26,8 +26,8 @@ module.exports.ShortToStr = function (v) { return String.fromCharCode((v >> 8) &
 module.exports.ShortToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); };
 module.exports.IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
 module.exports.IntToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); };
-module.exports.MakeToArray = function (v) { if (!v || v == null || typeof v == "object") return v; return [v]; };
-module.exports.SplitArray = function (v) { return v.split(","); };
+module.exports.MakeToArray = function (v) { if (!v || v == null || typeof v == 'object') return v; return [v]; };
+module.exports.SplitArray = function (v) { return v.split(','); };
 module.exports.Clone = function (v) { return JSON.parse(JSON.stringify(v)); };
 module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return module.exports.validateString(fname, 1, 4096) && x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); }; })();
 module.exports.makeFilename = function (v) { return v.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join(''); }
@@ -122,8 +122,8 @@ module.exports.parseNameValueList = function (list) {
 
 // Compute the MD5 digest hash for a set of values
 module.exports.ComputeDigesthash = function (username, password, realm, method, path, qop, nonce, nc, cnonce) {
-    var ha1 = crypto.createHash('md5').update(username + ":" + realm + ":" + password).digest("hex");
-    var ha2 = crypto.createHash('md5').update(method + ":" + path).digest("hex");
+    var ha1 = crypto.createHash('md5').update(username + ":" + realm + ":" + password).digest('hex');
+    var ha2 = crypto.createHash('md5').update(method + ":" + path).digest('hex');
     return crypto.createHash('md5').update(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2).digest("hex");
 };
 
