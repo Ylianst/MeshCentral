@@ -498,7 +498,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Return the current domain of the request
     function getDomain(req) {
         if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
-        if (req.headers.host != null) { var d = obj.dnsDomains[req.headers.host.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
+        if (req.headers.host != null) { var d = obj.dnsDomains[req.headers.host.split(':')[0].toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
         var x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
         var y = parent.config.domains[x[1].toLowerCase()];
@@ -2676,8 +2676,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Fetch the mesh object
         ws.meshid = 'mesh/' + domain.id + '/' + req.query.id;
         const mesh = obj.meshes[ws.meshid];
-        if (mesh == null) { delete ws.meshid; ws.send(JSON.stringify({ errorText: 'Invalid device group: ' + ws.meshid })); ws.close(); return; }
-        if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type:' + ws.meshid })); ws.close(); return; }
+        if (mesh == null) { ws.send(JSON.stringify({ errorText: 'Invalid device group: ' + ws.meshid })); delete ws.meshid; ws.close(); return; }
+        if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type:' + ws.meshid })); delete ws.meshid; ws.close(); return; }
 
         // Fetch the remote IP:Port for logging
         ws.remoteaddr = cleanRemoteAddr(req.ip);
