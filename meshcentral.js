@@ -1217,10 +1217,17 @@ function CreateMeshCentralServer(config, args) {
                 obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
 
                 // Plugin hook. Need to run something at server startup? This is the place.
-                if (obj.pluginHandler) { obj.pluginHandler.callHook("server_startup"); }
+                if (obj.pluginHandler) { obj.pluginHandler.callHook('server_startup'); }
                 
-                // Load the login cookie encryption key from the database if allowed
-                if ((obj.config) && (obj.config.settings) && (obj.config.settings.allowlogintoken == true)) {
+                // Setup the login cookie encryption key
+                if ((obj.config) && (obj.config.settings) && (typeof obj.config.settings.logincookieencryptionkey == 'string')) {
+                    // We have a string, hash it and use that as a key
+                    try { obj.loginCookieEncryptionKey = Buffer.from(obj.config.settings.logincookieencryptionkey, 'hex'); } catch (ex) { }
+                    if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json."); obj.loginCookieEncryptionKey = null; }
+                }
+
+                // Login cookie encryption key not set, use one from the database
+                if (obj.loginCookieEncryptionKey == null) {
                     obj.db.Get('LoginCookieEncryptionKey', function (err, docs) {
                         if ((docs.length > 0) && (docs[0].key != null) && (obj.args.logintokengen == null) && (docs[0].key.length >= 160)) {
                             obj.loginCookieEncryptionKey = Buffer.from(docs[0].key, 'hex');

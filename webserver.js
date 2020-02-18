@@ -2676,8 +2676,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Fetch the mesh object
         ws.meshid = 'mesh/' + domain.id + '/' + req.query.id;
         const mesh = obj.meshes[ws.meshid];
-        if (mesh == null) { delete ws.meshid; ws.send(JSON.stringify({ errorText: 'Invalid device group' })); ws.close(); return; }
-        if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type' })); ws.close(); return; }
+        if (mesh == null) { delete ws.meshid; ws.send(JSON.stringify({ errorText: 'Invalid device group: ' + ws.meshid })); ws.close(); return; }
+        if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type:' + ws.meshid })); ws.close(); return; }
 
         // Fetch the remote IP:Port for logging
         ws.remoteaddr = cleanRemoteAddr(req.ip);
@@ -4516,11 +4516,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.badLoginTable = {};
     obj.badLoginTableLastClean = 0;
     if (parent.config.settings == null) { parent.config.settings = {}; }
-    if (parent.config.settings.maxinvalidlogin == null) { parent.config.settings.maxinvalidlogin = { time: 10, count: 10 }; }
-    if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
-    if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
-    if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
+    if (parent.config.settings.maxinvalidlogin !== false) {
+        if (typeof parent.config.settings.maxinvalidlogin != 'object') { parent.config.settings.maxinvalidlogin = { time: 10, count: 10 }; }
+        if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
+        if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
+        if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
+    }
     obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
+        if (parent.config.settings.maxinvalidlogin === false) return;
         if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
         var splitip = ip.split('.');
         if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
@@ -4532,6 +4535,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
     obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
+        if (parent.config.settings.maxinvalidlogin === false) return true;
         if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
         var splitip = ip.split('.');
         if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
@@ -4544,6 +4548,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return (ipTable.length < parent.config.settings.maxinvalidlogin.count); // No more than x bad logins in x minutes
     }
     obj.cleanBadLoginTable = function () { // Clean up the IP address login blockage table, we do this occasionaly.
+        if (parent.config.settings.maxinvalidlogin === false) return;
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
         for (var ip in obj.badLoginTable) {
             var ipTable = obj.badLoginTable[ip];

@@ -700,26 +700,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'badlogins': {
-                            if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
-                                r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
+                            if (parent.parent.config.settings.maxinvalidlogin == false) {
+                                r = 'Bad login filter is disabled.';
                             } else {
-                                r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
-                            }
-                            var badLoginCount = 0;
-                            parent.cleanBadLoginTable();
-                            for (var i in parent.badLoginTable) {
-                                badLoginCount++;
-                                if (typeof parent.badLoginTable[i] == 'number') {
-                                    r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
+                                if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
+                                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
                                 } else {
-                                    if (parent.badLoginTable[i].length > 1) {
-                                        r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
+                                }
+                                var badLoginCount = 0;
+                                parent.cleanBadLoginTable();
+                                for (var i in parent.badLoginTable) {
+                                    badLoginCount++;
+                                    if (typeof parent.badLoginTable[i] == 'number') {
+                                        r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
                                     } else {
-                                        r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                                        if (parent.badLoginTable[i].length > 1) {
+                                            r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                                        } else {
+                                            r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                                        }
                                     }
                                 }
+                                if (badLoginCount == 0) { r += 'No bad logins.'; }
                             }
-                            if (badLoginCount == 0) { r += 'No bad logins.'; }
                             break;
                         }
                         case 'dispatchtable': {
