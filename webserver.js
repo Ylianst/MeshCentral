@@ -3650,6 +3650,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.use(function (req, res, next) {
                 parent.debug('web', '404 Error ' + req.url);
                 var domain = getDomain(req);
+                if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
+                if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
                 res.status(404).render(getRenderPage('error404', req), getRenderArgs({}, domain));
             });
         }
