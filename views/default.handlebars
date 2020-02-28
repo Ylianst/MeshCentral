@@ -1181,8 +1181,8 @@
         var uiMode = parseInt(getstore('uiMode', 1));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
-        var nightMode = (getstore('_nightMode', '0') == '1');
-        var footerBar = (getstore('_footerBar', '1') == '1');
+        var nightMode = (getstore('nightMode', '0') == '1');
+        var footerBar = (getstore('footerBar', '1') == '1');
         var sessionActivity = Date.now();
         var updateSessionTimer = null;
         var pluginHandlerBuilder = {{{pluginHandler}}};
@@ -1489,12 +1489,12 @@
         function toggleNightMode() {
             nightMode = !nightMode;
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; }
-            putstore('_nightMode', nightMode?'1':'0');
+            putstore('nightMode', nightMode?'1':'0');
         }
 
         function toggleFooterBarMode() {
             footerBar = !footerBar;
-            putstore('_footerBar', footerBar?'1':'0');
+            putstore('footerBar', footerBar?'1':'0');
             QS('container')['grid-template-rows'] = null;
             QS('container')['-ms-grid-rows'] = null;
             adjustPanels();
@@ -2232,6 +2232,8 @@
                                     var oldUiMode = localStorage.getItem('uiMode');
                                     var oldSort = localStorage.getItem('sort');
                                     var oldLoctag = localStorage.getItem('loctag');
+                                    var oldNightMode = localStorage.getItem('nightMode');
+                                    var oldFooterBar = localStorage.getItem('footerBar');
 
                                     var webstate = JSON.parse(message.event.state);
                                     for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
@@ -2242,6 +2244,8 @@
                                     if ((webstate.uiMode != null) && (webstate.uiMode != oldUiMode)) { userInterfaceSelectMenu(parseInt(webstate.uiMode)); }
                                     if ((webstate.sort != null) && (webstate.sort != oldSort)) { document.getElementById('sortselect').selectedIndex = sort = parseInt(webstate.sort); masterUpdate(6); }
                                     if ((webstate.loctag != null) && (webstate.loctag != oldLoctag)) { if (webstate.loctag != null) { args.locale = webstate.loctag; } else { delete args.locale; } masterUpdate(0xFFFFFFFF); }
+                                    if ((webstate.nightMode != null) && (webstate.nightMode != oldNightMode)) { nightMode = (webstate.nightMode == '1'); if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; } }
+                                    if ((webstate.footerBar != null) && (webstate.footerBar != oldFooterBar)) { footerBar = (webstate.footerBar == '1'); QS('container')['grid-template-rows'] = null; QS('container')['-ms-grid-rows'] = null; adjustPanels(); }
                                 }
                             } catch (ex) {}
                             break;
@@ -11050,11 +11054,11 @@
             };
             TextEncoder.prototype.toString = function(){return '[object TextEncoder]'};
             try {
-                Object.defineProperty(TextEncoder.prototype,"encoding",{
-                    get:function(){ if(TextEncoder.prototype.isPrototypeOf(this)) return'utf-8'; else throw TypeError("Illegal invocation"); }
+                Object.defineProperty(TextEncoder.prototype,'encoding',{
+                    get:function(){ if(TextEncoder.prototype.isPrototypeOf(this)) return'utf-8'; else throw TypeError('Illegal invocation'); }
                 });
             } catch(e) { TextEncoder.prototype.encoding = 'utf-8'; }
-            if (typeof Symbol!=="undefined")TextEncoder.prototype[Symbol.toStringTag]='TextEncoder';
+            if (typeof Symbol!=='undefined')TextEncoder.prototype[Symbol.toStringTag]='TextEncoder';
         }
 
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
