@@ -541,7 +541,7 @@ function CreateMeshCentralServer(config, args) {
 
                                 // Lower case all keys in the config file
                                 try {
-                                    require('./common.js').objKeysToLower(config2, ["ldapoptions"]);
+                                    require('./common.js').objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
                                 } catch (ex) {
                                     console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
                                     process.exit();
@@ -830,7 +830,7 @@ function CreateMeshCentralServer(config, args) {
 
                             // Lower case all keys in the config file
                             try {
-                                require('./common.js').objKeysToLower(config2, ['ldapoptions']);
+                                require('./common.js').objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
                             } catch (ex) {
                                 console.log("CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.");
                                 process.exit();
@@ -2266,7 +2266,7 @@ function getConfig(createSampleConfig) {
 
     // Lower case all keys in the config file
     try {
-        require('./common.js').objKeysToLower(config, ["ldapoptions"]);
+        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate']);
     } catch (ex) {
         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
         process.exit();

@@ -1128,6 +1128,7 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
+        if (webState.deviceView != null) { localStorage.setItem('_deviceView', webState.deviceView); }
         if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;

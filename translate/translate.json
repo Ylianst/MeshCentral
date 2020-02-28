@@ -3636,7 +3636,7 @@
       "pt": "Erro de chamada",
       "ru": "Ошибка вызова",
       "xloc": [
-        "default.handlebars->27->1480"
+        "default.handlebars->27->1477"
       ]
     },
     {
@@ -8824,10 +8824,7 @@
     },
     {
       "en": "Illegal invocation",
-      "nl": "Ongeldige aanroep",
-      "xloc": [
-        "default.handlebars->27->1478"
-      ]
+      "nl": "Ongeldige aanroep"
     },
     {
       "cs": "Kódovaní obrazu",
@@ -10393,7 +10390,7 @@
       "pt": "Menos",
       "ru": "Меньше",
       "xloc": [
-        "default.handlebars->27->1482"
+        "default.handlebars->27->1479"
       ]
     },
     {
@@ -12016,7 +12013,7 @@
       "pt": "Mais",
       "ru": "Еще",
       "xloc": [
-        "default.handlebars->27->1481"
+        "default.handlebars->27->1478"
       ]
     },
     {
@@ -20615,10 +20612,7 @@
     },
     {
       "en": "encoding",
-      "nl": "codering",
-      "xloc": [
-        "default.handlebars->27->1477"
-      ]
+      "nl": "codering"
     },
     {
       "cs": "eventslist.csv",
@@ -21001,10 +20995,7 @@
     },
     {
       "en": "undefined",
-      "nl": "onbepaald",
-      "xloc": [
-        "default.handlebars->27->1479"
-      ]
+      "nl": "onbepaald"
     },
     {
       "cs": "uživatel:",
