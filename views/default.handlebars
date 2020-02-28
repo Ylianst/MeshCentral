@@ -1128,7 +1128,6 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
-        if (webState.deviceView != null) { localStorage.setItem('_deviceView', webState.deviceView); }
         if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
@@ -1272,11 +1271,11 @@
 
             // Setup page controls
             Q('sortselect').selectedIndex = sort = getstore('sort', 0);
-            Q('sizeselect').selectedIndex = getstore('_viewsize', 1);
+            Q('sizeselect').selectedIndex = getstore('viewsize', 1);
             Q('SearchInput').value = getstore('_search', '');
             showRealNames = (getstore('showRealNames', 0) == 1);
             Q('RealNameCheckBox').checked = showRealNames;
-            Q('viewselect').value = getstore('_deviceView', 1);
+            Q('viewselect').value = getstore('deviceView', 1);
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
             QV('accountChangeEmailAddressSpan', (features & 0x200000) == 0);
 
@@ -2800,8 +2799,8 @@
             if (i != null) { Q('viewselect').value = i; }
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
-            putstore('_deviceView', Q('viewselect').value);
-            putstore('_viewsize', Q('sizeselect').value);
+            putstore('deviceView', Q('viewselect').value);
+            putstore('viewsize', Q('sizeselect').value);
             masterUpdate(4);
             setTimeout(function () { masterUpdate(512); }, 200);
         }
