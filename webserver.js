@@ -4230,7 +4230,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Filter the user web site and only output state that we need to keep
-    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode'];
+    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar'];
     const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling']
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
