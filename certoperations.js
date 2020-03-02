@@ -854,7 +854,7 @@ module.exports.CertificateOperations = function (parent) {
     obj.acceleratorPerformOperation = function (operation, data, tag, func) {
         if (acceleratorTotalCount <= 1) {
             // No accelerators available
-            program.processMessage({ action: operation, data: data, tag: tag, func: func });
+            require(program).processMessage({ action: operation, data: data, tag: tag, func: func });
         } else {
             var acc = obj.getAccelerator();
             if (acc == null) {

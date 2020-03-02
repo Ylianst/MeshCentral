@@ -261,13 +261,28 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
 // GreenLock v3 Manager
 module.exports.create = function (options) {
+    //console.log('xxx-create', options);
     var manager = { parent: globalLetsEncrypt };
     manager.find = async function (options) {
-        //console.log('LE-FIND', options);
+        try {
+            // GreenLock sometimes has the bad behavior of adding a wildcard cert request, remove it here if needed.
+            if ((options.wildname != null) && (options.wildname != '')) { options.wildname = ''; }
+            if (options.altnames) {
+                var altnames2 = [];
+                for (var i in options.altnames) { if (options.altnames[i].indexOf('*') == -1) { altnames2.push(options.altnames[i]); } }
+                options.altnames = altnames2;
+            }
+            if (options.servernames) {
+                var servernames2 = [];
+                for (var i in options.servernames) { if (options.servernames[i].indexOf('*') == -1) { servernames2.push(options.servernames[i]); } }
+                options.servernames = servernames2;
+            }
+        } catch (ex) { console.log(ex); }
         return Promise.resolve([{ subject: options.servername, altnames: options.altnames }]);
     };
 
     manager.set = function (options) {
+        //console.log('xxx-set', options);
         manager.parent.parent.debug('cert', "Certificate has been set: " + JSON.stringify(options));
         if (manager.parent.parent.config.letsencrypt.production == manager.parent.runAsProduction) { manager.parent.performRestart = true; }
         else if ((manager.parent.parent.config.letsencrypt.production === true) && (manager.parent.runAsProduction === false)) { manager.parent.performMoveToProduction = true; }
@@ -275,6 +290,7 @@ module.exports.create = function (options) {
     };
 
     manager.remove = function (options) {
+        //console.log('xxx-remove', options);
         manager.parent.parent.debug('cert', "Certificate has been removed: " + JSON.stringify(options));
         if (manager.parent.parent.config.letsencrypt.production == manager.parent.runAsProduction) { manager.parent.performRestart = true; }
         else if ((manager.parent.parent.config.letsencrypt.production === true) && (manager.parent.runAsProduction === false)) { manager.parent.performMoveToProduction = true; }
@@ -283,6 +299,7 @@ module.exports.create = function (options) {
 
     // set the global config
     manager.defaults = async function (options) {
+        //console.log('xxx-defaults', options);
         var r;
         if (manager.parent.runAsProduction === true) {
             // Production
