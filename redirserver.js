@@ -75,7 +75,15 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             parent.letsencrypt.challenge(req.url.slice(leChallengePrefix.length), getCleanHostname(req), function (response) { if (response == null) { res.sendStatus(404); } else { res.send(response); } });
         } else {
             // Everything else
-            res.set({ 'strict-transport-security': "max-age=60000; includeSubDomains", "Referrer-Policy": "no-referrer", "x-frame-options": "SAMEORIGIN", "X-XSS-Protection": "1; mode=block", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "default-src http: ws: \"self\" \"unsafe-inline\"" });
+            var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host));
+            res.set({
+                'strict-transport-security': 'max-age=60000; includeSubDomains',
+                'Referrer-Policy': 'no-referrer',
+                'x-frame-options': 'SAMEORIGIN',
+                'X-XSS-Protection': '1; mode=block',
+                'X-Content-Type-Options': 'nosniff',
+                'Content-Security-Policy': "default-src 'none'; style-src 'self' 'unsafe-inline';"
+            });
             return next();
         }
     });
