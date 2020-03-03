@@ -63,7 +63,15 @@ function createIndex(state, ptr) {
     state.lastIndex += 10;
 }
 
-function processBlock(state, block) {
+function processBlock(state, block, err) {
+    if (err != null) {
+        // Error reading the next block, exit now.
+        fs.close(state.recFile, function () {
+            for (var i in state) { delete state[i]; } // Clear the state.
+            log("Error.");
+        });
+        return;
+    }
     if (block == null) {
         // We are done, close this file.
         writeIndex(state, function () {
@@ -254,13 +262,14 @@ function readNextBlock(state, func) {
     if ((state.recFilePtr + 16) > state.recFileSize) { func(state, null); return; }
     var r = {}, buf = Buffer.alloc(16);
     fs.read(state.recFile, buf, 0, 16, state.recFilePtr, function (err, bytesRead, buf) {
+        if (bytesRead != 16) { func(state, null, true); return; } // Error
         r.type = buf.readInt16BE(0);
         r.flags = buf.readInt16BE(2);
         r.size = buf.readInt32BE(4);
         r.time = buf.readIntBE(8, 8);
         r.date = new Date(r.time);
         r.ptr = state.recFilePtr;
-        if ((state.recFilePtr + 16 + r.size) > state.recFileSize) { func(state, null); return; }
+        if ((state.recFilePtr + 16 + r.size) > state.recFileSize) { func(state, null, true); return; } // Error
         if (r.size == 0) {
             r.data = null;
             func(state, r);
