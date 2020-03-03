@@ -2280,11 +2280,11 @@ function getConfig(createSampleConfig) {
 function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
-        var dependencies = require("./package.json").dependencies;
+        var dependencies = require('./package.json').dependencies;
         for (var i in modules) {
             // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
             var moduleNameAndVersion = modules[i];
-            var moduleInfo = moduleNameAndVersion.split("@", 2);
+            var moduleInfo = moduleNameAndVersion.split('@', 2);
             var moduleName = moduleInfo[0];
             var moduleVersion = moduleInfo[1];
             try {
@@ -2379,7 +2379,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
-        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock'); } } // Add Greenlock Module
+        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock@4.0.4'); } } // Add Greenlock Module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.

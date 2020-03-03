@@ -798,8 +798,8 @@
                 </table>
                 <div id=p16events></div>
             </div>
-            <div id=p17 style="display:none">
-                <div id="p17title">
+            <div id=p17 style="display:none;margin-left:-18px">
+                <div id="p17title" style="margin-left:18px">
                     <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
@@ -1632,7 +1632,7 @@
                     if (updateNaggleFlags & 1) { onSearchInputChanged(); }
                     if (updateNaggleFlags & 2) { onSortSelectChange(false); }
                     if (updateNaggleFlags & 128) { updateMeshes(); }
-                    if (updateNaggleFlags & 4) { updateDevices(); if (xxcurrentView == 21) { p21updateMesh(); } }
+                    if (updateNaggleFlags & 4) { updateDevices(); updateDeviceDetails(); if (xxcurrentView == 21) { p21updateMesh(); } }
                     if (updateNaggleFlags & 8) { drawNotifications(); }
                     {{{StartGeoLocationJS}}}if (updateNaggleFlags & 16) { updateMapMarkers(); }{{{EndGeoLocationJS}}}
                     if (updateNaggleFlags & 32) { eventsUpdate(); }
@@ -1831,67 +1831,9 @@
                     if (message.nodeid != powerTimelineReq) break;
                     //console.log('getsysinfo', message); // ***********************
                     if (message.noinfo === true) {
-                        QH('p17info', "No information for this device.");
+                        updateDeviceDetails(getNodeFromId(message.nodeid));
                     } else {
-                        var x = '', s = {};
-                        if (message.hardware) {
-                            if (message.hardware.identifiers) {
-                                var ident = message.hardware.identifiers;
-                                // BIOS
-                                x += '<div class=DevSt style=margin-bottom:3px><b>' + "BIOS" + '</b></div>';
-                                if (ident.bios_vendor) { x += addDetailItem("Vendor", ident.bios_vendor, s); }
-                                if (ident.bios_version) { x += addDetailItem("Version", ident.bios_version, s); }
-                                x += '<br />';
-
-                                // Motherboard
-                                x += '<div class=DevSt style=margin-bottom:3px><b>' + "Motherboard" + '</b></div>';
-                                if (ident.board_vendor) { x += addDetailItem("Vendor", ident.board_vendor, s); }
-                                if (ident.board_name) { x += addDetailItem("Name", ident.board_name, s); }
-                                if (ident.board_serial && (ident.board_serial != '')) { x += addDetailItem("Serial", ident.board_serial, s); }
-                                if (ident.board_version) { x += addDetailItem("Version", ident.board_version, s); }
-                                if (ident.product_uuid) { x += addDetailItem("Identifier", ident.product_uuid, s); }
-                                x += '<br />';
-                            }
-
-                            if (message.hardware.windows) {
-                                if (message.hardware.windows.memory) {
-                                    // Memory
-                                    x += '<div class=DevSt style=margin-bottom:3px><b>' + "Memory" + '</b></div>';
-
-                                    // Sort Memory
-                                    function memorySort(a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; }
-                                    message.hardware.windows.memory.sort(memorySort);
-
-                                    x += '<table style=width:100%>';
-                                    for (var i in message.hardware.windows.memory) {
-                                        var m = message.hardware.windows.memory[i];
-                                        x += '<tr><td VALIGN=Top style=width:38px><img src="images/ram2.png" />'
-                                        x += '<td><div style=background-color:lightgray;border-radius:5px;padding:8px>';
-                                        x += '<div><b>' + m.BankLabel + '</b></div>';
-                                        if (m.Capacity) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
-                                        if (m.PartNumber) { x += addDetailItem("Part Number", ((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + m.PartNumber, s); }
-                                        x += '</div>';
-                                    }
-                                    x += '</table><br />';
-                                }
-
-                                if (message.hardware.windows.osinfo) {
-                                    // Operating System
-                                    var m = message.hardware.windows.osinfo;
-                                    x += '<div class=DevSt style=margin-bottom:3px><b>' + "Operating System" + '</b></div>';
-                                    if (m.Caption) { x += addDetailItem("Name", m.Caption, s); }
-                                    if (m.Version) { x += addDetailItem("Version", m.Version, s); }
-                                    if (m.OSArchitecture) { x += addDetailItem("Architecture", m.OSArchitecture, s); }
-                                    x += '<br />';
-                                }
-
-                                // Disks
-                                //x += '<div class=DevSt style=margin-bottom:3px><b>Disks</b></div>';
-                                //x += '<br />';
-                            }
-                        }
-
-                        QH('p17info', x);
+                        updateDeviceDetails(getNodeFromId(message.nodeid), message.hardware);
                     }
                     break;
                 }
@@ -1963,7 +1905,9 @@
                     break;
                 }
                 case 'getnetworkinfo': {
-                    if ((currentNode._id == message.nodeid) && (xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid))  {
+                    if (currentNode._id != message.nodeid) return;
+                    updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid))  {
                         if (message.netif == null) {
                             QH('d2netinfo', "No network interface information available for this device.");
                         } else {
@@ -5058,6 +5002,7 @@
                     meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
+                    meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
                     QH('p17info', '');
                 }
 
@@ -7344,6 +7289,177 @@
                 }
                 x += '</div>';
                 setDialogMode(2, "Event Details", 9, null, x);
+            }
+        }
+
+        //
+        // DEVICE DETAILS
+        //
+
+        var DeviceDetailsHardware = null;
+        var DeviceDetailsNetwork = null;
+        var DeviceDetailsNodeId = null;
+        function updateDeviceDetails(node, hardware, network) {
+            if (currentNode == null) return;
+            if (node == null) { node = currentNode; }
+            if (currentNode._id != node._id) return;
+            if (DeviceDetailsNodeId != node._id) { DeviceDetailsHardware = null; DeviceDetailsNetwork = null; DeviceDetailsNodeId = node._id; }
+            if (hardware != null) { DeviceDetailsHardware = hardware; }
+            if (network != null) { DeviceDetailsNetwork = network; }
+            hardware = DeviceDetailsHardware;
+            network = DeviceDetailsNetwork;
+            if (hardware == null) { hardware = {}; }
+            if (network == null) { network = {}; }
+            var sections = [], s = {};
+
+            // Operating System
+            if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
+                var x = '';
+                if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+                if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
+                if (hardware.windows && hardware.windows.osinfo) {
+                    var m = hardware.windows.osinfo;
+                    if (m.OSArchitecture) { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
+                }
+                if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }
+            }
+
+            // MeshAgent
+            if (node.agent) {
+                var x = '';
+                if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
+                    var str = '';
+                    if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
+                    if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    x += addDetailItem("Mesh Agent", str);
+                }
+                if ((node.conn & 1) != 0) {
+                    x += addDetailItem("Last agent connection", "Connected now");
+                } else {
+                    if (node.lastconnect) { x += addDetailItem("Last agent connection", printDateTime(new Date(node.lastconnect))); }
+                }
+                if (node.lastaddr) {
+                    var splitip = node.lastaddr.split(':');
+                    if (splitip.length > 2) {
+                        // IPv6
+                        x += addDetailItem("Last agent address", node.lastaddr);
+                    } else {
+                        // IPv4
+                        if (isPrivateIP(node.lastaddr)) {
+                            x += addDetailItem("Last agent address", splitip[0]);
+                        } else {
+                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a>');
+                        }
+                    }
+                }
+                if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png'}); }
+            }
+
+            // Networking
+            if (network.netif != null) {
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in network.netif) {
+                    var m = network.netif[i];
+                    x += '<tr><td><div style=color:black;background-color:lightgray;border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.name + (m.dnssuffix?(', ' + m.dnssuffix):'')) + '</b></div>';
+                    if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
+                    //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
+                    if (m.mac) {
+                        if (m.gatewaymac) {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m.mac), EscapeHtml(m.gatewaymac)));
+                        } else {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}", m.mac));
+                        }
+                    }
+                    if (m.v4addr && (m.v4addr != '0.0.0.0')) {
+                        if (m.v4gateway && m.v4mask) {
+                            x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(m.v4addr), EscapeHtml(m.v4mask), EscapeHtml(m.v4gateway)));
+                        } else {
+                            x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(m.v4addr)));
+                        }
+                    }
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking64.png'}); }
+            }
+
+            // Attribute: Intel AMT
+            if (node.intelamt != null) {
+                var x = '';
+                x += addDetailItem("Version", (node.intelamt.ver)?('v' + node.intelamt.ver):('<i>' + "Unknown" + '</i>'), s);
+                var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
+                var provisioningMode = '';
+                if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
+                x += addDetailItem("Provisioning State", ((node.intelamt.state)?(provisioningStates[node.intelamt.state]):('<i>' + "Unknown" + '</i>')) + provisioningMode, s);
+                x += addDetailItem("Security", (node.intelamt.tls == 1)?"Secured using TLS":"TLS is not setup", s);
+                x += addDetailItem("Admin Credentials", (node.intelamt.user == null || node.intelamt.user == '')?"Not Known":"Known", s);
+                if (x != '') { sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt64.png' }); }
+            }
+
+            if (hardware.identifiers) {
+                var x = '', ident = hardware.identifiers;
+                // BIOS
+                if (ident.bios_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.bios_vendor), s); }
+                if (ident.bios_version) { x += addDetailItem("Version", EscapeHtml(ident.bios_version), s); }
+                if (x != '') { sections.push({ name: "BIOS", html: x, img: 'chip64.png' }); }
+
+                // Motherboard
+                x = '';
+                if (ident.board_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.board_vendor), s); }
+                if (ident.board_name) { x += addDetailItem("Name", EscapeHtml(ident.board_name), s); }
+                if (ident.board_serial && (ident.board_serial != '')) { x += addDetailItem("Serial", EscapeHtml(ident.board_serial), s); }
+                if (ident.board_version) { x += addDetailItem("Version", EscapeHtml(ident.board_version), s); }
+                if (ident.product_uuid) { x += addDetailItem("Identifier", EscapeHtml(ident.product_uuid), s); }
+                if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard64.png'}); }
+            }
+
+            if (hardware.windows) {
+                if (hardware.windows.memory) {
+                    var x = '';
+                    // Sort Memory
+                    function memorySort(a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; }
+                    hardware.windows.memory.sort(memorySort);
+
+                    x += '<table style=width:100%>';
+                    for (var i in hardware.windows.memory) {
+                        var m = hardware.windows.memory[i];
+                        x += '<tr>';//<td VALIGN=Top style=width:38px><img src="images/ram2.png" />'
+                        x += '<td><div style=color:black;background-color:lightgray;border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.BankLabel) + '</b></div>';
+                        if (m.Capacity) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
+                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
+                        x += '</div>';
+                    }
+                    x += '</table>';
+
+                    if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram64.png'}); }
+                }
+
+                // Disks
+                //x += '<div class=DevSt style=margin-bottom:3px><b>Disks</b></div>';
+                //x += '<br />';
+                //console.log(message);
+            }
+
+            // Render the sections
+            var x = '';
+            for (var i in sections) {
+                if (sections[i].img == null) {
+                    x += '<div class=DevSt style=margin-bottom:3px;margin-left:16px><b>' + sections[i].name + '</b></div><div style=margin-bottom:10px;margin-left:16px>' + sections[i].html + '</div>';
+                } else {
+                    x += '<table style=width:100%><tr>';
+                    x += '<td style=width:64px;vertical-align:top><img src=images/details/' + sections[i].img + ' border=0 width=64 /></td>'; // height=12 
+                    x += '<td><div class=DevSt style=margin-bottom:3px;margin-left:16px><b>' + sections[i].name + '</b></div><div style=margin-bottom:10px;margin-left:16px>' + sections[i].html + '</div></td>';
+                    x += '</tr></table>';
+                }
+            }
+
+            if (x == '') {
+                QH('p17info', "No information for this device.");
+            } else {
+                QH('p17info', x);
             }
         }
 
@@ -11120,7 +11236,7 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
-        function addDetailItem(title, value, state) { return '<div><span style=float:right>' + value + '</span><span>' + title + '</span></div>'; }
+        function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
