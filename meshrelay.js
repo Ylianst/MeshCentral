@@ -330,17 +330,6 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 if (relayinfo.state == 2) {
                     var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
 
-                    // Close the recording file
-                    if (ws.logfile != null) {
-                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) {
-                            parent.parent.fs.close(fd);
-                            tag.ws.logfile = null;
-                            tag.pws.logfile = null;
-                            // Now that the recording file is closed, check if we need to index this file.
-                            if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
-                        }, { ws: ws, pws: peer.ws, logfile: ws.logfile });
-                    }
-
                     // Disconnect the peer
                     try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
                     parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ' --> ' + cleanRemoteAddr(peer.req.ip) + ')');
@@ -369,6 +358,19 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 } else {
                     parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ')');
                 }
+
+                // Close the recording file if needed
+                if (ws.logfile != null) {
+                    var logfile = ws.logfile;
+                    delete ws.logfile;
+                    if (peer.ws) { delete peer.ws.logfile; }
+                    recordingEntry(logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) {
+                        parent.parent.fs.close(fd);
+                        // Now that the recording file is closed, check if we need to index this file.
+                        if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+                    }, { ws: ws, pws: peer.ws, logfile: logfile });
+                }
+
                 try { ws.close(); } catch (ex) { }
                 delete parent.wsrelays[obj.id];
             }

@@ -113,13 +113,13 @@ function processBlock(state, block, err) {
             // MeshCentral Remote Desktop
             // TODO
             if (block.data.length >= 4) {
-                var command = block.data.readInt16BE(0);
-                var cmdsize = block.data.readInt16BE(2);
+                var command = block.data.readUInt16BE(0);
+                var cmdsize = block.data.readUInt16BE(2);
                 if ((command == 27) && (cmdsize == 8)) {
                     // Jumbo packet
                     if (block.data.length >= 12) {
-                        command = block.data.readInt16BE(8);
-                        cmdsize = block.data.readInt32BE(4);
+                        command = block.data.readUInt16BE(8);
+                        cmdsize = block.data.readUInt32BE(4);
                         if (block.data.length == (cmdsize + 8)) {
                             block.data = block.data.slice(8, block.data.length);
                         } else {
@@ -131,8 +131,8 @@ function processBlock(state, block, err) {
 
                 switch (command) {
                     case 3: // Tile
-                        var x = block.data.readInt16BE(4);
-                        var y = block.data.readInt16BE(6);
+                        var x = block.data.readUInt16BE(4);
+                        var y = block.data.readUInt16BE(6);
                         var dimensions = require('image-size')(block.data.slice(8));
                         //log("Tile", x, y, dimensions.width, dimensions.height, block.ptr);
                         //console.log(elapseSeconds);
@@ -148,13 +148,13 @@ function processBlock(state, block, err) {
 
                         break;
                     case 4: // Tile copy
-                        var x = block.data.readInt16BE(4);
-                        var y = block.data.readInt16BE(6);
+                        var x = block.data.readUInt16BE(4);
+                        var y = block.data.readUInt16BE(6);
                         //log("TileCopy", x, y);
                         break;
                     case 7: // Screen Size, clear the screen state and computer the tile count
-                        state.width = block.data.readInt16BE(4);
-                        state.height = block.data.readInt16BE(6);
+                        state.width = block.data.readUInt16BE(4);
+                        state.height = block.data.readUInt16BE(6);
                         state.swidth = state.width / 16;
                         state.sheight = state.height / 16;
                         if (Math.floor(state.swidth) != state.swidth) { state.swidth = Math.floor(state.swidth) + 1; }
@@ -232,20 +232,20 @@ function recordingEntry(fd, type, flags, time, data, func, tag, position) {
 function readLastBlock(state, func) {
     var buf = Buffer.alloc(32);
     fs.read(state.recFile, buf, 0, 32, state.recFileSize - 32, function (err, bytesRead, buf) {
-        var type = buf.readInt16BE(0);
-        var flags = buf.readInt16BE(2);
-        var size = buf.readInt32BE(4);
-        var time = (buf.readInt32BE(8) << 32) + buf.readInt32BE(12);
+        var type = buf.readUInt16BE(0);
+        var flags = buf.readUInt16BE(2);
+        var size = buf.readUInt32BE(4);
+        var time = (buf.readUInt32BE(8) << 32) + buf.readUInt32BE(12);
         var magic = buf.toString('utf8', 16, 32);
         if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCNDX')) {
             // Extra metadata present, lets read it.
             extraMetadata = null;
             var buf2 = Buffer.alloc(16);
             fs.read(state.recFile, buf2, 0, 16, time, function (err, bytesRead, buf2) {
-                var xtype = buf2.readInt16BE(0);
-                var xflags = buf2.readInt16BE(2);
-                var xsize = buf2.readInt32BE(4);
-                var xtime = (buf2.readInt32BE(8) << 32) + buf.readInt32BE(12);
+                var xtype = buf2.readUInt16BE(0);
+                var xflags = buf2.readUInt16BE(2);
+                var xsize = buf2.readUInt32BE(4);
+                var xtime = (buf2.readUInt32BE(8) << 32) + buf.readUInt32BE(12);
                 var buf3 = Buffer.alloc(xsize);
                 fs.read(state.recFile, buf3, 0, xsize, time + 16, function (err, bytesRead, buf3) {
                     func(state, true, xtime, JSON.parse(buf3.toString()));
@@ -263,10 +263,10 @@ function readNextBlock(state, func) {
     var r = {}, buf = Buffer.alloc(16);
     fs.read(state.recFile, buf, 0, 16, state.recFilePtr, function (err, bytesRead, buf) {
         if (bytesRead != 16) { func(state, null, true); return; } // Error
-        r.type = buf.readInt16BE(0);
-        r.flags = buf.readInt16BE(2);
-        r.size = buf.readInt32BE(4);
-        r.time = buf.readIntBE(8, 8);
+        r.type = buf.readUInt16BE(0);
+        r.flags = buf.readUInt16BE(2);
+        r.size = buf.readUInt32BE(4);
+        r.time = buf.readUIntBE(8, 8);
         r.date = new Date(r.time);
         r.ptr = state.recFilePtr;
         if ((state.recFilePtr + 16 + r.size) > state.recFileSize) { func(state, null, true); return; } // Error
