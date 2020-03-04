@@ -288,15 +288,18 @@
             if ((playing == false) && (forced !== true)) return;
             var flagBinary = (flags & 1) != 0, flagUser = (flags & 2) != 0;
 
-            // Update the clock
-            var deltaTimeTotalSec = Math.floor((time - recFileStartTime) / 1000);
-            if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
-                // Hours, minutes and seconds
-                currentDeltaTimeTotalSec = deltaTimeTotalSec;
-                var hrs = Math.floor(deltaTimeTotalSec / 3600);
-                var mins = Math.floor((deltaTimeTotalSec % 3600) / 60);
-                var secs = Math.floor(deltaTimeTotalSec % 60);
-                QH('timespan', pad2(hrs) + ':' + pad2(mins) + ':' + pad2(secs))
+            if (type == 2) {
+                // Update the clock
+                recFileLastTime = time;
+                var deltaTimeTotalSec = Math.floor((time - recFileStartTime) / 1000);
+                if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
+                    // Hours, minutes and seconds
+                    currentDeltaTimeTotalSec = deltaTimeTotalSec;
+                    var hrs = Math.floor(deltaTimeTotalSec / 3600);
+                    var mins = Math.floor((deltaTimeTotalSec % 3600) / 60);
+                    var secs = Math.floor(deltaTimeTotalSec % 60);
+                    QH('timespan', pad2(hrs) + ':' + pad2(mins) + ':' + pad2(secs))
+                }
             }
 
             if ((type == 2) && flagBinary && !flagUser) {
@@ -325,7 +328,6 @@
                 }
             }
 
-            recFileLastTime = time;
             if (playing) { readNextBlock(processBlock); }
         }
 
