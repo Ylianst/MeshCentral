@@ -19,9 +19,10 @@
       "cs": " - Resetovat za 1 den.",
       "de": " - Zurücksetzen in 1 Tag.",
       "en": " - Reset in 1 day.",
+      "fr": " - Réinitialiser en 1 jour.",
       "es": " - Reiniciar en 1 dia.",
       "nl": " - Herstart in {0} dag.",
-      "ru": "- Сброс через 1 день.",
+      "ru": " - Сброс через 1 день.",
       "xloc": [
         "default-mobile.handlebars->9->15",
         "default.handlebars->27->57"
@@ -31,9 +32,10 @@
       "cs": " - Resetovat za 1 hodinu.",
       "de": " - Zurücksetzen in 1 Stunde.",
       "en": " - Reset in 1 hour.",
+      "fr": " - Réinitialiser en 1 heure.",
       "es": " - Reiniciar en 1 hora.",
       "nl": " - Herstart in 1 uur.",
-      "ru": "- Сброс через 1 час.",
+      "ru": " - Сброс через 1 час.",
       "xloc": [
         "default-mobile.handlebars->9->13",
         "default.handlebars->27->55"
@@ -43,9 +45,10 @@
       "cs": " - Resetovat za 1 minutu.",
       "de": " - Zurücksetzen in 1 Minute.",
       "en": " - Reset in 1 minute.",
+      "fr": " - Réinitialiser en 1 minute.",
       "es": " - Reiniciar en 1 minuto.",
       "nl": " - Herstart in {0} days.",
-      "ru": "- Сброс через 1 минуту.",
+      "ru": " - Сброс через 1 минуту.",
       "xloc": [
         "default-mobile.handlebars->9->11",
         "default.handlebars->27->53"
@@ -55,9 +58,10 @@
       "cs": " - Resetovat za {0} dnů.",
       "de": " - Zurücksetzen in {0} Tagen.",
       "en": " - Reset in {0} days.",
+      "fr": " - Réinitialiser dans {0} jours.",
       "es": " - Reiniciar en {0} dias.",
       "nl": " - Herstart in {0} dagen.",
-      "ru": "- Сброс через {0} дней.",
+      "ru": " - Сброс через {0} дней.",
       "xloc": [
         "default-mobile.handlebars->9->16",
         "default.handlebars->27->58"
@@ -78,9 +82,10 @@
       "cs": " - Resetovat za {0} hodin.",
       "de": " - Zurücksetzen in {0} Stunden.",
       "en": " - Reset in {0} hours.",
+      "fr": " - Réinitialiser dans {0} heures.",
       "es": " - Reiniciar en {0} horas.",
       "nl": " - Herstart in {0} uren.",
-      "ru": "- Сброс через {0} часов.",
+      "ru": " - Сброс через {0} часов.",
       "xloc": [
         "default-mobile.handlebars->9->14",
         "default.handlebars->27->56"
@@ -101,6 +106,7 @@
       "cs": " - Resetovat za {0} minut.",
       "de": " - Zurücksetzen in {0} Minuten.",
       "en": " - Reset in {0} minutes.",
+      "fr": " - Réinitialiser dans {0} minutes.",
       "es": " - Reiniciar en {0} minutos.",
       "nl": " - Herstart in {0} minuten.",
       "ru": "- Сброс через {0} минут.",
@@ -649,6 +655,7 @@
       "cs": "1 minuta do odpojení",
       "de": "1 Minute bis zur Trennung",
       "en": "1 minute until disconnect",
+      "fr": "1 minute jusqu'à déconnexion",
       "es": "Un minuto hasta desconectar",
       "nl": "1 minuut totdat de verbinding wordt verbroken",
       "ru": "1 минута до разъединения",
@@ -704,6 +711,7 @@
       "cs": "1 sekunda do odpojení",
       "de": "1 Sekunde bis zur Trennung",
       "en": "1 second until disconnect",
+      "fr": "1 seconde jusqu'à déconnexion",
       "es": "Un segundo hasta desconectar",
       "nl": "1 seconde totdat de verbinding wordt verbroken",
       "ru": "1 секунда до разъединения",
@@ -1192,6 +1200,7 @@
       "cs": "Stav přihlášení za 7 dnů",
       "de": "7-Tage-Anmelde-Status",
       "en": "7 Day Login State",
+      "fr": "État de connexion sur 7 jours",
       "es": "Estado de inicio de sesión de 7 días",
       "nl": "Inlogstatus afgelopen 7 dagen",
       "ru": "7-дневная статистика входов"
@@ -2122,12 +2131,19 @@
     },
     {
       "en": "Admin Control Mode (ACM)",
+      "nl": "Admin Control Mode (ACM)",
+      "es": "Admin Control Mode (ACM)",
+      "cs": "Admin Control Mode (ACM)",
+      "fr": "Admin Control Mode (ACM)",
+      "de": "Admin Control Mode (ACM)",
+      "pt": "Admin Control Mode (ACM)",
       "xloc": [
         "default.handlebars->27->715"
       ]
     },
     {
       "en": "Admin Credentials",
+      "nl": "Beheerdersreferenties",
       "xloc": [
         "default.handlebars->27->721"
       ]
@@ -4208,6 +4224,12 @@
     },
     {
       "en": "Client Control Mode (CCM)",
+      "nl": "Client Control Mode (CCM)",
+      "es": "Client Control Mode (CCM)",
+      "ce": "Client Control Mode (CCM)",
+      "de": "Client Control Mode (CCM)",
+      "fr": "Client Control Mode (CCM)",
+      "pt": "Client Control Mode (CCM)",
       "xloc": [
         "default.handlebars->27->714"
       ]
@@ -4575,6 +4597,7 @@
     },
     {
       "en": "Connected now",
+      "nl": "Nu verbonden",
       "xloc": [
         "default.handlebars->27->693"
       ]
@@ -5484,6 +5507,7 @@
     },
     {
       "en": "Delete item?",
+      "nl": "Verwijder item?",
       "xloc": [
         "default.handlebars->27->410"
       ]
@@ -8766,18 +8790,27 @@
     },
     {
       "en": "IP: {0}",
+      "nl": "IP: {0}",
+      "es": "IP: {0}",
+      "cs": "IP: {0}",
+      "de": "IP: {0}",
+      "fr": "IP: {0}",
+      "pt": "IP: {0}",
+      "ru": "IP: {0}",
       "xloc": [
         "default.handlebars->27->707"
       ]
     },
     {
       "en": "IP: {0}, Mask: {1}, Gateway: {2}",
+      "nl": "IP: {0}, Mask: {1}, Gateway: {2}",
       "xloc": [
         "default.handlebars->27->705"
       ]
     },
     {
       "en": "IPv4 Layer",
+      "nl": "IPv4 Laag",
       "xloc": [
         "default.handlebars->27->704",
         "default.handlebars->27->706"
@@ -9432,6 +9465,13 @@
     },
     {
       "en": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "nl": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "es": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "cs": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "fr": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "de": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "pt": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
+      "ru": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
       "xloc": [
         "default.handlebars->27->724"
       ]
@@ -9534,6 +9574,13 @@
     },
     {
       "en": "Intel®AMT",
+      "nl": "Intel®AMT",
+      "es": "Intel®AMT",
+      "cs": "Intel®AMT",
+      "de": "Intel®AMT",
+      "fr": "Intel®AMT",
+      "pt": "Intel®AMT",
+      "ru": "Intel®AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
       ]
@@ -9982,6 +10029,7 @@
     },
     {
       "en": "Known",
+      "nl": "Bekend",
       "xloc": [
         "default.handlebars->27->723"
       ]
@@ -11035,6 +11083,7 @@
     },
     {
       "en": "MAC Layer",
+      "nl": "MAC Laag",
       "xloc": [
         "default.handlebars->27->700",
         "default.handlebars->27->702"
@@ -11056,12 +11105,20 @@
     },
     {
       "en": "MAC: {0}",
+      "nl": "MAC: {0}",
+      "es": "MAC: {0}",
+      "cs": "MAC: {0}",
+      "de": "MAC: {0}",
+      "fr": "MAC: {0}",
+      "pt": "MAC: {0}",
+      "ru": "MAC: {0}",
       "xloc": [
         "default.handlebars->27->703"
       ]
     },
     {
       "en": "MAC: {0}, Gateway: {1}",
+      "nl": "MAC: {0}, Gateway: {1}",
       "xloc": [
         "default.handlebars->27->701"
       ]
@@ -12479,6 +12536,7 @@
     },
     {
       "en": "Networking",
+      "nl": "Netwerken",
       "xloc": [
         "default.handlebars->27->708"
       ]
@@ -13238,6 +13296,7 @@
     },
     {
       "en": "Not Known",
+      "nl": "Onbekend",
       "xloc": [
         "default.handlebars->27->722"
       ]
@@ -14585,9 +14644,11 @@
     },
     {
       "en": "Provisioning Mode"
+      "nl": "Provisioning Modus"
     },
     {
       "en": "Provisioning State",
+      "nl": "Provisioning Staat",
       "xloc": [
         "default.handlebars->27->716"
       ]
@@ -15932,6 +15993,7 @@
     },
     {
       "en": "Secured using TLS",
+      "nl": "Beveiligd met TLS",
       "xloc": [
         "default.handlebars->27->719"
       ]
@@ -17818,6 +17880,7 @@
     },
     {
       "en": "TLS is not setup",
+      "nl": "TLS is niet ingesteld",
       "xloc": [
         "default.handlebars->27->720"
       ]
@@ -21169,6 +21232,7 @@
     },
     {
       "en": "{0} - Agent Installation",
+      "fr": "{0} {0} - Installation de l'agent",
       "nl": "{0} - Agent Installatie",
       "ru": "{0} - установка агента",
       "xloc": [
@@ -21292,6 +21356,7 @@
       "cs": "{0} gigabajtů zbývá",
       "de": "{0} Gigabytes verbleibend",
       "en": "{0} gigabytes remaining",
+      "fr": "{0} gigaoctets restants",
       "es": "Queda {0} gigabytes.",
       "ja": "残り{0}ギガバイト",
       "nl": "{0} rsterende gigabytes",
@@ -21305,6 +21370,7 @@
       "cs": "{0} skupin",
       "de": "{0} Gruppen",
       "en": "{0} groups",
+      "fr": "{0} groupes",
       "es": "{0} grupos",
       "ja": "{0}グループ",
       "nl": "{0} groepen",
@@ -21329,6 +21395,7 @@
       "cs": "{0} hodina{1}",
       "de": "{0} Stunde{1}",
       "en": "{0} hour{1}",
+      "fr": "{0} heure{1}",
       "es": "{0} hora {1}",
       "ja": "{0}時間{1}",
       "nl": "{0} uur{1}",
@@ -21339,6 +21406,7 @@
       "cs": "{0} kilobajtů zbývá",
       "de": "{0} Kilobytes verbleibend",
       "en": "{0} kilobytes remaining",
+      "fr": "{0} kilo-octets restants",
       "es": "Quedan {0} kilobytes",
       "ja": "残り{0}キロバイト",
       "nl": "{0} resterende kilobytes",
@@ -21352,6 +21420,7 @@
       "cs": "{0} malých písmen",
       "de": "{0} Kleinbuchstaben",
       "en": "{0} lower case",
+      "fr": "{0} minuscule",
       "es": "{0} minúscula",
       "ja": "{0}小文字",
       "nl": "{0} kleine letters",
@@ -21366,6 +21435,7 @@
       "cs": "{0} megabajtů zbývá",
       "de": "{0} Megabytes verbleibend",
       "en": "{0} megabytes remaining",
+      "fr": "{0} mégaoctets restants",
       "es": "Quedan {0} megabytes",
       "ja": "残り{0}メガバイト",
       "nl": "{0} resterende megabytes",
@@ -21390,6 +21460,7 @@
       "cs": "{0} minut{1} do odpojení",
       "de": "{0} Minute{1} bis zur Trennung",
       "en": "{0} minute{1} until disconnect",
+      "fr": "{0} minute {1} jusqu'à la déconnexion",
       "es": "{0} minutes {1} hasta desconectar",
       "ja": "切断するまで{0}分{1}",
       "nl": "{0} minuut {1} tot verbreken",
@@ -21400,6 +21471,7 @@
       "cs": "{0} dalších uživatelů není zobrazeno, vyhledejte je pomocí kolonky pro vyhledávání…",
       "de": "{0} weitere Benutzer nicht angezeigt, Suchfeld verwenden um weitere Benutzer zu suchen...",
       "en": "{0} more users not shown, use search box to look for users...",
+      "fr": "{0} autres utilisateurs non affichés, utilisez le champ de recherche pour rechercher des utilisateurs...",
       "es": "{0} no se muestran más usuarios, use la opcion de busqueda para encontrar los usuarios...",
       "ja": "{0}個のユーザーが表示されていません。検索ボックスを使用してユーザーを検索してください...",
       "nl": "{0} meer gebruikers niet getoond, gebruik zoekvak om gebruikers te zoeken ...",
@@ -21427,6 +21499,7 @@
       "cs": "{0} speciálních znaků",
       "de": "{0} nicht-alphanumerisch",
       "en": "{0} non-alphanumeric",
+      "fr": "{0} non alphanumérique",
       "es": "{0} no alfanumérico",
       "ja": "{0}英数字以外",
       "nl": "{0} niet-alfanumeriek",
@@ -21441,6 +21514,7 @@
       "cs": "{0} čísel",
       "de": "{0} numerisch",
       "en": "{0} numeric",
+      "fr": "{0} numérique",
       "es": "{0} numerico",
       "ja": "{0}数値",
       "nl": "{0} numeriek",
@@ -21455,6 +21529,7 @@
       "cs": "{0} sekund do odpojení",
       "de": "{0} Sekunden bis zur Trennung",
       "en": "{0} seconds until disconnect",
+      "fr": "{0} secondes jusqu'à la déconnexion",
       "es": "{0} segundos hasta desconectar",
       "nl": "{0} seconden totdat de verbinding wordt verbroken",
       "ru": "{0} секунд до разъединения",
@@ -21463,14 +21538,15 @@
       ]
     },
     {
-      "cs": "{0} sekund{1}",
-      "de": "{0} Sekunde{1}",
-      "en": "{0} second{1}",
+      "cs": "{0} sekund {1}",
+      "de": "{0} Sekunde {1}",
+      "en": "{0} second {1}",
+      "fr": "{0} seconde {1}",
       "es": "{0} segundo {1}",
-      "ja": "{0}秒{1}",
+      "ja": "{0}秒 {1}",
       "nl": "{0} seconde {1}",
-      "pt": "{0} segundo{1}",
-      "ru": "{0} секунд",
+      "pt": "{0} segundo {1}",
+      "ru": "{0} секунд {1}",
       "xloc": [
         "player.handlebars->3->3"
       ]
@@ -21479,6 +21555,7 @@
       "cs": "{0} sekund{1} do odpojení",
       "de": "{0} Sekunde{1} bis zur Trennung",
       "en": "{0} second{1} until disconnect",
+      "fr": "{0} seconde {1} jusqu'à la déconnexion",
       "es": "{0} segundos {1} hasta desconectar",
       "ja": "切断するまで{0}秒{1}",
       "nl": "{0} seconde {1} tot verbreken",
@@ -21489,6 +21566,7 @@
       "cs": "{0} relací",
       "de": "{0} Sitzungen",
       "en": "{0} sessions",
+      "fr": "{0} sessions",
       "es": "{0} sesiones",
       "ja": "{0}セッション",
       "nl": "{0} sessies",
@@ -21502,6 +21580,7 @@
       "cs": "{0} nastavení (.msh)",
       "de": "{0} Einstellungen (.msh)",
       "en": "{0} settings (.msh)",
+      "fr": "{0} paramètres (.msh)",
       "es": "Configuración {0} (.msh)",
       "ja": "{0}設定（.msh）",
       "nl": "{0} instellingen (.msh)",
@@ -21515,6 +21594,7 @@
       "cs": "{0} na {1}",
       "de": "{0} bis {1}",
       "en": "{0} to {1}",
+      "fr": "{0} à {1}",
       "es": "{0} a {1}",
       "ja": "{0}から{1}",
       "nl": "{0} tot {1}",
@@ -21528,6 +21608,7 @@
       "cs": "{0} velkých písmen",
       "de": "{0} Großbuchstaben",
       "en": "{0} upper case",
+      "fr": "{0} majuscule",
       "es": "{0} mayuscula",
       "ja": "{0}大文字",
       "nl": "{0} hoofdletters",
@@ -21542,6 +21623,7 @@
       "cs": "{0} uživatelů",
       "de": "{0} Benutzer",
       "en": "{0} users",
+      "fr": "{0} utilisateurs",
       "es": "{0} usuarios",
       "ja": "{0}ユーザー",
       "nl": "{0} gebruikers",
@@ -21555,6 +21637,7 @@
       "cs": "{0}b zbývá",
       "de": "{0}B verbleibend",
       "en": "{0}b left",
+      "fr": "{0}b gauche",
       "es": "Quedan {0}b ",
       "ja": "{0} b残り",
       "nl": "{0}b over",
@@ -21568,6 +21651,7 @@
       "cs": "{0}g zbývá",
       "de": "{0}G verbleibend",
       "en": "{0}g left",
+      "fr": "{0}g restantt",
       "es": "Quedan {0}g",
       "ja": "{0} g残り",
       "nl": "{0}g over",
@@ -21581,6 +21665,7 @@
       "cs": "{0}k v 1 souboru. {1}k maximum",
       "de": "{0}k in 1 Datei. {1}k maximal",
       "en": "{0}k in 1 file. {1}k maximum",
+      "fr": "{0} k dans 1 fichier.{1} k maximum",
       "es": "{0}k en 1 archivo. {1}k maximo",
       "ja": "{0} k in 1ファイル。 {1} k最大",
       "nl": "{0}k in 1 bestand. {1}k maximum",
@@ -21594,6 +21679,7 @@
       "cs": "{0}k v {1} souborech. {2}k maximum",
       "de": "{0}k in {1} Dateien. {2}k maximal",
       "en": "{0}k in {1} files. {2}k maximum",
+      "fr": "{0} k dans {1} fichiers.{2} k maximum",
       "es": "{0}k en {1} archivos. {2}k maximo",
       "ja": "{0} k個の{1}ファイル。 {2} k最大",
       "nl": "{0}k in 1 file. {2}k maximum",
@@ -21607,6 +21693,7 @@
       "cs": "{0}k zbývá",
       "de": "{0}k verbleibend",
       "en": "{0}k left",
+      "fr": "{0}k restant",
       "es": "Quedan {0}k",
       "ja": "{0} k残り",
       "nl": "{0}k over",
@@ -21620,6 +21707,7 @@
       "cs": "{0}m zbývá",
       "de": "{0}M verbleibend",
       "en": "{0}m left",
+      "fr": "{0} m restant",
       "es": "Quedan {0}m",
       "ja": "残り{0} m",
       "nl": "{0}m over",
