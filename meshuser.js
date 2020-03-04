@@ -689,7 +689,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,letsencrypt';
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) {
                                 if (f.length > 80) { fin += (f + ',\r\n'); f = ''; }
@@ -697,6 +697,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             if (f != '') { fin += f; }
                             r = 'Available commands: \r\n' + fin + '.';
+                            break;
+                        }
+                        case 'le':
+                        case 'letsencrypt': {
+                            if (parent.parent.letsencrypt == null) {
+                                r = "Let's Encrypt not in use.";
+                            } else {
+                                var leinfo = {};
+                                var greenLockVersion = null;
+                                try { greenLockVersion = require('greenlock/package.json').version; } catch (ex) { }
+                                if (greenLockVersion) { leinfo.greenLockVer = greenLockVersion; }
+                                leinfo.redirWebServerHooked = parent.parent.letsencrypt.redirWebServerHooked;
+                                leinfo.leDomains = parent.parent.letsencrypt.leDomains;
+                                leinfo.leResults = parent.parent.letsencrypt.leResults;
+                                leinfo.leResultsStaging = parent.parent.letsencrypt.leResultsStaging;
+                                leinfo.performRestart = parent.parent.letsencrypt.performRestart;
+                                leinfo.performMoveToProduction = parent.parent.letsencrypt.performMoveToProduction;
+                                leinfo.runAsProduction = parent.parent.letsencrypt.runAsProduction;
+                                leinfo.leDefaults = parent.parent.letsencrypt.leDefaults;
+                                leinfo.leDefaultsStaging = parent.parent.letsencrypt.leDefaultsStaging;
+                                r = JSON.stringify(leinfo, null, 4);
+                            }
+                            break;
+                        }
+                        case 'lecheck': {
+                            if (parent.parent.letsencrypt == null) {
+                                r = "Let's Encrypt not in use.";
+                            } else {
+                                var err = parent.parent.letsencrypt.checkRenewCertificate();
+                                if (err == null) { r = "Called Let's Encrypt certificate check."; } else { r = err; }
+                            }
                             break;
                         }
                         case 'badlogins': {
@@ -784,7 +815,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (error != null) { r2 += 'Exception: ' + error + '\r\n'; }
                                 try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
                             });
-                            r = 'Checking server update...';
+                            r = "Checking server update...";
                             break;
                         }
                         case 'info': {
@@ -800,6 +831,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             try { info.version = process.version; } catch (ex) { }
                             try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
                             try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
+                            try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
                             r = JSON.stringify(info, null, 4);
                             break;
                         }

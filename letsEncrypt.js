@@ -251,7 +251,9 @@ module.exports.CreateLetsEncrypt = function (parent) {
             } catch (ex) {
                 parent.debug('cert', "checkCertificate main exception: (" + JSON.stringify(ex) + ")");
                 console.log(ex);
+                return ex;
             }
+            return null;
         }
 
         return obj;

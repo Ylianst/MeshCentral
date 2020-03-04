@@ -21,8 +21,7 @@ limitations under the License.
 */
 
 // Construct a WSMAN communication object
-function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
-{
+function CreateWsmanComm(/*host, port, user, pass, tls, extra*/) {
     var obj = {};
     obj.PendingAjax = [];               // List of pending AJAX calls. When one frees up, another will start.
     obj.ActiveAjaxCount = 0;            // Number of currently active AJAX calls
@@ -31,15 +30,13 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
     obj.digest = null;
     obj.RequestCount = 0;
 
-    if (arguments.length == 1 && typeof(arguments[0] == 'object'))
-    {
+    if (arguments.length == 1 && typeof (arguments[0] == 'object')) {
         obj.host = arguments[0].host;
         obj.port = arguments[0].port;
         obj.authToken = arguments[0].authToken;
         obj.tls = arguments[0].tls;
     }
-    else
-    {
+    else {
         obj.host = arguments[0];
         obj.port = arguments[1];
         obj.user = arguments[2];
@@ -75,14 +72,10 @@ function CreateWsmanComm(/*host, port, user, pass, tls, extra*/)
         if (globalDebugFlags & 1) { console.log("SEND: " + postdata + "\r\n\r\n"); } // DEBUG
 
         // We are in a DukTape environement
-        if (obj.digest == null)
-        {
-            if (obj.authToken)
-            {
+        if (obj.digest == null) {
+            if (obj.authToken) {
                 obj.digest = require('http-digest').create({ authToken: obj.authToken });
-            }
-            else
-            {
+            } else {
                 obj.digest = require('http-digest').create(obj.user, obj.pass);
             }
             obj.digest.http = require('http');
