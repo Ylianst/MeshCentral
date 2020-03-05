@@ -5606,7 +5606,7 @@
 
         function connectDesktop(e, contype, tsid) {
             if (xxdialogMode) return;
-            if ((e != null) && (e.shiftKey == false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
+            if ((e != null) && (e.shiftKey != false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
             QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
             if (desktop == null) {
