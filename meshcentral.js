@@ -1072,7 +1072,11 @@ function CreateMeshCentralServer(config, args) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else if ((obj.config.letsencrypt != null) && (obj.config.letsencrypt.nochecks == true)) {
                 // Use Let's Encrypt with no checking
-                obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt(obj);
+                if (obj.config.letsencrypt.lib == 'acme-client') {
+                    obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt2(obj);
+                } else {
+                    obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt(obj);
+                }
                 obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt with no checking, use at your own risk.
             } else {
                 // Check Let's Encrypt settings
@@ -1084,7 +1088,13 @@ function CreateMeshCentralServer(config, args) {
                 else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address."); }
                 else {
                     var le = require('./letsencrypt.js');
-                    try { obj.letsencrypt = le.CreateLetsEncrypt(obj); } catch (ex) { }
+                    try {
+                        if (obj.config.letsencrypt.lib == 'acme-client') {
+                            obj.letsencrypt = le.CreateLetsEncrypt2(obj);
+                        } else {
+                            obj.letsencrypt = le.CreateLetsEncrypt(obj);
+                        }
+                    } catch (ex) { console.log(ex); }
                     if (obj.letsencrypt == null) { addServerWarning("Unable to setup GreenLock module."); leok = false; }
                 }
                 if (leok == true) {
@@ -2379,7 +2389,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
-        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock@4.0.4'); } } // Add Greenlock Module
+        if (config.letsencrypt != null) { if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push((config.letsencrypt.lib == 'acme-client') ? 'acme-client' : 'greenlock@4.0.4'); } } // Add Greenlock Module or acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.

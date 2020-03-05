@@ -14,8 +14,8 @@
 /*jshint esversion: 6 */
 'use strict';
 
+// GreenLock Implementation
 var globalLetsEncrypt = null;
-
 module.exports.CreateLetsEncrypt = function (parent) {
     try {
         // Get the GreenLock version
@@ -44,6 +44,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
         var obj = {};
         globalLetsEncrypt = obj;
         obj.parent = parent;
+        obj.lib = 'greenlock';
         obj.path = require('path');
         obj.redirWebServerHooked = false;
         obj.leDomains = null;
@@ -323,3 +324,196 @@ module.exports.create = function (options) {
 
     return manager;
 };
+
+
+// ACME-Client Implementation
+var globalLetsEncrypt = null;
+module.exports.CreateLetsEncrypt2 = function (parent) {
+    const acme = require('acme-client');
+    
+    var obj = {};
+    obj.lib = 'acme-client';
+    obj.fs = require('fs');
+    obj.path = require('path');
+    obj.parent = parent;
+    obj.forge = obj.parent.certificateOperations.forge;
+    obj.leDomains = null;
+    obj.challenges = {};
+    obj.runAsProduction = false;
+    obj.redirWebServerHooked = false;
+
+    // Setup the certificate storage paths
+    obj.certPath = obj.path.join(obj.parent.datapath, 'letsencrypt-certs');
+    try { obj.parent.fs.mkdirSync(obj.certPath); } catch (e) { }
+
+    // Hook up GreenLock to the redirection server
+    if (obj.parent.config.settings.rediraliasport === 80) { obj.redirWebServerHooked = true; }
+    else if ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port == 80)) { obj.redirWebServerHooked = true; }
+
+    // Deal with HTTP challenges
+    function challengeCreateFn(authz, challenge, keyAuthorization) { if (challenge.type === 'http-01') { obj.challenges[challenge.token] = keyAuthorization; } }
+    function challengeRemoveFn(authz, challenge, keyAuthorization) { if (challenge.type === 'http-01') { delete obj.challenges[challenge.token]; } }
+    obj.challenge = function (token, hostname, func) { func(obj.challenges[token]); }
+
+    // Get the current certificate
+    obj.getCertificate = function(certs, func) {
+        obj.runAsProduction = (obj.parent.config.letsencrypt.production === true);
+        parent.debug('cert', "LE: Getting certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
+        if (certs.CommonName.indexOf('.') == -1) { console.log("ERROR: Use --cert to setup the default server name before using Let's Encrypt."); func(certs); return; }
+        if (obj.parent.config.letsencrypt == null) { func(certs); return; }
+        if (obj.parent.config.letsencrypt.email == null) { console.log("ERROR: Let's Encrypt email address not specified."); func(certs); return; }
+        if ((obj.parent.redirserver == null) || ((typeof obj.parent.config.settings.rediraliasport === 'number') && (obj.parent.config.settings.rediraliasport !== 80)) || ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port !== 80))) { console.log("ERROR: Redirection web server must be active on port 80 for Let's Encrypt to work."); func(certs); return; }
+        if (obj.redirWebServerHooked !== true) { console.log("ERROR: Redirection web server not setup for Let's Encrypt to work."); func(certs); return; }
+        if ((obj.parent.config.letsencrypt.rsakeysize != null) && (obj.parent.config.letsencrypt.rsakeysize !== 2048) && (obj.parent.config.letsencrypt.rsakeysize !== 3072)) { console.log("ERROR: Invalid Let's Encrypt certificate key size, must be 2048 or 3072."); func(certs); return; }
+
+        // Get the list of domains
+        obj.leDomains = [ certs.CommonName ];
+        if (obj.parent.config.letsencrypt.names != null) {
+            if (typeof obj.parent.config.letsencrypt.names == 'string') { obj.parent.config.letsencrypt.names = obj.parent.config.letsencrypt.names.split(','); }
+            obj.parent.config.letsencrypt.names.map(function (s) { return s.trim(); }); // Trim each name
+            if ((typeof obj.parent.config.letsencrypt.names != 'object') || (obj.parent.config.letsencrypt.names.length == null)) { console.log("ERROR: Let's Encrypt names must be an array in config.json."); func(certs); return; }
+            obj.leDomains = obj.parent.config.letsencrypt.names;
+        }
+
+        // Read TLS certificate from the configPath
+        var certFile = obj.path.join(obj.certPath, (obj.runAsProduction ? 'production.crt' : 'staging.crt'));
+        var keyFile = obj.path.join(obj.certPath, (obj.runAsProduction ? 'production.key' : 'staging.key'));
+        if (obj.fs.existsSync(certFile) && obj.fs.existsSync(keyFile)) {
+            parent.debug('cert', "LE: Reading certificate files");
+
+            // Read the certificate and private key
+            var certPem = obj.fs.readFileSync(certFile).toString('utf8');
+            var cert = obj.forge.pki.certificateFromPem(certPem);
+            var keyPem = obj.fs.readFileSync(keyFile).toString('utf8');
+            var key = obj.forge.pki.privateKeyFromPem(keyPem);
+
+            // Decode the certificate common and alt names
+            obj.certNames = [cert.subject.getField('CN').value];
+            var altNames = cert.getExtension('subjectAltName');
+            if (altNames) { for (i = 0; i < altNames.altNames.length; i++) { var acn = altNames.altNames[i].value.toLowerCase(); if (obj.certNames.indexOf(acn) == -1) { obj.certNames.push(acn); } } }
+
+            // Decode the certificate expire time
+            obj.certExpire = cert.validity.notAfter;
+
+            // Use this certificate when possible on any domain
+            if (obj.certNames.indexOf(certs.CommonName) >= 0) {
+                certs.web.cert = certPem;
+                certs.web.key = keyPem;
+                //certs.web.ca = [results.pems.chain];
+            }
+            for (var i in obj.parent.config.domains) {
+                if ((obj.parent.config.domains[i].dns != null) && (obj.parent.certificateOperations.compareCertificateNames(obj.certNames, obj.parent.config.domains[i].dns))) {
+                    certs.dns[i].cert = certPem;
+                    certs.dns[i].key = keyPem;
+                    //certs.dns[i].ca = [results.pems.chain];
+                }
+            }
+        } else {
+            parent.debug('cert', "LE: No certificate files found");
+        }
+        func(certs);
+        obj.checkRenewCertificate();
+    }
+
+    // Check if we need to get a new certificate
+    // Return 0 = CertOK, 1 = Request:NoCert, 2 = Request:Expire, 3 = Request:MissingNames
+    obj.checkRenewCertificate = function () {
+        parent.debug('cert', "LE: Checking certificate");
+        if (obj.certNames == null) {
+            parent.debug('cert', "LE: Got no certificates, asking for one now.");
+            obj.requestCertificate();
+            return 1;
+        } else {
+            // Look at the existing certificate to see if we need to renew it
+            var daysLeft = Math.floor((obj.certExpire - new Date()) / 86400000);
+            parent.debug('cert', "LE: Certificate has " + daysLeft + " day(s) left.");
+            if (daysLeft < 45) {
+                parent.debug('cert', "LE: Asking for new certificate because of expire time.");
+                obj.requestCertificate();
+                return 2;
+            } else {
+                var missingDomain = false;
+                for (var i in obj.leDomains) {
+                    if (obj.parent.certificateOperations.compareCertificateNames(obj.certNames, obj.leDomains[i]) == false) {
+                        parent.debug('cert', "LE: Missing name " + obj.leDomains[i] + ".");
+                        missingDomain = true;
+                    }
+                }
+                if (missingDomain) {
+                    parent.debug('cert', "LE: Asking for new certificate because of missing names.");
+                    obj.requestCertificate();
+                    return 3;
+                } else {
+                    parent.debug('cert', "LE: Certificate is ok.");
+                }
+            }
+        }
+        return 0;
+    }
+
+    obj.requestCertificate = function () {
+        // Create a private key
+        parent.debug('cert', "LE: Generating private key...");
+        acme.forge.createPrivateKey().then(function (accountKey) {
+            // Create the ACME client
+            parent.debug('cert', "LE: Setting up ACME client...");
+            obj.client = new acme.Client({
+                directoryUrl: obj.runAsProduction ? acme.directory.letsencrypt.production : acme.directory.letsencrypt.staging,
+                accountKey: accountKey
+            });
+
+            // Create Certificate Request (CSR)
+            parent.debug('cert', "LE: Creating certificate request...");
+            acme.forge.createCsr({
+                commonName: obj.leDomains[0],
+                altNames: obj.leDomains
+            }).then(function (r) {
+                var csr = r[1];
+                obj.tempPrivateKey = r[0];
+                parent.debug('cert', "LE: Requesting certificate from Let's Encrypt...");
+                obj.client.auto({
+                    csr,
+                    email: obj.parent.config.letsencrypt.email,
+                    termsOfServiceAgreed: true,
+                    challengeCreateFn,
+                    challengeRemoveFn
+                }).then(function (cert) {
+                    parent.debug('cert', "LE: Got certificate.");
+
+                    // Save certificate and private key to PEM files
+                    var certFile = obj.path.join(obj.certPath, (obj.runAsProduction ? 'production.crt' : 'staging.crt'));
+                    var keyFile = obj.path.join(obj.certPath, (obj.runAsProduction ? 'production.key' : 'staging.key'));
+                    obj.fs.writeFileSync(certFile, cert);
+                    obj.fs.writeFileSync(keyFile, obj.tempPrivateKey);
+                    delete obj.tempPrivateKey;
+
+                    // Cause a server restart
+                    parent.debug('cert', "LE: Performing server restart...");
+                    obj.parent.performServerCertUpdate();
+                }, function (err) {
+                    parent.debug('cert', "LE: Failed to obtain certificate: " + err.message);
+                });
+            }, function (err) {
+                parent.debug('cert', "LE: Failed to generate certificate request: " + err.message);
+            });
+        }, function (err) {
+            parent.debug('cert', "LE: Failed to generate private key: " + err.message);
+        });
+    }
+
+    // Return the status of this module
+    obj.getStats = function () {
+        var r = {
+            lib: 'acme-client',
+            leDomains: obj.leDomains,
+            challenges: obj.challenges,
+            production: obj.runAsProduction,
+            webServer: obj.redirWebServerHooked,
+            certPath: obj.certPath,
+        };
+        if (obj.certExpire) { r.daysLeft = Math.floor((obj.certExpire - new Date()) / 86400000); }
+        return r;
+    }
+
+    return obj;
+}
