@@ -316,6 +316,7 @@
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
     <Folder Include="typings\globals\connect-redis\" />
+    <Folder Include="typings\globals\cookie-session\" />
     <Folder Include="typings\globals\express-handlebars\" />
     <Folder Include="typings\globals\express-session\" />
     <Folder Include="typings\globals\node-forge\" />
@@ -325,6 +326,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="typings\globals\connect-redis\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\cookie-session\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\express-handlebars\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\express-session\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />

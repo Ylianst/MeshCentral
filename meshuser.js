@@ -704,20 +704,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
                             } else {
-                                var leinfo = {};
-                                var greenLockVersion = null;
-                                try { greenLockVersion = require('greenlock/package.json').version; } catch (ex) { }
-                                if (greenLockVersion) { leinfo.greenLockVer = greenLockVersion; }
-                                leinfo.redirWebServerHooked = parent.parent.letsencrypt.redirWebServerHooked;
-                                leinfo.leDomains = parent.parent.letsencrypt.leDomains;
-                                leinfo.leResults = parent.parent.letsencrypt.leResults;
-                                leinfo.leResultsStaging = parent.parent.letsencrypt.leResultsStaging;
-                                leinfo.performRestart = parent.parent.letsencrypt.performRestart;
-                                leinfo.performMoveToProduction = parent.parent.letsencrypt.performMoveToProduction;
-                                leinfo.runAsProduction = parent.parent.letsencrypt.runAsProduction;
-                                leinfo.leDefaults = parent.parent.letsencrypt.leDefaults;
-                                leinfo.leDefaultsStaging = parent.parent.letsencrypt.leDefaultsStaging;
-                                r = JSON.stringify(leinfo, null, 4);
+                                if (parent.parent.letsencrypt.lib == 'greenlock') {
+                                    var leinfo = {};
+                                    var greenLockVersion = null;
+                                    try { greenLockVersion = require('greenlock/package.json').version; } catch (ex) { }
+                                    if (greenLockVersion) { leinfo.greenLockVer = greenLockVersion; }
+                                    leinfo.redirWebServerHooked = parent.parent.letsencrypt.redirWebServerHooked;
+                                    leinfo.leDomains = parent.parent.letsencrypt.leDomains;
+                                    leinfo.leResults = parent.parent.letsencrypt.leResults;
+                                    leinfo.leResultsStaging = parent.parent.letsencrypt.leResultsStaging;
+                                    leinfo.performRestart = parent.parent.letsencrypt.performRestart;
+                                    leinfo.performMoveToProduction = parent.parent.letsencrypt.performMoveToProduction;
+                                    leinfo.runAsProduction = parent.parent.letsencrypt.runAsProduction;
+                                    leinfo.leDefaults = parent.parent.letsencrypt.leDefaults;
+                                    leinfo.leDefaultsStaging = parent.parent.letsencrypt.leDefaultsStaging;
+                                    r = JSON.stringify(leinfo, null, 4);
+                                } else if (parent.parent.letsencrypt.lib == 'acme-client') {
+                                    r = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
+                                } else {
+                                    r = 'Unknown module';
+                                }
                             }
                             break;
                         }
@@ -725,8 +731,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
                             } else {
-                                var err = parent.parent.letsencrypt.checkRenewCertificate();
-                                if (err == null) { r = "Called Let's Encrypt certificate check."; } else { r = err; }
+                                if (parent.parent.letsencrypt.lib == 'greenlock') {
+                                    var err = parent.parent.letsencrypt.checkRenewCertificate();
+                                    if (err == null) { r = "Called Let's Encrypt certificate check."; } else { r = err; }
+                                } else if (parent.parent.letsencrypt.lib == 'acme-client') {
+                                    r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRenewCertificate()];
+                                } else {
+                                    r = 'Unknown module';
+                                }
                             }
                             break;
                         }

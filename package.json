@@ -28,8 +28,10 @@
     "sample-config.json"
   ],
   "dependencies": {
+    "acme-client": "^3.3.1",
     "aedes": "^0.40.1",
     "archiver": "^3.0.0",
+    "archiver-zip-encrypted": "^1.0.8",
     "body-parser": "^1.19.0",
     "cbor": "^4.1.5",
     "compression": "^1.7.4",
@@ -42,11 +44,15 @@
     "ipcheck": "^0.1.0",
     "minimist": "^1.2.0",
     "multiparty": "^4.2.1",
+    "nacme": "^2.3.8",
     "nedb": "^1.8.0",
     "node-forge": "^0.8.4",
+    "node-windows": "^1.0.0-beta.1",
+    "otplib": "^12.0.1",
     "ws": "^6.2.1",
     "xmldom": "^0.1.27",
-    "yauzl": "^2.10.0"
+    "yauzl": "^2.10.0",
+    "yubikeyotp": "^0.2.0"
   },
   "devDependencies": {},
   "repository": {
