@@ -689,7 +689,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,letsencrypt';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents';
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) {
                                 if (f.length > 80) { fin += (f + ',\r\n'); f = ''; }
@@ -699,8 +699,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r = 'Available commands: \r\n' + fin + '.';
                             break;
                         }
-                        case 'le':
-                        case 'letsencrypt': {
+                        case 'le': {
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
                             } else {
@@ -738,6 +737,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRenewCertificate()];
                                 } else {
                                     r = 'Unknown module';
+                                }
+                            }
+                            break;
+                        }
+                        case 'leevents': {
+                            if (parent.parent.letsencrypt == null) {
+                                r = "Let's Encrypt not in use.";
+                            } else {
+                                if (parent.parent.letsencrypt.lib == 'acme-client') {
+                                    r = parent.parent.letsencrypt.events.join('\r\n');
+                                } else {
+                                    r = 'Not supported';
                                 }
                             }
                             break;
