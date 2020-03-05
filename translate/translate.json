@@ -3031,7 +3031,7 @@
       "nl": "Weet u zeker dat u de plug-in {0} wilt gebruiken: {1}",
       "ru": "Вы уверенны, что {0} плагин: {1}",
       "xloc": [
-        "default.handlebars->27->1510"
+        "default.handlebars->27->1511"
       ]
     },
     {
@@ -3552,7 +3552,7 @@
       "pt": "Servidor CIRA",
       "ru": "CIRA Сервер",
       "xloc": [
-        "default.handlebars->27->1501"
+        "default.handlebars->27->1502"
       ]
     },
     {
@@ -3566,7 +3566,7 @@
       "pt": "Comandos do servidor CIRA",
       "ru": "CIRA Сервер команды",
       "xloc": [
-        "default.handlebars->27->1502"
+        "default.handlebars->27->1503"
       ]
     },
     {
@@ -3665,7 +3665,7 @@
       "pt": "Erro de chamada",
       "ru": "Ошибка вызова",
       "xloc": [
-        "default.handlebars->27->1511"
+        "default.handlebars->27->1512"
       ]
     },
     {
@@ -4000,7 +4000,7 @@
       "pt": "Verificando ...",
       "ru": "Проверка...",
       "xloc": [
-        "default.handlebars->27->1507",
+        "default.handlebars->27->1508",
         "default.handlebars->27->769"
       ]
     },
@@ -4663,7 +4663,7 @@
       "pt": "Encaminhador de conexão",
       "ru": "Ретранслятор подключения",
       "xloc": [
-        "default.handlebars->27->1500"
+        "default.handlebars->27->1501"
       ]
     },
     {
@@ -9089,7 +9089,7 @@
         "default.handlebars->27->1194",
         "default.handlebars->27->1200",
         "default.handlebars->27->1479",
-        "default.handlebars->27->1499"
+        "default.handlebars->27->1500"
       ]
     },
     {
@@ -10500,7 +10500,7 @@
       "pt": "Menos",
       "ru": "Меньше",
       "xloc": [
-        "default.handlebars->27->1513"
+        "default.handlebars->27->1514"
       ]
     },
     {
@@ -12153,7 +12153,7 @@
       "pt": "Mais",
       "ru": "Еще",
       "xloc": [
-        "default.handlebars->27->1512"
+        "default.handlebars->27->1513"
       ]
     },
     {
@@ -14314,7 +14314,7 @@
       "nl": "Plugin Actie",
       "ru": "Действие плагина",
       "xloc": [
-        "default.handlebars->27->1509",
+        "default.handlebars->27->1510",
         "default.handlebars->27->159"
       ]
     },
@@ -16346,6 +16346,12 @@
       ]
     },
     {
+      "en": "Server Database",
+      "xloc": [
+        "default.handlebars->27->1495"
+      ]
+    },
+    {
       "cs": "Soubory serveru",
       "de": "Server-Dateien",
       "en": "Server Files",
@@ -16455,7 +16461,7 @@
       "pt": "Rastreamento de servidor",
       "ru": "Трассировка сервера",
       "xloc": [
-        "default.handlebars->27->1503"
+        "default.handlebars->27->1504"
       ]
     },
     {
@@ -19152,7 +19158,7 @@
       "nl": "Bijgewerkt",
       "ru": "Актуально",
       "xloc": [
-        "default.handlebars->27->1508"
+        "default.handlebars->27->1509"
       ]
     },
     {
@@ -19991,8 +19997,8 @@
       "pt": "Servidor web",
       "ru": "Веб-сервер",
       "xloc": [
-        "default.handlebars->27->1495",
-        "default.handlebars->27->1496"
+        "default.handlebars->27->1496",
+        "default.handlebars->27->1497"
       ]
     },
     {
@@ -20006,7 +20012,7 @@
       "pt": "Solicitações de servidor Web",
       "ru": "Запросы веб-сервера",
       "xloc": [
-        "default.handlebars->27->1497"
+        "default.handlebars->27->1498"
       ]
     },
     {
@@ -20020,7 +20026,7 @@
       "pt": "Encaminhador de soquete da Web",
       "ru": "Ретранслятор Web Socket",
       "xloc": [
-        "default.handlebars->27->1498"
+        "default.handlebars->27->1499"
       ]
     },
     {
@@ -20663,7 +20669,7 @@
       "pt": "\\\\'",
       "ru": "\\\\'",
       "xloc": [
-        "default.handlebars->27->1506"
+        "default.handlebars->27->1507"
       ]
     },
     {
@@ -21088,7 +21094,7 @@
       "pt": "servertrace.csv",
       "ru": "servertrace.csv",
       "xloc": [
-        "default.handlebars->27->1505"
+        "default.handlebars->27->1506"
       ]
     },
     {
@@ -21137,7 +21143,7 @@
       "pt": "hora, fonte, mensagem",
       "ru": "time, source, message",
       "xloc": [
-        "default.handlebars->27->1504"
+        "default.handlebars->27->1505"
       ]
     },
     {
