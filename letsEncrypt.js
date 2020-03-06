@@ -343,6 +343,7 @@ module.exports.CreateLetsEncrypt2 = function (parent) {
     obj.redirWebServerHooked = false;
     obj.configErr = null;
     obj.configOk = false;
+    obj.pendingRequest = false;
 
     // Let's Encrypt debug logging
     obj.log = function (str) {
@@ -364,7 +365,7 @@ module.exports.CreateLetsEncrypt2 = function (parent) {
     // Deal with HTTP challenges
     function challengeCreateFn(authz, challenge, keyAuthorization) { if (challenge.type === 'http-01') { obj.challenges[challenge.token] = keyAuthorization; } }
     function challengeRemoveFn(authz, challenge, keyAuthorization) { if (challenge.type === 'http-01') { delete obj.challenges[challenge.token]; } }
-    obj.challenge = function (token, hostname, func) { obj.log((obj.challenges[token] != null)?"Succesful response to challenge.":"Failed to respond to challenge."); func(obj.challenges[token]); }
+    obj.challenge = function (token, hostname, func) { if (obj.challenges[token] != null) { obj.log("Succesful response to challenge."); } else { obj.log("Failed to respond to challenge, token: " + token + ", table: " + JSON.stringify(obj.challenges) + "."); } func(obj.challenges[token]); }
 
     // Get the current certificate
     obj.getCertificate = function(certs, func) {
@@ -433,6 +434,7 @@ module.exports.CreateLetsEncrypt2 = function (parent) {
     // Check if we need to get a new certificate
     // Return 0 = CertOK, 1 = Request:NoCert, 2 = Request:Expire, 3 = Request:MissingNames
     obj.checkRenewCertificate = function () {
+        if (obj.pendingRequest == true) { obj.log("Request for certificate is in process."); return 4; }
         if (obj.certNames == null) {
             obj.log("Got no certificates, asking for one now.");
             obj.requestCertificate();
@@ -466,7 +468,9 @@ module.exports.CreateLetsEncrypt2 = function (parent) {
     }
 
     obj.requestCertificate = function () {
+        if (obj.pendingRequest == true) return;
         if (obj.configOk == false) { obj.log("Can't request cert, invalid configuration.");return; }
+        obj.pendingRequest = true;
 
         // Create a private key
         obj.log("Generating private key...");
@@ -508,12 +512,18 @@ module.exports.CreateLetsEncrypt2 = function (parent) {
                     obj.parent.performServerCertUpdate();
                 }, function (err) {
                     obj.log("Failed to obtain certificate: " + err.message);
+                    obj.pendingRequest = false;
+                    delete obj.client;
                 });
             }, function (err) {
                 obj.log("Failed to generate certificate request: " + err.message);
+                obj.pendingRequest = false;
+                delete obj.client;
             });
         }, function (err) {
             obj.log("Failed to generate private key: " + err.message);
+            obj.pendingRequest = false;
+            delete obj.client;
         });
     }
 

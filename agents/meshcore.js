@@ -36,6 +36,10 @@ var MESHRIGHT_NOTERMINAL = 512;
 var MESHRIGHT_NOFILES = 1024;
 var MESHRIGHT_NOAMT = 2048;
 var MESHRIGHT_LIMITEDINPUT = 4096;
+var MESHRIGHT_LIMITEVENTS = 8192;
+var MESHRIGHT_CHATNOTIFY = 16384;
+var MESHRIGHT_UNINSTALL = 32768;
+var MESHRIGHT_NODESKTOP = 65536;
 
 function createMeshCore(agent) {
     var obj = {};
@@ -1328,7 +1332,7 @@ function createMeshCore(agent) {
                     //this.write('MeshCore Terminal Hello');
                 } else if (this.httprequest.protocol == 2) {
                     // Check user access rights for desktop
-                    if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) {
+                    if ((((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NODESKTOP) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
                         this.httprequest.protocol = 999999;
                         this.httprequest.s.end();
@@ -1396,8 +1400,7 @@ function createMeshCore(agent) {
                     if (this.httprequest.desktop.kvm.hasOwnProperty('connectionCount')) {
                         this.httprequest.desktop.kvm.connectionCount++;
                         this.httprequest.desktop.kvm.users.push(this.httprequest.username);
-                    }
-                    else {
+                    } else {
                         this.httprequest.desktop.kvm.connectionCount = 1;
                         this.httprequest.desktop.kvm.users = [this.httprequest.username];
                     }
@@ -1505,7 +1508,6 @@ function createMeshCore(agent) {
                     //this.write('MeshCore KVM Hello!1');
 
                 } else if (this.httprequest.protocol == 5) {
-
                     // Check user access rights for files
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOFILES) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!

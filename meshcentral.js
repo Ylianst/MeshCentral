@@ -1068,14 +1068,14 @@ function CreateMeshCentralServer(config, args) {
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
             // Get the current node version
             const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if ((obj.config.letsencrypt == null) || (obj.redirserver == null) || (nodeVersion < 8) || ((obj.config.letsencrypt.lib != 'acme-client') && (require('crypto').generateKeyPair == null))) {
+            if ((obj.config.letsencrypt == null) || (obj.redirserver == null) || (nodeVersion < 8) || ((obj.config.letsencrypt.lib == 'greenlock') && (require('crypto').generateKeyPair == null))) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else if ((obj.config.letsencrypt != null) && (obj.config.letsencrypt.nochecks == true)) {
                 // Use Let's Encrypt with no checking
-                if (obj.config.letsencrypt.lib == 'acme-client') {
-                    obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt2(obj);
-                } else {
+                if (obj.config.letsencrypt.lib == 'greenlock') {
                     obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt(obj);
+                } else {
+                    obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt2(obj);
                 }
                 obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt with no checking, use at your own risk.
             } else {
@@ -1089,10 +1089,10 @@ function CreateMeshCentralServer(config, args) {
                 else {
                     var le = require('./letsencrypt.js');
                     try {
-                        if (obj.config.letsencrypt.lib == 'acme-client') {
-                            obj.letsencrypt = le.CreateLetsEncrypt2(obj);
-                        } else {
+                        if (obj.config.letsencrypt.lib == 'greenlock') {
                             obj.letsencrypt = le.CreateLetsEncrypt(obj);
+                        } else {
+                            obj.letsencrypt = le.CreateLetsEncrypt2(obj);
                         }
                     } catch (ex) { console.log(ex); }
                     if (obj.letsencrypt == null) { addServerWarning("Unable to setup GreenLock module."); leok = false; }
@@ -2390,10 +2390,10 @@ function mainStart() {
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) {
-            if (config.letsencrypt.lib == 'acme-client') {
-                if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); }
-            } else {
+            if (config.letsencrypt.lib == 'greenlock') {
                 if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock@4.0.4'); }
+            } else {
+                if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); }
             }
         } // Add Greenlock Module or acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
