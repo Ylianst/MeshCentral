@@ -3981,11 +3981,12 @@
                     var rights = GetNodeRights(node);
                     var consoleRights = ((rights & 16) != 0);
 
-                    // Check if we have terminal and file access
+                    // Check if we have desktop, terminal and file access
+                    var desktopAccess = ((rights == 0xFFFFFFFF) || ((rights & 65536) == 0));
                     var terminalAccess = ((rights == 0xFFFFFFFF) || ((rights & 512) == 0));
                     var fileAccess = ((rights == 0xFFFFFFFF) || ((rights & 1024) == 0));
 
-                    QV('cxdesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)));
+                    QV('cxdesktop', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2))) && ((rights & 8) || (rights & 256)) && desktopAccess);
                     QV('cxterminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (rights & 8) && terminalAccess);
                     QV('cxfiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
@@ -4915,6 +4916,7 @@
                 masterUpdate(256);
 
                 // Check if we have terminal and file access
+                var desktopAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0));
                 var terminalAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0));
                 var fileAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0));
                 var amtAccess = ((meshrights == 0xFFFFFFFF) || ((meshrights & 2048) == 0));
@@ -4970,9 +4972,9 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', (((mesh.mtype == 1) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
+                QV('MainDevDesktop', desktopAccess && ((((mesh.mtype == 1) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
                     || ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2)))))
-                    && ((meshrights & 8) || (meshrights & 256))
+                    && ((meshrights & 8) || (meshrights & 256)))
                     );
                 QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8) && fileAccess);
@@ -8415,6 +8417,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
@@ -8450,6 +8453,7 @@
                     if (meshrights & 4) { Q('p20managecomputers').checked = true; }
                     if (meshrights & 8) {
                         Q('p20remotecontrol').checked = true;
+                        if (meshrights & 65536) { Q('p20nodesktop').checked = true; }
                         if (meshrights & 256) { Q('p20remoteview').checked = true; }
                         if (meshrights & 512) { Q('p20noterminal').checked = true; }
                         if (meshrights & 1024) { Q('p20nofiles').checked = true; }
@@ -8528,6 +8532,7 @@
             QE('p20limitevents', nc);
             QE('p20remoteview', nc && Q('p20remotecontrol').checked);
             QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
+            QE('p20nodesktop', nc && Q('p20remotecontrol').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
@@ -8550,6 +8555,7 @@
                     if (Q('p20wakedevices').checked == true) meshadmin += 64;
                     if (Q('p20editnotes').checked == true) meshadmin += 128;
                     if (Q('p20remoteview').checked == true) meshadmin += 256;
+                    if (Q('p20nodesktop').checked == true) meshadmin += 65536;
                     if (Q('p20noterminal').checked == true) meshadmin += 512;
                     if (Q('p20nofiles').checked == true) meshadmin += 1024;
                     if (Q('p20noamt').checked == true) meshadmin += 2048;
@@ -8598,6 +8604,7 @@
                     if ((meshrights & 64) != 0) r.push("Wake Devices");
                     if ((meshrights & 128) != 0) r.push("Edit Notes");
                     if (((meshrights & 8) != 0) && (meshrights & 256) != 0) r.push("Remote View Only");
+                    if (((meshrights & 8) != 0) && (meshrights & 65536) != 0) r.push("No Desktop");
                     if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r.push("No Terminal");
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r.push("No Files");
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r.push("No Intel&reg; AMT");

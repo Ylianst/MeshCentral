@@ -263,23 +263,25 @@ function readNextBlock(state, func) {
     var r = {}, buf = Buffer.alloc(16);
     fs.read(state.recFile, buf, 0, 16, state.recFilePtr, function (err, bytesRead, buf) {
         if (bytesRead != 16) { func(state, null, true); return; } // Error
-        r.type = buf.readUInt16BE(0);
-        r.flags = buf.readUInt16BE(2);
-        r.size = buf.readUInt32BE(4);
-        r.time = buf.readUIntBE(8, 8);
-        r.date = new Date(r.time);
-        r.ptr = state.recFilePtr;
-        if ((state.recFilePtr + 16 + r.size) > state.recFileSize) { func(state, null, true); return; } // Error
-        if (r.size == 0) {
-            r.data = null;
-            func(state, r);
-        } else {
-            r.data = Buffer.alloc(r.size);
-            fs.read(state.recFile, r.data, 0, r.size, state.recFilePtr + 16, function (err, bytesRead, buf) {
-                state.recFilePtr += (16 + r.size);
+        try {
+            r.type = buf.readUInt16BE(0);
+            r.flags = buf.readUInt16BE(2);
+            r.size = buf.readUInt32BE(4);
+            r.time = buf.readUIntBE(8, 8);
+            r.date = new Date(r.time);
+            r.ptr = state.recFilePtr;
+            if ((state.recFilePtr + 16 + r.size) > state.recFileSize) { func(state, null, true); return; } // Error
+            if (r.size == 0) {
+                r.data = null;
                 func(state, r);
-            });
-        }
+            } else {
+                r.data = Buffer.alloc(r.size);
+                fs.read(state.recFile, r.data, 0, r.size, state.recFilePtr + 16, function (err, bytesRead, buf) {
+                    state.recFilePtr += (16 + r.size);
+                    func(state, r);
+                });
+            }
+        } catch (ex) { func(state, null, true); return; } // Error
     });
 }
 

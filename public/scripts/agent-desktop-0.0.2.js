@@ -55,8 +55,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.onDisplayinfo = null;
     obj.accumulator = null;
 
-    var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none'];
-
+    var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none', 'not-allowed', 'col-resize', 'row-resize', 'copy', 'zoom-in', 'zoom-out'];
     obj.Start = function () {
         obj.State = 0;
         obj.accumulator = null;
