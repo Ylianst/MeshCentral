@@ -12681,12 +12681,14 @@
     },
     {
       "en": "No Desktop",
+      "nl": "Geen bureaublad",
       "xloc": [
         "default.handlebars->27->1173"
       ]
     },
     {
       "en": "No Desktop Access",
+      "nl": "Geen bureaublad toegang",
       "xloc": [
         "default.handlebars->27->1146"
       ]
@@ -16359,6 +16361,7 @@
     },
     {
       "en": "Server Database",
+      "nl": "Server Database",
       "xloc": [
         "default.handlebars->27->1497"
       ]
@@ -21568,6 +21571,14 @@
     },
     {
       "en": "{0} second{1}",
+      "nl": "{0} seconde{1}",
+      "es": "{0} second{1}",
+      "de": "{0} Sekunde{1}",
+      "cs": "{0} sekund{1}",
+      "pt": "{0} segundo{1}",
+      "fr": "{0} seconde{1}",
+      "ja": "{0} 秒{1}",
+      "ru": "{0} секунд{1}",
       "xloc": [
         "player.handlebars->3->3"
       ]
