@@ -189,10 +189,10 @@ function writeIndex(state, func) {
     extraMetadata.indexInterval = state.indexTime;
     extraMetadata.indexStartTime = state.startTime;
     extraMetadata.indexes = state.indexes;
-    recordingEntry(state.recFile, 4, 0, state.lastTimeStamp, JSON.stringify(extraMetadata), function (state) {
+    recordingEntry(state.recFile, 4, 0, state.lastTimeStamp, JSON.stringify(extraMetadata), function (state, len) {
         recordingEntry(state.recFile, 3, 0, state.recFileSize - 32, 'MeshCentralMCNDX', function (state) {
             func(state);
-        }, state);
+        }, state, state.recFileSize - 32 + len);
     }, state, state.recFileSize - 32);
 }
 
@@ -202,50 +202,50 @@ function recordingEntry(fd, type, flags, time, data, func, tag, position) {
         if (typeof data == 'string') {
             // String write
             var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-            header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+            header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data, 3 = End, 4 = Extra Metadata)
             header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
             header.writeInt32BE(blockData.length, 4); // Size
             header.writeIntBE(time, 10, 6); // Time
             var block = Buffer.concat([header, blockData]);
             if (typeof position == 'number') {
-                fs.write(fd, block, 0, block.length, position, function () { func(tag); });
+                fs.write(fd, block, 0, block.length, position, function () { func(tag, block.length); });
             } else {
-                fs.write(fd, block, 0, block.length, function () { func(tag); });
+                fs.write(fd, block, 0, block.length, function () { func(tag, block.length); });
             }
         } else {
             // Binary write
             var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-            header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+            header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data, 3 = End, 4 = Extra Metadata)
             header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
             header.writeInt32BE(data.length, 4); // Size
             header.writeIntBE(time, 10, 6); // Time
             var block = Buffer.concat([header, data]);
             if (typeof position == 'number') {
-                fs.write(fd, block, 0, block.length, position, function () { func(tag); });
+                fs.write(fd, block, 0, block.length, position, function () { func(tag, block.length); });
             } else {
-                fs.write(fd, block, 0, block.length, function () { func(tag); });
+                fs.write(fd, block, 0, block.length, function () { func(tag, block.length); });
             }
         }
-    } catch (ex) { console.log(ex); func(state, tag); }
+    } catch (ex) { console.log(ex); func(tag); }
 }
 
 function readLastBlock(state, func) {
     var buf = Buffer.alloc(32);
     fs.read(state.recFile, buf, 0, 32, state.recFileSize - 32, function (err, bytesRead, buf) {
-        var type = buf.readUInt16BE(0);
-        var flags = buf.readUInt16BE(2);
-        var size = buf.readUInt32BE(4);
-        var time = (buf.readUInt32BE(8) << 32) + buf.readUInt32BE(12);
+        var type = buf.readUInt16BE(0); // Type (1 = Header, 2 = Network Data)
+        var flags = buf.readUInt16BE(2); // Flags (1 = Binary, 2 = User)
+        var size = buf.readUInt32BE(4); // Size
+        var time = buf.readUIntBE(10, 6); // Time
         var magic = buf.toString('utf8', 16, 32);
         if ((type == 3) && (size == 16) && (magic == 'MeshCentralMCNDX')) {
             // Extra metadata present, lets read it.
             extraMetadata = null;
             var buf2 = Buffer.alloc(16);
             fs.read(state.recFile, buf2, 0, 16, time, function (err, bytesRead, buf2) {
-                var xtype = buf2.readUInt16BE(0);
-                var xflags = buf2.readUInt16BE(2);
-                var xsize = buf2.readUInt32BE(4);
-                var xtime = (buf2.readUInt32BE(8) << 32) + buf.readUInt32BE(12);
+                var xtype = buf2.readUInt16BE(0); // Type (1 = Header, 2 = Network Data, 3 = End, 4 = Extra Metadata)
+                var xflags = buf2.readUInt16BE(2); // Flags (1 = Binary, 2 = User)
+                var xsize = buf2.readUInt32BE(4); // Size
+                var xtime = buf.readUIntBE(10, 6); // Time
                 var buf3 = Buffer.alloc(xsize);
                 fs.read(state.recFile, buf3, 0, xsize, time + 16, function (err, bytesRead, buf3) {
                     func(state, true, xtime, JSON.parse(buf3.toString()));
@@ -264,10 +264,10 @@ function readNextBlock(state, func) {
     fs.read(state.recFile, buf, 0, 16, state.recFilePtr, function (err, bytesRead, buf) {
         if (bytesRead != 16) { func(state, null, true); return; } // Error
         try {
-            r.type = buf.readUInt16BE(0);
-            r.flags = buf.readUInt16BE(2);
-            r.size = buf.readUInt32BE(4);
-            r.time = buf.readUIntBE(8, 8);
+            r.type = buf.readUInt16BE(0); // Type (1 = Header, 2 = Network Data, 3 = End, 4 = Extra Metadata)
+            r.flags = buf.readUInt16BE(2); // Flags (1 = Binary, 2 = User)
+            r.size = buf.readUInt32BE(4); // Size
+            r.time = buf.readUIntBE(10, 6); // Time
             r.date = new Date(r.time);
             r.ptr = state.recFilePtr;
             if ((state.recFilePtr + 16 + r.size) > state.recFileSize) { func(state, null, true); return; } // Error
