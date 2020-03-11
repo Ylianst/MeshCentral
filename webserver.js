@@ -1564,7 +1564,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
             if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { features += 0x00010000; } // Enable password hints
             if (parent.config.settings.no2factorauth !== true) { features += 0x00020000; } // Enable WebAuthn/FIDO2 support
-            if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) { features += 0x00040000; } // Force 2-factor auth
+            if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) {
+                // Check if we can skip 2nd factor auth because of the source IP address
+                var skip2factor = false;
+                if ((req != null) && (req.ip != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
+                    for (var i in domain.passwordrequirements.skip2factor) {
+                        if (require('ipcheck').match(req.ip, domain.passwordrequirements.skip2factor[i]) === true) { skip2factor = true; }
+                    }
+                }
+                if (skip2factor == false) { features += 0x00040000; } // Force 2-factor auth
+            } 
             if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
             if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
             if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
