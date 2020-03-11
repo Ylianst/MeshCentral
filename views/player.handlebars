@@ -197,7 +197,7 @@
 
         function processFirstBlock(type, flags, time, data) {
             recFileProtocol = 0;
-            if ((type != 1) || (flags != 0)) { cleanup(); return; }
+            if ((type != 1) || (flags > 2)) { cleanup(); return; }
             try { recFileMetadata = JSON.parse(data) } catch (ex) { cleanup(); return; }
             if ((recFileMetadata == null) || (recFileMetadata.magic != 'MeshCentralRelaySession') || (recFileMetadata.ver != 1)) { cleanup(); return; }
             if (recFileExtras) { for (var i in recFileExtras) { recFileMetadata[i] = recFileExtras[i]; } }
@@ -428,7 +428,7 @@
             recFile = files[0];
             recFilePtr = 0;
             readNextBlock(processFirstBlock);
-            readLastBlock(function (type, flags, time) {
+            readLastBlock(function (type, flags, time, extras) {
                 if (type == 3) {
                     // File is ok
                     recFileEndTime = time;
