@@ -2417,7 +2417,7 @@ function mainStart() {
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
             if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
-            if (allsspi == false) { modules.push('otplib'); } // Google Authenticator support
+            if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
         // Install any missing modules and launch the server
