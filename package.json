@@ -29,7 +29,6 @@
   ],
   "dependencies": {
     "archiver": "^3.0.0",
-    "archiver-zip-encrypted": "^1.0.8",
     "body-parser": "^1.19.0",
     "cbor": "^4.1.5",
     "compression": "^1.7.4",
@@ -38,20 +37,15 @@
     "express": "^4.17.0",
     "express-handlebars": "^3.1.0",
     "express-ws": "^4.0.0",
-    "html-minifier": "^4.0.0",
     "ipcheck": "^0.1.0",
     "jsdom": "^16.2.1",
-    "minify-js": "0.0.4",
     "minimist": "^1.2.0",
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.8.4",
-    "node-windows": "^1.0.0-beta.1",
-    "otplib": "^10.0.0",
     "ws": "^6.2.1",
     "xmldom": "^0.1.27",
-    "yauzl": "^2.10.0",
-    "yubikeyotp": "^0.2.0"
+    "yauzl": "^2.10.0"
   },
   "devDependencies": {},
   "repository": {
