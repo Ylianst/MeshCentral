@@ -1041,7 +1041,7 @@ function CreateMeshCentralServer(config, args) {
             if ((obj.config) && (obj.config.settings) && (obj.config.settings.plugins != null)) {
                 const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
                 if (nodeVersion < 7) {
-                    addServerWarning("Plugin support requires Node v7.0 or higher.");
+                    addServerWarning("Plugin support requires Node v7.x or higher.");
                     delete obj.config.settings.plugins;
                 } else {
                     obj.pluginHandler = require('./pluginHandler.js').pluginHandler(obj);
@@ -1068,15 +1068,11 @@ function CreateMeshCentralServer(config, args) {
         obj.certificateOperations.GetMeshServerCertificate(obj.args, obj.config, function (certs) {
             // Get the current node version
             const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-            if ((obj.config.letsencrypt == null) || (obj.redirserver == null) || (nodeVersion < 8) || ((obj.config.letsencrypt.lib == 'greenlock') && (require('crypto').generateKeyPair == null))) {
+            if ((obj.config.letsencrypt == null) || (obj.redirserver == null) || (nodeVersion < 8)) {
                 obj.StartEx3(certs); // Just use the configured certificates
             } else if ((obj.config.letsencrypt != null) && (obj.config.letsencrypt.nochecks == true)) {
                 // Use Let's Encrypt with no checking
-                if (obj.config.letsencrypt.lib == 'greenlock') {
-                    obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt(obj);
-                } else {
-                    obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt2(obj);
-                }
+                obj.letsencrypt = require('./letsencrypt.js').CreateLetsEncrypt(obj);
                 obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt with no checking, use at your own risk.
             } else {
                 // Check Let's Encrypt settings
@@ -1088,14 +1084,8 @@ function CreateMeshCentralServer(config, args) {
                 else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address."); }
                 else {
                     var le = require('./letsencrypt.js');
-                    try {
-                        if (obj.config.letsencrypt.lib == 'greenlock') {
-                            obj.letsencrypt = le.CreateLetsEncrypt(obj);
-                        } else {
-                            obj.letsencrypt = le.CreateLetsEncrypt2(obj);
-                        }
-                    } catch (ex) { console.log(ex); }
-                    if (obj.letsencrypt == null) { addServerWarning("Unable to setup GreenLock module."); leok = false; }
+                    try { obj.letsencrypt = le.CreateLetsEncrypt(obj); } catch (ex) { console.log(ex); }
+                    if (obj.letsencrypt == null) { addServerWarning("Unable to setup Let's Encrypt module."); leok = false; }
                 }
                 if (leok == true) {
                     // Check that the email address domain MX resolves.

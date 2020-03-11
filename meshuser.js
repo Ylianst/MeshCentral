@@ -703,26 +703,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
                             } else {
-                                if (parent.parent.letsencrypt.lib == 'greenlock') {
-                                    var leinfo = {};
-                                    var greenLockVersion = null;
-                                    try { greenLockVersion = require('greenlock/package.json').version; } catch (ex) { }
-                                    if (greenLockVersion) { leinfo.greenLockVer = greenLockVersion; }
-                                    leinfo.redirWebServerHooked = parent.parent.letsencrypt.redirWebServerHooked;
-                                    leinfo.leDomains = parent.parent.letsencrypt.leDomains;
-                                    leinfo.leResults = parent.parent.letsencrypt.leResults;
-                                    leinfo.leResultsStaging = parent.parent.letsencrypt.leResultsStaging;
-                                    leinfo.performRestart = parent.parent.letsencrypt.performRestart;
-                                    leinfo.performMoveToProduction = parent.parent.letsencrypt.performMoveToProduction;
-                                    leinfo.runAsProduction = parent.parent.letsencrypt.runAsProduction;
-                                    leinfo.leDefaults = parent.parent.letsencrypt.leDefaults;
-                                    leinfo.leDefaultsStaging = parent.parent.letsencrypt.leDefaultsStaging;
-                                    r = JSON.stringify(leinfo, null, 4);
-                                } else if (parent.parent.letsencrypt.lib == 'acme-client') {
-                                    r = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
-                                } else {
-                                    r = 'Unknown module';
-                                }
+                                r = JSON.stringify(parent.parent.letsencrypt.getStats(), null, 4);
                             }
                             break;
                         }
@@ -730,14 +711,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
                             } else {
-                                if (parent.parent.letsencrypt.lib == 'greenlock') {
-                                    var err = parent.parent.letsencrypt.checkRenewCertificate();
-                                    if (err == null) { r = "Called Let's Encrypt certificate check."; } else { r = err; }
-                                } else if (parent.parent.letsencrypt.lib == 'acme-client') {
-                                    r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRenewCertificate()];
-                                } else {
-                                    r = 'Unknown module';
-                                }
+                                r = ["CertOK", "Request:NoCert", "Request:Expire", "Request:MissingNames"][parent.parent.letsencrypt.checkRenewCertificate()];
                             }
                             break;
                         }
@@ -745,11 +719,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
                             } else {
-                                if (parent.parent.letsencrypt.lib == 'acme-client') {
-                                    r = parent.parent.letsencrypt.events.join('\r\n');
-                                } else {
-                                    r = 'Not supported';
-                                }
+                                r = parent.parent.letsencrypt.events.join('\r\n');
                             }
                             break;
                         }
@@ -845,6 +815,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var info = process.memoryUsage();
                             info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
                             if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
+                            if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } }
                             try { info.nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]); } catch (ex) { }
                             try { info.currentVer = parent.parent.currentVer; } catch (ex) { }
                             try { info.platform = process.platform; } catch (ex) { }
@@ -3121,7 +3092,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-get':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
