@@ -2424,7 +2424,7 @@ function mainStart() {
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
 
         // On exit, also terminate the child process if applicable
-        process.on("exit", function () { if (childProcess) { childProcess.kill(); childProcess = null; } });
+        process.on('exit', function () { if (childProcess) { childProcess.kill(); childProcess = null; } });
 
         // If our parent exits, we also exit
         if (args.launch) {
