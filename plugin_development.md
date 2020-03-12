@@ -49,7 +49,7 @@ A valid JSON object within a file named `config.json` in the root folder of your
 | repository.type | Yes | string | valid values are `git` and in the future, `npm` will also be supported in the future
 | repository.url | Yes | string | the URL to the project's repository
 | versionHistoryUrl | No | string | the URL to the project's versions/tags
-| meshCentralCompat | Yes | string | the semantic version string of required compatibility with the MeshCentral server
+| meshCentralCompat | Yes | string | the minimum version string of required compatibility with the MeshCentral server, can be formatted as "0.1.2-c" or ">=0.1.2-c". Currently only supports minimum version, not full semantic checking.
 
 ## Plugin Hooks
 These are separated into the following categories depending on the type of functionality the plugin should offer.
