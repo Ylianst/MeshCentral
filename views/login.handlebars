@@ -228,7 +228,7 @@
                 <div class="footer1">{{{footer}}}</div>
                 <div class="footer2">
                     {{{rootCertLink}}}
-                    &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                    &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
                 </div>
             </div>
         
@@ -285,15 +285,21 @@
             }
         }
 
+        // Fix links if a loginKey if used
+        var urlargs = parseUriArgs();
+        if (urlargs.key) {
+            Q('termsLinkFooter').href += '?key=' + urlargs.key;
+        }
+
         // If URL arguments are provided, add them to form posts
         if (window.location.href.indexOf('?') > 0) {
-            var urlargs = window.location.href.substring(window.location.href.indexOf('?'));
-            Q('loginformargs').value = urlargs;
-            Q('createformargs').value = urlargs;
-            Q('resetformargs').value = urlargs;
-            Q('tokenformargs').value = urlargs;
-            Q('resettokenformargs').value = urlargs;
-            Q('resetpasswordformargs').value = urlargs;
+            var xurlargs = window.location.href.substring(window.location.href.indexOf('?'));
+            Q('loginformargs').value = xurlargs;
+            Q('createformargs').value = xurlargs;
+            Q('resetformargs').value = xurlargs;
+            Q('tokenformargs').value = xurlargs;
+            Q('resettokenformargs').value = xurlargs;
+            Q('resetpasswordformargs').value = xurlargs;
         }
 
         //var webPageFullScreen = getstore('webPageFullScreen', true);
@@ -727,6 +733,7 @@
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
+        function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
 
     </script>
 </body>
