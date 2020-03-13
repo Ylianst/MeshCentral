@@ -1014,7 +1014,7 @@
             <div class="footer1">{{{footer}}}</div>
             <div class="footer2">
                 <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify Email</a>
-                &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
             </div>
         </div>
         <div id=dialog class="noselect" style="display:none">
@@ -1216,6 +1216,11 @@
             delete urlargs.gotomesh;
             delete urlargs.gotouser;
             delete urlargs.gotougrp;
+
+            // Fix links if a loginKey is used
+            if (urlargs.key) {
+                Q('termsLinkFooter').href += '?key=' + urlargs.key;
+            }
 
             // Check if we are in debug mode
             args = parseUriArgs();
@@ -2620,10 +2625,10 @@
                     var url;
                     if (serverinfo.https == true) {
                         var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-                        url = 'https://' + servername + portStr + domainUrl + 'agentinvite?c=' + message.cookie;
+                        url = 'https://' + servername + portStr + domainUrl + 'agentinvite?c=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
                     } else {
                         var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
-                        url = 'http://' + servername + portStr + domainUrl + 'agentinvite?c=' + message.cookie;
+                        url = 'http://' + servername + portStr + domainUrl + 'agentinvite?c=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
                     }
                     Q('agentInvitationLink').href = url;
                     var t = format((message.expire == 1)?"1 hour":"{0} hours", message.expire);
@@ -3519,15 +3524,15 @@
 
             // Setup CIRA using a MeshCommander script (Pretty Simple)
             x += '<div id=dlgAddCira0>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.", EscapeHtml(mesh.name)) + '<br /><br />';
-            //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
-            x += addHtmlValue("Setup CIRA", '<a href="mescript.ashx?type=1&meshid=' + meshid + '" download>cira_setup.mescript</a>');
-            x += addHtmlValue("Cleanup CIRA", '<a href="mescript.ashx?type=2" download>cira_clean.mescript</a>');
+            //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
+            x += addHtmlValue("Setup CIRA", '<a href="mescript.ashx?type=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&meshid=' + meshid + '" download>cira_setup.mescript</a>');
+            x += addHtmlValue("Cleanup CIRA", '<a href="mescript.ashx?type=2' + (urlargs.key?('&key=' + urlargs.key):'') + '" download>cira_clean.mescript</a>');
             x += '</div>';
 
             // Setup CIRA with user/pass authentication (Somewhat difficult)
             x += '<div id=dlgAddCira1 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel AMT", EscapeHtml(mesh.name));
             if (serverinfo.mpspass) { x += (" and authenticate to the server using this username and password." + '<br /><br />'); } else { x += (" and authenticate to the server using this username and any password." + '<br /><br />'); }
-            x += addHtmlValue("Root Certificate", '<a href=\"' + "MeshServerRootCert.cer" + '\" download>' + "Root Certificate File" + '</a>');
+            x += addHtmlValue("Root Certificate", '<a href=\"' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '\" download>' + "Root Certificate File" + '</a>');
             x += addHtmlValue("Username", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
             if (serverinfo.mpspass) { x += addHtmlValue("Password", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpspass) + '" />'); }
             if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
@@ -3536,7 +3541,7 @@
             // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
             if ((features & 16) == 0) {
                 x += '<div id=dlgAddCira2 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.", EscapeHtml(mesh.name)) + '<br /><br />';
-                x += addHtmlValue("Root Certificate", '<a href="MeshServerRootCert.cer" download>' + "Root Certificate File" + '</a>');
+                x += addHtmlValue("Root Certificate", '<a href="' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '" download>' + "Root Certificate File" + '</a>');
                 x += addHtmlValue("Organization", '<input style=width:230px readonly value="' + meshidx + '" />');
                 if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
                 x += '</div>';
@@ -3631,9 +3636,9 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title=\"' + "32bit version of the MeshAgent" + '\">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0" download onclick="setDialogMode(0)" title=\"' + "64bit version of the MeshAgent" + '\">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0" rel="noreferrer noopener" target="_blank">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "32bit version of the MeshAgent" + '\">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "64bit version of the MeshAgent" + '\">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" rel="noreferrer noopener" target="_blank">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
             // Linux agent install
@@ -3643,13 +3648,13 @@
 
             // MacOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '" rel="noreferrer noopener" target="_blank" title="64bit version of MacOS Mesh Agent">MacOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy MacOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
+            x += addHtmlValue("Mesh Agent", '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '" download rel="noreferrer noopener" target="_blank" title="' + "64bit version of MacOS Mesh Agent" + '">MacOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy MacOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
             // Windows agent uninstall
             x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a href="meshagents?id=3" download onclick="setDialogMode(0)" title="' + "32bit version of the MeshAgent" + '">' + "Windows (.exe)" + '</a>');
-            x += addHtmlValue("Mesh Agent", '<a href="meshagents?id=4" download onclick="setDialogMode(0)" title="' + "64bit version of the MeshAgent" + '">' + "Windows x64 (.exe)" + '</a>');
+            x += addHtmlValue("Mesh Agent", '<a href="meshagents?id=3' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title="' + "32bit version of the MeshAgent" + '">' + "Windows (.exe)" + '</a>');
+            x += addHtmlValue("Mesh Agent", '<a href="meshagents?id=4' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title="' + "64bit version of the MeshAgent" + '">' + "Windows x64 (.exe)" + '</a>');
             x += '</div>';
 
             // Linux agent uninstall
@@ -3667,14 +3672,14 @@
                 var portStr = (serverinfo.port == 443)?'':(':' + serverinfo.port);
                 if ((features & 0x2000) == 0)
                 {
-                    Q('agins_linux_area').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                    Q('agins_linux_area_un').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    Q('agins_linux_area').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
+                    Q('agins_linux_area_un').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
                 else
                 {
                     // Server asked that agent be installed to preferably not use a HTTP proxy.
-                    Q('agins_linux_area').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                    Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    Q('agins_linux_area').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
+                    Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
             }
             else
@@ -3682,14 +3687,14 @@
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
                 if ((features & 0x2000) == 0)
                 {
-                    Q('agins_linux_area').value = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                    Q('agins_linux_area_un').value = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    Q('agins_linux_area').value = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
+                    Q('agins_linux_area_un').value = '(wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" -O ./meshinstall.sh || wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
                 else
                 {
                     // Server asked that agent be installed to preferably not use a HTTP proxy.
-                    Q('agins_linux_area').value = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                    Q('agins_linux_area_un').value = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
+                    Q('agins_linux_area').value = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh http://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
+                    Q('agins_linux_area_un').value = 'wget "http://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
                 }
             }
             Q('aginsSelect').focus();
@@ -3704,6 +3709,7 @@
             var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
             var c = 'https://' + servername + portStr + domainUrl + url;
             if (addflag == 1) c += Q('aginsType').value;
+            c += (urlargs.key?('&key=' + urlargs.key):'');
             copyTextToClip(c);
         }
 
@@ -3717,9 +3723,9 @@
             QV('aginsTypeDiv', v == 0);
 
             // Fix the links if needed
-            Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
-            Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value;
-            if (debugmode > 0) { Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value; }
+            Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'');
+            Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'');
+            if (debugmode > 0) { Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''); }
         }
 
         function validateDeviceToMesh() {
@@ -5396,7 +5402,7 @@
         function p10showMeshRouterDialog() {
             if (xxdialogMode) return;
             var x = '<div>' + "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server." + '</div><br />';
-            x += addHtmlValue('Win32 Executable', '<a style=cursor:pointer download href="meshagents?meshaction=winrouter" onclick="setDialogMode(0)">MeshCentralRouter.exe</a>');
+            x += addHtmlValue("Win32 Executable", '<a style=cursor:pointer download href="meshagents?meshaction=winrouter' + (urlargs.key?('&key=' + urlargs.key):'') + '" onclick="setDialogMode(0)">MeshCentralRouter.exe</a>');
             setDialogMode(2, "MeshCentral Router", 1, null, x, 'fileDownload');
         }
 
@@ -5430,9 +5436,9 @@
             if (mode == 0) { x += '<div>' + "MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials." + '<br /><br />'; }
             if (mode == 1) { x += '<div>' + "Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed." + '<br /><br />'; }
             x += addHtmlValue("Operating System", y);
-            x += addHtmlValue("MeshCmd", '<a id=meshcmddownloadid href="meshagents?meshcmd=3" download></a>');
-            if (mode == 0) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=generic" download>' + "MeshAction (.txt)" + '</a>'); }
-            if (mode == 1) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=route&nodeid=' + nodeid + '" download>' + "MeshAction (.txt)" + '</a>'); }
+            x += addHtmlValue("MeshCmd", '<a id=meshcmddownloadid href="meshagents?meshcmd=3' + (urlargs.key?('&key=' + urlargs.key):'') + '" download></a>');
+            if (mode == 0) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=generic' + (urlargs.key?('&key=' + urlargs.key):'') + '" download>' + "MeshAction (.txt)" + '</a>'); }
+            if (mode == 1) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=route&nodeid=' + nodeid + (urlargs.key?('&key=' + urlargs.key):'') + '" download>' + "MeshAction (.txt)" + '</a>'); }
             x += '</div>';
             setDialogMode(2, [ "Download MeshCmd", "Network Router" ][mode], 9, null, x, 'fileDownload');
             meshCmdOsClick();
@@ -5440,7 +5446,7 @@
 
         function meshCmdOsClick() {
             var os = Q('aginsSelect').value, osn = '', osurl = '';
-            //Q('meshcmddownloadid').href = 'meshagents?meshcmd=' + os;
+            //Q('meshcmddownloadid').href = 'meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):'');
             if (os == 3) { osn = "MeshCmd (Win32 executable)"; }
             if (os == 4) { osn = "MeshCmd (Win64 executable)"; }
             if (os == 5) { osn = "MeshCmd (Linux x86, 32bit)"; }
@@ -5448,7 +5454,7 @@
             if (os == 16) { osn = "MeshCmd (MacOS, 64bit)"; }
             if (os == 25) { osn = "MeshCmd (Linux ARM, 32bit)"; }
             QH('meshcmddownloadid', osn);
-            Q('meshcmddownloadid').setAttribute('href', 'meshagents?meshcmd=' + os);
+            Q('meshcmddownloadid').setAttribute('href', 'meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):''));
         }
 
         function p10showiconselector() {

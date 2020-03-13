@@ -152,7 +152,7 @@
             <table cellpadding="0" cellspacing="10" style="width: 100%">
                 <tr>
                     <td style="text-align:left"></td>
-                    <td style="text-align:right"><a href="/">Back</a></td>
+                    <td style="text-align:right"><a id="backLink" href="/">Back</a></td>
                 </tr>
             </table>
         </div>
@@ -169,6 +169,13 @@
         if (terms != '') { QH('column_l', decodeURIComponent(terms)); }
         QV('column_l', true);
         userInterfaceSelectMenu();
+
+        // Fix links if a loginKey if used
+        var urlargs = parseUriArgs();
+        if (urlargs.key) {
+            console.log('aa', urlargs.key);
+            Q('backLink').href += '?key=' + urlargs.key;
+        }
 
         // Setup logout control
         var logoutControl = '';
@@ -242,6 +249,7 @@
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
 
     </script>
 </body>
