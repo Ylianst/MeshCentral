@@ -276,12 +276,12 @@ module.exports.pluginHandler = function (parent) {
 
     // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
     // Convert 1.2.3-a to 1.2.3-3 where the letter is converted to a number.
-    function versionToNumber(ver) { var x = ver.split('-'); if (x.length != 2) return ver; x[1] = x[1].toLowerCase().charCodeAt(0) - 96; return x.join('.'); }
+    obj.versionToNumber = function(ver) { var x = ver.split('-'); if (x.length != 2) return ver; x[1] = x[1].toLowerCase().charCodeAt(0) - 96; return x.join('.'); }
 
     // Check if the current version of MeshCentral is at least the minimal required.
-    function checkMeshCentralVersion(current, minimal) {
+    obj.versionCompare = function(current, minimal) {
         if (minimal.startsWith('>=')) { minimal = minimal.substring(2); }
-        var c = versionToNumber(current).split('.'), m = versionToNumber(minimal).split('.');
+        var c = obj.versionToNumber(current).split('.'), m = obj.versionToNumber(minimal).split('.');
         if (c.length != m.length) return false;
         for (var i = 0; i < c.length; i++) { var cx = parseInt(c[i]), cm = parseInt(m[i]); if (cx > cm) { return true; } if (cx < cm) { return false; } }
         return true;
@@ -312,7 +312,7 @@ module.exports.pluginHandler = function (parent) {
                                 'installedVersion': curconf.version,
                                 'version': newconf.version,
                                 'hasUpdate': s.gt(newconf.version, curconf.version),
-                                'meshCentralCompat': checkMeshCentralVersion(parent.currentVer, newconf.meshCentralCompat),
+                                'meshCentralCompat': obj.versionCompare(parent.currentVer, newconf.meshCentralCompat),
                                 'changelogUrl': curconf.changelogUrl,
                                 'status': curconf.status
                             });

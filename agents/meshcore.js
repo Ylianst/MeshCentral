@@ -1960,7 +1960,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'alert,agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
@@ -1971,6 +1971,24 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'alert':
+                    if (args['_'].length ==  0)
+                    {
+                        response = "Proper usage: alert TITLE, CAPTION [, TIMEOUT]"; // Display usage
+                    }
+                    else
+                    {
+                        var p = args['_'].join(' ').split(',');
+                        if(p.length<2)
+                        {
+                            response = "Proper usage: alert TITLE, CAPTION [, TIMEOUT]"; // Display usage
+                        }
+                        else
+                        {
+                            this._alert = require('message-box').create(p[0], p[1], p.length==3?parseInt(p[2]):9999);
+                        }
+                    }
+                    break;
                 case 'agentsize':
                     var actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
                     if (process.platform == 'win32') {
