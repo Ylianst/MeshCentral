@@ -301,6 +301,7 @@
                 <div id="p2AccountSecurity" style="display:none">
                     <p><strong>Account security</strong></p>
                     <div style="margin-left:25px">
+                        <div id="manageEmail2FA"><div class="p2AccountActions"><span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthEmail()">Manage email authentication</a><br /></span></div>
                         <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
                         <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
                         <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
@@ -1590,6 +1591,7 @@
 
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode, domain authentication to 2 factor auth not supported.
+            QV('manageEmail2FA', features & 0x00800000);
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('p2ServerActions', siteRights & 21);
@@ -1660,13 +1662,19 @@
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('manageOtp', (userinfo.otpsecret == 1) || (userinfo.otphkeys > 0));
+            QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
             masterUpdate(4 + 128 + 4096);
 
-            // Check if backup codes should really be enabled
-            if ((backupCodesWarningDone == false) && !(userinfo.otpkeys > 0) && (((userinfo.otpsecret == 1) && !(userinfo.otphkeys > 0)) || ((userinfo.otpsecret != 1) && (userinfo.otphkeys == 1)))) {
+            // Check if none or at least 2 factors are enabled.
+            var authFactorCount = 0;
+            if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount += 1; }
+            if (userinfo.otpkeys == 1) { authFactorCount += 1; }
+            if (userinfo.otpsecret == 1) { authFactorCount += 1; }
+            if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; }
+            if ((backupCodesWarningDone == false) && (authFactorCount == 1)) {
                 var n = { text: "Please add two-factor backup codes. If the current factor is lost, there is not way to recover this account.", title: "Two factor authentication" };
                 addNotification(n);
                 backupCodesWarningDone = true;
@@ -4743,7 +4751,7 @@
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
             if (event && (event.shiftKey == true)) {
                 // Open the device in a different tab
@@ -7689,6 +7697,14 @@
         // MY ACCOUNT
         //
 
+        function account_manageAuthEmail() {
+            if (xxdialogMode || ((features & 0x00800000) == 0)) return;
+            var emailU2Fenabled = ((userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
+            setDialogMode(2, "Email Authentication", 1, function () {
+                if (emailU2Fenabled != Q('email2facheck').checked) { meshserver.send({ action: 'otpemail', enabled: Q('email2facheck').checked }); }
+            }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox ' + (emailU2Fenabled?'checked':'') + '/>' + "Enable email two-factor authenticaiton." + '</label>');
+        }
+
         function account_manageAuthApp() {
             if (xxdialogMode || ((features & 4096) == 0)) return;
             if (userinfo.otpsecret == 1) { account_removeOtp(); } else { account_addOtp(); }
@@ -7928,7 +7944,7 @@
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return false; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below." + '<br /><br />';
