@@ -160,7 +160,10 @@
                                         <tr>
                                             <td colspan=2>
                                                 <div style=float:right><input id=tokenOkButton type=submit value="Login" disabled="disabled" /></div>
-                                                <div style=float:right><input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" /></div>
+                                                <div style=float:right>
+                                                    <input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" />
+                                                    <input style="display:none;float:right" id=emailKeyButton type=button value="Email" onclick="useEmailToken()" />
+                                                </div>
                                             </td>
                                         </tr>
                                     </table>
@@ -270,10 +273,11 @@
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
         var publicKeyCredentialRequestOptions = null;
+        var otpemail = ('{{{otpemail}}}' === 'true');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Hold on, reset mail sent."];
+        var okmessages = ['', "Hold on, reset mail sent.", "Email sent."];
         var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
@@ -349,6 +353,7 @@
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
+                QV('emailKeyButton', otpemail && (messageid != 2));
             }
 
             if (loginMode == '5') {
@@ -415,6 +420,17 @@
                     function (error) { console.log('credentials-get error', error); }
                 );
             }
+        }
+
+        function useEmailToken() {
+            if (otpemail != true) return;
+            setDialogMode(1, "Secure Login", 3, useEmailKeyEx, "Send token to registed email address?");
+        }
+
+        function useEmailKeyEx() {
+            Q('hwtokenInput').value = '**email**';
+            QE('tokenOkButton', true);
+            Q('tokenOkButton').click();
         }
 
         function showPassHint(e) {
