@@ -1999,6 +1999,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (command.resetNextLogin === true) { chguser.passchange = -1; } else { chguser.passchange = Math.floor(Date.now() / 1000); }
                                 delete chguser.passtype; // Remove the password type if one was present.
                                 if (command.removeMultiFactor == true) {
+                                    if (chguser.otpekey) { delete chguser.otpekey; }
                                     if (chguser.otpsecret) { delete chguser.otpsecret; }
                                     if (chguser.otphkeys) { delete chguser.otphkeys; }
                                     if (chguser.otpkeys) { delete chguser.otpkeys; }
@@ -2986,9 +2987,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     break;
                 }
+            case 'otpemail':
+                {
+                    // Check input
+                    if (typeof command.enabled != 'boolean') return;
+                    
+                    // See if we really need to change the state
+                    if ((command.enabled === true) && (user.otpekey != null)) return;
+                    if ((command.enabled === false) && (user.otpekey == null)) return;
+
+                    // Change the email 2FA of this user
+                    if (command.enabled === true) { user.otpekey = {}; } else { delete user.otpekey; }
+                    parent.db.SetUser(user);
+                    ws.send(JSON.stringify({ action: 'otpemail', success: true, enabled: command.enabled })); // Report success
+
+                    // Notify change
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: command.enabled ? "Enabled email two-factor authentication." :"Disabled email two-factor authentication.", domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+                    break;
+                }
             case 'otpauth-request':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Request a one time password to be setup
@@ -3002,7 +3025,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-setup':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
@@ -3030,7 +3053,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-clear':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Clear the one time password secret
@@ -3053,7 +3076,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-getpasswords':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 

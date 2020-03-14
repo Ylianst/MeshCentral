@@ -552,7 +552,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check if we can use OTP tokens with email
         var otpemail = (parent.mailserver != null);
-        if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
 
         // Check email key
         if ((otpemail) && (user.otpekey != null) && (user.otpekey.d != null) && (user.otpekey.k === token)) {
@@ -1625,6 +1625,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
             if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
             if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
+            if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
@@ -1721,7 +1722,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check if we can use OTP tokens with email
         var otpemail = (parent.mailserver != null) && (req.session.tokenemail);
-        if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
 
         // Render the login page
         render(req, res, getRenderPage('login', req), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail }, domain));
@@ -4274,7 +4275,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete user2.domain;
         delete user2.subscriptions;
         delete user2.passtype;
-        if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpekey = 1; } // Indicates that email 2FA is enabled.
+        if ((typeof user2.otpekey == 'object') && (user2.otpekey != null)) { user2.otpekey = 1; } // Indicates that email 2FA is enabled.
         if ((typeof user2.otpsecret == 'string') && (user2.otpsecret != null)) { user2.otpsecret = 1; } // Indicates a time secret is present.
         if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
         if ((typeof user2.otphkeys == 'object') && (user2.otphkeys != null)) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
