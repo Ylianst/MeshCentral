@@ -541,7 +541,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Check if a 2nd factor is present
-        return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
+        return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || (user.otpekey != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
     // Check the 2-step auth token
@@ -549,6 +549,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         parent.debug('web', 'checkUserOneTimePassword()');
         const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (parent.config.settings.no2factorauth !== true));
         if (twoStepLoginSupported == false) { parent.debug('web', 'checkUserOneTimePassword: not supported.'); func(true); return; };
+
+        // Check if we can use OTP tokens with email
+        var otpemail = (parent.mailserver != null);
+        if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+
+        // Check email key
+        if ((otpemail) && (user.otpekey != null) && (user.otpekey.d != null) && (user.otpekey.k === token)) {
+            var deltaTime = (Date.now() - user.otpekey.d);
+            if ((deltaTime > 0) && (deltaTime < 300000)) { // Allow 5 minutes to use the email token (10000 * 60 * 5).
+                user.otpekey = {};
+                obj.db.SetUser(user);
+                parent.debug('web', 'checkUserOneTimePassword: success (email).');
+                func(true);
+                return;
+            }
+        }
 
         // Check hardware key
         if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken) == 'string') && (hwtoken.length > 0)) {
@@ -595,10 +611,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Update the hardware key counter and accept the 2nd factor
                             webAuthnKey.counter = webauthnResponse.counter;
                             obj.db.SetUser(user);
-                            parent.debug('web', 'checkUserOneTimePassword: success.');
+                            parent.debug('web', 'checkUserOneTimePassword: success (hardware).');
                             func(true);
                         } else {
-                            parent.debug('web', 'checkUserOneTimePassword: fail.');
+                            parent.debug('web', 'checkUserOneTimePassword: fail (hardware).');
                             func(false);
                         }
                         return;
@@ -610,12 +626,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check Google Authenticator
         const otplib = require('otplib')
         otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
-        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib.authenticator.check(token, user.otpsecret) == true)) { func(true); return; };
+        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib.authenticator.check(token, user.otpsecret) == true)) {
+            parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
+            func(true);
+            return;
+        };
 
         // Check written down keys
         if ((user.otpkeys != null) && (user.otpkeys.keys != null) && (typeof (token) == 'string') && (token.length == 8)) {
             var tokenNumber = parseInt(token);
-            for (var i = 0; i < user.otpkeys.keys.length; i++) { if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) { user.otpkeys.keys[i].u = false; func(true); return; } }
+            for (var i = 0; i < user.otpkeys.keys.length; i++) {
+                if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) {
+                    parent.debug('web', 'checkUserOneTimePassword: success (one-time).');
+                    user.otpkeys.keys[i].u = false; func(true); return;
+                }
+            }
         }
 
         // Check OTP hardware key
@@ -631,7 +656,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var yubikeyotp = require('yubikeyotp');
                 var request = { otp: token, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
                 if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                yubikeyotp.verifyOTP(request, function (err, results) { func((results != null) && (results.status == 'OK')); });
+                yubikeyotp.verifyOTP(request, function (err, results) {
+                    if ((results != null) && (results.status == 'OK')) {
+                        parent.debug('web', 'checkUserOneTimePassword: success (Yubikey).');
+                        func(true);
+                    } else {
+                        parent.debug('web', 'checkUserOneTimePassword: fail (Yubikey).');
+                        func(false);
+                    }
+                });
                 return;
             }
         }
@@ -687,6 +720,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Check if this user has 2-step login active
                 if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user, req)) {
+                    if ((req.body.hwtoken == '**email**') && (user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null)) {
+                        user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
+                        obj.db.SetUser(user);
+                        parent.debug('web', 'Sending 2FA email to: ' + user.email);
+                        parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k);
+                        req.session.messageid = 2; // "Email sent" message
+                        req.session.loginmode = '4';
+                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                        return;
+                    }
+
                     checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result) {
                         if (result == false) {
                             var randomWaitTime = 0;
@@ -706,6 +750,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Wait and redirect the user
                             setTimeout(function () {
                                 req.session.loginmode = '4';
+                                req.session.tokenemail = ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null));
                                 req.session.tokenusername = xusername;
                                 req.session.tokenpassword = xpassword;
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -793,6 +838,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         //req.session.regenerate(function () {
         // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
         delete req.session.loginmode;
+        delete req.session.tokenemail;
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
         delete req.session.tokenemail;
@@ -1008,6 +1054,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Failed, error out.
                 parent.debug('web', 'handleResetPasswordRequest: failed authenticate()');
                 delete req.session.loginmode;
+                delete req.session.tokenemail;
                 delete req.session.tokenusername;
                 delete req.session.tokenpassword;
                 delete req.session.resettokenusername;
@@ -1672,8 +1719,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var hwstate = null;
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
+        // Check if we can use OTP tokens with email
+        var otpemail = (parent.mailserver != null) && (req.session.tokenemail);
+        if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+
         // Render the login page
-        render(req, res, getRenderPage('login', req), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate }, domain));
+        render(req, res, getRenderPage('login', req), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail }, domain));
     }
 
     // Handle a post request on the root
@@ -4223,6 +4274,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete user2.domain;
         delete user2.subscriptions;
         delete user2.passtype;
+        if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpekey = 1; } // Indicates that email 2FA is enabled.
         if ((typeof user2.otpsecret == 'string') && (user2.otpsecret != null)) { user2.otpsecret = 1; } // Indicates a time secret is present.
         if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
         if ((typeof user2.otphkeys == 'object') && (user2.otphkeys != null)) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
@@ -4509,6 +4561,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
     function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
     function getRandomLowerCase(len) { var r = '', random = obj.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
+
+    // Generate a 8 digit integer with even random probability for each value.
+    function getRandomEightDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 100000000; }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }

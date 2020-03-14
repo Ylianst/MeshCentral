@@ -164,7 +164,10 @@
                                         <tr>
                                             <td colspan=2>
                                                 <div style=float:right><input id=tokenOkButton type=submit value="Login" disabled="disabled" /></div>
-                                                <div style=float:right><input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" /></div>
+                                                <div style=float:right>
+                                                    <input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" />
+                                                    <input style="display:none;float:right" id=emailKeyButton type=button value="Email" onclick="useEmailToken()" />
+                                                </div>
                                             </td>
                                         </tr>
                                     </table>
@@ -238,7 +241,7 @@
             </table>
         </div>
     </div>
-    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:180px;width:400px;display:none">
+    <div id=dialog style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:5px;position:fixed;top:180px;width:300px;display:none">
         <div style="width:100%;background-color:#003366;color:#FFF;border-radius:5px 5px 0 0">
             <div id=id_dialogclose style=float:right;padding:5px;cursor:pointer onclick=setDialogMode()><b>X</b></div>
             <div id=id_dialogtitle style=padding:5px></div>
@@ -271,10 +274,11 @@
         var hardwareKeyChallenge = decodeURIComponent('{{{hkey}}}');
         var publicKeyCredentialRequestOptions = null;
         var currentpanel = 0;
+        var otpemail = ('{{{otpemail}}}' === 'true');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Hold on, reset mail sent."];
+        var okmessages = ['', "Hold on, reset mail sent.", "Email sent."];
         var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
@@ -328,6 +332,7 @@
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
+                QV('emailKeyButton', otpemail && (messageid != 2)); // TODO
             }
 
             if (loginMode == '5') {
@@ -364,6 +369,7 @@
         
         // Use a hardware security key
         function useSecurityKey() {
+            if (xxdialogMode) return;
             if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                 if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
 
@@ -391,6 +397,18 @@
                     function (error) { console.log('credentials-get error', error); }
                 );
             }
+        }
+
+        function useEmailToken() {
+            if (xxdialogMode) return;
+            if (otpemail != true) return;
+            setDialogMode(1, "Secure Login", 3, useEmailKeyEx, "Send token to registed email address?");
+        }
+
+        function useEmailKeyEx() {
+            Q('hwtokenInput').value = '**email**';
+            QE('tokenOkButton', true);
+            Q('tokenOkButton').click();
         }
 
         function showPassHint() {
@@ -633,7 +651,7 @@
             if (((b & 8) || x) && f) f(x, t);
         }
 
-        function center() { QS('dialog').left = ((((getDocWidth() - 400) / 2)) + 'px'); }
+        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
