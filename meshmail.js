@@ -144,7 +144,6 @@ module.exports.CreateMeshMail = function (parent) {
         var options = { email: email, servername: domain.title ? domain.title : 'MeshCentral', token: token };
 
         // Send the email
-        console.log(options);
         obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
         sendNextMail();
     };
