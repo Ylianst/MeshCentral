@@ -1183,6 +1183,7 @@
     },
     {
       "en": "64bit version of MacOS Mesh Agent",
+      "nl": "64bit versie van de MacOS Mesh Agent",
       "xloc": [
         "default.handlebars->27->320"
       ]
@@ -6997,6 +6998,7 @@
     },
     {
       "en": "Email Authentication",
+      "nl": "E-mail authenticatie",
       "xloc": [
         "default-mobile.handlebars->9->30",
         "default.handlebars->27->759"
@@ -7061,6 +7063,7 @@
     },
     {
       "en": "Email sent.",
+      "nl": "E-mail verzonden.",
       "xloc": [
         "login-mobile.handlebars->5->2",
         "login.handlebars->5->2"
@@ -7100,6 +7103,7 @@
     },
     {
       "en": "Enable email two-factor authenticaiton.",
+      "nl": "Schakel e-mail tweefactorauthenticatie in.",
       "xloc": [
         "default-mobile.handlebars->9->32",
         "default.handlebars->27->761"
@@ -11517,6 +11521,7 @@
     },
     {
       "en": "Manage email authentication",
+      "nl": "Beheer e-mailverificatie",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageEmail2FA->0",
         "default.handlebars->container->column_l->p2->p2AccountSecurity->3->manageEmail2FA->1->0"
@@ -16044,6 +16049,7 @@
     },
     {
       "en": "Secure Login",
+      "nl": "Beveiligde login",
       "xloc": [
         "login-mobile.handlebars->5->20",
         "login.handlebars->5->20"
@@ -16341,6 +16347,7 @@
     },
     {
       "en": "Send token to registed email address?",
+      "nl": "Token verzenden naar geregistreerd e-mailadres?",
       "xloc": [
         "login-mobile.handlebars->5->21",
         "login.handlebars->5->21"
@@ -20138,6 +20145,7 @@
     },
     {
       "en": "When enabled, on each login, you will be given the option to receive a login token to you email account for added security.",
+      "nl": "Indien ingeschakeld, krijgt u bij elke login de optie om een login-token voor uw e-mailaccount te ontvangen voor extra veiligheid.",
       "xloc": [
         "default-mobile.handlebars->9->31",
         "default.handlebars->27->760"
@@ -20269,6 +20277,7 @@
     },
     {
       "en": "Win32 Executable",
+      "nl": "Win32 uitvoerbaar",
       "xloc": [
         "default.handlebars->27->573"
       ]
