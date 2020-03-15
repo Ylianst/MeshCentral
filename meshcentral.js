@@ -2314,7 +2314,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(`npm install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(npmpath + ` install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
             process.exit();
@@ -2334,6 +2334,7 @@ var serverWarnings = [];
 function addServerWarning(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
 
 // Load the really basic modules
+var npmpath = 'npm';
 var meshserver = null;
 var childProcess = null;
 var previouslyInstalledModules = {};
@@ -2348,6 +2349,21 @@ function mainStart() {
     InstallModules(['minimist'], function () {
         // Parse inbound arguments
         var args = require('minimist')(process.argv.slice(2));
+
+        // Setup the NPM path
+        if (args.npmpath == null) {
+            try {
+                var xnodepath = process.argv[0];
+                var xnpmpath = require('path').join(require('path').dirname(process.argv[0]), 'npm');
+                if (require('fs').existsSync(xnodepath) && require('fs').existsSync(xnpmpath)) {
+                    if (xnodepath.indexOf(' ') >= 0) { xnodepath = '"' + xnodepath + '"'; }
+                    if (xnpmpath.indexOf(' ') >= 0) { xnpmpath = '"' + xnpmpath + '"'; }
+                    if (require('os').platform() == 'win32') { npmpath = xnpmpath; } else { npmpath = (xnodepath + ' ' + xnpmpath); }
+                }
+            } catch (ex) { console.log(ex); }
+        } else {
+            npmpath = args.npmpath;
+        }
 
         // Get the server configuration
         var config = getConfig(false);
