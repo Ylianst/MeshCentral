@@ -1263,6 +1263,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Called to process an agent invite GET/POST request
+    function handleInviteRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleInviteRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        if ((req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req), getRenderArgs({ messageid: 0 }, domain)); return; } // No invitation code
+
+        // Send invitation link, valid for 1 minute.
+        //res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: 'mesh//xxxxx', f: 0, expire: 1 }, parent.invitationLinkEncryptionKey));
+
+        render(req, res, getRenderPage('invite', req), getRenderArgs({ messageid: 100 }, domain)); // Bad invitation code
+    }
+
     // Called to process an agent invite request
     function handleAgentInviteRequest(req, res) {
         const domain = getDomain(req);
@@ -3596,6 +3609,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'resetpassword', handleResetPasswordRequest);
             obj.app.post(url + 'resetaccount', handleResetAccountRequest);
             obj.app.get(url + 'checkmail', handleCheckMailRequest);
+            obj.app.get(url + 'invite', handleInviteRequest);
+            obj.app.post(url + 'invite', handleInviteRequest);
             obj.app.get(url + 'agentinvite', handleAgentInviteRequest);
             obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
             obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
