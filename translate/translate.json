@@ -3855,6 +3855,7 @@
     },
     {
       "en": "Change the password for this user",
+      "nl": "Wijzig het wachtwoord voor deze gebruiker",
       "xloc": [
         "default.handlebars->27->1412"
       ]
@@ -13394,6 +13395,7 @@
     },
     {
       "en": "Not verified",
+      "nl": "niet geverifieerd",
       "xloc": [
         "default.handlebars->27->1418"
       ]
@@ -18235,6 +18237,7 @@
     },
     {
       "en": "The name of this computer as set in the operating system",
+      "nl": "De naam van deze computer zoals ingesteld in het besturingssysteem",
       "xloc": [
         "default.handlebars->27->443",
         "default.handlebars->27->445"
@@ -19857,6 +19860,7 @@
     },
     {
       "en": "Verified",
+      "nl": "Geverifieerd",
       "xloc": [
         "default.handlebars->27->1419"
       ]
