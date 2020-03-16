@@ -4789,7 +4789,7 @@
                 x += addDeviceAttribute('<span title=\"' + "The name of the device group this computer belong to." + '\">' + "Group" + '</span>', '<a href=# title=\"' + "The name of the device group this computer belong to" + '\" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
 
                 // Attribute: Name
-                if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="The name of this computer as set in the operating system">Name</span>', '<span title="The name of this computer as set in the operating system">' + EscapeHtml(node.rname) + '</span>'); }
+                if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
                 if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
@@ -9999,7 +9999,7 @@
             x = '<div style=float:right;font-size:x-small>';
             if (deletePossible) x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>';
             x += '</div><div style=font-size:x-small>';
-            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="Change the password for this user">' + "Change Password" + '</a>';
+            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
             x += '</div><br>'
             QH('p30html3', x);
 
@@ -10028,7 +10028,7 @@
             if (xxdialogMode) return false;
             var x = '';
             x += addHtmlValue("Email", '<input id=dp30email style=width:230px maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() />');
-            if (serverinfo.emailcheck) { x += addHtmlValue("Status", '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>Not verified</option><option value=1>Verified</option></select>'); }
+            if (serverinfo.emailcheck) { x += addHtmlValue("Status", '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
             setDialogMode(2, format("Change Email for {0}", EscapeHtml(currentUser.name)), 3, p30showUserEmailChangeDialogEx, x);
             Q('dp30email').focus();
             Q('dp30email').value = (currentUser.email?currentUser.email:'');
