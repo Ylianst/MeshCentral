@@ -18,6 +18,7 @@ var minify = null;
 
 var meshCentralSourceFiles = [
     "../views/agentinvite.handlebars",
+    "../views/invite.handlebars",
     "../views/default.handlebars",
     "../views/default-mobile.handlebars",
     "../views/download.handlebars",

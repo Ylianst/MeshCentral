@@ -7807,6 +7807,7 @@
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu",
         "error404.handlebars->container->topbar->uiMenuButton->uiMenu",
+        "invite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "login.handlebars->container->topbar->uiMenuButton->uiMenu",
         "terms.handlebars->container->topbar->uiMenuButton->uiMenu"
       ]
@@ -9782,6 +9783,12 @@
       ]
     },
     {
+      "en": "Invalid invitation code.",
+      "xloc": [
+        "invite.handlebars->3->1"
+      ]
+    },
+    {
       "cs": "Neplatný token, zkuste to znovu.",
       "de": "Ungültiges Token, versuchen Sie es erneut.",
       "en": "Invalid token, try again.",
@@ -9821,6 +9828,12 @@
       "ru": "Тип приглашения",
       "xloc": [
         "default.handlebars->27->263"
+      ]
+    },
+    {
+      "en": "Invitation Code",
+      "xloc": [
+        "invite.handlebars->container->column_l->5->1->0->3->1"
       ]
     },
     {
@@ -10524,6 +10537,7 @@
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu",
         "error404.handlebars->container->topbar->uiMenuButton->uiMenu",
+        "invite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "login.handlebars->container->topbar->uiMenuButton->uiMenu",
         "terms.handlebars->container->topbar->uiMenuButton->uiMenu"
       ]
@@ -17806,6 +17820,12 @@
       ]
     },
     {
+      "en": "Submit",
+      "xloc": [
+        "invite.handlebars->container->column_l->5->1->0->3->3->3"
+      ]
+    },
+    {
       "cs": "Úspěch",
       "de": "Erfolg",
       "en": "Success",
@@ -18276,6 +18296,12 @@
       ]
     },
     {
+      "en": "This is a portal for computer remote management and support.",
+      "xloc": [
+        "invite.handlebars->container->column_l->3"
+      ]
+    },
+    {
       "cs": "Toto není bezpečná zásada, protože aktivaci budou provádět agenti.",
       "de": "Dies ist keine sichere Richtlinie, da Agenten die Aktivierung durchführen.",
       "en": "This is not a secure policy as agents will be performing activation.",
@@ -18640,6 +18666,7 @@
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu",
         "error404.handlebars->container->topbar->uiMenuButton->uiMenu",
+        "invite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "login.handlebars->container->topbar->uiMenuButton->uiMenu",
         "terms.handlebars->container->topbar->uiMenuButton->uiMenu"
       ]
@@ -18723,6 +18750,7 @@
         "agentinvite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "default.handlebars->container->topbar->1->1->uiMenuButton->uiMenu",
         "error404.handlebars->container->topbar->uiMenuButton->uiMenu",
+        "invite.handlebars->container->topbar->uiMenuButton->uiMenu",
         "login.handlebars->container->topbar->uiMenuButton->uiMenu",
         "terms.handlebars->container->topbar->uiMenuButton->uiMenu"
       ]
@@ -19690,6 +19718,7 @@
         "agentinvite.handlebars->container->topbar",
         "default.handlebars->container->topbar->1->1",
         "error404.handlebars->container->topbar",
+        "invite.handlebars->container->topbar",
         "login.handlebars->container->topbar",
         "terms.handlebars->container->topbar"
       ]
@@ -20139,6 +20168,7 @@
       "pt": "Bem vindo",
       "ru": "Добро пожаловать",
       "xloc": [
+        "invite.handlebars->container->column_l->1",
         "login.handlebars->container->column_l->1"
       ]
     },
@@ -21922,6 +21952,7 @@
         "agentinvite.handlebars->container->topbar->uiMenuButton",
         "default.handlebars->container->topbar->1->1->uiMenuButton",
         "error404.handlebars->container->topbar->uiMenuButton",
+        "invite.handlebars->container->topbar->uiMenuButton",
         "login.handlebars->container->topbar->uiMenuButton",
         "terms.handlebars->container->topbar->uiMenuButton"
       ]
