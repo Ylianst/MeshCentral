@@ -28,9 +28,9 @@
 module.exports.CreateDB = function (parent, func) {
     var obj = {};
     var Datastore = null;
-    var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days. (Seconds * Minutes * Hours * Days)
-    var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days. (Seconds * Minutes * Hours * Days)
-    var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days. (Seconds * Minutes * Hours * Days)
+    var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
+    var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
+    var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
     obj.identifier = null;
     obj.dbKey = null;
