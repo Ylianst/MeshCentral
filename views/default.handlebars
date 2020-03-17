@@ -8147,10 +8147,9 @@
             x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
 
             // Display invitation codes
-            if (features & 0x01000000) {
+            if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
                 var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
                 if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
-                //x += addHtmlValue("Invite Codes", addLink(inviteCodeStr, 'p20editmeshInviteCode()'));
                 x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
             }
 
