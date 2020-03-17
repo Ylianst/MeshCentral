@@ -2319,6 +2319,7 @@
                                 if (message.event.consent != null) { meshes[message.event.meshid].consent = message.event.consent; }
                                 if (message.event.links) { meshes[message.event.meshid].links = message.event.links; }
                                 if (message.event.amt) { meshes[message.event.meshid].amt = message.event.amt; }
+                                if (message.event.invite != null) { meshes[message.event.meshid].invite = message.event.invite; } else { delete meshes[message.event.meshid].invite; }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (IsMeshViewable(message.event.meshid) == false) {
@@ -8136,7 +8137,7 @@
                 x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent()', meshrights & 1));
             }
 
-            // Display user consent
+            // Display user notification
             var meshNotify = 0, meshNotifyStr = [];
             if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
             if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
@@ -8144,6 +8145,14 @@
             if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
             if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
             x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+
+            // Display invitation codes
+            if (features & 0x01000000) {
+                var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
+                if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
+                //x += addHtmlValue("Invite Codes", addLink(inviteCodeStr, 'p20editmeshInviteCode()'));
+                x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
+            }
 
             // Intel AMT setup
             var intelAmtPolicy = "No Policy";
@@ -8658,6 +8667,63 @@
         }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); return false; }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
+
+        function p20editmeshInviteCode() {
+            if (xxdialogMode) return false;
+            var meshrights = GetMeshRights(currentMesh);
+
+            var servername = serverinfo.name;
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var url;
+            if (serverinfo.https == true) {
+                var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
+                url = 'https://' + servername + portStr + domainUrl + 'invite';
+            } else {
+                var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
+                url = 'http://' + servername + portStr + domainUrl + 'invite';
+            }
+
+            if (meshrights & 1) {
+                // We can edit the mesh invite codes
+                var x = "When enabled, invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
+                x += '<div style=width:100%;text-align:center><a target=_blank href="' + url + '">' + url + '</a></div><br />';
+                x += '<div style=margin-bottom:5px><label><input id=agentJoinCheck type=checkbox onclick=p20editmeshInviteCodeValidate() />' + "Enable Invite Codes" + '</label></div>';
+                x += addHtmlValue("Invite Codes", '<input id=agentInviteCode style=width:236px onkeyup=p20editmeshInviteCodeValidate() placeholder="code1, code2, code3" />');
+                x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+                setDialogMode(2, "Invite Codes", 3, p20editmeshInviteCodeEx, x);
+                if (currentMesh.invite != null) {
+                    Q('agentJoinCheck').checked = true;
+                    Q('agentInviteCode').value = currentMesh.invite.codes.join(', ');
+                    Q('agentInviteType').value = (currentMesh.invite.flags & 3);
+                }
+                p20editmeshInviteCodeValidate();
+            } else {
+                // View codes only
+                var x = "Invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
+                x += '<div style=width:100%;text-align:center><a target=_blank href="' + url + '">' + url + '</a></div><br />';
+                x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
+                x += addHtmlValue("Installation Type", ["Background and interactive", "Background only", "Interactive only"][currentMesh.invite.flags & 3]);
+                setDialogMode(2, "Invite Codes", 1, null, x);
+            }
+        }
+
+        function p20editmeshInviteCodeValidate() {
+            var ok = true, codes = Q('agentInviteCode').value.split(',');
+            for (var i in codes) { codes[i] = codes[i].trim(); if (codes[i] == '') { ok = false; } }
+            QE('agentInviteCode', Q('agentJoinCheck').checked);
+            QE('agentInviteType', Q('agentJoinCheck').checked);
+            QE('idx_dlgOkButton', (Q('agentJoinCheck').checked == false) || (ok));
+        }
+
+        function p20editmeshInviteCodeEx() {
+            if (Q('agentJoinCheck').checked == true) {
+                var codes = Q('agentInviteCode').value.split(',');
+                for (var i in codes) { codes[i] = codes[i].trim(); }
+                meshserver.send({ action: 'editmesh', meshid: currentMesh._id, invite: { codes: codes, flags: parseInt(Q('agentInviteType').value) } });
+            } else {
+                meshserver.send({ action: 'editmesh', meshid: currentMesh._id, invite: '*' });
+            }
+        }
 
         function p20editMeshNotify() {
             if (xxdialogMode) return false;

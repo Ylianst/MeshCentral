@@ -282,6 +282,7 @@
     <Content Include="views\download.handlebars" />
     <Content Include="views\error404-mobile.handlebars" />
     <Content Include="views\error404.handlebars" />
+    <Content Include="views\invite.handlebars" />
     <Content Include="views\login-mobile.handlebars" />
     <Content Include="views\login.handlebars" />
     <Content Include="views\message.handlebars" />

@@ -1270,8 +1270,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req), getRenderArgs({ messageid: 0 }, domain)); return; } // No invitation code
 
-        // Send invitation link, valid for 1 minute.
-        //res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: 'mesh//xxxxx', f: 0, expire: 1 }, parent.invitationLinkEncryptionKey));
+        // Each for a device group that has this invite code.
+        for (var i in obj.meshes) {
+            if ((obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
+                // Send invitation link, valid for 1 minute.
+                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : ''));
+                return;
+            }
+        }
 
         render(req, res, getRenderPage('invite', req), getRenderArgs({ messageid: 100 }, domain)); // Bad invitation code
     }
@@ -1639,6 +1645,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
             if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
             if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
+            if (domain.agentinvitecodes == true) { features += 0x01000000; } // Support for agent invite codes
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
@@ -3609,8 +3616,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'resetpassword', handleResetPasswordRequest);
             obj.app.post(url + 'resetaccount', handleResetAccountRequest);
             obj.app.get(url + 'checkmail', handleCheckMailRequest);
-            obj.app.get(url + 'invite', handleInviteRequest);
-            obj.app.post(url + 'invite', handleInviteRequest);
             obj.app.get(url + 'agentinvite', handleAgentInviteRequest);
             obj.app.post(url + 'amtevents.ashx', obj.handleAmtEventRequest);
             obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
@@ -3636,6 +3641,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
+            if (parent.config.domains[i].agentinvitecodes == true) {
+                obj.app.get(url + 'invite', handleInviteRequest);
+                obj.app.post(url + 'invite', handleInviteRequest);
+            }
             if (parent.pluginHandler != null) {
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.handlePluginAdminPostReq);
