@@ -1983,7 +1983,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'changeuserpass':
                 {
                     // Change a user's password
-                    if (user.siteadmin != 0xFFFFFFFF) break;
+                    if ((user.siteadmin & 2) == 0) break;
                     if (common.validateString(command.userid, 1, 256) == false) break;
                     if (common.validateString(command.pass, 0, 256) == false) break;
                     if ((command.hint != null) && (common.validateString(command.hint, 0, 256) == false)) break;
@@ -1992,6 +1992,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     var chguser = parent.users[command.userid];
                     if (chguser) {
+                        // If we are not full administrator, we can't change anything on a different full administrator
+                        if ((user.siteadmin != 0xFFFFFFFF) & (chguser.siteadmin == 0xFFFFFFFF)) break;
+
                         // Can only perform this operation on other users of our group.
                         if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 

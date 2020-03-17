@@ -10064,7 +10064,7 @@
             x = '<div style=float:right;font-size:x-small>';
             if (deletePossible) x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>';
             x += '</div><div style=font-size:x-small>';
-            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
+            if (((userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF)) || (userinfo.siteadmin == 0xFFFFFFFF)) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
             x += '</div><br>'
             QH('p30html3', x);
 
