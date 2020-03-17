@@ -7100,6 +7100,7 @@
     },
     {
       "en": "Enable Invite Codes",
+      "nl": "Schakel uitnodigingscodes in",
       "xloc": [
         "default.handlebars->27->1201"
       ]
@@ -9799,6 +9800,7 @@
     },
     {
       "en": "Invalid invitation code.",
+      "nl": "Ongeldige uitnodigingscode.",
       "xloc": [
         "invite.handlebars->3->1"
       ]
@@ -9847,12 +9849,14 @@
     },
     {
       "en": "Invitation codes can be used by anyone to join devices to this device group using the following public link:",
+      "nl": "Uitnodigingscodes kunnen door iedereen worden gebruikt om apparaten toe te voegen aan deze apparaatgroep via de volgende openbare link:",
       "xloc": [
         "default.handlebars->27->1208"
       ]
     },
     {
       "en": "Invitation Code",
+      "nl": "Uitnodigingscode",
       "xloc": [
         "invite.handlebars->container->column_l->5->1->0->3->1"
       ]
@@ -9875,6 +9879,7 @@
     },
     {
       "en": "Invite Codes",
+      "nl": "Uitnodigingscode",
       "xloc": [
         "default.handlebars->27->1065",
         "default.handlebars->27->1202",
@@ -17854,6 +17859,7 @@
     },
     {
       "en": "Submit",
+      "nl": "Verzenden",
       "xloc": [
         "invite.handlebars->container->column_l->5->1->0->3->3->3"
       ]
@@ -18331,6 +18337,7 @@
     },
     {
       "en": "This is a portal for computer remote management and support.",
+      "nl": "Dit is een portaal voor extern computerbeheer en ondersteuning.",
       "xloc": [
         "invite.handlebars->container->column_l->3"
       ]
@@ -20236,6 +20243,7 @@
     },
     {
       "en": "When enabled, invitation codes can be used by anyone to join devices to this device group using the following public link:",
+      "nl": "Indien ingeschakeld, kunnen uitnodigingscodes door iedereen worden gebruikt om apparaten toe te voegen aan deze apparaatgroep via de volgende openbare link:",
       "xloc": [
         "default.handlebars->27->1200"
       ]
