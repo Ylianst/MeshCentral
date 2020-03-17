@@ -8147,10 +8147,9 @@
             x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
 
             // Display invitation codes
-            if (features & 0x01000000) {
+            if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
                 var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
                 if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
-                //x += addHtmlValue("Invite Codes", addLink(inviteCodeStr, 'p20editmeshInviteCode()'));
                 x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
             }
 
@@ -10065,7 +10064,7 @@
             x = '<div style=float:right;font-size:x-small>';
             if (deletePossible) x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>';
             x += '</div><div style=font-size:x-small>';
-            if (userinfo.siteadmin == 0xFFFFFFFF) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
+            if (((userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF)) || (userinfo.siteadmin == 0xFFFFFFFF)) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
             x += '</div><br>'
             QH('p30html3', x);
 
