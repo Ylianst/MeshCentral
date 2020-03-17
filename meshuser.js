@@ -2273,15 +2273,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
                         if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Group "' + mesh.name + '" consent changed'; mesh.consent = command.consent; }
 
-                        if (command.invite === '*') {
-                            // Clear invite codes
-                            if (mesh.invite != null) { delete mesh.invite; }
-                            if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
-                        } else if (typeof command.invite === 'object') {
-                            // Set invite codes
-                            if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
-                                mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
+                        // See if we need to change device group invitation codes
+                        if (mesh.mtype == 2) {
+                            if (command.invite === '*') {
+                                // Clear invite codes
+                                if (mesh.invite != null) { delete mesh.invite; }
                                 if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
+                            } else if (typeof command.invite === 'object') {
+                                // Set invite codes
+                                if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
+                                    // Check if an invite code is not already in use.
+                                    var dup = null;
+                                    for (var i in command.invite.codes) {
+                                        for (var j in parent.meshes) {
+                                            if ((j != command.meshid) && (parent.meshes[j].invite != null) && (parent.meshes[j].invite.codes.indexOf(command.invite.codes[i]) >= 0)) { dup = command.invite.codes[i]; break; }
+                                        }
+                                    }
+                                    if (dup != null) {
+                                        // A duplicate was found, don't allow this change.
+                                        displayNotificationMessage('Error, invite code \"' + dup + '\" already in use.', 'Invite Codes');
+                                        return;
+                                    }
+                                    mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
+                                    if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
+                                }
                             }
                         }
 
