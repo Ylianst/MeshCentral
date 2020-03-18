@@ -4101,12 +4101,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         db.Get(nodeid, function (err, nodes) {
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
 
-            // Check direct link
-            var rights = 0, visible = false, r = user.links[nodes[0].meshid];
+            // Check device link
+            var rights = 0, visible = false, r = user.links[nodeid];
             if (r != null) {
-                rights = r.rights;
+                if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a device link, stop here.
+                rights |= r.rights;
                 visible = true;
-                if (rights == 0xFFFFFFFF) { func(nodes[0], rights, true); return; } // User has full rights thru a direct link, stop here.
+            }
+
+            // Check device group link
+            r = user.links[nodes[0].meshid];
+            if (r != null) {
+                if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a device group link, stop here.
+                rights |= r.rights;
+                visible = true;
             }
 
             // Check user group links
@@ -4116,7 +4124,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (g && (g.links != null)) {
                         r = g.links[nodes[0].meshid];
                         if (r != null) {
-                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], r.rights, true); return; } // User has full rights thru a user group link, stop here.
+                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a user group link, stop here.
                             rights |= r.rights; // TODO: Deal with reverse rights
                             visible = true;
                         }
@@ -4202,7 +4210,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return r;
     }
 
-    // Get the right of a user on a given device group
+    // Get the rights of a user on a given device group
     obj.GetMeshRights = function (user, mesh) {
         if ((user == null) || (mesh == null)) { return 0; }
         if (typeof user == 'string') { user = obj.users[user]; }

@@ -3458,14 +3458,14 @@
             if (typeof mesh == 'string') { mesh = meshes[mesh] }
             if ((mesh == null) || (mesh.links == null)) { return 0; }
 
-            // Check if user user
+            // Check if super user
             if (userinfo.manageAllDeviceGroups) return 0xFFFFFFFF;
 
-            // Check direct link permission
+            // Check device group link permission
             var rights = 0, r = mesh.links[userid];
             if (r != null) {
+                if (rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device group link, stop here.
                 rights = r.rights;
-                if (rights == 0xFFFFFFFF) { return rights; } // User has full rights thru a direct link, stop here.
             }
 
             // Check permissions thru user groups
@@ -3476,7 +3476,7 @@
                     if (i.startsWith('ugrp/')) {
                         r = mesh.links[i];
                         if (r != null) {
-                            if (r.rights == 0xFFFFFFFF) { return r.rights; } // User has full rights thru a user group, stop here.
+                            if (r.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a user group, stop here.
                             rights |= r.rights; // TODO: Deal with reverse permissions
                         }
                     }
@@ -3514,7 +3514,19 @@
             if (node == null) { return 0; }
             if (userid == null) { userid = userinfo._id; }
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
-            return GetMeshRights(node.meshid, userid);
+            var r = GetMeshRights(node.meshid, userid);
+            if (r != 0xFFFFFFFF) {
+                var user = null;
+                if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
+                if ((user != null) && (user.links != null)) {
+                    var r2 = user.links[node._id];
+                    if (r2 != null) {
+                        if (r2.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device link, stop here.
+                        r |= r2; // TODO: Deal with reverse permissions
+                    }
+                }
+            }
+            return r;
         }
 
         //

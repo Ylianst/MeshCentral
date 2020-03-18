@@ -72,7 +72,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
 
             // Event node deletion
-            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey), obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
 
             // Disconnect all connections if needed
             const state = parent.parent.GetConnectivityState(obj.dbNodeKey);
@@ -555,12 +555,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (adminUser.links == null) adminUser.links = {};
                 adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
                 db.SetUser(adminUser);
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [adminUser._id]), obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [adminUser._id, obj.dbNodeKey]), obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
             }
         } else {
             if ((mesh != null) && (mesh.deleted != null) && (mesh.links)) {
                 // Must un-delete this mesh
-                var ids = parent.CreateMeshDispatchTargets(mesh._id);
+                var ids = parent.CreateMeshDispatchTargets(mesh._id, [obj.dbNodeKey]);
 
                 // See if users still exists, if so, add links to the mesh
                 for (var userid in mesh.links) {
@@ -640,13 +640,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     mesh = { type: 'mesh', _id: obj.dbMeshKey, name: obj.meshid, mtype: 2, desc: '', domain: domain.id, links: links };
                     db.Set(common.escapeLinksFieldName(mesh));
                     parent.meshes[obj.meshid] = mesh;
-                    parent.parent.AddEventDispatch(parent.CreateMeshDispatchTargets(obj.meshid), ws);
+                    parent.parent.AddEventDispatch(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), ws);
 
                     if (adminUser.links == null) user.links = {};
                     adminUser.links[obj.meshid] = { rights: 0xFFFFFFFF };
                     //adminUser.subscriptions = parent.subscribe(adminUser._id, ws);
                     db.SetUser(user);
-                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(meshid, [user._id]), obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(meshid, [user._id, obj.dbNodeKey]), obj, { etype: 'mesh', username: user.name, meshid: obj.meshid, name: obj.meshid, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
                 }
             }
 
@@ -741,7 +741,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device) };
                     if (log == 0) { event.nolog = 1; } else { event.msg = 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', '); }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid), obj, event);
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
             }
 
@@ -781,9 +781,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Event the new node
         if (obj.agentInfo.capabilities & 0x20) {
             // This is a temporary agent, don't log.
-            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey), obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
         } else {
-            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey), obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
         }
 
         completeAgentConnection3(device, mesh);
@@ -1114,7 +1114,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         } catch (ex) { }
 
                         // Event the node interface information change (This is a lot of traffic, probably don't need this).
-                        //parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid), obj, { action: 'smBiosChange', nodeid: obj.dbNodeKey, domain: domain.id, smbios: command.value,  nolog: 1 });
+                        //parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), obj, { action: 'smBiosChange', nodeid: obj.dbNodeKey, domain: domain.id, smbios: command.value,  nolog: 1 });
 
                         break;
                     }
@@ -1128,7 +1128,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         db.Set(command);
 
                         // Event the node interface information change
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid), obj, { action: 'ifchange', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), obj, { action: 'ifchange', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
 
                         break;
                     }
@@ -1167,7 +1167,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Event node deletion
                                 const change = 'Migrated device ' + node.name;
-                                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid), obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain });
+                                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.dbNodeKey]), obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain });
                             }
                         });
                         break;
@@ -1183,7 +1183,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Log a value in the event log
                         if ((typeof command.msg == 'string') && (command.msg.length < 4096)) {
                             var event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.msg };
-                            var targets = parent.CreateMeshDispatchTargets(obj.dbMeshKey);
+                            var targets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
                             if (typeof command.userid == 'string') {
                                 var loguser = parent.users[command.userid];
                                 if (loguser) { event.userid = command.userid; event.username = loguser.name; targets.push(command.userid); }
@@ -1227,7 +1227,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             // Log this activation event
                             var event = { etype: 'node', action: 'amtactivate', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Device requested Intel AMT ACM activation, FQDN: ' + command.fqdn, ip: obj.remoteaddrport };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey), obj, event);
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
 
                             // Update the device Intel AMT information
                             ChangeAgentCoreInfo({ "intelamt": { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
@@ -1277,7 +1277,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.value == 'string') && (command.value.value.length < 256)) {
                                         // If this is a diagnostic agent, log the event in the log of the main agent
                                         var event = { etype: 'node', action: 'diagnostic', nodeid: obj.realNodeKey, domain: domain.id, msg: command.value.value };
-                                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey), obj, event);
+                                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
                                     }
                                     break;
                                 }
@@ -1295,7 +1295,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                         // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
                         var event = { etype: 'node', action: 'sysinfohash', nodeid: obj.dbNodeKey, domain: domain.id, hash: command.data.hash, nolog: 1 };
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey), obj, event);
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
                     }
                     break;
                 }
@@ -1394,7 +1394,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (changes.length > 0) { event.msg = 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', '); }
                     if ((log == 0) || ((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || (changes.length == 0)) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid), obj, event);
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
             }
         });
@@ -1435,7 +1435,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', ') };
                     if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid), obj, event);
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
             }
         });
@@ -1464,7 +1464,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Event the node change
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), nolog: 1 };
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid), obj, event);
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
             }
         });
