@@ -1825,6 +1825,7 @@
     },
     {
       "en": "Add Device",
+      "nl": "Apparaat toevoegen",
       "xloc": [
         "default.handlebars->27->1447"
       ]
@@ -4333,6 +4334,7 @@
     },
     {
       "en": "Common Devices",
+      "nl": "Gemeenschappelijke apparaten",
       "xloc": [
         "default.handlebars->27->1448"
       ]
@@ -4415,6 +4417,7 @@
     },
     {
       "en": "Confirm deletion of user {0}?",
+      "nl": "Verwijdering van gebruiker {0} bevestigen?",
       "xloc": [
         "default.handlebars->27->1446"
       ]
@@ -8138,6 +8141,7 @@
     },
     {
       "en": "Full Device Rights",
+      "nl": "Volledige apparaatrechten",
       "xloc": [
         "default.handlebars->27->1451"
       ]
@@ -13108,6 +13112,7 @@
     },
     {
       "en": "No devices in common",
+      "nl": "Geen gemeenschappelijke apparaten",
       "xloc": [
         "default.handlebars->27->1455"
       ]
@@ -13980,6 +13985,7 @@
     },
     {
       "en": "Partial Device Rights",
+      "nl": "Gedeeltelijke apparaatrechten",
       "xloc": [
         "default.handlebars->27->1449"
       ]
@@ -19253,6 +19259,7 @@
     },
     {
       "en": "Unknown Device",
+      "nl": "Onbekend apparaat",
       "xloc": [
         "default.handlebars->27->1450"
       ]
