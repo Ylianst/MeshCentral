@@ -2721,7 +2721,7 @@
                 go(parseInt('{{viewmode}}'));
                 goBackStack.push(2);
             } else if (args.gotouser != null) {
-                if (users['user/' + domain + '/' + args.gotouser] == null) return; // This user is not loaded yet
+                if ((users == null) || (users['user/' + domain + '/' + args.gotouser] == null)) return; // This user is not loaded yet
                 gotoUser('user/' + domain + '/' + args.gotouser);
                 go(parseInt('{{viewmode}}'));
                 goBackStack.push(4);
@@ -3123,9 +3123,11 @@
 
                 // Display all empty device groups, we need to do this because users can add devices to these at any time.
                 if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
-                    var deviceHeaderId2 = deviceHeaderId;
-                    for (var i in meshes) {
-                        var mesh = meshes[i], meshrights = GetMeshRights(mesh);
+                    var deviceHeaderId2 = deviceHeaderId, sortedMeshes = [];
+                    for (var i in meshes) { sortedMeshes.push(meshes[i]); }
+                    sortedMeshes.sort(nameSort);
+                    for (var i in sortedMeshes) {
+                        var mesh = sortedMeshes[i], meshrights = GetMeshRights(mesh);
                         if (displayedMeshes[mesh._id] == null) {
                             if ((current != '') && (r != '')) { r += '</tr></table>'; }
                             r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt>';
@@ -3141,8 +3143,7 @@
                             if (mesh.mtype == 1) {
                                 r += '<td><div style=padding:10px><i>' + "No Intel&reg; AMT devices in this mesh";
                                 if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
-                            }
-                            if (mesh.mtype == 2) {
+                            } else if (mesh.mtype == 2) {
                                 r += '<td>';
                                 r += '<div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                                 r += '<div style=padding:10px><i>' + "No devices in this group";
@@ -10055,16 +10056,14 @@
             // Draw the user timeline
             drawUserPermissions();
 
-            // Check if we can delete this user
-            var deletePossible = true;
-            if (user._id == userinfo._id) deletePossible = false;
-            if (user.siteadmin && user.siteadmin > 0 && userinfo.siteadmin != 0xFFFFFFFF) deletePossible = false;
+            // Check if we can change password / delete this user
+            var userAdminRights = (((userinfo.siteadmin != null) && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF)) || (userinfo.siteadmin == 0xFFFFFFFF));
 
             // Show bottom buttons
             x = '<div style=float:right;font-size:x-small>';
-            if (deletePossible) x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>';
+            if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>'; }
             x += '</div><div style=font-size:x-small>';
-            if (((userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF)) || (userinfo.siteadmin == 0xFFFFFFFF)) x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>';
+            if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
             x += '</div><br>'
             QH('p30html3', x);
 
@@ -10160,7 +10159,7 @@
 
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format('Confirm deletion of user {0}?', EscapeHtml(currentUser.name)));
+            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)));
         }
 
         function p30showDeleteUserDialogEx() {
@@ -10170,6 +10169,29 @@
         // Draw device power bars. The bars are 766px wide.
         function drawUserPermissions() {
             var count = 1, x = '';
+
+            if (urlargs.dp == 1) { // For testing only
+                // Display common devices
+                x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+                x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+                if (currentUser.links) {
+                    for (var i in currentUser.links) {
+                        if (i.startsWith('node/')) {
+                            var cr = 0, r = currentUser.links[i].rights, node = getNodeFromId(i), trash = '', rights = "Partial Device Rights";
+                            if (node == null) { continue; }
+                            if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
+                            var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
+                            if (r == 0xFFFFFFFF) rights = "Full Device Rights"; else if (r == 0) rights = "No Rights";
+                            if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + nodename + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                        }
+                    }
+                }
+                if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
+                x += '</tbody></table><br />';
+            }
+
+            // Display common device groups
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
             if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device Group" + '</a>'; }
@@ -10190,6 +10212,7 @@
             if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No device groups in common" + '</i><div></div></div></td><td></td></tr>'; }
             x += '</tbody></table>';
 
+            // Display user groups
             if (usergroups != null) {
                 count = 1;
                 x += '<br />';
@@ -11169,14 +11192,14 @@
             if (typeof mesh == 'string') { mesh = meshes[mesh] }
             if ((mesh == null) || (mesh.links == null)) { return 0; }
 
-            // Check if user user
+            // Check if super user
             if (userinfo.manageAllDeviceGroups) return 0xFFFFFFFF;
 
-            // Check direct link permission
+            // Check device group link permission
             var rights = 0, r = mesh.links[userid];
             if (r != null) {
+                if (rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device group link, stop here.
                 rights = r.rights;
-                if (rights == 0xFFFFFFFF) { return rights; } // User has full rights thru a direct link, stop here.
             }
 
             // Check permissions thru user groups
@@ -11187,7 +11210,7 @@
                     if (i.startsWith('ugrp/')) {
                         r = mesh.links[i];
                         if (r != null) {
-                            if (r.rights == 0xFFFFFFFF) { return r.rights; } // User has full rights thru a user group, stop here.
+                            if (r.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a user group, stop here.
                             rights |= r.rights; // TODO: Deal with reverse permissions
                         }
                     }
@@ -11219,13 +11242,25 @@
 
             return false;
         }
-
+        
         // Return the user rights for a given node
         function GetNodeRights(node, userid) {
             if (node == null) { return 0; }
             if (userid == null) { userid = userinfo._id; }
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
-            return GetMeshRights(node.meshid, userid);
+            var r = GetMeshRights(node.meshid, userid);
+            if (r != 0xFFFFFFFF) {
+                var user = null;
+                if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
+                if ((user != null) && (user.links != null)) {
+                    var r2 = user.links[node._id];
+                    if (r2 != null) {
+                        if (r2.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device link, stop here.
+                        r |= r2; // TODO: Deal with reverse permissions
+                    }
+                }
+            }
+            return r;
         }
 
         //

@@ -542,7 +542,7 @@
         "default-mobile.handlebars->9->246",
         "default-mobile.handlebars->9->70",
         "default.handlebars->27->1233",
-        "default.handlebars->27->1469",
+        "default.handlebars->27->1470",
         "default.handlebars->27->653"
       ]
     },
@@ -1851,7 +1851,7 @@
         "default.handlebars->27->1169",
         "default.handlebars->27->1171",
         "default.handlebars->27->1369",
-        "default.handlebars->27->1446",
+        "default.handlebars->27->1447",
         "default.handlebars->27->187"
       ]
     },
@@ -1918,7 +1918,7 @@
       "nl": "Lidmaatschap toevoegen",
       "ru": "Добавить участие",
       "xloc": [
-        "default.handlebars->27->1465"
+        "default.handlebars->27->1466"
       ]
     },
     {
@@ -1964,7 +1964,7 @@
       "xloc": [
         "default.handlebars->27->1075",
         "default.handlebars->27->1170",
-        "default.handlebars->27->1455"
+        "default.handlebars->27->1456"
       ]
     },
     {
@@ -2304,7 +2304,7 @@
       "nl": "Agent fout tellers",
       "ru": "Счетчик ошибок агента",
       "xloc": [
-        "default.handlebars->27->1477"
+        "default.handlebars->27->1478"
       ]
     },
     {
@@ -2350,7 +2350,7 @@
       "nl": "Agent Sessies",
       "ru": "Сессии агентов",
       "xloc": [
-        "default.handlebars->27->1493"
+        "default.handlebars->27->1494"
       ]
     },
     {
@@ -2447,7 +2447,7 @@
       "pt": "Agentes",
       "ru": "Агенты",
       "xloc": [
-        "default.handlebars->27->1506"
+        "default.handlebars->27->1507"
       ]
     },
     {
@@ -3038,7 +3038,7 @@
       "nl": "Weet u zeker dat u de plug-in {0} wilt gebruiken: {1}",
       "ru": "Вы уверенны, что {0} плагин: {1}",
       "xloc": [
-        "default.handlebars->27->1542"
+        "default.handlebars->27->1543"
       ]
     },
     {
@@ -3359,7 +3359,7 @@
       "nl": "Ongeldige handtening",
       "ru": "Плохой ключ",
       "xloc": [
-        "default.handlebars->27->1484"
+        "default.handlebars->27->1485"
       ]
     },
     {
@@ -3370,7 +3370,7 @@
       "nl": "Onjuist webcertificaat",
       "ru": "Плохой веб-сертификат",
       "xloc": [
-        "default.handlebars->27->1483"
+        "default.handlebars->27->1484"
       ]
     },
     {
@@ -3563,7 +3563,7 @@
       "pt": "Servidor CIRA",
       "ru": "CIRA Сервер",
       "xloc": [
-        "default.handlebars->27->1533"
+        "default.handlebars->27->1534"
       ]
     },
     {
@@ -3577,7 +3577,7 @@
       "pt": "Comandos do servidor CIRA",
       "ru": "CIRA Сервер команды",
       "xloc": [
-        "default.handlebars->27->1534"
+        "default.handlebars->27->1535"
       ]
     },
     {
@@ -3588,7 +3588,7 @@
       "nl": "CPU gebruik",
       "ru": "Загрузка CPU",
       "xloc": [
-        "default.handlebars->27->1498"
+        "default.handlebars->27->1499"
       ]
     },
     {
@@ -3602,7 +3602,7 @@
       "pt": "Carga da CPU nos últimos 15 minutos",
       "ru": "Загрузка CPU за последние 15 минут",
       "xloc": [
-        "default.handlebars->27->1501"
+        "default.handlebars->27->1502"
       ]
     },
     {
@@ -3616,7 +3616,7 @@
       "pt": "Carga da CPU nos últimos 5 minutos",
       "ru": "Загрузка CPU за последние 5 минут",
       "xloc": [
-        "default.handlebars->27->1500"
+        "default.handlebars->27->1501"
       ]
     },
     {
@@ -3630,7 +3630,7 @@
       "pt": "Carga da CPU no último minuto",
       "ru": "Загрузка CPU за последнюю минуту",
       "xloc": [
-        "default.handlebars->27->1499"
+        "default.handlebars->27->1500"
       ]
     },
     {
@@ -3676,7 +3676,7 @@
       "pt": "Erro de chamada",
       "ru": "Ошибка вызова",
       "xloc": [
-        "default.handlebars->27->1543"
+        "default.handlebars->27->1544"
       ]
     },
     {
@@ -4018,7 +4018,7 @@
       "pt": "Verificando ...",
       "ru": "Проверка...",
       "xloc": [
-        "default.handlebars->27->1539",
+        "default.handlebars->27->1540",
         "default.handlebars->27->778"
       ]
     },
@@ -4322,7 +4322,7 @@
       "ru": "Общие группы устройств",
       "xloc": [
         "default.handlebars->27->1370",
-        "default.handlebars->27->1447"
+        "default.handlebars->27->1448"
       ]
     },
     {
@@ -4402,6 +4402,12 @@
       ]
     },
     {
+      "en": "Confirm deletion of user {0}?",
+      "xloc": [
+        "default.handlebars->27->1446"
+      ]
+    },
+    {
       "cs": "Potvrdit přesun jednoho záznamu do tohoto umístění?",
       "de": "Bestätigen Sie das Verschieben von 1 Eintrag an diesen Ort?",
       "en": "Confirm move of 1 entrie to this location?",
@@ -4466,7 +4472,7 @@
       "ru": "Подтвердить удаление группы устройств {0}?",
       "xloc": [
         "default.handlebars->27->1380",
-        "default.handlebars->27->1467"
+        "default.handlebars->27->1468"
       ]
     },
     {
@@ -4477,7 +4483,7 @@
       "nl": "Bevestig het verwijderen van de groep {0}?",
       "ru": "Подтвердить удаление группы {0}?",
       "xloc": [
-        "default.handlebars->27->1463"
+        "default.handlebars->27->1464"
       ]
     },
     {
@@ -4599,7 +4605,7 @@
       "nl": "Verbonden Intel&reg; AMT",
       "ru": "Подключено Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->27->1489"
+        "default.handlebars->27->1490"
       ]
     },
     {
@@ -4610,7 +4616,7 @@
       "nl": "Verbonden gebruikers",
       "ru": "Подключенные пользователи",
       "xloc": [
-        "default.handlebars->27->1494"
+        "default.handlebars->27->1495"
       ]
     },
     {
@@ -4667,7 +4673,7 @@
       "pt": "Contagem de conexões",
       "ru": "Подключений ",
       "xloc": [
-        "default.handlebars->27->1505"
+        "default.handlebars->27->1506"
       ]
     },
     {
@@ -4681,7 +4687,7 @@
       "pt": "Encaminhador de conexão",
       "ru": "Ретранслятор подключения",
       "xloc": [
-        "default.handlebars->27->1532"
+        "default.handlebars->27->1533"
       ]
     },
     {
@@ -4768,7 +4774,7 @@
       "pt": "Codificador de cookies",
       "ru": "Cookie-кодировщик",
       "xloc": [
-        "default.handlebars->27->1519"
+        "default.handlebars->27->1520"
       ]
     },
     {
@@ -4977,7 +4983,7 @@
       "pt": "Servidor Core",
       "ru": "Основной сервер",
       "xloc": [
-        "default.handlebars->27->1518"
+        "default.handlebars->27->1519"
       ]
     },
     {
@@ -5844,8 +5850,8 @@
         "default.handlebars->27->1145",
         "default.handlebars->27->1147",
         "default.handlebars->27->1376",
-        "default.handlebars->27->1453",
-        "default.handlebars->27->1459"
+        "default.handlebars->27->1454",
+        "default.handlebars->27->1460"
       ]
     },
     {
@@ -5878,7 +5884,7 @@
         "default.handlebars->27->1348",
         "default.handlebars->27->1361",
         "default.handlebars->27->1416",
-        "default.handlebars->27->1492",
+        "default.handlebars->27->1493",
         "default.handlebars->container->column_l->p2->9"
       ]
     },
@@ -6681,7 +6687,7 @@
       "nl": "Duplicaat Agent",
       "ru": "Скопировать агент",
       "xloc": [
-        "default.handlebars->27->1488"
+        "default.handlebars->27->1489"
       ]
     },
     {
@@ -7578,7 +7584,7 @@
       "nl": "Extern",
       "ru": "Внешний",
       "xloc": [
-        "default.handlebars->27->1512"
+        "default.handlebars->27->1513"
       ]
     },
     {
@@ -7934,8 +7940,8 @@
       "pt": "Livre",
       "ru": "Свободно",
       "xloc": [
-        "default.handlebars->27->1473",
-        "default.handlebars->27->1475"
+        "default.handlebars->27->1474",
+        "default.handlebars->27->1476"
       ]
     },
     {
@@ -8114,7 +8120,7 @@
       "xloc": [
         "default.handlebars->27->1090",
         "default.handlebars->27->1373",
-        "default.handlebars->27->1450"
+        "default.handlebars->27->1451"
       ]
     },
     {
@@ -8610,7 +8616,7 @@
       "es": "Heap Total",
       "nl": "Heap Totaal",
       "xloc": [
-        "default.handlebars->27->1514"
+        "default.handlebars->27->1515"
       ]
     },
     {
@@ -8620,7 +8626,7 @@
       "es": "Heap Used",
       "nl": "Heap gebruikt",
       "xloc": [
-        "default.handlebars->27->1513"
+        "default.handlebars->27->1514"
       ]
     },
     {
@@ -9142,8 +9148,8 @@
       "xloc": [
         "default.handlebars->27->1222",
         "default.handlebars->27->1228",
-        "default.handlebars->27->1510",
-        "default.handlebars->27->1531"
+        "default.handlebars->27->1511",
+        "default.handlebars->27->1532"
       ]
     },
     {
@@ -9705,7 +9711,7 @@
       "nl": "Ongeldige apparaatgroep type",
       "ru": "Некорректный тип группы устройств",
       "xloc": [
-        "default.handlebars->27->1487"
+        "default.handlebars->27->1488"
       ]
     },
     {
@@ -9716,7 +9722,7 @@
       "nl": "Onjuiste JSON",
       "ru": "Некорректный JSON",
       "xloc": [
-        "default.handlebars->27->1481"
+        "default.handlebars->27->1482"
       ]
     },
     {
@@ -9756,7 +9762,7 @@
       "nl": "Onjuiste PKCS handtekening",
       "ru": "Некорректная сигнатура PKCS",
       "xloc": [
-        "default.handlebars->27->1479"
+        "default.handlebars->27->1480"
       ]
     },
     {
@@ -9767,7 +9773,7 @@
       "nl": "Ongeldige RSA handtekening",
       "ru": "Некорректная сигнатура RSA",
       "xloc": [
-        "default.handlebars->27->1480"
+        "default.handlebars->27->1481"
       ]
     },
     {
@@ -10589,7 +10595,7 @@
       "pt": "Menos",
       "ru": "Меньше",
       "xloc": [
-        "default.handlebars->27->1545"
+        "default.handlebars->27->1546"
       ]
     },
     {
@@ -11418,7 +11424,7 @@
       "pt": "Mensagens do servidor principal",
       "ru": "Сообщения главного сервера",
       "xloc": [
-        "default.handlebars->27->1521"
+        "default.handlebars->27->1522"
       ]
     },
     {
@@ -11715,7 +11721,7 @@
       "nl": "Max Sessies bereikt",
       "ru": "Достигнуто максимальное число сессий",
       "xloc": [
-        "default.handlebars->27->1485"
+        "default.handlebars->27->1486"
       ]
     },
     {
@@ -11760,7 +11766,7 @@
       "pt": "Megabytes",
       "ru": "Мегабайт",
       "xloc": [
-        "default.handlebars->27->1511"
+        "default.handlebars->27->1512"
       ]
     },
     {
@@ -11774,7 +11780,7 @@
       "pt": "Memória",
       "ru": "ОЗУ",
       "xloc": [
-        "default.handlebars->27->1502",
+        "default.handlebars->27->1503",
         "default.handlebars->27->743",
         "default.handlebars->container->column_l->p40->3->1->p40type->3"
       ]
@@ -11884,7 +11890,7 @@
       "nl": "MeshAgent verkeer",
       "ru": "Трафик MeshAgent",
       "xloc": [
-        "default.handlebars->27->1523"
+        "default.handlebars->27->1524"
       ]
     },
     {
@@ -11897,7 +11903,7 @@
       "nl": "MeshAgent update",
       "ru": "Обновление MeshAgent",
       "xloc": [
-        "default.handlebars->27->1524"
+        "default.handlebars->27->1525"
       ]
     },
     {
@@ -11977,7 +11983,7 @@
       "pt": "Peering do servidor MeshCentral",
       "ru": "Соединения сервера MeshCentral",
       "xloc": [
-        "default.handlebars->27->1522"
+        "default.handlebars->27->1523"
       ]
     },
     {
@@ -12169,7 +12175,7 @@
       "pt": "Despachante de mensagens",
       "ru": "Диспетчер сообщения",
       "xloc": [
-        "default.handlebars->27->1520"
+        "default.handlebars->27->1521"
       ]
     },
     {
@@ -12251,7 +12257,7 @@
       "pt": "Mais",
       "ru": "Еще",
       "xloc": [
-        "default.handlebars->27->1544"
+        "default.handlebars->27->1545"
       ]
     },
     {
@@ -12804,7 +12810,7 @@
       "ru": "События не найдены",
       "xloc": [
         "default.handlebars->27->1269",
-        "default.handlebars->27->1468",
+        "default.handlebars->27->1469",
         "default.handlebars->27->691"
       ]
     },
@@ -12951,7 +12957,7 @@
         "default.handlebars->27->1091",
         "default.handlebars->27->1192",
         "default.handlebars->27->1374",
-        "default.handlebars->27->1451"
+        "default.handlebars->27->1452"
       ]
     },
     {
@@ -13020,7 +13026,7 @@
       "ru": "Нет общих групп устройств",
       "xloc": [
         "default.handlebars->27->1377",
-        "default.handlebars->27->1454"
+        "default.handlebars->27->1455"
       ]
     },
     {
@@ -13229,7 +13235,7 @@
       "nl": "Geen gebruikersgroep lidmaatschap",
       "ru": "Нет членства в группах пользователей",
       "xloc": [
-        "default.handlebars->27->1460"
+        "default.handlebars->27->1461"
       ]
     },
     {
@@ -13622,7 +13628,7 @@
       "pt": "Ocorreu em {0}",
       "ru": "Произошло в {0}",
       "xloc": [
-        "default.handlebars->27->1471"
+        "default.handlebars->27->1472"
       ]
     },
     {
@@ -13943,7 +13949,7 @@
       "xloc": [
         "default.handlebars->27->1089",
         "default.handlebars->27->1371",
-        "default.handlebars->27->1448"
+        "default.handlebars->27->1449"
       ]
     },
     {
@@ -14435,7 +14441,7 @@
       "nl": "Plugin Actie",
       "ru": "Действие плагина",
       "xloc": [
-        "default.handlebars->27->1541",
+        "default.handlebars->27->1542",
         "default.handlebars->27->159"
       ]
     },
@@ -14978,7 +14984,7 @@
       "pt": "RSS",
       "ru": "RSS",
       "xloc": [
-        "default.handlebars->27->1515"
+        "default.handlebars->27->1516"
       ]
     },
     {
@@ -15121,7 +15127,7 @@
       "nl": "Relay geteld",
       "ru": "Число ретрансляций",
       "xloc": [
-        "default.handlebars->27->1497"
+        "default.handlebars->27->1498"
       ]
     },
     {
@@ -15132,7 +15138,7 @@
       "nl": "Relay fouten",
       "ru": "Ошибки ретранслятора",
       "xloc": [
-        "default.handlebars->27->1490"
+        "default.handlebars->27->1491"
       ]
     },
     {
@@ -15145,8 +15151,8 @@
       "pt": "Retransmissão de sessão ",
       "ru": "Сессии ретранслятора",
       "xloc": [
-        "default.handlebars->27->1496",
-        "default.handlebars->27->1509"
+        "default.handlebars->27->1497",
+        "default.handlebars->27->1510"
       ]
     },
     {
@@ -15358,7 +15364,7 @@
       "ru": "Удалить группу устройств.",
       "xloc": [
         "default.handlebars->27->1379",
-        "default.handlebars->27->1466"
+        "default.handlebars->27->1467"
       ]
     },
     {
@@ -15369,7 +15375,7 @@
       "nl": "Verwijder gebruiker",
       "ru": "Удалить пользователя",
       "xloc": [
-        "default.handlebars->27->1462"
+        "default.handlebars->27->1463"
       ]
     },
     {
@@ -15442,7 +15448,7 @@
       "nl": "Verwijder de groepslidmaatschap",
       "ru": "Удалить членство пользователя в группе",
       "xloc": [
-        "default.handlebars->27->1458"
+        "default.handlebars->27->1459"
       ]
     },
     {
@@ -15469,7 +15475,7 @@
       "xloc": [
         "default.handlebars->27->1092",
         "default.handlebars->27->1366",
-        "default.handlebars->27->1452"
+        "default.handlebars->27->1453"
       ]
     },
     {
@@ -16479,14 +16485,14 @@
       "nl": "Server Certificaat",
       "ru": "Сертификат сервера",
       "xloc": [
-        "default.handlebars->27->1525"
+        "default.handlebars->27->1526"
       ]
     },
     {
       "en": "Server Database",
       "nl": "Server Database",
       "xloc": [
-        "default.handlebars->27->1526"
+        "default.handlebars->27->1527"
       ]
     },
     {
@@ -16571,7 +16577,7 @@
       "nl": "Server Status",
       "ru": "Состояние сервера",
       "xloc": [
-        "default.handlebars->27->1476"
+        "default.handlebars->27->1477"
       ]
     },
     {
@@ -16599,7 +16605,7 @@
       "pt": "Rastreamento de servidor",
       "ru": "Трассировка сервера",
       "xloc": [
-        "default.handlebars->27->1535"
+        "default.handlebars->27->1536"
       ]
     },
     {
@@ -16707,7 +16713,7 @@
       "pt": "ServerStats.csv",
       "ru": "ServerStats.csv",
       "xloc": [
-        "default.handlebars->27->1517"
+        "default.handlebars->27->1518"
       ]
     },
     {
@@ -18291,7 +18297,7 @@
       "pt": "Atualmente não há notificações",
       "ru": "На данный момент уведомлений нет",
       "xloc": [
-        "default.handlebars->27->1470"
+        "default.handlebars->27->1471"
       ]
     },
     {
@@ -19176,7 +19182,7 @@
         "default-mobile.handlebars->9->174",
         "default-mobile.handlebars->9->175",
         "default.handlebars->27->13",
-        "default.handlebars->27->1461",
+        "default.handlebars->27->1462",
         "default.handlebars->27->364",
         "default.handlebars->27->41",
         "default.handlebars->27->42",
@@ -19209,7 +19215,7 @@
       "nl": "Onbekende actie",
       "ru": "Неизвестное действие",
       "xloc": [
-        "default.handlebars->27->1482"
+        "default.handlebars->27->1483"
       ]
     },
     {
@@ -19221,8 +19227,8 @@
       "ru": "Неизвестная группа устройств",
       "xloc": [
         "default.handlebars->27->1372",
-        "default.handlebars->27->1449",
-        "default.handlebars->27->1486"
+        "default.handlebars->27->1450",
+        "default.handlebars->27->1487"
       ]
     },
     {
@@ -19233,7 +19239,7 @@
       "nl": "Onbekende groep",
       "ru": "Неизвестная группа",
       "xloc": [
-        "default.handlebars->27->1478"
+        "default.handlebars->27->1479"
       ]
     },
     {
@@ -19259,7 +19265,7 @@
       "nl": "Onbekende gebruikersgroep",
       "ru": "Неизвестная группа пользователей",
       "xloc": [
-        "default.handlebars->27->1457"
+        "default.handlebars->27->1458"
       ]
     },
     {
@@ -19320,7 +19326,7 @@
       "nl": "Bijgewerkt",
       "ru": "Актуально",
       "xloc": [
-        "default.handlebars->27->1540"
+        "default.handlebars->27->1541"
       ]
     },
     {
@@ -19509,8 +19515,8 @@
       "pt": "Usava",
       "ru": "Использовано",
       "xloc": [
-        "default.handlebars->27->1472",
-        "default.handlebars->27->1474"
+        "default.handlebars->27->1473",
+        "default.handlebars->27->1475"
       ]
     },
     {
@@ -19568,7 +19574,7 @@
       "nl": "Gebruikersaccounts",
       "ru": "Учетные записи пользователей",
       "xloc": [
-        "default.handlebars->27->1491"
+        "default.handlebars->27->1492"
       ]
     },
     {
@@ -19609,7 +19615,7 @@
       "xloc": [
         "default.handlebars->27->1146",
         "default.handlebars->27->1350",
-        "default.handlebars->27->1464"
+        "default.handlebars->27->1465"
       ]
     },
     {
@@ -19631,7 +19637,7 @@
       "nl": "Gebruikersgroeps lidmaatschap",
       "ru": "Членство в группах пользователей",
       "xloc": [
-        "default.handlebars->27->1456"
+        "default.handlebars->27->1457"
       ]
     },
     {
@@ -19713,7 +19719,7 @@
       "pt": "Sessões de Usuário",
       "ru": "Сессии пользователя",
       "xloc": [
-        "default.handlebars->27->1508"
+        "default.handlebars->27->1509"
       ]
     },
     {
@@ -19841,7 +19847,7 @@
       "xloc": [
         "default.handlebars->27->1349",
         "default.handlebars->27->1360",
-        "default.handlebars->27->1507",
+        "default.handlebars->27->1508",
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral"
       ]
     },
@@ -19853,7 +19859,7 @@
       "nl": "gebruikers Sessies",
       "ru": "Сессии пользователей",
       "xloc": [
-        "default.handlebars->27->1495"
+        "default.handlebars->27->1496"
       ]
     },
     {
@@ -20167,8 +20173,8 @@
       "pt": "Servidor web",
       "ru": "Веб-сервер",
       "xloc": [
-        "default.handlebars->27->1527",
-        "default.handlebars->27->1528"
+        "default.handlebars->27->1528",
+        "default.handlebars->27->1529"
       ]
     },
     {
@@ -20182,7 +20188,7 @@
       "pt": "Solicitações de servidor Web",
       "ru": "Запросы веб-сервера",
       "xloc": [
-        "default.handlebars->27->1529"
+        "default.handlebars->27->1530"
       ]
     },
     {
@@ -20196,7 +20202,7 @@
       "pt": "Encaminhador de soquete da Web",
       "ru": "Ретранслятор Web Socket",
       "xloc": [
-        "default.handlebars->27->1530"
+        "default.handlebars->27->1531"
       ]
     },
     {
@@ -20862,7 +20868,7 @@
       "pt": "\\\\'",
       "ru": "\\\\'",
       "xloc": [
-        "default.handlebars->27->1538"
+        "default.handlebars->27->1539"
       ]
     },
     {
@@ -21053,7 +21059,7 @@
       "pt": "livre",
       "ru": "свободно",
       "xloc": [
-        "default.handlebars->27->1503"
+        "default.handlebars->27->1504"
       ]
     },
     {
@@ -21287,7 +21293,7 @@
       "pt": "servertrace.csv",
       "ru": "servertrace.csv",
       "xloc": [
-        "default.handlebars->27->1537"
+        "default.handlebars->27->1538"
       ]
     },
     {
@@ -21324,7 +21330,7 @@
       "pt": "tempo, conn.agente, conn.usuários.usersessions, conn.relaysession, conn.intelamt, mem.externo mem.amontoado, mem.heaptotal, mem.rss",
       "ru": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "xloc": [
-        "default.handlebars->27->1516"
+        "default.handlebars->27->1517"
       ]
     },
     {
@@ -21336,7 +21342,7 @@
       "pt": "hora, fonte, mensagem",
       "ru": "time, source, message",
       "xloc": [
-        "default.handlebars->27->1536"
+        "default.handlebars->27->1537"
       ]
     },
     {
@@ -21359,7 +21365,7 @@
       "pt": "total",
       "ru": "всего",
       "xloc": [
-        "default.handlebars->27->1504"
+        "default.handlebars->27->1505"
       ]
     },
     {
