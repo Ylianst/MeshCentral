@@ -24,10 +24,10 @@
     "_Port": 443,
     "_AliasPort": 444,
     "_RedirPort": 80,
-    "_ExactPorts": "true",
+    "_ExactPorts": true,
     "_AllowLoginToken": true,
     "_AllowFraming": true,
-    "_agentInviteCodes": true
+    "_agentInviteCodes": true,
     "_WebRTC": false,
     "_Nice404": false,
     "_ClickOnce": false,
