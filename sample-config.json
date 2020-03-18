@@ -27,7 +27,7 @@
     "_ExactPorts": "true",
     "_AllowLoginToken": true,
     "_AllowFraming": true,
-    "_agentInviteCodes": true
+    "_agentInviteCodes": true,
     "_WebRTC": false,
     "_Nice404": false,
     "_ClickOnce": false,
