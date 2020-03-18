@@ -3238,9 +3238,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         } else if (req.query.meshaction != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
-            const domain = checkUserIpAddress(req, res);
-            if (domain == null) { res.sendStatus(404); return; }
             var user = obj.users[req.session.userid];
             if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
@@ -3267,8 +3264,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="meshaction.txt"' });
                     res.send(JSON.stringify(meshaction, null, ' '));
                 });
-            }
-            else if (req.query.meshaction == 'generic') {
+            } else if (req.query.meshaction == 'generic') {
                 var meshaction = {
                     username: '',
                     password: '',
