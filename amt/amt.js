@@ -733,7 +733,7 @@ function AmtStackCreateService(wsmanStack) {
                 e = null;
                 try {
                     es = atob(responses.Body['EventRecords'][i]);
-                    e = new Buffer(es);
+                    e = Buffer.from(es);
                 } catch (ex) {
                     console.log(ex + " " + responses.Body['EventRecords'][i])
                 }
