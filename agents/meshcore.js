@@ -1985,7 +1985,7 @@ function createMeshCore(agent) {
                         }
                         else
                         {
-                            this._alert = require('message-box').create(p[0], p[1], p.length==3?parseInt(p[2]):9999);
+                            this._alert = require('message-box').create(p[0], p[1], p.length==3?parseInt(p[2]):9999,1);
                         }
                     }
                     break;
