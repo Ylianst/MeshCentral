@@ -200,12 +200,17 @@ module.exports.CertificateOperations = function (parent) {
         if (u.protocol == 'https:') {
             // Read the certificate from HTTPS
             if (hostname == null) { hostname = u.hostname; }
-            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: hostname, rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
+            parent.debug('cert', "loadCertificate() - Loading certificate from " + u.hostname + ":" + (u.port ? u.port : 443) + ", Hostname: " + hostname + "...");
+            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: hostname, rejectUnauthorized: false }, function () {
+                this.xxcert = this.getPeerCertificate();
+                parent.debug('cert', "loadCertificate() - TLS connected, " + ((this.xxcert != null) ? "got certificate." : "no certificate."));
+                try { this.destroy(); } catch (ex) { }
+                this.xxfunc(this.xxurl, (this.xxcert == null)?null:(this.xxcert.raw.toString('binary')), hostname, this.xxtag);
+            });
             tlssocket.xxurl = url;
             tlssocket.xxfunc = func;
             tlssocket.xxtag = tag;
-            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert.raw.toString('binary'), hostname, this.xxtag); });
-            tlssocket.on('error', function () { this.xxfunc(this.xxurl, null, hostname, this.xxtag); });
+            tlssocket.on('error', function (error) { try { this.destroy(); } catch (ex) { } parent.debug('cert', "loadCertificate() - TLS error: " + error); this.xxfunc(this.xxurl, null, hostname, this.xxtag); });
         } else if (u.protocol == 'file:') {
             // Read the certificate from a file
             obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
