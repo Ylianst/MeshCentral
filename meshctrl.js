@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail', 'generateinvitelink', 'config'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail', 'generateinvitelink', 'config'];
 //console.log(args);
 
 if (args['_'].length == 0) {
@@ -28,6 +28,7 @@ if (args['_'].length == 0) {
     console.log("  SendInviteEmail           - Send an agent install invitation email.");
     console.log("  GenerateInviteLink        - Create an invitation link.");
     console.log("  Broadcast                 - Display a message to all online users.");
+    console.log("  ShowEvents                - Display real-time server events in JSON format.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
@@ -80,6 +81,10 @@ if (args['_'].length == 0) {
         case 'broadcast': {
             if (args.msg == null) { console.log("Message missing, use --msg [message]"); }
             else { ok = true; }
+            break;
+        }
+        case 'showevents': {
+            ok = true;
             break;
         }
         case 'adduser': {
@@ -551,6 +556,10 @@ function serverConnect() {
                 ws.send(JSON.stringify(op));
                 break;
             }
+            case 'showevents': {
+                console.log('Connected. Press ctrl-c to end.');
+                break;
+            }
         }
     });
 
@@ -561,6 +570,10 @@ function serverConnect() {
         var data = null;
         try { data = JSON.parse(rawdata); } catch (ex) { }
         if (data == null) { console.log('Unable to parse data: ' + rawdata); }
+        if (settings.cmd == 'showevents') {
+            console.log(data);
+            return;
+        }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
                 if (settings.cmd == 'serverinfo') {
