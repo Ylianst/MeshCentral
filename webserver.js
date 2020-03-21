@@ -541,7 +541,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Check if a 2nd factor is present
-        return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || (user.otpekey != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
+        return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null)) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
     // Check the 2-step auth token
