@@ -1271,7 +1271,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(common.escapeLinksFieldName(mesh)); }
                                 // Notify mesh change
                                 change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
-                                var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id };
+                                var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                 parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, event);
                             }
@@ -1667,7 +1667,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             db.Set(common.escapeLinksFieldName(xmesh));
 
                                             // Notify mesh change
-                                            var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Added group ' + ugrp.name + ' to mesh ' + xmesh.name, domain: domain.id };
+                                            var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Added group ' + ugrp.name + ' to mesh ' + xmesh.name, domain: domain.id, invite: mesh.invite };
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                             //parent.parent.DispatchEvent(['*', xmesh._id, user._id], obj, event);
                                             pendingDispatchEvents.push([['*', xmesh._id, user._id], obj, event]);
@@ -1728,7 +1728,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         db.Set(common.escapeLinksFieldName(xmesh));
 
                                         // Notify mesh change
-                                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: domain.id };
+                                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: domain.id, invite: mesh.invite };
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                         parent.parent.DispatchEvent(['*', xmesh._id, user._id], obj, event);
                                     }
@@ -2378,7 +2378,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(common.escapeLinksFieldName(mesh));
 
                             // Notify mesh change
-                            var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id };
+                            var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
                             removedCount++;
@@ -2458,9 +2458,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Notify mesh change
                         var event;
                         if (deluser != null) {
-                            event = { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id };
+                            event = { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                         } else {
-                            event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id };
+                            event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                         }
                         parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, event);
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removemeshuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -2501,7 +2501,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(common.escapeLinksFieldName(mesh));
                         var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
                         delete amtpolicy2.password;
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, event);
 
