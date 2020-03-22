@@ -137,74 +137,103 @@ module.exports.CreateMeshMail = function (parent) {
 
     // Send account login mail / 2 factor token
     obj.sendAccountLoginMail = function (domain, email, token) {
-        var template = getTemplateEx('account-login', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
+        obj.checkEmail(email, function (checked) {
+            if (checked) {
+                parent.debug('email', "Sending login token to " + email);
 
-        // Set all the options.
-        var options = { email: email, servername: domain.title ? domain.title : 'MeshCentral', token: token };
+                var template = getTemplateEx('account-login', domain);
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
 
-        // Send the email
-        obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
-        sendNextMail();
+                // Set all the options.
+                var options = { email: email, servername: domain.title ? domain.title : 'MeshCentral', token: token };
+
+                // Send the email
+                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                sendNextMail();
+            }
+        });
     };
 
     // Send account invitation mail
     obj.sendAccountInviteMail = function (domain, username, accountname, email, password) {
-        var template = getTemplateEx('account-invite', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
+        obj.checkEmail(email, function (checked) {
+            if (checked) {
+                parent.debug('email', "Sending account invitation to " + email);
 
-        // Set all the options.
-        var options = { username: username, accountname: accountname, email: email, servername: domain.title ? domain.title : 'MeshCentral', password: password };
+                var template = getTemplateEx('account-invite', domain);
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
 
-        // Send the email
-        obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
-        sendNextMail();
+                // Set all the options.
+                var options = { username: username, accountname: accountname, email: email, servername: domain.title ? domain.title : 'MeshCentral', password: password };
+
+                // Send the email
+                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                sendNextMail();
+            }
+        });
     };
 
     // Send account check mail
     obj.sendAccountCheckMail = function (domain, username, email) {
-        var template = getTemplateEx('account-check', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, no reset possible.
+        obj.checkEmail(email, function (checked) {
+            if (checked) {
+                parent.debug('email', "Sending email verification to " + email);
 
-        // Set all the options.
-        var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
-        options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username.toLowerCase(), e: email, a: 1 }, obj.mailCookieEncryptionKey);
+                var template = getTemplateEx('account-check', domain);
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, no reset possible.
 
-        // Send the email
-        obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
-        sendNextMail();
+                // Set all the options.
+                var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
+                options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username.toLowerCase(), e: email, a: 1 }, obj.mailCookieEncryptionKey);
+
+                // Send the email
+                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                sendNextMail();
+            }
+        });
     };
 
     // Send account reset mail
     obj.sendAccountResetMail = function (domain, username, email) {
-        var template = getTemplateEx('account-reset', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
+        obj.checkEmail(email, function (checked) {
+            if (checked) {
+                parent.debug('email', "Sending account password reset to " + email);
 
-        // Set all the options.
-        var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
-        options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 }, obj.mailCookieEncryptionKey);
+                var template = getTemplateEx('account-reset', domain);
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
 
-        // Send the email
-        obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
-        sendNextMail();
+                // Set all the options.
+                var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
+                options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 }, obj.mailCookieEncryptionKey);
+
+                // Send the email
+                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                sendNextMail();
+            }
+        });
     };
 
     // Send agent invite mail
     obj.sendAgentInviteMail = function (domain, username, email, meshid, name, os, msg, flags, expirehours) {
-        var template = getTemplateEx('mesh-invite', domain);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
+        obj.checkEmail(email, function (checked) {
+            if (checked) {
+                parent.debug('email', "Sending agent install invitation to " + email);
+                var template = getTemplateEx('mesh-invite', domain);
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
 
-        // Set all the template replacement options and generate the final email text (both in txt and html formats).
-        var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral' };
-        options.windows = ((os == 0) || (os == 1)) ? 1 : 0;
-        options.linux = ((os == 0) || (os == 2)) ? 1 : 0;
-        options.osx = ((os == 0) || (os == 3)) ? 1 : 0;
-        options.link = (os == 4) ? 1 : 0;
-        options.linkurl = createInviteLink(domain, meshid, flags, expirehours);
+                // Set all the template replacement options and generate the final email text (both in txt and html formats).
+                var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral' };
+                options.windows = ((os == 0) || (os == 1)) ? 1 : 0;
+                options.linux = ((os == 0) || (os == 2)) ? 1 : 0;
+                options.osx = ((os == 0) || (os == 3)) ? 1 : 0;
+                options.link = (os == 4) ? 1 : 0;
+                options.linkurl = createInviteLink(domain, meshid, flags, expirehours);
 
-        // Send the email
-        obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
-        sendNextMail();
+                // Send the email
+                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                sendNextMail();
+            }
+        });
     };
 
     // Send out the next mail in the pending list
@@ -223,6 +252,7 @@ module.exports.CreateMeshMail = function (parent) {
                 sendNextMail(); // Send the next mail
             } else {
                 obj.retry++;
+                parent.debug('email', 'SMTP server failed: ' + JSON.stringify(err));
                 console.log('SMTP server failed: ' + JSON.stringify(err));
                 if (obj.retry < 6) { setTimeout(sendNextMail, 60000); } // Wait and try again
             }
@@ -238,6 +268,7 @@ module.exports.CreateMeshMail = function (parent) {
                 // Remove all non-object types from error to avoid a JSON stringify error.
                 var err2 = {};
                 for (var i in err) { if (typeof (err[i]) != 'object') { err2[i] = err[i]; } }
+                parent.debug('email', 'SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err2));
                 console.log('SMTP mail server ' + parent.config.smtp.host + ' failed: ' + JSON.stringify(err2));
             }
         });
@@ -258,6 +289,19 @@ module.exports.CreateMeshMail = function (parent) {
     // Create a agent invitation link
     function createInviteLink(domain, meshid, flags, expirehours) {
         return '/agentinvite?c=' + parent.encodeCookie({ a: 4, mid: meshid, f: flags, expire: expirehours * 60 }, parent.invitationLinkEncryptionKey);
+    }
+
+    // Check the email domain DNS MX record.
+    obj.approvedEmailDomains = {};
+    obj.checkEmail = function (email, func) {
+        var emailSplit = email.split('@');
+        if (emailSplit.length != 2) { func(false); return; }
+        if (obj.approvedEmailDomains[emailSplit[1]] === true) { func(true); return; }
+        require('dns').resolveMx(emailSplit[1], function (err, addresses) {
+            parent.debug('email', "checkEmail: " + email + ", " + (err == null));
+            if (err == null) { obj.approvedEmailDomains[emailSplit[1]] = true; }
+            func(err == null);
+        });
     }
 
     return obj;

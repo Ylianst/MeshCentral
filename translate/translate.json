@@ -3764,7 +3764,7 @@
       "pt": "Tem certeza de que deseja {0} o plug-in: {1}",
       "ru": "Вы уверенны, что {0} плагин: {1}",
       "xloc": [
-        "default.handlebars->27->1553"
+        "default.handlebars->27->1554"
       ],
       "zh-chs": "您確定要{0}插件嗎：{1}"
     },
@@ -4408,7 +4408,7 @@
       "pt": "Servidor CIRA",
       "ru": "CIRA Сервер",
       "xloc": [
-        "default.handlebars->27->1544"
+        "default.handlebars->27->1545"
       ],
       "zh-chs": "CIRA服務器"
     },
@@ -4425,7 +4425,7 @@
       "pt": "Comandos do servidor CIRA",
       "ru": "CIRA Сервер команды",
       "xloc": [
-        "default.handlebars->27->1545"
+        "default.handlebars->27->1546"
       ],
       "zh-chs": "CIRA服務器命令"
     },
@@ -4548,7 +4548,7 @@
       "pt": "Erro de chamada",
       "ru": "Ошибка вызова",
       "xloc": [
-        "default.handlebars->27->1554"
+        "default.handlebars->27->1555"
       ],
       "zh-chs": "通話錯誤"
     },
@@ -4966,7 +4966,7 @@
       "pt": "Verificando ...",
       "ru": "Проверка...",
       "xloc": [
-        "default.handlebars->27->1550",
+        "default.handlebars->27->1551",
         "default.handlebars->27->778"
       ],
       "zh-chs": "檢查..."
@@ -5824,7 +5824,7 @@
       "pt": "Encaminhador de conexão",
       "ru": "Ретранслятор подключения",
       "xloc": [
-        "default.handlebars->27->1543"
+        "default.handlebars->27->1544"
       ],
       "zh-chs": "連接繼電器"
     },
@@ -8724,6 +8724,12 @@
       "zh-chs": "郵件認證"
     },
     {
+      "en": "Email Traffic",
+      "xloc": [
+        "default.handlebars->27->1538"
+      ]
+    },
+    {
       "cs": "Ověření e-mailu",
       "de": "E-Mail-Verifizierung",
       "en": "Email Verification",
@@ -11386,7 +11392,7 @@
         "default.handlebars->27->1223",
         "default.handlebars->27->1229",
         "default.handlebars->27->1521",
-        "default.handlebars->27->1542"
+        "default.handlebars->27->1543"
       ],
       "zh-chs": "英特爾AMT"
     },
@@ -13186,7 +13192,7 @@
       "pt": "Menos",
       "ru": "Меньше",
       "xloc": [
-        "default.handlebars->27->1556"
+        "default.handlebars->27->1557"
       ],
       "zh-chs": "減"
     },
@@ -15252,7 +15258,7 @@
       "pt": "Mais",
       "ru": "Еще",
       "xloc": [
-        "default.handlebars->27->1555"
+        "default.handlebars->27->1556"
       ],
       "zh-chs": "更多"
     },
@@ -17996,7 +18002,7 @@
       "pt": "Ação do Plugin",
       "ru": "Действие плагина",
       "xloc": [
-        "default.handlebars->27->1552",
+        "default.handlebars->27->1553",
         "default.handlebars->27->159"
       ],
       "zh-chs": "插件動作"
@@ -20738,7 +20744,7 @@
       "pt": "Rastreamento de servidor",
       "ru": "Трассировка сервера",
       "xloc": [
-        "default.handlebars->27->1546"
+        "default.handlebars->27->1547"
       ],
       "zh-chs": "服務器跟踪"
     },
@@ -24177,7 +24183,7 @@
       "pt": "Atualizado",
       "ru": "Актуально",
       "xloc": [
-        "default.handlebars->27->1551"
+        "default.handlebars->27->1552"
       ],
       "zh-chs": "最新"
     },
@@ -25251,8 +25257,8 @@
       "pt": "Servidor web",
       "ru": "Веб-сервер",
       "xloc": [
-        "default.handlebars->27->1538",
-        "default.handlebars->27->1539"
+        "default.handlebars->27->1539",
+        "default.handlebars->27->1540"
       ],
       "zh-chs": "網絡服務器"
     },
@@ -25269,7 +25275,7 @@
       "pt": "Solicitações de servidor Web",
       "ru": "Запросы веб-сервера",
       "xloc": [
-        "default.handlebars->27->1540"
+        "default.handlebars->27->1541"
       ],
       "zh-chs": "Web服務器請求"
     },
@@ -25286,7 +25292,7 @@
       "pt": "Encaminhador de soquete da Web",
       "ru": "Ретранслятор Web Socket",
       "xloc": [
-        "default.handlebars->27->1541"
+        "default.handlebars->27->1542"
       ],
       "zh-chs": "Web套接字中繼"
     },
@@ -26123,7 +26129,7 @@
       "pt": "\\\\'",
       "ru": "\\\\'",
       "xloc": [
-        "default.handlebars->27->1549"
+        "default.handlebars->27->1550"
       ],
       "zh-chs": "\\\\'"
     },
@@ -26656,7 +26662,7 @@
       "pt": "servertrace.csv",
       "ru": "servertrace.csv",
       "xloc": [
-        "default.handlebars->27->1548"
+        "default.handlebars->27->1549"
       ],
       "zh-chs": "servertrace.csv"
     },
@@ -26722,7 +26728,7 @@
       "pt": "hora, fonte, mensagem",
       "ru": "time, source, message",
       "xloc": [
-        "default.handlebars->27->1547"
+        "default.handlebars->27->1548"
       ],
       "zh-chs": "時間，來源，訊息"
     },
