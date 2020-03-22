@@ -124,7 +124,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (e) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'listuserids', 'showusergroups', 'shownodes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'resetaccount', 'pass'];
+        var validArguments = ['_', 'notls', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'listuserids', 'showusergroups', 'shownodes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'memorytracking', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'resetaccount', 'pass', 'adminaccount'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -140,16 +140,15 @@ function CreateMeshCentralServer(config, args) {
                 console.log('');
                 console.log('Run standalone, console application');
             }
-            console.log('   --notls                           Use HTTP instead of HTTPS for the main web server.');
             console.log('   --user [username]                 Always login as [username] if account exists.');
             console.log('   --port [number]                   Web server port number.');
             console.log('   --mpsport [number]                Intel AMT server port number.');
             console.log('   --redirport [number]              Creates an additional HTTP server to redirect users to the HTTPS server.');
             console.log('   --exactports                      Server must run with correct ports or exit.');
             console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
-            console.log('   --fastcert                        Generate weaker RSA2048 certificates.');
             console.log('   --listuserids                     Show a list of a user identifiers in the database.');
             console.log('   --resetaccount [userid]           Unlock an account, disable 2FA and set a new account password.');
+            console.log('   --adminaccount [userid]           Promote account to site administrator.');
             console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
             console.log('                                     country and organization can optionaly be set.');
             return;
@@ -611,10 +610,18 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.resetaccount) {
                         if (obj.args.pass == null) { console.log('Usage: --resetaccount [userid] --pass [password].'); process.exit(); return; }
                         obj.db.Get(obj.args.resetaccount, function (err, docs) {
-                            if ((err != null) || (docs == null) || (docs.length == 0)) { console.log('Unknown user id, usage: --resetaccount [userid] --pass [password].'); process.exit(); return; }
+                            if ((err != null) || (docs == null) || (docs.length == 0)) { console.log('Unknown userid, usage: --resetaccount [userid] --pass [password].'); process.exit(); return; }
                             var user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
                             delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; // Disable 2FA
                             require('./pass').hash(obj.args.pass, user.salt, function (err, hash, tag) { if (err) { console.log('Unable to reset password: ' + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log('Done.'); process.exit(); return; }); }, 0);
+                        });
+                        return;
+                    }
+                    if (obj.args.adminaccount) {
+                        obj.db.Get(obj.args.adminaccount, function (err, docs) {
+                            if ((err != null) || (docs == null) || (docs.length == 0)) { console.log('Unknown userid, usage: --adminaccount [userid].'); process.exit(); return; }
+                            docs[0].siteadmin = 0xFFFFFFFF; // Set user as site administrator
+                            obj.db.Set(docs[0], function () { console.log('Done.'); process.exit(); return; });
                         });
                         return;
                     }
