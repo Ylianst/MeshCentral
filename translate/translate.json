@@ -5023,6 +5023,7 @@
     {
       "de": "Vereinfachtes Chinesisch",
       "en": "Chinese (Simplified)",
+      "nl": "Chinees (Vereenvoudigd)",
       "pt": "Chinês (simplificado)",
       "xloc": [
         "default.handlebars->27->975"
@@ -8725,6 +8726,7 @@
     },
     {
       "en": "Email Traffic",
+      "nl": "E-mailverkeer",
       "xloc": [
         "default.handlebars->27->1538"
       ]
