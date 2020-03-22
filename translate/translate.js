@@ -788,7 +788,7 @@ function translationsToJson(t) {
     for (var i in arr) {
         var names = [], el = arr[i], el2 = {};
         for (var j in el) { names.push(j); }
-        names.sort();
+        names.sort(function (a, b) { if (a == b) { return 0; } if (a == 'xloc') { return 1; } if (b == 'xloc') { return -1; } return a - b });
         for (var j in names) { el2[names[j]] = el[names[j]]; }
         if (el2.xloc != null) { el2.xloc.sort(); }
         arr2.push(el2);
