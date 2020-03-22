@@ -10709,6 +10709,12 @@
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
                     var t = new Date(serverTimelineStats[i].time);
+                    if (serverTimelineStats[i].first == true) {
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                    }
                     if (serverTimelineStats[i].conn) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.ca });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.cu });
@@ -10729,6 +10735,12 @@
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
+                    if (serverTimelineStats[i].first == true) { 
+                        data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                    }
                     data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.external / (1024 * 1024) });
                     data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.heapUsed / (1024 * 1024) });
                     data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.heapTotal / (1024 * 1024) });
