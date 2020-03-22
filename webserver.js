@@ -3777,12 +3777,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
-                            if (typeof req.query.token != 'string') {
-                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                            // Figure out if email 2FA is allowed
+                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
+                            if ((typeof req.query.token != 'string') || (req.query.token == '**email**')) {
+                                if ((req.query.token == '**email**') && (email2fa == true)) {
+                                    // Cause a token to be sent to the user's registered email
+                                    user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
+                                    obj.db.SetUser(user);
+                                    parent.debug('web', 'Sending 2FA email to: ' + user.email);
+                                    parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k);
+                                    // Ask for a login token & confirm email was sent
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                } else {
+                                    // Ask for a login token
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
+                                }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
                                     if (result == false) {
-                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                                        // Failed, ask for a login token again
+                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         func(ws, req, domain, user);
@@ -3836,12 +3850,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
+                            // Figure out if email 2FA is allowed
+                            var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
                             if (s.length != 3) {
-                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, s[2], null, function (result) {
                                     if (result == false) {
-                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired' })); ws.close(); } catch (e) { }
+                                        if ((s[2] == '**email**') && (email2fa == true)) {
+                                            // Cause a token to be sent to the user's registered email
+                                            user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
+                                            obj.db.SetUser(user);
+                                            parent.debug('web', 'Sending 2FA email to: ' + user.email);
+                                            parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k);
+                                            // Ask for a login token & confirm email was sent
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                        } else {
+                                            // Ask for a login token
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
+                                        }
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         func(ws, req, domain, user);
