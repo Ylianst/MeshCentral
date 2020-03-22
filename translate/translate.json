@@ -2845,7 +2845,7 @@
       "pt": "Contadores de erros do agente",
       "ru": "Счетчик ошибок агента",
       "xloc": [
-        "default.handlebars->27->1488"
+        "default.handlebars->27->1489"
       ],
       "zh-chs": "座席錯誤計數器"
     },
@@ -2911,7 +2911,7 @@
       "pt": "Sessões do agente",
       "ru": "Сессии агентов",
       "xloc": [
-        "default.handlebars->27->1504"
+        "default.handlebars->27->1505"
       ],
       "zh-chs": "座席會議"
     },
@@ -3033,7 +3033,7 @@
       "pt": "Agentes",
       "ru": "Агенты",
       "xloc": [
-        "default.handlebars->27->1517"
+        "default.handlebars->27->1518"
       ],
       "zh-chs": "代理商"
     },
@@ -3764,7 +3764,7 @@
       "pt": "Tem certeza de que deseja {0} o plug-in: {1}",
       "ru": "Вы уверенны, что {0} плагин: {1}",
       "xloc": [
-        "default.handlebars->27->1554"
+        "default.handlebars->27->1555"
       ],
       "zh-chs": "您確定要{0}插件嗎：{1}"
     },
@@ -4156,7 +4156,7 @@
       "pt": "Assinatura ruim",
       "ru": "Плохой ключ",
       "xloc": [
-        "default.handlebars->27->1495"
+        "default.handlebars->27->1496"
       ],
       "zh-chs": "錯誤的簽名"
     },
@@ -4173,7 +4173,7 @@
       "pt": "Certificado da Web inválido",
       "ru": "Плохой веб-сертификат",
       "xloc": [
-        "default.handlebars->27->1494"
+        "default.handlebars->27->1495"
       ],
       "zh-chs": "錯誤的網絡證書"
     },
@@ -4408,7 +4408,7 @@
       "pt": "Servidor CIRA",
       "ru": "CIRA Сервер",
       "xloc": [
-        "default.handlebars->27->1545"
+        "default.handlebars->27->1546"
       ],
       "zh-chs": "CIRA服務器"
     },
@@ -4425,7 +4425,7 @@
       "pt": "Comandos do servidor CIRA",
       "ru": "CIRA Сервер команды",
       "xloc": [
-        "default.handlebars->27->1546"
+        "default.handlebars->27->1547"
       ],
       "zh-chs": "CIRA服務器命令"
     },
@@ -4442,7 +4442,7 @@
       "pt": "Carga da CPU",
       "ru": "Загрузка CPU",
       "xloc": [
-        "default.handlebars->27->1509"
+        "default.handlebars->27->1510"
       ],
       "zh-chs": "CPU負載"
     },
@@ -4459,7 +4459,7 @@
       "pt": "Carga da CPU nos últimos 15 minutos",
       "ru": "Загрузка CPU за последние 15 минут",
       "xloc": [
-        "default.handlebars->27->1512"
+        "default.handlebars->27->1513"
       ],
       "zh-chs": "最近15分鐘的CPU負載"
     },
@@ -4476,7 +4476,7 @@
       "pt": "Carga da CPU nos últimos 5 minutos",
       "ru": "Загрузка CPU за последние 5 минут",
       "xloc": [
-        "default.handlebars->27->1511"
+        "default.handlebars->27->1512"
       ],
       "zh-chs": "最近5分鐘的CPU負載"
     },
@@ -4493,7 +4493,7 @@
       "pt": "Carga da CPU no último minuto",
       "ru": "Загрузка CPU за последнюю минуту",
       "xloc": [
-        "default.handlebars->27->1510"
+        "default.handlebars->27->1511"
       ],
       "zh-chs": "最後一分鐘的CPU負載"
     },
@@ -4548,7 +4548,7 @@
       "pt": "Erro de chamada",
       "ru": "Ошибка вызова",
       "xloc": [
-        "default.handlebars->27->1555"
+        "default.handlebars->27->1556"
       ],
       "zh-chs": "通話錯誤"
     },
@@ -4966,7 +4966,7 @@
       "pt": "Verificando ...",
       "ru": "Проверка...",
       "xloc": [
-        "default.handlebars->27->1551",
+        "default.handlebars->27->1552",
         "default.handlebars->27->778"
       ],
       "zh-chs": "檢查..."
@@ -5191,6 +5191,12 @@
         "default.handlebars->27->108"
       ],
       "zh-chs": "從應用程序中清除機密，然後重試。您只有幾分鐘的時間來輸入正確的代碼。"
+    },
+    {
+      "en": "Clear this notification",
+      "xloc": [
+        "default.handlebars->27->1483"
+      ]
     },
     {
       "cs": "Pro úpravu toho, jak je zařízení nazýváno na serveru, klikněte sem",
@@ -5719,7 +5725,7 @@
       "pt": "Intel&reg; AMT conectado",
       "ru": "Подключено Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->27->1500"
+        "default.handlebars->27->1501"
       ],
       "zh-chs": "連接的英特爾&reg;AMT"
     },
@@ -5736,7 +5742,7 @@
       "pt": "Usuários conectados",
       "ru": "Подключенные пользователи",
       "xloc": [
-        "default.handlebars->27->1505"
+        "default.handlebars->27->1506"
       ],
       "zh-chs": "關聯用戶"
     },
@@ -5808,7 +5814,7 @@
       "pt": "Contagem de conexões",
       "ru": "Подключений ",
       "xloc": [
-        "default.handlebars->27->1516"
+        "default.handlebars->27->1517"
       ],
       "zh-chs": "連接數"
     },
@@ -5825,7 +5831,7 @@
       "pt": "Encaminhador de conexão",
       "ru": "Ретранслятор подключения",
       "xloc": [
-        "default.handlebars->27->1544"
+        "default.handlebars->27->1545"
       ],
       "zh-chs": "連接繼電器"
     },
@@ -5932,7 +5938,7 @@
       "pt": "Codificador de cookies",
       "ru": "Cookie-кодировщик",
       "xloc": [
-        "default.handlebars->27->1530"
+        "default.handlebars->27->1531"
       ],
       "zh-chs": "Cookie編碼器"
     },
@@ -6192,7 +6198,7 @@
       "pt": "Servidor Core",
       "ru": "Основной сервер",
       "xloc": [
-        "default.handlebars->27->1529"
+        "default.handlebars->27->1530"
       ],
       "zh-chs": "核心服務器"
     },
@@ -7303,7 +7309,7 @@
         "default.handlebars->27->1349",
         "default.handlebars->27->1362",
         "default.handlebars->27->1417",
-        "default.handlebars->27->1503",
+        "default.handlebars->27->1504",
         "default.handlebars->container->column_l->p2->9"
       ],
       "zh-chs": "設備組"
@@ -8298,7 +8304,7 @@
       "pt": "Agente duplicado",
       "ru": "Скопировать агент",
       "xloc": [
-        "default.handlebars->27->1499"
+        "default.handlebars->27->1500"
       ],
       "zh-chs": "代理重複"
     },
@@ -8728,7 +8734,7 @@
       "en": "Email Traffic",
       "nl": "E-mailverkeer",
       "xloc": [
-        "default.handlebars->27->1538"
+        "default.handlebars->27->1539"
       ]
     },
     {
@@ -9439,7 +9445,7 @@
       "pt": "Externo",
       "ru": "Внешний",
       "xloc": [
-        "default.handlebars->27->1523"
+        "default.handlebars->27->1524"
       ],
       "zh-chs": "外部"
     },
@@ -9871,8 +9877,8 @@
       "pt": "Livre",
       "ru": "Свободно",
       "xloc": [
-        "default.handlebars->27->1484",
-        "default.handlebars->27->1486"
+        "default.handlebars->27->1485",
+        "default.handlebars->27->1487"
       ],
       "zh-chs": "自由"
     },
@@ -10720,7 +10726,7 @@
       "nl": "Heap Totaal",
       "pt": "Total da pilha",
       "xloc": [
-        "default.handlebars->27->1525"
+        "default.handlebars->27->1526"
       ],
       "zh-chs": "堆總數"
     },
@@ -10735,7 +10741,7 @@
       "nl": "Heap gebruikt",
       "pt": "Pilha usada",
       "xloc": [
-        "default.handlebars->27->1524"
+        "default.handlebars->27->1525"
       ],
       "zh-chs": "堆使用"
     },
@@ -11393,8 +11399,8 @@
       "xloc": [
         "default.handlebars->27->1223",
         "default.handlebars->27->1229",
-        "default.handlebars->27->1521",
-        "default.handlebars->27->1543"
+        "default.handlebars->27->1522",
+        "default.handlebars->27->1544"
       ],
       "zh-chs": "英特爾AMT"
     },
@@ -12087,7 +12093,7 @@
       "pt": "Tipo de grupo de dispositivos inválido",
       "ru": "Некорректный тип группы устройств",
       "xloc": [
-        "default.handlebars->27->1498"
+        "default.handlebars->27->1499"
       ],
       "zh-chs": "無效的設備組類型"
     },
@@ -12104,7 +12110,7 @@
       "pt": "JSON inválido",
       "ru": "Некорректный JSON",
       "xloc": [
-        "default.handlebars->27->1492"
+        "default.handlebars->27->1493"
       ],
       "zh-chs": "無效的JSON"
     },
@@ -12156,7 +12162,7 @@
       "pt": "Assinatura PKCS inválida",
       "ru": "Некорректная сигнатура PKCS",
       "xloc": [
-        "default.handlebars->27->1490"
+        "default.handlebars->27->1491"
       ],
       "zh-chs": "無效的PKCS簽名"
     },
@@ -12173,7 +12179,7 @@
       "pt": "Siguatura RSA inválida",
       "ru": "Некорректная сигнатура RSA",
       "xloc": [
-        "default.handlebars->27->1491"
+        "default.handlebars->27->1492"
       ],
       "zh-chs": "無效的RSA密碼"
     },
@@ -13194,7 +13200,7 @@
       "pt": "Menos",
       "ru": "Меньше",
       "xloc": [
-        "default.handlebars->27->1557"
+        "default.handlebars->27->1558"
       ],
       "zh-chs": "減"
     },
@@ -14211,7 +14217,7 @@
       "pt": "Mensagens do servidor principal",
       "ru": "Сообщения главного сервера",
       "xloc": [
-        "default.handlebars->27->1532"
+        "default.handlebars->27->1533"
       ],
       "zh-chs": "主服務器消息"
     },
@@ -14585,7 +14591,7 @@
       "pt": "Número máximo de sessões atingidas",
       "ru": "Достигнуто максимальное число сессий",
       "xloc": [
-        "default.handlebars->27->1496"
+        "default.handlebars->27->1497"
       ],
       "zh-chs": "達到的會話數上限"
     },
@@ -14639,7 +14645,7 @@
       "pt": "Megabytes",
       "ru": "Мегабайт",
       "xloc": [
-        "default.handlebars->27->1522"
+        "default.handlebars->27->1523"
       ],
       "zh-chs": "兆字節"
     },
@@ -14656,7 +14662,7 @@
       "pt": "Memória",
       "ru": "ОЗУ",
       "xloc": [
-        "default.handlebars->27->1513",
+        "default.handlebars->27->1514",
         "default.handlebars->27->743",
         "default.handlebars->container->column_l->p40->3->1->p40type->3"
       ],
@@ -14789,7 +14795,7 @@
       "pt": "Tráfego MeshAgent",
       "ru": "Трафик MeshAgent",
       "xloc": [
-        "default.handlebars->27->1534"
+        "default.handlebars->27->1535"
       ],
       "zh-chs": "MeshAgent流量"
     },
@@ -14806,7 +14812,7 @@
       "pt": "Atualização do MeshAgent",
       "ru": "Обновление MeshAgent",
       "xloc": [
-        "default.handlebars->27->1535"
+        "default.handlebars->27->1536"
       ],
       "zh-chs": "MeshAgent更新"
     },
@@ -14905,7 +14911,7 @@
       "pt": "Peering do servidor MeshCentral",
       "ru": "Соединения сервера MeshCentral",
       "xloc": [
-        "default.handlebars->27->1533"
+        "default.handlebars->27->1534"
       ],
       "zh-chs": "MeshCentral服務器對等"
     },
@@ -15159,7 +15165,7 @@
       "pt": "Despachante de mensagens",
       "ru": "Диспетчер сообщения",
       "xloc": [
-        "default.handlebars->27->1531"
+        "default.handlebars->27->1532"
       ],
       "zh-chs": "郵件調度程序"
     },
@@ -15260,7 +15266,7 @@
       "pt": "Mais",
       "ru": "Еще",
       "xloc": [
-        "default.handlebars->27->1556"
+        "default.handlebars->27->1557"
       ],
       "zh-chs": "更多"
     },
@@ -18004,7 +18010,7 @@
       "pt": "Ação do Plugin",
       "ru": "Действие плагина",
       "xloc": [
-        "default.handlebars->27->1553",
+        "default.handlebars->27->1554",
         "default.handlebars->27->159"
       ],
       "zh-chs": "插件動作"
@@ -18696,7 +18702,7 @@
       "pt": "RSS",
       "ru": "RSS",
       "xloc": [
-        "default.handlebars->27->1526"
+        "default.handlebars->27->1527"
       ],
       "zh-chs": "的RSS"
     },
@@ -18875,7 +18881,7 @@
       "pt": "Contagem de relés",
       "ru": "Число ретрансляций",
       "xloc": [
-        "default.handlebars->27->1508"
+        "default.handlebars->27->1509"
       ],
       "zh-chs": "中繼計數"
     },
@@ -18891,7 +18897,7 @@
       "pt": "Erros de retransmissão",
       "ru": "Ошибки ретранслятора",
       "xloc": [
-        "default.handlebars->27->1501"
+        "default.handlebars->27->1502"
       ],
       "zh-chs": "中繼錯誤"
     },
@@ -18907,8 +18913,8 @@
       "pt": "Retransmissão de sessão ",
       "ru": "Сессии ретранслятора",
       "xloc": [
-        "default.handlebars->27->1507",
-        "default.handlebars->27->1520"
+        "default.handlebars->27->1508",
+        "default.handlebars->27->1521"
       ],
       "zh-chs": "接力會議"
     },
@@ -20592,7 +20598,7 @@
       "pt": "Certificado do servidor",
       "ru": "Сертификат сервера",
       "xloc": [
-        "default.handlebars->27->1536"
+        "default.handlebars->27->1537"
       ],
       "zh-chs": "服務器證書"
     },
@@ -20605,7 +20611,7 @@
       "nl": "Server Database",
       "pt": "Banco de Dados do Servidor",
       "xloc": [
-        "default.handlebars->27->1537"
+        "default.handlebars->27->1538"
       ],
       "zh-chs": "服務器數據庫"
     },
@@ -20712,7 +20718,7 @@
       "pt": "Estado do servidor",
       "ru": "Состояние сервера",
       "xloc": [
-        "default.handlebars->27->1487"
+        "default.handlebars->27->1488"
       ],
       "zh-chs": "服務器狀態"
     },
@@ -20746,7 +20752,7 @@
       "pt": "Rastreamento de servidor",
       "ru": "Трассировка сервера",
       "xloc": [
-        "default.handlebars->27->1547"
+        "default.handlebars->27->1548"
       ],
       "zh-chs": "服務器跟踪"
     },
@@ -20882,7 +20888,7 @@
       "pt": "ServerStats.csv",
       "ru": "ServerStats.csv",
       "xloc": [
-        "default.handlebars->27->1528"
+        "default.handlebars->27->1529"
       ],
       "zh-chs": "ServerStats.csv"
     },
@@ -24026,7 +24032,7 @@
       "pt": "Ação desconhecida",
       "ru": "Неизвестное действие",
       "xloc": [
-        "default.handlebars->27->1493"
+        "default.handlebars->27->1494"
       ],
       "zh-chs": "未知動作"
     },
@@ -24058,7 +24064,7 @@
       "xloc": [
         "default.handlebars->27->1373",
         "default.handlebars->27->1460",
-        "default.handlebars->27->1497"
+        "default.handlebars->27->1498"
       ],
       "zh-chs": "未知設備組"
     },
@@ -24075,7 +24081,7 @@
       "pt": "Grupo desconhecido",
       "ru": "Неизвестная группа",
       "xloc": [
-        "default.handlebars->27->1489"
+        "default.handlebars->27->1490"
       ],
       "zh-chs": "未知群組"
     },
@@ -24185,7 +24191,7 @@
       "pt": "Atualizado",
       "ru": "Актуально",
       "xloc": [
-        "default.handlebars->27->1552"
+        "default.handlebars->27->1553"
       ],
       "zh-chs": "最新"
     },
@@ -24425,8 +24431,8 @@
       "pt": "Usava",
       "ru": "Использовано",
       "xloc": [
-        "default.handlebars->27->1483",
-        "default.handlebars->27->1485"
+        "default.handlebars->27->1484",
+        "default.handlebars->27->1486"
       ],
       "zh-chs": "用過的"
     },
@@ -24500,7 +24506,7 @@
       "pt": "Contas de usuário",
       "ru": "Учетные записи пользователей",
       "xloc": [
-        "default.handlebars->27->1502"
+        "default.handlebars->27->1503"
       ],
       "zh-chs": "用戶帳號"
     },
@@ -24692,7 +24698,7 @@
       "pt": "Sessões de Usuário",
       "ru": "Сессии пользователя",
       "xloc": [
-        "default.handlebars->27->1519"
+        "default.handlebars->27->1520"
       ],
       "zh-chs": "用戶會話"
     },
@@ -24847,7 +24853,7 @@
       "xloc": [
         "default.handlebars->27->1350",
         "default.handlebars->27->1361",
-        "default.handlebars->27->1518",
+        "default.handlebars->27->1519",
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral"
       ],
       "zh-chs": "用戶數"
@@ -24865,7 +24871,7 @@
       "pt": "Sessões de Usuários",
       "ru": "Сессии пользователей",
       "xloc": [
-        "default.handlebars->27->1506"
+        "default.handlebars->27->1507"
       ],
       "zh-chs": "用戶會話"
     },
@@ -25259,8 +25265,8 @@
       "pt": "Servidor web",
       "ru": "Веб-сервер",
       "xloc": [
-        "default.handlebars->27->1539",
-        "default.handlebars->27->1540"
+        "default.handlebars->27->1540",
+        "default.handlebars->27->1541"
       ],
       "zh-chs": "網絡服務器"
     },
@@ -25277,7 +25283,7 @@
       "pt": "Solicitações de servidor Web",
       "ru": "Запросы веб-сервера",
       "xloc": [
-        "default.handlebars->27->1541"
+        "default.handlebars->27->1542"
       ],
       "zh-chs": "Web服務器請求"
     },
@@ -25294,7 +25300,7 @@
       "pt": "Encaminhador de soquete da Web",
       "ru": "Ретранслятор Web Socket",
       "xloc": [
-        "default.handlebars->27->1542"
+        "default.handlebars->27->1543"
       ],
       "zh-chs": "Web套接字中繼"
     },
@@ -26131,7 +26137,7 @@
       "pt": "\\\\'",
       "ru": "\\\\'",
       "xloc": [
-        "default.handlebars->27->1550"
+        "default.handlebars->27->1551"
       ],
       "zh-chs": "\\\\'"
     },
@@ -26370,7 +26376,7 @@
       "pt": "livre",
       "ru": "свободно",
       "xloc": [
-        "default.handlebars->27->1514"
+        "default.handlebars->27->1515"
       ],
       "zh-chs": "自由"
     },
@@ -26664,7 +26670,7 @@
       "pt": "servertrace.csv",
       "ru": "servertrace.csv",
       "xloc": [
-        "default.handlebars->27->1549"
+        "default.handlebars->27->1550"
       ],
       "zh-chs": "servertrace.csv"
     },
@@ -26714,7 +26720,7 @@
       "pt": "tempo, conn.agente, conn.usuários.usersessions, conn.relaysession, conn.intelamt, mem.externo mem.amontoado, mem.heaptotal, mem.rss",
       "ru": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "xloc": [
-        "default.handlebars->27->1527"
+        "default.handlebars->27->1528"
       ],
       "zh-chs": "時間，conn.agent，conn.users，conn.usersessions，conn.relaysession，conn.intelamt，mem.external，mem.heapused，mem.heaptotal，mem.rss"
     },
@@ -26730,7 +26736,7 @@
       "pt": "hora, fonte, mensagem",
       "ru": "time, source, message",
       "xloc": [
-        "default.handlebars->27->1548"
+        "default.handlebars->27->1549"
       ],
       "zh-chs": "時間，來源，訊息"
     },
@@ -26760,7 +26766,7 @@
       "pt": "total",
       "ru": "всего",
       "xloc": [
-        "default.handlebars->27->1515"
+        "default.handlebars->27->1516"
       ],
       "zh-chs": "總"
     },
