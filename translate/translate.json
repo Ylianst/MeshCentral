@@ -5194,6 +5194,7 @@
     },
     {
       "en": "Clear this notification",
+      "nl": "Wis deze melding",
       "xloc": [
         "default.handlebars->27->1483"
       ]
