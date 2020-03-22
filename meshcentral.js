@@ -70,6 +70,7 @@ function CreateMeshCentralServer(config, args) {
     obj.serverWarnings = []; // List of warnings that should be shown to administrators
     obj.cookieUseOnceTable = {}; // List of cookies that are already expired
     obj.cookieUseOnceTableCleanCounter = 0; // Clean the cookieUseOnceTable each 20 additions
+    obj.firstStats = true; // True until this server saves it's not stats to the database
 
     // Server version
     obj.currentVer = null;
@@ -1272,6 +1273,7 @@ function CreateMeshCentralServer(config, args) {
                         }
                     };
                     if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
+                    if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
                     obj.db.SetServerStats(data); // Save the stats to the database
                     obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats
                 }, 300000);
