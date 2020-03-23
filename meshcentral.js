@@ -617,7 +617,8 @@ function CreateMeshCentralServer(config, args) {
                         });
                         return;
                     }
-                    if (obj.args.adminaccount || (obj.args.resetaccount.startsWith('user/') == false)) {
+                    if (obj.args.adminaccount) {
+                        if (obj.args.resetaccount.startsWith('user/') == false) { console.log('Invalid userid, usage: --adminaccount [userid].'); process.exit(); return; }
                         obj.db.Get(obj.args.adminaccount, function (err, docs) {
                             if ((err != null) || (docs == null) || (docs.length == 0)) { console.log('Unknown userid, usage: --adminaccount [userid].'); process.exit(); return; }
                             docs[0].siteadmin = 0xFFFFFFFF; // Set user as site administrator
