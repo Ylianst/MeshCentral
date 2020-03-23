@@ -608,7 +608,7 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.recordencryptionrecode) { obj.db.performRecordEncryptionRecode(function (count) { console.log('Re-encoded ' + count + ' record(s).'); process.exit(); }); return; }
                     if (obj.args.dbstats) { obj.db.getDbStats(function (stats) { console.log(stats); process.exit(); }); return; }
                     if (obj.args.resetaccount) {
-                        if (obj.args.pass == null) { console.log('Usage: --resetaccount [userid] --pass [password].'); process.exit(); return; }
+                        if ((obj.args.pass == null) || (obj.args.pass == '') || (obj.args.resetaccount.startsWith('user/') == false)) { console.log('Usage: --resetaccount [userid] --pass [password].'); process.exit(); return; }
                         obj.db.Get(obj.args.resetaccount, function (err, docs) {
                             if ((err != null) || (docs == null) || (docs.length == 0)) { console.log('Unknown userid, usage: --resetaccount [userid] --pass [password].'); process.exit(); return; }
                             var user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
@@ -617,7 +617,7 @@ function CreateMeshCentralServer(config, args) {
                         });
                         return;
                     }
-                    if (obj.args.adminaccount) {
+                    if (obj.args.adminaccount || (obj.args.resetaccount.startsWith('user/') == false)) {
                         obj.db.Get(obj.args.adminaccount, function (err, docs) {
                             if ((err != null) || (docs == null) || (docs.length == 0)) { console.log('Unknown userid, usage: --adminaccount [userid].'); process.exit(); return; }
                             docs[0].siteadmin = 0xFFFFFFFF; // Set user as site administrator
