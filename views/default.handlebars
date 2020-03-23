@@ -8429,6 +8429,13 @@
                 var y = '';
                 for (var i in meshes) { if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(meshes[i].name) + '</option>'; } }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
+            } else if (userid === 4) {
+                var y = '', firstMeshId = null;
+                for (var i in meshes) { y += '<option value=' + encodeURIComponent(meshes[i]._id) + '>' + EscapeHtml(meshes[i].name) + '</option>'; if (firstMeshId == null) { firstMeshId = meshes[i]._id; } }
+                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog() id=dp2meshid style=width:100%>' + y + '</select></div>');
+                y = '';
+                for (var i in nodes) { if (nodes[i].meshid == firstMeshId) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
+                x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2nodeid style=width:100%>' + y + '</select></div>');
             } else {
                 userid = decodeURIComponent(userid);
                 var uname = userid.split('/')[2];
@@ -8442,10 +8449,12 @@
                 }
             }
             x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray">';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
+            if (userid != 4) {
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
+            }
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
@@ -8470,6 +8479,8 @@
                 setDialogMode(2, "Add User Group", 3, p20showAddMeshUserDialogEx, x, userid);
             } else if (userid === 3) {
                 setDialogMode(2, "Add Device Group", 3, p20showAddMeshUserDialogEx, x, userid);
+            } else if (userid === 4) {
+                setDialogMode(2, "Add Device", 3, p20showAddMeshUserDialogEx, x, userid);
             } else {
                 if (userid.startsWith('ugrp/')) {
                     setDialogMode(2, "Edit Device Group Permissions", 7, p20showAddMeshUserDialogEx, x, userid);
@@ -8503,6 +8514,12 @@
             }
             p20validateAddMeshUserDialog();
             return false;
+        }
+
+        function p20changeMeshAddMeshUserDialog() {
+            var y = '', meshid = decodeURIComponent(Q('dp2meshid').value);
+            for (var i in nodes) { if (nodes[i].meshid == meshid) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
+            QH('dp2nodeid', y);
         }
 
         function p20setname(name) {
@@ -8551,11 +8568,15 @@
             }
             QE('idx_dlgOkButton', ok);
 
-            var nc = !Q('p20fulladmin').checked;
-            QE('p20fulladmin', meshrights == 0xFFFFFFFF);
-            QE('p20editmesh', nc && (meshrights == 0xFFFFFFFF));
-            QE('p20manageusers', nc);
-            QE('p20managecomputers', nc);
+            if (Q('p20fulladmin') != null) {
+                var nc = !Q('p20fulladmin').checked;
+                QE('p20fulladmin', meshrights == 0xFFFFFFFF);
+                QE('p20editmesh', nc && (meshrights == 0xFFFFFFFF));
+                QE('p20manageusers', nc);
+                QE('p20managecomputers', nc);
+            } else {
+                nc = true;
+            }
             QE('p20remotecontrol', nc);
             QE('p20meshagentconsole', nc);
             QE('p20meshserverfiles', nc);
@@ -8577,10 +8598,12 @@
                 p20viewuserEx(b, t);
             } else {
                 var meshadmin = 0;
-                if (Q('p20fulladmin').checked == true) { meshadmin = 0xFFFFFFFF; } else {
-                    if (Q('p20editmesh').checked == true) meshadmin += 1;
-                    if (Q('p20manageusers').checked == true) meshadmin += 2;
-                    if (Q('p20managecomputers').checked == true) meshadmin += 4;
+                if ((Q('p20fulladmin') != null) && (Q('p20fulladmin').checked == true)) { meshadmin = 0xFFFFFFFF; } else {
+                    if (Q('p20fulladmin') != null) {
+                        if (Q('p20editmesh').checked == true) meshadmin += 1;
+                        if (Q('p20manageusers').checked == true) meshadmin += 2;
+                        if (Q('p20managecomputers').checked == true) meshadmin += 4;
+                    }
                     if (Q('p20remotecontrol').checked == true) meshadmin += 8;
                     if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
                     if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
@@ -8606,6 +8629,9 @@
                 } else if (t === 3) {
                     var meshid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[meshid];
                     if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: meshid, meshname: mesh.name, userids: [ currentUserGroup._id ], meshadmin: meshadmin }); }
+                } else if (t === 4) {
+                    var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
+                    if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUser._id ], rights: meshadmin }); }
                 } else {
                     if (t == null) {
                         var users = Q('dp20username').value.split(','), users2 = [];
@@ -10173,7 +10199,7 @@
 
             if (urlargs.dp == 1) { // For testing only
                 // Display common devices
-                x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+                x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
                 x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
                 if (currentUser.links) {
                     for (var i in currentUser.links) {
