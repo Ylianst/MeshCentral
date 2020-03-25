@@ -6327,13 +6327,14 @@
                 displayCount++;
                 displaySelector += '<option' + ((selDisplay == i) ? ' selected' : '') + ' value=' + i + '>' + displays[i] + '</option>';
                 if ((deskPreferedStickyDisplay == i) && (selDisplay != deskPreferedStickyDisplay)) { desktop.m.SetDisplay(i); }
+                deskPreferedStickyDisplay = -1;
             }
             QH('termdisplays', displaySelector);
             QV('termdisplays', displayCount > 1);
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
-        var deskPreferedStickyDisplay = 0;
+        var deskPreferedStickyDisplay = -1;
         function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); Q('termdisplays').blur(); }
 
         // Double click detection. This is important for MacOS.
