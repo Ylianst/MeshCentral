@@ -178,7 +178,7 @@ function CreateMeshCentralServer(config, args) {
                 didSomething = true;
             }
 
-            // Check is "meshcentral-web" exists, if so, translate all pages in that folder.
+            // Check if "meshcentral-web" exists, if so, translate all pages in that folder.
             if (obj.webViewsOverridePath != null) {
                 didSomething = true;
                 var files = obj.fs.readdirSync(obj.webViewsOverridePath);
@@ -972,6 +972,15 @@ function CreateMeshCentralServer(config, args) {
                 obj.config.domains[i].newaccountsrights = newAccRights;
             }
             if (obj.config.domains[i].newaccountsrights && (typeof (obj.config.domains[i].newaccountsrights) != 'number')) { delete obj.config.domains[i].newaccountsrights; }
+
+            // Check if there is a web views path and/or web public path for this domain
+            if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
+                if ((obj.config.domains[i].webviewspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web-' + i + '/views')))) { obj.config.domains[i].webviewspath = obj.path.join(__dirname, '../../meshcentral-web-' + i + '/views'); }
+                if ((obj.config.domains[i].webpublicpath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web-' + i + '/public')))) { obj.config.domains[i].webpublicpath = obj.path.join(__dirname, '../../meshcentral-web-' + i + '/public'); }
+            } else {
+                if ((obj.config.domains[i].webviewspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/views')))) { obj.config.domains[i].webviewspath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/views'); }
+                if ((obj.config.domains[i].webpublicpath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/public')))) { obj.config.domains[i].webpublicpath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/public'); }
+            }
         }
 
         // Log passed arguments into Windows Service Log
@@ -2395,7 +2404,7 @@ function mainStart() {
         // Lowercase the auth value if present
         for (var i in config.domains) { if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); } }
 
-        // Check is Windows SSPI and YubiKey OTP will be used
+        // Check if Windows SSPI and YubiKey OTP will be used
         var sspi = false;
         var ldap = false;
         var allsspi = true;

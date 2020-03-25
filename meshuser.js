@@ -2415,6 +2415,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
 
+                // Convert user names to userid's
+                if (command.userids == null) {
+                    command.userids = [];
+                    for (var i in command.usernames) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                }
+
                 // TODO
                 //console.log(command);
 
@@ -3192,7 +3198,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-remove':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false || command.index == null) break;
 
@@ -3218,7 +3224,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var yubikeyotp = null;
                     try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
 
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((yubikeyotp == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
@@ -3267,7 +3273,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
-                    // Check is 2-step login is supported
+                    // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (command.name == null)) break;
 
