@@ -476,19 +476,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Check if the source IP address is allowed, return domain if allowed
+    // If there is a fail and null is returned, the request or connection is closed already.
     function checkUserIpAddress(req, res) {
         if ((parent.config.settings.userblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userblockedip, true) == true)) { obj.blockedUsers++; return null; }
         if ((parent.config.settings.userallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userallowedip, false) == false)) { obj.blockedUsers++; return null; }
         const domain = (req.url ? getDomain(req) : getDomain(res));
+        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
         if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true) == true)) { obj.blockedUsers++; return null; }
         if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false) == false)) { obj.blockedUsers++; return null; }
         return domain;
     }
 
     // Check if the source IP address is allowed, return domain if allowed
+    // If there is a fail and null is returned, the request or connection is closed already.
     function checkAgentIpAddress(req, res) {
-        if ((parent.config.settings.agentblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentblockedip, true) == true)) { obj.blockedAgents++; return null; }
-        if ((parent.config.settings.agentallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentallowedip, false) == false)) { obj.blockedAgents++; return null; }
+        if ((parent.config.settings.agentblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
+        if ((parent.config.settings.agentallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
         const domain = (req.url ? getDomain(req) : getDomain(res));
         if ((domain.agentblockedip != null) && (checkIpAddressEx(req, res, domain.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
         if ((domain.agentallowedip != null) && (checkIpAddressEx(req, res, domain.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
@@ -496,6 +499,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return the current domain of the request
+    // Request or connection says open regardless of the response
     function getDomain(req) {
         if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
         if (req.headers.host != null) { var d = obj.dnsDomains[req.headers.host.split(':')[0].toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
@@ -508,7 +512,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi')) { parent.debug('web', 'handleLogoutRequest: failed checks.'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if (domain.auth == 'sspi') { parent.debug('web', 'handleLogoutRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
@@ -696,7 +701,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleLoginRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleLoginRequest: invalid domain'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check if this is a banned ip address
@@ -875,7 +880,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     function handleCreateAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCreateAccountRequest: failed checks.'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCreateAccountRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Always lowercase the email address
@@ -987,6 +993,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account password reset
     function handleResetPasswordRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check everything is ok
@@ -1071,7 +1078,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process an account reset request
     function handleResetAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Always lowercase the email address
@@ -1164,7 +1172,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Called to process a web based email verification request
     function handleCheckMailRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         if (req.query.c != null) {
@@ -1313,7 +1322,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function handleDeleteAccountRequest(req, res, direct) {
         parent.debug('web', 'handleDeleteAccountRequest()');
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleDeleteAccountRequest: failed checks.'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleDeleteAccountRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         var user = null;
@@ -1400,7 +1410,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle password changes
     function handlePasswordChangeRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // Check if the user is logged and we have all required parameters
@@ -1441,7 +1452,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
 
@@ -1751,7 +1762,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a post request on the root
     function handleRootPostRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.end("Not Found"); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.end("Not Found"); return; } // Check 3FA URL key
         parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
 
@@ -1795,7 +1806,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Serve the xterm page
     function handleXTermRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleXTermRequest: Bad domain'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         parent.debug('web', 'handleXTermRequest: sending xterm');
@@ -1828,7 +1839,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { parent.debug('web', 'handleTermsRequest: Bad domain'); res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         // See if term.txt was loaded from the database
@@ -2032,7 +2043,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
@@ -2063,9 +2074,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle logo request
     function handleLogoRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
 
         //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if ((domain != null) && domain.titlepicture) {
+        if (domain.titlepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.titlepicture] != null)) {
                 // Use the logo in the database
                 res.set({ 'Content-Type': 'image/jpeg' });
@@ -2077,7 +2089,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
-        if ((domain != null) && (domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'images/logoback.png')))) {
+        if ((domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'images/logoback.png')))) {
             // Use the domain logo picture
             try { res.sendFile(obj.path.join(domain.webpublicpath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
         } else if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/logoback.png'))) {
@@ -2092,6 +2104,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle translation request
     function handleTranslationsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
         //if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
 
@@ -2155,9 +2168,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle welcome image request
     function handleWelcomeImageRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
 
         //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if ((domain != null) && domain.welcomepicture) {
+        if (domain.welcomepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.welcomepicture] != null)) {
                 // Use the welcome image in the database
                 res.set({ 'Content-Type': 'image/jpeg' });
@@ -2169,7 +2183,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             try { res.sendFile(obj.path.join(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
         }
 
-        if ((domain != null) && (domain.webpublicpath != null)) {
+        if (domain.webpublicpath != null) {
             obj.fs.exists(obj.path.join(domain.webpublicpath, 'images/mainwelcome.jpg'), function (exists) {
                 if (exists) {
                     // Use the domain logo picture
@@ -2198,7 +2212,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Server the player page
     function handlePlayerRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
 
         parent.debug('web', 'handlePlayerRequest: sending player');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
@@ -2208,7 +2222,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle domain redirection
     obj.handleDomainRedirect = function (req, res) {
         const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (domain.redirects == null)) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
+        if (domain.redirects == null) { res.sendStatus(404); return; }
         var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split('?');
         if (splitUrl.length > 1) { urlArgs = '?' + splitUrl[1]; }
         if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) { urlName = splitUrl[0].substring(1).toLowerCase(); }
@@ -2258,7 +2273,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Download a file from the server
     function handleDownloadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         const user = obj.users[req.session.userid];
         if (user == null) { res.sendStatus(404); return; }
@@ -2275,7 +2290,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Upload a MeshCore.js file to the server
     function handleUploadMeshCoreFile(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if (domain.id !== '') { res.sendStatus(401); return; }
 
         var authUserid = null;
@@ -2313,7 +2328,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Upload a file to the server
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if (domain.userQuota == -1) { res.sendStatus(401); return; }
         var authUserid = null;
         if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
@@ -2771,7 +2786,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a Intel AMT activation request
     function handleAmtActivateWebSocket(ws, req) {
         const domain = checkUserIpAddress(ws, req);
-        if (domain == null) { ws.send(JSON.stringify({ errorText: 'Invalid domain' })); ws.close(); return; }
+        if (domain == null) { return; }
         if (req.query.id == null) { ws.send(JSON.stringify({ errorText: 'Missing group identifier' })); ws.close(); return; }
 
         // Fetch the mesh object
@@ -2960,7 +2975,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle the web socket echo request, just echo back the data sent
     function handleEchoWebSocket(ws, req) {
         const domain = checkUserIpAddress(ws, req);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
         // When data is received from the web socket, echo it back
@@ -3089,7 +3104,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a server backup request
     function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
         var user = obj.users[req.session.userid];
@@ -3122,7 +3137,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a server restore request
     function handleRestoreRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (obj.parent.args.noserverbackup == 1) { res.sendStatus(401); return; }
         var authUserid = null;
@@ -3149,8 +3164,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        const domain = getDomain(req, res);
+        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
 
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
@@ -3300,6 +3315,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.sendStatus(401);
             }
         } else {
+            domain = checkUserIpAddress(req, res); // Recheck the domain to apply user IP filtering.
+            if (domain == null) return;
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
             // Send a list of available mesh agents
             var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body><table>';
@@ -3325,8 +3342,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Create a OSX mesh agent installer
     obj.handleMeshOsxAgentRequest = function (req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if ((domain == null) || (req.query.id == null)) { res.sendStatus(404); return; }
+        const domain = getDomain(req, res);
+        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
+        if (req.query.id == null) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
@@ -3417,7 +3435,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
 
         // If required, check if this user has rights to do this
@@ -3454,7 +3472,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Handle a request for power events
     obj.handleDevicePowerEvents = function (req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { res.sendStatus(404); return; }
+        if (domain == null) { return; }
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (req.query.id == null) || (typeof req.query.id != 'string')) { res.sendStatus(401); return; }
         var x = req.query.id.split('/');
         var user = obj.users[req.session.userid];
@@ -3493,7 +3511,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Handle a plugin admin request
         obj.handlePluginAdminReq = function (req, res) {
             const domain = checkUserIpAddress(req, res);
-            if (domain == null) { res.sendStatus(404); return; }
+            if (domain == null) { return; }
             if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
             var user = obj.users[req.session.userid];
             if (user == null) { res.sendStatus(401); return; }
@@ -3503,7 +3521,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         obj.handlePluginAdminPostReq = function (req, res) {
             const domain = checkUserIpAddress(req, res);
-            if (domain == null) { res.sendStatus(404); return; }
+            if (domain == null) { return; }
             if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
             var user = obj.users[req.session.userid];
             if (user == null) { res.sendStatus(401); return; }
@@ -3513,7 +3531,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         obj.handlePluginJS = function (req, res) {
             const domain = checkUserIpAddress(req, res);
-            if (domain == null) { res.sendStatus(404); return; }
+            if (domain == null) { return; }
             if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
             var user = obj.users[req.session.userid];
             if (user == null) { res.sendStatus(401); return; }
@@ -3694,7 +3712,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Receive mesh agent connections
             obj.app.ws(url + 'agent.ashx', function (ws, req) {
                 var domain = checkAgentIpAddress(ws, req);
-                if (domain == null) { parent.debug('web', 'Got agent connection from blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
+                if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
                 //console.log('Agent connect: ' + cleanRemoteAddr(req.ip));
                 try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
@@ -3703,7 +3721,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.parent.mqttbroker != null) {
                 obj.app.ws(url + 'mqtt.ashx', function (ws, req) {
                     var domain = checkAgentIpAddress(ws, req);
-                    if (domain == null) { parent.debug('web', 'Got agent connection from blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
+                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
                     var serialtunnel = SerialTunnel();
                     serialtunnel.xtransport = 'ws';
                     serialtunnel.xdomain = domain;
@@ -3789,8 +3807,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Check IP filtering and domain
             var domain = null;
-            if (noAuthOk == true) { domain = getDomain(req); } else { domain = checkUserIpAddress(ws, req); } // If auth is required, enforce IP address filtering.
-            if (domain == null) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-1' })); ws.close(); return; } catch (e) { return; } }
+            if (noAuthOk == true) {
+                domain = getDomain(req);
+                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-1' })); ws.close(); return; } catch (e) { return; }
+            } else {
+                // If authentication is required, enforce IP address filtering.
+                domain = checkUserIpAddress(ws, req);
+                if (domain == null) { return; }
+            }
 
             // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
             if ((req.query.user != null) && (req.query.pass != null)) {
