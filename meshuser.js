@@ -1268,7 +1268,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             mesh = parent.meshes[meshid];
                             if (mesh) {
                                 // Remove user from the mesh
-                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(common.escapeLinksFieldName(mesh)); }
+                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
                                 // Notify mesh change
                                 change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
                                 var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
@@ -1664,7 +1664,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (xmesh && xmesh.links) {
                                             ugrp.links[i] = { rights: cgroup.links[i].rights };
                                             xmesh.links[ugrpid] = { rights: cgroup.links[i].rights };
-                                            db.Set(common.escapeLinksFieldName(xmesh));
+                                            db.Set(xmesh);
 
                                             // Notify mesh change
                                             var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Added group ' + ugrp.name + ' to mesh ' + xmesh.name, domain: domain.id, invite: mesh.invite };
@@ -1678,7 +1678,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // Save the new group
-                        db.Set(common.escapeLinksFieldName(ugrp));
+                        db.Set(ugrp);
                         if (db.changeStream == false) { parent.userGroups[ugrpid] = ugrp; }
 
                         // Event the device group creation
@@ -1703,7 +1703,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     db.Get(command.ugrpid, function (err, groups) {
                         if ((err != null) || (groups.length != 1)) return;
-                        var group = common.unEscapeLinksFieldName(groups[0]);
+                        var group = groups[0];
 
                         // Unlink any user and meshes that have a link to this group
                         if (group.links) {
@@ -1725,7 +1725,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     var xmesh = parent.meshes[i];
                                     if (xmesh && xmesh.links) {
                                         delete xmesh.links[group._id];
-                                        db.Set(common.escapeLinksFieldName(xmesh));
+                                        db.Set(xmesh);
 
                                         // Notify mesh change
                                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: domain.id, invite: mesh.invite };
@@ -1762,7 +1762,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name) && (command.name.indexOf(' ') == -1)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
                         if (change != '') {
-                            db.Set(common.escapeLinksFieldName(group));
+                            db.Set(group);
                             var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: change, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
@@ -1822,7 +1822,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         if (addedCount > 0) {
                             // Save the new group to the database
-                            db.Set(common.escapeLinksFieldName(group));
+                            db.Set(group);
 
                             // Notify user group change
                             var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Added user ' + chguser.name + ' to user group ' + group.name, domain: domain.id };
@@ -1884,7 +1884,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((group.links != null) && (group.links[command.userid] != null)) {
                                 change = true;
                                 delete group.links[command.userid];
-                                db.Set(common.escapeLinksFieldName(group));
+                                db.Set(group);
 
                                 // Notify user group change
                                 if (change) {
@@ -2158,7 +2158,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var links = {};
                         links[user._id] = { name: user.name, rights: 4294967295 };
                         mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
-                        db.Set(common.escapeLinksFieldName(mesh));
+                        db.Set(mesh);
                         parent.meshes[meshid] = mesh;
                         parent.parent.AddEventDispatch([meshid], ws);
 
@@ -2230,7 +2230,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var xgroup = parent.userGroups[j];
                             if (xgroup && xgroup.links) {
                                 delete xgroup.links[mesh._id];
-                                db.Set(common.escapeLinksFieldName(xgroup));
+                                db.Set(xgroup);
 
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', user._id, xgroup._id];
@@ -2251,7 +2251,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Mark the mesh as deleted
                     mesh.deleted = new Date(); // Mark the time this mesh was deleted, we can expire it at some point.
-                    db.Set(common.escapeLinksFieldName(mesh)); // We don't really delete meshes because if a device connects to is again, we will un-delete it.
+                    db.Set(mesh); // We don't really delete meshes because if a device connects to is again, we will un-delete it.
 
                     // Delete all devices attached to this mesh in the database
                     db.RemoveMeshDocuments(command.meshid);
@@ -2304,7 +2304,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         if (change != '') {
-                            db.Set(common.escapeLinksFieldName(mesh));
+                            db.Set(mesh);
                             var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, event);
@@ -2356,7 +2356,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (newuser.links == null) { newuser.links = {}; }
                             if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = command.meshadmin; } else { newuser.links[command.meshid] = { rights: command.meshadmin }; }
                             if (newuserid.startsWith('user/')) { db.SetUser(newuser); }
-                            else if (newuserid.startsWith('ugrp/')) { db.Set(common.escapeLinksFieldName(newuser)); }
+                            else if (newuserid.startsWith('ugrp/')) { db.Set(newuser); }
                             parent.parent.DispatchEvent([newuser._id], obj, 'resubscribe');
 
                             if (newuserid.startsWith('user/')) {
@@ -2375,7 +2375,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Add userid to the mesh
                             mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
-                            db.Set(common.escapeLinksFieldName(mesh));
+                            db.Set(mesh);
 
                             // Notify mesh change
                             var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
@@ -2402,6 +2402,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try {
                     if (common.validateString(command.nodeid, 1, 1024) == false) { err = 'Invalid nodeid'; } // Check the nodeid
                     else if (common.validateInt(command.rights) == false) { err = 'Invalid rights'; } // Device rights must be an integer
+                    else if ((command.rights & 7) != 0) { err = 'Invalid rights'; } // EDITMESH, MANAGEUSERS or MANAGECOMPUTERS rights can't be assigned to a user to device link
                     else if ((common.validateStrArray(command.usernames, 1, 64) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
                     else {
                         if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.meshid; }
@@ -2421,8 +2422,70 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     for (var i in command.usernames) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
                 }
 
-                // TODO
-                //console.log(command);
+                // Get the node and the rights for this node
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    // Check if already in the right mesh
+                    if ((node == null) || (node.meshid == command.meshid)) return;
+                    var dispatchTargets = ['*', node.meshid, node._id];
+
+                    // Check that we have rights to manage users on this device
+                    if ((rights & MESHRIGHT_MANAGEUSERS) == 0) return;
+
+                    // Add the new link to the users
+                    var nodeChanged = false;
+                    for (var i in command.userids) {
+                        var newuserid = command.userids[i];
+                        var newuser = parent.users[newuserid];
+                        if (newuser != null) {
+                            // Add this user to the dispatch target list
+                            dispatchTargets.push(newuser._id);
+
+                            if (command.rights == 0) {
+                                // Remove link to this user
+                                if (newuser.links != null) {
+                                    delete newuser.links[command.nodeid];
+                                    if (Object.keys(newuser.links).length == 0) { delete newuser.links; }
+                                }
+
+                                // Remove link to this device
+                                if (node.links != null) {
+                                    delete node.links[newuserid];
+                                    nodeChanged = true;
+                                    if (Object.keys(node.links).length == 0) { delete node.links; }
+                                }
+                            } else {
+                                // Add the new link to this user
+                                if (newuser.links == null) { newuser.links = {}; }
+                                newuser.links[command.nodeid] = { rights: command.rights };
+
+                                // Add the new link to the device
+                                if (node.links == null) { node.links = {}; }
+                                node.links[newuserid] = { rights: command.rights }
+                                nodeChanged = true;
+                            }
+
+                            // Save the user to the database
+                            db.SetUser(newuser);
+
+                            // Notify user change
+                            var targets = ['*', 'server-users', newuserid._id];
+                            var event = { etype: 'user', userid: newuserid._id, username: newuserid.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + user.name) : ('Changed user device rights for ' + user.name), domain: domain.id, account: parent.CloneSafeUser(newuser) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
+                        }
+                    }
+
+                    // Save the device
+                    if (nodeChanged == true) {
+                        // Save the node to the database
+                        db.Set(node);
+
+                        // Event the node change
+                        var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                        parent.parent.DispatchEvent(dispatchTargets, obj, event);
+                    }
+                });
 
                 break;
             }
@@ -2461,7 +2524,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((delmeshrights == 0xFFFFFFFF) && (mesh.links[deluserid].rights != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
                             delete deluser.links[command.meshid];
                             if (deluserid.startsWith('user/')) { db.SetUser(deluser); }
-                            else if (deluserid.startsWith('ugrp/')) { db.Set(common.escapeLinksFieldName(deluser)); }
+                            else if (deluserid.startsWith('ugrp/')) { db.Set(deluser); }
                             parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
 
                             if (deluserid.startsWith('user/')) {
@@ -2483,7 +2546,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Remove user from the mesh
                     if (mesh.links[command.userid] != null) {
                         delete mesh.links[command.userid];
-                        db.Set(common.escapeLinksFieldName(mesh));
+                        db.Set(mesh);
 
                         // Notify mesh change
                         var event;
@@ -2528,7 +2591,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.amtpolicy.type === 2) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup }; }
                         else if (command.amtpolicy.type === 3) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, cirasetup: command.amtpolicy.cirasetup }; }
                         mesh.amt = amtpolicy;
-                        db.Set(common.escapeLinksFieldName(mesh));
+                        db.Set(mesh);
                         var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
                         delete amtpolicy2.password;
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };

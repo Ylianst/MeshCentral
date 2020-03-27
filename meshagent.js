@@ -549,7 +549,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 const links = {};
                 links[adminUser._id] = { name: adminUser.name, rights: 0xFFFFFFFF };
                 mesh = { type: 'mesh', _id: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', domain: domain.id, links: links };
-                db.Set(common.escapeLinksFieldName(mesh));
+                db.Set(mesh);
                 parent.meshes[obj.dbMeshKey] = mesh;
 
                 if (adminUser.links == null) adminUser.links = {};
@@ -580,7 +580,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Mark the mesh as active
                 delete mesh.deleted;
-                db.Set(common.escapeLinksFieldName(mesh));
+                db.Set(mesh);
             }
         }
         return mesh;
@@ -638,7 +638,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     var links = {};
                     links[user._id] = { name: adminUser.name, rights: 0xFFFFFFFF };
                     mesh = { type: 'mesh', _id: obj.dbMeshKey, name: obj.meshid, mtype: 2, desc: '', domain: domain.id, links: links };
-                    db.Set(common.escapeLinksFieldName(mesh));
+                    db.Set(mesh);
                     parent.meshes[obj.meshid] = mesh;
                     parent.parent.AddEventDispatch(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), ws);
 

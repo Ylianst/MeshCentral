@@ -815,8 +815,8 @@ function CreateMeshCentralServer(config, args) {
                                             objectToAdd.push(newobj); // Add this user
                                         }
                                     } else if (newobj.type == 'mesh') {
-                                        // Add this object after escaping
-                                        objectToAdd.push(obj.common.escapeLinksFieldName(newobj));
+                                        // Add this object
+                                        objectToAdd.push(newobj);
                                     } // Don't add nodes.
                                 }
                                 console.log('Importing ' + objectToAdd.length + ' object(s)...');

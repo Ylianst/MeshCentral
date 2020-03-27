@@ -789,11 +789,17 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the main collection (MariaDB or MySQL)
             obj.Set = function (value, func) {
                 var extra = null, extraex = null;
+                value = common.escapeLinksFieldNameEx(value);
                 if (value.meshid) { extra = value.meshid; } else if (value.email) { extra = 'email/' + value.email; }
                 if ((value.type == 'node') && (value.intelamt != null) && (value.intelamt.uuid != null)) { extraex = 'uuid/' + value.intelamt.uuid; }
                 sqlDbQuery('REPLACE INTO meshcentral.main VALUE (?, ?, ?, ?, ?, ?)', [value._id, (value.type ? value.type : null), ((value.domain != null) ? value.domain : null), extra, extraex, JSON.stringify(performTypedRecordEncrypt(value))], func);
             }
-            obj.Get = function (_id, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], func); }
+            obj.Get = function (_id, func) {
+                sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], function (err, docs) {
+                    if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                    func(_id, func);
+                });
+            }
             obj.GetAll = function (func) { sqlDbQuery('SELECT domain, doc FROM meshcentral.main', null, func); }
             obj.GetHash = function (id, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [id], func); }
             obj.GetAllTypeNoTypeField = function (type, domain, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ?', [type, domain], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); }); };
@@ -920,7 +926,7 @@ module.exports.CreateDB = function (parent, func) {
             }
         } else if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
-            obj.Set = function (data, func) { obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
+            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -932,9 +938,15 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }).toArray(function (err, docs) { func2(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }).toArray(function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func2(err, performTypedRecordDecrypt(docs));
+                    });
                 } else {
-                    obj.file.find({ _id: id }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }).toArray(function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func(err, performTypedRecordDecrypt(docs));
+                    });
                 }
             };
             obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1052,7 +1064,7 @@ module.exports.CreateDB = function (parent, func) {
 
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
-            obj.Set = function (data, func) { var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
+            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -1064,9 +1076,15 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }, function (err, docs) { func2(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }, function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func2(err, performTypedRecordDecrypt(docs));
+                    });
                 } else {
-                    obj.file.find({ _id: id }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }, function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func(err, performTypedRecordDecrypt(docs));
+                    });
                 }
             };
             obj.GetAll = function (func) { obj.file.find({}, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1323,6 +1341,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Called when a node has changed
     function dbNodeChange(nodeChange, added) {
+        common.unEscapeLinksFieldName(nodeChange.fullDocument);
         const node = nodeChange.fullDocument;
         if (node.intelamt && node.intelamt.pass) { delete node.intelamt.pass; } // Remove the Intel AMT password before eventing this.
         parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: node, nodeid: node._id, domain: node.domain, nolog: 1 });
