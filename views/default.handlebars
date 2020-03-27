@@ -8408,7 +8408,7 @@
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags });
         }
 
-        function p20showAddMeshUserDialog(userid) {
+        function p20showAddMeshUserDialog(userid, selected) {
             if (xxdialogMode) return false;
             var x = '';
             if (userid == null) {
@@ -8432,11 +8432,12 @@
                 for (var i in meshes) { if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(meshes[i].name) + '</option>'; } }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if (userid === 4) {
-                var y = '', firstMeshId = null;
-                for (var i in meshes) { y += '<option value=' + encodeURIComponent(meshes[i]._id) + '>' + EscapeHtml(meshes[i].name) + '</option>'; if (firstMeshId == null) { firstMeshId = meshes[i]._id; } }
+                var y = '', selectedMeshId = null, selectedNode = null;
+                if (selected != null) { selectedNode = getNodeFromId(decodeURIComponent(selected)); if (selectedNode != null) { selectedMeshId = selectedNode.meshid; } }
+                for (var i in meshes) { if (selectedMeshId == null) { selectedMeshId = meshes[i]._id; } y += '<option value=' + encodeURIComponent(meshes[i]._id) + ((selectedMeshId == meshes[i]._id)?' selected':' ') + '>' + EscapeHtml(meshes[i].name) + '</option>'; }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(4) id=dp2meshid style=width:100%>' + y + '</select></div>');
                 y = '';
-                for (var i in nodes) { if (nodes[i].meshid == firstMeshId) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
+                for (var i in nodes) { if (nodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + ((selectedNode == nodes[i])?' selected':' ') + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
                 x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(4) id=dp2nodeid style=width:100%>' + y + '</select></div>');
             } else {
                 userid = decodeURIComponent(userid);
@@ -8482,7 +8483,9 @@
             } else if (userid === 3) {
                 setDialogMode(2, "Add Device Group", 3, p20showAddMeshUserDialogEx, x, userid);
             } else if (userid === 4) {
-                setDialogMode(2, "Add Device", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('dp2meshid', selected == null);
+                QE('dp2nodeid', selected == null);
             } else {
                 if (userid.startsWith('ugrp/')) {
                     setDialogMode(2, "Edit Device Group Permissions", 7, p20showAddMeshUserDialogEx, x, userid);
@@ -10236,7 +10239,7 @@
                             var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
                             if (r == 0xFFFFFFFF) rights = "Full Device Rights"; else if (r == 0) rights = "No Rights";
                             if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></div></td></tr>';
                         }
                     }
                 }
