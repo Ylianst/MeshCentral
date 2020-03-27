@@ -10231,16 +10231,20 @@
                 x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
                 x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
                 if (currentUser.links) {
-                    for (var i in currentUser.links) {
-                        if (i.startsWith('node/')) {
-                            var r = currentUser.links[i].rights, node = getNodeFromId(i), trash = '', rights = "Partial Device Rights", cr = GetNodeRights(node);
-                            if (node == null) { continue; }
-                            if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
-                            var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
-                            if (r == 0xFFFFFFFF) rights = "Full Device Rights"; else if (r == 0) rights = "No Rights";
-                            if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></div></td></tr>';
+                    // Sort the list of devices to display
+                    var nodelist = [];
+                    for (var i in currentUser.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { nodelist.push(node); } } }
+                    nodelist.sort(nameSort);
+                    for (var i in nodelist) {
+                        var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', rights = "Partial Device Rights", cr = GetNodeRights(node);
+                        if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
+                        var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
+                        if (r == 0xFFFFFFFF) rights = "Full Device Rights"; else if (r == 0) rights = "No Rights";
+                        if ((cr & 2) != 0) {
+                            rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                            trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         }
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                     }
                 }
                 if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
