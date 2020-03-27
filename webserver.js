@@ -3810,7 +3810,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var domain = null;
             if (noAuthOk == true) {
                 domain = getDomain(req);
-                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-1' })); ws.close(); return; } catch (e) { return; }
+                if (domain == null) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-1' })); ws.close(); return; } catch (e) { } return; }
             } else {
                 // If authentication is required, enforce IP address filtering.
                 domain = checkUserIpAddress(ws, req);

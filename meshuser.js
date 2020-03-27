@@ -2737,6 +2737,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
                             });
 
+                            // Remove any user node links
+                            if (node.links != null) {
+                                for (var i in node.links) {
+                                    if (i.startsWith('user/')) {
+                                        var cuser = parent.users[i];
+                                        if ((cuser != null) && (cuser.links != null) && (cuser.links[node._id] != null)) {
+                                            // Remove the user link & save the user
+                                            delete cuser.links[node._id];
+                                            if (Object.keys(cuser.links).length == 0) { delete cuser.links; }
+                                            db.SetUser(cuser);
+
+                                            // Notify user change
+                                            var targets = ['*', 'server-users', cuser._id];
+                                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
+                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                            parent.parent.DispatchEvent(targets, obj, event);
+                                        }
+                                    }
+                                }
+                            }
+
                             // Event node deletion
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + parent.meshes[node.meshid].name, domain: domain.id };
                             // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.

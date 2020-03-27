@@ -1069,7 +1069,7 @@ function CreateMeshCentralServer(config, args) {
             }
 
             // Start plugin manager if configuration allows this.
-            if ((obj.config) && (obj.config.settings) && (obj.config.settings.plugins != null)) {
+            if ((obj.config) && (obj.config.settings) && (obj.config.settings.plugins != null) && (obj.config.settings.plugins != false) && ((typeof obj.config.settings.plugins != 'object') || (obj.config.settings.plugins.enabled != false))) {
                 const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
                 if (nodeVersion < 7) {
                     addServerWarning("Plugin support requires Node v7.x or higher.");
