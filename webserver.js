@@ -1346,32 +1346,52 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check if the password is correct
         obj.authenticate(user.name, req.body.apassword1, domain, function (err, userid) {
-            var user = obj.users[userid];
-            if (user) {
-                // Remove all the mesh links to this user
-                if (user.links != null) {
-                    for (var meshid in user.links) {
-                        // Get the mesh
-                        var mesh = obj.meshes[meshid];
-                        if (mesh) {
-                            // Remove user from the mesh
-                            if (mesh.links[userid] != null) { delete mesh.links[userid]; obj.db.Set(mesh); }
-                            // Notify mesh change
-                            var change = 'Removed user ' + user.name + ' from group ' + mesh.name;
-                            obj.parent.DispatchEvent(['*', mesh._id, user._id, userid], obj, { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id });
+            var deluser = obj.users[userid];
+            if ((deluser != null) || (userid == null)) {
+                // Remove all links to this user
+                if (deluser.links != null) {
+                    for (var i in deluser.links) {
+                        if (i.startsWith('mesh/')) {
+                            // Get the device group
+                            mesh = parent.meshes[i];
+                            if (mesh) {
+                                // Remove user from the mesh
+                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
+
+                                // Notify mesh change
+                                change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
+                                var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                                parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, event);
+                            }
+                        } else if (i.startsWith('node/')) {
+                            // Get the node and the rights for this node
+                            parent.GetNodeWithRights(domain, deluser, i, function (node, rights, visible) {
+                                if ((node == null) || (node.links == null) || (node.links[deluser._id] == null)) return;
+
+                                // Remove the link and save the node to the database
+                                delete node.links[deluser._id];
+                                if (Object.keys(node.links).length == 0) { delete node.links; }
+                                db.Set(node);
+
+                                // Event the node change
+                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                                parent.parent.DispatchEvent(['*', node.meshid, node._id], obj, event);
+                            });
                         }
                     }
                 }
 
                 // Remove notes for this user
-                obj.db.Remove('nt' + user._id);
+                obj.db.Remove('nt' + deluser._id);
 
                 // Remove the user
-                obj.db.Remove(user._id);
-                delete obj.users[user._id];
+                obj.db.Remove(deluser._id);
+                delete obj.users[deluser._id];
                 req.session = null;
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
+                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluser._id, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
                 parent.debug('web', 'handleDeleteAccountRequest: removed user.');
             } else {
                 parent.debug('web', 'handleDeleteAccountRequest: auth failed.');
