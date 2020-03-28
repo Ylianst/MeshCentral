@@ -474,6 +474,7 @@
                 </table><br />
                 <div id=p10html2></div>
                 <div id=p10html3></div>
+                <div id=p10html4></div>
             </div>
             <div id=p11 class="noselect" style="display:none">
                 <div id="p11title">
@@ -5052,6 +5053,39 @@
                     if (lastTab != null && Q('p19ph-' + lastTab) != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
                 }
 
+                // Show special user permissions
+                x = '';
+                if (urlargs.dp == 1) { // For testing only
+                    x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a>';
+                    x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Special Permissions" + '</th><th scope=col style=text-align:left></th></tr>';
+                    var count = 1;
+                    if (currentNode.links != null) {
+                        // Sort the list of users to display
+                        var useridlist = [];
+                        for (var i in currentNode.links) { if (i.startsWith('user/')) { useridlist.push(i); } }
+                        useridlist.sort();
+                        for (var i in useridlist) {
+                            var trash = '', rights = '', userid = useridlist[i], srights = currentNode.links[userid].rights, rights = "Some Added Rights", username = userid.split('/')[2];
+                            if ((users != null) && (users[userid] != null)) { username = users[userid].name; }
+
+                            /*
+                            var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', rights = "Partial Device Rights", cr = GetNodeRights(node);
+                            if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
+                            var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
+                            */
+                            if (srights == 0xFFFFFFFF) rights = "Full Device Rights"; else if (srights == 0) rights = "No Added Rights";
+                            if ((meshrights & 2) != 0) {
+                                rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                            }
+                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                        }
+                    }
+                    if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No users with special device permissions" + '</i><div></div></div></td><td></td></tr>'; }
+                    x += '</tbody></table>';
+                }
+                QH('p10html4', x);
+
                 // Change the URL
                 var urlviewmode = '';
                 if ((xxcurrentView >= 10) && (xxcurrentView <= 19) && (currentNode != null)) {
@@ -5220,6 +5254,7 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
+
             QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + '" onclick="setDialogMode(0)"><img title=\"' + "Download power events" + '\" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
@@ -8411,8 +8446,8 @@
         function p20showAddMeshUserDialog(userid, selected) {
             if (xxdialogMode) return false;
             var x = '';
-            if (userid == null) {
-                x += "Allow users to manage this device group and devices in this group.";
+            if ((userid == null) || (userid == 5)) {
+                if (userid == null) { x += "Allow users to manage this device group and devices in this group."; } else { x += "Allow users to manage this device."; }
                 if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
                 x += '<br /><br /><div style=\'position:relative\'>';
                 x += addHtmlValue("User Names", '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
@@ -8452,7 +8487,7 @@
                 }
             }
             x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray">';
-            if (userid != 4) {
+            if ((userid != 4) && (userid != 5)) {
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
@@ -8486,6 +8521,9 @@
                 setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
+            } else if (userid === 5) {
+                setDialogMode(2, "Add Users to Device", 3, p20showAddMeshUserDialogEx, x, userid);
+                Q('dp20username').focus();
             } else {
                 if (userid.startsWith('ugrp/')) {
                     setDialogMode(2, "Edit Device Group Permissions", 7, p20showAddMeshUserDialogEx, x, userid);
@@ -8661,6 +8699,10 @@
                 } else if (t === 4) {
                     var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
                     if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUser._id ], rights: meshadmin }); }
+                } else if (t === 5) {
+                    var users = Q('dp20username').value.split(','), users2 = [];
+                    for (var i in users) { users2.push(users[i].trim()); }
+                    meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, usernames: users2, rights: meshadmin });
                 } else {
                     if (t == null) {
                         var users = Q('dp20username').value.split(','), users2 = [];
@@ -10302,12 +10344,14 @@
 
         function p30removeNodeFromUser(event, nodeid) {
             if (xxdialogMode) return;
-            var node = getNodeFromId(decodeURIComponent(nodeid))
-            setDialogMode(2, "Remove User", 3, p30removeNodeFromUserEx, format("Confirm removal of device {0}?", node.name), node);
+            var node = getNodeFromId(decodeURIComponent(nodeid));
+            setDialogMode(2, "Remove Device", 3, function(b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [ currentUser._id ], rights: 0 }); }, format("Confirm removal of device {0}?", node.name), node);
         }
 
-        function p30removeNodeFromUserEx(b, node) {
-            meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [ currentUser._id ], rights: 0 });
+        function p30removeUserFromNode(event, userid) {
+            if (xxdialogMode) return;
+            var user = users[decodeURIComponent(userid)];
+            setDialogMode(2, "Remove User", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0 }); }, format("Confirm removal of user {0}?", user.name), user);
         }
 
         function p30RemoveUserGroup(button, ugrpid) {
