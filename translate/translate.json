@@ -16614,6 +16614,7 @@
     },
     {
       "en": "No users with special device permissions",
+      "nl": "Geen gebruikers met speciale apparaatrechten",
       "xloc": [
         "default.handlebars->27->534"
       ]
@@ -25252,6 +25253,7 @@
     },
     {
       "en": "Wake",
+      "nl": "wekken",
       "xloc": [
         "default.handlebars->27->545"
       ]
