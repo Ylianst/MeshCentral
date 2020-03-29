@@ -2242,7 +2242,7 @@
                                 delete users[message.event.account._id]; // No longer part of our groups, remove this user.
                             }
 
-                            masterUpdate(16384);
+                            masterUpdate(4 | 16384);
                             break;
                         }
                         case 'accountremove': {
@@ -5053,11 +5053,11 @@
                     if (lastTab != null && Q('p19ph-' + lastTab) != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
                 }
 
-                // Show special user permissions
+                // Show user device permissions
                 x = '';
                 if (urlargs.dp == 1) { // For testing only
                     x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a>';
-                    x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Special Permissions" + '</th><th scope=col style=text-align:left></th></tr>';
+                    x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Permissions" + '</th><th scope=col style=text-align:left></th></tr>';
                     var count = 1;
                     if (currentNode.links != null) {
                         // Sort the list of users to display
@@ -5065,20 +5065,14 @@
                         for (var i in currentNode.links) { if (i.startsWith('user/')) { useridlist.push(i); } }
                         useridlist.sort();
                         for (var i in useridlist) {
-                            var trash = '', rights = '', userid = useridlist[i], srights = currentNode.links[userid].rights, rights = "Some Added Rights", username = userid.split('/')[2];
-                            if ((users != null) && (users[userid] != null)) { username = users[userid].name; }
-
-                            /*
-                            var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', rights = "Partial Device Rights", cr = GetNodeRights(node);
-                            if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
-                            var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
-                            */
-                            if (srights == 0xFFFFFFFF) rights = "Full Device Rights"; else if (srights == 0) rights = "No Added Rights";
+                            var trash = '', rights = '', userid = useridlist[i], srights = currentNode.links[userid].rights, username = EscapeHtml(userid.split('/')[2]), rights = makeUserDeviceRightsString(srights);
+                            if ((users != null) && (users[userid] != null)) { username = EscapeHtml(users[userid].name); }
                             if ((meshrights & 2) != 0) {
-                                rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                                rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(5,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
                                 trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                             }
-                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                            if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(userid) + '");haltEvent(event);\'>' + username + '</a>'; }
+                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                         }
                     }
                     if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No users with special device permissions" + '</i><div></div></div></td><td></td></tr>'; }
@@ -5097,6 +5091,30 @@
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
             go(panel);
+        }
+
+        function makeUserDeviceRightsString(rights) {
+            if (rights == 57592) { return "Full Device Rights"; }
+            var str = [];
+            if (rights & 8) {
+                var str1 = [];
+                if (rights & 256) str1.push("No Input");
+                if (rights & 512) str1.push("No Terminal");
+                if (rights & 1024) str1.push("No Files");
+                if (rights & 2048) str1.push("No AMT");
+                if (rights & 4096) str1.push("Limited Input");
+                if (rights & 65536) str1.push("No Desktop");
+                if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
+            }
+            if (rights & 16) str.push("Console");
+            if (rights & 32) str.push("Server Files");
+            if (rights & 64) str.push("Wake");
+            if (rights & 128) str.push("Notes");
+            if (rights & 8192) str.push("Limit Events");
+            if (rights & 16384) str.push("Chat");
+            if (rights & 32768) str.push("Uninstall");
+            if (str.length == 0) return "No Added Rights";
+            return str.join(', ');
         }
 
         function writeDeviceEvent(nodeid) {
@@ -8447,9 +8465,12 @@
             if (xxdialogMode) return false;
             var x = '';
             if ((userid == null) || (userid == 5)) {
-                if (userid == null) { x += "Allow users to manage this device group and devices in this group."; } else { x += "Allow users to manage this device."; }
-                if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
-                x += '<br /><br /><div style=\'position:relative\'>';
+                if (selected == null) {
+                    if (userid == null) { x += "Allow users to manage this device group and devices in this group."; } else { x += "Allow users to manage this device."; }
+                    if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
+                    x += '<br /><br />';
+                }
+                x += '<div style=\'position:relative\'>';
                 x += addHtmlValue("User Names", '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
                 x += '<div id=dp20usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
                 x += '</div><br>';
@@ -8522,7 +8543,29 @@
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
             } else if (userid === 5) {
-                setDialogMode(2, "Add Users to Device", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, selected?"Edit User Device Permissions":"Add User Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                if (selected != null) {
+                    selected = decodeURIComponent(selected);
+                    if ((users != null) && (users[selected] != null)) { Q('dp20username').value = users[selected].name; } else { Q('dp20username').value = selected.split('/')[2]; }
+                    var urights = currentNode.links[selected].rights;
+                    QE('dp20username', false);
+                    if (urights & 8) {
+                        Q('p20remotecontrol').checked = true;
+                        if (urights & 65536) { Q('p20nodesktop').checked = true; }
+                        if (urights & 256) { Q('p20remoteview').checked = true; }
+                        if (urights & 512) { Q('p20noterminal').checked = true; }
+                        if (urights & 1024) { Q('p20nofiles').checked = true; }
+                        if (urights & 2048) { Q('p20noamt').checked = true; }
+                        if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
+                    }
+                    if (urights & 16) { Q('p20meshagentconsole').checked = true; }
+                    if (urights & 32) { Q('p20meshserverfiles').checked = true; }
+                    if (urights & 64) { Q('p20wakedevices').checked = true; }
+                    if (urights & 128) { Q('p20editnotes').checked = true; }
+                    if (urights & 8192) { Q('p20limitevents').checked = true; }
+                    if (urights & 16384) { Q('p20chatnotify').checked = true; }
+                    if (urights & 32768) { Q('p20uninstall').checked = true; }
+                }
                 Q('dp20username').focus();
             } else {
                 if (userid.startsWith('ugrp/')) {
@@ -10278,15 +10321,15 @@
                     for (var i in currentUser.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { nodelist.push(node); } } }
                     nodelist.sort(nameSort);
                     for (var i in nodelist) {
-                        var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', rights = "Partial Device Rights", cr = GetNodeRights(node);
+                        var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', cr = GetNodeRights(node);
                         if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
                         var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
-                        if (r == 0xFFFFFFFF) rights = "Full Device Rights"; else if (r == 0) rights = "No Rights";
                         if ((cr & 2) != 0) {
-                            rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                            rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
                             trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         }
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                        nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + nodename + '</a>';
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                     }
                 }
                 if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
@@ -11377,17 +11420,23 @@
             if (userid == null) { userid = userinfo._id; }
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
             var r = GetMeshRights(node.meshid, userid);
-            if (r != 0xFFFFFFFF) {
-                var user = null;
-                if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
-                if ((user != null) && (user.links != null)) {
-                    var r2 = user.links[node._id];
-                    if (r2 != null) {
-                        if (r2.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device link, stop here.
-                        r |= r2; // TODO: Deal with reverse permissions
-                    }
+            if (r == 0xFFFFFFFF) return r;
+            var user = null;
+
+            // Check direct device rights using device data
+            if ((node.links != null) && (node.links[userid] != null)) { r |= node.links[userid].rights; } // TODO: Deal with reverse permissions
+            
+            // Check direct device rights using user data
+            /*
+            if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
+            if ((user != null) && (user.links != null)) {
+                var r2 = user.links[node._id];
+                if (r2 != null) {
+                    if (r2.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device link, stop here.
+                    r |= r2.rights; // TODO: Deal with reverse permissions
                 }
             }
+            */
             return r;
         }
 
