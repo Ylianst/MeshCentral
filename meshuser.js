@@ -690,6 +690,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     switch (cmd) {
                         case 'help': {
                             var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats';
+                            if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) {
                                 if (f.length > 80) { fin += (f + ',\r\n'); f = ''; }
@@ -697,6 +698,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             if (f != '') { fin += f; }
                             r = 'Available commands: \r\n' + fin + '.';
+                            break;
+                        }
+                        case 'heapdump': {
+                            // Heapdump support, see example at:
+                            // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
+                            if (parent.parent.config.settings.heapdump === true) {
+                                var dumpFileName = parent.path.join(parent.parent.datapath, `heapDump-${Date.now()}.heapsnapshot`);
+                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Generating dump file at: " + dumpFileName, tag: command.tag })); } catch (ex) { }
+                                require('heapdump').writeSnapshot(dumpFileName, (err, filename) => {
+                                    try { ws.send(JSON.stringify({ action: 'serverconsole', value: "Done.", tag: command.tag })); } catch (ex) { }
+                                });
+                            } else {
+                                r = "Heapdump not supported, add \"heapdump\":true to settings section of config.json.";
+                            }
                             break;
                         }
                         case 'le': {
