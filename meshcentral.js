@@ -2459,6 +2459,10 @@ function mainStart() {
             if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
+        // Setup heapdump support if needed, useful for memory leak debugging
+        // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
+        if (config.settings.heapdump === true) { modules.push('heapdump'); }
+
         // Install any missing modules and launch the server
         InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
 
