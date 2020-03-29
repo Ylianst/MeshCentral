@@ -2502,8 +2502,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.SetUser(newuser);
 
                             // Notify user change
-                            var targets = ['*', 'server-users', newuserid._id];
-                            var event = { etype: 'user', userid: newuserid._id, username: newuserid.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + user.name) : ('Changed user device rights for ' + user.name), domain: domain.id, account: parent.CloneSafeUser(newuser) };
+                            var targets = ['*', 'server-users', newuserid];
+                            var event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + newuser.name) : ('Changed user device rights for ' + newuser.name), domain: domain.id, account: parent.CloneSafeUser(newuser) };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         }
