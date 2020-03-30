@@ -2411,12 +2411,24 @@
     },
     {
       "en": "Add User",
+      "cs": "Přidat uživatele",
+      "de": "Benutzer hinzufügen",
+      "es": "Agregar Usuario",
+      "fr": "Ajouter un utilisateur",
+      "hi": "उपयोगकर्ता जोड़ें",
+      "ja": "ユーザーを追加する",
+      "ko": "사용자 추가",
+      "nl": "Gebruiker toevoegen",
+      "pt": "Adicionar usuário",
+      "ru": "Добавить пользователя",
+      "zh-chs": "添加用戶",
       "xloc": [
         "default.handlebars->27->531"
       ]
     },
     {
       "en": "Add User Device Permissions",
+      "nl": "Gebruikersmachtigingen voor apparaat toevoegen",
       "xloc": [
         "default.handlebars->27->1217"
       ]
@@ -3146,6 +3158,7 @@
     },
     {
       "en": "Allow users to manage this device.",
+      "nl": "Sta gebruikers toe om dit apparaat te beheren.",
       "xloc": [
         "default.handlebars->27->1182"
       ]
@@ -5966,6 +5979,7 @@
     },
     {
       "en": "Control",
+      "nl": "Controle",
       "xloc": [
         "default.handlebars->27->543",
         "default.handlebars->27->562"
@@ -8702,6 +8716,7 @@
     },
     {
       "en": "Edit User Device Permissions",
+      "nl": "Bewerk gebruikersapparaatrechten",
       "xloc": [
         "default.handlebars->27->1216"
       ]
@@ -13279,6 +13294,7 @@
     },
     {
       "en": "Limit Events",
+      "nl": "Beperk gebeurtenissen",
       "xloc": [
         "default.handlebars->27->548",
         "default.handlebars->27->567"
@@ -15964,6 +15980,13 @@
     },
     {
       "en": "No AMT",
+      "nl": "Geen AMT",
+      "cs": "Žádné AMT",
+      "de": "Kein AMT",
+      "es": "Sin AMT",
+      "fr": "Pas d'appareil AMT",
+      "pt": "Nenhum AMT",
+      "ru": "Нет AMT",
       "xloc": [
         "default.handlebars->27->540",
         "default.handlebars->27->559"
@@ -15989,6 +16012,7 @@
     },
     {
       "en": "No Added Rights",
+      "nl": "Geen toegevoegde rechten",
       "xloc": [
         "default.handlebars->27->551"
       ]
@@ -16100,6 +16124,7 @@
     },
     {
       "en": "No Input",
+      "nl": "Geen input",
       "xloc": [
         "default.handlebars->27->537",
         "default.handlebars->27->556"
@@ -19289,6 +19314,7 @@
     },
     {
       "en": "Remove Device",
+      "nl": "Verwijder apparaat",
       "xloc": [
         "default.handlebars->27->1508"
       ]
@@ -24797,6 +24823,7 @@
     },
     {
       "en": "User Permissions"
+      "en": "Gebruikersrechten"
     },
     {
       "cs": "PowerShell uživatele",
