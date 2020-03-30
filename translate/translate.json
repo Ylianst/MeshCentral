@@ -217,10 +217,7 @@
       "nl": " Gebruiker toevoegen",
       "pt": " Adicionar usuário",
       "ru": " Добавить пользователя",
-      "zh-chs": " 添加用戶",
-      "xloc": [
-        "default-mobile.handlebars->9->284"
-      ]
+      "zh-chs": " 添加用戶"
     },
     {
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
@@ -2423,6 +2420,7 @@
       "ru": "Добавить пользователя",
       "zh-chs": "添加用戶",
       "xloc": [
+        "default-mobile.handlebars->9->284",
         "default.handlebars->27->531"
       ]
     },
@@ -24822,8 +24820,8 @@
       ]
     },
     {
-      "en": "User Permissions"
-      "en": "Gebruikersrechten"
+      "en": "User Permissions",
+      "nl": "Gebruikersrechten"
     },
     {
       "cs": "PowerShell uživatele",
