@@ -1818,7 +1818,7 @@
                             if (message.nodes[m][n]._id == null) { console.log('Invalid node (' + n + '): ' + JSON.stringify(message.nodes)); continue; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
-                            if (meshes[m]) { message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase(); }
+                            message.nodes[m][n].meshnamel = meshes[m]?meshes[m].name.toLowerCase():'*';
                             message.nodes[m][n].meshid = m;
                             message.nodes[m][n].state = (message.nodes[m][n].state)?(message.nodes[m][n].state):0;
                             if (!message.nodes[m][n].icon) message.nodes[m][n].icon = 1;
@@ -2377,7 +2377,7 @@
                             if (getNodeFromId(node._id) != null) break; // This node is already known.
                             node.namel = node.name.toLowerCase();
                             if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
-                            node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                            node.meshnamel = meshes[node.meshid]?meshes[node.meshid].name.toLowerCase():'*';
                             node.state = 0;
                             if (!node.icon) node.icon = 1;
                             node.ident = ++nodeShortIdent;
@@ -2475,7 +2475,7 @@
                                 } else {
                                     // We see the new mesh, move this device
                                     node.meshid = message.event.newMeshId;
-                                    node.meshnamel = meshes[message.event.newMeshId].name.toLowerCase();
+                                    node.meshnamel = meshes[message.event.newMeshId]?meshes[message.event.newMeshId].name.toLowerCase():'*';
                                     masterUpdate(1 | 2 | 4);
                                 }
                                 refreshDevice(message.event.nodeid);
@@ -2485,7 +2485,7 @@
                                 if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
-                                node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                                node.meshnamel = meshes[node.meshid]?meshes[node.meshid].name.toLowerCase():'*';
                                 node.state = 0;
                                 if (!node.icon) node.icon = 1;
                                 node.ident = ++nodeShortIdent;
@@ -2975,7 +2975,7 @@
                     var meshrights = GetNodeRights(node);
                     if (sort == 0) {
                         // Mesh header
-                        if (node.meshid != current) {
+                        if (((meshes[node.meshid]?node.meshid:'*') != current)) {
                             if (((view == 1) || (view == 3)) && (current != null)) { r += '</div>'; } // Close collapse div
                             deviceHeaderSet();
                             var extra = '';
@@ -2992,11 +2992,12 @@
                             }
                             if (meshes[node.meshid]) {
                                 r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
+                                current = node.meshid;
                             } else {
                                 r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer><i>' + "Indivitual Devices" + '</i></span></div>';
+                                current = '*';
                             }
                             if (view == 2) { r += '</div>'; }
-                            current = node.meshid;
                             displayedMeshes[current] = 1;
                             c = 0;
                             if ((view == 1) || (view == 3)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div

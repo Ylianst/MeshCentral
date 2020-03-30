@@ -797,7 +797,7 @@
                         for (var n in message.nodes[m]) {
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
-                            if (meshes[m]) { message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase(); }
+                            message.nodes[m][n].meshnamel = meshes[m]?meshes[m].name.toLowerCase():'*';
                             message.nodes[m][n].meshid = m;
                             message.nodes[m][n].state = (message.nodes[m][n].state) ? (message.nodes[m][n].state) : 0;
                             message.nodes[m][n].desc = message.nodes[m][n].desc;
@@ -1029,7 +1029,7 @@
                             if (getNodeFromId(node._id) != null) break; // This node is already known.
                             node.namel = node.name.toLowerCase();
                             if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
-                            node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                            node.meshnamel = meshes[node.meshid]?meshes[node.meshid].name.toLowerCase():'*';
                             node.state = 0;
                             if (!node.icon) node.icon = 1;
                             node.ident = ++nodeShortIdent;
@@ -1121,7 +1121,7 @@
                                 } else {
                                     // We see the new mesh, move this device
                                     node.meshid = message.event.newMeshId;
-                                    node.meshnamel = meshes[message.event.newMeshId].name.toLowerCase();
+                                    node.meshnamel = meshes[message.event.newMeshId]?meshes[message.event.newMeshId].name.toLowerCase():'*';
                                 }
                                 updateDevices();
                                 refreshDevice(message.event.nodeid);
@@ -1131,7 +1131,7 @@
                                 if (!meshes[node.meshid]) break; // This is a node for a mesh we don't know. Happens when we are site administrator, we get all messages.
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
-                                node.meshnamel = meshes[node.meshid].name.toLowerCase();
+                                node.meshnamel = meshes[node.meshid]?meshes[node.meshid].name.toLowerCase():'*';
                                 node.state = 0;
                                 if (!node.icon) node.icon = 1;
                                 node.ident = ++nodeShortIdent;
@@ -1751,7 +1751,8 @@
                 if (sort == 0) {
                     // Mesh header
                     nodes.sort(meshSort);
-                    if (nodes[i].meshid != current) {
+                    //if (nodes[i].meshid != current) {
+                    if (((meshes[nodes[i].meshid]?nodes[i].meshid:'*') != current)) {
                         deviceHeaderSet();
                         var extra = '';
                         if ((meshes[nodes[i].meshid] != null) && (meshes[nodes[i].meshid].mtype == 1)) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
@@ -1761,11 +1762,12 @@
 
                         if (meshes[nodes[i].meshid]) {
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                            current = nodes[i].meshid;
                         } else {
-                            r += '</span><span id=MxMESH style=cursor:pointer>' + "Indivitual Devices" + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                            r += '</span><span id=MxMESH style=cursor:pointer><i>' + "Indivitual Devices" + '</i></span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                            current = '*';
                         }
                         
-                        current = nodes[i].meshid;
                         displayedMeshes[current] = 1;
                         c = 0;
                     }
@@ -3196,7 +3198,7 @@
 
             x += '<br style=clear:both><br>';
             var currentMeshLinks = currentMesh.links[userinfo._id];
-            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12>' + " Add User" + '</a></div>'; }
+            if (currentMeshLinks && ((currentMeshLinks.rights & 2) != 0)) { x += '<div style=margin-bottom:6px><a onclick=p20showAddMeshUserDialog() style=cursor:pointer><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a></div>'; }
 
             /*
             if ((meshrights & 4) != 0) {
