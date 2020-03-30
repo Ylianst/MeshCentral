@@ -162,8 +162,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                var meshrights = parent.GetMeshRights(user, agent.dbMeshKey); // TODO: We will need to get the rights for this specific node.
+                //var meshrights = parent.GetMeshRights(user, agent.dbMeshKey); // TODO: We will need to get the rights for this specific node.
                 var mesh = parent.meshes[agent.dbMeshKey];
+                var meshrights = parent.GetNodeRights(user, mesh, agent.dbNodeKey);
                 if ((mesh != null) && ((meshrights & MESHRIGHT_REMOTECONTROL) || (meshrights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
                     command.sessionid = ws.sessionId;   // Set the session id, required for responses
                     command.rights = meshrights;        // Add user rights flags to the message
@@ -181,8 +182,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    var meshrights = parent.GetMeshRights(user, routing.meshid);
+                    //var meshrights = parent.GetMeshRights(user, routing.meshid); // TODO: We will need to get the rights for this specific node.
                     var mesh = parent.meshes[routing.meshid];
+                    var meshrights = parent.GetNodeRights(user, mesh, agent.dbNodeKey);
                     if ((mesh != null) && ((meshrights & MESHRIGHT_REMOTECONTROL) || (meshrights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
                         command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
                         command.rights = meshrights;         // Add user rights flags to the message
@@ -473,11 +475,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'nodes':
                 {
-                    var links = [], err = null;
+                    var links = [], extraids = null, err = null;
                     try {
                         if (command.meshid == null) {
                             // Request a list of all meshes this user as rights to
                             links = parent.GetAllMeshIdWithRights(user);
+
+                            // Add any nodes with direct rights
+                            if (obj.user.links != null) { for (var i in obj.user.links) { if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); } } }
                         } else {
                             // Request list of all nodes for one specific meshid
                             meshid = command.meshid;
@@ -495,7 +500,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Request a list of all nodes
-                    db.GetAllTypeNoTypeFieldMeshFiltered(links, domain.id, 'node', command.id, function (err, docs) {
+                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, docs) {
                         if (docs == null) { docs = []; }
                         var r = {};
                         for (i in docs) {
@@ -2500,10 +2505,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Save the user to the database
                             db.SetUser(newuser);
+                            parent.parent.DispatchEvent([newuser], obj, 'resubscribe');
 
                             // Notify user change
                             var targets = ['*', 'server-users', newuserid];
-                            var event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + newuser.name) : ('Changed user device rights for ' + newuser.name), domain: domain.id, account: parent.CloneSafeUser(newuser) };
+                            var event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + newuser.name) : ('Changed user device rights for ' + newuser.name), domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         }

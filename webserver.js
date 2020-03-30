@@ -2474,7 +2474,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
 
             // Check if this user has permission to manage this computer
-            if ((obj.GetMeshRights(user, node.meshid) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { ws.close(); } catch (e) { } return; }
+            if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { ws.close(); } catch (e) { } return; }
 
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
@@ -3494,6 +3494,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.handleDevicePowerEvents = function (req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (req.query.id == null) || (typeof req.query.id != 'string')) { res.sendStatus(401); return; }
         var x = req.query.id.split('/');
         var user = obj.users[req.session.userid];
@@ -3506,7 +3507,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var node = docs[0];
 
                 // Check if we have right to this node
-                if (obj.GetMeshRights(user, node.meshid) == 0) { res.sendStatus(401); return; }
+                if (obj.GetNodeRights(user, node.meshid, node._id) == 0) { res.sendStatus(401); return; }
 
                 // Get the list of power events and send them
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="powerevents.csv"' });
@@ -4374,6 +4375,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         return false;
     }
 
+    // Return the user rights for a given node
+    obj.GetNodeRights = function (user, mesh, nodeid) {
+        if ((user == null) || (mesh == null) || (nodeid == null)) { return 0; }
+        if (typeof user == 'string') { user = obj.users[user]; }
+        var r = obj.GetMeshRights(user, mesh);
+        if (r == 0xFFFFFFFF) return r;
+
+        // Check direct device rights using device data
+        if ((user.links != null) && (user.links[nodeid] != null)) { r |= user.links[nodeid].rights; } // TODO: Deal with reverse permissions
+        return r;
+    }
+
     // Returns a list of displatch targets for a given mesh
     // We have to target the meshid and all user groups for this mesh, plus any added targets
     obj.CreateMeshDispatchTargets = function (mesh, addedTargets) {
@@ -4510,7 +4523,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.titlepicture == null) && (domain.titlehtml == null)) {
             if (domain.title == null) {
                 xargs.title1 = 'MeshCentral';
-                xargs.title2 = '2.0';
+                xargs.title2 = '';
             } else {
                 xargs.title1 = domain.title;
                 xargs.title2 = domain.title2 ? domain.title2 : '';
@@ -4535,13 +4548,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Check that we are in the same domain and the user has rights over this node.
             if ((splitsessionid.length == 4) && (splitsessionid[0] == 'user') && (splitsessionid[1] == domainid)) {
                 // Check if this user has rights to get this message
-                if (obj.GetMeshRights(splitsessionid[0] + '/' + splitsessionid[1] + '/' + splitsessionid[2], meshid) == 0) return; // TODO: Check if this is ok
+                if (obj.GetNodeRights(splitsessionid[0] + '/' + splitsessionid[1] + '/' + splitsessionid[2], meshid, nodeid) == 0) return; // TODO: Check if this is ok
 
                 // See if the session is connected. If so, go ahead and send this message to the target node
                 var ws = obj.wssessions2[command.sessionid];
                 if (ws != null) {
-                    command.nodeid = nodeid; // Set the nodeid, required for responses.
-                    delete command.sessionid;       // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
+                    command.nodeid = nodeid;  // Set the nodeid, required for responses.
+                    delete command.sessionid; // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
                     try { ws.send(JSON.stringify(command)); } catch (ex) { }
                 } else if (parent.multiServer != null) {
                     // See if we can send this to a peer server
@@ -4558,7 +4571,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Check that we are in the same domain and the user has rights over this node.
             if ((splituserid[0] == 'user') && (splituserid[1] == domainid)) {
                 // Check if this user has rights to get this message
-                if (obj.GetMeshRights(command.userid, meshid) == 0) return; // TODO: Check if this is ok
+                if (obj.GetNodeRights(command.userid, meshid, nodeid) == 0) return; // TODO: Check if this is ok
 
                 // See if the session is connected
                 var sessions = obj.wssessions[command.userid];
@@ -4566,7 +4579,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Go ahead and send this message to the target node
                 if (sessions != null) {
                     command.nodeid = nodeid; // Set the nodeid, required for responses.
-                    delete command.userid;          // Remove the userid, since we are sending to that userid, so it's implyed.
+                    delete command.userid;   // Remove the userid, since we are sending to that userid, so it's implyed.
                     for (i in sessions) { sessions[i].send(JSON.stringify(command)); }
                 }
 
@@ -4581,7 +4594,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Find all connected user sessions with access to this device
             for (var userid in obj.wssessions) {
                 var xsessions = obj.wssessions[userid];
-                if (obj.GetMeshRights(userid, meshid) != 0) {
+                if (obj.GetNodeRights(userid, meshid, nodeid) != 0) {
                     // Send the message to all sessions for this user on this server
                     for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
                 }

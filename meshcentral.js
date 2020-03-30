@@ -1551,7 +1551,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Event any changes on this server only
             if ((newConnectivity != oldPowerState) || (newPowerState != oldPowerState)) {
-                obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: newConnectivity, pwr: newPowerState, nolog: 1, nopeers: 1 });
+                obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid, [nodeid]), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: newConnectivity, pwr: newPowerState, nolog: 1, nopeers: 1 });
             }
         }
     };
@@ -1599,8 +1599,8 @@ function CreateMeshCentralServer(config, args) {
             }
 
             // Event the node connection change
-            if (eventConnectChange == 1) { obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 }); }
-        } else {
+            if (eventConnectChange == 1) { obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid, [nodeid]), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 }); }
+        } else {nodeid
             // Multi server mode
 
             // Change the node connection state
@@ -1672,7 +1672,7 @@ function CreateMeshCentralServer(config, args) {
             }
 
             // Event the node connection change
-            if (eventConnectChange == 1) { obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 }); }
+            if (eventConnectChange == 1) { obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid, [nodeid]), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 }); }
         } else {
             // Multi server mode
 

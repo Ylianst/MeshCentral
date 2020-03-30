@@ -794,7 +794,7 @@ function createMeshCore(agent) {
                             if (process.platform != 'win32') break;
                             var p = require('user-sessions').enumerateUsers();
                             p.sessionid = data.sessionid;
-                            p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: u.sessionid, data: u }); });
+                            p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: u }); });
                             break;
                         }
                         default:

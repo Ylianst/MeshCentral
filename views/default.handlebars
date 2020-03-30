@@ -1814,21 +1814,25 @@
                 case 'nodes': {
                     nodes = [];
                     for (var m in message.nodes) {
-                        if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
                         for (var n in message.nodes[m]) {
                             if (message.nodes[m][n]._id == null) { console.log('Invalid node (' + n + '): ' + JSON.stringify(message.nodes)); continue; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
-                            message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
+                            if (meshes[m]) { message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase(); }
                             message.nodes[m][n].meshid = m;
                             message.nodes[m][n].state = (message.nodes[m][n].state)?(message.nodes[m][n].state):0;
-                            message.nodes[m][n].desc = message.nodes[m][n].desc;
-                            message.nodes[m][n].ip = message.nodes[m][n].ip;
                             if (!message.nodes[m][n].icon) message.nodes[m][n].icon = 1;
                             message.nodes[m][n].ident = ++nodeShortIdent;
                             nodes.push(message.nodes[m][n]);
                         }
                     }
+
+                    // If we are currently looking at a node this is now gone, change the view.
+                    if ((currentNode != null) && (getNodeFromId(currentNode._id) == null)) { currentNode = null; go(1); }
+
+                    // Change the reference to the current node
+                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); }
+
                     masterUpdate(1 | 2 | 4 | 64);
                     break;
                 }
@@ -1996,7 +2000,7 @@
                     break;
                 }
                 case 'events': {
-                    if ((message.nodeid != null) && (message.nodeid == currentNode._id)) {
+                    if ((message.nodeid != null) && (currentNode != null) && (message.nodeid == currentNode._id)) {
                         currentDeviceEvents = message.events;
                         masterUpdate(1024);
                     } else if ((message.user != null) && (message.user == currentUser.name)) {
@@ -2232,6 +2236,9 @@
                                         meshserver.send({ action: 'wssessioncount' });
                                     }
                                 }
+
+                                // If out list of nodes may have changes, request the new list now.
+                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
                             }
                             if (users == null) break;
 
@@ -2327,9 +2334,9 @@
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
-                                    // Delete all nodes in that mesh
+                                    // Delete all nodes in that mesh, except ones with direct links
                                     var newnodes = [];
-                                    for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
+                                    for (var i in nodes) { if ((nodes[i].meshid != message.event.meshid) || ((userinfo.links != null) && (userinfo.links[nodes[i]._id] != null))) { newnodes.push(nodes[i]); } }
                                     nodes = newnodes;
 
                                     // If we are looking at a node in the deleted mesh, move back to "My Devices"
@@ -2926,11 +2933,11 @@
             QV('kvmListToolbar', view == 3);
             QV('devMapToolbar', view == 4);
             QV('devListToolbarSize', view == 3);
-            QV('NoMeshesPanel', meshcount == 0);
+            QV('NoMeshesPanel', (nodes.length == 0) && (meshcount == 0));
             //QV('devListToolbarView', (meshcount != 0) && (nodes.length > 0));
-            QV('devListToolbarViewIcons', (meshcount != 0) && (nodes.length > 0));
-            QV('devListToolbarSort', (meshcount != 0) && (nodes.length > 0) && (view < 4));
-            if ((meshcount == 0) || (nodes.length == 0)) { view = 1; sort = 0; }
+            QV('devListToolbarViewIcons', nodes.length > 0);
+            QV('devListToolbarSort', (nodes.length > 0) && (view < 4));
+            if (nodes.length == 0) { view = 1; sort = 0; }
             if (view == 4) {
                 setTimeout( function() { if (xxmap.map != null) { xxmap.map.updateSize(); } }, 200);
                 // TODO
@@ -2964,7 +2971,7 @@
                     var node = nodes[i];
                     if (node.v == false) continue;
                     var mesh2 = meshes[node.meshid];
-                    if ((view == 3) && (mesh2.mtype == 1)) continue;
+                    //if ((view == 3) && (mesh2.mtype == 1)) continue;
                     var meshrights = GetNodeRights(node);
                     if (sort == 0) {
                         // Mesh header
@@ -2973,7 +2980,7 @@
                             deviceHeaderSet();
                             var extra = '';
                             if (view == 2) { r += '<tr><td colspan=5>'; }
-                            if (meshes[node.meshid].mtype == 1) { extra = '<span class=devHeaderx>' + ", Intel&reg; AMT only" + '</span>'; }
+                            if (meshes[node.meshid] && (meshes[node.meshid].mtype == 1)) { extra = '<span class=devHeaderx>' + ", Intel&reg; AMT only" + '</span>'; }
                             if ((view == 1) && (current != null)) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                             if (view == 2) { r += '<div>'; }
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span style=float:right>';
@@ -2983,7 +2990,11 @@
                                 var collapsed = CollapsedGroups[node.meshid];
                                 r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"' + node.meshid + '\",' + view + ')></img>'; // Collapse action
                             }
-                            r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
+                            if (meshes[node.meshid]) {
+                                r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
+                            } else {
+                                r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer><i>' + "Indivitual Devices" + '</i></span></div>';
+                            }
                             if (view == 2) { r += '</div>'; }
                             current = node.meshid;
                             displayedMeshes[current] = 1;
@@ -3113,7 +3124,7 @@
                 }
 
                 // If there is nothing to display, explain the problem
-                if ((r == '') && (meshcount > 0) && (Q('SearchInput').value != '')) {
+                if ((r == '') && (nodes.length > 0) && (Q('SearchInput').value != '')) {
                     if (sort == 3) {
                         r = '<div style="margin:30px">' + "No devices are included in any groups, click on a device\'s \"Groups\" to add to a group." + '</div>';
                     } else {
@@ -3173,7 +3184,7 @@
 
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
-                if ((view < 3) && (sort == 0) && (meshcount > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
+                if ((view < 3) && (sort == 0) && (nodes.length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
                     r += '<a href=# onclick="return account_createMesh()" title=\"' + "Create a new group of devices." + '\" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
@@ -4139,6 +4150,8 @@
         // DEVICES MAP
         //
 
+        {{{StartGeoLocationJS}}}
+
         // Maps code starts from here. Initialize all the variables
         var xxmap = {
             map: null,
@@ -4150,8 +4163,6 @@
             mapLayer: null, // Create a tile and use OSM source
             mapView: null, // Sets the initial view
         }
-
-        {{{StartGeoLocationJS}}}
 
         // Add a feature for every Node and change style if connection status changes
         function updateMapMarkers(selectedMesh) {
@@ -4775,7 +4786,7 @@
                 var nname = EscapeHtml(node.name);
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
                 if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title=\"' + "Click here to edit the server-side device name" + '\" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
-                nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>';
+                if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);
@@ -4790,7 +4801,7 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span title=\"' + "The name of the device group this computer belong to." + '\">' + "Group" + '</span>', '<a href=# title=\"' + "The name of the device group this computer belong to" + '\" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                if (mesh) { x += addDeviceAttribute('<span title=\"' + "The name of the device group this computer belong to." + '\">' + "Group" + '</span>', '<a href=# title=\"' + "The name of the device group this computer belong to" + '\" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>'); }
 
                 // Attribute: Name
                 if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
@@ -4861,20 +4872,16 @@
                     x += addDeviceAttribute(meName, str);
                 }
 
-                if (mesh.mtype == 2) {
+                if ((node.agent != null) && (node.agent.tag != null)) {
                     // Attribute: Mesh Agent Tag
-                    if ((node.agent != null) && (node.agent.tag != null)) {
-                        var tag = EscapeHtml(node.agent.tag);
-                        if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
-                        x += addDeviceAttribute("Agent Tag", tag);
-                    }
-                } else {
+                    var tag = EscapeHtml(node.agent.tag);
+                    if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
+                    x += addDeviceAttribute("Agent Tag", tag);
+                } else if ((node.intelamt != null) && (node.intelamt.tag != null)) {
                     // Attribute: Intel AMT Tag
-                    if ((node.intelamt != null) && (node.intelamt.tag != null)) {
-                        var tag = EscapeHtml(node.intelamt.tag);
-                        if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
-                        x += addDeviceAttribute("Intel&reg; AMT Tag", tag);
-                    }
+                    var tag = EscapeHtml(node.intelamt.tag);
+                    if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
+                    x += addDeviceAttribute("Intel&reg; AMT Tag", tag);
                 }
 
                 // Attribute: Intel AMT
@@ -4947,13 +4954,15 @@
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title=\"' + "Remove this device" + '\">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
-                if (mesh.mtype == 2) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
+                if (node.agent) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
+                {{{StartGeoLocationJS}}}
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
-                if ((terminalAccess) && ((meshrights & 8) != 0) && (mesh.mtype == 2)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
-                if ((args.xterm === 0) && (mesh.mtype == 2) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
+                {{{EndGeoLocationJS}}}
+                if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
+                if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (clickOnce == true) && (mesh.mtype == 2) && ((meshrights & 8) != 0)) {
+                if (((connectivity & 1) != 0) && (clickOnce == true) && (node.agent) && ((meshrights & 8) != 0)) {
                     if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2") title=\"' + "Requires Microsoft ClickOnce support in your browser" + '.\">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
                         x += '<a href=# onclick=p10clickOnce("' + node._id + '","PSSH",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "Putty" + '</a>&nbsp;';
@@ -4990,14 +4999,14 @@
                 // Show or hide the tabs
                 // mesh.mtype: 1 = Intel AMT only, 2 = Mesh Agent
                 // node.agent.caps (bitmask): 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console
-                QV('MainDevDesktop', desktopAccess && ((((mesh.mtype == 1) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
-                    || ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2)))))
+                QV('MainDevDesktop', desktopAccess && ((((node.agent == null) && ((typeof node.intelamt.sku !== 'number') || ((node.intelamt.sku & 8) != 0)))
+                    || ((node.agent != null) && ((node.agent.caps == null) || ((node.agent.caps & 1) != 0) || (node.intelamt && (node.intelamt.state == 2)))))
                     && ((meshrights & 8) || (meshrights & 256)))
                     );
-                QV('MainDevTerminal', ((mesh.mtype == 1) || (node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
-                QV('MainDevFiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (meshrights & 8) && fileAccess);
+                QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || (node.agent.caps == null) || ((node.agent.caps & 2) != 0) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
+                QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
-                QV('MainDevConsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (meshrights & 8));
+                QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
                 QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0));
                 QH('p15coreName', ((node.agent != null) && (node.agent.core != null))?node.agent.core:'');
@@ -5035,7 +5044,7 @@
 
                 // Update the web page title
                 if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) {
-                    document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + ' - ' + mesh.name;
+                    document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + (mesh?(' - ' + mesh.name):'');
                 } else {
                     document.title = decodeURIComponent('{{{extitle}}}');
                 }
@@ -5055,29 +5064,27 @@
 
                 // Show user device permissions
                 x = '';
-                if (urlargs.dp == 1) { // For testing only
-                    x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a>';
-                    x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Permissions" + '</th><th scope=col style=text-align:left></th></tr>';
-                    var count = 1;
-                    if (currentNode.links != null) {
-                        // Sort the list of users to display
-                        var useridlist = [];
-                        for (var i in currentNode.links) { if (i.startsWith('user/')) { useridlist.push(i); } }
-                        useridlist.sort();
-                        for (var i in useridlist) {
-                            var trash = '', rights = '', userid = useridlist[i], srights = currentNode.links[userid].rights, username = EscapeHtml(userid.split('/')[2]), rights = makeUserDeviceRightsString(srights);
-                            if ((users != null) && (users[userid] != null)) { username = EscapeHtml(users[userid].name); }
-                            if ((meshrights & 2) != 0) {
-                                rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(5,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                            }
-                            if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(userid) + '");haltEvent(event);\'>' + username + '</a>'; }
-                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                if (meshrights & 7) { x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a>'; }
+                x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Authorizations" + '</th><th scope=col style=text-align:left></th></tr>';
+                var count = 1;
+                if (currentNode.links != null) {
+                    // Sort the list of users to display
+                    var useridlist = [];
+                    for (var i in currentNode.links) { if (i.startsWith('user/')) { useridlist.push(i); } }
+                    useridlist.sort();
+                    for (var i in useridlist) {
+                        var trash = '', rights = '', userid = useridlist[i], srights = currentNode.links[userid].rights, username = EscapeHtml(userid.split('/')[2]), rights = makeUserDeviceRightsString(srights);
+                        if ((users != null) && (users[userid] != null)) { username = EscapeHtml(users[userid].name); }
+                        if ((meshrights & 2) != 0) {
+                            trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                            rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(5,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
                         }
+                        if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(userid) + '");haltEvent(event);\'>' + username + '</a>'; }
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                     }
-                    if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No users with special device permissions" + '</i><div></div></div></td><td></td></tr>'; }
-                    x += '</tbody></table>';
                 }
+                if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No users with special device permissions" + '</i><div></div></div></td><td></td></tr>'; }
+                x += '</tbody></table>';
                 QH('p10html4', x);
 
                 // Change the URL
@@ -5114,6 +5121,33 @@
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
             if (str.length == 0) return "No Added Rights";
+            return str.join(', ');
+        }
+
+        function makeDeviceGroupRightsString(rights) {
+            if (rights == 0xFFFFFFFF) { return "Full Rights"; }
+            var str = [];
+            if (rights & 1) str.push("Edit Group");
+            if (rights & 2) str.push("Manage Users");
+            if (rights & 4) str.push("Manage Devices");
+            if (rights & 8) {
+                var str1 = [];
+                if (rights & 256) str1.push("No Input");
+                if (rights & 512) str1.push("No Terminal");
+                if (rights & 1024) str1.push("No Files");
+                if (rights & 2048) str1.push("No AMT");
+                if (rights & 4096) str1.push("Limited Input");
+                if (rights & 65536) str1.push("No Desktop");
+                if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
+            }
+            if (rights & 16) str.push("Console");
+            if (rights & 32) str.push("Server Files");
+            if (rights & 64) str.push("Wake");
+            if (rights & 128) str.push("Notes");
+            if (rights & 8192) str.push("Limit Events");
+            if (rights & 16384) str.push("Chat");
+            if (rights & 32768) str.push("Uninstall");
+            if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
 
@@ -5273,7 +5307,7 @@
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
 
-            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + '" onclick="setDialogMode(0)"><img title=\"' + "Download power events" + '\" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + (urlargs.key?('&key=' + urlargs.key):'') + '" onclick="setDialogMode(0)"><img title=\"' + "Download power events" + '\" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -5623,22 +5657,23 @@
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
-            QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (mesh.mtype == 2) && (currentNode.agent.caps & 1));
+            QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
             QV('connectbutton1hspan',
                 (deskState == 0) &&
                 (rights & 8) &&
-                ((mesh.mtype == 1) ||
+                (
                   ((currentNode.intelamt != null) &&
                   (currentNode.intelamt.state == 2) &&
                   (currentNode.intelamt.ver != null) &&
-                  (typeof currentNode.intelamt.sku == 'number') &&
-                  ((currentNode.intelamt.sku & 8) != 0))
+                  ((currentNode.intelamt.sku == null) ||
+                  ((typeof currentNode.intelamt.sku == 'number') &&
+                  ((currentNode.intelamt.sku & 8) != 0))))
                 )
             );
 
             // Show the right settings
-            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
-            QV('d7meshkvm', (webRtcDesktop) || ((mesh.mtype == 2) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
+            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
+            QV('d7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
             var inputAllowed = (rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0));
@@ -5657,12 +5692,12 @@
             QE('deskkeys', deskState == 3);
 
             // Display this only if we have Chat & Notify permissions
-            QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (mesh.mtype == 2) && online);
+            QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
+            QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
 
-            QV('DeskToolsButton', (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (mesh.mtype == 2) && online);
-            QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (mesh.mtype == 2) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
+            QV('DeskToolsButton', (inputAllowed) && (currentNode.agent) && online);
+            QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
+            QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
@@ -6431,9 +6466,9 @@
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
-            QV('connectbutton2span', (termState == false) && (mesh.mtype == 2) && (currentNode.agent.caps & 2));
-            QV('connectbutton2hspan', (termState == false) && ((terminalNode.intelamt != null) && (mesh.mtype == 1 || terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
-            QV('terminalSizeDropDown', (termState == false) && ((terminalNode.intelamt != null) && (mesh.mtype == 1 || terminalNode.intelamt.state == 2) && ((terminalNode.intelamt.ver != null) || (mesh.mtype == 1))));
+            QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
+            QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
+            QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
@@ -8266,13 +8301,17 @@
             }
             sortedusers.sort(function(a, b) { if (a.name > b.name) return 1; if (a.name < b.name) return -1; return 0; });
 
-            // Display all users for this mesh
+            // Display all users for this device group
             for (var i in sortedusers) {
-                var trash = '', rights = "Partial Device Group Rights", r = sortedusers[i].rights, icon = 2;
-                if (r == 0xFFFFFFFF) rights = "Full Device Group Administrator"; else if (r == 0) rights = "No Rights";
-                if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) { trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 2;
+                if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) {
+                    trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                    rights = '<div tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                }
                 if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
-                x += '<tr tabindex=0 onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')" style=cursor:pointer' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m' + icon + '></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
+                if (users != null) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "User" + '\" class=m' + icon + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
 
@@ -8490,7 +8529,11 @@
             } else if (userid === 4) {
                 var y = '', selectedMeshId = null, selectedNode = null;
                 if (selected != null) { selectedNode = getNodeFromId(decodeURIComponent(selected)); if (selectedNode != null) { selectedMeshId = selectedNode.meshid; } }
-                for (var i in meshes) { if (selectedMeshId == null) { selectedMeshId = meshes[i]._id; } y += '<option value=' + encodeURIComponent(meshes[i]._id) + ((selectedMeshId == meshes[i]._id)?' selected':' ') + '>' + EscapeHtml(meshes[i].name) + '</option>'; }
+                for (var i in meshes) {
+                    if ((meshes[i].links[userinfo._id] != null) && (meshes[i].links[userinfo._id].rights & 7)) { // Only show device groups that we have user administrator for.
+                        if (selectedMeshId == null) { selectedMeshId = meshes[i]._id; } y += '<option value=' + encodeURIComponent(meshes[i]._id) + ((selectedMeshId == meshes[i]._id)?' selected':' ') + '>' + EscapeHtml(meshes[i].name) + '</option>';
+                    }
+                }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(4) id=dp2meshid style=width:100%>' + y + '</select></div>');
                 y = '';
                 for (var i in nodes) { if (nodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + ((selectedNode == nodes[i])?' selected':' ') + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
@@ -9943,7 +9986,9 @@
             // Display all users for this mesh
             for (var i in sortedusers) {
                 var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + EscapeHtml(decodeURIComponent(sortedusers[i].name)) + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
+                if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                 ++count;
             }
 
@@ -9959,13 +10004,18 @@
             if (currentUserGroup.links) {
                 for (var i in currentUserGroup.links) {
                     if (i.startsWith('mesh/')) {
-                        var cr = 0, r = currentUserGroup.links[i].rights, mesh = meshes[i], trash = '', rights = "Partial Device Group Rights";
+                        var cr = 0, r = currentUserGroup.links[i].rights, mesh = meshes[i], trash = '', rights = makeDeviceGroupRightsString(r);
                         if (mesh == null) { continue; }
                         if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
-                        var meshname = mesh?EscapeHtml(mesh.name):('<i>' + "Unknown Device Group" + '</i>');
-                        if (r == 0xFFFFFFFF) rights = "Full Device Group Administrator"; else if (r == 0) rights = "No Rights";
-                        if ((cr & 2) != 0) { trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponent(mesh._id) + '")\' title=\"' + "Remove user group rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                        var meshname = '<i>' + "Unknown Device Group" + '</i>';
+                        if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else {}
+                        if ((cr & 2) != 0) {
+                            trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponent(mesh._id) + '")\' title=\"' + "Remove user group rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+
+                            // TODO
+                            //rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(5,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                        }
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                     }
                 }
             }
@@ -10311,30 +10361,28 @@
         function drawUserPermissions() {
             var count = 1, x = '';
 
-            if (urlargs.dp == 1) { // For testing only
-                // Display common devices
-                x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
-                x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
-                if (currentUser.links) {
-                    // Sort the list of devices to display
-                    var nodelist = [];
-                    for (var i in currentUser.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { nodelist.push(node); } } }
-                    nodelist.sort(nameSort);
-                    for (var i in nodelist) {
-                        var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', cr = GetNodeRights(node);
-                        if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
-                        var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
-                        if ((cr & 2) != 0) {
-                            rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
-                            trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        }
-                        nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + nodename + '</a>';
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+            // Display common devices
+            x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            if (currentUser.links) {
+                // Sort the list of devices to display
+                var nodelist = [];
+                for (var i in currentUser.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { nodelist.push(node); } } }
+                nodelist.sort(nameSort);
+                for (var i in nodelist) {
+                    var node = nodelist[i], r = currentUser.links[node._id].rights, trash = '', cr = GetNodeRights(node);
+                    if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
+                    var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
+                    if ((cr & 2) != 0) {
+                        rights = '<div style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></div>';
+                        trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                     }
+                    nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + nodename + '</a>';
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
-                if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
-                x += '</tbody></table><br />';
             }
+            if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
+            x += '</tbody></table><br />';
 
             // Display common device groups
             count = 1;
@@ -10345,13 +10393,13 @@
             if (currentUser.links) {
                 for (var i in currentUser.links) {
                     if (i.startsWith('mesh/')) {
-                        var cr = 0, r = currentUser.links[i].rights, mesh = meshes[i], trash = '', rights = "Partial Device Group Rights";
+                        var cr = 0, r = currentUser.links[i].rights, mesh = meshes[i], trash = '', rights = makeDeviceGroupRightsString(r);
                         if (mesh == null) { continue; }
                         if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
-                        var meshname = mesh?EscapeHtml(mesh.name):('<i>' + "Unknown Device Group" + '</i>');
-                        if (r == 0xFFFFFFFF) rights = "Full Device Group Administrator"; else if (r == 0) rights = "No Rights";
+                        var meshname = '<i>' + "Unknown Device Group" + '</i>';
+                        if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; } else {}
                         if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponent(mesh._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                     }
                 }
             }
@@ -10372,9 +10420,13 @@
                     for (var i in currentUser.links) {
                         if (i.startsWith('ugrp/')) {
                             var r = currentUser.links[i].rights, group = usergroups[i], trash = '';
-                            var groupname = (group != null)?EscapeHtml(group.name):('<i>' + "Unknown User Group" + '</i>');
+                            var groupname = '<i>' + "Unknown User Group" + '</i>';
+                            if (group != null) {
+                                groupname = EscapeHtml(group.name);
+                                if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponent(i) + '");haltEvent(event);\'>' + groupname + '</a>'; }
+                            }
                             if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponent(i) + '")\' title=\"' + "Remove user group membership" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "Device Group" + '\" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                            x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User Group" + '\" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                         }
                     }
                 }
@@ -11193,7 +11245,7 @@
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
-                document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + ' - ' + meshes[currentNode.meshid].name;
+                document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + ((meshes[currentNode.meshid])?(' - ' + meshes[currentNode.meshid].name):'');
             } else {
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
