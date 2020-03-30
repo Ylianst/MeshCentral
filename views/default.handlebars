@@ -2237,7 +2237,7 @@
                                     }
                                 }
 
-                                // If out list of nodes may have changes, request the new list now.
+                                // If our list of nodes may have changes, request the new list now.
                                 if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
                             }
                             if (users == null) break;
