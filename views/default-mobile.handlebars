@@ -795,10 +795,9 @@
                     nodes = [];
                     for (var m in message.nodes) {
                         for (var n in message.nodes[m]) {
-                            if (!meshes[m]) { console.log('Invalid mesh (1): ' + m); continue; }
                             message.nodes[m][n].namel = message.nodes[m][n].name.toLowerCase();
                             if (message.nodes[m][n].rname) { message.nodes[m][n].rnamel = message.nodes[m][n].rname.toLowerCase(); } else { message.nodes[m][n].rnamel = message.nodes[m][n].namel; }
-                            message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase();
+                            if (meshes[m]) { message.nodes[m][n].meshnamel = meshes[m].name.toLowerCase(); }
                             message.nodes[m][n].meshid = m;
                             message.nodes[m][n].state = (message.nodes[m][n].state) ? (message.nodes[m][n].state) : 0;
                             message.nodes[m][n].desc = message.nodes[m][n].desc;
@@ -807,6 +806,13 @@
                             nodes.push(message.nodes[m][n]);
                         }
                     }
+
+                    // If we are currently looking at a node this is now gone, change the view.
+                    //if ((currentNode != null) && (getNodeFromId(currentNode._id) == null)) { currentNode = null; go(1); }
+
+                    // Change the reference to the current node
+                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); }
+
                     //onSortSelectChange();
                     //onSearchInputChanged();
                     updateDevices();
@@ -903,6 +909,9 @@
                                 userinfo = message.event.account;
                                 if (oldsiteadmin != newsiteadmin) updateSiteAdmin();
                                 updateSelf();
+
+                                // If our list of nodes may have changes, request the new list now.
+                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
                             }
                             break;
                         }
@@ -976,9 +985,9 @@
                                     if ((xxcurrentView == 20) && (currentMesh == meshes[message.event.meshid])) go(2);
                                     delete meshes[message.event.meshid];
 
-                                    // Delete all nodes in that mesh
+                                    // Delete all nodes in that mesh, except ones with direct links
                                     var newnodes = [];
-                                    for (var i in nodes) { if (nodes[i].meshid != message.event.meshid) { newnodes.push(nodes[i]); } }
+                                    for (var i in nodes) { if ((nodes[i].meshid != message.event.meshid) || ((userinfo.links != null) && (userinfo.links[nodes[i]._id] != null))) { newnodes.push(nodes[i]); } }
                                     nodes = newnodes;
 
                                     // If we are looking at a node in the deleted mesh, move back to "My Devices"
@@ -1745,11 +1754,17 @@
                     if (nodes[i].meshid != current) {
                         deviceHeaderSet();
                         var extra = '';
-                        if (meshes[nodes[i].meshid].mtype == 1) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
+                        if ((meshes[nodes[i].meshid] != null) && (meshes[nodes[i].meshid].mtype == 1)) { extra = '<span style=color:lightgray>' + ", Intel&reg; AMT only" + '</span>'; }
                         if (current != null) { if (c == 2) { r += '<td><div style=width:301px></div></td>'; } if (r != '') { r += '</tr></table>'; } }
                         r += '<div class=DevSt style=padding-top:4px><span style=float:right>';
                         //r += getMeshActions(meshes[nodes[i].meshid], meshrights);
-                        r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+
+                        if (meshes[nodes[i].meshid]) {
+                            r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                        } else {
+                            r += '</span><span id=MxMESH style=cursor:pointer>' + "Indivitual Devices" + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                        }
+                        
                         current = nodes[i].meshid;
                         displayedMeshes[current] = 1;
                         c = 0;
@@ -1908,8 +1923,7 @@
             var node = getNodeFromId(nodeid);
             if (node == null) { goBack(); return; }
             var mesh = meshes[node.meshid];
-            if (mesh == null) { goBack(); return; }
-            var meshrights = GetMeshRights(mesh);
+            var meshrights = GetNodeRights(node);
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -1923,13 +1937,13 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                x += addDeviceAttribute('<span>' + "Group" + '</span>', '<a onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>');
+                if (mesh) { x += addDeviceAttribute('<span>' + "Group" + '</span>', '<a onclick=goForward("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>'); }
 
                 // Attribute: Name
                 if (node.rname != null) { x += addDeviceAttribute('<span>' + "Name" + '</span>', '<span>' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
-                if ((mesh.mtype == 1) || (node.name != node.host)) {
+                if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
                     if ((meshrights & 4) != 0) {
                         if (node.host) {
                             x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
@@ -2090,7 +2104,7 @@
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
                 ((meshrights & 8) || (meshrights & 256)) &&
-                (((meshes[currentNode.meshid].mtype == 1) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
+                (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
             ) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
             updateFooterMenu(menus);
@@ -2320,22 +2334,23 @@
 
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
-            QV('connectbutton1', (deskState == 0) && (mesh.mtype == 2) && ((meshrights & 8) || (meshrights & 256)));
+            QV('connectbutton1', (deskState == 0) && ((meshrights & 8) || (meshrights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
             QV('connectbutton1h',
                 (deskState == 0) &&
                 (meshrights & 8) &&
-                ((mesh.mtype == 1) ||
-                  (currentNode.intelamt != null) &&
-                  ((currentNode.intelamt.state == 2) &&
+                (
+                  ((currentNode.intelamt != null) &&
+                  (currentNode.intelamt.state == 2) &&
                   (currentNode.intelamt.ver != null) &&
-                  (typeof currentNode.intelamt.sku == 'number') &&
-                  ((currentNode.intelamt.sku & 8) != 0))
+                  ((currentNode.intelamt.sku == null) ||
+                  ((typeof currentNode.intelamt.sku == 'number') &&
+                  ((currentNode.intelamt.sku & 8) != 0))))
                 )
             );
 
             // Show the right settings
-            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (mesh.mtype == 1))) && ((deskState == 0) || (desktop.contype == 2)));
-            QV('d7meshkvm', (mesh.mtype == 2) && ((deskState == false) || (desktop.contype == 1)));
+            QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
+            QV('d7meshkvm', ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
 
             // Enable buttons
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
@@ -3515,17 +3530,23 @@
             if (userid == null) { userid = userinfo._id; }
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
             var r = GetMeshRights(node.meshid, userid);
-            if (r != 0xFFFFFFFF) {
-                var user = null;
-                if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
-                if ((user != null) && (user.links != null)) {
-                    var r2 = user.links[node._id];
-                    if (r2 != null) {
-                        if (r2.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device link, stop here.
-                        r |= r2; // TODO: Deal with reverse permissions
-                    }
+            if (r == 0xFFFFFFFF) return r;
+            var user = null;
+
+            // Check direct device rights using device data
+            if ((node.links != null) && (node.links[userid] != null)) { r |= node.links[userid].rights; } // TODO: Deal with reverse permissions
+
+            // Check direct device rights using user data
+            /*
+            if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
+            if ((user != null) && (user.links != null)) {
+                var r2 = user.links[node._id];
+                if (r2 != null) {
+                    if (r2.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device link, stop here.
+                    r |= r2.rights; // TODO: Deal with reverse permissions
                 }
             }
+            */
             return r;
         }
 
