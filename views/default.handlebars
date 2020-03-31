@@ -2465,7 +2465,7 @@
                             for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
                             if (index != -1) {
                                 var node = nodes[index];
-                                if (meshes[message.event.newMeshId] == null) {
+                                if ((meshes[message.event.newMeshId] == null) && ((userinfo.links == null) || (userinfo.links[node._id] == null))) {
                                     // We don't see the new mesh, remove this device
 
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
@@ -2994,7 +2994,7 @@
                                 r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
                                 current = node.meshid;
                             } else {
-                                r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer><i>' + "Indivitual Devices" + '</i></span></div>';
+                                r += '<span id=MxMESH><i>' + "Indivitual Devices" + '</i></span></div>';
                                 current = '*';
                             }
                             if (view == 2) { r += '</div>'; }
