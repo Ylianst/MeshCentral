@@ -1977,6 +1977,7 @@
     },
     {
       "en": "Account is locked",
+      "nl": "Account is uitgeschakeld",
       "xloc": [
         "default.handlebars->27->1354",
         "default.handlebars->27->1447"
@@ -6064,12 +6065,14 @@
     },
     {
       "en": "Copy Windows 32bit agent URL to clipboard",
+      "nl": "Kopieer de Windows 32bit-agent URL naar het klembord",
       "xloc": [
         "default.handlebars->27->313"
       ]
     },
     {
       "en": "Copy Windows 64bit agent URL to clipboard",
+      "nl": "Kopieer de Windows 64bit-agent URL naar het klembord",
       "xloc": [
         "default.handlebars->27->317"
       ]
@@ -7946,6 +7949,7 @@
     },
     {
       "en": "Display public link",
+      "nl": "Openbare link weergeven",
       "xloc": [
         "default.handlebars->27->1284"
       ]
@@ -8863,6 +8867,7 @@
     },
     {
       "en": "Email is not verified",
+      "nl": "E-mail is niet geverifieerd",
       "xloc": [
         "default.handlebars->27->1350"
       ]
@@ -19478,6 +19483,7 @@
     },
     {
       "en": "Remove this user",
+      "nl": "Verwijder deze gebruiker",
       "xloc": [
         "default.handlebars->27->1483"
       ]
@@ -20647,6 +20653,7 @@
     },
     {
       "en": "Send email to user",
+      "nl": "Stuur e-mail naar de gebruiker",
       "xloc": [
         "default.handlebars->27->1352"
       ]
@@ -22413,6 +22420,7 @@
     },
     {
       "en": "Stop process",
+      "nl": "Stop proces",
       "xloc": [
         "default.handlebars->27->664"
       ]
@@ -25207,6 +25215,7 @@
     },
     {
       "en": "Version incompatible, please upgrade your MeshCentral installation first",
+      "nl": "Versie is niet compatibel, upgrade eerst uw MeshCentral installatie",
       "xloc": [
         "default.handlebars->27->1604"
       ]
@@ -25265,6 +25274,7 @@
     },
     {
       "en": "View Changelog",
+      "nl": "Bekijk aanpassingen log",
       "xloc": [
         "default.handlebars->27->1607",
         "default.handlebars->27->1609"
@@ -26826,6 +26836,7 @@
     },
     {
       "en": "k max, blank for default",
+      "nl": "k max, blank voor standaard",
       "xloc": [
         "default.handlebars->27->1392"
       ]
