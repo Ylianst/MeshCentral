@@ -1112,7 +1112,7 @@
                             for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
                             if (index != -1) {
                                 var node = nodes[index];
-                                if (meshes[message.event.newMeshId] == null) {
+                                if ((meshes[message.event.newMeshId] == null) && ((userinfo.links == null) || (userinfo.links[node._id] == null))) {
                                     // We don't see the new mesh, remove this device
 
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
@@ -1764,7 +1764,7 @@
                             r += '</span><span id=MxMESH style=cursor:pointer onclick=goForward("' + nodes[i].meshid + '")>' + EscapeHtml(meshes[nodes[i].meshid].name) + '</span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
                             current = nodes[i].meshid;
                         } else {
-                            r += '</span><span id=MxMESH style=cursor:pointer><i>' + "Indivitual Devices" + '</i></span>' + extra + '<span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
+                            r += '</span><span id=MxMESH><i>' + "Indivitual Devices" + '</i></span><span id=DevxHeader' + deviceHeaderId + ' style=color:lightgray></span></div>';
                             current = '*';
                         }
                         

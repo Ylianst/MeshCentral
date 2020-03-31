@@ -504,6 +504,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (docs == null) { docs = []; }
                         var r = {};
                         for (i in docs) {
+                            // Check device links, if a link points to an unknown user, remove it.
+                            parent.cleanDevice(docs[i]);
+
                             // Remove any connectivity and power state information, that should not be in the database anyway.
                             // TODO: Find why these are sometimes saves in the db.
                             if (docs[i].conn != null) { delete docs[i].conn; }
@@ -747,26 +750,36 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (parent.parent.config.settings.maxinvalidlogin == false) {
                                 r = 'Bad login filter is disabled.';
                             } else {
-                                if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
-                                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
-                                } else {
-                                    r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
-                                }
-                                var badLoginCount = 0;
-                                parent.cleanBadLoginTable();
-                                for (var i in parent.badLoginTable) {
-                                    badLoginCount++;
-                                    if (typeof parent.badLoginTable[i] == 'number') {
-                                        r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
+                                if (cmdargs['_'] == 'reset') {
+                                    // Reset bad login table
+                                    parent.badLoginTable = {};
+                                    parent.badLoginTableLastClean = 0;
+                                    r = 'Done.'
+                                } else if (cmdargs['_'] == '') {
+                                    // Show current bad login table
+                                    if (typeof parent.parent.config.settings.maxinvalidlogin.coolofftime == 'number') {
+                                        r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s), " + parent.parent.config.settings.maxinvalidlogin.coolofftime + " minute(s) cooloff.\r\n";
                                     } else {
-                                        if (parent.badLoginTable[i].length > 1) {
-                                            r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                                        r = "Max is " + parent.parent.config.settings.maxinvalidlogin.count + " bad login(s) in " + parent.parent.config.settings.maxinvalidlogin.time + " minute(s).\r\n";
+                                    }
+                                    var badLoginCount = 0;
+                                    parent.cleanBadLoginTable();
+                                    for (var i in parent.badLoginTable) {
+                                        badLoginCount++;
+                                        if (typeof parent.badLoginTable[i] == 'number') {
+                                            r += "Cooloff for " + Math.floor((parent.badLoginTable[i] - Date.now()) / 60000) + " minute(s)\r\n";
                                         } else {
-                                            r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                                            if (parent.badLoginTable[i].length > 1) {
+                                                r += (i + ' - ' + parent.badLoginTable[i].length + " records\r\n");
+                                            } else {
+                                                r += (i + ' - ' + parent.badLoginTable[i].length + " record\r\n");
+                                            }
                                         }
                                     }
+                                    if (badLoginCount == 0) { r += 'No bad logins.'; }
+                                } else {
+                                    r = 'Usage: badlogin [reset]';
                                 }
-                                if (badLoginCount == 0) { r += 'No bad logins.'; }
                             }
                             break;
                         }
@@ -1305,7 +1318,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Remove the link and save the node to the database
                                     delete node.links[deluser._id];
                                     if (Object.keys(node.links).length == 0) { delete node.links; }
-                                    db.Set(node);
+                                    db.Set(parent.cleanDevice(node));
 
                                     // Event the node change
                                     var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
@@ -2518,7 +2531,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Save the device
                     if (nodeChanged == true) {
                         // Save the node to the database
-                        db.Set(node);
+                        db.Set(parent.cleanDevice(node));
 
                         // Event the node change
                         var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
@@ -2720,7 +2733,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Perform the switch, start by saving the node with the new meshid.
                             const oldMeshId = node.meshid;
                             node.meshid = command.meshid;
-                            db.Set(node);
+                            db.Set(parent.cleanDevice(node));
 
                             // If the device is connected on this server, switch it now.
                             var agentSession = parent.wsagents[node._id];
@@ -2997,7 +3010,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         if (change == 1) {
                             // Save the node
-                            db.Set(node);
+                            db.Set(parent.cleanDevice(node));
 
                             // Event the node change. Only do this if the database will not do it.
                             event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');

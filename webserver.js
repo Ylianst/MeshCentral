@@ -216,6 +216,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Fetch all device groups (meshes) from the database, keep this in memory
+        // As we load things in memory, we will also be doing some cleaning up.
+        // We will not save any clean up in the database right now, instead it will be saved next time there is a change.
         obj.db.GetAllType('mesh', function (err, docs) {
             obj.common.unEscapeAllLinksFieldName(docs);
             for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } // Get all meshes, including deleted ones.
@@ -223,13 +225,62 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Fetch all user groups from the database, keep this in memory
             obj.db.GetAllType('ugrp', function (err, docs) {
                 obj.common.unEscapeAllLinksFieldName(docs);
-                for (var i in docs) { obj.userGroups[docs[i]._id] = docs[i]; } // Get all user groups
 
-                // We loaded the users, device groups and suer group state, start the server
+                // Perform user group link cleanup
+                for (var i in docs) {
+                    const ugrp = docs[i];
+                    if (ugrp.links != null) {
+                        for (var j in ugrp.links) {
+                            if (j.startsWith('user/') && (obj.users[j] == null)) { delete ugrp.links[j]; } // User group has a link to a user that does not exist
+                            else if (j.startsWith('mesh/') && ((obj.meshes[j] == null) || (obj.meshes[j].deleted != null))) { delete ugrp.links[j]; } // User has a link to a device group that does not exist
+                        }
+                    }
+                    obj.userGroups[docs[i]._id] = docs[i]; // Get all user groups
+                }
+
+                // Perform device group link cleanup
+                for (var i in obj.meshes) {
+                    const mesh = obj.meshes[i];
+                    if (mesh.links != null) {
+                        for (var j in mesh.links) {
+                            if (j.startsWith('ugrp/') && (obj.userGroups[j] == null)) { delete mesh.links[j]; } // Device group has a link to a user group that does not exist
+                            else if (j.startsWith('user/') && (obj.users[j] == null)) { delete mesh.links[j]; } // Device group has a link to a user that does not exist
+                        }
+                    }
+                } 
+
+                // Perform user link cleanup
+                for (var i in obj.users) {
+                    const user = obj.users[i];
+                    if (user.links != null) {
+                        for (var j in user.links) {
+                            if (j.startsWith('ugrp/') && (obj.userGroups[j] == null)) { delete user.links[j]; } // User has a link to a user group that does not exist
+                            else if (j.startsWith('mesh/') && ((obj.meshes[j] == null) || (obj.meshes[j].deleted != null))) { delete user.links[j]; } // User has a link to a device group that does not exist
+                            //else if (j.startsWith('node/') && (obj.nodes[j] == null)) { delete user.links[j]; } // TODO
+                        }
+                        //if (Object.keys(user.links).length == 0) { delete user.links; }
+                    }
+                }
+
+                // We loaded the users, device groups and user group state, start the server
                 serverStart();
             });
         });
     });
+
+    // Clean up a device, used before saving it in the database
+    obj.cleanDevice = function (device) {
+        // Check device links, if a link points to an unknown user, remove it.
+        if (device.links != null) {
+            for (var j in device.links) {
+                if (obj.users[j] == null) {
+                    delete device.links[j];
+                    if (Object.keys(device.links).length == 0) { delete device.links; }
+                }
+            }
+        }
+        return device;
+    }
 
     // Return statistics about this web server
     obj.getStats = function () {
@@ -1372,7 +1423,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 // Remove the link and save the node to the database
                                 delete node.links[deluser._id];
                                 if (Object.keys(node.links).length == 0) { delete node.links; }
-                                db.Set(node);
+                                db.Set(obj.cleanDevice(node));
 
                                 // Event the node change
                                 var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
@@ -3081,7 +3132,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                         // Update the database
                                                         var oldname = node.host;
                                                         node.host = amthost;
-                                                        obj.db.Set(node);
+                                                        obj.db.Set(obj.cleanDevice(node));
 
                                                         // Event the node change
                                                         var event = { etype: 'node', action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Intel(R) AMT host change ' + node.name + ' from group ' + mesh.name + ': ' + oldname + ' to ' + amthost };
