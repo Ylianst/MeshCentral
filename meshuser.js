@@ -508,7 +508,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.cleanDevice(docs[i]);
 
                             // Remove any connectivity and power state information, that should not be in the database anyway.
-                            // TODO: Find why these are sometimes saves in the db.
+                            // TODO: Find why these are sometimes saved in the db.
                             if (docs[i].conn != null) { delete docs[i].conn; }
                             if (docs[i].pwr != null) { delete docs[i].pwr; }
                             if (docs[i].agct != null) { delete docs[i].agct; }
@@ -2998,7 +2998,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
                         if (command.intelamt != null) {
                             if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
-                            if (command.intelamt.tls && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
+                            if ((command.intelamt.tls != null) && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                         }
                         if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
                             var ok = true, group2 = [];

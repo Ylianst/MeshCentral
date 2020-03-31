@@ -5352,9 +5352,9 @@
                 if (amtuser == '') amtuser = 'admin';
                 var amtpass = Q('dp10password').value;
                 if (amtpass == '') amtuser = '';
-                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: Q('dp10tls').value } });
+                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: parseInt(Q('dp10tls').value) } });
                 tag.node.intelamt.user = amtuser;
-                tag.node.intelamt.tls = Q('dp10tls').value;
+                tag.node.intelamt.tls = parseInt(Q('dp10tls').value);
                 if (tag.func) { setTimeout(function () { tag.func(null, tag.arg); }, 300); }
             }
         }
