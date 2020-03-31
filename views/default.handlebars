@@ -1936,7 +1936,7 @@
                                 var splitip = currentNode.lastaddr.split(':');
                                 if (splitip.length > 2) {
                                     // IPv6
-                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="Copy address to clipboard" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(currentNode.lastaddr) + '\") width=10 height=10>');
+                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(currentNode.lastaddr) + '\") width=10 height=10>');
                                 } else {
                                     // IPv4
                                     if (isPrivateIP(currentNode.lastaddr)) {
@@ -3660,8 +3660,8 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "32bit version of the MeshAgent" + '\">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 32bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "64bit version of the MeshAgent" + '\">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="Copy Windows 64bit agent URL to clipboard" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "32bit version of the MeshAgent" + '\">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "64bit version of the MeshAgent" + '\">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" rel="noreferrer noopener" target="_blank">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
@@ -4935,7 +4935,7 @@
                 if ((meshrights & 76) != 0) { x += '<input type=button value=\"' + "Actions" + '\" title=\"' + "Perform power actions on the device" + '\" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value=\"' + "Notes" + '\" title=\"' + "View notes about this device" + '\" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 x += '<input type=button value=\"' + "Log Event" + '\" title=\"' + "Write an event for this device" + '\" onclick=writeDeviceEvent("' + encodeURIComponent(node._id) + '") />';
-                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="Display a text message of the remote device" onclick=deviceToastFunction() />';  }
+                //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -6329,7 +6329,7 @@
                     if (p[i].p != 0) {
                         var c = p[i].c;
                         if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0,30) + '...</span>' }
-                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="Stop process" onclick=\'return stopProcess(' + p[i].p + ',"' + p[i].c + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + c + '</div></div>';
+                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + p[i].p + ',"' + p[i].c + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + c + '</div></div>';
                     }
                 }
                 QH('DeskToolsProcesses', x);
@@ -9115,7 +9115,7 @@
                     h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + name + '">&nbsp;<span style=float:right title=\"' + title + '\">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")></div><a href=# style=cursor:pointer onclick=\'return p5folderset(\"' + encodeURIComponent(f.nx) + '\")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title="Display public link" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponent(f.nx)) + '")\'>' + "Link" + '</a>)'; }
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponent(f.nx)) + '")\'>' + "Link" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel="noreferrer noopener" target="_blank" download href="downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '">' + shortname + '</a>' + publiclink; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -9573,19 +9573,19 @@
             if (user.links) { for (var i in user.links) { if (i.startsWith('mesh/')) { groups++; } } }
 
             var username = EscapeHtml(user.name), emailVerified = '';
-            if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true) ? ' <b style=color:red title="Email is not verified">&#x2717;</b>' : ' <b style=color:green title="Email is verified">&#x2713</b>'); }
+            if (serverinfo.emailcheck == true) { emailVerified = ((user.emailVerified != true) ? ' <b style=color:red title="' + "Email is not verified" + '">&#x2717;</b>' : ' <b style=color:green title="' + "Email is verified" + '">&#x2713</b>'); }
             if (user.email != null) {
                 if (((features & 0x200000) == 0) || (user.email.toLowerCase() != user.name.toLowerCase())) {
                     // Username & email are different
                     username += ', <a href=# onclick=\'return doemail(event,\"' + user.email + '\")\'>' + user.email + '</a>' + emailVerified;
                 } else {
                     // Username & email are the same
-                    username += ' <a href=# onclick=\'return doemail(event,\"' + user.email + '\")\'><img src="images/mail12.png" height=9 width=12 title="Send email to user" style="margin-top:2px" /></a>' + emailVerified;
+                    username += ' <a href=# onclick=\'return doemail(event,\"' + user.email + '\")\'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
                 }
             }
 
-            if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="2nd factor authentication enabled" style="margin-top:2px" />'; }
-            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" />'; }
+            if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
 
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
             x += '<div class=bar>';
@@ -9793,7 +9793,7 @@
             if (user == null) return;
             var uself = (userinfo._id == user._id);
             var x = '<div><div id=d2AdminPermissions>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>' + "Server Files" + '</label>, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>k max, blank for default<br><hr/>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>' + "Server Files" + '</label>, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>' + "k max, blank for default" + '<br><hr/>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>' + "Full Administrator" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverbackup>' + "Server Backup" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>' + "Server Restore" + '</label><br>';
@@ -10190,7 +10190,7 @@
 
             // Server permissions
             var msg = [], premsg = '';
-            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="Account is locked" style="margin-top:2px" /> '; msg.push("Locked account"); }
+            if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" /> '; msg.push("Locked account"); }
             if ((user.siteadmin == null) || ((user.siteadmin & (0xFFFFFFFF - 224)) == 0)) { msg.push("No server rights"); } else if (user.siteadmin == 8) { msg.push("Access to server files"); } else if (user.siteadmin == 0xFFFFFFFF) { msg.push("Full administrator"); } else { msg.push("Partial rights"); }
             if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
 
@@ -10253,7 +10253,7 @@
 
             // Show bottom buttons
             x = '<div style=float:right;font-size:x-small>';
-            if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="Remove this user">' + "Delete User" + '</a>'; }
+            if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
             x += '</div><div style=font-size:x-small>';
             if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
             x += '</div><br>'
@@ -11297,7 +11297,7 @@
                     //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                   }
                 };
-                var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="Version incompatible, please upgrade your MeshCentral installation first" style="cursor: pointer; color:red;"> ! </span> ]';
+                var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="' + "Version incompatible, please upgrade your MeshCentral installation first" + '" style="cursor: pointer; color:red;"> ! </span> ]';
 
                 var tbl = Q('p42tbl');
                 installedPluginList.forEach(function(p){
@@ -11316,11 +11316,11 @@
                     if (installedPluginList['version_info'] != null && installedPluginList['version_info'][p._id] != null) {
                         var vin = installedPluginList['version_info'][p._id];
                         if (vin.hasUpdate) {
-                            p.upgradeAvail = '<a title="View Changelog" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            p.upgradeAvail = '<a title="' + "View Changelog" + '" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
                         } else {
                             cant_action.push('upgrade');
                             if (p.status) p.upgradeAvail = "Up to date";
-                            else p.upgradeAvail = '<a title="View Changelog" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            else p.upgradeAvail = '<a title="' + "View Changelog" + '" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
                         }
                         if (!vin.meshCentralCompat) {
                             p.upgradeAvail += vers_not_compat;
