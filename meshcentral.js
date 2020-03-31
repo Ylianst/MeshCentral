@@ -1600,7 +1600,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Event the node connection change
             if (eventConnectChange == 1) { obj.DispatchEvent(obj.webserver.CreateMeshDispatchTargets(meshid, [nodeid]), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 }); }
-        } else {nodeid
+        } else {
             // Multi server mode
 
             // Change the node connection state
@@ -1655,13 +1655,13 @@ function CreateMeshCentralServer(config, args) {
                 state.connectivity -= connectType;
 
                 // If the node is completely disconnected, clean it up completely
-                if (state.connectivity == 0) { delete obj.connectivityByNode[nodeid]; state.powerState = 0; }
+                if (state.connectivity == 0) { delete obj.connectivityByNode[nodeid]; }
                 eventConnectChange = 1;
             }
 
             // Clear node power state
+            var oldPowerState = state.powerState, powerState = 0;
             if (connectType == 1) { state.agentPower = 0; } else if (connectType == 2) { state.ciraPower = 0; } else if (connectType == 4) { state.amtPower = 0; }
-            var powerState = 0, oldPowerState = state.powerState;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
             if ((state.powerState == null) || (state.powerState != powerState)) {
                 state.powerState = powerState;
