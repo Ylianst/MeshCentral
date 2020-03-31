@@ -857,13 +857,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
                             if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
                             if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } }
-                            try { info.nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]); } catch (ex) { }
-                            try { info.currentVer = parent.parent.currentVer; } catch (ex) { }
+                            try { info.nodeVersion = process.version; } catch (ex) { }
+                            try { info.meshVersion = parent.parent.currentVer; } catch (ex) { }
                             try { info.platform = process.platform; } catch (ex) { }
                             try { info.arch = process.arch; } catch (ex) { }
                             try { info.pid = process.pid; } catch (ex) { }
                             try { info.uptime = process.uptime(); } catch (ex) { }
-                            try { info.version = process.version; } catch (ex) { }
                             try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
                             try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
                             try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
