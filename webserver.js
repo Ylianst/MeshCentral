@@ -3238,7 +3238,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
-        const domain = getDomain(req, res);
+        var domain = getDomain(req, res);
         if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
 
         // If required, check if this user has rights to do this
