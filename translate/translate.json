@@ -8653,6 +8653,7 @@
     },
     {
       "en": "Edit Group",
+      "nl": "Bewerk groep",
       "xloc": [
         "default.handlebars->27->553"
       ]
@@ -10191,6 +10192,7 @@
     },
     {
       "en": "Full Rights",
+      "nl": "Volledige rechten",
       "xloc": [
         "default.handlebars->27->552"
       ]
@@ -11279,6 +11281,7 @@
     },
     {
       "en": "Indivitual Devices",
+      "nl": "Individuele apparaten",
       "xloc": [
         "default-mobile.handlebars->9->96",
         "default.handlebars->27->163"
@@ -14424,6 +14427,7 @@
     },
     {
       "en": "Manage Devices",
+      "nl": "Beheer apparaten",
       "xloc": [
         "default.handlebars->27->555"
       ]
