@@ -1022,7 +1022,8 @@ function startMeshCommander() {
                 } else {
                     // If TLS is going to be used, setup a TLS socket
                     var tls = require('tls');
-                    var tlsoptions = { host: webargs.host, port: webargs.port, secureProtocol: ((webargs.tls1only == 1) ? 'TLSv1_method' : 'SSLv23_method'), rejectUnauthorized: false };
+                    var tlsoptions = { host: webargs.host, port: webargs.port, rejectUnauthorized: false };
+                    if (webargs.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
                     ws.forwardclient = tls.connect(tlsoptions, function () { debug(1, 'Connected TLS to ' + webargs.host + ':' + webargs.port + '.'); this.pipe(this.ws, { end: false }); this.ws.pipe(this, { end: false }); });
                     ws.forwardclient.on('error', function () { debug(1, 'TLS connection error to ' + webargs.host + ':' + webargs.port + '.'); try { this.ws.end(); } catch (e) { } });
                     ws.forwardclient.ws = ws;
