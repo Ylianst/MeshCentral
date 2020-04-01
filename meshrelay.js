@@ -80,7 +80,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                rights = user.links[agent.dbMeshKey]; // TODO: Need to include user group / node rights
+                rights = parent.GetNodeRights(user, agent.dbMeshKey, agent.dbNodeKey);
                 mesh = parent.meshes[agent.dbMeshKey];
                 if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
@@ -98,7 +98,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    rights = user.links[routing.meshid]; // TODO: Need to include user groups / node rights
+                    rights = parent.GetNodeRights(user, routing.meshid, command.nodeid);
                     mesh = parent.meshes[routing.meshid];
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
@@ -419,8 +419,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 const node = docs[0];
 
                 // Check if this user has permission to manage this computer
-                const meshlinks = user.links[node.meshid];
-                if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (e) { } return; }
 
                 // Send connection request to agent
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
@@ -438,8 +437,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 const node = docs[0];
 
                 // Check if this user has permission to manage this computer
-                const meshlinks = user.links[node.meshid];
-                if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
 
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
