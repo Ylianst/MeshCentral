@@ -2525,7 +2525,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
 
             // Check if this user has permission to manage this computer
-            if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { ws.close(); } catch (e) { } return; }
+            if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (3)'); try { ws.close(); } catch (e) { } return; }
 
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
