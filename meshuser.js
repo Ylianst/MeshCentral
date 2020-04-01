@@ -2392,16 +2392,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         for (var i in command.usernames) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
                     }
 
-                    var unknownUsers = [], removedCount = 0, failCount = 0;
+                    var unknownUsers = [], successCount = 0, failCount = 0, msgs = [];
                     for (var i in command.userids) {
                         // Check if the user exists
                         var newuserid = command.userids[i], newuser = null;
                         if (newuserid.startsWith('user/')) { newuser = parent.users[newuserid]; }
                         else if (newuserid.startsWith('ugrp/')) { newuser = parent.userGroups[newuserid]; }
 
+                        // Search for a user name in that windows domain is the username starts with *\
+                        if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
+                            var search = newuserid.split('/')[2].substring(1);
+                            for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { newuser = parent.users[i]; command.userids[i] = newuserid = parent.users[i]._id; break; } }
+                        }
+
                         if (newuser != null) {
                             // Can't add or modify self
-                            if (newuserid == obj.user._id) { continue; }
+                            if (newuserid == obj.user._id) { errors.push("Can't add self."); continue; }
 
                             // Add mesh to user or user group
                             if (newuser.links == null) { newuser.links = {}; }
@@ -2432,19 +2438,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
-                            removedCount++;
+                            msgs.push("Added user " + newuser._id.split('/')[2]);
+                            successCount++;
                         } else {
-                            unknownUsers.push(command.userids[i]);
+                            msgs.push("Unknown user " + newuserid._id.split('/')[2]);
+                            unknownUsers.push(newuserid);
                             failCount++;
                         }
                     }
+
+                    if ((successCount == 0) && (failCount == 0)) { msgs.push("Nothing done"); }
 
                     if (unknownUsers.length > 0) {
                         // Send error back, user not found.
                         displayNotificationMessage('User' + ((unknownUsers.length > 1) ? 's' : '') + ' ' + EscapeHtml(unknownUsers.join(', ')) + ' not found.', 'Device Group', 'ServerNotify');
                     }
 
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: 'ok', removed: removedCount, failed: failCount })); } catch (ex) { } }
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: msgs.join(', '), success: successCount, failed: failCount })); } catch (ex) { } }
                     break;
                 }
             case 'adddeviceuser': {
@@ -2456,7 +2466,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     else if ((command.rights & 7) != 0) { err = 'Invalid rights'; } // EDITMESH, MANAGEUSERS or MANAGECOMPUTERS rights can't be assigned to a user to device link
                     else if ((common.validateStrArray(command.usernames, 1, 64) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 64 characters
                     else {
-                        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.meshid; }
+                        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                         else if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
                     }
                 } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -2487,6 +2497,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     for (var i in command.userids) {
                         var newuserid = command.userids[i];
                         var newuser = parent.users[newuserid];
+
+                        // Search for a user name in that windows domain is the username starts with *\
+                        if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
+                            var search = newuserid.split('/')[2].substring(1);
+                            for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { newuser = parent.users[i]; command.userids[i] = newuserid = newuser._id; break; } }
+                        }
+
                         if (newuser != null) {
                             // Add this user to the dispatch target list
                             dispatchTargets.push(newuser._id);
@@ -2537,6 +2554,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(dispatchTargets, obj, event);
                     }
+
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adddeviceuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                 });
 
                 break;
@@ -2569,6 +2588,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var deluserid = command.userid, deluser = null;
                     if (deluserid.startsWith('user/')) { deluser = parent.users[deluserid]; }
                     else if (deluserid.startsWith('ugrp/')) { deluser = parent.userGroups[deluserid]; }
+
+                    // Search for a user name in that windows domain is the username starts with *\
+                    if ((deluser == null) && (deluserid.startsWith('user/' + domain.id + '/*\\')) == true) {
+                        var search = deluserid.split('/')[2].substring(1);
+                        for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { deluser = parent.users[i]; command.userid = deluserid = deluser._id; break; } }
+                    }
+
                     if (deluser != null) {
                         // Remove mesh from user
                         if (deluser.links != null && deluser.links[command.meshid] != null) {

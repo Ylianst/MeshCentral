@@ -3125,7 +3125,9 @@
                 }
 
                 // If there is nothing to display, explain the problem
+                var viewNothing = false;
                 if ((r == '') && (nodes.length > 0) && (Q('SearchInput').value != '')) {
+                    viewNothing = true;
                     if (sort == 3) {
                         r = '<div style="margin:30px">' + "No devices are included in any groups, click on a device\'s \"Groups\" to add to a group." + '</div>';
                     } else {
@@ -3172,7 +3174,7 @@
                     }
                 }
 
-                if (r != '') {
+                if ((r != '') && (viewNothing == false)) {
                     r += '</table>';
                     if (view == 2) {
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
@@ -9587,20 +9589,24 @@
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
 
-            x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
+            x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
             x += '<div class=bar>';
+            x += '<div class=baricon><input type=checkbox></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
-            x += '<div class=g1></div><div class=g2></div>';
+            x += '<div class=g1></div><div class=g2></div><div>';
             x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
             return x;
         }
 
         // Highlights the user being hovered
         function userMouseHover(element, over) {
-            var e = element.children[0].children[0];
+            var e = element.children[0].children[0].children[1];
             e.children[1].classList.remove('g1s');
             e.children[2].classList.remove('g2s');
-            if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('g2s'); }
+            if (over == 1) {
+                e.children[1].classList.add('g1s');
+                e.children[2].classList.add('g2s');
+            }
             element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
         }
 
