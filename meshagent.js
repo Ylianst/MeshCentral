@@ -687,7 +687,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 device = nodes[0];
 
                 // This device exists, meshid given by the device must be ignored, use the server side one.
-                if (device.meshid != obj.dbMeshKey) {
+                if ((device.meshid != null) && (device.meshid != obj.dbMeshKey)) {
                     obj.dbMeshKey = device.meshid;
                     obj.meshid = device.meshid.split('/')[2];
                 }

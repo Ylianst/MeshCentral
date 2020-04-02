@@ -2777,7 +2777,7 @@
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
-                    var meshrights = GetMeshRights(currentNode.meshid);
+                    var meshrights = GetNodeRights(currentNode);
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -2836,7 +2836,7 @@
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
-                    var meshrights = GetMeshRights(currentNode.meshid);
+                    var meshrights = GetNodeRights(currentNode);
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
@@ -2870,7 +2870,7 @@
             if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
                 if (currentNode != null) {
-                    var meshrights = GetMeshRights(currentNode.meshid);
+                    var meshrights = GetNodeRights(currentNode);
                     var inputAllowed = ((meshrights == 0xFFFFFFFF) || (((meshrights & 8) != 0) && ((meshrights & 256) == 0)));
                     if (inputAllowed == false) return false;
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
