@@ -153,8 +153,10 @@ function run(argv) {
     if ((typeof args.cdrom) == 'string') { settings.cdrom = args.cdrom; }
     if ((typeof args.tag) == 'string') { settings.tag = args.tag; }
     if ((typeof args.scan) == 'string') { settings.scan = args.scan; }
+    if ((typeof args.token) == 'string') { settings.token = args.token; }
     if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
+    if (args.emailtoken) { settings.emailtoken = true; }
     if (args.debug === true) { settings.debuglevel = 1; }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
     if (args.noconsole) { settings.noconsole = true; }
@@ -2048,20 +2050,80 @@ function processLmsControlData(data) {
 //
 
 function startRouter() {
+    // Start by requesting a login token, this is needed because of 2FA and check that we have correct credentials from the start
+    var options;
+    try {
+        var url = settings.serverurl.split('meshrelay.ashx').join('control.ashx') + '?user=' + settings.username + '&pass=' + settings.password;
+        if (settings.emailtoken) { url += '&token=**email**'; } else if (settings.token != null) { url += '&token=' + settings.token; }
+        options = http.parseUri(url);
+    } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
+    options.checkServerIdentity = onVerifyServer;
+    options.rejectUnauthorized = false;
+    settings.websocket = http.request(options);
+    settings.websocket.upgrade = OnServerWebSocket;
+    settings.websocket.on('error', function (e) { console.log("ERROR: " + JSON.stringify(e)); });
+    settings.websocket.end();
+}
+
+function OnServerWebSocket(msg, s, head) {
+    settings.webchannel = s;
+    s.on('data', function (msg) {
+        var command = JSON.parse(msg);
+        switch (command.action) {
+            case 'close': {
+                if (command.cause == 'noauth') {
+                    if (command.msg == 'tokenrequired') {
+                        if (command.email2fasent === true) {
+                            console.log("Login token email sent.");
+                        } else if (command.email2fa === true) {
+                            console.log("Login token required, use --token [token], or --emailtoken get a token.");
+                        } else {
+                            console.log("Login token required, use --token [token].");
+                        }
+                    } else { console.log("Invalid username or password."); }
+                } else { console.log("Server disconnected: " + command.msg); }
+                process.exit(1);
+                return;
+            }
+            case 'serverinfo': {
+                s.write("{\"action\":\"authcookie\"}"); // Ask for our first authentication cookie
+                break;
+            }
+            case 'authcookie': {
+                if (settings.acookie == null) {
+                    settings.acookie = command.cookie;
+                    settings.rcookie = command.rcookie;
+                    settings.renewCookieTimer = setInterval(function () { settings.webchannel.write("{\"action\":\"authcookie\"}"); }, 600000); // Ask for new cookie every 10 minutes
+                    startRouterEx();
+                } else {
+                    settings.acookie = command.cookie;
+                    settings.rcookie = command.rcookie;
+                }
+                break;
+            }
+        }
+    });
+    s.on('error', function () { console.log("Server connection error."); process.exit(1); return; });
+    s.on('close', function () { console.log("Server closed the connection."); process.exit(1); return; });
+}
+
+function startRouterEx() {
     tcpserver = net.createServer(OnTcpClientConnected);
     tcpserver.on('error', function (e) { console.log("ERROR: " + JSON.stringify(e)); exit(0); return; });
-    tcpserver.listen(settings.localport, function () {
-        // We started listening.
-        if (settings.remotetarget == null) {
-            console.log('Redirecting local port ' + settings.localport + ' to remote port ' + settings.remoteport + '.');
-        } else {
-            console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotetarget + ':' + settings.remoteport + '.');
-        }
-        console.log("Press ctrl-c to exit.");
+    try {
+        tcpserver.listen(settings.localport, function () {
+            // We started listening.
+            if (settings.remotetarget == null) {
+                console.log('Redirecting local port ' + settings.localport + ' to remote port ' + settings.remoteport + '.');
+            } else {
+                console.log('Redirecting local port ' + settings.localport + ' to ' + settings.remotetarget + ':' + settings.remoteport + '.');
+            }
+            console.log("Press ctrl-c to exit.");
 
-        // If settings has a "cmd", run it now.
-        //process.exec("notepad.exe");
-    });
+            // If settings has a "cmd", run it now.
+            //process.exec("notepad.exe");
+        });
+    } catch (ex) { console.log("Unable to bind to local TCP port " + settings.localport + "."); exit(1); return; }
 }
 
 // Called when a TCP connect is received on the local port. Launch a tunnel.
@@ -2071,8 +2133,9 @@ function OnTcpClientConnected(c) {
         debug(1, "Client connected");
         c.on('end', function () { disconnectTunnel(this, this.websocket, "Client closed"); });
         c.pause();
+        var options;
         try {
-            options = http.parseUri(settings.serverurl + '?user=' + settings.username + '&pass=' + settings.password + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport + (settings.remotetarget == null ? '' : '&tcpaddr=' + settings.remotetarget));
+            options = http.parseUri(settings.serverurl + '?auth=' + settings.acookie + '&nodeid=' + settings.remotenodeid + '&tcpport=' + settings.remoteport + (settings.remotetarget == null ? '' : '&tcpaddr=' + settings.remotetarget));
         } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
         options.checkServerIdentity = onVerifyServer;
         options.rejectUnauthorized = false;
@@ -2106,8 +2169,8 @@ function OnWebSocket(msg, s, head) {
             }
         }
     });
-    s.on('error', function (msg) { disconnectTunnel(this.tcp, this, 'Websocket error'); });
-    s.on('close', function (msg) { disconnectTunnel(this.tcp, this, 'Websocket closed'); });
+    s.on('error', function () { disconnectTunnel(this.tcp, this, 'Websocket error'); });
+    s.on('close', function () { disconnectTunnel(this.tcp, this, 'Websocket closed'); });
     s.parent = this;
 }
 

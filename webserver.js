@@ -3352,9 +3352,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         localPort: 1234,
                         remoteName: node.name,
                         remoteNodeId: node._id,
-                        remoteTarget: '',
+                        remoteTarget: null,
                         remotePort: 3389,
-                        username: '',
+                        username: user.name,
                         password: '',
                         serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
                         serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
@@ -3368,7 +3368,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             } else if (req.query.meshaction == 'generic') {
                 var meshaction = {
-                    username: '',
+                    username: user.name,
                     password: '',
                     serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
                     serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
