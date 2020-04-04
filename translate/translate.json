@@ -598,6 +598,7 @@
     },
     {
       "en": ", you can access it now with:",
+      "nl": ", je hebt er nu toegang toe met:",
       "ja": "、あなたは今それを使ってそれにアクセスできます：",
       "xloc": [
         "account-invite.html->0->3"
@@ -3285,6 +3286,7 @@
     },
     {
       "en": "An account was created for you on server",
+      "nl": "Er is een account voor je aangemaakt op de server",
       "ja": "サーバー上にアカウントが作成されました",
       "xloc": [
         "account-invite.html->0->3"
@@ -4306,6 +4308,7 @@
     },
     {
       "en": "Best regards,",
+      "nl": "Vriendelijke groeten,",
       "ja": "宜しくお願いします、",
       "xloc": [
         "account-invite.html->0",
@@ -5276,6 +5279,7 @@
     },
     {
       "en": "Click here to download the MeshAgent for Apple OSX.",
+      "nl": "Klik hier om de MeshAgent te downloaden voor Apple OSX.",
       "ja": "ここをクリックして、Apple OSX用のMeshAgentをダウンロードしてください。",
       "xloc": [
         "mesh-invite.html->0->11->1->0"
@@ -5283,6 +5287,7 @@
     },
     {
       "en": "Click here to download the MeshAgent for Windows.",
+      "nl": "Klik hier om de MeshAgent te downloaden voor Windows.",
       "ja": "Windows用のMeshAgentをダウンロードするには、ここをクリックしてください。",
       "xloc": [
         "mesh-invite.html->0->9->1->1"
@@ -5307,6 +5312,7 @@
     },
     {
       "en": "Click here to reset your account password.",
+      "nl": "Klik hier om je wachtwoord opnieuw in te stellen.",
       "ja": "ここをクリックしてアカウントのパスワードをリセットしてください。",
       "xloc": [
         "account-reset.html->0->5->1"
@@ -5314,6 +5320,7 @@
     },
     {
       "en": "Click here to verify your e-mail address.",
+      "nl": "Klik hier om uw e-mailadres te verifiëren.",
       "ja": "ここをクリックして、電子メールアドレスを確認してください。",
       "xloc": [
         "account-check.html->0->5->1"
@@ -9963,6 +9970,7 @@
     },
     {
       "en": "For Linux, cut & paste the following in a terminal to install the agent:",
+      "nl": "Voor Linux, knip het volgende en plak dit in een terminal om de agent te installeren:",
       "ja": "Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。",
       "xloc": [
         "mesh-invite.html->0->13->1"
@@ -10958,6 +10966,7 @@
     },
     {
       "en": "Hello [[[NAME]]],",
+      "nl": "Hallo [[[NAME]]],",
       "ja": "[[[NAME]]]様",
       "xloc": [
         "mesh-invite.html->0->3->1"
@@ -10982,6 +10991,7 @@
     },
     {
       "en": "Hi [[[USERNAME]]],",
+      "nl": "Hallo [[[USERNAME]]],",
       "ja": "[[[USERNAME]]]様",
       "xloc": [
         "account-check.html->0->3",
@@ -11368,6 +11378,7 @@
     },
     {
       "en": "If you did not initiate this request, please ignore this mail.",
+      "nl": "Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.",
       "ja": "このリクエストを開始していない場合は、このメールを無視してください。",
       "xloc": [
         "account-check.html->0",
@@ -15418,6 +15429,7 @@
     },
     {
       "en": "Message:",
+      "nl": "Bericht:",
       "ja": "メッセージ：",
       "xloc": [
         "mesh-invite.html->0->7->1"
@@ -23346,6 +23358,7 @@
     },
     {
       "en": "This token can only be used once and is valid for 5 minutes.",
+      "nl": "Dit token kan maar één keer worden gebruikt en is 5 minuten geldig.",
       "ja": "このトークンは1回だけ使用でき、5分間有効です。",
       "xloc": [
         "account-login.html->0->5"
@@ -23569,6 +23582,7 @@
     },
     {
       "en": "To install the software,",
+      "nl": "Om de software te installeren,",
       "ja": "ソフトウェアをインストールするには、",
       "xloc": [
         "mesh-invite.html->0->15->1"
@@ -25076,6 +25090,7 @@
     },
     {
       "en": "User [[[USERNAME]]] on server",
+      "nl": "Gebruiker [[[USERNAME]]] op server",
       "ja": "サーバー上のユーザー[[[USERNAME]]]",
       "xloc": [
         "mesh-invite.html->0->5"
@@ -26407,6 +26422,7 @@
     },
     {
       "en": "Your login token is: [[[TOKEN]]]",
+      "nl": "Uw login token is: [[[TOKEN]]]",
       "ja": "ログイントークンは次のとおりです：[[[TOKEN]]]",
       "xloc": [
         "account-login.html->0->3"
@@ -26500,6 +26516,7 @@
     },
     {
       "en": "[[[ACCOUNTNAME]]]",
+      "nl": "[[[ACCOUNTNAME]]]",
       "ja": "[[[ACCOUNTNAME]]]",
       "xloc": [
         "account-invite.html->0->5->1"
@@ -26507,6 +26524,7 @@
     },
     {
       "en": "[[[MSG]]]",
+      "nl": "[[[MSG]]]",
       "ja": "[[[MSG]]]",
       "xloc": [
         "mesh-invite.html->0->7->1->1"
@@ -26514,6 +26532,7 @@
     },
     {
       "en": "[[[PASSWORD]]]",
+      "nl": "[[[PASSWORD]]]",
       "ja": "[[[PASSWORD]]]",
       "xloc": [
         "account-invite.html->0->5->4"
@@ -26521,6 +26540,7 @@
     },
     {
       "en": "[[[SERVERNAME]]]",
+      "nl": "[[[SERVERNAME]]]",
       "ja": "[[[SERVERNAME]]]",
       "xloc": [
         "account-check.html->0->3->1",
@@ -26531,6 +26551,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Account Invitation",
+      "nl": "[[[SERVERNAME]]] - Account uitnodiging",
       "ja": "[[[SERVERNAME]]]-アカウントの招待",
       "xloc": [
         "account-invite.html->0->1->1->0->1->1"
@@ -26538,6 +26559,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Account Login",
+      "nl": "[[[SERVERNAME]]] - Inloggen account",
       "ja": "[[[SERVERNAME]]]-アカウントログイン",
       "xloc": [
         "account-login.html->0->1->1->0->1->1"
@@ -26545,6 +26567,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Agent Installation",
+      "nl": "[[[SERVERNAME]]] - Agent installatie",
       "ja": "[[[SERVERNAME]]]-エージェントのインストール",
       "xloc": [
         "mesh-invite.html->0->1->1->0->1->1"
@@ -26552,6 +26575,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Verification",
+      "nl": "[[[SERVERNAME]]] - Verificatie",
       "ja": "[[[SERVERNAME]]]-確認",
       "xloc": [
         "account-check.html->0->1->1->0->1->1",
@@ -26560,6 +26584,7 @@
     },
     {
       "en": "[[[USERNAME]]]",
+      "nl": "[[[USERNAME]]]",
       "ja": "[[[USERNAME]]]",
       "xloc": [
         "account-invite.html->0",
@@ -26638,6 +26663,7 @@
     },
     {
       "en": "and follow the instructions.",
+      "nl": "en volg de instructies.",
       "ja": "指示に従ってください。",
       "xloc": [
         "mesh-invite.html->0->15->1"
@@ -27068,6 +27094,7 @@
     },
     {
       "en": "is requesting an account password reset, click on the following link to complete the process.",
+      "nl": "vraagt om het opnieuw instellen van het wachtwoord van een account, klik op de volgende link om het proces te voltooien.",
       "ja": "がアカウントパスワードのリセットを要求している場合は、次のリンクをクリックしてプロセスを完了します。",
       "xloc": [
         "account-reset.html->0->3"
@@ -27075,6 +27102,7 @@
     },
     {
       "en": "is requesting email verification, click on the following link to complete the process.",
+      "nl": "vraagt om e-mailverificatie, klik op de volgende link om het proces te voltooien.",
       "ja": "がメールの確認をリクエストしている場合は、次のリンクをクリックしてプロセスを完了してください。",
       "xloc": [
         "account-check.html->0->3"
@@ -27082,6 +27110,7 @@
     },
     {
       "en": "is requesting you to install software to start a remote control session.",
+      "nl": "vraagt u om de software te installeren om een ondersteunings sessie te starten.",
       "ja": "リモートコントロールセッションを開始するソフトウェアをインストールするように要求しています。",
       "xloc": [
         "mesh-invite.html->0->5"
