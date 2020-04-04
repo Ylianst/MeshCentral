@@ -597,6 +597,13 @@
       ]
     },
     {
+      "en": ", you can access it now with:",
+      "ja": "、あなたは今それを使ってそれにアクセスできます：",
+      "xloc": [
+        "account-invite.html->0->3"
+      ]
+    },
+    {
       "cs": "–",
       "de": "-",
       "en": "-",
@@ -1977,6 +1984,7 @@
     },
     {
       "en": "Account is locked",
+      "ja": "アカウントがロックされています",
       "nl": "Account is uitgeschakeld",
       "xloc": [
         "default.handlebars->27->1354",
@@ -2287,6 +2295,7 @@
     },
     {
       "en": "Add Device Permissions",
+      "ja": "デバイス権限を追加",
       "nl": "Apparaatrechten toevoegen",
       "xloc": [
         "default.handlebars->27->1218"
@@ -2416,9 +2425,9 @@
       ]
     },
     {
-      "en": "Add User",
       "cs": "Přidat uživatele",
       "de": "Benutzer hinzufügen",
+      "en": "Add User",
       "es": "Agregar Usuario",
       "fr": "Ajouter un utilisateur",
       "hi": "उपयोगकर्ता जोड़ें",
@@ -2435,6 +2444,7 @@
     },
     {
       "en": "Add User Device Permissions",
+      "ja": "ユーザーデバイスの権限を追加する",
       "nl": "Gebruikersmachtigingen voor apparaat toevoegen",
       "xloc": [
         "default.handlebars->27->1221"
@@ -3165,6 +3175,7 @@
     },
     {
       "en": "Allow users to manage this device.",
+      "ja": "ユーザーにこのデバイスの管理を許可します。",
       "nl": "Sta gebruikers toe om dit apparaat te beheren.",
       "xloc": [
         "default.handlebars->27->1186"
@@ -3270,6 +3281,13 @@
       "zh-chs": "總是提示",
       "xloc": [
         "default.handlebars->27->1102"
+      ]
+    },
+    {
+      "en": "An account was created for you on server",
+      "ja": "サーバー上にアカウントが作成されました",
+      "xloc": [
+        "account-invite.html->0->3"
       ]
     },
     {
@@ -4287,6 +4305,14 @@
       ]
     },
     {
+      "en": "Best regards,",
+      "ja": "宜しくお願いします、",
+      "xloc": [
+        "account-invite.html->0",
+        "mesh-invite.html->0"
+      ]
+    },
+    {
       "cs": "bosenština",
       "de": "Bosnisch",
       "en": "Bosnian",
@@ -5070,6 +5096,7 @@
     {
       "de": "Vereinfachtes Chinesisch",
       "en": "Chinese (Simplified)",
+      "ja": "中国語（簡体字）",
       "nl": "Chinees (Vereenvoudigd)",
       "pt": "Chinês (simplificado)",
       "xloc": [
@@ -5241,9 +5268,24 @@
     },
     {
       "en": "Clear this notification",
+      "ja": "この通知をクリア",
       "nl": "Wis deze melding",
       "xloc": [
         "default.handlebars->27->1536"
+      ]
+    },
+    {
+      "en": "Click here to download the MeshAgent for Apple OSX.",
+      "ja": "ここをクリックして、Apple OSX用のMeshAgentをダウンロードしてください。",
+      "xloc": [
+        "mesh-invite.html->0->11->1->0"
+      ]
+    },
+    {
+      "en": "Click here to download the MeshAgent for Windows.",
+      "ja": "Windows用のMeshAgentをダウンロードするには、ここをクリックしてください。",
+      "xloc": [
+        "mesh-invite.html->0->9->1->1"
       ]
     },
     {
@@ -5261,6 +5303,20 @@
       "zh-chs": "單擊此處編輯服務器端設備名稱",
       "xloc": [
         "default.handlebars->27->442"
+      ]
+    },
+    {
+      "en": "Click here to reset your account password.",
+      "ja": "ここをクリックしてアカウントのパスワードをリセットしてください。",
+      "xloc": [
+        "account-reset.html->0->5->1"
+      ]
+    },
+    {
+      "en": "Click here to verify your e-mail address.",
+      "ja": "ここをクリックして、電子メールアドレスを確認してください。",
+      "xloc": [
+        "account-check.html->0->5->1"
       ]
     },
     {
@@ -5611,6 +5667,7 @@
     },
     {
       "en": "Confirm removal of device {0}?",
+      "ja": "デバイス{0}の削除を確認しますか？",
       "nl": "Bevestig het verwijderen van apparaat {0}?",
       "xloc": [
         "default.handlebars->27->1522"
@@ -5986,6 +6043,7 @@
     },
     {
       "en": "Control",
+      "ja": "コントロール",
       "nl": "Controle",
       "xloc": [
         "default.handlebars->27->546",
@@ -6065,6 +6123,7 @@
     },
     {
       "en": "Copy Windows 32bit agent URL to clipboard",
+      "ja": "Windows 32ビットエージェントのURLをクリップボードにコピー",
       "nl": "Kopieer de Windows 32bit-agent URL naar het klembord",
       "xloc": [
         "default.handlebars->27->313"
@@ -6072,6 +6131,7 @@
     },
     {
       "en": "Copy Windows 64bit agent URL to clipboard",
+      "ja": "Windows 64ビットエージェントのURLをクリップボードにコピー",
       "nl": "Kopieer de Windows 64bit-agent URL naar het klembord",
       "xloc": [
         "default.handlebars->27->317"
@@ -7949,6 +8009,7 @@
     },
     {
       "en": "Display public link",
+      "ja": "公開リンクを表示",
       "nl": "Openbare link weergeven",
       "xloc": [
         "default.handlebars->27->1284"
@@ -8677,6 +8738,7 @@
     },
     {
       "en": "Edit Device Permissions",
+      "ja": "デバイスの権限を編集する",
       "nl": "Bewerk apparaatrechten",
       "xloc": [
         "default.handlebars->27->1219"
@@ -8684,6 +8746,7 @@
     },
     {
       "en": "Edit Group",
+      "ja": "グループを編集",
       "nl": "Bewerk groep",
       "xloc": [
         "default.handlebars->27->556"
@@ -8746,6 +8809,7 @@
     },
     {
       "en": "Edit User Device Permissions",
+      "ja": "ユーザーデバイスの権限を編集する",
       "nl": "Bewerk gebruikersapparaatrechten",
       "xloc": [
         "default.handlebars->27->1220"
@@ -8842,6 +8906,7 @@
     },
     {
       "en": "Email Traffic",
+      "ja": "メールトラフィック",
       "nl": "E-mailverkeer",
       "xloc": [
         "default.handlebars->27->1592"
@@ -8867,6 +8932,7 @@
     },
     {
       "en": "Email is not verified",
+      "ja": "メールは検証されていない",
       "nl": "E-mail is niet geverifieerd",
       "xloc": [
         "default.handlebars->27->1350"
@@ -9896,6 +9962,13 @@
       ]
     },
     {
+      "en": "For Linux, cut & paste the following in a terminal to install the agent:",
+      "ja": "Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。",
+      "xloc": [
+        "mesh-invite.html->0->13->1"
+      ]
+    },
+    {
       "cs": "Vynutit reset hesla při dalším přihlášení.",
       "de": "Passwort beim nächsten Login zurücksetzen.",
       "en": "Force password reset on next login.",
@@ -10231,6 +10304,7 @@
     },
     {
       "en": "Full Rights",
+      "ja": "完全な権利",
       "nl": "Volledige rechten",
       "xloc": [
         "default.handlebars->27->555"
@@ -10883,6 +10957,13 @@
       ]
     },
     {
+      "en": "Hello [[[NAME]]],",
+      "ja": "[[[NAME]]]様",
+      "xloc": [
+        "mesh-invite.html->0->3->1"
+      ]
+    },
+    {
       "cs": "Pomozte MeshCentral přeložit do svého jazyka",
       "de": "Hilf bei der Übersetzung von MeshCentral",
       "en": "Help translate MeshCentral",
@@ -10897,6 +10978,14 @@
       "zh-chs": "幫助翻譯MeshCentral",
       "xloc": [
         "default.handlebars->27->1026"
+      ]
+    },
+    {
+      "en": "Hi [[[USERNAME]]],",
+      "ja": "[[[USERNAME]]]様",
+      "xloc": [
+        "account-check.html->0->3",
+        "account-reset.html->0->3"
       ]
     },
     {
@@ -11278,6 +11367,15 @@
       ]
     },
     {
+      "en": "If you did not initiate this request, please ignore this mail.",
+      "ja": "このリクエストを開始していない場合は、このメールを無視してください。",
+      "xloc": [
+        "account-check.html->0",
+        "account-reset.html->0",
+        "mesh-invite.html->0->17"
+      ]
+    },
+    {
       "de": "Illegaler Aufruf",
       "en": "Illegal invocation",
       "hi": "अवैध मंगलाचरण",
@@ -11320,6 +11418,7 @@
     },
     {
       "en": "Individual Devices",
+      "ja": "個々のデバイス",
       "nl": "Individuele apparaten",
       "xloc": [
         "default-mobile.handlebars->9->96",
@@ -13334,6 +13433,7 @@
     },
     {
       "en": "Limit Events",
+      "ja": "イベントを制限する",
       "nl": "Beperk gebeurtenissen",
       "xloc": [
         "default.handlebars->27->551",
@@ -14466,6 +14566,7 @@
     },
     {
       "en": "Manage Devices",
+      "ja": "デバイスを管理する",
       "nl": "Beheer apparaten",
       "xloc": [
         "default.handlebars->27->558"
@@ -15316,6 +15417,13 @@
       ]
     },
     {
+      "en": "Message:",
+      "ja": "メッセージ：",
+      "xloc": [
+        "mesh-invite.html->0->7->1"
+      ]
+    },
+    {
       "cs": "Microsoft™ Windows 32bit",
       "de": "Microsoft™ Windows 32bit",
       "en": "Microsoft™ Windows 32bit",
@@ -16020,12 +16128,13 @@
       ]
     },
     {
-      "en": "No AMT",
-      "nl": "Geen AMT",
       "cs": "Žádné AMT",
       "de": "Kein AMT",
+      "en": "No AMT",
       "es": "Sin AMT",
       "fr": "Pas d'appareil AMT",
+      "ja": "AMTなし",
+      "nl": "Geen AMT",
       "pt": "Nenhum AMT",
       "ru": "Нет AMT",
       "xloc": [
@@ -16053,6 +16162,7 @@
     },
     {
       "en": "No Added Rights",
+      "ja": "追加された権利なし",
       "nl": "Geen toegevoegde rechten",
       "xloc": [
         "default.handlebars->27->554"
@@ -16165,6 +16275,7 @@
     },
     {
       "en": "No Input",
+      "ja": "入力なし",
       "nl": "Geen input",
       "xloc": [
         "default.handlebars->27->540",
@@ -16708,6 +16819,7 @@
     },
     {
       "en": "No users with special device permissions",
+      "ja": "特別なデバイス権限を持つユーザーはいません",
       "nl": "Geen gebruikers met speciale apparaatrechten",
       "xloc": [
         "default.handlebars->27->538"
@@ -17845,6 +17957,7 @@
       "ru": "Пароль:",
       "zh-chs": "密碼：",
       "xloc": [
+        "account-invite.html->0->5",
         "default-mobile.handlebars->9->42",
         "default-mobile.handlebars->9->43",
         "default.handlebars->27->1040",
@@ -19355,6 +19468,7 @@
     },
     {
       "en": "Remove Device",
+      "ja": "デバイスを削除",
       "nl": "Verwijder apparaat",
       "xloc": [
         "default.handlebars->27->1521"
@@ -19483,6 +19597,7 @@
     },
     {
       "en": "Remove this user",
+      "ja": "このユーザーを削除",
       "nl": "Verwijder deze gebruiker",
       "xloc": [
         "default.handlebars->27->1483"
@@ -20653,6 +20768,7 @@
     },
     {
       "en": "Send email to user",
+      "ja": "ユーザーにメールを送信",
       "nl": "Stuur e-mail naar de gebruiker",
       "xloc": [
         "default.handlebars->27->1352"
@@ -22420,6 +22536,7 @@
     },
     {
       "en": "Stop process",
+      "ja": "プロセスを停止",
       "nl": "Stop proces",
       "xloc": [
         "default.handlebars->27->664"
@@ -23228,6 +23345,13 @@
       ]
     },
     {
+      "en": "This token can only be used once and is valid for 5 minutes.",
+      "ja": "このトークンは1回だけ使用でき、5分間有効です。",
+      "xloc": [
+        "account-login.html->0->5"
+      ]
+    },
+    {
       "cs": "Tím se přidá položka do tohoto záznamu událostí na zařízení.",
       "de": "Dies wird einen Eintrag zum Ereignisprotokoll des Geräts hinzufügen.",
       "en": "This will add an entry to this device\\'s event log.",
@@ -23441,6 +23565,13 @@
       "zh-chs": "開始，",
       "xloc": [
         "default.handlebars->container->column_l->p1->NoMeshesPanel->1->1->0->3->getStarted1"
+      ]
+    },
+    {
+      "en": "To install the software,",
+      "ja": "ソフトウェアをインストールするには、",
+      "xloc": [
+        "mesh-invite.html->0->15->1"
       ]
     },
     {
@@ -24885,6 +25016,7 @@
     },
     {
       "en": "User Permissions",
+      "ja": "ユーザー権限",
       "nl": "Gebruikersrechten"
     },
     {
@@ -24940,6 +25072,13 @@
         "default.handlebars->termShellContextMenuLinux->cxtermps",
         "xterm.handlebars->termShellContextMenu->cxtermunorm",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
+      ]
+    },
+    {
+      "en": "User [[[USERNAME]]] on server",
+      "ja": "サーバー上のユーザー[[[USERNAME]]]",
+      "xloc": [
+        "mesh-invite.html->0->5"
       ]
     },
     {
@@ -25052,6 +25191,7 @@
       "ru": "Имя пользователя:",
       "zh-chs": "用戶名：",
       "xloc": [
+        "account-invite.html->0->5",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->nuUserRow->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->7->1->0->loginusername",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->nuUserRow->nuUser",
@@ -25215,6 +25355,7 @@
     },
     {
       "en": "Version incompatible, please upgrade your MeshCentral installation first",
+      "ja": "バージョンに互換性がありません。最初にMeshCentralインストールをアップグレードしてください",
       "nl": "Versie is niet compatibel, upgrade eerst uw MeshCentral installatie",
       "xloc": [
         "default.handlebars->27->1604"
@@ -25274,6 +25415,7 @@
     },
     {
       "en": "View Changelog",
+      "ja": "変更ログを表示",
       "nl": "Bekijk aanpassingen log",
       "xloc": [
         "default.handlebars->27->1607",
@@ -25382,6 +25524,7 @@
     },
     {
       "en": "Wake",
+      "ja": "ウェイク",
       "nl": "wekken",
       "xloc": [
         "default.handlebars->27->549",
@@ -26263,6 +26406,13 @@
       ]
     },
     {
+      "en": "Your login token is: [[[TOKEN]]]",
+      "ja": "ログイントークンは次のとおりです：[[[TOKEN]]]",
+      "xloc": [
+        "account-login.html->0->3"
+      ]
+    },
+    {
       "cs": "YubiKey™ OTP",
       "de": "YubiKey&trade; OTP",
       "en": "YubiKey&trade; OTP",
@@ -26349,6 +26499,74 @@
       ]
     },
     {
+      "en": "[[[ACCOUNTNAME]]]",
+      "ja": "[[[ACCOUNTNAME]]]",
+      "xloc": [
+        "account-invite.html->0->5->1"
+      ]
+    },
+    {
+      "en": "[[[MSG]]]",
+      "ja": "[[[MSG]]]",
+      "xloc": [
+        "mesh-invite.html->0->7->1->1"
+      ]
+    },
+    {
+      "en": "[[[PASSWORD]]]",
+      "ja": "[[[PASSWORD]]]",
+      "xloc": [
+        "account-invite.html->0->5->4"
+      ]
+    },
+    {
+      "en": "[[[SERVERNAME]]]",
+      "ja": "[[[SERVERNAME]]]",
+      "xloc": [
+        "account-check.html->0->3->1",
+        "account-invite.html->0->3->1",
+        "account-reset.html->0->3->1",
+        "mesh-invite.html->0->5->1"
+      ]
+    },
+    {
+      "en": "[[[SERVERNAME]]] - Account Invitation",
+      "ja": "[[[SERVERNAME]]]-アカウントの招待",
+      "xloc": [
+        "account-invite.html->0->1->1->0->1->1"
+      ]
+    },
+    {
+      "en": "[[[SERVERNAME]]] - Account Login",
+      "ja": "[[[SERVERNAME]]]-アカウントログイン",
+      "xloc": [
+        "account-login.html->0->1->1->0->1->1"
+      ]
+    },
+    {
+      "en": "[[[SERVERNAME]]] - Agent Installation",
+      "ja": "[[[SERVERNAME]]]-エージェントのインストール",
+      "xloc": [
+        "mesh-invite.html->0->1->1->0->1->1"
+      ]
+    },
+    {
+      "en": "[[[SERVERNAME]]] - Verification",
+      "ja": "[[[SERVERNAME]]]-確認",
+      "xloc": [
+        "account-check.html->0->1->1->0->1->1",
+        "account-reset.html->0->1->1->0->1->1"
+      ]
+    },
+    {
+      "en": "[[[USERNAME]]]",
+      "ja": "[[[USERNAME]]]",
+      "xloc": [
+        "account-invite.html->0",
+        "mesh-invite.html->0"
+      ]
+    },
+    {
       "cs": "\\\\",
       "de": "\\\\",
       "en": "\\\\",
@@ -26419,6 +26637,13 @@
       ]
     },
     {
+      "en": "and follow the instructions.",
+      "ja": "指示に従ってください。",
+      "xloc": [
+        "mesh-invite.html->0->15->1"
+      ]
+    },
+    {
       "cs": "a jeho zdroj může být stažen z",
       "de": "und seine Quelle kann von heruntergeladen werden",
       "en": "and its source can be downloaded from",
@@ -26434,6 +26659,13 @@
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->75->1",
         "terms.handlebars->container->column_l->75->1"
+      ]
+    },
+    {
+      "en": "click here",
+      "ja": "ここをクリック",
+      "xloc": [
+        "mesh-invite.html->0->15->1->1"
       ]
     },
     {
@@ -26835,7 +27067,29 @@
       ]
     },
     {
+      "en": "is requesting an account password reset, click on the following link to complete the process.",
+      "ja": "がアカウントパスワードのリセットを要求している場合は、次のリンクをクリックしてプロセスを完了します。",
+      "xloc": [
+        "account-reset.html->0->3"
+      ]
+    },
+    {
+      "en": "is requesting email verification, click on the following link to complete the process.",
+      "ja": "がメールの確認をリクエストしている場合は、次のリンクをクリックしてプロセスを完了してください。",
+      "xloc": [
+        "account-check.html->0->3"
+      ]
+    },
+    {
+      "en": "is requesting you to install software to start a remote control session.",
+      "ja": "リモートコントロールセッションを開始するソフトウェアをインストールするように要求しています。",
+      "xloc": [
+        "mesh-invite.html->0->5"
+      ]
+    },
+    {
       "en": "k max, blank for default",
+      "ja": "k max、デフォルトでは空白",
       "nl": "k max, blank voor standaard",
       "xloc": [
         "default.handlebars->27->1392"
