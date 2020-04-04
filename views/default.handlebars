@@ -2277,9 +2277,7 @@
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
-                            //meshserver.send({ action: 'nodes' });
-                            //meshserver.send({ action: 'usergroups' });
-                            //meshserver.send({ action: 'users' });
+                            meshserver.send({ action: 'nodes' });
                             break;
                         }
                         case 'deleteusergroup': {
