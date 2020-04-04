@@ -75,7 +75,15 @@ CheckInstallAgent() {
 			machineid=30
 		  else
 			# Linux x86, 64 bit
-			machineid=6
+			bitlen=$( getconf LONG_BIT )
+			if [ $bitlen == '32' ] 
+			then
+				# 32 bit OS
+				machineid=5
+			else
+				# 64 bit OS
+				machineid=6
+			fi
 		  fi
         fi
         if [ $machinetype == 'x86' ] || [ $machinetype == 'i686' ] || [ $machinetype == 'i586' ]
