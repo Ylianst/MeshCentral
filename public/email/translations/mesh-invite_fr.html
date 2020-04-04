@@ -3,40 +3,40 @@
     <table style="background-color:#003366;color:lightgray;width:100%" cellpadding="8">
         <tbody><tr>
             <td>
-                <b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Agent Installation</b>
+                <b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Installation de l'agent</b>
             </td>
         </tr>
     </tbody></table>
     <area-name>
         <p>
-            Hello [[[NAME]]],
+            Bonjour [[[NAME]]],
         </p>
     </area-name>
-    <p>User [[[USERNAME]]] on server <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> is requesting you to install software to start a remote control session.</p>
+    <p>Utilisateur [[[USERNAME]]] sur le serveur <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> vous demande d'installer un logiciel pour démarrer une session de contrôle à distance.</p>
     <area-msg>
         <p>
-            Message: <b>[[[MSG]]]</b>
+            Message: <b notrans="1">[[[MSG]]]</b>
         </p>
     </area-msg>
     <area-windows>
         <p style="margin-left:30px">
-            <a href="[[[SERVERURL]]]/meshagents?id=3&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Click here to download the MeshAgent for Windows.</a>
+            <a href="[[[SERVERURL]]]/meshagents?id=3&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Cliquez ici pour télécharger le MeshAgent pour Windows.</a>
         </p>
     </area-windows>
     <area-osx>
-        <p style="margin-left:30px"><a href="[[[SERVERURL]]]/meshagents?id=16&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Click here to download the MeshAgent for Apple OSX.</a></p>
+        <p style="margin-left:30px"><a href="[[[SERVERURL]]]/meshagents?id=16&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Cliquez ici pour télécharger le MeshAgent pour Apple OSX.</a></p>
     </area-osx>
     <area-linux>
         <p>
-            For Linux, cut &amp; paste the following in a terminal to install the agent:<br>
+            Pour Linux, copiez et collez les éléments suivants dans un terminal pour installer l'agent:<br>
             </p><pre style="margin-left:30px" notrans="1">wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh &amp;&amp; chmod 755 ./meshinstall.sh &amp;&amp; sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHIDHEX]]]\'</pre>
         <p></p>
     </area-linux>
     <area-link>
         <p>
-            To install the software, <a href="[[[SERVERURL]]][[[LINKURL]]]">click here</a> and follow the instructions.
+            Pour installer le logiciel, <a href="[[[SERVERURL]]][[[LINKURL]]]">cliquez ici</a> et suivez les instructions.
         </p>
     </area-link>
-    <p>If you did not initiate this request, please ignore this mail.</p>
-    Best regards,<br>[[[USERNAME]]]<br>
+    <p>Si vous n'avez pas initié cette demande, veuillez ignorer ce courrier.</p>
+    Meilleures salutations,<br>[[[USERNAME]]]<br>
 </div></body></html>

@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Email Verification
+Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~
+Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.

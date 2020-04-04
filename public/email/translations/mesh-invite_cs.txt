@@ -1,0 +1,35 @@
+[[[SERVERNAME]]] - Pozvánka
+~[[[AREA-NAME]]]
+Dobrý den, [[[NAME]]],
+~[[[/AREA-NAME]]]
+Uživatel [[[USERNAME]]] na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/) požaduje instalaci softwaru k zahájení relace vzdáleného řízení.
+~[[[AREA-MSG]]]
+~
+Zpráva: [[[MSG]]]
+~
+~[[[/AREA-MSG]]]
+~[[[AREA-WINDOWS]]]
+V případě systému Windows dokončete proces pomocí následujícího odkazu:
+~
+~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~[[[/AREA-WINDOWS]]]
+~[[[AREA-OSX]]]
+V případě systému Apple OSX dokončete proces pomocí následujícího odkazu:
+~
+~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~[[[/AREA-OSX]]]
+~[[[AREA-LINUX]]]
+V případě systému Linux vyjměte a vložte do terminálu a nainstalujte agenta:
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHIDHEX]]]\'
+~
+~[[[/AREA-LINUX]]]
+~[[[AREA-LINK]]]
+Chcete-li nainstalovat software, přejděte na [[[SERVERURL]]][[[LINKURL]]] a postupujte podle pokynů.
+~[[[/AREA-LINK]]]
+Pokud jste tento požadavek nezačali, ignorujte tento e-mail.
+~
+S pozdravem,
+~[[[USERNAME]]]

@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Connexion au compte
+Votre jeton de connexion est: [[[TOKEN]]]
+~
+Ce jeton ne peut être utilisé qu'une seule fois et est valide pendant 5 minutes.

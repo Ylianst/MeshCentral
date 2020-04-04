@@ -1,0 +1,35 @@
+[[[SERVERNAME]]] - Invitation
+~[[[AREA-NAME]]]
+Bonjour [[[NAME]]],
+~[[[/AREA-NAME]]]
+L'utilisateur [[[USERNAME]]] sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/) vous demande d'installer un logiciel pour démarrer la session de contrôle à distance.
+~[[[AREA-MSG]]]
+~
+Message: [[[MSG]]]
+~
+~[[[/AREA-MSG]]]
+~[[[AREA-WINDOWS]]]
+Pour Windows, accédez au lien suivant pour terminer le processus:
+~
+~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~[[[/AREA-WINDOWS]]]
+~[[[AREA-OSX]]]
+Pour Apple OSX, accédez au lien suivant pour terminer le processus:
+~
+~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~[[[/AREA-OSX]]]
+~[[[AREA-LINUX]]]
+Pour Linux, copiez et collez les éléments suivants dans un terminal pour installer l'agent:
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHIDHEX]]]\'
+~
+~[[[/AREA-LINUX]]]
+~[[[AREA-LINK]]]
+Pour installer le logiciel, accédez à [[[SERVERURL]]][[[LINKURL]]] et suivez les instructions.
+~[[[/AREA-LINK]]]
+Si vous n'avez pas initié cette demande, veuillez ignorer ce courrier.
+~
+Meilleures salutations,
+~[[[USERNAME]]]

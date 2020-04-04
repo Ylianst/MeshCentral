@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - E-Mail-Überprüfung
+Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) führt eine E-Mail-Überprüfung durch. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~
+Wenn Sie diese Anfrage nicht initiiert haben, ignorieren Sie diese Mail bitte.
