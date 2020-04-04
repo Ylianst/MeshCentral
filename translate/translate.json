@@ -602,8 +602,8 @@
       "de": "können Sie jetzt darauf zugreifen mit:",
       "en": ", you can access it now with:",
       "fr": ", vous pouvez y accéder maintenant avec:",
-      "ja": "、あなたは今それを使ってそれにアクセスできます：",
       "nl": ", je hebt er nu toegang toe met:",
+      "ja": "、あなたは今それを使ってそれにアクセスできます：",
       "ru": "Вы можете получить к нему доступ сейчас:",
       "zh-chs": "，您现在可以通过以下方式访问它：",
       "xloc": [
@@ -3357,8 +3357,8 @@
       "de": "Auf dem Server wurde ein Konto für Sie erstellt",
       "en": "An account was created for you on server",
       "fr": "Un compte a été créé pour vous sur le serveur",
-      "ja": "サーバー上にアカウントが作成されました",
       "nl": "Er is een account voor je aangemaakt op de server",
+      "ja": "サーバー上にアカウントが作成されました",
       "ru": "Учетная запись была создана для вас на сервере",
       "zh-chs": "在服务器上为您创建了一个帐户",
       "xloc": [
@@ -4406,8 +4406,8 @@
       "de": "Freundliche Grüße,",
       "en": "Best regards,",
       "fr": "Meilleures salutations,",
-      "ja": "宜しくお願いします、",
       "nl": "Vriendelijke groeten,",
+      "ja": "宜しくお願いします、",
       "ru": "С уважением,",
       "zh-chs": "最好的祝福，",
       "xloc": [
@@ -5400,8 +5400,8 @@
       "de": "Klicken Sie hier, um den MeshAgent für Apple OSX herunterzuladen.",
       "en": "Click here to download the MeshAgent for Apple OSX.",
       "fr": "Cliquez ici pour télécharger le MeshAgent pour Apple OSX.",
-      "ja": "ここをクリックして、Apple OSX用のMeshAgentをダウンロードしてください。",
       "nl": "Klik hier om de MeshAgent te downloaden voor Apple OSX.",
+      "ja": "ここをクリックして、Apple OSX用のMeshAgentをダウンロードしてください。",
       "ru": "Нажмите здесь, чтобы загрузить MeshAgent для Apple OSX.",
       "zh-chs": "单击此处下载适用于Apple OSX的MeshAgent。",
       "xloc": [
@@ -5413,8 +5413,8 @@
       "de": "Klicken Sie hier, um den MeshAgent für Windows herunterzuladen.",
       "en": "Click here to download the MeshAgent for Windows.",
       "fr": "Cliquez ici pour télécharger le MeshAgent pour Windows.",
-      "ja": "Windows用のMeshAgentをダウンロードするには、ここをクリックしてください。",
       "nl": "Klik hier om de MeshAgent te downloaden voor Windows.",
+      "ja": "Windows用のMeshAgentをダウンロードするには、ここをクリックしてください。",
       "ru": "Нажмите здесь, чтобы загрузить MeshAgent для Windows.",
       "zh-chs": "单击此处下载适用于Windows的MeshAgent。",
       "xloc": [
@@ -5443,8 +5443,8 @@
       "de": "Klicken Sie hier, um Ihr Kontopasswort zurückzusetzen.",
       "en": "Click here to reset your account password.",
       "fr": "Cliquez ici pour réinitialiser le mot de passe de votre compte.",
-      "ja": "ここをクリックしてアカウントのパスワードをリセットしてください。",
       "nl": "Klik hier om je wachtwoord opnieuw in te stellen.",
+      "ja": "ここをクリックしてアカウントのパスワードをリセットしてください。",
       "ru": "Нажмите здесь, чтобы сбросить пароль учетной записи.",
       "zh-chs": "单击此处重置您的帐户密码。",
       "xloc": [
@@ -5456,8 +5456,8 @@
       "de": "Klicken Sie hier, um Ihre E-Mail-Adresse zu bestätigen.",
       "en": "Click here to verify your e-mail address.",
       "fr": "Cliquez ici pour vérifier votre adresse e-mail.",
-      "ja": "ここをクリックして、電子メールアドレスを確認してください。",
       "nl": "Klik hier om uw e-mailadres te verifiëren.",
+      "ja": "ここをクリックして、電子メールアドレスを確認してください。",
       "ru": "Нажмите здесь, чтобы подтвердить свой адрес электронной почты.",
       "zh-chs": "单击此处以验证您的电子邮件地址。",
       "xloc": [
@@ -10235,8 +10235,8 @@
       "de": "Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, um den Agenten zu installieren:",
       "en": "For Linux, cut & paste the following in a terminal to install the agent:",
       "fr": "Pour Linux, copiez et collez les éléments suivants dans un terminal pour installer l'agent:",
-      "ja": "Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。",
       "nl": "Voor Linux, knip het volgende en plak dit in een terminal om de agent te installeren:",
+      "ja": "Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。",
       "ru": "Для Linux вырезайте и вставляйте в терминал следующее, чтобы установить агент:",
       "zh-chs": "对于Linux，将以下内容剪切并粘贴到终端中以安装代理程序：",
       "xloc": [
@@ -11262,8 +11262,8 @@
       "de": "Hallo [[[NAME]]],",
       "en": "Hello [[[NAME]]],",
       "fr": "Bonjour [[[NAME]]],",
-      "ja": "[[[NAME]]]様",
       "nl": "Hallo [[[NAME]]],",
+      "ja": "[[[NAME]]]様",
       "ru": "Здравствуйте, [[[NAME]]],",
       "zh-chs": "您好[[[NAME]]]，",
       "xloc": [
@@ -11293,8 +11293,8 @@
       "de": "Hallo [[[USERNAME]]],",
       "en": "Hi [[[USERNAME]]],",
       "fr": "Bonjour [[[USERNAME]]],",
-      "ja": "[[[USERNAME]]]様",
       "nl": "Hallo [[[USERNAME]]],",
+      "ja": "[[[USERNAME]]]様",
       "ru": "Привет [[[USERNAME]]],",
       "zh-chs": "[[[USERNAME]]，你好，",
       "xloc": [
@@ -11721,8 +11721,8 @@
       "de": "Wenn Sie diese Anfrage nicht initiiert haben, ignorieren Sie diese Mail bitte.",
       "en": "If you did not initiate this request, please ignore this mail.",
       "fr": "Si vous n'avez pas initié cette demande, veuillez ignorer ce courrier.",
-      "ja": "このリクエストを開始していない場合は、このメールを無視してください。",
       "nl": "Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.",
+      "ja": "このリクエストを開始していない場合は、このメールを無視してください。",
       "ru": "Если вы не инициировали этот запрос, игнорируйте это письмо.",
       "zh-chs": "如果您没有发起此请求，请忽略此邮件。",
       "xloc": [
@@ -15883,8 +15883,8 @@
       "de": "Botschaft:",
       "en": "Message:",
       "fr": "Message:",
-      "ja": "メッセージ：",
       "nl": "Bericht:",
+      "ja": "メッセージ：",
       "ru": "Сообщение:",
       "zh-chs": "信息：",
       "xloc": [
@@ -24012,8 +24012,8 @@
       "de": "Dieser Token kann nur einmal verwendet werden und ist 5 Minuten gültig.",
       "en": "This token can only be used once and is valid for 5 minutes.",
       "fr": "Ce jeton ne peut être utilisé qu'une seule fois et est valide pendant 5 minutes.",
-      "ja": "このトークンは1回だけ使用でき、5分間有効です。",
       "nl": "Dit token kan maar één keer worden gebruikt en is 5 minuten geldig.",
+      "ja": "このトークンは1回だけ使用でき、5分間有効です。",
       "ru": "Этот токен может быть использован только один раз и действителен в течение 5 минут.",
       "zh-chs": "该令牌只能使用一次，有效期为5分钟。",
       "xloc": [
@@ -24247,8 +24247,8 @@
       "de": "Um die Software zu installieren,",
       "en": "To install the software,",
       "fr": "Pour installer le logiciel,",
-      "ja": "ソフトウェアをインストールするには、",
       "nl": "Om de software te installeren,",
+      "ja": "ソフトウェアをインストールするには、",
       "ru": "Чтобы установить программное обеспечение,",
       "zh-chs": "要安装软件，",
       "xloc": [
@@ -25806,8 +25806,8 @@
       "de": "Benutzer [[[USERNAME]]] auf dem Server",
       "en": "User [[[USERNAME]]] on server",
       "fr": "Utilisateur [[[USERNAME]]] sur le serveur",
-      "ja": "サーバー上のユーザー[[[USERNAME]]]",
       "nl": "Gebruiker [[[USERNAME]]] op server",
+      "ja": "サーバー上のユーザー[[[USERNAME]]]",
       "ru": "Пользователь [[[USERNAME]]] на сервере",
       "zh-chs": "伺服器上的使用者[[[USERNAME]]]",
       "xloc": [
@@ -27203,8 +27203,8 @@
       "de": "Ihr Login-Token lautet: [[[TOKEN]]]",
       "en": "Your login token is: [[[TOKEN]]]",
       "fr": "Votre jeton de connexion est: [[[TOKEN]]]",
-      "ja": "ログイントークンは次のとおりです：[[[TOKEN]]]",
       "nl": "Uw login token is: [[[TOKEN]]]",
+      "ja": "ログイントークンは次のとおりです：[[[TOKEN]]]",
       "ru": "Ваш токен для входа: [[[TOKEN]]]",
       "zh-chs": "您的登录令牌为：[[[TOKEN]]]",
       "xloc": [
@@ -27304,8 +27304,8 @@
       "de": "[[[ACCOUNTNAME]]]",
       "en": "[[[ACCOUNTNAME]]]",
       "fr": "[[[ACCOUNTNAME]]]",
-      "ja": "[[[ACCOUNTNAME]]]",
       "nl": "[[[ACCOUNTNAME]]]",
+      "ja": "[[[ACCOUNTNAME]]]",
       "ru": "[[[ACCOUNTNAME]]]",
       "zh-chs": "[[[ACCOUNTNAME]]]"
     },
@@ -27314,8 +27314,8 @@
       "de": "[[[MSG]]]",
       "en": "[[[MSG]]]",
       "fr": "[[[MSG]]]",
-      "ja": "[[[MSG]]]",
       "nl": "[[[MSG]]]",
+      "ja": "[[[MSG]]]",
       "ru": "[[[MSG]]]",
       "zh-chs": "[[[MSG]]]"
     },
@@ -27324,8 +27324,8 @@
       "de": "[[[PASSWORD]]]",
       "en": "[[[PASSWORD]]]",
       "fr": "[[[PASSWORD]]]",
-      "ja": "[[[PASSWORD]]]",
       "nl": "[[[PASSWORD]]]",
+      "ja": "[[[PASSWORD]]]",
       "ru": "[[[PASSWORD]]]",
       "zh-chs": "[[[PASSWORD]]]"
     },
@@ -27334,8 +27334,8 @@
       "de": "[[[SERVERNAME]]]",
       "en": "[[[SERVERNAME]]]",
       "fr": "[[[SERVERNAME]]]",
-      "ja": "[[[SERVERNAME]]]",
       "nl": "[[[SERVERNAME]]]",
+      "ja": "[[[SERVERNAME]]]",
       "ru": "[[[SERVERNAME]]]",
       "zh-chs": "[[[SERVERNAME]]]",
       "xloc": [
@@ -27349,8 +27349,8 @@
       "de": "[[[SERVERNAME]]] - Kontoeinladung",
       "en": "[[[SERVERNAME]]] - Account Invitation",
       "fr": "[[[SERVERNAME]]] - Invitation au compte",
-      "ja": "[[[SERVERNAME]]]-アカウントの招待",
       "nl": "[[[SERVERNAME]]] - Account uitnodiging",
+      "ja": "[[[SERVERNAME]]]-アカウントの招待",
       "ru": "[[[SERVERNAME]]] - приглашение в аккаунт",
       "zh-chs": "[[[SERVERNAME]]]-帐户邀请",
       "xloc": [
@@ -27363,8 +27363,8 @@
       "de": "[[[SERVERNAME]]] - Konto-Login",
       "en": "[[[SERVERNAME]]] - Account Login",
       "fr": "[[[SERVERNAME]]] - Connexion au compte",
-      "ja": "[[[SERVERNAME]]]-アカウントログイン",
       "nl": "[[[SERVERNAME]]] - Inloggen account",
+      "ja": "[[[SERVERNAME]]]-アカウントログイン",
       "ru": "[[[SERVERNAME]]] - Вход в аккаунт",
       "zh-chs": "[[[SERVERNAME]]]-帐户登录",
       "xloc": [
@@ -27389,8 +27389,8 @@
       "de": "[[[SERVERNAME]]] - Agenteninstallation",
       "en": "[[[SERVERNAME]]] - Agent Installation",
       "fr": "[[[SERVERNAME]]] - Installation de l'agent",
-      "ja": "[[[SERVERNAME]]]-エージェントのインストール",
       "nl": "[[[SERVERNAME]]] - Agent installatie",
+      "ja": "[[[SERVERNAME]]]-エージェントのインストール",
       "ru": "[[[SERVERNAME]]] - Установка агента",
       "zh-chs": "[[[SERVERNAME]]]-代理程序安装",
       "xloc": [
@@ -27426,8 +27426,8 @@
       "de": "[[[SERVERNAME]]] - Überprüfung",
       "en": "[[[SERVERNAME]]] - Verification",
       "fr": "[[[SERVERNAME]]] - Vérification",
-      "ja": "[[[SERVERNAME]]]-確認",
       "nl": "[[[SERVERNAME]]] - Verificatie",
+      "ja": "[[[SERVERNAME]]]-確認",
       "ru": "[[[SERVERNAME]]] - Подтверждение",
       "zh-chs": "[[[SERVERNAME]]]-验证",
       "xloc": [
@@ -27440,8 +27440,8 @@
       "de": "[[[USERNAME]]]",
       "en": "[[[USERNAME]]]",
       "fr": "[[[USERNAME]]]",
-      "ja": "[[[USERNAME]]]",
       "nl": "[[[USERNAME]]]",
+      "ja": "[[[USERNAME]]]",
       "ru": "[[[USERNAME]]]",
       "zh-chs": "[[[USERNAME]]]",
       "xloc": [
@@ -27525,8 +27525,8 @@
       "de": "und folgen Sie den Anweisungen.",
       "en": "and follow the instructions.",
       "fr": "et suivez les instructions.",
-      "ja": "指示に従ってください。",
       "nl": "en volg de instructies.",
+      "ja": "指示に従ってください。",
       "ru": "и следуйте инструкциям.",
       "zh-chs": "并按照说明进行操作。",
       "xloc": [
@@ -27972,8 +27972,8 @@
       "de": "Wenn Sie ein Zurücksetzen des Kontokennworts anfordern, klicken Sie auf den folgenden Link, um den Vorgang abzuschließen.",
       "en": "is requesting an account password reset, click on the following link to complete the process.",
       "fr": "demande une réinitialisation du mot de passe du compte, cliquez sur le lien suivant pour terminer le processus.",
-      "ja": "がアカウントパスワードのリセットを要求している場合は、次のリンクをクリックしてプロセスを完了します。",
       "nl": "vraagt om het opnieuw instellen van het wachtwoord van een account, klik op de volgende link om het proces te voltooien.",
+      "ja": "がアカウントパスワードのリセットを要求している場合は、次のリンクをクリックしてプロセスを完了します。",
       "ru": "запрашивает сброс пароля учетной записи, нажмите на следующую ссылку, чтобы завершить процесс.",
       "zh-chs": "正在要求重置帐户密码，请单击以下链接以完成该过程。",
       "xloc": [
@@ -27985,8 +27985,8 @@
       "de": "Wenn Sie eine E-Mail-Bestätigung anfordern, klicken Sie auf den folgenden Link, um den Vorgang abzuschließen.",
       "en": "is requesting email verification, click on the following link to complete the process.",
       "fr": "demande une vérification par e-mail, cliquez sur le lien suivant pour terminer le processus.",
-      "ja": "がメールの確認をリクエストしている場合は、次のリンクをクリックしてプロセスを完了してください。",
       "nl": "vraagt om e-mailverificatie, klik op de volgende link om het proces te voltooien.",
+      "ja": "がメールの確認をリクエストしている場合は、次のリンクをクリックしてプロセスを完了してください。",
       "ru": "запрашивает подтверждение по электронной почте, нажмите на следующую ссылку, чтобы завершить процесс.",
       "zh-chs": "正在请求电子邮件验证，请单击以下链接以完成该过程。",
       "xloc": [
@@ -27998,8 +27998,8 @@
       "de": "fordert Sie auf, Software zu installieren, um eine Fernsteuerungssitzung zu starten.",
       "en": "is requesting you to install software to start a remote control session.",
       "fr": "vous demande d'installer un logiciel pour démarrer une session de contrôle à distance.",
-      "ja": "リモートコントロールセッションを開始するソフトウェアをインストールするように要求しています。",
       "nl": "vraagt u om de software te installeren om een ondersteunings sessie te starten.",
+      "ja": "リモートコントロールセッションを開始するソフトウェアをインストールするように要求しています。",
       "ru": "просит вас установить программное обеспечение, чтобы начать сеанс удаленного управления.",
       "zh-chs": "正在要求您安装软件以启动远程控制会话。",
       "xloc": [
