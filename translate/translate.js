@@ -31,6 +31,29 @@ var meshCentralSourceFiles = [
     "../views/xterm.handlebars",
     "../views/message.handlebars",
     "../views/messenger.handlebars",
+    "../views/player.handlebars",
+    "../public/email/account-check.html",
+    "../public/email/account-invite.html",
+    "../public/email/account-login.html",
+    "../public/email/account-reset.html",
+    "../public/email/mesh-invite.html"
+];
+
+var minifyMeshCentralSourceFiles = [
+    "../views/agentinvite.handlebars",
+    "../views/invite.handlebars",
+    "../views/default.handlebars",
+    "../views/default-mobile.handlebars",
+    "../views/download.handlebars",
+    "../views/error404.handlebars",
+    "../views/error404-mobile.handlebars",
+    "../views/login.handlebars",
+    "../views/login-mobile.handlebars",
+    "../views/terms.handlebars",
+    "../views/terms-mobile.handlebars",
+    "../views/xterm.handlebars",
+    "../views/message.handlebars",
+    "../views/messenger.handlebars",
     "../views/player.handlebars"
 ];
 
@@ -248,8 +271,8 @@ function startEx(argv) {
     }
 
     if (command == 'minifyall') {
-        for (var i in meshCentralSourceFiles) {
-            var outname = meshCentralSourceFiles[i];
+        for (var i in minifyMeshCentralSourceFiles) {
+            var outname = minifyMeshCentralSourceFiles[i];
             var outnamemin = null;
             if (outname.endsWith('.handlebars')) {
                 outnamemin = (outname.substring(0, outname.length - 11) + '-min.handlebars');
@@ -528,9 +551,11 @@ function getStrings(name, node) {
         var subnode = node.childNodes[i];
 
         // Check if the "value" attribute exists and needs to be translated
+        var subnodeignore = false;
         if ((subnode.attributes != null) && (subnode.attributes.length > 0)) {
-            var subnodeignore = false, subnodevalue = null, subnodeplaceholder = null, subnodetitle = null;
+            var subnodevalue = null, subnodeplaceholder = null, subnodetitle = null;
             for (var j in subnode.attributes) {
+                if ((subnode.attributes[j].name == 'notrans') && (subnode.attributes[j].value == '1')) { subnodeignore = true; }
                 if ((subnode.attributes[j].name == 'type') && (subnode.attributes[j].value == 'hidden')) { subnodeignore = true; }
                 if (subnode.attributes[j].name == 'value') { subnodevalue = subnode.attributes[j].value; }
                 if (subnode.attributes[j].name == 'placeholder') { subnodeplaceholder = subnode.attributes[j].value; }
@@ -553,22 +578,24 @@ function getStrings(name, node) {
             }
         }
 
-        // Check the content of the element
-        var subname = subnode.id;
-        if (subname == null || subname == '') { subname = i; }
-        if (subnode.hasChildNodes()) {
-            getStrings(name + '->' + subname, subnode);
-        } else {
-            if (subnode.nodeValue == null) continue;
-            var nodeValue = subnode.nodeValue.trim().split('\\r').join('').split('\\n').join('').trim();
-            if ((nodeValue.length > 0) && (subnode.nodeType == 3)) {
-                if ((node.tagName != 'SCRIPT') && (node.tagName != 'STYLE') && (nodeValue.length < 8000) && (nodeValue.startsWith('{{{') == false) && (nodeValue != ' ')) {
-                    if (performCheck) { log('  "' + nodeValue + '"'); }
-                    // Add a new string to the list
-                    if (sourceStrings[nodeValue] == null) { sourceStrings[nodeValue] = { en: nodeValue, xloc: [name] }; } else { if (sourceStrings[nodeValue].xloc == null) { sourceStrings[nodeValue].xloc = []; } sourceStrings[nodeValue].xloc.push(name); }
-                } else if (node.tagName == 'SCRIPT') {
-                    // Parse JavaScript
-                    getStringFromJavaScript(name, subnode.nodeValue);
+        if (subnodeignore == false) {
+            // Check the content of the element
+            var subname = subnode.id;
+            if (subname == null || subname == '') { subname = i; }
+            if (subnode.hasChildNodes()) {
+                getStrings(name + '->' + subname, subnode);
+            } else {
+                if (subnode.nodeValue == null) continue;
+                var nodeValue = subnode.nodeValue.trim().split('\\r').join('').split('\\n').join('').trim();
+                if ((nodeValue.length > 0) && (subnode.nodeType == 3)) {
+                    if ((node.tagName != 'SCRIPT') && (node.tagName != 'STYLE') && (nodeValue.length < 8000) && (nodeValue.startsWith('{{{') == false) && (nodeValue != ' ')) {
+                        if (performCheck) { log('  "' + nodeValue + '"'); }
+                        // Add a new string to the list
+                        if (sourceStrings[nodeValue] == null) { sourceStrings[nodeValue] = { en: nodeValue, xloc: [name] }; } else { if (sourceStrings[nodeValue].xloc == null) { sourceStrings[nodeValue].xloc = []; } sourceStrings[nodeValue].xloc.push(name); }
+                    } else if (node.tagName == 'SCRIPT') {
+                        // Parse JavaScript
+                        getStringFromJavaScript(name, subnode.nodeValue);
+                    }
                 }
             }
         }
@@ -664,9 +691,11 @@ function translateStrings(name, node) {
         var subnode = node.childNodes[i];
 
         // Check if the "value" attribute exists and needs to be translated
+        var subnodeignore = false;
         if ((subnode.attributes != null) && (subnode.attributes.length > 0)) {
-            var subnodeignore = false, subnodevalue = null, subnodeindex = null, subnodeplaceholder = null, subnodeplaceholderindex = null, subnodetitle = null, subnodetitleindex = null;
+            var subnodevalue = null, subnodeindex = null, subnodeplaceholder = null, subnodeplaceholderindex = null, subnodetitle = null, subnodetitleindex = null;
             for (var j in subnode.attributes) {
+                if ((subnode.attributes[j].name == 'notrans') && (subnode.attributes[j].value == '1')) { subnodeignore = true; }
                 if ((subnode.attributes[j].name == 'type') && (subnode.attributes[j].value == 'hidden')) { subnodeignore = true; }
                 if (subnode.attributes[j].name == 'value') { subnodevalue = subnode.attributes[j].value; subnodeindex = j; }
                 if (subnode.attributes[j].name == 'placeholder') { subnodeplaceholder = subnode.attributes[j].value; subnodeplaceholderindex = j; }
@@ -689,27 +718,29 @@ function translateStrings(name, node) {
             }
         }
 
-        var subname = subnode.id;
-        if (subname == null || subname == '') { subname = i; }
-        if (subnode.hasChildNodes()) {
-            translateStrings(name + '->' + subname, subnode);
-        } else {
-            if (subnode.nodeValue == null) continue;
-            var nodeValue = subnode.nodeValue.trim().split('\\r').join('').split('\\n').join('').trim();
+        if (subnodeignore == false) {
+            var subname = subnode.id;
+            if (subname == null || subname == '') { subname = i; }
+            if (subnode.hasChildNodes()) {
+                translateStrings(name + '->' + subname, subnode);
+            } else {
+                if (subnode.nodeValue == null) continue;
+                var nodeValue = subnode.nodeValue.trim().split('\\r').join('').split('\\n').join('').trim();
 
-            // Look for the front trim
-            var frontTrim = '', backTrim = '';;
-            var x1 = subnode.nodeValue.indexOf(nodeValue);
-            if (x1 > 0) { frontTrim = subnode.nodeValue.substring(0, x1); }
-            if (x1 != -1) { backTrim = subnode.nodeValue.substring(x1 + nodeValue.length); }
+                // Look for the front trim
+                var frontTrim = '', backTrim = '';;
+                var x1 = subnode.nodeValue.indexOf(nodeValue);
+                if (x1 > 0) { frontTrim = subnode.nodeValue.substring(0, x1); }
+                if (x1 != -1) { backTrim = subnode.nodeValue.substring(x1 + nodeValue.length); }
 
-            if ((nodeValue.length > 0) && (subnode.nodeType == 3)) {
-                if ((node.tagName != 'SCRIPT') && (node.tagName != 'STYLE') && (nodeValue.length < 8000) && (nodeValue.startsWith('{{{') == false) && (nodeValue != ' ')) {
-                    // Check if we have a translation for this string
-                    if (translationTable[nodeValue]) { subnode.nodeValue = (frontTrim + translationTable[nodeValue] + backTrim); }
-                } else if (node.tagName == 'SCRIPT') {
-                    // Translate JavaScript
-                    subnode.nodeValue = translateStringsFromJavaScript(name, subnode.nodeValue);
+                if ((nodeValue.length > 0) && (subnode.nodeType == 3)) {
+                    if ((node.tagName != 'SCRIPT') && (node.tagName != 'STYLE') && (nodeValue.length < 8000) && (nodeValue.startsWith('{{{') == false) && (nodeValue != ' ')) {
+                        // Check if we have a translation for this string
+                        if (translationTable[nodeValue]) { subnode.nodeValue = (frontTrim + translationTable[nodeValue] + backTrim); }
+                    } else if (node.tagName == 'SCRIPT') {
+                        // Translate JavaScript
+                        subnode.nodeValue = translateStringsFromJavaScript(name, subnode.nodeValue);
+                    }
                 }
             }
         }
