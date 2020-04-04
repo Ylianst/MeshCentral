@@ -1,0 +1,35 @@
+[[[SERVERNAME]]] - Invitation
+~[[[AREA-NAME]]]
+Hallo [[[NAME]]],
+~[[[/AREA-NAME]]]
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/) is requesting you install software to start the remote control session.
+~[[[AREA-MSG]]]
+~
+Message: [[[MSG]]]
+~
+~[[[/AREA-MSG]]]
+~[[[AREA-WINDOWS]]]
+For Windows, nagivate to the following link to complete the process:
+~
+~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~[[[/AREA-WINDOWS]]]
+~[[[AREA-OSX]]]
+For Apple OSX, nagivate to the following link to complete the process:
+~
+~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~[[[/AREA-OSX]]]
+~[[[AREA-LINUX]]]
+Voor Linux, knip het volgende en plak dit in een terminal om de agent te installeren:
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHIDHEX]]]\'
+~
+~[[[/AREA-LINUX]]]
+~[[[AREA-LINK]]]
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]] and follow the instructions.
+~[[[/AREA-LINK]]]
+Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.
+~
+Vriendelijke groeten,
+~[[[USERNAME]]]

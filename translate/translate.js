@@ -36,7 +36,12 @@ var meshCentralSourceFiles = [
     "../public/email/account-invite.html",
     "../public/email/account-login.html",
     "../public/email/account-reset.html",
-    "../public/email/mesh-invite.html"
+    "../public/email/mesh-invite.html",
+    "../public/email/account-check.txt",
+    "../public/email/account-invite.txt",
+    "../public/email/account-login.txt",
+    "../public/email/account-reset.txt",
+    "../public/email/mesh-invite.txt"
 ];
 
 var minifyMeshCentralSourceFiles = [
@@ -509,9 +514,11 @@ function translateEx(lang, langFileData, sources, createSubDir) {
         if ((entry['en'] != null) && (entry[lang] != null)) { translationTable[entry['en']] = entry[lang]; }
     }
     // Translate the files
-    for (var i = 0; i < sources.length; i++) { translateFromHtml(lang, sources[i], createSubDir); }
+    for (var i = 0; i < sources.length; i++) {
+        if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars')) { translateFromHtml(lang, sources[i], createSubDir); }
+        else if (sources[i].endsWith('.txt')) { translateFromTxt(lang, sources[i], createSubDir); }
+    }
 }
-
 
 function extract(langFile, sources) {
     sourceStrings = {};
@@ -524,7 +531,10 @@ function extract(langFile, sources) {
             delete sourceStrings[langFileData.strings[i]['en']].xloc;
         }
     }
-    for (var i = 0; i < sources.length; i++) { extractFromHtml(sources[i]); }
+    for (var i = 0; i < sources.length; i++) {
+        if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars')) { extractFromHtml(sources[i]); } 
+        else if (sources[i].endsWith('.txt')) { extractFromTxt(sources[i]); }
+    }
     var count = 0, output = [];
     for (var i in sourceStrings) {
         count++;
@@ -538,15 +548,27 @@ function extract(langFile, sources) {
     return;
 }
 
+function extractFromTxt(file) {
+    log("Processing TXT: " + path.basename(file));
+    var lines = fs.readFileSync(file).toString().split('\r\n');
+    var name = path.basename(file);
+    for (var i in lines) {
+        var line = lines[i];
+        if ((line.length > 1) && (line[0] != '~')) {
+            if (sourceStrings[line] == null) { sourceStrings[line] = { en: line, xloc: [name] }; } else { if (sourceStrings[line].xloc == null) { sourceStrings[line].xloc = []; } sourceStrings[line].xloc.push(name); }
+        }
+    }
+}
+
 function extractFromHtml(file) {
     var data = fs.readFileSync(file);
     var { JSDOM } = jsdom;
     const dom = new JSDOM(data, { includeNodeLocations: true });
     log("Processing HTML: " + path.basename(file));
-    getStrings(path.basename(file), dom.window.document.querySelector('body'));
+    getStringsHtml(path.basename(file), dom.window.document.querySelector('body'));
 }
 
-function getStrings(name, node) {
+function getStringsHtml(name, node) {
     for (var i = 0; i < node.childNodes.length; i++) {
         var subnode = node.childNodes[i];
 
@@ -583,7 +605,7 @@ function getStrings(name, node) {
             var subname = subnode.id;
             if (subname == null || subname == '') { subname = i; }
             if (subnode.hasChildNodes()) {
-                getStrings(name + '->' + subname, subnode);
+                getStringsHtml(name + '->' + subname, subnode);
             } else {
                 if (subnode.nodeValue == null) continue;
                 var nodeValue = subnode.nodeValue.trim().split('\\r').join('').split('\\n').join('').trim();
@@ -616,7 +638,27 @@ function getStringFromJavaScript(name, script) {
     }
 }
 
+function translateFromTxt(lang, file, createSubDir) {
+    log("Translating TXT (" + lang + "): " + path.basename(file));
+    var lines = fs.readFileSync(file).toString().split('\r\n'), outlines = [];
+    for (var i in lines) {
+        var line = lines[i];
+        if ((line.length > 1) && (line[0] != '~')) {
+            if (translationTable[line] != null) { outlines.push(translationTable[line]); } else { outlines.push(line); }
+        } else {
+            outlines.push(line);
+        }
+    }
 
+    var outname = file, out = outlines.join('\r\n');
+    if (createSubDir != null) {
+        var outfolder = path.join(path.dirname(file), createSubDir);
+        if (fs.existsSync(outfolder) == false) { fs.mkdirSync(outfolder); }
+        outname = path.join(path.dirname(file), createSubDir, path.basename(file));
+    }
+    outname = (outname.substring(0, outname.length - 4) + '_' + lang + '.txt');
+    fs.writeFileSync(outname, out, { flag: 'w+' });
+}
 
 
 
