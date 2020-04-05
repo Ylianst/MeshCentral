@@ -84,20 +84,24 @@ function CreateMeshCentralServer(config, args) {
         obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
         obj.backuppath = obj.path.join(__dirname, '../../meshcentral-backup');
         obj.recordpath = obj.path.join(__dirname, '../../meshcentral-recordings');
-        obj.webPublicPath = obj.path.join(__dirname, 'public');
         obj.webViewsPath = obj.path.join(__dirname, 'views');
+        obj.webPublicPath = obj.path.join(__dirname, 'public');
+        obj.webEmailsPath = obj.path.join(__dirname, 'emails');
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/views'))) { obj.webViewsOverridePath = obj.path.join(__dirname, '../../meshcentral-web/views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/public'))) { obj.webPublicOverridePath = obj.path.join(__dirname, '../../meshcentral-web/public'); }
+        if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../../meshcentral-web/emails'); }
     } else {
         obj.parentpath = __dirname;
         obj.datapath = obj.path.join(__dirname, '../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../meshcentral-files');
         obj.backuppath = obj.path.join(__dirname, '../meshcentral-backups');
         obj.recordpath = obj.path.join(__dirname, '../meshcentral-recordings');
-        obj.webPublicPath = obj.path.join(__dirname, 'public');
         obj.webViewsPath = obj.path.join(__dirname, 'views');
+        obj.webPublicPath = obj.path.join(__dirname, 'public');
+        obj.webEmailsPath = obj.path.join(__dirname, 'emails');
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/views'))) { obj.webViewsOverridePath = obj.path.join(__dirname, '../meshcentral-web/views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicOverridePath = obj.path.join(__dirname, '../meshcentral-web/public'); }
+        if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../meshcentral-web/emails'); }
     }
 
     // Look to see if data and/or file path is specified
@@ -978,9 +982,11 @@ function CreateMeshCentralServer(config, args) {
             if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) {
                 if ((obj.config.domains[i].webviewspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web-' + i + '/views')))) { obj.config.domains[i].webviewspath = obj.path.join(__dirname, '../../meshcentral-web-' + i + '/views'); }
                 if ((obj.config.domains[i].webpublicpath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web-' + i + '/public')))) { obj.config.domains[i].webpublicpath = obj.path.join(__dirname, '../../meshcentral-web-' + i + '/public'); }
+                if ((obj.config.domains[i].webemailspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web-' + i + '/emails')))) { obj.config.domains[i].webemailspath = obj.path.join(__dirname, '../../meshcentral-web-' + i + '/emails'); }
             } else {
                 if ((obj.config.domains[i].webviewspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/views')))) { obj.config.domains[i].webviewspath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/views'); }
                 if ((obj.config.domains[i].webpublicpath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/public')))) { obj.config.domains[i].webpublicpath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/public'); }
+                if ((obj.config.domains[i].webemailspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/emails')))) { obj.config.domains[i].webemailspath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/emails'); }
             }
         }
 

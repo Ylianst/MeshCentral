@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - приглашение в аккаунт
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
+~
+С уважением,
+~[[[USERNAME]]]
