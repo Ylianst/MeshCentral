@@ -32,16 +32,16 @@ var meshCentralSourceFiles = [
     "../views/message.handlebars",
     "../views/messenger.handlebars",
     "../views/player.handlebars",
-    "../public/email/account-check.html",
-    "../public/email/account-invite.html",
-    "../public/email/account-login.html",
-    "../public/email/account-reset.html",
-    "../public/email/mesh-invite.html",
-    "../public/email/account-check.txt",
-    "../public/email/account-invite.txt",
-    "../public/email/account-login.txt",
-    "../public/email/account-reset.txt",
-    "../public/email/mesh-invite.txt"
+    "../emails/account-check.html",
+    "../emails/account-invite.html",
+    "../emails/account-login.html",
+    "../emails/account-reset.html",
+    "../emails/mesh-invite.html",
+    "../emails/account-check.txt",
+    "../emails/account-invite.txt",
+    "../emails/account-login.txt",
+    "../emails/account-reset.txt",
+    "../emails/mesh-invite.txt"
 ];
 
 var minifyMeshCentralSourceFiles = [

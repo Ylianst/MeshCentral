@@ -1,0 +1,35 @@
+[[[SERVERNAME]]]-邀请
+~<area-name>
+您好[[[NAME]]]，
+~</area-name>
+服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用户[[[USERNAME]]]请求您安装软件以启动远程控制会话。
+~<area-msg>
+~
+讯息：[[[MSG]]]
+~
+~</area-msg>
+~<area-windows>
+对于Windows，请导航至以下链接以完成该过程：
+~
+~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-windows>
+~<area-osx>
+对于Apple OSX，请导航至以下链接以完成该过程：
+~
+~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~
+~</area-osx>
+~<area-linux>
+对于Linux，将以下内容剪切并粘贴到终端中以安装代理程序：
+~
+~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
+~
+~</area-linux>
+~<area-link>
+要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]]，然后按照说明进行操作。
+~</area-link>
+如果您没有发起此请求，请忽略此邮件。
+~
+最好的祝福，
+~[[[USERNAME]]]

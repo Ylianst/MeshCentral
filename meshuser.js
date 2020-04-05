@@ -1207,7 +1207,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 parent.parent.DispatchEvent(targets, obj, message);
 
                                 // Send the verification email
-                                if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+                                if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, parent.getLanguageCodes(req)); }
                             }
                         });
                     }
@@ -1224,7 +1224,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if ((parent.parent.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
                         // Send the verification email
-                        parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email);
+                        parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, parent.getLanguageCodes(req));
                     }
                     break;
                 }
@@ -1545,7 +1545,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                     // Perform email invitation
                                     if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && parent.parent.mailserver) {
-                                        parent.parent.mailserver.sendAccountInviteMail(domain, user.name, newusername, command.email.toLowerCase(), command.pass);
+                                        parent.parent.mailserver.sendAccountInviteMail(domain, user.name, newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
                                     }
 
                                     // OK Response
@@ -3147,7 +3147,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Perform email invitation
-                    parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire);
+                    parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire, parent.getLanguageCodes(req));
 
                     // Send a response if needed
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }

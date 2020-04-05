@@ -180,8 +180,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.crypto.randomBytes(16, function (err, buf) { obj.httpAuthRealm = buf.toString('hex'); });
     obj.crypto.randomBytes(48, function (err, buf) { obj.relayRandom = buf; });
 
-    // Get non-english pages
+    // Get non-english web pages and emails
     getRenderList();
+    getEmailLanguageList();
 
     // Setup DNS domain TLS SNI credentials
     {
@@ -781,7 +782,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                         obj.db.SetUser(user);
                         parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                        parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k);
+                        parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                         req.session.messageid = 2; // "Email sent" message
                         req.session.loginmode = '4';
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1028,7 +1029,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
-                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email); }
+                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, obj.getLanguageCodes(req)); }
                                 }, 0);
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
@@ -1179,7 +1180,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Send email to perform recovery.
                                     delete req.session.tokenemail;
                                     if (obj.parent.mailserver != null) {
-                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req));
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
@@ -1199,7 +1200,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // No second factor, send email to perform recovery.
                             if (obj.parent.mailserver != null) {
-                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email);
+                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req));
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
@@ -3907,7 +3908,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                     obj.db.SetUser(user);
                                     parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                    parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k);
+                                    parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                                     // Ask for a login token & confirm email was sent
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                 } else {
@@ -3984,7 +3985,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                             obj.db.SetUser(user);
                                             parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                            parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k);
+                                            parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                                             // Ask for a login token & confirm email was sent
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                         } else {
@@ -4663,28 +4664,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Returns a list of acceptable languages in order
+    obj.getLanguageCodes = function(req) {
+        // If a user set a localization, use that
+        if ((req.query.lang == null) && (req.session != null) && (req.session.userid)) {
+            var user = obj.users[req.session.userid];
+            if ((user != null) && (user.lang != null)) { req.query.lang = user.lang; }
+        };
+
+        // Get a list of acceptable languages in order
+        var acceptLanguages = [];
+        if (req.query.lang != null) {
+            acceptLanguages.push(req.query.lang.toLowerCase());
+        } else {
+            if (req.headers['accept-language'] != null) {
+                var acceptLanguageSplit = req.headers['accept-language'].split(';');
+                for (var i in acceptLanguageSplit) {
+                    var acceptLanguageSplitEx = acceptLanguageSplit[i].split(',');
+                    for (var j in acceptLanguageSplitEx) { if (acceptLanguageSplitEx[j].startsWith('q=') == false) { acceptLanguages.push(acceptLanguageSplitEx[j].toLowerCase()); } }
+                }
+            }
+        }
+
+        return acceptLanguages;
+    }
+
     // Render a page using the proper language
     function render(req, res, filename, args) {
         if (obj.renderPages != null) {
-            // If a user set a localization, use that
-            if ((req.query.lang == null) && (req.session != null) && (req.session.userid)) {
-                var user = obj.users[req.session.userid];
-                if ((user != null) && (user.lang != null)) { req.query.lang = user.lang; }
-            };
-
-            // Get a list of acceptable languages in order
-            var acceptLanguages = [];
-            if (req.query.lang != null) {
-                acceptLanguages.push(req.query.lang.toLowerCase());
-            } else {
-                if (req.headers['accept-language'] != null) {
-                    var acceptLanguageSplit = req.headers['accept-language'].split(';');
-                    for (var i in acceptLanguageSplit) {
-                        var acceptLanguageSplitEx = acceptLanguageSplit[i].split(',');
-                        for (var j in acceptLanguageSplitEx) { if (acceptLanguageSplitEx[j].startsWith('q=') == false) { acceptLanguages.push(acceptLanguageSplitEx[j].toLowerCase()); } }
-                    }
-                }
-            }
+            // Get the list of acceptable languages in order
+            var acceptLanguages = obj.getLanguageCodes(req);
 
             // Take a look at the options we have for this file
             var fileOptions = obj.renderPages[obj.path.basename(filename)];
@@ -4743,6 +4752,45 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
                             obj.renderPages[xname[0]][xname[1]] = obj.path.join(translateFolder, name);
                             if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Get the list of pages with different languages that can be rendered
+    function getEmailLanguageList() {
+        // Fetch default rendeing pages
+        var translateFolder = null;
+        if (obj.fs.existsSync('emails/translations')) { translateFolder = 'emails/translations'; }
+        if (obj.fs.existsSync(obj.path.join(__dirname, 'emails', 'translations'))) { translateFolder = obj.path.join(__dirname, 'emails', 'translations'); }
+
+        if (translateFolder != null) {
+            obj.emailLanguages = ['en'];
+            var files = obj.fs.readdirSync(translateFolder);
+            for (var i in files) {
+                var name = files[i];
+                if (name.endsWith('.html')) {
+                    name = name.substring(0, name.length - 5);
+                    var xname = name.split('_');
+                    if (xname.length == 2) {
+                        if (obj.emailLanguages.indexOf(xname[1]) == -1) { obj.emailLanguages.push(xname[1]); }
+                    }
+                }
+            }
+
+            // See if there are any custom rending pages that will override the default ones
+            if ((obj.parent.webEmailsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webEmailsOverridePath, 'translations')))) {
+                translateFolder = obj.path.join(obj.parent.webEmailsOverridePath, 'translations');
+                var files = obj.fs.readdirSync(translateFolder);
+                for (var i in files) {
+                    var name = files[i];
+                    if (name.endsWith('.html')) {
+                        name = name.substring(0, name.length - 5);
+                        var xname = name.split('_');
+                        if (xname.length == 2) {
+                            if (obj.emailLanguages.indexOf(xname[1]) == -1) { obj.emailLanguages.push(xname[1]); }
                         }
                     }
                 }

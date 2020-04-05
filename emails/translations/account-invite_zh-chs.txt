@@ -1,0 +1,5 @@
+[[[SERVERNAME]]]-帐户邀请
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
+~
+最好的祝福，
+~[[[USERNAME]]]

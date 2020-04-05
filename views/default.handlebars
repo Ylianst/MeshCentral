@@ -3595,7 +3595,7 @@
             if (xxdialogMode) return false;
             var x = '', mesh = meshes[meshid];
             if (features & 64) {
-                x += addHtmlValue("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>Link invitation</option><option value=1>Email invitation</option></select>') + '<hr />';
+                x += addHtmlValue("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>') + '<hr />';
                 x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
                 x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder=\"' + "example@email.com" + '\" onkeyup=validateAgentInvite()></input>');
