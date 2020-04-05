@@ -42,6 +42,7 @@ module.exports.CreateMeshMail = function (parent) {
 
     // Get the correct mail template object
     function getTemplate(name, domain, lang) {
+        parent.debug('email', 'Getting mail template for: ' + name + ', lang: ' + lang);
         if (Array.isArray(lang)) { lang = lang[0]; } // TODO: For now, we only use the first language given.
 
         var r = {}, emailsPath = null;
@@ -63,7 +64,7 @@ module.exports.CreateMeshMail = function (parent) {
         }
 
         // Get the english email
-        if (htmlfile == null) {
+        if ((htmlfile == null) || (txtfile == null)) {
             var pathHtml = obj.parent.path.join(emailsPath, name + '.html');
             var pathTxt = obj.parent.path.join(emailsPath, name + '.txt');
             if (obj.parent.fs.existsSync(pathHtml) && obj.parent.fs.existsSync(pathTxt)) {
@@ -152,8 +153,16 @@ module.exports.CreateMeshMail = function (parent) {
             if (checked) {
                 parent.debug('email', "Sending login token to " + email);
 
+                if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
+                    parent.debug('email', "Error: Server name not set."); // If the server name is not set, email not possible.
+                    return;
+                }
+
                 var template = getTemplate('account-login', domain, language);
-                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
+                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    return; 
+                }
 
                 // Set all the options.
                 var options = { email: email, servername: domain.title ? domain.title : 'MeshCentral', token: token };
@@ -171,8 +180,16 @@ module.exports.CreateMeshMail = function (parent) {
             if (checked) {
                 parent.debug('email', "Sending account invitation to " + email);
 
+                if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
+                    parent.debug('email', "Error: Server name not set."); // If the server name is not set, email not possible.
+                    return;
+                }
+
                 var template = getTemplate('account-invite', domain, language);
-                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, invitation not possible.
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
+                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    return;
+                }
 
                 // Set all the options.
                 var options = { username: username, accountname: accountname, email: email, servername: domain.title ? domain.title : 'MeshCentral', password: password };
@@ -190,8 +207,16 @@ module.exports.CreateMeshMail = function (parent) {
             if (checked) {
                 parent.debug('email', "Sending email verification to " + email);
 
+                if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
+                    parent.debug('email', "Error: Server name not set."); // If the server name is not set, email not possible.
+                    return;
+                }
+
                 var template = getTemplate('account-check', domain, language);
-                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, no reset possible.
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
+                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    return;
+                }
 
                 // Set all the options.
                 var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
@@ -210,8 +235,16 @@ module.exports.CreateMeshMail = function (parent) {
             if (checked) {
                 parent.debug('email', "Sending account password reset to " + email);
 
+                if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
+                    parent.debug('email', "Error: Server name not set."); // If the server name is not set, email not possible.
+                    return;
+                }
+
                 var template = getTemplate('account-reset', domain, language);
-                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) return; // If the server name is not set, don't validate the email address.
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
+                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    return;
+                }
 
                 // Set all the options.
                 var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
@@ -229,10 +262,16 @@ module.exports.CreateMeshMail = function (parent) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending agent install invitation to " + email);
+
+                if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
+                    parent.debug('email', "Error: Server name not set."); // If the server name is not set, email not possible.
+                    return;
+                }
+
                 var template = getTemplate('mesh-invite', domain, language);
-                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null) || (parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
-                    parent.debug('email', "Failed to get email template for " + email);
-                    return; // If the server name is not set, don't validate the email address.
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
+                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    return;
                 }
 
                 // Set all the template replacement options and generate the final email text (both in txt and html formats).
@@ -256,9 +295,9 @@ module.exports.CreateMeshMail = function (parent) {
 
         var mailToSend = obj.pendingMails[0];
         obj.sendingMail = true;
-        //console.log('SMTP sending mail to ' + mailToSend.to + '.');
+        parent.debug('email', 'SMTP sending mail to ' + mailToSend.to + '.');
         obj.smtpServer.sendMail(mailToSend, function (err, info) {
-            //console.log(JSON.stringify(err), JSON.stringify(info));
+            parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
             obj.sendingMail = false;
             if (err == null) {
                 obj.pendingMails.shift();
