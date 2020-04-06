@@ -2438,11 +2438,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
-                            msgs.push("Added user " + newuser._id.split('/')[2]);
+                            msgs.push("Added user " + newuserid.split('/')[2]);
                             successCount++;
                         } else {
-                            msgs.push("Unknown user " + newuserid._id.split('/')[2]);
-                            unknownUsers.push(newuserid);
+                            msgs.push("Unknown user " + newuserid.split('/')[2]);
+                            unknownUsers.push(newuserid.split('/')[2]);
                             failCount++;
                         }
                     }
