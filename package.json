@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.5.1-e",
+  "version": "0.5.1-g",
   "keywords": [
     "Remote Management",
     "Intel AMT",
@@ -20,6 +20,7 @@
     "amt",
     "bin",
     "views",
+    "emails",
     "agents",
     "public",
     "translate",
