@@ -1492,7 +1492,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Handle any errors
                     if (err != null) {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        if (command.responseid != null) {
+                            try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: err })); } catch (ex) { }
+                        } else {
+                            // Send error back, user not found.
+                            displayNotificationMessage(err, 'New Account', 'ServerNotify');
+                        }
                         break;
                     }
 

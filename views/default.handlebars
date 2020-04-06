@@ -9732,10 +9732,9 @@
             if ((features & 0x200000) == 0) { Q('p4name').focus(); } else { Q('p4email').focus(); }
         }
 
-        function showCreateNewAccountDialogValidate(x) {
-            var ve = true;
+        function showCreateNewAccountDialogValidate() {
+            var ve = validateEmail(Q('p4email').value);
             if (serverinfo.emailcheck) {
-                ve = validateEmail(Q('p4email').value);
                 QE('p4verifiedEmail', ve);
                 QE('p4invitationEmail', ve && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
                 if (ve == false) { Q('p4verifiedEmail').checked = false; }
@@ -9743,8 +9742,8 @@
             }
             QE('p4pass1', !Q('p4randomPassword').checked);
             QE('p4pass2', !Q('p4randomPassword').checked);
+            if (ve == false) { QE('idx_dlgOkButton', false); return; }
 
-            if ((x == null) && (Q('p4email').value.length > 0) && (ve == false)) { QE('idx_dlgOkButton', false); return; }
             var ok = true;
             if ((features & 0x200000) == 0) { ok &= (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))); } // Username is not email address
             if (Q('p4randomPassword').checked == false) { ok &= (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements)); }
