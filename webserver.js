@@ -3509,7 +3509,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req);
         if (domain == null) { return; }
         //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
 
