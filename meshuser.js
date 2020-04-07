@@ -3126,15 +3126,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'inviteAgent':
                 {
+                    var err = null, mesh = null;
+
                     // Resolve the device group name if needed
                     if ((typeof command.meshname == 'string') && (command.meshid == null)) {
                         for (var i in parent.meshes) {
                             var m = parent.meshes[i];
-                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) { command.meshid = m._id; break; }
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                            }
                         }
                     }
 
-                    var err = null, mesh = null;
                     try {
                         if ((parent.parent.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
                         else if ((parent.parent.certificates.CommonName == null) || (parent.parent.certificates.CommonName.indexOf('.') == -1)) { err = 'Unsupported feature'; } // Server name must be configured
@@ -3581,15 +3584,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'createInviteLink': {
+                var err = null;
+
                 // Resolve the device group name if needed
                 if ((typeof command.meshname == 'string') && (command.meshid == null)) {
                     for (var i in parent.meshes) {
                         var m = parent.meshes[i];
-                        if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) { command.meshid = m._id; break; }
+                        if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                            if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                        }
                     }
                 }
 
-                var err = null;
                 if (common.validateString(command.meshid, 8, 128) == false) { err = 'Invalid group id'; } // Check the meshid
                 else if (common.validateInt(command.expire, 0, 99999) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
                 else if (common.validateInt(command.flags, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
