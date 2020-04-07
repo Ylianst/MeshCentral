@@ -56,6 +56,8 @@
     "_MpsTlsOffload": true,
     "_No2FactorAuth": true,
     "_Log": "main,web,webrequest,cert",
+    "_syslog": true,
+    "_syslogjson": true,
     "_WebRtConfig": {
       "iceServers": [
         { "urls": "stun:stun.services.mozilla.com" },
