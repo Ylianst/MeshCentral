@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Account Reset
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
+Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
