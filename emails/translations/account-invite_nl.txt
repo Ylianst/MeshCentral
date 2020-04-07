@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Account uitnodiging
-An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
+Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/), Je kan inloggen met de gebruikersnaam "[[[ACCOUNTNAME]]]" en wachtwoord "[[[PASSWORD]]]".
 ~
 Vriendelijke groeten,
 ~[[[USERNAME]]]
