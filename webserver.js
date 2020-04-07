@@ -3355,7 +3355,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         remoteNodeId: node._id,
                         remoteTarget: null,
                         remotePort: 3389,
-                        username: user.name,
+                        username: '',
                         password: '',
                         serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
                         serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
