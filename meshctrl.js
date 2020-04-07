@@ -113,13 +113,13 @@ if (args['_'].length == 0) {
             break;
         }
         case 'sendinviteemail': {
-            if (args.id == null) { console.log("Device group identifier id missing, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else if (args.email == null) { console.log("Device email is missing, use --email [email]"); }
-            else { ok = true; }
+			else { ok = true; }
             break;
         }
         case 'generateinvitelink': {
-            if (args.id == null) { console.log("Device group identifier id missing, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else if (args.hours == null) { console.log("Invitation validity period missing, use --hours [hours]"); }
             else { ok = true; }
             break;
@@ -135,18 +135,24 @@ if (args['_'].length == 0) {
                     }
                     case 'sendinviteemail': {
                         console.log("Send invitation email with instructions on how to install the mesh agent for a specific device group. Example usage:\r\n");
-                        console.log("  MeshCtrl SendInviteEmail --id devicegroupid --email user@sample.com");
+                        console.log("  MeshCtrl SendInviteEmail --id devicegroupid --message \"msg\" --email user@sample.com");
+                        console.log("  MeshCtrl SendInviteEmail --group \"My Computers\" --name \"Jack\" --email user@sample.com");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --email [email]        - Email address.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --name (name)          - Name of recipient to be included in the email.");
+						console.log("  --message (msg)        - Message to be included in the email.");
                         break;
                     }
                     case 'generateinvitelink': {
                         console.log("Generate a agent invitation URL for a given group. Example usage:\r\n");
                         console.log("  MeshCtrl GenerateInviteLink --id devicegroupid --hours 24");
-                        console.log("  MeshCtrl GenerateInviteLink --id devicegroupid --hours 0");
+                        console.log("  MeshCtrl GenerateInviteLink --group \"My Computers\" --hours 0");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
                         break;
                     }
@@ -624,12 +630,16 @@ function serverConnect() {
                 break;
             }
             case 'sendinviteemail': {
-                var op = { action: 'inviteAgent', meshid: args.id, email: args.email, name: '', os: '0', responseid: 'meshctrl' }
+                var op = { action: 'inviteAgent', email: args.email, name: '', os: '0', responseid: 'meshctrl' }
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
+                if (args.name) { op.name = args.name; }
+                if (args.message) { op.msg = args.message; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'generateinvitelink': {
-                var op = { action: 'createInviteLink', meshid: args.id, expire: args.hours, flags: 0, responseid: 'meshctrl' }
+                var op = { action: 'createInviteLink', expire: args.hours, flags: 0, responseid: 'meshctrl' }
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
