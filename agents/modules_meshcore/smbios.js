@@ -191,6 +191,12 @@ function SMBiosTables()
         catch(e)
         {
         }
+        try
+        {
+            if (JSON.stringify(r).length > 65535) { r = {}; }
+        }
+        catch(ee)
+        {}
         return r;
     }
     this.processorInfo = function processorInfo(data) {
