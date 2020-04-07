@@ -574,6 +574,24 @@ function CreateMeshCentralServer(config, args) {
         //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
+        // Setup syslog support
+        if ((require('os').platform() != 'win32') && ((config.settings.syslog != null) || (config.settings.syslogjson != null))) {
+            if (config.settings.syslog === true) { config.settings.syslog = 'meshcentral'; }
+            if (config.settings.syslogjson === true) { config.settings.syslogjson = 'meshcentral-json'; }
+            if (typeof config.settings.syslog == 'string') {
+                obj.syslog = require('modern-syslog');
+                console.log('Starting ' + config.settings.syslog + ' syslog.');
+                obj.syslog.init(config.settings.syslog, obj.syslog.LOG_PID | obj.syslog.LOG_ODELAY, obj.syslog.LOG_LOCAL0);
+                obj.syslog.log(obj.syslog.LOG_INFO, "MeshCentral v" + getCurrentVerion() + " Server Start");
+            }
+            if (typeof config.settings.syslogjson == 'string') {
+                obj.syslogjson = require('modern-syslog');
+                console.log('Starting ' + config.settings.syslogjson + ' JSON syslog.');
+                obj.syslogjson.init(config.settings.syslogjson, obj.syslogjson.LOG_PID | obj.syslogjson.LOG_ODELAY, obj.syslogjson.LOG_LOCAL0);
+                obj.syslogjson.log(obj.syslogjson.LOG_INFO, "MeshCentral v" + getCurrentVerion() + " Server Start");
+            }
+        }
+
         // Check top level configuration for any unreconized values
         if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
@@ -1474,6 +1492,10 @@ function CreateMeshCentralServer(config, args) {
     obj.DispatchEvent = function (ids, source, event, fromPeerServer) {
         // If the database is not setup, exit now.
         if (!obj.db) return;
+
+        // Send event to syslog is needed
+        if (obj.syslog && event.msg) { obj.syslog.log(obj.syslog.LOG_INFO, event.msg); }
+        if (obj.syslogjson) { obj.syslog.log(obj.syslogjson.LOG_INFO, JSON.stringify(event)); }
 
         obj.debug('dispatch', 'DispatchEvent', ids);
         if ((typeof event == 'object') && (!event.nolog)) {
@@ -2464,6 +2486,9 @@ function mainStart() {
             if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
             if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
+
+        // Syslog support
+        if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
 
         // Setup heapdump support if needed, useful for memory leak debugging
         // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
