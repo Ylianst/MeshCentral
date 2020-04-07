@@ -145,7 +145,6 @@ function WindowsConsole()
                         this.TrayIcon.remove();
                         handled = true;
                     }
-                    //if (!handled) { console.log(msg); }
                 }
             });
             retVal.remove = function remove()
