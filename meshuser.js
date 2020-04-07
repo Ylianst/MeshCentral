@@ -3126,6 +3126,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'inviteAgent':
                 {
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) { command.meshid = m._id; break; }
+                        }
+                    }
+
                     var err = null, mesh = null;
                     try {
                         if ((parent.parent.mailserver == null) || (args.lanonly == true)) { err = 'Unsupported feature'; } // This operation requires the email server
@@ -3573,13 +3581,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'createInviteLink': {
+                // Resolve the device group name if needed
+                if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                    for (var i in parent.meshes) {
+                        var m = parent.meshes[i];
+                        if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) { command.meshid = m._id; break; }
+                    }
+                }
+
                 var err = null;
                 if (common.validateString(command.meshid, 8, 128) == false) { err = 'Invalid group id'; } // Check the meshid
                 else if (common.validateInt(command.expire, 0, 99999) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
-                else if (common.validateInt(command.flags, 0, 256) == false) { err = 'Invalid flags'; }; // Check the flags
-                if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
-                var smesh = command.meshid.split('/');
-                if ((smesh.length != 3) || (smesh[0] != 'mesh') || (smesh[1] != domain.id)) { err = 'Invalid group id'; }
+                else if (common.validateInt(command.flags, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
+                else if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check meshid
+                else {
+                    if (command.meshid.split('/').length == 1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                    var smesh = command.meshid.split('/');
+                    if ((smesh.length != 3) || (smesh[0] != 'mesh') || (smesh[1] != domain.id)) { err = 'Invalid group id'; }
+                    mesh = parent.meshes[command.meshid];
+                    if ((mesh == null) || (parent.IsMeshViewable(user, mesh) == false)) { err = 'Invalid group id'; }
+                }
                 var serverName = parent.getWebServerName(domain);
 
                 // Handle any errors
@@ -3588,8 +3609,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
 
-                mesh = parent.meshes[command.meshid];
-                if (mesh == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: 'Unable to find this device group id' })); } catch (ex) { } } break; }
                 const inviteCookie = parent.parent.encodeCookie({ a: 4, mid: command.meshid, f: command.flags, expire: command.expire * 60 }, parent.parent.invitationLinkEncryptionKey);
                 if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createInviteLink', responseid: command.responseid, result: 'Unable to generate invitation cookie' })); } catch (ex) { } } break; }
 
