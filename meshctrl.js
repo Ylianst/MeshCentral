@@ -59,14 +59,14 @@ if (args['_'].length == 0) {
             break;
         }
         case 'addusertodevicegroup': {
-            if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
-            else if (args.id == null) { console.log("Add user to group missing group id, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
+            else if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
             else { ok = true; }
             break;
         }
         case 'removeuserfromdevicegroup': {
-            if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
-            else if (args.id == null) { console.log("Remove user from group missing group id, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
+            else if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
             else { ok = true; }
             break;
         }
@@ -88,7 +88,7 @@ if (args['_'].length == 0) {
             break;
         }
         case 'removedevicegroup': {
-            if (args.id == null) { console.log("Message group identifier, use --id [identifier]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else { ok = true; }
             break;
         }
@@ -257,15 +257,17 @@ if (args['_'].length == 0) {
                         console.log("Remove a device group, Example usages:\r\n");
                         console.log("  MeshCtrl RemoveDeviceGroup --id groupid");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         break;
                     }
                     case 'addusertodevicegroup': {
                         console.log("Add a user to a device group, Example usages:\r\n");
                         console.log("  MeshCtrl AddUserToDeviceGroup --id groupid --userid userid --fullrights");
-                        console.log("  MeshCtrl AddUserToDeviceGroup --id groupid --userid userid --editgroup --manageusers");
+                        console.log("  MeshCtrl AddUserToDeviceGroup --group groupname --userid userid --editgroup --manageusers");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --userid [userid]      - The user identifier.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --fullrights           - Allow full rights over this device group.");
@@ -296,7 +298,8 @@ if (args['_'].length == 0) {
                         console.log("Remove a user from a device group, Example usages:\r\n");
                         console.log("  MeshCtrl RemoveuserFromDeviceGroup --id groupid --userid userid");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --userid [userid]      - The user identifier.");
                         break;
                     }
@@ -572,7 +575,8 @@ function serverConnect() {
                 break;
             }
             case 'removedevicegroup': {
-                var op = { action: 'deletemesh', meshid: args.id, responseid: 'meshctrl' };
+                var op = { action: 'deletemesh', responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
@@ -595,12 +599,14 @@ function serverConnect() {
                 if (args.limitedevents) { meshrights |= 8192; }
                 if (args.chatnotify) { meshrights |= 16384; }
                 if (args.uninstall) { meshrights |= 32768; }
-                var op = { action: 'addmeshuser', meshid: args.id, usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                var op = { action: 'addmeshuser', usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'removeuserfromdevicegroup': {
-                var op = { action: 'removemeshuser', meshid: args.id, userid: args.userid, responseid: 'meshctrl' };
+                var op = { action: 'removemeshuser', userid: args.userid, responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
