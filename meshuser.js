@@ -2241,6 +2241,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'deletemesh':
                 {
                     var err = null;
+
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                            }
+                        }
+                    }
+
                     try {
                         // Delete a mesh and all computers within it
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
@@ -2370,8 +2381,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'addmeshuser':
                 {
-                    if (typeof command.userid == 'string') { command.userids = [ command.userid ]; }
                     var err = null;
+                    if (typeof command.userid == 'string') { command.userids = [command.userid]; }
+
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                            }
+                        }
+                    }
+
                     try {
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
                         else if (common.validateInt(command.meshadmin) == false) { err = 'Invalid group rights'; } // Mesh rights must be an integer
@@ -2568,6 +2590,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'removemeshuser':
                 {
                     var err = null;
+
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                            }
+                        }
+                    }
+
                     try {
                         if (common.validateString(command.userid, 1, 1024) == false) { err = "Invalid userid"; } // Check userid
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = "Invalid groupid"; } // Check meshid
