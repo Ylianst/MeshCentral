@@ -1495,7 +1495,7 @@ function CreateMeshCentralServer(config, args) {
 
         // Send event to syslog is needed
         if (obj.syslog && event.msg) { obj.syslog.log(obj.syslog.LOG_INFO, event.msg); }
-        if (obj.syslogjson) { obj.syslog.log(obj.syslogjson.LOG_INFO, JSON.stringify(event)); }
+        if (obj.syslogjson) { obj.syslogjson.log(obj.syslogjson.LOG_INFO, JSON.stringify(event)); }
 
         obj.debug('dispatch', 'DispatchEvent', ids);
         if ((typeof event == 'object') && (!event.nolog)) {
