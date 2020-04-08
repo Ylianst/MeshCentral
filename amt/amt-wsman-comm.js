@@ -167,7 +167,32 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
         obj.socketState = 1;
         obj.kerberosDone = 0;
 
-        if (obj.mode==1 ) { //Direct 
+        if ((obj.parent != null) && (obj.mode === 2) || (obj.mode === 3)) { // CIRA and APF            
+            if (obj.mode == 2) { // CIRA
+                var ciraconn = obj.parent.mpsserver.ciraConnections[obj.host];
+                obj.socket = obj.parent.mpsserver.SetupCiraChannel(ciraconn, obj.port);
+            } else { // APF
+                var apfconn = obj.parent.apfserver.apfConnections[obj.host];
+                obj.socket = obj.parent.apfserver.SetupCiraChannel(apfconn, obj.port);
+            }
+            obj.socket.onData = function (ccon, data) { obj.xxOnSocketData(data); }
+            obj.socket.onStateChange = function (ccon, state) {
+                if (state == 0) {
+                    try {
+                        obj.socketParseState = 0;
+                        obj.socketAccumulator = '';
+                        obj.socketHeader = null;
+                        obj.socketData = '';
+                        obj.socketState = 0;
+                        obj.xxOnSocketClosed();
+                    } catch (e) { }
+                } else if (state == 2) {
+                    // channel open success
+                    obj.xxOnSocketConnected();
+                }
+            }
+        } else {
+            // Direct connection
             if (obj.xtls != 1) {
                 // Connect without TLS
                 obj.socket = new obj.net.Socket();
@@ -196,33 +221,6 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
                 obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
             }
             obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
-        } else if (obj.mode==2 || obj.mode==3) { // CIRA and APF            
-            if (obj.mode==2) { // CIRA
-                var ciraconn = obj.parent.mpsserver.ciraConnections[obj.host];
-                obj.socket = obj.parent.mpsserver.SetupCiraChannel(ciraconn, obj.port);
-            } else { //APF
-                var apfconn = obj.parent.apfserver.apfConnections[obj.host];
-                obj.socket = obj.parent.apfserver.SetupCiraChannel(apfconn, obj.port);
-            }
-            obj.socket.onData = function (ccon, data) {
-                obj.xxOnSocketData(data);
-            }
-
-            obj.socket.onStateChange = function (ccon, state) {
-                if (state == 0) {
-                    try {
-                        obj.socketParseState = 0;
-                        obj.socketAccumulator = '';
-                        obj.socketHeader = null;
-                        obj.socketData = '';
-                        obj.socketState = 0;
-                        obj.xxOnSocketClosed();
-                    } catch (e) { }
-                } else if (state == 2) {
-                    // channel open success
-                    obj.xxOnSocketConnected();
-                }
-            }
         }
     }
 
