@@ -2389,7 +2389,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + meshCoreObj.value + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
+                    response = 'Current Core: ' + (require('MeshAgent').coreHash ? ('CRC[' + crc32c(require('MeshAgent').coreHash) + ']') : (meshCoreObj.value)) + '\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amt != null) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amt.lmsstate] + '.'; }
                     if (meshCoreObj.osdesc) { response += '\r\nOS: ' + meshCoreObj.osdesc + '.'; }
                     response += '\r\nModules: ' + addedModules.join(', ') + '.';
