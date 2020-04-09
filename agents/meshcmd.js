@@ -114,7 +114,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI'];
 
     // Load the action file
     var actionfile = null;
@@ -200,6 +200,7 @@ function run(argv) {
         console.log('  AmtFeatures       - Intel AMT features & user consent.');
         console.log('  AmtNetwork        - Intel AMT network interface settings.');
         console.log('  AmtScan           - Search local network for Intel AMT devices.');
+        console.log('  AmtWifi           - Intel AMT Wifi interface settings.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(1); return;
@@ -385,6 +386,24 @@ function run(argv) {
             console.log('AmtSCAN will look for Intel AMT device on the network. Example usage:\r\n\r\n  meshcmd amtscan --scan 192.168.1.0/24');
             console.log('\r\Required arguments:\r\n');
             console.log('  --scan [ip range]      The IP address range to perform the scan on.');
+        } else if (action == 'amtwifi') {
+            console.log('AmtWifi is used to get/set Intel AMT Wifi configuration. Example usage:\r\n\r\n  meshcmd amtwifi --host 1.2.3.4 --user admin --pass mypassword --list');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]         The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]         The Intel AMT login password.');
+            console.log('  --[action]                Action options are list, add, del.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --user [username]         The Intel AMT login username, admin is default.');
+            console.log('  --tls                     Specifies that TLS must be used.');
+            console.log('  --list                    List of stored Wifi profile');
+            console.log('  --add                     Add new Wifi profile');
+            console.log('     --name                 New Wifi profile name');
+            console.log('     --priority             Priority of this profile - default 1');
+            console.log('     --ssid                 Wifi SSID');
+            console.log('     --auth                 Wifi Authentication method (4 - WPA, 6 - WPA2/RSN) - default 6');
+            console.log('     --enc                  Wifi Encryption type (3 - TKIP, 4 - CCMP) - default 3');
+            console.log('     --psk                  Wifi password/pre-shared key');
+            console.log('  --del [profile-name]      Delete new Wifi profile');            
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -690,6 +709,27 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         performAmtNetConfig(args);
+    } else if (settings.action == 'amtwifi') { // Perform remote Intel AMT Wifi configuration operation
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if (args.add != null) {
+            if ((args.name == null) || (typeof args.name != 'string') || args.name == '') {
+                console.log("Wifi profile name is required."); exit(1); return;
+            }
+            if ((args.ssid == null) || (typeof args.ssid != 'string') || args.ssid == '') {                
+                console.log("Wifi SSID is required."); exit(1); return;
+            }
+            if ((args.psk == null) || (typeof args.psk != 'string') || args.psk == '') {
+                console.log("Wifi password is required."); exit(1); return;
+            }
+        }
+        if (args.del !=null) {
+            if ((settings.name == null) || (typeof settings.name != 'string') || settings.name == '') {
+                console.log("Wifi profile name is required."); exit(1); return;
+            }
+        }
+        performAmtWifiConfig(args);
     } else if (settings.action == 'amtfeatures') { // Perform remote Intel AMT feature configuration operation
         if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -2472,6 +2512,104 @@ function performAmtNetConfig1(stack, name, response, status, args) {
     }
 }
 
+//
+// Intel AMT Wifi configuration
+//
+
+function performAmtWifiConfig(args) {
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
+        settings.noconsole = true; startLms(performAmtWifiConfig0, false, args);
+    } else {
+        performAmtWifiConfig0(1, args);
+    }
+}
+
+function performAmtWifiConfig0(state, args) {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings'], performAmtWifiConfig1, args);
+}
+
+function performAmtWifiConfig1(stack, name, response, status, args) {
+    if ( status == 200 ) {
+        var wifiAuthMethod = {1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768 : "WPA3 802.1x"};
+        var wifiEncMethod = {1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None"}
+        var wifiProfiles = {};
+        for (var y in response['CIM_WiFiEndpointSettings'].responses) {
+            var z = response['CIM_WiFiEndpointSettings'].responses[y];
+            var n = z['ElementName'];
+            wifiProfiles[n]= {'Priority': z['Priority'], 'SSID':z['SSID'],'AuthenticationMethod': z['AuthenticationMethod'], 'EncryptionMethod': z['EncryptionMethod']};
+        }
+
+        if (args) {
+            if (args.list) {
+                console.log('List of AMT Wifi profiles:');
+                if (wifiProfiles.length==0) {
+                    console.log('No Wifi profiles is stored.');
+                }
+                for (var t in wifiProfiles) {
+                    var w = wifiProfiles[t];
+                    console.log('Profile Name: '+t+'; Priority: '+w['Priority']+ '; SSID: '+w['SSID']+'; Security: '+wifiAuthMethod[w['AuthenticationMethod']]+'/'+wifiEncMethod[w['EncryptionMethod']]);
+                }
+                process.exit(0);
+            } else if (args.add) {
+                if (args.auth==null) {args.auth=6}//if not set, default to WPA2 PSK
+                if (args.enc==null) {args.enc=3}//if not set, default to TKIP
+                if (args.priority==null) {args.priority=0}//if not set, default to 0
+
+                var wifiep = {
+                    __parameterType: 'reference',
+                    __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
+                    Name: 'WiFi Endpoint 0'
+                };
+
+                var wifiepsettinginput = {
+                    __parameterType: 'instance',
+                    __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
+                    ElementName: args.name,
+                    InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + args.name,
+                    AuthenticationMethod: args.auth,                        
+                    EncryptionMethod: args.enc,
+                    SSID: args.ssid,
+                    Priority: args.priority,
+                    PSKPassPhrase: args.psk
+                }                
+                stack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, 
+                    function(stck, nm, resp, sts) {
+                        if (sts==200) {
+                            console.log("Wifi profile " + args.name + " successfully added.");
+                        } else {
+                            console.log("Failed to add wifi profile " + args.name + ".");
+                        }
+                        process.exit(0);
+                    });                
+            } else if (args.del) {
+                if (wifiProfiles[args.name]==null) {
+                    console.log("Profile "+args.name+" could not be found.");
+                    process.exit(0);
+                }
+                stack.Delete('CIM_WiFiEndpointSettings', { InstanceID : 'Intel(r) AMT:WiFi Endpoint Settings ' + args.name }, 
+                    function(stck, nm, resp, sts){
+                        if (sts==200) {
+                            console.log("Wifi profile " + args.name + " successfully deleted.");
+                        } else {
+                            console.log("Failed to delete wifi profile " + args.name + ".");
+                        }
+                        process.exit(0);
+                    }, 
+                0, 1);
+            }
+        } else {
+            process.exit(0);
+        }         
+    } else {
+        console.log("Error, status " + status + ".");
+        process.exit(1);
+    }
+}
 
 //
 // Intel AMT feature configuration action
