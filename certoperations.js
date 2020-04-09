@@ -200,12 +200,17 @@ module.exports.CertificateOperations = function (parent) {
         if (u.protocol == 'https:') {
             // Read the certificate from HTTPS
             if (hostname == null) { hostname = u.hostname; }
-            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: hostname, rejectUnauthorized: false }, function () { this.xxcert = this.getPeerCertificate(); this.end(); });
+            parent.debug('cert', "loadCertificate() - Loading certificate from " + u.hostname + ":" + (u.port ? u.port : 443) + ", Hostname: " + hostname + "...");
+            const tlssocket = obj.tls.connect((u.port ? u.port : 443), u.hostname, { servername: hostname, rejectUnauthorized: false }, function () {
+                this.xxcert = this.getPeerCertificate();
+                parent.debug('cert', "loadCertificate() - TLS connected, " + ((this.xxcert != null) ? "got certificate." : "no certificate."));
+                try { this.destroy(); } catch (ex) { }
+                this.xxfunc(this.xxurl, (this.xxcert == null)?null:(this.xxcert.raw.toString('binary')), hostname, this.xxtag);
+            });
             tlssocket.xxurl = url;
             tlssocket.xxfunc = func;
             tlssocket.xxtag = tag;
-            tlssocket.on('end', function () { this.xxfunc(this.xxurl, this.xxcert.raw.toString('binary'), hostname, this.xxtag); });
-            tlssocket.on('error', function () { this.xxfunc(this.xxurl, null, hostname, this.xxtag); });
+            tlssocket.on('error', function (error) { try { this.destroy(); } catch (ex) { } parent.debug('cert', "loadCertificate() - TLS error: " + error); this.xxfunc(this.xxurl, null, hostname, this.xxtag); });
         } else if (u.protocol == 'file:') {
             // Read the certificate from a file
             obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
@@ -301,10 +306,8 @@ module.exports.CertificateOperations = function (parent) {
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = String(Math.floor((Math.random() * 100000) + 1));
-        cert.validity.notBefore = new Date();
-        cert.validity.notBefore.setFullYear(cert.validity.notBefore.getFullYear() - 1); // Create a certificate that is valid one year before, to make sure out-of-sync clocks don"t reject this cert.
-        cert.validity.notAfter = new Date();
-        cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 30);
+        cert.validity.notBefore = new Date(2018, 0, 1);
+        cert.validity.notAfter = new Date(2049, 11, 31);
         if (addThumbPrintToName === true) { commonName += '-' + obj.pki.getPublicKeyFingerprint(cert.publicKey, { encoding: 'hex' }).substring(0, 6); }
         if (country == null) { country = "unknown"; }
         if (organization == null) { organization = "unknown"; }
@@ -325,10 +328,8 @@ module.exports.CertificateOperations = function (parent) {
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
         cert.serialNumber = String(Math.floor((Math.random() * 100000) + 1));
-        cert.validity.notBefore = new Date();
-        cert.validity.notBefore.setFullYear(cert.validity.notAfter.getFullYear() - 1); // Create a certificate that is valid one year before, to make sure out-of-sync clocks don"t reject this cert.
-        cert.validity.notAfter = new Date();
-        cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 30);
+        cert.validity.notBefore = new Date(2018, 0, 1);
+        cert.validity.notAfter = new Date(2049, 11, 31);
         if (addThumbPrintToName === true) { commonName += "-" + obj.pki.getPublicKeyFingerprint(cert.publicKey, { encoding: 'hex' }).substring(0, 6); }
         var attrs = [{ name: 'commonName', value: commonName }];
         if (country != null) { attrs.push({ name: 'countryName', value: country }); }
@@ -807,7 +808,7 @@ module.exports.CertificateOperations = function (parent) {
             accelerator.accid = acceleratorCreateCount;
             accelerator.on('message', function (message) {
                 acceleratorMessage++;
-                this.x.func(this.x.tag, message);
+                if (this.x.func) { this.x.func(this.x.tag, message); }
                 delete this.x;
                 if (pendingAccelerator.length > 0) { this.send(this.x = pendingAccelerator.shift()); } else { freeAccelerators.push(this); }
             });
@@ -850,6 +851,25 @@ module.exports.CertificateOperations = function (parent) {
                 // Send to accelerator now
                 acceleratorPerformSignatureRunFuncCall++;
                 acc.send(acc.x = { action: 'sign', key: privatekey, data: data, tag: tag, func: func });
+            }
+        }
+    };
+
+    // Perform any general operation
+    obj.acceleratorPerformOperation = function (operation, data, tag, func) {
+        if (acceleratorTotalCount <= 1) {
+            // No accelerators available
+            require(program).processMessage({ action: operation, data: data, tag: tag, func: func });
+        } else {
+            var acc = obj.getAccelerator();
+            if (acc == null) {
+                // Add to pending accelerator workload
+                acceleratorPerformSignaturePushFuncCall++;
+                pendingAccelerator.push({ action: operation, data: data, tag: tag, func: func });
+            } else {
+                // Send to accelerator now
+                acceleratorPerformSignatureRunFuncCall++;
+                acc.send(acc.x = { action: operation, data: data, tag: tag, func: func });
             }
         }
     };

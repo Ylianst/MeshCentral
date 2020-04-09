@@ -28,9 +28,9 @@
 module.exports.CreateDB = function (parent, func) {
     var obj = {};
     var Datastore = null;
-    var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days. (Seconds * Minutes * Hours * Days)
-    var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days. (Seconds * Minutes * Hours * Days)
-    var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days. (Seconds * Minutes * Hours * Days)
+    var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
+    var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
+    var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
     obj.identifier = null;
     obj.dbKey = null;
@@ -42,7 +42,8 @@ module.exports.CreateDB = function (parent, func) {
         // Check if the database unique identifier is present
         // This is used to check that in server peering mode, everyone is using the same database.
         obj.Get('DatabaseIdentifier', function (err, docs) {
-            if ((docs.length == 1) && (docs[0].value != null)) {
+            if (err != null) { parent.debug('db', 'ERROR (Get DatabaseIdentifier): ' + err); }
+            if ((err == null) && (docs.length == 1) && (docs[0].value != null)) {
                 obj.identifier = docs[0].value;
             } else {
                 obj.identifier = Buffer.from(require('crypto').randomBytes(48), 'binary').toString('hex');
@@ -52,8 +53,9 @@ module.exports.CreateDB = function (parent, func) {
 
         // Load database schema version and check if we need to update
         obj.Get('SchemaVersion', function (err, docs) {
+            if (err != null) { parent.debug('db', 'ERROR (Get SchemaVersion): ' + err); }
             var ver = 0;
-            if (docs && docs.length == 1) { ver = docs[0].value; }
+            if ((err == null) && (docs.length == 1)) { ver = docs[0].value; }
             if (ver == 1) { console.log('This is an unsupported beta 1 database, delete it to create a new one.'); process.exit(0); }
 
             // TODO: Any schema upgrades here...
@@ -87,6 +89,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Remove all objects that have a "meshid" that no longer points to a valid mesh.
         obj.GetAllType('mesh', function (err, docs) {
+            if (err != null) { parent.debug('db', 'ERROR (GetAll mesh): ' + err); }
             var meshlist = [];
             if ((err == null) && (docs.length > 0)) { for (var i in docs) { meshlist.push(docs[i]._id); } }
             if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
@@ -102,7 +105,8 @@ module.exports.CreateDB = function (parent, func) {
 
             // Fix all of the creating & login to ticks by seconds, not milliseconds.
             obj.GetAllType('user', function (err, docs) {
-                if (err == null && docs.length > 0) {
+                if (err != null) { parent.debug('db', 'ERROR (GetAll user): ' + err); }
+                if ((err == null) && (docs.length > 0)) {
                     for (var i in docs) {
                         var fixed = false;
 
@@ -182,14 +186,14 @@ module.exports.CreateDB = function (parent, func) {
             // MongoDB
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }]).toArray(function (err, docs) {
                 var counters = {}, totalCount = 0;
-                for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } }
+                if (err == null) { for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } } }
                 func(counters);
             });
         } else if (obj.databaseType == 2) {
             // MongoJS
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }], function (err, docs) {
                 var counters = {}, totalCount = 0;
-                for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } }
+                if (err == null) { for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } } }
                 func(counters);
             });
         } else if (obj.databaseType == 1) {
@@ -219,13 +223,14 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // This is used to rate limit a number of operation per day. Returns a startValue each new days, but you can substract it and save the value in the db.
-    obj.getValueOfTheDay = function (id, startValue, func) { obj.Get(id, function (err, docs) { var date = new Date(), t = date.toLocaleDateString(); if (docs.length == 1) { var r = docs[0]; if (r.day == t) { func({ _id: id, value: r.value, day: t }); return; } } func({ _id: id, value: startValue, day: t }); }); };
+    obj.getValueOfTheDay = function (id, startValue, func) { obj.Get(id, function (err, docs) { var date = new Date(), t = date.toLocaleDateString(); if ((err == null) && (docs.length == 1)) { var r = docs[0]; if (r.day == t) { func({ _id: id, value: r.value, day: t }); return; } } func({ _id: id, value: startValue, day: t }); }); };
     obj.escapeBase64 = function escapeBase64(val) { return (val.replace(/\+/g, '@').replace(/\//g, '$')); }
 
     // Encrypt an database object
     obj.performRecordEncryptionRecode = function (func) {
         var count = 0;
         obj.GetAllType('user', function (err, docs) {
+            if (err != null) { parent.debug('db', 'ERROR (performRecordEncryptionRecode): ' + err); }
             if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
             obj.GetAllType('node', function (err, docs) {
                 if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
@@ -236,7 +241,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Encrypt an database object
     function performTypedRecordDecrypt(data) {
-        if ((obj.dbRecordsDecryptKey == null) || (typeof data != 'object')) return data;
+        if ((data == null) || (obj.dbRecordsDecryptKey == null) || (typeof data != 'object')) return data;
         for (var i in data) {
             if (data[i].type == 'user') {
                 data[i] = performPartialRecordDecrypt(data[i]);
@@ -335,7 +340,9 @@ module.exports.CreateDB = function (parent, func) {
         }
         //sqlDbQuery('DROP DATABASE MeshCentral', null, function (err, docs) { console.log('DROP'); }); return;
         sqlDbQuery('USE meshcentral', null, function (err, docs) {
+            if (err != null) { parent.debug('db', 'ERROR: USE meshcentral: ' + err); }
             if (err == null) { setupFunctions(func); } else {
+                parent.debug('db', 'Creating database...');
                 sqlDbBatchExec([
                     'CREATE DATABASE meshcentral',
                     // Main table
@@ -364,7 +371,10 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE INDEX ndxsmbiosexpire ON meshcentral.smbios (expire)',
                     // Plugins table
                     'CREATE TABLE meshcentral.plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
-                ], function (err) { /*if (err != null) { console.log(err); }*/ setupFunctions(func); });
+                ], function (err) {
+                    if (err != null) { parent.debug('db', 'BatchSetupDb: ' + err); }
+                    setupFunctions(func);
+                });
             }
         });
     } else if (parent.args.mongodb) {
@@ -373,6 +383,7 @@ module.exports.CreateDB = function (parent, func) {
         require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
             Datastore = client;
+            parent.debug('db', 'Connected to MongoDB database...');
 
             // Get the database name and setup the database client
             var dbname = 'meshcentral';
@@ -778,15 +789,31 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the main collection (MariaDB or MySQL)
             obj.Set = function (value, func) {
                 var extra = null, extraex = null;
+                value = common.escapeLinksFieldNameEx(value);
                 if (value.meshid) { extra = value.meshid; } else if (value.email) { extra = 'email/' + value.email; }
                 if ((value.type == 'node') && (value.intelamt != null) && (value.intelamt.uuid != null)) { extraex = 'uuid/' + value.intelamt.uuid; }
                 sqlDbQuery('REPLACE INTO meshcentral.main VALUE (?, ?, ?, ?, ?, ?)', [value._id, (value.type ? value.type : null), ((value.domain != null) ? value.domain : null), extra, extraex, JSON.stringify(performTypedRecordEncrypt(value))], func);
             }
-            obj.Get = function (_id, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], func); }
+            obj.Get = function (_id, func) {
+                sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], function (err, docs) {
+                    if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                    func(_id, func);
+                });
+            }
             obj.GetAll = function (func) { sqlDbQuery('SELECT domain, doc FROM meshcentral.main', null, func); }
             obj.GetHash = function (id, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [id], func); }
-            obj.GetAllTypeNoTypeField = function (type, domain, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ?', [type, domain], function (err, docs) { for (var i in docs) { delete docs[i].type } func(err, docs); }); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { if (id && (id != '')) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, meshes], function (err, docs) { for (var i in docs) { delete docs[i].type } func(err, docs); }); } else { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ? AND extra IN (?)', [type, domain, meshes], function (err, docs) { for (var i in docs) { delete docs[i].type } func(err, docs); }); } };
+            obj.GetAllTypeNoTypeField = function (type, domain, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ?', [type, domain], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); }); };
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (id && (id != '')) {
+                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, meshes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                } else {
+                    if (extrasids == null) {
+                        sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ? AND extra IN (?)', [type, domain, meshes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                    } else {
+                        sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [type, domain, meshes, extrasids], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                    }
+                }
+            };
             obj.GetAllType = function (type, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ?', [type], func); }
             obj.GetAllIdsOfType = function (ids, domain, type, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id IN (?) AND domain = ? AND type = ?', [ids, domain, type], func); }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], func); }
@@ -796,11 +823,11 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM meshcentral.main WHERE type = ?', [type], func); };
             obj.InsertMany = function (data, func) { var pendingOps = 0; for (var i in data) { pendingOps++; obj.Set(data[i], function () { if (--pendingOps == 0) { func(); } }); } };
             obj.RemoveMeshDocuments = function (id) { sqlDbQuery('DELETE FROM meshcentral.main WHERE extra = ?', [id], function () { sqlDbQuery('DELETE FROM meshcentral.main WHERE id = ?', ['nt' + id], func); } ); };
-            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
+            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { sqlDbQuery('DELETE FROM meshcentral.main WHERE domain = ?', [domain], func); };
             obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
-            obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE (type = "node") AND (extraex IS NOT NULL)', null, function (err, docs) { var r = []; for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } func(err, r); }); };
+            obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE (type = "node") AND (extraex IS NOT NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } } func(err, r); }); };
             obj.getAmtUuidMeshNode = function (meshid, uuid, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE meshid = ? AND extraex = ?', [meshid, 'uuid/' + uuid], func); };
             obj.getAmtUuidNode = function (uuid, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = "node" AND extraex = ?', ['uuid/' + uuid], func); };
             obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { sqlDbExec('SELECT COUNT(id) FROM meshcentral.main WHERE domain = ? AND type = ?', [domainid, type], function (err, response) { func((response['COUNT(id)'] == null) || (response['COUNT(id)'] > max), response['COUNT(id)']) }); } }
@@ -904,12 +931,12 @@ module.exports.CreateDB = function (parent, func) {
                 obj.getPlugins = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.plugin', null, func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { sqlDbQuery('SELECT doc FROM meshcentral.plugin WHERE id = ?', [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM meshcentral.plugin WHERE id = ?', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if (docs.length == 1) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
+                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('REPLACE INTO meshcentral.plugin VALUE (?, ?)', [id, JSON.stringify(args)], func); };
             }
         } else if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
-            obj.Set = function (data, func) { obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
+            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); obj.file.replaceOne({ _id: data._id }, performTypedRecordEncrypt(data), { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -921,15 +948,31 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }).toArray(function (err, docs) { func2(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }).toArray(function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func2(err, performTypedRecordDecrypt(docs));
+                    });
                 } else {
-                    obj.file.find({ _id: id }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }).toArray(function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func(err, performTypedRecordDecrypt(docs));
+                    });
                 }
             };
             obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    var x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                } else {
+                    var x = { type: type, domain: domain, $or: [ { meshid: { $in: meshes } }, { _id: { $in: extrasids } } ] };
+                    if (id) { x._id = id; }
+                    obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                }
+            };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -939,7 +982,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveAllOfType = function (type, func) { obj.file.deleteMany({ type: type }, { multi: true }, func); };
             obj.InsertMany = function (data, func) { obj.file.insertMany(data, func); };
             obj.RemoveMeshDocuments = function (id) { obj.file.deleteMany({ meshid: id }, { multi: true }); obj.file.deleteOne({ _id: 'nt' + id }); };
-            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
+            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.deleteMany({ domain: domain }, { multi: true }, func); };
             obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
@@ -1041,7 +1084,7 @@ module.exports.CreateDB = function (parent, func) {
 
         } else {
             // Database actions on the main collection (NeDB and MongoJS)
-            obj.Set = function (data, func) { var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
+            obj.Set = function (data, func) { data = common.escapeLinksFieldNameEx(data); var xdata = performTypedRecordEncrypt(data); obj.file.update({ _id: xdata._id }, xdata, { upsert: true }, func); };
             obj.Get = function (id, func) {
                 if (arguments.length > 2) {
                     var parms = [func];
@@ -1053,15 +1096,36 @@ module.exports.CreateDB = function (parent, func) {
                         userCallback.apply(obj, _func2.userArgs);
                     };
                     func2.userArgs = parms;
-                    obj.file.find({ _id: id }, function (err, docs) { func2(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }, function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func2(err, performTypedRecordDecrypt(docs));
+                    });
                 } else {
-                    obj.file.find({ _id: id }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find({ _id: id }, function (err, docs) {
+                        if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
+                        func(err, performTypedRecordDecrypt(docs));
+                    });
                 }
             };
             obj.GetAll = function (func) { obj.file.find({}, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }, { _id: 0, hash: 1 }, func); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) { var x = { type: type, domain: domain, meshid: { $in: meshes } }; if (id) { x._id = id; } obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            //obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, domain, type, id, func) {
+                //var x = { type: type, domain: domain, meshid: { $in: meshes } };
+                //if (id) { x._id = id; }
+                //obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+            //};
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    var x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                } else {
+                    var x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                    if (id) { x._id = id; }
+                    obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                }
+            };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1071,7 +1135,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); };
             obj.InsertMany = function (data, func) { obj.file.insert(data, func); };
             obj.RemoveMeshDocuments = function (id) { obj.file.remove({ meshid: id }, { multi: true }); obj.file.remove({ _id: 'nt' + id }); };
-            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if (docs.length == 1) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
+            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.remove({ domain: domain }, { multi: true }, func); };
             obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
@@ -1236,7 +1300,7 @@ module.exports.CreateDB = function (parent, func) {
                 var mongoDumpPath = 'mongodump';
                 if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) { mongoDumpPath = parent.config.settings.autobackup.mongodumppath; }
                 const child_process = require('child_process');
-                const cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+                var cmd = '\"' + mongoDumpPath + '\" --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
                 if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\" --archive=\"' + newBackupPath + '.archive\"'; }
                 var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                     try {
@@ -1312,6 +1376,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Called when a node has changed
     function dbNodeChange(nodeChange, added) {
+        common.unEscapeLinksFieldName(nodeChange.fullDocument);
         const node = nodeChange.fullDocument;
         if (node.intelamt && node.intelamt.pass) { delete node.intelamt.pass; } // Remove the Intel AMT password before eventing this.
         parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: node, nodeid: node._id, domain: node.domain, nolog: 1 });

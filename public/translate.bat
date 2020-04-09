@@ -1,5 +1,6 @@
 @ECHO OFF
 CD ..\translate
-C:\Users\Default.DESKTOP-M9I88C9\AppData\Roaming\nvm\v12.13.0\node translate.js minifyall
-C:\Users\Default.DESKTOP-M9I88C9\AppData\Roaming\nvm\v12.13.0\node translate.js translateall
-C:\Users\Default.DESKTOP-M9I88C9\AppData\Roaming\nvm\v12.13.0\node translate.js extractall
+%LOCALAPPDATA%\..\Roaming\nvm\v12.13.0\node translate.js minifyall
+%LOCALAPPDATA%\..\Roaming\nvm\v12.13.0\node translate.js translateall
+%LOCALAPPDATA%\..\Roaming\nvm\v12.13.0\node translate.js extractall
+DEL ..\emails\translations\*-min_*

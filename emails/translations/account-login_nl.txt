@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Inloggen account
+Uw login token is: [[[TOKEN]]]
+~
+Dit token kan maar één keer worden gebruikt en is 5 minuten geldig.

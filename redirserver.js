@@ -75,7 +75,15 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             parent.letsencrypt.challenge(req.url.slice(leChallengePrefix.length), getCleanHostname(req), function (response) { if (response == null) { res.sendStatus(404); } else { res.send(response); } });
         } else {
             // Everything else
-            res.set({ 'strict-transport-security': "max-age=60000; includeSubDomains", "Referrer-Policy": "no-referrer", "x-frame-options": "SAMEORIGIN", "X-XSS-Protection": "1; mode=block", "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "default-src http: ws: \"self\" \"unsafe-inline\"" });
+            var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host));
+            res.set({
+                'strict-transport-security': 'max-age=60000; includeSubDomains',
+                'Referrer-Policy': 'no-referrer',
+                'x-frame-options': 'SAMEORIGIN',
+                'X-XSS-Protection': '1; mode=block',
+                'X-Content-Type-Options': 'nosniff',
+                'Content-Security-Policy': "default-src 'none'; style-src 'self' 'unsafe-inline';"
+            });
             return next();
         }
     });
@@ -105,7 +113,8 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         if (parent.config.domains[i].dns != null) { continue; }
         var url = parent.config.domains[i].url;
         obj.app.get(url, performRedirection); // Root redirection
-        obj.app.use(url + "clickonce", obj.express.static(obj.parent.path.join(__dirname, "public/clickonce"))); // Indicates the clickonce folder is public
+        obj.app.get(url + 'player.htm', performRedirection); // Player redirection
+        obj.app.use(url + 'clickonce', obj.express.static(obj.parent.path.join(__dirname, "public/clickonce"))); // Indicates the clickonce folder is public
 
         // Setup all of the redirections to HTTPS
         const redirections = ['terms', 'logout', 'MeshServerRootCert.cer', 'mescript.ashx', 'checkmail', 'agentinvite', 'messenger', 'meshosxagent', 'devicepowerevents.ashx', 'downloadfile.ashx', 'userfiles/*', 'webrelay.ashx', 'health.ashx', 'logo.png', 'welcome.jpg'];
@@ -127,10 +136,11 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         obj.tcpServer = obj.app.listen(port, function () {
             obj.port = port;
             console.log("MeshCentral HTTP redirection server running on port " + port + ".");
-            obj.parent.updateServerState("redirect-port", port);
+            obj.parent.authLog('http', 'Server listening on 0.0.0.0 port ' + port + '.');
+            obj.parent.updateServerState('redirect-port', port);
             func(obj.port);
-        }).on("error", function (err) {
-            if ((err.code == "EACCES") && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); func(obj.port); }
+        }).on('error', function (err) {
+            if ((err.code == 'EACCES') && (port < 65535)) { StartRedirServer(port + 1); } else { console.log(err); func(obj.port); }
         });
     }
 

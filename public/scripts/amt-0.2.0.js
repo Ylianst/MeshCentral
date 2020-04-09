@@ -760,7 +760,7 @@ function AmtStackCreateService(wsmanStack) {
 // ###BEGIN###{Certificates}
 
 // Forge MD5
-function hex_md5(str) { return forge.md.md5.create().update(str).digest().toHex(); }
+function hex_md5(str) { if (str == null) { str = ''; } return forge.md.md5.create().update(str).digest().toHex(); }
 
 // ###END###{Certificates}
 
@@ -774,6 +774,7 @@ for (var i = 0; i < 64;) { md5_k[i] = 0 | (Math.abs(Math.sin(++i)) * 4294967296)
 
 // Perform MD5 on raw string and return hex
 function hex_md5(str) {
+    if (str == null) { str = ''; }
     var b, c, d, j,
     x = [],
     str2 = unescape(encodeURI(str)),

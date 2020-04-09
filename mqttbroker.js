@@ -124,7 +124,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         // Look for any MQTT connections to send this to
         var clients = obj.connections[nodeid];
         if (clients == null) return;
-        if (typeof message == 'string') { message = new Buffer(message); }
+        if (typeof message == 'string') { message = Buffer.from(message); }
         for (var i in clients) {
             // Only publish to client that subscribe to the topic
             if (clients[i].subscriptions[topic] != null) { clients[i].publish({ cmd: 'publish', qos: 0, topic: topic, payload: message, retain: false }); }
