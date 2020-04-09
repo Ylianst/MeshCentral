@@ -607,7 +607,7 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
         if (g_len > obj.iderinfo.readbfr) { len = obj.iderinfo.readbfr; }
         g_len -= len;
         g_lba += len;
-        var buffer = new Buffer(len);
+        var buffer = Buffer.alloc(len);
         fs.read(g_media, buffer, 0, len, lba, function (error, bytesRead, buffer) {
             obj.SendDataToHost(g_dev, (g_len == 0), buffer.toString('binary'), featureRegister & 1);
             if ((g_len > 0) && (g_reset == false)) {

@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Account Reset
+Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~
+If you did not initiate this request, please ignore this mail.

@@ -26,8 +26,8 @@ module.exports.ShortToStr = function (v) { return String.fromCharCode((v >> 8) &
 module.exports.ShortToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); };
 module.exports.IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
 module.exports.IntToStrX = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); };
-module.exports.MakeToArray = function (v) { if (!v || v == null || typeof v == "object") return v; return [v]; };
-module.exports.SplitArray = function (v) { return v.split(","); };
+module.exports.MakeToArray = function (v) { if (!v || v == null || typeof v == 'object') return v; return [v]; };
+module.exports.SplitArray = function (v) { return v.split(','); };
 module.exports.Clone = function (v) { return JSON.parse(JSON.stringify(v)); };
 module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return module.exports.validateString(fname, 1, 4096) && x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); }; })();
 module.exports.makeFilename = function (v) { return v.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join(''); }
@@ -122,8 +122,8 @@ module.exports.parseNameValueList = function (list) {
 
 // Compute the MD5 digest hash for a set of values
 module.exports.ComputeDigesthash = function (username, password, realm, method, path, qop, nonce, nc, cnonce) {
-    var ha1 = crypto.createHash('md5').update(username + ":" + realm + ":" + password).digest("hex");
-    var ha2 = crypto.createHash('md5').update(method + ":" + path).digest("hex");
+    var ha1 = crypto.createHash('md5').update(username + ":" + realm + ":" + password).digest('hex');
+    var ha2 = crypto.createHash('md5').update(method + ":" + path).digest('hex');
     return crypto.createHash('md5').update(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2).digest("hex");
 };
 
@@ -147,6 +147,7 @@ module.exports.escapeFieldName = function (name) { if ((name.indexOf('%') == -1)
 module.exports.unEscapeFieldName = function (name) { if (name.indexOf('%') == -1) return name; return name.split('%2E').join('.').split('%24').join('$').split('%25').join('%'); };
 
 // Escape all links
+module.exports.escapeLinksFieldNameEx = function (docx) { if (docx.links == null) { return docx; } var doc = Object.assign({}, docx); doc.links = Object.assign({}, doc.links); for (var i in doc.links) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.links[ue] = doc.links[i]; delete doc.links[i]; } } return doc; };
 module.exports.escapeLinksFieldName = function (docx) { var doc = Object.assign({}, docx); if (doc.links != null) { doc.links = Object.assign({}, doc.links); for (var i in doc.links) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.links[ue] = doc.links[i]; delete doc.links[i]; } } } return doc; };
 module.exports.unEscapeLinksFieldName = function (doc) { if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } } return doc; };
 //module.exports.escapeAllLinksFieldName = function (docs) { for (var i in docs) { module.exports.escapeLinksFieldName(docs[i]); } return docs; };
@@ -251,7 +252,7 @@ module.exports.translationsToJson = function(t) {
     for (var i in arr) {
         var names = [], el = arr[i], el2 = {};
         for (var j in el) { names.push(j); }
-        names.sort();
+        names.sort(function (a, b) { if (a == b) { return 0; } if (a == 'xloc') { return 1; } if (b == 'xloc') { return -1; } return a - b });
         for (var j in names) { el2[names[j]] = el[names[j]]; }
         if (el2.xloc != null) { el2.xloc.sort(); }
         arr2.push(el2);

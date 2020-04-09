@@ -401,7 +401,8 @@ function windows_terminal() {
             }
         }
     }
-    this._WriteCharacter = function (key, bControlKey) {
+    this._WriteCharacter = function (key, bControlKey)
+    {
         var rec = GM.CreateVariable(20);
         rec.Deref(0, 2).toBuffer().writeUInt16LE(KEY_EVENT);                                // rec.EventType 
         rec.Deref(4, 4).toBuffer().writeUInt16LE(1);                                        // rec.Event.KeyEvent.bKeyDown
@@ -410,10 +411,10 @@ function windows_terminal() {
         rec.Deref(8, 2).toBuffer().writeUInt16LE(1);                                        // rec.Event.KeyEvent.wRepeatCount
         rec.Deref(10, 2).toBuffer().writeUInt16LE(this._user32.VkKeyScanA(key).Val);        // rec.Event.KeyEvent.wVirtualKeyCode
         rec.Deref(12, 2).toBuffer().writeUInt16LE(this._user32.MapVirtualKeyA(this._user32.VkKeyScanA(key).Val, MAPVK_VK_TO_VSC).Val);
-        
+
         var dwWritten = GM.CreateVariable(4);
         if (this._kernel32.WriteConsoleInputA(this._stdinput, rec, 1, dwWritten).Val == 0) { return (false); }
-        
+
         rec.Deref(4, 4).toBuffer().writeUInt16LE(0);                                         // rec.Event.KeyEvent.bKeyDown
         return (this._kernel32.WriteConsoleInputA(this._stdinput, rec, 1, dwWritten).Val != 0);
     }
@@ -478,23 +479,28 @@ function windows_terminal() {
         return (retVal);
     }
     
-    this._SendDataBuffer = function (data) {
+    this._SendDataBuffer = function (data)
+    {
         // { data, attributes, width, height, x, y }
-        
-        var dy, line, attr;
-        for (dy = 0; dy < data.height; ++dy) {
-            line = data.data[dy];
-            attr = data.attributes[dy];
-            line.s = line.toString();
-            
-            //line = data.data.slice(data.width * dy, (data.width * dy) + data.width);
-            //attr = data.attributes.slice(data.width * dy, (data.width * dy) + data.width);
-            this._stream.push(TranslateLine(data.x + 1, data.y + dy + 1, line, attr));
+        if (this._stream != null)
+        {
+            var dy, line, attr;
+            for (dy = 0; dy < data.height; ++dy)
+            {
+                line = data.data[dy];
+                attr = data.attributes[dy];
+                line.s = line.toString();
+
+                //line = data.data.slice(data.width * dy, (data.width * dy) + data.width);
+                //attr = data.attributes.slice(data.width * dy, (data.width * dy) + data.width);
+                this._stream.push(TranslateLine(data.x + 1, data.y + dy + 1, line, attr));
+            }
         }
     }
 
-    this._SendScroll = function _SendScroll(dx, dy) {
-        if (this._scrollTimer) { return; }
+    this._SendScroll = function _SendScroll(dx, dy)
+    {
+        if (this._scrollTimer || this._stream == null) { return; }
         
         var info = GM.CreateVariable(22);
         if (this._kernel32.GetConsoleScreenBufferInfo(this._stdoutput, info).Val == 0) { throw ('Error getting screen buffer info'); }

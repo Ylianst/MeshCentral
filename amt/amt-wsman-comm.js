@@ -167,46 +167,15 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
         obj.socketState = 1;
         obj.kerberosDone = 0;
 
-        if (obj.mode==1 ) { //Direct 
-            if (obj.xtls != 1) {
-                // Connect without TLS
-                obj.socket = new obj.net.Socket();
-                obj.socket.setEncoding('binary');
-                obj.socket.setTimeout(6000); // Set socket idle timeout
-                obj.socket.on('data', obj.xxOnSocketData);
-                obj.socket.on('close', obj.xxOnSocketClosed);
-                obj.socket.on('timeout', obj.xxOnSocketClosed);
-                obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
-            } else {
-                // Connect with TLS
-                var options = { secureProtocol: ((obj.xtlsMethod == 0) ? 'SSLv23_method' : 'TLSv1_method'), ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
-                if (obj.xtlsoptions) {
-                    if (obj.xtlsoptions.ca) options.ca = obj.xtlsoptions.ca;
-                    if (obj.xtlsoptions.cert) options.cert = obj.xtlsoptions.cert;
-                    if (obj.xtlsoptions.key) options.key = obj.xtlsoptions.key;
-                    obj.xtlsoptions = options;
-                }
-                obj.socket = obj.tls.connect(obj.port, obj.host, obj.xtlsoptions, obj.xxOnSocketConnected);
-                obj.socket.setEncoding('binary');
-                obj.socket.setTimeout(6000); // Set socket idle timeout
-                obj.socket.on('data', obj.xxOnSocketData);
-                obj.socket.on('close', obj.xxOnSocketClosed);
-                obj.socket.on('timeout', obj.xxOnSocketClosed);
-                obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
-            }
-            obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
-        } else if (obj.mode==2 || obj.mode==3) { // CIRA and APF            
-            if (obj.mode==2) { // CIRA
+        if ((obj.parent != null) && (obj.mode === 2) || (obj.mode === 3)) { // CIRA and APF            
+            if (obj.mode == 2) { // CIRA
                 var ciraconn = obj.parent.mpsserver.ciraConnections[obj.host];
                 obj.socket = obj.parent.mpsserver.SetupCiraChannel(ciraconn, obj.port);
-            } else { //APF
+            } else { // APF
                 var apfconn = obj.parent.apfserver.apfConnections[obj.host];
                 obj.socket = obj.parent.apfserver.SetupCiraChannel(apfconn, obj.port);
             }
-            obj.socket.onData = function (ccon, data) {
-                obj.xxOnSocketData(data);
-            }
-
+            obj.socket.onData = function (ccon, data) { obj.xxOnSocketData(data); }
             obj.socket.onStateChange = function (ccon, state) {
                 if (state == 0) {
                     try {
@@ -222,6 +191,36 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
                     obj.xxOnSocketConnected();
                 }
             }
+        } else {
+            // Direct connection
+            if (obj.xtls != 1) {
+                // Connect without TLS
+                obj.socket = new obj.net.Socket();
+                obj.socket.setEncoding('binary');
+                obj.socket.setTimeout(6000); // Set socket idle timeout
+                obj.socket.on('data', obj.xxOnSocketData);
+                obj.socket.on('close', obj.xxOnSocketClosed);
+                obj.socket.on('timeout', obj.xxOnSocketClosed);
+                obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
+            } else {
+                // Connect with TLS
+                var options = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                if (obj.xtlsMethod != 0) { options.secureProtocol = 'TLSv1_method'; }
+                if (obj.xtlsoptions) {
+                    if (obj.xtlsoptions.ca) options.ca = obj.xtlsoptions.ca;
+                    if (obj.xtlsoptions.cert) options.cert = obj.xtlsoptions.cert;
+                    if (obj.xtlsoptions.key) options.key = obj.xtlsoptions.key;
+                    obj.xtlsoptions = options;
+                }
+                obj.socket = obj.tls.connect(obj.port, obj.host, obj.xtlsoptions, obj.xxOnSocketConnected);
+                obj.socket.setEncoding('binary');
+                obj.socket.setTimeout(6000); // Set socket idle timeout
+                obj.socket.on('data', obj.xxOnSocketData);
+                obj.socket.on('close', obj.xxOnSocketClosed);
+                obj.socket.on('timeout', obj.xxOnSocketClosed);
+                obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
+            }
+            obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
         }
     }
 

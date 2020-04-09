@@ -160,7 +160,10 @@
                                         <tr>
                                             <td colspan=2>
                                                 <div style=float:right><input id=tokenOkButton type=submit value="Login" disabled="disabled" /></div>
-                                                <div style=float:right><input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" /></div>
+                                                <div style=float:right>
+                                                    <input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" />
+                                                    <input style="display:none;float:right" id=emailKeyButton type=button value="Email" onclick="useEmailToken()" />
+                                                </div>
                                             </td>
                                         </tr>
                                     </table>
@@ -228,7 +231,7 @@
                 <div class="footer1">{{{footer}}}</div>
                 <div class="footer2">
                     {{{rootCertLink}}}
-                    &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                    &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
                 </div>
             </div>
         
@@ -270,10 +273,11 @@
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
         var publicKeyCredentialRequestOptions = null;
+        var otpemail = ('{{{otpemail}}}' === 'true');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Hold on, reset mail sent."];
+        var okmessages = ['', "Hold on, reset mail sent.", "Email sent."];
         var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
@@ -285,15 +289,21 @@
             }
         }
 
+        // Fix links if a loginKey if used
+        var urlargs = parseUriArgs();
+        if (urlargs.key) {
+            Q('termsLinkFooter').href += '?key=' + urlargs.key;
+        }
+
         // If URL arguments are provided, add them to form posts
         if (window.location.href.indexOf('?') > 0) {
-            var urlargs = window.location.href.substring(window.location.href.indexOf('?'));
-            Q('loginformargs').value = urlargs;
-            Q('createformargs').value = urlargs;
-            Q('resetformargs').value = urlargs;
-            Q('tokenformargs').value = urlargs;
-            Q('resettokenformargs').value = urlargs;
-            Q('resetpasswordformargs').value = urlargs;
+            var xurlargs = window.location.href.substring(window.location.href.indexOf('?'));
+            Q('loginformargs').value = xurlargs;
+            Q('createformargs').value = xurlargs;
+            Q('resetformargs').value = xurlargs;
+            Q('tokenformargs').value = xurlargs;
+            Q('resettokenformargs').value = xurlargs;
+            Q('resetpasswordformargs').value = xurlargs;
         }
 
         //var webPageFullScreen = getstore('webPageFullScreen', true);
@@ -343,6 +353,7 @@
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
+                QV('emailKeyButton', otpemail && (messageid != 2));
             }
 
             if (loginMode == '5') {
@@ -353,7 +364,7 @@
                     publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
                     for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
                         publicKeyCredentialRequestOptions.allowCredentials.push(
-                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                            { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc', 'internal'] }
                         );
                     }
 
@@ -388,7 +399,7 @@
                 publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
                 for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
                     publicKeyCredentialRequestOptions.allowCredentials.push(
-                        { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc'], }
+                        { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc', 'internal'] }
                     );
                 }
 
@@ -409,6 +420,17 @@
                     function (error) { console.log('credentials-get error', error); }
                 );
             }
+        }
+
+        function useEmailToken() {
+            if (otpemail != true) return;
+            setDialogMode(1, "Secure Login", 3, useEmailKeyEx, "Send token to registed email address?");
+        }
+
+        function useEmailKeyEx() {
+            Q('hwtokenInput').value = '**email**';
+            QE('tokenOkButton', true);
+            Q('tokenOkButton').click();
         }
 
         function showPassHint(e) {
@@ -727,6 +749,7 @@
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
+        function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
 
     </script>
 </body>

@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 var settings = {};
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'sendinviteemail', 'generateinvitelink', 'config'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config'];
 //console.log(args);
 
 if (args['_'].length == 0) {
@@ -25,9 +25,12 @@ if (args['_'].length == 0) {
     console.log("  RemoveDeviceGroup         - Delete a device group.");
     console.log("  AddUserToDeviceGroup      - Add a user to a device group.");
     console.log("  RemoveUserFromDeviceGroup - Remove a user from a device group.");
+    console.log("  AddUserToDevice           - Add a user to a device.");
+    console.log("  RemoveUserFromDevice      - Remove a user from a device.");
     console.log("  SendInviteEmail           - Send an agent install invitation email.");
     console.log("  GenerateInviteLink        - Create an invitation link.");
     console.log("  Broadcast                 - Display a message to all online users.");
+    console.log("  ShowEvents                - Display real-time server events in JSON format.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
@@ -56,14 +59,26 @@ if (args['_'].length == 0) {
             break;
         }
         case 'addusertodevicegroup': {
-            if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
-            else if (args.id == null) { console.log("Add user to group missing group id, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
+            else if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
             else { ok = true; }
             break;
         }
         case 'removeuserfromdevicegroup': {
-            if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
-            else if (args.id == null) { console.log("Remove user from group missing group id, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
+            else if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'addusertodevice': {
+            if (args.userid == null) { console.log("Add user to device missing useid, use --userid [userid]"); }
+            else if (args.id == null) { console.log("Add user to device missing device id, use --id [deviceid]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'removeuserfromdevice': {
+            if (args.userid == null) { console.log("Remove user from device missing useid, use --userid [userid]"); }
+            else if (args.id == null) { console.log("Remove user from device missing device id, use --id [deviceid]"); }
             else { ok = true; }
             break;
         }
@@ -73,13 +88,17 @@ if (args['_'].length == 0) {
             break;
         }
         case 'removedevicegroup': {
-            if (args.id == null) { console.log("Message group identifier, use --id [identifier]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else { ok = true; }
             break;
         }
         case 'broadcast': {
             if (args.msg == null) { console.log("Message missing, use --msg [message]"); }
             else { ok = true; }
+            break;
+        }
+        case 'showevents': {
+            ok = true;
             break;
         }
         case 'adduser': {
@@ -94,13 +113,13 @@ if (args['_'].length == 0) {
             break;
         }
         case 'sendinviteemail': {
-            if (args.id == null) { console.log("Device group identifier id missing, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else if (args.email == null) { console.log("Device email is missing, use --email [email]"); }
-            else { ok = true; }
+			else { ok = true; }
             break;
         }
         case 'generateinvitelink': {
-            if (args.id == null) { console.log("Device group identifier id missing, use --id [groupid]"); }
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else if (args.hours == null) { console.log("Invitation validity period missing, use --hours [hours]"); }
             else { ok = true; }
             break;
@@ -116,18 +135,24 @@ if (args['_'].length == 0) {
                     }
                     case 'sendinviteemail': {
                         console.log("Send invitation email with instructions on how to install the mesh agent for a specific device group. Example usage:\r\n");
-                        console.log("  MeshCtrl SendInviteEmail --id devicegroupid --email user@sample.com");
+                        console.log("  MeshCtrl SendInviteEmail --id devicegroupid --message \"msg\" --email user@sample.com");
+                        console.log("  MeshCtrl SendInviteEmail --group \"My Computers\" --name \"Jack\" --email user@sample.com");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --email [email]        - Email address.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --name (name)          - Name of recipient to be included in the email.");
+						console.log("  --message (msg)        - Message to be included in the email.");
                         break;
                     }
                     case 'generateinvitelink': {
                         console.log("Generate a agent invitation URL for a given group. Example usage:\r\n");
                         console.log("  MeshCtrl GenerateInviteLink --id devicegroupid --hours 24");
-                        console.log("  MeshCtrl GenerateInviteLink --id devicegroupid --hours 0");
+                        console.log("  MeshCtrl GenerateInviteLink --group \"My Computers\" --hours 0");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - Device group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
                         break;
                     }
@@ -232,15 +257,17 @@ if (args['_'].length == 0) {
                         console.log("Remove a device group, Example usages:\r\n");
                         console.log("  MeshCtrl RemoveDeviceGroup --id groupid");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         break;
                     }
                     case 'addusertodevicegroup': {
                         console.log("Add a user to a device group, Example usages:\r\n");
                         console.log("  MeshCtrl AddUserToDeviceGroup --id groupid --userid userid --fullrights");
-                        console.log("  MeshCtrl AddUserToDeviceGroup --id groupid --userid userid --editgroup --manageusers");
+                        console.log("  MeshCtrl AddUserToDeviceGroup --group groupname --userid userid --editgroup --manageusers");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --userid [userid]      - The user identifier.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --fullrights           - Allow full rights over this device group.");
@@ -257,13 +284,54 @@ if (args['_'].length == 0) {
                         console.log("  --noterminal           - Hide the terminal tab from this user.");
                         console.log("  --nofiles              - Hide the files tab from this user.");
                         console.log("  --noamt                - Hide the Intel AMT tab from this user.");
+                        console.log("  --limitedevents        - User can only see his own events.");
+                        console.log("  --chatnotify           - Allow chat and notification options.");
+                        console.log("  --uninstall            - Allow remote uninstall of the agent.");
+                        if (args.limiteddesktop) { meshrights |= 4096; }
+                        if (args.limitedevents) { meshrights |= 8192; }
+                        if (args.chatnotify) { meshrights |= 16384; }
+                        if (args.uninstall) { meshrights |= 32768; }
+
                         break;
                     }
                     case 'removeuserfromdevicegroup': {
                         console.log("Remove a user from a device group, Example usages:\r\n");
                         console.log("  MeshCtrl RemoveuserFromDeviceGroup --id groupid --userid userid");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id [groupid]         - The group identifier.");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
+                        console.log("  --userid [userid]      - The user identifier.");
+                        break;
+                    }
+                    case 'addusertodevice': {
+                        console.log("Add a user to a device, Example usages:\r\n");
+                        console.log("  MeshCtrl AddUserToDevice --id deviceid --userid userid --fullrights");
+                        console.log("  MeshCtrl AddUserToDevice --id deviceid --userid userid --remotecontrol");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("  --userid [userid]      - The user identifier.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --fullrights           - Allow full rights over this device.");
+                        console.log("  --remotecontrol        - Allow device remote control operations.");
+                        console.log("  --agentconsole         - Allow agent console operations.");
+                        console.log("  --serverfiles          - Allow access to group server files.");
+                        console.log("  --wakedevices          - Allow device wake operation.");
+                        console.log("  --notes                - Allow editing of device notes.");
+                        console.log("  --desktopviewonly      - Restrict user to view-only remote desktop.");
+                        console.log("  --limiteddesktop       - Limit remote desktop keys.");
+                        console.log("  --noterminal           - Hide the terminal tab from this user.");
+                        console.log("  --nofiles              - Hide the files tab from this user.");
+                        console.log("  --noamt                - Hide the Intel AMT tab from this user.");
+                        console.log("  --limitedevents        - User can only see his own events.");
+                        console.log("  --chatnotify           - Allow chat and notification options.");
+                        console.log("  --uninstall            - Allow remote uninstall of the agent.");
+                        break;
+                    }
+                    case 'removeuserfromdevice': {
+                        console.log("Remove a user from a device, Example usages:\r\n");
+                        console.log("  MeshCtrl RemoveuserFromDeviceGroup --id deviceid --userid userid");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
                         console.log("  --userid [userid]      - The user identifier.");
                         break;
                     }
@@ -271,7 +339,7 @@ if (args['_'].length == 0) {
                         console.log("Display a message to all logged in users, Example usages:\r\n");
                         console.log("  MeshCtrl Broadcast --msg \"This is a test\"");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --msg [message]         - Message to display.");
+                        console.log("  --msg [message]        - Message to display.");
                         break;
                     }
                     default: {
@@ -507,7 +575,8 @@ function serverConnect() {
                 break;
             }
             case 'removedevicegroup': {
-                var op = { action: 'deletemesh', meshid: args.id, responseid: 'meshctrl' };
+                var op = { action: 'deletemesh', responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
@@ -527,28 +596,66 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
-                var op = { action: 'addmeshuser', meshid: args.id, usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                if (args.limitedevents) { meshrights |= 8192; }
+                if (args.chatnotify) { meshrights |= 16384; }
+                if (args.uninstall) { meshrights |= 32768; }
+                var op = { action: 'addmeshuser', usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'removeuserfromdevicegroup': {
-                var op = { action: 'removemeshuser', meshid: args.id, userid: args.userid, responseid: 'meshctrl' };
+                var op = { action: 'removemeshuser', userid: args.userid, responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'addusertodevice': {
+                var meshrights = 0;
+                if (args.fullrights) { meshrights = (8 + 16 + 32 + 64 + 128 + 16384 + 32768); }
+                if (args.remotecontrol) { meshrights |= 8; }
+                if (args.agentconsole) { meshrights |= 16; }
+                if (args.serverfiles) { meshrights |= 32; }
+                if (args.wakedevices) { meshrights |= 64; }
+                if (args.notes) { meshrights |= 128; }
+                if (args.desktopviewonly) { meshrights |= 256; }
+                if (args.noterminal) { meshrights |= 512; }
+                if (args.nofiles) { meshrights |= 1024; }
+                if (args.noamt) { meshrights |= 2048; }
+                if (args.limiteddesktop) { meshrights |= 4096; }
+                if (args.limitedevents) { meshrights |= 8192; }
+                if (args.chatnotify) { meshrights |= 16384; }
+                if (args.uninstall) { meshrights |= 32768; }
+                var op = { action: 'adddeviceuser', nodeid: args.id, usernames: [args.userid], rights: meshrights, responseid: 'meshctrl' };
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'removeuserfromdevice': {
+                var op = { action: 'adddeviceuser', nodeid: args.id, usernames: [args.userid], rights: 0, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'sendinviteemail': {
-                var op = { action: "inviteAgent", meshid: args.id, email: args.email, name: "", os: "0", responseid: 'meshctrl' }
+                var op = { action: 'inviteAgent', email: args.email, name: '', os: '0', responseid: 'meshctrl' }
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
+                if (args.name) { op.name = args.name; }
+                if (args.message) { op.msg = args.message; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'generateinvitelink': {
-                var op = { action: "createInviteLink", meshid: args.id, expire: args.hours, flags: 0, responseid: 'meshctrl' }
+                var op = { action: 'createInviteLink', expire: args.hours, flags: 0, responseid: 'meshctrl' }
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'broadcast': {
                 var op = { action: 'userbroadcast', msg: args.msg, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'showevents': {
+                console.log('Connected. Press ctrl-c to end.');
                 break;
             }
         }
@@ -561,6 +668,10 @@ function serverConnect() {
         var data = null;
         try { data = JSON.parse(rawdata); } catch (ex) { }
         if (data == null) { console.log('Unable to parse data: ' + rawdata); }
+        if (settings.cmd == 'showevents') {
+            console.log(data);
+            return;
+        }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
                 if (settings.cmd == 'serverinfo') {
@@ -591,6 +702,7 @@ function serverConnect() {
             case 'addmeshuser': //
             case 'removemeshuser': //
             case 'inviteAgent': //
+            case 'adddeviceuser': //
             case 'userbroadcast': { // BROADCAST
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }

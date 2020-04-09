@@ -274,6 +274,19 @@ module.exports.pluginHandler = function (parent) {
         })
     };
 
+    // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
+    // Convert 1.2.3-a to 1.2.3-3 where the letter is converted to a number.
+    obj.versionToNumber = function(ver) { var x = ver.split('-'); if (x.length != 2) return ver; x[1] = x[1].toLowerCase().charCodeAt(0) - 96; return x.join('.'); }
+
+    // Check if the current version of MeshCentral is at least the minimal required.
+    obj.versionCompare = function(current, minimal) {
+        if (minimal.startsWith('>=')) { minimal = minimal.substring(2); }
+        var c = obj.versionToNumber(current).split('.'), m = obj.versionToNumber(minimal).split('.');
+        if (c.length != m.length) return false;
+        for (var i = 0; i < c.length; i++) { var cx = parseInt(c[i]), cm = parseInt(m[i]); if (cx > cm) { return true; } if (cx < cm) { return false; } }
+        return true;
+    }
+
     obj.getPluginLatest = function () {
         return new Promise(function (resolve, reject) {
             parent.db.getPlugins(function (err, plugins) {
@@ -294,16 +307,12 @@ module.exports.pluginHandler = function (parent) {
                             });
                             if (curconf == null) reject("Some plugin configs could not be parsed");
                             var s = require('semver');
-                            // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
-                            // Convert the letter to ASCII for a "true" version number comparison
-                            var mcCurVer = parent.currentVer.replace(/-(.)$/, (m, p1) => { return ("000" + p1.charCodeAt(0)).substr(-3,3); });
-                            var piCompatVer = newconf.meshCentralCompat.replace(/-(.)\b/g, (m, p1) => { return ("000" + p1.charCodeAt(0)).substr(-3,3); });
                             latestRet.push({
                                 'id': curconf._id,
                                 'installedVersion': curconf.version,
                                 'version': newconf.version,
                                 'hasUpdate': s.gt(newconf.version, curconf.version),
-                                'meshCentralCompat': s.satisfies(mcCurVer, piCompatVer),
+                                'meshCentralCompat': obj.versionCompare(parent.currentVer, newconf.meshCentralCompat),
                                 'changelogUrl': curconf.changelogUrl,
                                 'status': curconf.status
                             });
@@ -377,7 +386,7 @@ module.exports.pluginHandler = function (parent) {
                     response.pipe(file);
                     file.on('finish', function () {
                         file.close(function () {
-                            var yauzl = require("yauzl");
+                            var yauzl = require('yauzl');
                             if (!obj.fs.existsSync(obj.pluginPath)) {
                                 obj.fs.mkdirSync(obj.pluginPath);
                             }

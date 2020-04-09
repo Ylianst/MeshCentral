@@ -36,6 +36,10 @@ var MESHRIGHT_NOTERMINAL = 512;
 var MESHRIGHT_NOFILES = 1024;
 var MESHRIGHT_NOAMT = 2048;
 var MESHRIGHT_LIMITEDINPUT = 4096;
+var MESHRIGHT_LIMITEVENTS = 8192;
+var MESHRIGHT_CHATNOTIFY = 16384;
+var MESHRIGHT_UNINSTALL = 32768;
+var MESHRIGHT_NODESKTOP = 65536;
 
 function createMeshCore(agent) {
     var obj = {};
@@ -276,7 +280,8 @@ function createMeshCore(agent) {
     */
 
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-    var meshCoreObj = { action: 'coreinfo', value: 'MeshCore v6', caps: 14 }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+    var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ('MeshCore CRC[' + crc32c(require('MeshAgent').coreHash) + ']') : ('MeshCore v6')), caps: 14 }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+
 
     // Get the operating system description string
     try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; }); } catch (ex) { }
@@ -790,7 +795,7 @@ function createMeshCore(agent) {
                             if (process.platform != 'win32') break;
                             var p = require('user-sessions').enumerateUsers();
                             p.sessionid = data.sessionid;
-                            p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: u.sessionid, data: u }); });
+                            p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: u }); });
                             break;
                         }
                         default:
@@ -1328,7 +1333,7 @@ function createMeshCore(agent) {
                     //this.write('MeshCore Terminal Hello');
                 } else if (this.httprequest.protocol == 2) {
                     // Check user access rights for desktop
-                    if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) {
+                    if ((((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NODESKTOP) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
                         this.httprequest.protocol = 999999;
                         this.httprequest.s.end();
@@ -1396,8 +1401,7 @@ function createMeshCore(agent) {
                     if (this.httprequest.desktop.kvm.hasOwnProperty('connectionCount')) {
                         this.httprequest.desktop.kvm.connectionCount++;
                         this.httprequest.desktop.kvm.users.push(this.httprequest.username);
-                    }
-                    else {
+                    } else {
                         this.httprequest.desktop.kvm.connectionCount = 1;
                         this.httprequest.desktop.kvm.users = [this.httprequest.username];
                     }
@@ -1505,7 +1509,6 @@ function createMeshCore(agent) {
                     //this.write('MeshCore KVM Hello!1');
 
                 } else if (this.httprequest.protocol == 5) {
-
                     // Check user access rights for files
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOFILES) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -1958,7 +1961,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
@@ -1969,6 +1972,27 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'startupoptions':
+                    response = JSON.stringify(require('MeshAgent').getStartupOptions());
+                    break;
+                case 'alert':
+                    if (args['_'].length ==  0)
+                    {
+                        response = "Proper usage: alert TITLE, CAPTION [, TIMEOUT]"; // Display usage
+                    }
+                    else
+                    {
+                        var p = args['_'].join(' ').split(',');
+                        if(p.length<2)
+                        {
+                            response = "Proper usage: alert TITLE, CAPTION [, TIMEOUT]"; // Display usage
+                        }
+                        else
+                        {
+                            this._alert = require('message-box').create(p[0], p[1], p.length==3?parseInt(p[2]):9999,1);
+                        }
+                    }
+                    break;
                 case 'agentsize':
                     var actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
                     if (process.platform == 'win32') {
@@ -2366,7 +2390,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + meshCoreObj.value + '.\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
+                    response = 'Current Core: ' +  meshCoreObj.value + '\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amt != null) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amt.lmsstate] + '.'; }
                     if (meshCoreObj.osdesc) { response += '\r\nOS: ' + meshCoreObj.osdesc + '.'; }
                     response += '\r\nModules: ' + addedModules.join(', ') + '.';

@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Ověření e-mailem
+Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) provádí ověření e-mailem. Chcete-li proces dokončit, přejděte na následující odkaz:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~
+Pokud jste tento požadavek nezačali, ignorujte tento e-mail.
