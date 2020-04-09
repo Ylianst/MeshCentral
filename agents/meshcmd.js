@@ -398,7 +398,7 @@ function run(argv) {
             console.log('  --list                    List of stored Wifi profile');
             console.log('  --add                     Add new Wifi profile');
             console.log('     --name                 New Wifi profile name');
-            console.log('     --priority             Priority of this profile - default 1');
+            console.log('     --priority             Priority of this profile - default 0');
             console.log('     --ssid                 Wifi SSID');
             console.log('     --auth                 Wifi Authentication method (4 - WPA, 6 - WPA2/RSN) - default 6');
             console.log('     --enc                  Wifi Encryption type (3 - TKIP, 4 - CCMP) - default 3');
