@@ -362,7 +362,9 @@
                                 <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
                             </div>
                             <div>
-                                <input id=UserNewAccountButton type=button style=margin-left:6px onclick=showCreateNewAccountDialog() value="New Account..." />
+                                <input type=button id=UsersSelectAllButton onclick="p3usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupActionButton disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
+                                <input id=UserNewAccountButton type=button onclick=showCreateNewAccountDialog() value="New Account..." />
                                 <input id=UserSearchInput type=text style=width:120px;margin-left:6px placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                             </div>
                         </td>
@@ -9491,6 +9493,10 @@
             var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
             x += '<th>' + "Name" + '<th style=width:80px>' + "Groups" + '<th style=width:120px>' + nobreak("Last Access") + '<th style=width:120px>' + "Permissions";
 
+            // Save the list of currently checked users
+            var checkedUserids = [], elements = document.getElementsByClassName('UserCheckbox');
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedUserids.push(elements[i].value); } }
+
             // Online users
             for (var i in sortedUserIds) {
                 var user = users[sortedUserIds[i]], sessions = null;
@@ -9531,6 +9537,12 @@
             else if (hiddenUsers > 1) { x += '<br />' + format("{0} more users not shown, use search box to look for users...", hiddenUsers) + '<br />'; }
             if (maxUsers == 100) { x += '<br />' + "No users found." + '<br />'; }
             QH('p3users', x);
+
+            // Re-check userid's
+            elements = document.getElementsByClassName('UserCheckbox');
+            var eself = encodeURIComponent(userinfo._id);
+            for (var i=0;i<elements.length;i++) { elements[i].checked = ((checkedUserids.indexOf(elements[i].value) >= 0) && (elements[i].value != eself)); }
+            p3updateInfo();
 
             // Update current user panel if needed
             if ((currentUser != null) && (xxcurrentView == 30)) { gotoUser(encodeURIComponent(currentUser._id),true); }
@@ -9589,11 +9601,73 @@
 
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
             x += '<div class=bar>';
-            x += '<div class=baricon><input type=checkbox></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
+            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             x += '<div class=g1></div><div class=g2></div><div>';
             x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
             return x;
+        }
+
+        // Called when a user checkbox is clicked
+        function p3updateInfo() {
+            var elements = document.getElementsByClassName('UserCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            QE('UsersGroupActionButton', checkcount > 0);
+            Q('UsersSelectAllButton').value = (checkcount > 0)?"Select None":"Select All";
+        }
+
+        // Called to select all or unselect all users
+        function p3usersSelectallButtonFunction() {
+            var eself = encodeURIComponent(userinfo._id);
+            var elements = document.getElementsByClassName('UserCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0) && (elements[i].value != eself); }
+            p3updateInfo();
+        }
+        
+        // Called to perform a group action on many users
+        function p3usersGroupActionFunction() {
+            var elements = document.getElementsByClassName('UserCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            if (checkcount == 0) return;
+
+            var x = "Select an operation to perform on all selected users." + '<br /><br />';
+            x += addHtmlValue("Operation", '<select style=width:240px id=d3groupop><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option><option value=3>' + "Delete account" + '</option></select>');
+            setDialogMode(2, "Group Action", 3, p3usersGroupActionFunctionEx, x);
+        }
+
+        function p3usersGroupActionFunctionEx() {
+            var elements = document.getElementsByClassName('UserCheckbox'), userids = [];
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { userids.push(decodeURIComponent(elements[i].value)); } }
+            var op = Q('d3groupop').value;
+            if (op == 1) {
+                // Lock accounts
+                for (var i in userids) {
+                    var user = users[userids[i]], siteadmin = (user.siteadmin == null)?0:user.siteadmin;
+                    if ((siteadmin & 32) == 0) { siteadmin += 32; meshserver.send({ action: 'edituser', id: user._id, siteadmin: siteadmin }); }
+                }
+            } else if (op == 2) {
+                // Unlock accounts
+                for (var i in userids) {
+                    var user = users[userids[i]], siteadmin = (user.siteadmin == null)?0:user.siteadmin;
+                    if ((siteadmin & 32) != 0) { siteadmin -= 32; meshserver.send({ action: 'edituser', id: user._id, siteadmin: siteadmin }); }
+                }
+            } else if (op == 3) {
+                // Delete accounts, ask for confirmation
+                var x = "Confirm delete selected account(s)?" + '<br /><br />';
+                x += '<label><input id=d3check type=checkbox onchange=p3usersGroupActionFunctionDelEx() />' + "Confirm" + '</label>';
+                setDialogMode(2, "Delete Accounts", 3, groupActionFunctionDelEx, x);
+                QE('idx_dlgOkButton', false);
+            }
+        }
+
+        function p3usersGroupActionFunctionDelEx() { QE('idx_dlgOkButton', Q('d3check').checked); }
+
+        // Delete a batch of user accounts
+        function groupActionFunctionDelEx(b) {
+            var elements = document.getElementsByClassName('UserCheckbox'), userids = [];
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { userids.push(decodeURIComponent(elements[i].value)); } }
+            for (var i in userids) { var user = users[userids[i]]; meshserver.send({ action: 'deleteuser', userid: user._id, username: user.name }); }
         }
 
         // Highlights the user being hovered
