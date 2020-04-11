@@ -3862,8 +3862,8 @@
             } else if (op == 101) {
                 // Group delete, ask for confirmation
                 var x = "Confirm delete selected devices(s)?" + '<br /><br />';
-                x += '<label><input id=d2check type=checkbox onchange=d2groupActionFunctionDelEx() />' + "Confirm" + '</label>';
-                setDialogMode(2, "Delete Nodes", 3, groupActionFunctionDelEx, x);
+                x += '<label><input id=d2check type=checkbox onchange=d2groupActionFunctionDelCheck() />' + "Confirm" + '</label>';
+                setDialogMode(2, "Delete Nodes", 3, d2groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             } else if (op == 102) {
                 // Move computers to a different group
@@ -3908,8 +3908,8 @@
             return false;
         }
 
-        function d2groupActionFunctionDelEx() { QE('idx_dlgOkButton', Q('d2check').checked); }
-        function groupActionFunctionDelEx() { meshserver.send({ action: 'removedevices', nodeids: getCheckedDevices() }); }
+        function d2groupActionFunctionDelCheck() { QE('idx_dlgOkButton', Q('d2check').checked); }
+        function d2groupActionFunctionDelExec() { meshserver.send({ action: 'removedevices', nodeids: getCheckedDevices() }); }
 
         function onSortSelectChange(skipsave) {
             sort = document.getElementById('sortselect').selectedIndex;
@@ -9655,16 +9655,16 @@
             } else if (op == 3) {
                 // Delete accounts, ask for confirmation
                 var x = "Confirm delete selected account(s)?" + '<br /><br />';
-                x += '<label><input id=d3check type=checkbox onchange=p3usersGroupActionFunctionDelEx() />' + "Confirm" + '</label>';
-                setDialogMode(2, "Delete Accounts", 3, groupActionFunctionDelEx, x);
+                x += '<label><input id=d3check type=checkbox onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
+                setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             }
         }
 
-        function p3usersGroupActionFunctionDelEx() { QE('idx_dlgOkButton', Q('d3check').checked); }
+        function p3usersGroupActionFunctionDelCheck() { QE('idx_dlgOkButton', Q('d3check').checked); }
 
         // Delete a batch of user accounts
-        function groupActionFunctionDelEx(b) {
+        function p3groupActionFunctionDelExec(b) {
             var elements = document.getElementsByClassName('UserCheckbox'), userids = [];
             for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { userids.push(decodeURIComponent(elements[i].value)); } }
             for (var i in userids) { var user = users[userids[i]]; meshserver.send({ action: 'deleteuser', userid: user._id, username: user.name }); }

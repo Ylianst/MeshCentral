@@ -298,9 +298,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 88: // MNG_KVM_MOUSE_CURSOR
                 if (cmdsize != 5) break;
                 var cursorNum = str.charCodeAt(4);
-                console.log('MouseCursorRaw', cursorNum);
                 if (cursorNum > mouseCursors.length) { cursorNum = 0; }
-                console.log('MouseCursorStr', mouseCursors[cursorNum]);
                 obj.CanvasId.style.cursor = mouseCursors[cursorNum];
                 break;
         }
