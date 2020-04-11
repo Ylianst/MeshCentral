@@ -223,7 +223,7 @@
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
       "de": " Passwort-Hinweis kann verwendet werden, wird jedoch nicht empfohlen.",
       "en": " Password hint can be used but is not recommanded.",
-      "es": " Sugerencia de contraseña puede ser usada pero no se recomienda.",
+      "es": "La sugerencia de contraseña se puede usar pero no se recomienda.",
       "fr": " Un indice de mot de passe peut être utilisé mais n'est pas recommandé.",
       "hi": " पासवर्ड संकेत का उपयोग किया जा सकता है, लेकिन अनुशंसित नहीं है।",
       "ja": " パスワードヒントは使用できますが、推奨されません。",
@@ -240,7 +240,7 @@
       "cs": " Než budou moci být přiřazeni ke skupině zařízení, je třeba aby se uživatelé alespoň jednou k tomuto serveru přihlásili.",
       "de": " Benutzer müssen sich an diesem Server anmelden, bevor sie einer Gerätegruppe hinzugefügt werden können.",
       "en": " Users need to login to this server once before they can be added to a device group.",
-      "es": " Los usuarios deben iniciar sesión en el server antes de que pueda agregar un dispositivo al grupo.",
+      "es": "Los usuarios deben iniciar sesión en este servidor una vez antes de poder agregarlos a un grupo de dispositivos.",
       "fr": " Les utilisateurs doivent se connecter une fois sur ce serveur avant de pouvoir être ajoutés à un groupe de périphériques..",
       "hi": " डिवाइस समूह में जोड़े जाने से पहले उपयोगकर्ताओं को एक बार इस सर्वर में प्रवेश करना होगा।",
       "ja": " ユーザーは、デバイスグループに追加する前にこのサーバーに1回ログインする必要があります。",
@@ -258,7 +258,7 @@
       "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a libovolného hesla.",
       "de": " und gegenüber dem Server authentifizieren mittels dieses Benutzernamens und eines beliebigen Passworts.",
       "en": " and authenticate to the server using this username and any password.",
-      "es": " y autenticarse al server usando este usuario y cualquier contraseña.",
+      "es": " y autenticarse al servidor usando este usuario y cualquier contraseña.",
       "fr": " et vous authentifier sur le serveur en utilisant ce nom d'utilisateur et n'importe quel mot de passe.",
       "hi": " और इस उपयोगकर्ता नाम और किसी भी पासवर्ड का उपयोग कर सर्वर को प्रमाणित करें।",
       "ja": " このユーザー名とパスワードを使用してサーバーに対して認証します。",
@@ -275,7 +275,7 @@
       "cs": " a ověřovat se na serveru pomocí tohoto uživatelského jména a hesla.",
       "de": " und gegenüber dem Server authentifizieren mittels dieses Benutzernamens und Passworts.",
       "en": " and authenticate to the server using this username and password.",
-      "es": " y autenticarse al server usando este usuario y contraseña.",
+      "es": " y autenticarse al servidor usando este usuario y contraseña.",
       "fr": " et authentifiez-vous sur le serveur en utilisant ce nom d'utilisateur et mot de passe.",
       "hi": " और इस उपयोगकर्ता नाम और पासवर्ड का उपयोग कर सर्वर को प्रमाणित करें।",
       "ja": " このユーザー名とパスワードを使用してサーバーに対して認証します。",
@@ -583,7 +583,7 @@
       "cs": ", spusťte ho a zvolte „Nainstalovat“ nebo „Připojit“.",
       "de": ", ausführen und \"Installieren\" oder \"Verbinden\" wählen.",
       "en": ", run it and press \"Install\" or \"Connect\".",
-      "es": ", execute y presione \"Instalar\" o \"Conectar\".",
+      "es": "ejecútelo y presione \"Instalar\" o \"Conectar\".",
       "fr": ", exécutez le puis cliquez sur \"Install\" or \"Connect.",
       "hi": ", इसे चलाएं और \"इंस्टॉल करें\" या \"कनेक्ट\" दबाएं।",
       "ja": "、実行して「インストール」または「接続」を押します。",
@@ -606,6 +606,7 @@
       "ja": "、あなたは今それを使ってそれにアクセスできます：",
       "ru": "Вы можете получить к нему доступ сейчас:",
       "zh-chs": "，您现在可以通过以下方式访问它：",
+      "es": ", ahora puede acceder con:",
       "xloc": [
         "account-invite.html->2->3"
       ]
@@ -1239,6 +1240,7 @@
     },
     {
       "en": "3.All advertising materials mentioning features or use of this software must display the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
+      "es": "3. Todos los materiales publicitarios que mencionen características o el uso de este software deben mostrar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit. (Http://www.openssl.org/)\"",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->35->1",
         "terms.handlebars->container->column_l->35->1"
@@ -1246,6 +1248,7 @@
     },
     {
       "en": "3.Neither the name of CodePlex Foundation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
+      "es": "3. Ni el nombre de la Fundación CodePlex ni los nombres de sus colaboradores pueden utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito específico.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->19->1",
         "terms.handlebars->container->column_l->19->1"
@@ -1253,6 +1256,7 @@
     },
     {
       "en": "3.jQuery Foundation - MIT License",
+      "es": "3.jQuery Foundation - Licencia MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->45->1->0",
         "terms.handlebars->container->column_l->45->1->0"
@@ -1324,6 +1328,7 @@
     },
     {
       "en": "4.The names \"OpenSSL Toolkit\" and \"OpenSSL Project\" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact openssl-core@openssl.org.",
+      "es": "4. Los nombres \"OpenSSL Toolkit\" y \"OpenSSL Project\" no deben utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito. Para obtener un permiso por escrito, comuníquese con openssl-core@openssl.org.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->37->1",
         "terms.handlebars->container->column_l->37->1"
@@ -1331,6 +1336,7 @@
     },
     {
       "en": "4.jQuery User Interface - MIT License",
+      "es": "4.jQuery User Interface - Licencia MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->51->1->0",
         "terms.handlebars->container->column_l->51->1->0"
@@ -1401,6 +1407,7 @@
     },
     {
       "en": "5.Products derived from this software may not be called \"OpenSSL\" nor may \"OpenSSL\" appear in their names without prior written permission of the OpenSSL Project.",
+      "es": "5. Los productos derivados de este software no pueden llamarse \"OpenSSL\" ni \"OpenSSL\" aparecer en sus nombres sin el permiso previo por escrito del Proyecto OpenSSL.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->39->1",
         "terms.handlebars->container->column_l->39->1"
@@ -1408,6 +1415,7 @@
     },
     {
       "en": "5.noVNC - Mozilla Public License 2.0",
+      "es": "5.noVNC - Mozilla Public License 2.0",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->59->1->0",
         "terms.handlebars->container->column_l->59->1->0"
@@ -1461,6 +1469,7 @@
     },
     {
       "en": "6.Rcarousel - MIT LIcense",
+      "es": "6.Rcarousel - Licencia MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->65->1->0",
         "terms.handlebars->container->column_l->65->1->0"
@@ -1468,6 +1477,7 @@
     },
     {
       "en": "6.Redistributions of any form whatsoever must retain the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)\".",
+      "es": "6. Las redistribuciones de cualquier forma deben conservar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit (http://www.openssl.org/)\".",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->41->1",
         "terms.handlebars->container->column_l->41->1"
@@ -1503,6 +1513,7 @@
       "pt": "Versão de 64 bits do MacOS Mesh Agent",
       "ru": "64-битная версия MacOS Mesh Agent",
       "zh-chs": "64位版本的MacOS Mesh Agent",
+      "es": "versión de 64bit de Agente Mesh para MacOs ",
       "xloc": [
         "default.handlebars->27->326"
       ]
@@ -1572,6 +1583,7 @@
     },
     {
       "en": "7.Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK License",
+      "es": "7.Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 UK Licencia",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->73->1->0",
         "terms.handlebars->container->column_l->73->1->0"
@@ -2048,6 +2060,7 @@
       "nl": "Account is uitgeschakeld",
       "ru": "Аккаунт заблокирован",
       "zh-chs": "帐户已被锁定",
+      "es": "La cuenta esta bloqueada",
       "xloc": [
         "default.handlebars->27->1357",
         "default.handlebars->27->1461"
@@ -2320,6 +2333,7 @@
       "pt": "Adicionar Dispositivo",
       "ru": "Добавить устройство",
       "zh-chs": "添加設備",
+      "es": "Agregar Dispositivo",
       "xloc": [
         "default.handlebars->27->1517"
       ]
@@ -2371,6 +2385,7 @@
       "nl": "Apparaatrechten toevoegen",
       "ru": "Добавить разрешения для устройства",
       "zh-chs": "添加设备权限",
+      "es": "Agregar permisos de dispositivo",
       "xloc": [
         "default.handlebars->27->1220"
       ]
@@ -2526,6 +2541,7 @@
       "nl": "Gebruikersmachtigingen voor apparaat toevoegen",
       "ru": "Добавить разрешения для пользовательских устройств",
       "zh-chs": "添加用户设备权限",
+      "es": "Agregar permisos del usuario del dispositivo",
       "xloc": [
         "default.handlebars->27->1223"
       ]
@@ -2709,7 +2725,7 @@
       "cs": "Přidat nový počítač pomocí agenta.",
       "de": "Füge einen neuen Rechner durch Installation des Mesh-Agenten zu diesem Mesh hinzu.",
       "en": "Add a new computer to this mesh by installing the mesh agent.",
-      "es": "Agregue una nueva computadora al MESH instalando el agente.",
+      "es": "Agregue una nueva computadora a este MESH instalando el agente.",
       "fr": "Ajouter un nouvel ordinateur à ce groupe en installant l'agent",
       "hi": "मेष एजेंट स्थापित करके इस मेष में एक नया कंप्यूटर जोड़ें।",
       "ja": "メッシュエージェントをインストールして、このメッシュに新しいコンピューターを追加します。",
@@ -2744,7 +2760,7 @@
       "cs": "Adresy",
       "de": "Adressen",
       "en": "Addresses",
-      "es": "Direcciónes",
+      "es": "Direcciones",
       "fr": "Adresses",
       "hi": "पतों",
       "ja": "住所",
@@ -2761,7 +2777,7 @@
       "cs": "Admin Control Mode (ACM)",
       "de": "Admin Control Mode (ACM)",
       "en": "Admin Control Mode (ACM)",
-      "es": "Admin Control Mode (ACM)",
+      "es": "Modo de control de administrador (ACM)",
       "fr": "Admin Control Mode (ACM)",
       "hi": "व्यवस्थापक नियंत्रण मोड (ACM)",
       "ja": "管理制御モード（ACM）",
@@ -2786,6 +2802,7 @@
       "pt": "Credenciais de administrador",
       "ru": "Учетные данные администратора",
       "zh-chs": "管理員憑證",
+      "es": "Credenciales del Administrador",
       "xloc": [
         "default.handlebars->27->774"
       ]
@@ -2864,7 +2881,7 @@
       "cs": "Správce",
       "de": "Administrator",
       "en": "Administrator",
-      "es": "Administrator",
+      "es": "Administrador",
       "fr": "Administrateur",
       "hi": "प्रशासक",
       "ja": "管理者",
@@ -2881,7 +2898,7 @@
       "cs": "afrikánština",
       "de": "Afrikaans",
       "en": "Afrikaans",
-      "es": "Africanos",
+      "es": "Afrikaans",
       "fr": "afrikaans",
       "hi": "अफ्रीकी",
       "ja": "アフリカーンス語",
@@ -3000,6 +3017,7 @@
       "pt": "Instalação do agente",
       "ru": "Установка агента",
       "zh-chs": "代理安裝",
+      "es": "Instalación del Agente",
       "xloc": [
         "agentinvite.handlebars->3->3"
       ]
@@ -3008,7 +3026,7 @@
       "cs": "Agent Relay (předávání)",
       "de": "Agent-Weiterleitung",
       "en": "Agent Relay",
-      "es": "Agente Relay",
+      "es": "Agente de Retransmisión",
       "fr": "Relais d'agent",
       "hi": "एजेंट रिले",
       "ja": "エージェントリレー",
@@ -3183,7 +3201,7 @@
       "cs": "albánština",
       "de": "Albanian",
       "en": "Albanian",
-      "es": "Albanesa",
+      "es": "Albanés",
       "fr": "albanais",
       "hi": "अल्बानियन",
       "ja": "アルバニア語",
@@ -3219,7 +3237,7 @@
       "cs": "Všechny displeje",
       "de": "Alle Bildschirme",
       "en": "All Displays",
-      "es": "Todos los Displays",
+      "es": "Todas las Pantallas",
       "fr": "Tous affichages",
       "hi": "सभी प्रदर्शित करता है",
       "ja": "すべてのディスプレイ",
@@ -3236,7 +3254,7 @@
       "cs": "Zaměřit vše",
       "de": "Alles fokussieren",
       "en": "All Focus",
-      "es": "All Focus",
+      "es": "Todos se Centran",
       "fr": "Tout se concentrer",
       "hi": "ऑल फोकस",
       "ja": "オールフォーカス",
@@ -3255,7 +3273,7 @@
       "cs": "Umožnit uživatelům spravovat tuto skupinu a zařízení v této skupině.",
       "de": "Erlaube Benutzern, diese Gerätegruppe und die Geräte darin zu verwalten.",
       "en": "Allow users to manage this device group and devices in this group.",
-      "es": "Permitir a los Usuarios Administrar este grupo de dispositivos y Dispositivos en este grupo.",
+      "es": "Permitir a los Usuarios Administrar este grupo de dispositivos y los dispositivos en este grupo.",
       "fr": "Autoriser les utilisateurs à gérer ce groupe et les périphériques de ce groupe.",
       "hi": "उपयोगकर्ताओं को इस समूह में इस उपकरण समूह और उपकरणों को प्रबंधित करने की अनुमति दें।",
       "ja": "ユーザーがこのデバイスグループとこのグループ内のデバイスを管理できるようにします。",
@@ -3278,6 +3296,7 @@
       "nl": "Sta gebruikers toe om dit apparaat te beheren.",
       "ru": "Разрешить пользователям управлять этим устройством.",
       "zh-chs": "允许用户管理此设备。",
+      "es": "Permitir al usuario administrar este dispositivo",
       "xloc": [
         "default.handlebars->27->1188"
       ]
@@ -3322,7 +3341,7 @@
       "cs": "Alternativní (F10 = ESC+0)",
       "de": "Alternativ (F10 = ESC+0)",
       "en": "Alternate (F10 = ESC+0)",
-      "es": "Alternativo (F10 = ESC + 0)",
+      "es": "Alternar (F10 = ESC + 0)",
       "fr": "Alternative (F10 = ESC+0)",
       "hi": "वैकल्पिक (F10 = ESC + 0)",
       "ja": "代替（F10 = ESC + 0）",
@@ -3347,6 +3366,7 @@
       "pt": "Porta alternativa",
       "ru": "Поменять порт",
       "zh-chs": "備用端口",
+      "es": "Puerto Alternativo",
       "xloc": [
         "default.handlebars->altPortContextMenu->cxaltport->0"
       ]
@@ -3394,6 +3414,7 @@
       "ja": "サーバー上にアカウントが作成されました",
       "ru": "Учетная запись была создана для вас на сервере",
       "zh-chs": "在服务器上为您创建了一个帐户",
+      "es": "Una cuenta ha sido creada en su servidor",
       "xloc": [
         "account-invite.html->2->3"
       ]
@@ -3401,6 +3422,7 @@
     {
       "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
       "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
+      "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \"[[[ACCOUNTNAME]]]\" y la contraseña \"[[[PASSWORD]]]\".",
       "xloc": [
         "account-invite.txt"
       ]
@@ -3413,7 +3435,8 @@
       "fr": "Un compte a été créé pour vous sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/), vous pouvez y accéder maintenant avec le nom d'utilisateur \\\"[[[ACCOUNTNAME]]]\\\" et le mot de passe \\\"[[[PASSWORD]]]\\\".",
       "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）にアカウントが作成されました。ユーザー名 \\\"[[[ACCOUNTNAME]]]\\\" とパスワード \\\"[[[PASSWORD]]]\\\"。",
       "ru": "Для вас была создана учетная запись на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/), теперь вы можете получить к ней доступ с помощью имени пользователя \\\"[[[ACCOUNTNAME]]]\\\" и пароля \\\"[[[PASSWORD]]]\\\".",
-      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/ 上为您创建了一个帐户，您现在可以使用用户名\\“ [[[ACCOUNTNAME]]] 和密码 \\\"[[[PASSWORD]]]\\\"。"
+      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/ 上为您创建了一个帐户，您现在可以使用用户名\\“ [[[ACCOUNTNAME]]] 和密码 \\\"[[[PASSWORD]]]\\\"。",
+      "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \\\"[[[ACCOUNTNAME]]]\\\" y la contraseña \\\"[[[PASSWORD]]]\\\"."
     },
     {
       "cs": "Android APK",
@@ -3490,7 +3513,7 @@
       "cs": "Všechny podporované",
       "de": "Alle unterstützten",
       "en": "Any supported",
-      "es": "Cualquier Soporte.",
+      "es": "Cualquiera soportado.",
       "fr": "Tout pris en charge",
       "hi": "कोई समर्थित",
       "ja": "サポートされているもの",
@@ -3566,6 +3589,7 @@
       "pt": "Árabe (Argélia)",
       "ru": "Арабский (Алжир)",
       "zh-chs": "阿拉伯文（阿爾及利亞）",
+      "es": "Arabe (Algeria)",
       "xloc": [
         "default.handlebars->27->829"
       ]
@@ -3582,6 +3606,7 @@
       "pt": "Árabe (Bahrain)",
       "ru": "Арабский (Бахрейн)",
       "zh-chs": "阿拉伯文（巴林）",
+      "es": "Arabe (Bahrain)",
       "xloc": [
         "default.handlebars->27->830"
       ]
@@ -3598,6 +3623,7 @@
       "pt": "Árabe (Egito)",
       "ru": "Арабский (Египет)",
       "zh-chs": "阿拉伯文（埃及）",
+      "es": "Arabe (Egipto)",
       "xloc": [
         "default.handlebars->27->831"
       ]
@@ -3614,6 +3640,7 @@
       "pt": "Árabe (Iraque)",
       "ru": "Арабский (Ирак)",
       "zh-chs": "阿拉伯文（伊拉克）",
+      "es": "Arabe (Irak)",
       "xloc": [
         "default.handlebars->27->832"
       ]
@@ -3630,6 +3657,7 @@
       "pt": "Árabe (Jordânia)",
       "ru": "Арабский (Иордания)",
       "zh-chs": "阿拉伯語（約旦）",
+      "es": "Árabe (Jordania)",
       "xloc": [
         "default.handlebars->27->833"
       ]
@@ -3646,6 +3674,7 @@
       "pt": "Árabe (Kuwait)",
       "ru": "Арабский (Кувейт)",
       "zh-chs": "阿拉伯文（科威特）",
+      "es": "Árabe (Kuwait)",
       "xloc": [
         "default.handlebars->27->834"
       ]
@@ -3662,6 +3691,7 @@
       "pt": "Árabe (Líbano)",
       "ru": "Арабский (Ливан)",
       "zh-chs": "阿拉伯語（黎巴嫩）",
+      "es": "Árabe (Líbano)",
       "xloc": [
         "default.handlebars->27->835"
       ]
@@ -3678,6 +3708,7 @@
       "pt": "Árabe (Líbia)",
       "ru": "Арабский (Ливия)",
       "zh-chs": "阿拉伯文（利比亞）",
+      "es": "Árabe (Libia)",
       "xloc": [
         "default.handlebars->27->836"
       ]
@@ -3694,6 +3725,7 @@
       "pt": "Árabe (Marrocos)",
       "ru": "Арабский (Марокко)",
       "zh-chs": "阿拉伯文（摩洛哥）",
+      "es": "Árabe (Marruecos)",
       "xloc": [
         "default.handlebars->27->837"
       ]
@@ -3710,6 +3742,7 @@
       "pt": "Árabe (Omã)",
       "ru": "Арабский (Оман)",
       "zh-chs": "阿拉伯文（阿曼）",
+      "es": "Árabe (Omán)",
       "xloc": [
         "default.handlebars->27->838"
       ]
@@ -3726,6 +3759,7 @@
       "pt": "Árabe (Catar)",
       "ru": "Арабский (Катар)",
       "zh-chs": "阿拉伯語（卡塔爾）",
+      "es": "Árabe (Qatar)",
       "xloc": [
         "default.handlebars->27->839"
       ]
@@ -3742,6 +3776,7 @@
       "pt": "Árabe (Arábia Saudita)",
       "ru": "Арабский (Саудовская Аравия)",
       "zh-chs": "阿拉伯語（沙特阿拉伯）",
+      "es": "Árabe (Arabia Saudita)",
       "xloc": [
         "default.handlebars->27->840"
       ]
@@ -3758,6 +3793,7 @@
       "pt": "Árabe (padrão)",
       "ru": "Арабский (стандартный)",
       "zh-chs": "阿拉伯語（標準）",
+      "es": "Árabe (estándar)",
       "xloc": [
         "default.handlebars->27->828"
       ]
@@ -3774,6 +3810,7 @@
       "pt": "Árabe (Síria)",
       "ru": "Арабский (Сирия)",
       "zh-chs": "阿拉伯語（敘利亞）",
+      "es": "Árabe (Siria)",
       "xloc": [
         "default.handlebars->27->841"
       ]
@@ -3790,6 +3827,7 @@
       "pt": "Árabe (Tunísia)",
       "ru": "Арабский (Тунис)",
       "zh-chs": "阿拉伯文（突尼斯）",
+      "es": "Árabe (Túnez)",
       "xloc": [
         "default.handlebars->27->842"
       ]
@@ -3806,6 +3844,7 @@
       "pt": "Árabe (U.A.E)",
       "ru": "Арабский (О.А.Э.)",
       "zh-chs": "阿拉伯文（阿聯酋）",
+      "es": "Árabe (U.A.E.)",
       "xloc": [
         "default.handlebars->27->843"
       ]
@@ -3822,6 +3861,7 @@
       "pt": "Árabe (Iêmen)",
       "ru": "Арабский (Йемен)",
       "zh-chs": "阿拉伯文（也門）",
+      "es": "Árabe (Yemen)",
       "xloc": [
         "default.handlebars->27->844"
       ]
@@ -3838,6 +3878,7 @@
       "pt": "Aragonês",
       "ru": "Арагонский",
       "zh-chs": "阿拉貢人",
+      "es": "Aragonés",
       "xloc": [
         "default.handlebars->27->845"
       ]
@@ -3974,6 +4015,7 @@
       "pt": "Armênio",
       "ru": "Армянский",
       "zh-chs": "亞美尼亞人",
+      "es": "Armenio",
       "xloc": [
         "default.handlebars->27->846"
       ]
@@ -3990,6 +4032,7 @@
       "pt": "Assamese",
       "ru": "Ассамский",
       "zh-chs": "阿薩姆語",
+      "es": "Asamés",
       "xloc": [
         "default.handlebars->27->847"
       ]
@@ -4006,6 +4049,7 @@
       "pt": "Asturiano",
       "ru": "Астурии",
       "zh-chs": "阿斯圖里亞斯人",
+      "es": "Asturiano",
       "xloc": [
         "default.handlebars->27->848"
       ]
@@ -4168,6 +4212,7 @@
       "pt": "Azerbaijão",
       "ru": "Азербайджанский",
       "zh-chs": "阿塞拜疆",
+      "es": "Azerbaiyano",
       "xloc": [
         "default.handlebars->27->849"
       ]
@@ -4361,7 +4406,7 @@
       "cs": "Nesprávný certifikát webu",
       "de": "Ungültiges Web-Zertifikat",
       "en": "Bad Web Certificate",
-      "es": "Cenrtificado Web Erroneo",
+      "es": "Certificado Web Erroneo",
       "fr": "Mauvais certificat web",
       "hi": "खराब वेब प्रमाणपत्र",
       "ja": "不正なWeb証明書",
@@ -4386,6 +4431,7 @@
       "pt": "Basco",
       "ru": "Баскский",
       "zh-chs": "巴斯克",
+      "es": "Vasco",
       "xloc": [
         "default.handlebars->27->850"
       ]
@@ -4419,6 +4465,7 @@
       "pt": "Bielorrusso",
       "ru": "Белорусский",
       "zh-chs": "白俄羅斯語",
+      "es": "Bielorruso",
       "xloc": [
         "default.handlebars->27->852"
       ]
@@ -4435,6 +4482,7 @@
       "pt": "Bengali",
       "ru": "Бенгальский",
       "zh-chs": "孟加拉",
+      "es": "Bengalí",
       "xloc": [
         "default.handlebars->27->853"
       ]
@@ -4448,6 +4496,7 @@
       "ja": "宜しくお願いします、",
       "ru": "С уважением,",
       "zh-chs": "最好的祝福，",
+      "es": "Atentamente,",
       "xloc": [
         "account-invite.html->2",
         "account-invite.txt",
@@ -4467,6 +4516,7 @@
       "pt": "Bósnia",
       "ru": "Боснийский",
       "zh-chs": "波斯尼亞人",
+      "es": "Bosnio",
       "xloc": [
         "default.handlebars->27->854"
       ]
@@ -4483,6 +4533,7 @@
       "pt": "Breton",
       "ru": "Бретонский",
       "zh-chs": "布列塔尼",
+      "es": "Bretón",
       "xloc": [
         "default.handlebars->27->855"
       ]
@@ -4551,6 +4602,7 @@
       "pt": "Búlgaria",
       "ru": "Болгарский",
       "zh-chs": "保加利亞語",
+      "es": "Búlgaro",
       "xloc": [
         "default.handlebars->27->851"
       ]
@@ -4567,6 +4619,7 @@
       "pt": "Birmanês",
       "ru": "Бирманский",
       "zh-chs": "緬甸人",
+      "es": "Birmano",
       "xloc": [
         "default.handlebars->27->856"
       ]
@@ -4648,7 +4701,7 @@
       "cs": "Vytížení procesoru",
       "de": "CPU-Auslastung",
       "en": "CPU Load",
-      "es": "Carga en el CPU",
+      "es": "Carga de la CPU",
       "fr": "Charge CPU",
       "hi": "सीपीयू लोड",
       "ja": "CPU負荷",
@@ -4665,7 +4718,7 @@
       "cs": "vytížení procesoru v uplynulých 15 minutách",
       "de": "CPU-Auslastung der vergangenen 15 Minuten",
       "en": "CPU load in the last 15 minutes",
-      "es": "Carga en el CPU en los ultimos 15 minutos",
+      "es": "Carga de la CPU en los últimos 15 minutos",
       "fr": "Charge CPU dans les 15 dernières minutes",
       "hi": "पिछले 15 मिनट में सीपीयू लोड हुआ",
       "ja": "過去15分間のCPU負荷",
@@ -4682,7 +4735,7 @@
       "cs": "vytížení procesoru v uplynulých 5 minutách",
       "de": "CPU-Auslastung der vergangenen 5 Minuten",
       "en": "CPU load in the last 5 minutes",
-      "es": "Carga en el CPU en los ultimos 5 minutos",
+      "es": "Carga de la CPU en los últimos 5 minutos",
       "fr": "Charge CPU dans les 5 dernières minutes",
       "hi": "पिछले 5 मिनट में सीपीयू लोड हुआ",
       "ja": "過去5分間のCPU負荷",
@@ -4699,7 +4752,7 @@
       "cs": "vytížení procesoru v předešlé minutě",
       "de": "CPU-Auslastung der vergangenen Minute",
       "en": "CPU load in the last minute",
-      "es": "Carga en el CPU en el ultimo minuto",
+      "es": "Carga de la CPU en el último minuto",
       "fr": "Charge CPU dans la dernière minute",
       "hi": "अंतिम समय में सीपीयू लोड",
       "ja": "直前のCPU負荷",
@@ -4996,6 +5049,7 @@
       "pt": "Alterar a senha para este usuário",
       "ru": "Изменить пароль для этого пользователя",
       "zh-chs": "更改該用戶的密碼",
+      "es": "Cambiar la contraseña para este usuario",
       "xloc": [
         "default.handlebars->27->1499"
       ]
@@ -5222,6 +5276,7 @@
       "pt": "Chinês (Hong Kong)",
       "ru": "Китайский (Гонконг)",
       "zh-chs": "中文（香港）",
+      "es": "Chino (Hong Kong)",
       "xloc": [
         "default.handlebars->27->861"
       ]
@@ -5238,6 +5293,7 @@
       "pt": "Chinês (PRC)",
       "ru": "Китайский (КНР)",
       "zh-chs": "中文（中國）",
+      "es": "Chino (PRC)",
       "xloc": [
         "default.handlebars->27->862"
       ]
@@ -5252,6 +5308,7 @@
       "pt": "Chinês (simplificado)",
       "ru": "Упрощенный китайский)",
       "zh-chs": "简体中文）",
+      "es": "Chino (simplificado)",
       "xloc": [
         "default.handlebars->27->1022"
       ]
@@ -5268,6 +5325,7 @@
       "pt": "Chinês (Singapura)",
       "ru": "Китайский (Сингапур)",
       "zh-chs": "中文（新加坡）",
+      "es": "Chino (Singapur)",
       "xloc": [
         "default.handlebars->27->863"
       ]
@@ -5284,6 +5342,7 @@
       "pt": "Chinês (Taiwan)",
       "ru": "Китайский (Тайвань)",
       "zh-chs": "中文（台灣）",
+      "es": "Chino (Taiwán)",
       "xloc": [
         "default.handlebars->27->864"
       ]
@@ -5318,6 +5377,7 @@
       "pt": "Chuvash",
       "ru": "Чувашский",
       "zh-chs": "楚瓦什",
+      "es": "Chuvash",
       "xloc": [
         "default.handlebars->27->865"
       ]
@@ -5429,6 +5489,7 @@
       "nl": "Wis deze melding",
       "ru": "Очистить это уведомление",
       "zh-chs": "清除此通知",
+      "es": "Borrar esta notificación",
       "xloc": [
         "default.handlebars->27->1550"
       ]
@@ -5442,6 +5503,7 @@
       "ja": "ここをクリックして、Apple OSX用のMeshAgentをダウンロードしてください。",
       "ru": "Нажмите здесь, чтобы загрузить MeshAgent для Apple OSX.",
       "zh-chs": "单击此处下载适用于Apple OSX的MeshAgent。",
+      "es": "Haga click aquí para descargar el Agente de MeshCentral para Apple OSX.",
       "xloc": [
         "mesh-invite.html->2->11->1->0"
       ]
@@ -5455,6 +5517,7 @@
       "ja": "Windows用のMeshAgentをダウンロードするには、ここをクリックしてください。",
       "ru": "Нажмите здесь, чтобы загрузить MeshAgent для Windows.",
       "zh-chs": "单击此处下载适用于Windows的MeshAgent。",
+      "es": "Haga click aquí para descargar el agente de MeshCentral para Windows.",
       "xloc": [
         "mesh-invite.html->2->9->1->1"
       ]
@@ -5485,6 +5548,7 @@
       "ja": "ここをクリックしてアカウントのパスワードをリセットしてください。",
       "ru": "Нажмите здесь, чтобы сбросить пароль учетной записи.",
       "zh-chs": "单击此处重置您的帐户密码。",
+      "es": "Haga click aquí para resetear la contraseña de su cuenta.",
       "xloc": [
         "account-reset.html->2->5->1"
       ]
@@ -5498,6 +5562,7 @@
       "ja": "ここをクリックして、電子メールアドレスを確認してください。",
       "ru": "Нажмите здесь, чтобы подтвердить свой адрес электронной почты.",
       "zh-chs": "单击此处以验证您的电子邮件地址。",
+      "es": "Haga click aquí para verificar su dirección de e-mail",
       "xloc": [
         "account-check.html->2->5->1"
       ]
@@ -5657,6 +5722,7 @@
       "pt": "Dispositivos comuns",
       "ru": "Общие устройства",
       "zh-chs": "通用設備",
+      "es": "Dispositivos comunes",
       "xloc": [
         "default.handlebars->27->1518"
       ]
@@ -5775,6 +5841,7 @@
       "pt": "Confirmar exclusão do usuário {0}?",
       "ru": "Подтвердить удаление пользователя {0}?",
       "zh-chs": "確認刪除用戶{0}？",
+      "es": "Confirmar la eliminación del usuario {0}?",
       "xloc": [
         "default.handlebars->27->1516"
       ]
@@ -5877,6 +5944,7 @@
       "nl": "Bevestig het verwijderen van apparaat {0}?",
       "ru": "Подтвердите удаление устройства {0}?",
       "zh-chs": "确认移除设备{0}？",
+      "es": "Confirmar la eliminación del dispositivo {0}?",
       "xloc": [
         "default.handlebars->27->1536"
       ]
@@ -6079,6 +6147,7 @@
       "pt": "Conectado agora",
       "ru": "Подключено сейчас",
       "zh-chs": "現在已連接",
+      "es": "Conectado ahora",
       "xloc": [
         "default.handlebars->27->746"
       ]
@@ -6261,6 +6330,7 @@
       "nl": "Controle",
       "ru": "контроль",
       "zh-chs": "控制",
+      "es": "Control",
       "xloc": [
         "default.handlebars->27->548",
         "default.handlebars->27->567"
@@ -6347,6 +6417,7 @@
       "nl": "Kopieer de Windows 32bit-agent URL naar het klembord",
       "ru": "Скопировать URL-адрес агента Windows 32bit в буфер обмена",
       "zh-chs": "将Windows 32位代理URL复制到剪贴板",
+      "es": "Copiar la URL del Agente de Windows de 32bit al portapapeles",
       "xloc": [
         "default.handlebars->27->315"
       ]
@@ -6360,6 +6431,7 @@
       "nl": "Kopieer de Windows 64bit-agent URL naar het klembord",
       "ru": "Скопировать URL-адрес агента Windows 64bit в буфер обмена",
       "zh-chs": "将Windows 64位代理URL复制到剪贴板",
+      "es": "Copiar la URL del Agente de Windows de 64bit al portapapeles",
       "xloc": [
         "default.handlebars->27->319"
       ]
@@ -6469,6 +6541,7 @@
       "pt": "Copyright (C) 2011 Joel Martin Este formulário de código-fonte está sujeito aos termos da Licença Pública Mozilla, v.2.0 0.Se uma cópia da MPL não foi distribuída com este arquivo, você pode obter uma em http: // mozilla.org / MPL / 2.0 /.",
       "ru": "Copyright (C) 2011 Joel Martin Данная форма исходного кода регулируется условиями Общественной лицензии Mozilla, v. 2.0. Если копия MPL не была распространена с этим файлом, ее можно получить по адресу http://mozilla.org/MPL/2.0/.",
       "zh-chs": "版權所有（C）2011 Joel Martin此源代碼表受Mozilla公共許可證v。2.0條款的約束。如果未隨該文件分發MPL的副本，則可以在http://mozilla.org/MPL/2.0/上獲得一份。",
+      "es": "Derecho de Autor  (C) 2011Joel Martin Este código fuente esta sujeto a los términos de la Licencia Pública de Mozilla, V 2.0. Si una copia de MPL no es distribuida con este archivo, Ud. puede obtener uno en http://mozilla.org/MPL/2.0/.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->63->1",
         "terms.handlebars->container->column_l->63->1"
@@ -6486,6 +6559,7 @@
       "pt": "Copyright (c) 1998-2011 O Projeto OpenSSL.Todos os direitos reservados.",
       "ru": "Copyright (c) 1998-2011 The OpenSSL Project. Все права защищены.",
       "zh-chs": "版權所有（c）1998-2011 The OpenSSL Project。版權所有。",
+      "es": "Derechos de autor (c) 1998-2011 Proyecto OpenSSL. Todos los derechos reservados.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->27->1",
         "terms.handlebars->container->column_l->27->1"
@@ -6503,6 +6577,7 @@
       "pt": "Direitos autorais (c) 2009, CodePlex Foundation.Todos os direitos reservados.",
       "ru": "Copyright (c) 2009, CodePlex Foundation. Все права защищены.",
       "zh-chs": "CodePlex Foundation版權所有（c）2009。版權所有。",
+      "es": "Derechos de autor (c) 2009, Fundación CodePlex. Todos los derechos reservados.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->11->1",
         "terms.handlebars->container->column_l->11->1"
@@ -6520,6 +6595,7 @@
       "pt": "Copyright (c) 2010 Wojciech 'RRH' Ryrych",
       "ru": "Copyright (c) 2010 Wojciech 'RRH' Ryrych",
       "zh-chs": "版權所有（c）2010 Wojciech'RRH'Ryrych",
+      "es": "Derechos de autor (c) 2010 Wojciech 'RRH' Ryrych",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->69->1",
         "terms.handlebars->container->column_l->69->1"
@@ -6537,6 +6613,7 @@
       "pt": "Copyright 2013 jQuery Foundation e outros colaboradores",
       "ru": "Copyright 2013 jQuery Foundation и другие участники",
       "zh-chs": "版權所有2013 jQuery Foundation和其他貢獻者",
+      "es": "Copyright 2013 Fundación jQuery y otros contribuyentes",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->47->1",
         "terms.handlebars->container->column_l->47->1"
@@ -6554,6 +6631,7 @@
       "pt": "Copyright 2013 jQuery Foundation e outros colaboradores,",
       "ru": "Copyright 2013 jQuery Foundation и другие участники,",
       "zh-chs": "版權所有2013 jQuery Foundation和其他貢獻者，",
+      "es": "Copyright 2013 Fundación jQuery y otros contribuyentes",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->53->1",
         "terms.handlebars->container->column_l->53->1"
@@ -6588,6 +6666,7 @@
       "pt": "Corso",
       "ru": "Kорсиканский",
       "zh-chs": "科西嘉人",
+      "es": "Corso",
       "xloc": [
         "default.handlebars->27->866"
       ]
@@ -6761,6 +6840,7 @@
       "pt": "Cree",
       "ru": "Кри (Канадский язык)",
       "zh-chs": "克里",
+      "es": "Cree",
       "xloc": [
         "default.handlebars->27->867"
       ]
@@ -6777,6 +6857,7 @@
       "pt": "Croata",
       "ru": "Хорватский",
       "zh-chs": "克羅地亞語",
+      "es": "Croata",
       "xloc": [
         "default.handlebars->27->868"
       ]
@@ -6917,6 +6998,7 @@
       "pt": "Tcheco",
       "ru": "Чешский",
       "zh-chs": "捷克文",
+      "es": "Checo",
       "xloc": [
         "default.handlebars->27->869"
       ]
@@ -6950,6 +7032,7 @@
       "pt": "Dinamarquês",
       "ru": "Датский",
       "zh-chs": "丹麥文",
+      "es": "Danés",
       "xloc": [
         "default.handlebars->27->870"
       ]
@@ -7267,6 +7350,7 @@
       "pt": "Apagar item?",
       "ru": "Удалить пункт?",
       "zh-chs": "刪除項目？",
+      "es": "Borrar artículo?",
       "xloc": [
         "default.handlebars->27->418"
       ]
@@ -7721,6 +7805,7 @@
       "pt": "Exportação de informações do dispositivo",
       "ru": "Экспорт информации об устройстве",
       "zh-chs": "設備信息導出",
+      "es": "Exportar Información del Dispositivo",
       "xloc": [
         "default.handlebars->27->394"
       ]
@@ -8273,6 +8358,7 @@
       "nl": "Openbare link weergeven",
       "ru": "Показать публичную ссылку",
       "zh-chs": "显示公共链接",
+      "es": "Mostrar enlace público",
       "xloc": [
         "default.handlebars->27->1286"
       ]
@@ -8600,6 +8686,7 @@
       "pt": "Faça o download da lista de dispositivos com um dos formatos de arquivo abaixo.",
       "ru": "Загрузите список устройств с одним из форматов файлов ниже.",
       "zh-chs": "使用以下一種文件格式下載設備列表。",
+      "es": "Descargue la lista de dispositivos con uno de los formatos de archivo a continuación.",
       "xloc": [
         "default.handlebars->27->389"
       ]
@@ -8804,6 +8891,7 @@
       "pt": "Holandês (belga)",
       "ru": "Голландский (Бельгийский)",
       "zh-chs": "荷蘭語（比利時）",
+      "es": "Holandés (belga)",
       "xloc": [
         "default.handlebars->27->872"
       ]
@@ -8820,6 +8908,7 @@
       "pt": "Holandês (padrão)",
       "ru": "Голландский (Стандартный)",
       "zh-chs": "荷蘭語（標準）",
+      "es": "Holandés (estándar)",
       "xloc": [
         "default.handlebars->27->871"
       ]
@@ -9011,6 +9100,7 @@
       "nl": "Bewerk apparaatrechten",
       "ru": "Изменить разрешения устройства",
       "zh-chs": "编辑设备权限",
+      "es": "Editar los permisos del dispositivo",
       "xloc": [
         "default.handlebars->27->1221"
       ]
@@ -9024,6 +9114,7 @@
       "nl": "Bewerk groep",
       "ru": "Редактировать группу",
       "zh-chs": "编辑组",
+      "es": "Editar Grupo",
       "xloc": [
         "default.handlebars->27->558"
       ]
@@ -9092,6 +9183,7 @@
       "nl": "Bewerk gebruikersapparaatrechten",
       "ru": "Изменить разрешения для пользовательских устройств",
       "zh-chs": "编辑用户设备权限",
+      "es": "Editar los permisos del usuario del dispositivo",
       "xloc": [
         "default.handlebars->27->1222"
       ]
@@ -9184,6 +9276,7 @@
       "pt": "Autenticação do email",
       "ru": "Аутентификация электронной почты",
       "zh-chs": "郵件認證",
+      "es": "Email de autenticación",
       "xloc": [
         "default-mobile.handlebars->9->30",
         "default.handlebars->27->809"
@@ -9198,6 +9291,7 @@
       "nl": "E-mailverkeer",
       "ru": "Почтовый трафик",
       "zh-chs": "电子邮件流量",
+      "es": "Tráfico de correo electrónico",
       "xloc": [
         "default.handlebars->27->1606"
       ]
@@ -9223,6 +9317,7 @@
     {
       "en": "Email invitation",
       "nl": "E-mail uitnodiging",
+      "es": "Email de invitación",
       "xloc": [
         "default.handlebars->27->267"
       ]
@@ -9236,6 +9331,7 @@
       "nl": "E-mail is niet geverifieerd",
       "ru": "Электронная почта не подтверждена",
       "zh-chs": "邮件未验证",
+      "es": "El email no esta no esta verficado",
       "xloc": [
         "default.handlebars->27->1353"
       ]
@@ -9304,6 +9400,7 @@
       "pt": "Email enviado.",
       "ru": "Письмо отправлено.",
       "zh-chs": "郵件已發送。",
+      "es": "Email enviado",
       "xloc": [
         "login-mobile.handlebars->5->2",
         "login.handlebars->5->2"
@@ -9343,6 +9440,7 @@
       "pt": "Ativar códigos de convite",
       "ru": "Включить коды приглашения",
       "zh-chs": "啟用邀請代碼",
+      "es": "Habilitar Códigos de Invitación",
       "xloc": [
         "default.handlebars->27->1253"
       ]
@@ -9376,6 +9474,7 @@
       "pt": "Habilite a autenticação de dois fatores por email.",
       "ru": "Включить двухфакторную аутентификацию электронной почты.",
       "zh-chs": "啟用電子郵件兩因素驗證。",
+      "es": "Habilitar autenticación de dos factores por correo.",
       "xloc": [
         "default-mobile.handlebars->9->32",
         "default.handlebars->27->811"
@@ -9444,6 +9543,7 @@
       "pt": "Inglês (Austrália)",
       "ru": "Английский (Австралия)",
       "zh-chs": "英文（澳洲）",
+      "es": "Inglés (Australia)",
       "xloc": [
         "default.handlebars->27->874"
       ]
@@ -9460,6 +9560,7 @@
       "pt": "Inglês (Belize)",
       "ru": "Английский (Белиз)",
       "zh-chs": "英語（伯利茲）",
+      "es": "Inglés (belice)",
       "xloc": [
         "default.handlebars->27->875"
       ]
@@ -9476,6 +9577,7 @@
       "pt": "Inglês (Canadá)",
       "ru": "Английский (Канада)",
       "zh-chs": "英文（加拿大）",
+      "es": "Inglés (Canadá)",
       "xloc": [
         "default.handlebars->27->876"
       ]
@@ -9492,6 +9594,7 @@
       "pt": "Inglês (Irlanda)",
       "ru": "Английский (Ирландия)",
       "zh-chs": "英文（愛爾蘭）",
+      "es": "Inglés (Irlanda)",
       "xloc": [
         "default.handlebars->27->877"
       ]
@@ -9508,6 +9611,7 @@
       "pt": "Inglês (Jamaica)",
       "ru": "Английский (Ямайка)",
       "zh-chs": "英文（牙買加）",
+      "es": "Inglés (Jamaica)",
       "xloc": [
         "default.handlebars->27->878"
       ]
@@ -9524,6 +9628,7 @@
       "pt": "Inglês (Nova Zelândia)",
       "ru": "Английский (Новая Зеландия)",
       "zh-chs": "英文（紐西蘭）",
+      "es": "Inglés (Nueva Zelanda)",
       "xloc": [
         "default.handlebars->27->879"
       ]
@@ -9540,6 +9645,7 @@
       "pt": "Inglês (Filipinas)",
       "ru": "Английский (Филиппины)",
       "zh-chs": "英文（菲律賓）",
+      "es": "Inglés (Filipinas)",
       "xloc": [
         "default.handlebars->27->880"
       ]
@@ -9556,6 +9662,7 @@
       "pt": "Inglês (África do Sul)",
       "ru": "Английский (Южная Африка)",
       "zh-chs": "英語（南非）",
+      "es": "Inglés (Sudáfrica)",
       "xloc": [
         "default.handlebars->27->881"
       ]
@@ -9572,6 +9679,7 @@
       "pt": "Inglês (Trinidad Tobago)",
       "ru": "Английский (Тринидад и Тобаго)",
       "zh-chs": "英文（特立尼達和多巴哥）",
+      "es": "Inglés (Trinidad y Tobago)",
       "xloc": [
         "default.handlebars->27->882"
       ]
@@ -9588,6 +9696,7 @@
       "pt": "Inglês (Reino Unido)",
       "ru": "Английский (Великобритания)",
       "zh-chs": "英文（英國）",
+      "es": "Inglés (Reino Unido)",
       "xloc": [
         "default.handlebars->27->883"
       ]
@@ -9604,6 +9713,7 @@
       "pt": "Inglês (Estados Unidos)",
       "ru": "Английский (Соединенные Штаты)",
       "zh-chs": "美國英語）",
+      "es": "Inglés (Estados Unidos)",
       "xloc": [
         "default.handlebars->27->884"
       ]
@@ -9620,6 +9730,7 @@
       "pt": "Inglês (Zimbábue)",
       "ru": "Английский (Зимбабве)",
       "zh-chs": "英文（津巴布韋）",
+      "es": "Inglés (Zimbabwe)",
       "xloc": [
         "default.handlebars->27->885"
       ]
@@ -9774,6 +9885,7 @@
       "pt": "Esperanto",
       "ru": "Эсперанто",
       "zh-chs": "世界語",
+      "es": "Esperanto",
       "xloc": [
         "default.handlebars->27->886"
       ]
@@ -9790,6 +9902,7 @@
       "pt": "Estoniano",
       "ru": "Эстонский",
       "zh-chs": "愛沙尼亞語",
+      "es": "Estonio",
       "xloc": [
         "default.handlebars->27->887"
       ]
@@ -9895,6 +10008,7 @@
       "pt": "Exportar informações do dispositivo",
       "ru": "Экспорт информации об устройстве",
       "zh-chs": "導出設備信息",
+      "es": "Exportar información del dispositivo",
       "xloc": [
         "default.handlebars->27->381"
       ]
@@ -9962,6 +10076,7 @@
       "pt": "FYRO Macedonian",
       "ru": "Mакедонский (БЮР)",
       "zh-chs": "FYRO馬其頓語",
+      "es": "Macedonio Macedonia",
       "xloc": [
         "default.handlebars->27->937"
       ]
@@ -9978,6 +10093,7 @@
       "pt": "O servidor remoto retornou um erro: (429) Too Many Requests.",
       "ru": "Фарерский",
       "zh-chs": "法羅語",
+      "es": "Faeroese",
       "xloc": [
         "default.handlebars->27->888"
       ]
@@ -10011,6 +10127,7 @@
       "pt": "Persa (persa)",
       "ru": "Фарси (Персидский)",
       "zh-chs": "波斯語（波斯語）",
+      "es": "Farsi (Persa)",
       "xloc": [
         "default.handlebars->27->889"
       ]
@@ -10062,6 +10179,7 @@
       "pt": "Fijiano",
       "ru": "Фиджи",
       "zh-chs": "斐濟",
+      "es": "Fiyiano",
       "xloc": [
         "default.handlebars->27->890"
       ]
@@ -10290,6 +10408,7 @@
       "ja": "Apple OSXの場合、次のリンクに移動してプロセスを完了します。",
       "ru": "Для Apple OSX перейдите по следующей ссылке, чтобы завершить процесс:",
       "zh-chs": "对于Apple OSX，请导航至以下链接以完成该过程：",
+      "es": "Para Apple OSX, navegue hasta el siguiente enlace para completar el proceso:",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -10303,6 +10422,7 @@
       "ja": "Linuxの場合は、ターミナルで以下をカットアンドペーストしてエージェントをインストールします。",
       "ru": "Для Linux вырезайте и вставляйте в терминал следующее, чтобы установить агент:",
       "zh-chs": "对于Linux，将以下内容剪切并粘贴到终端中以安装代理程序：",
+      "es": "Para Linux, copie y pegue lo siguiente en la terminal para instalar el agente:",
       "xloc": [
         "mesh-invite.html->2->13->1",
         "mesh-invite.txt"
@@ -10317,6 +10437,7 @@
       "ja": "Windowsの場合、次のリンクに移動してプロセスを完了します。",
       "ru": "Для Windows откройте следующую ссылку, чтобы завершить процесс:",
       "zh-chs": "对于Windows，请导航至以下链接以完成该过程：",
+      "es": "Para windows, navegue al siguiente enlace para completar el proceso:",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -10343,7 +10464,7 @@
       "cs": "Zapomenuté heslo?",
       "de": "Passwort vergessen?",
       "en": "Forgot password?",
-      "es": "¿Se te olvidó tu contraseña?",
+      "es": "¿Olvidaste tu contraseña?",
       "fr": "Mot de passe oublié?",
       "hi": "पासवर्ड भूल गए?",
       "ja": "パスワードをお忘れですか？",
@@ -10412,7 +10533,7 @@
       "cs": "Volné",
       "de": "Frei",
       "en": "Free",
-      "es": "Gratis",
+      "es": "Libre",
       "fr": "Libre",
       "hi": "नि: शुल्क",
       "ja": "無料",
@@ -10456,6 +10577,7 @@
       "pt": "Francês (Bélgica)",
       "ru": "Французский (Бельгия)",
       "zh-chs": "法語（比利時）",
+      "es": "Francés (Bélgica)",
       "xloc": [
         "default.handlebars->27->893"
       ]
@@ -10472,6 +10594,7 @@
       "pt": "Francês (Canadá)",
       "ru": "Французский (Канада)",
       "zh-chs": "法語（加拿大）",
+      "es": "Francés (Canadá)",
       "xloc": [
         "default.handlebars->27->894"
       ]
@@ -10488,6 +10611,7 @@
       "pt": "Francês (França)",
       "ru": "Французский (Франция)",
       "zh-chs": "法語（法國）",
+      "es": "Francés (Francia)",
       "xloc": [
         "default.handlebars->27->895"
       ]
@@ -10504,6 +10628,7 @@
       "pt": "Francês (Luxemburgo)",
       "ru": "Французский (Люксембург)",
       "zh-chs": "法語（盧森堡）",
+      "es": "Francés (Luxemburgo)",
       "xloc": [
         "default.handlebars->27->896"
       ]
@@ -10520,6 +10645,7 @@
       "pt": "Francês (Mônaco)",
       "ru": "Французский (Монако)",
       "zh-chs": "法語（摩納哥）",
+      "es": "Francés (Mónaco)",
       "xloc": [
         "default.handlebars->27->897"
       ]
@@ -10536,6 +10662,7 @@
       "pt": "Francês (Padrão)",
       "ru": "Французский (Стандартный)",
       "zh-chs": "法語（標準）",
+      "es": "Francés (estándar)",
       "xloc": [
         "default.handlebars->27->892"
       ]
@@ -10552,6 +10679,7 @@
       "pt": "Francês (Suíça)",
       "ru": "Французский (Швейцария)",
       "zh-chs": "法語（瑞士）",
+      "es": "Francés (Suiza)",
       "xloc": [
         "default.handlebars->27->898"
       ]
@@ -10568,6 +10696,7 @@
       "pt": "Frísio",
       "ru": "Фризский",
       "zh-chs": "弗里斯蘭語",
+      "es": "Friso",
       "xloc": [
         "default.handlebars->27->899"
       ]
@@ -10584,6 +10713,7 @@
       "pt": "Friuliano",
       "ru": "Фриульский",
       "zh-chs": "弗留利",
+      "es": "Friuliano",
       "xloc": [
         "default.handlebars->27->900"
       ]
@@ -10654,6 +10784,7 @@
       "pt": "Direitos completos do dispositivo",
       "ru": "Полные права на устройство",
       "zh-chs": "完整的設備權限",
+      "es": "Derechos completos del dispositivo",
       "xloc": [
         "default.handlebars->27->541"
       ]
@@ -10667,6 +10798,7 @@
       "nl": "Volledige rechten",
       "ru": "Полные права",
       "zh-chs": "完全权利",
+      "es": "Derechos Completos",
       "xloc": [
         "default.handlebars->27->557"
       ]
@@ -10719,6 +10851,7 @@
       "pt": "Gaélico (irlandês)",
       "ru": "Гэльский (Ирландский)",
       "zh-chs": "蓋爾語（愛爾蘭）",
+      "es": "Gaélico (Irlandés)",
       "xloc": [
         "default.handlebars->27->902"
       ]
@@ -10735,6 +10868,7 @@
       "pt": "Gaélico (escocês)",
       "ru": "Гэльский (Шотландия)",
       "zh-chs": "蓋爾語（蘇格蘭語）",
+      "es": "Gaélico (Escocés)",
       "xloc": [
         "default.handlebars->27->901"
       ]
@@ -10751,6 +10885,7 @@
       "pt": "Galego",
       "ru": "Галицкий",
       "zh-chs": "加拉契人",
+      "es": "Gallego",
       "xloc": [
         "default.handlebars->27->903"
       ]
@@ -10759,7 +10894,7 @@
       "cs": "MAC adresa brány",
       "de": "Gateway-MAC",
       "en": "Gateway MAC",
-      "es": "MAC del Gateway",
+      "es": "MAC de la Puerta de Enlace",
       "fr": "Passerelle MAC",
       "hi": "गेटवे मैक",
       "ja": "ゲートウェイMAC",
@@ -10857,6 +10992,7 @@
       "pt": "Georgiano",
       "ru": "Грузинский",
       "zh-chs": "格魯吉亞人",
+      "es": "Georgiano",
       "xloc": [
         "default.handlebars->27->904"
       ]
@@ -10873,6 +11009,7 @@
       "pt": "Alemão (Áustria)",
       "ru": "Немецкий (Австрия)",
       "zh-chs": "德語（奧地利）",
+      "es": "Alemán (Austria)",
       "xloc": [
         "default.handlebars->27->906"
       ]
@@ -10889,6 +11026,7 @@
       "pt": "Alemão (Alemanha)",
       "ru": "Немецкий (Германия)",
       "zh-chs": "德文（德國）",
+      "es": "Alemán (Alemania)",
       "xloc": [
         "default.handlebars->27->907"
       ]
@@ -10905,6 +11043,7 @@
       "pt": "Alemão (Liechtenstein)",
       "ru": "Немецкий (Лихтенштейн)",
       "zh-chs": "德文（列支敦士登）",
+      "es": "Alemán (Liechtenstein)",
       "xloc": [
         "default.handlebars->27->908"
       ]
@@ -10921,6 +11060,7 @@
       "pt": "Alemão (Luxemburgo)",
       "ru": "Немецкий (Люксембург)",
       "zh-chs": "德語（盧森堡）",
+      "es": "Alemán (Luxemburgo)",
       "xloc": [
         "default.handlebars->27->909"
       ]
@@ -10937,6 +11077,7 @@
       "pt": "Alemão (Padrão)",
       "ru": "Немецкий (Стандартный)",
       "zh-chs": "德語（標準）",
+      "es": "Alemán (Estándar)",
       "xloc": [
         "default.handlebars->27->905"
       ]
@@ -10953,6 +11094,7 @@
       "pt": "Alemão (Suíça)",
       "ru": "Немецкий (Швейцария)",
       "zh-chs": "德語（瑞士）",
+      "es": "Alemán (Suiza)",
       "xloc": [
         "default.handlebars->27->910"
       ]
@@ -11059,6 +11201,7 @@
       "pt": "Grego",
       "ru": "Греческий",
       "zh-chs": "希臘語",
+      "es": "Griego",
       "xloc": [
         "default.handlebars->27->911"
       ]
@@ -11200,6 +11343,7 @@
       "pt": "Gujarati",
       "ru": "Гуджарати",
       "zh-chs": "古久拉提",
+      "es": "Gujarati",
       "xloc": [
         "default.handlebars->27->912"
       ]
@@ -11235,6 +11379,7 @@
       "pt": "Haitiano",
       "ru": "Гаитянский",
       "zh-chs": "海地",
+      "es": "Haitiano",
       "xloc": [
         "default.handlebars->27->913"
       ]
@@ -11294,7 +11439,7 @@
       "cs": "Halda využito",
       "de": "Heap verwendet",
       "en": "Heap Used",
-      "es": "Heap Used",
+      "es": "Heap Usado",
       "fr": "Tas utilisé",
       "hi": "हीप का इस्तेमाल किया",
       "ja": "使用ヒープ",
@@ -11333,6 +11478,7 @@
       "ja": "[[[NAME]]]様",
       "ru": "Здравствуйте, [[[NAME]]],",
       "zh-chs": "您好[[[NAME]]]，",
+      "es": "Hola [[[NAME]]],",
       "xloc": [
         "mesh-invite.html->2->3->1",
         "mesh-invite.txt"
@@ -11342,7 +11488,7 @@
       "cs": "Pomozte MeshCentral přeložit do svého jazyka",
       "de": "Hilf bei der Übersetzung von MeshCentral",
       "en": "Help translate MeshCentral",
-      "es": "Ayuda traducir MeshCentral",
+      "es": "Ayuda a traducir MeshCentral",
       "fr": "Traduire MeshCentral",
       "hi": "मदद",
       "ja": "MeshCentralの翻訳を支援",
@@ -11364,6 +11510,7 @@
       "ja": "[[[USERNAME]]]様",
       "ru": "Привет [[[USERNAME]]],",
       "zh-chs": "[[[USERNAME]]，你好，",
+      "es": "Hola [[[USERNAME]]],",
       "xloc": [
         "account-check.html->2->3",
         "account-reset.html->2->3"
@@ -11378,6 +11525,7 @@
       "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。",
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
       "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在执行电子邮件验证。导航至以下链接以完成该过程：",
+      "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) esta realizando una comprobación del e-mail. Navegue al siguiente enlace para completar el proceso:",
       "xloc": [
         "account-check.txt"
       ]
@@ -11391,6 +11539,7 @@
       "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。",
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
       "zh-chs": "[[[USERNAME]]，您好：[[[SERVERNAME]]]（[[[SERVERURL]]]）正在请求重置帐户密码。导航至以下链接以完成该过程：",
+      "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está solicitando un restablecimiento de contraseña de cuenta. Navegue al siguiente enlace para completar el proceso:",
       "xloc": [
         "account-reset.txt"
       ]
@@ -11454,7 +11603,7 @@
       "cs": "Drží se jeden záznam pro kopii",
       "de": "Halte 1 Eintrag zum Kopieren",
       "en": "Holding 1 entrie for copy",
-      "es": "Sosteniendo 1 entrada para copia",
+      "es": "Manteniendo 1 entrada para copia",
       "fr": "Tenir 1 entrée pour copie",
       "hi": "नकल के लिए 1 एंट्री पकड़ना",
       "ja": "コピー用に1つのエントリを保持",
@@ -11472,7 +11621,7 @@
       "cs": "Drží se jeden záznam pro přesun",
       "de": "Halte 1 Eintrag zum Verschieben",
       "en": "Holding 1 entrie for move",
-      "es": "Sosteniendo 1 entrada para mover",
+      "es": "Manteniendo 1 entrada para mover\n",
       "fr": "Tenir 1 entrée pour se déplacer",
       "hi": "मूव के लिए 1 एंट्री पकड़ना",
       "ja": "移動のために1つのエントリを保持",
@@ -11569,7 +11718,7 @@
       "cs": "Synchronizace názvu stroje",
       "de": "Hostname synchronisieren",
       "en": "Hostname Sync",
-      "es": "Syncronizar Nombre de host",
+      "es": "Sincronización de Nombre de Host",
       "fr": "Synchroniser le nom d'hôte",
       "hi": "होस्टनाम सिंक",
       "ja": "ホスト名の同期",
@@ -11594,6 +11743,7 @@
       "pt": "Húngaro",
       "ru": "Венгерский",
       "zh-chs": "匈牙利",
+      "es": "Hungaro",
       "xloc": [
         "default.handlebars->27->916"
       ]
@@ -11662,6 +11812,7 @@
       "pt": "IP: {0}, Máscara: {1}, Gateway: {2}",
       "ru": "IP: {0}, маска: {1}, шлюз: {2}",
       "zh-chs": "IP：{0}，掩碼：{1}，網關：{2}",
+      "es": "IP: {0}, Mascara: {1}, Puerta de Enlace: {2}",
       "xloc": [
         "default.handlebars->27->758"
       ]
@@ -11678,6 +11829,7 @@
       "pt": "Camada IPv4",
       "ru": "Уровень IPv4",
       "zh-chs": "IPv4層",
+      "es": "Capa IPv4",
       "xloc": [
         "default.handlebars->27->757",
         "default.handlebars->27->759"
@@ -11746,6 +11898,7 @@
       "pt": "islandês",
       "ru": "Исландский",
       "zh-chs": "冰島的",
+      "es": "Islandés",
       "xloc": [
         "default.handlebars->27->917"
       ]
@@ -11794,6 +11947,7 @@
       "ja": "このリクエストを開始していない場合は、このメールを無視してください。",
       "ru": "Если вы не инициировали этот запрос, игнорируйте это письмо.",
       "zh-chs": "如果您没有发起此请求，请忽略此邮件。",
+      "es": "Si Ud. no inicio este proceso, por favor ignore este email",
       "xloc": [
         "account-check.html->2",
         "account-check.txt",
@@ -11814,7 +11968,8 @@
       "nl": "Ongeldige aanroep",
       "pt": "Invocação ilegal",
       "ru": "Незаконное обращение",
-      "zh-chs": "非法調用"
+      "zh-chs": "非法調用",
+      "es": "Invocación ilegal"
     },
     {
       "cs": "Kódovaní obrazu",
@@ -11845,6 +12000,7 @@
       "pt": "Indexado a cada {0} segundos",
       "ru": "Индексируется каждые {0} секунд",
       "zh-chs": "每{0}秒索引一次",
+      "es": "Indexar cada {0} segundos",
       "xloc": [
         "player.handlebars->3->17"
       ]
@@ -11858,6 +12014,7 @@
       "nl": "Individuele apparaten",
       "ru": "Индивидуальные устройства",
       "zh-chs": "个别装置",
+      "es": "Dispositivos Individuales",
       "xloc": [
         "default-mobile.handlebars->9->96",
         "default.handlebars->27->164"
@@ -11875,6 +12032,7 @@
       "pt": "Indonésia",
       "ru": "Индонезийский",
       "zh-chs": "印度尼西亞",
+      "es": "Indonesio",
       "xloc": [
         "default.handlebars->27->918"
       ]
@@ -12755,6 +12913,7 @@
       "pt": "Inuktitut",
       "ru": "Инуктитут",
       "zh-chs": "因紐特人",
+      "es": "Inuktitut",
       "xloc": [
         "default.handlebars->27->919"
       ]
@@ -12910,6 +13069,7 @@
       "pt": "Código de convite inválido.",
       "ru": "Неверный код приглашения.",
       "zh-chs": "邀請碼無效。",
+      "es": "Código de Invitación inválido.",
       "xloc": [
         "invite.handlebars->3->1"
       ]
@@ -12943,7 +13103,8 @@
       "nl": "Uitnodigingscode",
       "pt": "Código de Convite",
       "ru": "Код приглашения",
-      "zh-chs": "邀請碼"
+      "zh-chs": "邀請碼",
+      "es": "Código de Invitación"
     },
     {
       "cs": "Odkaz na pozvánku ({0})",
@@ -12991,6 +13152,7 @@
       "pt": "Os códigos de convite podem ser usados ​​por qualquer pessoa para associar dispositivos a este grupo de dispositivos usando o seguinte link público:",
       "ru": "Коды приглашений могут использоваться любым пользователем для присоединения устройств к этой группе устройств по следующей общедоступной ссылке:",
       "zh-chs": "任何人都可以使用邀請代碼通過以下公共鏈接將設備加入該設備組：",
+      "es": "Los códigos de invitación pueden ser usados por cualquiera para unir dispositivos a este grupo de dispositivos usando el siguiente enlace público:",
       "xloc": [
         "default.handlebars->27->1260"
       ]
@@ -13004,6 +13166,7 @@
       "ja": "招待コード",
       "ru": "Код приглашения",
       "zh-chs": "邀请码",
+      "es": "Código de Invitación",
       "xloc": [
         "invite.handlebars->container->column_l->5->1->0->3->1"
       ]
@@ -13039,6 +13202,7 @@
       "pt": "Códigos de convite",
       "ru": "Пригласительные коды",
       "zh-chs": "邀請碼",
+      "es": "Códigos de invitación",
       "xloc": [
         "default.handlebars->27->1113",
         "default.handlebars->27->1254",
@@ -13068,7 +13232,7 @@
       "cs": "Pozvat kohokoliv k instalaci agenta pro vzdálené ovládání.",
       "de": "Laden Sie jemanden ein, den Mesh-Agenten auf diesem Mesh zu installieren.",
       "en": "Invite someone to install the mesh agent on this mesh.",
-      "es": "Invite a alguien a instalar el agente de mesh en este server.",
+      "es": "Invite a alguien a instalar el agente de mesh en este servidor.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage sur ce maillage.",
       "hi": "इस जाली पर मेष एजेंट को स्थापित करने के लिए किसी को आमंत्रित करें।",
       "ja": "このメッシュにメッシュエージェントをインストールするように招待します。",
@@ -13128,6 +13292,7 @@
       "pt": "Italiano (Padrão)",
       "ru": "Итальянский (Стандартный)",
       "zh-chs": "意大利語（標準）",
+      "es": "Italiano (estándar)",
       "xloc": [
         "default.handlebars->27->921"
       ]
@@ -13144,6 +13309,7 @@
       "pt": "Italiano (Suíça)",
       "ru": "Итальянский (Швейцария)",
       "zh-chs": "義大利文（瑞士）",
+      "es": "Italiano (Suiza)",
       "xloc": [
         "default.handlebars->27->922"
       ]
@@ -13196,6 +13362,7 @@
       "pt": "Kannada",
       "ru": "Каннада",
       "zh-chs": "卡納達語",
+      "es": "Kannada",
       "xloc": [
         "default.handlebars->27->924"
       ]
@@ -13212,6 +13379,7 @@
       "pt": "Caxemira",
       "ru": "Кашмирский",
       "zh-chs": "克什米爾語",
+      "es": "Cachemira",
       "xloc": [
         "default.handlebars->27->925"
       ]
@@ -13228,6 +13396,7 @@
       "pt": "Cazaque",
       "ru": "Казахский",
       "zh-chs": "哈薩克語",
+      "es": "Kazajo",
       "xloc": [
         "default.handlebars->27->926"
       ]
@@ -13296,6 +13465,7 @@
       "pt": "Khmer",
       "ru": "Кхмерский",
       "zh-chs": "高棉語",
+      "es": "Jemer",
       "xloc": [
         "default.handlebars->27->927"
       ]
@@ -13312,6 +13482,7 @@
       "pt": "Kirghiz",
       "ru": "Киргизский",
       "zh-chs": "吉爾吉斯",
+      "es": "Kirghiz",
       "xloc": [
         "default.handlebars->27->928"
       ]
@@ -13328,6 +13499,7 @@
       "pt": "Klingon",
       "ru": "Клингонский",
       "zh-chs": "克林貢",
+      "es": "Klingon",
       "xloc": [
         "default.handlebars->27->929"
       ]
@@ -13344,6 +13516,7 @@
       "pt": "Conhecido",
       "ru": "Известный",
       "zh-chs": "已知的",
+      "es": "Conocido",
       "xloc": [
         "default.handlebars->27->776"
       ]
@@ -13360,6 +13533,7 @@
       "pt": "coreano",
       "ru": "Korean",
       "zh-chs": "韓語",
+      "es": "Coreano",
       "xloc": [
         "default.handlebars->27->930"
       ]
@@ -13376,6 +13550,7 @@
       "pt": "Coreano (Coréia do Norte)",
       "ru": "Корейский (Северная Корея)",
       "zh-chs": "韓語（朝鮮）",
+      "es": "Coreano (Corea del Norte)",
       "xloc": [
         "default.handlebars->27->931"
       ]
@@ -13392,6 +13567,7 @@
       "pt": "Coreano (Coréia do Sul)",
       "ru": "Корейский (Южная Корея)",
       "zh-chs": "韓語（韓國）",
+      "es": "Coreano (Corea del Sur)",
       "xloc": [
         "default.handlebars->27->932"
       ]
@@ -13925,6 +14101,7 @@
       "nl": "Beperk gebeurtenissen",
       "ru": "Предельные события",
       "zh-chs": "极限赛事",
+      "es": "Limitar Eventos",
       "xloc": [
         "default.handlebars->27->553",
         "default.handlebars->27->572"
@@ -14025,6 +14202,7 @@
     {
       "en": "Link invitation",
       "nl": "Uitnodigingslink",
+      "es": "Enlace de invitación",
       "xloc": [
         "default.handlebars->27->266"
       ]
@@ -14588,6 +14766,7 @@
       "pt": "Shell de Login",
       "ru": "Вход в оболочку",
       "zh-chs": "登錄外殼",
+      "es": "Shell de inicio de sesión",
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->cxtermps",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
@@ -14679,6 +14858,7 @@
       "pt": "Camada MAC",
       "ru": "MAC-уровень",
       "zh-chs": "MAC層",
+      "es": "Capa MAC",
       "xloc": [
         "default.handlebars->27->753",
         "default.handlebars->27->755"
@@ -14730,6 +14910,7 @@
       "pt": "MAC: {0}, Gateway: {1}",
       "ru": "MAC: {0}, шлюз: {1}",
       "zh-chs": "MAC：{0}，網關：{1}",
+      "es": "MAC: {0}, Puerta de Enlace: {1}",
       "xloc": [
         "default.handlebars->27->754"
       ]
@@ -15016,6 +15197,7 @@
       "pt": "Malaiala",
       "ru": "Малаяламский",
       "zh-chs": "馬拉雅拉姆語",
+      "es": "Malayalam",
       "xloc": [
         "default.handlebars->27->939"
       ]
@@ -15032,6 +15214,7 @@
       "pt": "Maltês",
       "ru": "Мальтийский",
       "zh-chs": "馬耳他語",
+      "es": "Maltés",
       "xloc": [
         "default.handlebars->27->940"
       ]
@@ -15103,6 +15286,7 @@
       "nl": "Beheer apparaten",
       "ru": "Управление устройствами",
       "zh-chs": "管理设备",
+      "es": "Administrar dispositivos",
       "xloc": [
         "default.handlebars->27->560"
       ]
@@ -15207,6 +15391,7 @@
       "pt": "Gerenciar autenticação de email",
       "ru": "Управление аутентификацией электронной почты",
       "zh-chs": "管理電子郵件身份驗證",
+      "es": "Administrar autenticación por mail",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageEmail2FA->0",
         "default.handlebars->container->column_l->p2->p2AccountSecurity->3->manageEmail2FA->1->0"
@@ -15327,6 +15512,7 @@
       "pt": "Maori",
       "ru": "Маори",
       "zh-chs": "毛利人",
+      "es": "Maori",
       "xloc": [
         "default.handlebars->27->941"
       ]
@@ -15361,6 +15547,7 @@
       "pt": "Marathi",
       "ru": "Маратхи",
       "zh-chs": "馬拉地語",
+      "es": "Marathi",
       "xloc": [
         "default.handlebars->27->942"
       ]
@@ -15980,6 +16167,7 @@
       "ja": "メッセージ：",
       "ru": "Сообщение:",
       "zh-chs": "信息：",
+      "es": "Mensaje:",
       "xloc": [
         "mesh-invite.html->2->7->1"
       ]
@@ -15993,6 +16181,7 @@
       "ja": "メッセージ：[[[MSG]]]",
       "ru": "Сообщение: [[[MSG]]]",
       "zh-chs": "讯息：[[[MSG]]]",
+      "es": "Mensaje: [[[MSG]]]",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -16078,6 +16267,7 @@
       "pt": "Moldavian",
       "ru": "Молдавский",
       "zh-chs": "摩爾達維亞人",
+      "es": "Moldavo",
       "xloc": [
         "default.handlebars->27->943"
       ]
@@ -16086,7 +16276,7 @@
       "cs": "Více",
       "de": "Mehr",
       "en": "More",
-      "es": "Mas",
+      "es": "Más",
       "fr": "Plus",
       "hi": "अधिक",
       "ja": "もっと",
@@ -16103,7 +16293,7 @@
       "cs": "Základní deska",
       "de": "Hauptplatine",
       "en": "Motherboard",
-      "es": "Motherboard",
+      "es": "Placa Madre",
       "fr": "Carte mère",
       "hi": "मदरबोर्ड",
       "ja": "マザーボード",
@@ -16488,6 +16678,7 @@
       "pt": "Navajo",
       "ru": "Навахо",
       "zh-chs": "納瓦霍人",
+      "es": "Navajo",
       "xloc": [
         "default.handlebars->27->944"
       ]
@@ -16504,6 +16695,7 @@
       "pt": "Ndonga",
       "ru": "Ндонга",
       "zh-chs": "恩東加",
+      "es": "Ndonga",
       "xloc": [
         "default.handlebars->27->945"
       ]
@@ -16520,6 +16712,7 @@
       "pt": "Nepali",
       "ru": "Непальский",
       "zh-chs": "尼泊爾文",
+      "es": "Nepali",
       "xloc": [
         "default.handlebars->27->946"
       ]
@@ -16570,6 +16763,7 @@
       "pt": "Trabalho em rede",
       "ru": "сетей",
       "zh-chs": "聯網",
+      "es": "Redes",
       "xloc": [
         "default.handlebars->27->761"
       ]
@@ -16748,6 +16942,7 @@
       "nl": "Geen toegevoegde rechten",
       "ru": "Нет добавленных прав",
       "zh-chs": "没有增加的权利",
+      "es": "Sin derechos añadidos",
       "xloc": [
         "default.handlebars->27->556"
       ]
@@ -16784,6 +16979,7 @@
       "pt": "No Desktop",
       "ru": "Нет рабочего стола",
       "zh-chs": "沒有桌面",
+      "es": "Sin Escritorio",
       "xloc": [
         "default.handlebars->27->1236",
         "default.handlebars->27->547",
@@ -16802,6 +16998,7 @@
       "pt": "Sem acesso à área de trabalho",
       "ru": "Нет доступа к рабочему столу",
       "zh-chs": "沒有桌面訪問",
+      "es": "Sin acceso al escritorio",
       "xloc": [
         "default.handlebars->27->1205"
       ]
@@ -16872,6 +17069,7 @@
       "nl": "Geen input",
       "ru": "Нет ввода",
       "zh-chs": "无输入",
+      "es": "Sin entrada",
       "xloc": [
         "default.handlebars->27->542",
         "default.handlebars->27->561"
@@ -17197,6 +17395,7 @@
       "pt": "Nenhum dispositivo em comum",
       "ru": "Нет общих устройств",
       "zh-chs": "沒有共同的設備",
+      "es": "Sin dispositivos en común",
       "xloc": [
         "default.handlebars->27->1522"
       ]
@@ -17432,6 +17631,7 @@
       "nl": "Geen gebruikers met speciale apparaatrechten",
       "ru": "Нет пользователей со специальными правами доступа к устройству",
       "zh-chs": "没有拥有特殊设备权限的用户",
+      "es": "No hay usuarios con permisos especiales para dispositivos.",
       "xloc": [
         "default.handlebars->27->540"
       ]
@@ -17543,6 +17743,7 @@
       "pt": "norueguês",
       "ru": "Норвежский",
       "zh-chs": "挪威",
+      "es": "Noruego",
       "xloc": [
         "default.handlebars->27->947"
       ]
@@ -17559,6 +17760,7 @@
       "pt": "Norueguês (Bokmal)",
       "ru": "Норвежский (Букмол)",
       "zh-chs": "挪威文（Bokmal）",
+      "es": "Noruego (Bokmal)",
       "xloc": [
         "default.handlebars->27->948"
       ]
@@ -17575,6 +17777,7 @@
       "pt": "Norueguês (Nynorsk)",
       "ru": "Норвежский (Нюнорск)",
       "zh-chs": "挪威文（尼諾斯克）",
+      "es": "Noruego (Nynorsk)",
       "xloc": [
         "default.handlebars->27->949"
       ]
@@ -17591,6 +17794,7 @@
       "pt": "Não ativado (entrada)",
       "ru": "Не активированно (In)",
       "zh-chs": "未激活（輸入）",
+      "es": "(entrada) No activada",
       "xloc": [
         "default-mobile.handlebars->9->180",
         "default.handlebars->27->461",
@@ -17609,6 +17813,7 @@
       "pt": "Não ativado (pré)",
       "ru": "Не активированно (Pre)",
       "zh-chs": "未激活（預）",
+      "es": "(Pre) No activada",
       "xloc": [
         "default-mobile.handlebars->9->179",
         "default.handlebars->27->460",
@@ -17645,6 +17850,7 @@
       "pt": "Não conhecido",
       "ru": "Неизвестный",
       "zh-chs": "未知",
+      "es": "No se Conoce",
       "xloc": [
         "default.handlebars->27->775"
       ]
@@ -17678,6 +17884,7 @@
       "pt": "Não verificado",
       "ru": "не подтверждено",
       "zh-chs": "未經審核的",
+      "es": "Sin Verificar",
       "xloc": [
         "default.handlebars->27->1505"
       ]
@@ -17898,6 +18105,7 @@
       "pt": "Occitânico",
       "ru": "Окситанский",
       "zh-chs": "歐舒丹",
+      "es": "Occitano",
       "xloc": [
         "default.handlebars->27->950"
       ]
@@ -18055,6 +18263,7 @@
       "pt": "Abra o terminal XTerm",
       "ru": "Открыть терминал XTerm",
       "zh-chs": "打開XTerm終端",
+      "es": "Abrir Terminal XTerm",
       "xloc": [
         "default.handlebars->27->517"
       ]
@@ -18163,6 +18372,7 @@
       "pt": "Oriya",
       "ru": "Ория",
       "zh-chs": "奧里亞",
+      "es": "Oriya",
       "xloc": [
         "default.handlebars->27->951"
       ]
@@ -18179,6 +18389,7 @@
       "pt": "Oromo",
       "ru": "Оромо",
       "zh-chs": "奧羅莫",
+      "es": "Oromo",
       "xloc": [
         "default.handlebars->27->952"
       ]
@@ -18329,7 +18540,8 @@
       "nl": "Gedeeltelijke apparaatrechten",
       "pt": "Direitos Parciais do Dispositivo",
       "ru": "Частичные права на устройство",
-      "zh-chs": "部分設備權利"
+      "zh-chs": "部分設備權利",
+      "es": "Derechos parciales del dispositivo"
     },
     {
       "cs": "Částečná práva",
@@ -19365,7 +19577,8 @@
       "nl": "Provisioning Modus",
       "pt": "Modo de provisionamento",
       "ru": "Режим обеспечения",
-      "zh-chs": "供應模式"
+      "zh-chs": "供應模式",
+      "es": "Modo de Aprovisionamiento"
     },
     {
       "cs": "Poskytující stát",
@@ -19379,6 +19592,7 @@
       "pt": "Estado de provisionamento",
       "ru": "Предоставление государства",
       "zh-chs": "供應國",
+      "es": "Estado de Aprovisionamiento",
       "xloc": [
         "default.handlebars->27->769"
       ]
@@ -19413,6 +19627,7 @@
       "pt": "Punjabi",
       "ru": "Пенджаби",
       "zh-chs": "旁遮普語",
+      "es": "Punjabi",
       "xloc": [
         "default.handlebars->27->957"
       ]
@@ -19429,6 +19644,7 @@
       "pt": "Punjabi (Índia)",
       "ru": "Пенджаби (Индия)",
       "zh-chs": "旁遮普（印度）",
+      "es": "Punjabi (India)",
       "xloc": [
         "default.handlebars->27->958"
       ]
@@ -19445,6 +19661,7 @@
       "pt": "Punjabi (Paquistão)",
       "ru": "Пенджаби (Пакистан)",
       "zh-chs": "旁遮普（巴基斯坦）",
+      "es": "Punjabi (Pakistan)",
       "xloc": [
         "default.handlebars->27->959"
       ]
@@ -19496,6 +19713,7 @@
       "pt": "Quechua",
       "ru": "Кечуа",
       "zh-chs": "蓋丘亞族",
+      "es": "Quechua",
       "xloc": [
         "default.handlebars->27->960"
       ]
@@ -19565,6 +19783,7 @@
       "pt": "Conexão RDP",
       "ru": "Подключение RDP",
       "zh-chs": "RDP連接",
+      "es": "Conexión RDP",
       "xloc": [
         "default.handlebars->27->413"
       ]
@@ -19581,6 +19800,7 @@
       "pt": "Porta de conexão remota RDP:",
       "ru": "Порт RDP:",
       "zh-chs": "RDP遠程連接端口：",
+      "es": "puerto de conexión remoto RDP:",
       "xloc": [
         "default.handlebars->27->412"
       ]
@@ -19787,7 +20007,7 @@
       "cs": "Obnovit jádra agentů",
       "de": "Agentenkerne aktualisieren",
       "en": "Refresh Agent Cores",
-      "es": "Actualizar Core del Agente",
+      "es": "Actualizar núcleos de agente",
       "fr": "Actualiser les cœurs d'agent",
       "hi": "एजेंट को ताज़ा करें",
       "ja": "エージェントコアの更新",
@@ -19949,6 +20169,7 @@
       "pt": "Instalação de agente remoto para {0}",
       "ru": "Установка агента для {0}",
       "zh-chs": "{0}的遠程代理安裝",
+      "es": "Instalación de Agente Remoto de {0}",
       "xloc": [
         "agentinvite.handlebars->3->1"
       ]
@@ -20142,6 +20363,7 @@
       "nl": "Verwijder apparaat",
       "ru": "Удалить устройство",
       "zh-chs": "删除设备",
+      "es": "Dispositivo Remoto",
       "xloc": [
         "default.handlebars->27->1535"
       ]
@@ -20276,6 +20498,7 @@
       "nl": "Verwijder deze gebruiker",
       "ru": "Удалить этого пользователя",
       "zh-chs": "删除该用户",
+      "es": "Eliminar a este usuario",
       "xloc": [
         "default.handlebars->27->1497"
       ]
@@ -20637,6 +20860,7 @@
       "pt": "Rhaeto-Romanic",
       "ru": "Ретороманский",
       "zh-chs": "修羅羅馬式",
+      "es": "Retorrománico",
       "xloc": [
         "default.handlebars->27->961"
       ]
@@ -20653,6 +20877,7 @@
       "pt": "Romena",
       "ru": "Румынский",
       "zh-chs": "羅馬尼亞語",
+      "es": "Rumano",
       "xloc": [
         "default.handlebars->27->962"
       ]
@@ -20669,6 +20894,7 @@
       "pt": "Romeno (Moldávia)",
       "ru": "Румынский (Молдавия)",
       "zh-chs": "羅馬尼亞文（摩爾達維亞）",
+      "es": "Rumano (Moldavia)",
       "xloc": [
         "default.handlebars->27->963"
       ]
@@ -20862,6 +21088,7 @@
       "pt": "Sami (lapão)",
       "ru": "Саамский",
       "zh-chs": "薩米（拉普蘭）",
+      "es": "Sami (Lapona)",
       "xloc": [
         "default.handlebars->27->966"
       ]
@@ -20895,6 +21122,7 @@
       "pt": "Sango",
       "ru": "Санго",
       "zh-chs": "三鄉",
+      "es": "Sango",
       "xloc": [
         "default.handlebars->27->967"
       ]
@@ -20911,6 +21139,7 @@
       "pt": "Sanskrit",
       "ru": "Санскритский",
       "zh-chs": "梵文",
+      "es": "Sánscrito",
       "xloc": [
         "default.handlebars->27->968"
       ]
@@ -20927,6 +21156,7 @@
       "pt": "Sardinian",
       "ru": "Сардинский",
       "zh-chs": "撒丁島",
+      "es": "Sardo",
       "xloc": [
         "default.handlebars->27->969"
       ]
@@ -21132,6 +21362,7 @@
       "pt": "Login seguro",
       "ru": "Безопасный вход",
       "zh-chs": "安全登錄",
+      "es": "Inicio de sesión seguro",
       "xloc": [
         "login-mobile.handlebars->5->20",
         "login.handlebars->5->20"
@@ -21149,6 +21380,7 @@
       "pt": "Protegido usando TLS",
       "ru": "Защищено с помощью TLS",
       "zh-chs": "使用TLS保護",
+      "es": "Seguro usando TLS",
       "xloc": [
         "default.handlebars->27->772"
       ]
@@ -21203,6 +21435,7 @@
       "pt": "Procurando",
       "ru": "Ищу",
       "zh-chs": "尋求",
+      "es": "Buscando",
       "xloc": [
         "player.handlebars->3->16"
       ]
@@ -21480,6 +21713,7 @@
       "nl": "Stuur e-mail naar de gebruiker",
       "ru": "Отправить письмо пользователю",
       "zh-chs": "发送电子邮件给用户",
+      "es": "Enviar email al usuario",
       "xloc": [
         "default.handlebars->27->1355"
       ]
@@ -21547,6 +21781,7 @@
       "pt": "Enviar token para o endereço de e-mail registrado?",
       "ru": "Отправить токен на зарегистрированный адрес электронной почты?",
       "zh-chs": "將令牌發送到註冊的電子郵件地址？",
+      "es": "¿Enviar token para registrar la dirección de correo electrónico?",
       "xloc": [
         "login-mobile.handlebars->5->21",
         "login.handlebars->5->21"
@@ -21581,6 +21816,7 @@
       "pt": "Sérvia",
       "ru": "Сербский",
       "zh-chs": "塞爾維亞",
+      "es": "Serbio",
       "xloc": [
         "default.handlebars->27->972"
       ]
@@ -21648,6 +21884,7 @@
       "pt": "Banco de Dados do Servidor",
       "ru": "База данных сервера",
       "zh-chs": "服務器數據庫",
+      "es": "Base de Datos del Servidor",
       "xloc": [
         "default.handlebars->27->1605"
       ]
@@ -22389,6 +22626,7 @@
       "pt": "Sindhi",
       "ru": "Синдхи",
       "zh-chs": "信地",
+      "es": "Sindhi",
       "xloc": [
         "default.handlebars->27->970"
       ]
@@ -22405,6 +22643,7 @@
       "pt": "Cingalês",
       "ru": "Сингальский",
       "zh-chs": "僧伽羅語",
+      "es": "Cingalés",
       "xloc": [
         "default.handlebars->27->971"
       ]
@@ -22567,6 +22806,7 @@
       "pt": "Eslovaco",
       "ru": "Словацкий",
       "zh-chs": "斯洛伐克文",
+      "es": "Eslovaco",
       "xloc": [
         "default.handlebars->27->973"
       ]
@@ -22583,6 +22823,7 @@
       "pt": "Esloveno",
       "ru": "Словенский",
       "zh-chs": "斯洛文尼亞文",
+      "es": "Esloveno",
       "xloc": [
         "default.handlebars->27->974"
       ]
@@ -22704,6 +22945,7 @@
       "pt": "Somani",
       "ru": "Сомани",
       "zh-chs": "索馬尼",
+      "es": "Somani",
       "xloc": [
         "default.handlebars->27->975"
       ]
@@ -22720,6 +22962,7 @@
       "pt": "Sorbian",
       "ru": "Сорбский",
       "zh-chs": "索比亞人",
+      "es": "Sorbio",
       "xloc": [
         "default.handlebars->27->976"
       ]
@@ -22866,6 +23109,7 @@
       "pt": "Espanhol (Argentina)",
       "ru": "Испанский (Аргентина)",
       "zh-chs": "西班牙文（阿根廷）",
+      "es": "Español (Argentina)",
       "xloc": [
         "default.handlebars->27->978"
       ]
@@ -22882,6 +23126,7 @@
       "pt": "Espanhol (Bolívia)",
       "ru": "Испанский (Боливия)",
       "zh-chs": "西班牙語（玻利維亞）",
+      "es": "Español (Bolivia)",
       "xloc": [
         "default.handlebars->27->979"
       ]
@@ -22898,6 +23143,7 @@
       "pt": "Espanhol (Chile)",
       "ru": "Испанский (Чили)",
       "zh-chs": "西班牙語（智利）",
+      "es": "Español (Chile)",
       "xloc": [
         "default.handlebars->27->980"
       ]
@@ -22914,6 +23160,7 @@
       "pt": "Espanhol (Colômbia)",
       "ru": "Испанский (Колумбия)",
       "zh-chs": "西班牙語（哥倫比亞）",
+      "es": "Español (Colombia)",
       "xloc": [
         "default.handlebars->27->981"
       ]
@@ -22930,6 +23177,7 @@
       "pt": "Espanhol (Costa Rica)",
       "ru": "Испанский (Коста-Рика)",
       "zh-chs": "西班牙語（哥斯達黎加）",
+      "es": "Español (Costa Rica)",
       "xloc": [
         "default.handlebars->27->982"
       ]
@@ -22946,6 +23194,7 @@
       "pt": "Espanhol (República Dominicana)",
       "ru": "Испанский (Доминиканская Республика)",
       "zh-chs": "西班牙語（多米尼加共和國）",
+      "es": "Español (Republica Dominicana)",
       "xloc": [
         "default.handlebars->27->983"
       ]
@@ -22962,6 +23211,7 @@
       "pt": "Espanhol (Equador)",
       "ru": "Испанский (Эквадор)",
       "zh-chs": "西班牙語（厄瓜多爾）",
+      "es": "Español (Ecuador)",
       "xloc": [
         "default.handlebars->27->984"
       ]
@@ -22978,6 +23228,7 @@
       "pt": "Espanhol (El Salvador)",
       "ru": "Испанский (Сальвадор)",
       "zh-chs": "西班牙語（薩爾瓦多）",
+      "es": "Español (El Salvador)",
       "xloc": [
         "default.handlebars->27->985"
       ]
@@ -22994,6 +23245,7 @@
       "pt": "Espanhol (Guatemala)",
       "ru": "Испанский (Гватемала)",
       "zh-chs": "西班牙語（危地馬拉）",
+      "es": "Español (Guatemala)",
       "xloc": [
         "default.handlebars->27->986"
       ]
@@ -23010,6 +23262,7 @@
       "pt": "Espanhol (Honduras)",
       "ru": "Испанский (Гондурас)",
       "zh-chs": "西班牙語（洪都拉斯）",
+      "es": "Español (Honduras)",
       "xloc": [
         "default.handlebars->27->987"
       ]
@@ -23043,6 +23296,7 @@
       "pt": "Espanhol (Nicarágua)",
       "ru": "Испанский (Никарагуа)",
       "zh-chs": "西班牙語（尼加拉瓜）",
+      "es": "Español (Nicaragua)",
       "xloc": [
         "default.handlebars->27->989"
       ]
@@ -23059,6 +23313,7 @@
       "pt": "Espanhol (Panamá)",
       "ru": "Испанский (Панама)",
       "zh-chs": "西班牙語（巴拿馬）",
+      "es": "Español (Panama)",
       "xloc": [
         "default.handlebars->27->990"
       ]
@@ -23075,6 +23330,7 @@
       "pt": "Espanhol (Paraguai)",
       "ru": "Испанский (Парагвай)",
       "zh-chs": "西班牙語（巴拉圭）",
+      "es": "Español (Paraguay)",
       "xloc": [
         "default.handlebars->27->991"
       ]
@@ -23091,6 +23347,7 @@
       "pt": "Espanhol (Peru)",
       "ru": "Испанский (Перу)",
       "zh-chs": "西班牙語（秘魯）",
+      "es": "Español (Peru)",
       "xloc": [
         "default.handlebars->27->992"
       ]
@@ -23107,6 +23364,7 @@
       "pt": "Espanhol (Porto Rico)",
       "ru": "Испанский (Пуэрто-Рико)",
       "zh-chs": "西班牙語（波多黎各）",
+      "es": "Español (Puerto Rico)",
       "xloc": [
         "default.handlebars->27->993"
       ]
@@ -23123,6 +23381,7 @@
       "pt": "Espanhol (Espanha)",
       "ru": "Испанский (Испания)",
       "zh-chs": "西班牙語（西班牙）",
+      "es": "Español (España)",
       "xloc": [
         "default.handlebars->27->994"
       ]
@@ -23139,6 +23398,7 @@
       "pt": "Espanhol (Uruguai)",
       "ru": "Испанский (Уругвай)",
       "zh-chs": "西班牙語（烏拉圭）",
+      "es": "Español (Uruguay)",
       "xloc": [
         "default.handlebars->27->995"
       ]
@@ -23155,6 +23415,7 @@
       "pt": "Espanhol (Venezuela)",
       "ru": "Испанский (Венесуэла)",
       "zh-chs": "西班牙語（委內瑞拉）",
+      "es": "Español (Venezuela)",
       "xloc": [
         "default.handlebars->27->996"
       ]
@@ -23273,6 +23534,7 @@
       "nl": "Stop proces",
       "ru": "Остановить процесс",
       "zh-chs": "停止程序",
+      "es": "Detener el proceso",
       "xloc": [
         "default.handlebars->27->666"
       ]
@@ -23378,6 +23640,7 @@
       "pt": "Enviar",
       "ru": "Отправить",
       "zh-chs": "提交",
+      "es": "Enviar",
       "xloc": [
         "invite.handlebars->container->column_l->5->1->0->3->3->3"
       ]
@@ -23445,6 +23708,7 @@
       "pt": "Sutu",
       "ru": "Суту",
       "zh-chs": "蘇圖",
+      "es": "Sutu",
       "xloc": [
         "default.handlebars->27->997"
       ]
@@ -23461,6 +23725,7 @@
       "pt": "Suaíli",
       "ru": "Суахили",
       "zh-chs": "斯瓦希里語",
+      "es": "Swahili",
       "xloc": [
         "default.handlebars->27->998"
       ]
@@ -23477,6 +23742,7 @@
       "pt": "Sueco",
       "ru": "Шведский",
       "zh-chs": "瑞典",
+      "es": "Sueco",
       "xloc": [
         "default.handlebars->27->999"
       ]
@@ -23493,6 +23759,7 @@
       "pt": "Sueco (Finlândia)",
       "ru": "Шведский (Финляндия)",
       "zh-chs": "瑞典語（芬蘭）",
+      "es": "Sueco (Finlandia)",
       "xloc": [
         "default.handlebars->27->1000"
       ]
@@ -23509,6 +23776,7 @@
       "pt": "Sueco (Suécia)",
       "ru": "Шведский (Швеция)",
       "zh-chs": "瑞典文（瑞典）",
+      "es": "Sueco (Suecia)",
       "xloc": [
         "default.handlebars->27->1001"
       ]
@@ -23618,6 +23886,7 @@
       "pt": "TLS não está configurado",
       "ru": "TLS не настроен",
       "zh-chs": "未設置TLS",
+      "es": "TLS no esta configurado",
       "xloc": [
         "default.handlebars->27->773"
       ]
@@ -23708,6 +23977,7 @@
       "pt": "Tâmil",
       "ru": "Тамильский",
       "zh-chs": "泰米爾語",
+      "es": "Tamil",
       "xloc": [
         "default.handlebars->27->1002"
       ]
@@ -23724,6 +23994,7 @@
       "pt": "Tatar",
       "ru": "Татарский",
       "zh-chs": "塔塔爾族",
+      "es": "Tatar",
       "xloc": [
         "default.handlebars->27->1003"
       ]
@@ -23740,6 +24011,7 @@
       "pt": "Teluga",
       "ru": "Телугу",
       "zh-chs": "泰盧加",
+      "es": "Teluga",
       "xloc": [
         "default.handlebars->27->1004"
       ]
@@ -23866,6 +24138,7 @@
       "pt": "Thai",
       "ru": "Тайский",
       "zh-chs": "泰國",
+      "es": "Tailandés",
       "xloc": [
         "default.handlebars->27->1005"
       ]
@@ -23934,6 +24207,7 @@
       "pt": "O nome deste computador, conforme definido no sistema operacional",
       "ru": "Имя этого компьютера, указанное в операционной системе",
       "zh-chs": "在操作系統中設置的此計算機的名稱",
+      "es": "El nombre de esta computadora como se establece en el sistema operativo",
       "xloc": [
         "default.handlebars->27->449",
         "default.handlebars->27->451"
@@ -24020,6 +24294,7 @@
       "pt": "Este é um portal para gerenciamento e suporte remotos de computadores.",
       "ru": "Это портал для удаленного управления и поддержки компьютера.",
       "zh-chs": "這是計算機遠程管理和支持的門戶。",
+      "es": "Este es un portal para la administración y soporte remoto de computadoras.",
       "xloc": [
         "invite.handlebars->container->column_l->3"
       ]
@@ -24121,6 +24396,7 @@
       "ja": "このトークンは1回だけ使用でき、5分間有効です。",
       "ru": "Этот токен может быть использован только один раз и действителен в течение 5 минут.",
       "zh-chs": "该令牌只能使用一次，有效期为5分钟。",
+      "es": "Este token solo se puede usar una vez y es válido durante 5 minutos.",
       "xloc": [
         "account-login.html->2->5",
         "account-login.txt"
@@ -24356,6 +24632,7 @@
       "ja": "ソフトウェアをインストールするには、",
       "ru": "Чтобы установить программное обеспечение,",
       "zh-chs": "要安装软件，",
+      "es": "Para instalar este software,",
       "xloc": [
         "mesh-invite.html->2->15->1"
       ]
@@ -24369,6 +24646,7 @@
       "ja": "ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]]に移動し、指示に従います。",
       "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]] и следуйте инструкциям.",
       "zh-chs": "要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]]，然后按照说明进行操作。",
+      "es": "Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]] y siga las instrucciones.",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -24753,6 +25031,7 @@
       "pt": "Tsonga",
       "ru": "Тсонга",
       "zh-chs": "特松加",
+      "es": "Tsonga",
       "xloc": [
         "default.handlebars->27->1007"
       ]
@@ -24769,6 +25048,7 @@
       "pt": "Tswana",
       "ru": "Тсвана",
       "zh-chs": "茨瓦納",
+      "es": "Tswana",
       "xloc": [
         "default.handlebars->27->1008"
       ]
@@ -24785,6 +25065,7 @@
       "pt": "turco",
       "ru": "Турецкий",
       "zh-chs": "土耳其",
+      "es": "Turco",
       "xloc": [
         "default.handlebars->27->1009"
       ]
@@ -24801,6 +25082,7 @@
       "pt": "Turcomano",
       "ru": "Туркменский",
       "zh-chs": "土庫曼人",
+      "es": "Turcomanos",
       "xloc": [
         "default.handlebars->27->1010"
       ]
@@ -25208,6 +25490,7 @@
       "pt": "Dispositivo desconhecido",
       "ru": "Неизвестное устройство",
       "zh-chs": "未知設備",
+      "es": "Dispositivo desconocido",
       "xloc": [
         "default.handlebars->27->1519"
       ]
@@ -25540,6 +25823,7 @@
       "pt": "Sorábio superior",
       "ru": "Верхний Сорбский",
       "zh-chs": "上索布族",
+      "es": "Sorbio superior",
       "xloc": [
         "default.handlebars->27->1012"
       ]
@@ -25556,6 +25840,7 @@
       "pt": "urdu",
       "ru": "Урду",
       "zh-chs": "烏爾都語",
+      "es": "Urdu",
       "xloc": [
         "default.handlebars->27->1013"
       ]
@@ -25857,7 +26142,8 @@
       "ja": "ユーザー権限",
       "nl": "Gebruikersrechten",
       "ru": "Пользовательские разрешения",
-      "zh-chs": "用户权限"
+      "zh-chs": "用户权限",
+      "es": "Permisos de usuario"
     },
     {
       "cs": "PowerShell uživatele",
@@ -25923,6 +26209,7 @@
       "ja": "サーバー上のユーザー[[[USERNAME]]]",
       "ru": "Пользователь [[[USERNAME]]] на сервере",
       "zh-chs": "伺服器上的使用者[[[USERNAME]]]",
+      "es": "Usuario [[[USERNAME]]] en servidor",
       "xloc": [
         "mesh-invite.html->2->5"
       ]
@@ -25936,6 +26223,7 @@
       "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。",
       "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
       "zh-chs": "服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用户[[[USERNAME]]]请求您安装软件以启动远程控制会话。",
+      "es": "Usuario [[[USERNAME]]] en servitor [[[SERVERNAME]]] ([[[SERVERURL]]]/) le solicita que instale software para iniciar la sesión de control remoto.",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -26124,6 +26412,7 @@
       "pt": "Venda",
       "ru": "Венда",
       "zh-chs": "文達",
+      "es": "Venda",
       "xloc": [
         "default.handlebars->27->1014"
       ]
@@ -26158,6 +26447,7 @@
       "pt": "Verificado",
       "ru": "Проверенный",
       "zh-chs": "已驗證",
+      "es": "Verficado",
       "xloc": [
         "default.handlebars->27->1506"
       ]
@@ -26227,6 +26517,7 @@
       "nl": "Versie is niet compatibel, upgrade eerst uw MeshCentral installatie",
       "ru": "Версия несовместима, пожалуйста, сначала обновите установку MeshCentral",
       "zh-chs": "版本不兼容，请先升级您的MeshCentral安装",
+      "es": "Versión Incompatible, por favor primero actualice su instalación de MeshCentral",
       "xloc": [
         "default.handlebars->27->1618"
       ]
@@ -26292,6 +26583,7 @@
       "nl": "Bekijk aanpassingen log",
       "ru": "Просмотр журнала изменений",
       "zh-chs": "查看变更日志",
+      "es": "Ver registro de cambios",
       "xloc": [
         "default.handlebars->27->1621",
         "default.handlebars->27->1623"
@@ -26360,6 +26652,7 @@
       "pt": "Volapuk",
       "ru": "Волапукский",
       "zh-chs": "沃拉普克",
+      "es": "Volapuk",
       "xloc": [
         "default.handlebars->27->1016"
       ]
@@ -26407,6 +26700,7 @@
       "nl": "Wekken",
       "ru": "Услуга",
       "zh-chs": "唤醒",
+      "es": "Despertar",
       "xloc": [
         "default.handlebars->27->551",
         "default.handlebars->27->570"
@@ -26479,6 +26773,7 @@
       "pt": "valão",
       "ru": "Валлонский",
       "zh-chs": "瓦隆",
+      "es": "Valón",
       "xloc": [
         "default.handlebars->27->1017"
       ]
@@ -26620,6 +26915,7 @@
       "pt": "galês",
       "ru": "Уэльский",
       "zh-chs": "威爾士語",
+      "es": "Galés",
       "xloc": [
         "default.handlebars->27->1018"
       ]
@@ -26636,6 +26932,7 @@
       "pt": "Quando ativado, os códigos de convite podem ser usados ​​por qualquer pessoa para associar dispositivos a este grupo de dispositivos usando o seguinte link público:",
       "ru": "Когда этот параметр включен, коды приглашений могут использоваться любым пользователем для присоединения устройств к этой группе устройств по следующей общедоступной ссылке:",
       "zh-chs": "啟用後，任何人都可以使用邀請代碼通過以下公共鏈接將設備加入該設備組：",
+      "es": "Cuando está habilitado, cualquiera puede usar códigos de invitación para unir dispositivos a este grupo de dispositivos mediante el siguiente enlace público:",
       "xloc": [
         "default.handlebars->27->1252"
       ]
@@ -26652,6 +26949,7 @@
       "pt": "Quando ativado, em cada login, você terá a opção de receber um token de login na sua conta de email para aumentar a segurança.",
       "ru": "При включении при каждом входе в систему вам будет предоставлена возможность получать токен для входа в свою учетную запись электронной почты для обеспечения дополнительной безопасности.",
       "zh-chs": "啟用後，每次登錄時，您都可以選擇向電子郵件帳戶接收登錄令牌，以提高安全性。",
+      "es": "Cuando esté habilitado, en cada inicio de sesión, se le dará la opción de recibir un token de inicio de sesión en su cuenta de correo electrónico para mayor seguridad.",
       "xloc": [
         "default-mobile.handlebars->9->31",
         "default.handlebars->27->810"
@@ -26828,6 +27126,7 @@
       "pt": "Executável Win32",
       "ru": "Исполняемый файл Win32",
       "zh-chs": "Win32可執行文件",
+      "es": "Ejecutable Win32",
       "xloc": [
         "default.handlebars->27->622"
       ]
@@ -27292,6 +27591,7 @@
       "ja": "リモートオペレーターがデスクトップやファイルを含め、リモートでコンピューターに完全にアクセスできるようにするソフトウェアをインストールするよう招待されました。この招待が予期されていて、誰がコンピュータにアクセスするかがわかっている場合にのみ、以下の手順に従ってください。オペレーティングシステムを選択し、以下の手順に従います。",
       "ru": "Вам было предложено установить программное обеспечение, которое позволит удаленному оператору получить полный доступ к вашему компьютеру, включая рабочий стол и файлы. Следуйте приведенным ниже инструкциям только в том случае, если это приглашение ожидалось и вы знаете, кто будет обращаться к вашему компьютеру. Выбор вашей операционной системы и следуйте инструкциям ниже.",
       "zh-chs": "已邀请您安装软件，该软件将允许远程操作员远程完全访问您的计算机，包括桌面和文件。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择操作系统，然后按照以下说明进行操作。",
+      "es": "Se le invitó a instalar un software que permitirá que un operador remoto acceda completamente a su computadora de forma remota, incluido el escritorio y los archivos. Solo siga las instrucciones a continuación si estaba esperando esta invitación y sabe quién accederá a su computadora. Seleccione su sistema operativo y siga las instrucciones a continuación.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
       ]
@@ -27322,6 +27622,7 @@
       "ja": "ログイントークンは次のとおりです：[[[TOKEN]]]",
       "ru": "Ваш токен для входа: [[[TOKEN]]]",
       "zh-chs": "您的登录令牌为：[[[TOKEN]]]",
+      "es": "Su token de inicio de sesión es: [[[TOKEN]]]",
       "xloc": [
         "account-login.html->2->3",
         "account-login.txt"
@@ -27422,7 +27723,8 @@
       "nl": "[[[ACCOUNTNAME]]]",
       "ja": "[[[ACCOUNTNAME]]]",
       "ru": "[[[ACCOUNTNAME]]]",
-      "zh-chs": "[[[ACCOUNTNAME]]]"
+      "zh-chs": "[[[ACCOUNTNAME]]]",
+      "es": "[[[ACCOUNTNAME]]]"
     },
     {
       "cs": "[[[MSG]]]",
@@ -27432,7 +27734,8 @@
       "nl": "[[[MSG]]]",
       "ja": "[[[MSG]]]",
       "ru": "[[[MSG]]]",
-      "zh-chs": "[[[MSG]]]"
+      "zh-chs": "[[[MSG]]]",
+      "es": "[[[MSG]]]"
     },
     {
       "cs": "[[[PASSWORD]]]",
@@ -27442,7 +27745,8 @@
       "nl": "[[[PASSWORD]]]",
       "ja": "[[[PASSWORD]]]",
       "ru": "[[[PASSWORD]]]",
-      "zh-chs": "[[[PASSWORD]]]"
+      "zh-chs": "[[[PASSWORD]]]",
+      "es": "[[[PASSWORD]]]"
     },
     {
       "cs": "[[[SERVERNAME]]]",
@@ -27453,6 +27757,7 @@
       "ja": "[[[SERVERNAME]]]",
       "ru": "[[[SERVERNAME]]]",
       "zh-chs": "[[[SERVERNAME]]]",
+      "es": "[[[SERVERNAME]]]",
       "xloc": [
         "account-check.html->2->3->1",
         "account-reset.html->2->3->1",
@@ -27468,6 +27773,7 @@
       "ja": "[[[SERVERNAME]]]-アカウントの招待",
       "ru": "[[[SERVERNAME]]] - приглашение в аккаунт",
       "zh-chs": "[[[SERVERNAME]]]-帐户邀请",
+      "es": "[[[SERVERNAME]]] - Invitación de Cuenta",
       "xloc": [
         "account-invite.html->0",
         "account-invite.html->2->1->1->0->1->1",
@@ -27483,6 +27789,7 @@
       "ja": "[[[SERVERNAME]]]-アカウントログイン",
       "ru": "[[[SERVERNAME]]] - Вход в аккаунт",
       "zh-chs": "[[[SERVERNAME]]]-帐户登录",
+      "es": "[[[SERVERNAME]]] - Nombre de Usuario",
       "xloc": [
         "account-login.html->0",
         "account-login.html->2->1->1->0->1->1",
@@ -27498,6 +27805,7 @@
       "ja": "[[[SERVERNAME]]]-アカウントのリセット",
       "ru": "[[[SERVERNAME]]] - Сброс учетной записи",
       "zh-chs": "[[[SERVERNAME]]]-帐户重置",
+      "es": "[[[SERVERNAME]]] - Resetear Cuenta",
       "xloc": [
         "account-reset.html->0",
         "account-reset.txt"
@@ -27512,6 +27820,7 @@
       "ja": "[[[SERVERNAME]]]-エージェントのインストール",
       "ru": "[[[SERVERNAME]]] - Установка агента",
       "zh-chs": "[[[SERVERNAME]]]-代理程序安装",
+      "es": "[[[SERVERNAME]]] - Instalación de Agente",
       "xloc": [
         "mesh-invite.html->2->1->1->0->1->1"
       ]
@@ -27525,6 +27834,7 @@
       "ja": "[[[SERVERNAME]]]-メールの確認",
       "ru": "[[[SERVERNAME]]] - подтверждение по электронной почте",
       "zh-chs": "[[[SERVERNAME]]]-电子邮件验证",
+      "es": "[[[SERVERNAME]]] - Verificación de Email",
       "xloc": [
         "account-check.html->0",
         "account-check.txt"
@@ -27539,6 +27849,7 @@
       "ja": "[[[SERVERNAME]]]-招待",
       "ru": "[[[SERVERNAME]]] - Приглашение",
       "zh-chs": "[[[SERVERNAME]]]-邀请",
+      "es": "[[[SERVERNAME]]] - Invitación",
       "xloc": [
         "mesh-invite.html->0",
         "mesh-invite.txt"
@@ -27553,6 +27864,7 @@
       "ja": "[[[SERVERNAME]]]-確認",
       "ru": "[[[SERVERNAME]]] - Подтверждение",
       "zh-chs": "[[[SERVERNAME]]]-验证",
+      "es": "[[[SERVERNAME]]] - Invitación",
       "xloc": [
         "account-check.html->2->1->1->0->1->1",
         "account-reset.html->2->1->1->0->1->1"
@@ -27567,6 +27879,7 @@
       "ja": "[[[USERNAME]]]",
       "ru": "[[[USERNAME]]]",
       "zh-chs": "[[[USERNAME]]]",
+      "es": "[[[USERNAME]]]",
       "xloc": [
         "account-invite.html->2",
         "mesh-invite.html->2"
@@ -27630,7 +27943,7 @@
       "cs": "admin",
       "de": "Admin",
       "en": "admin",
-      "es": "admin",
+      "es": "administrador",
       "fr": "administrateur",
       "hi": "व्यवस्थापक",
       "ja": "管理者",
@@ -27652,6 +27965,7 @@
       "ja": "指示に従ってください。",
       "ru": "и следуйте инструкциям.",
       "zh-chs": "并按照说明进行操作。",
+      "es": "y siga las instrucciones",
       "xloc": [
         "mesh-invite.html->2->15->1"
       ]
@@ -27683,6 +27997,7 @@
       "ja": "ここをクリック",
       "ru": "кликните сюда",
       "zh-chs": "点击这里",
+      "es": "haga click aquí",
       "xloc": [
         "mesh-invite.html->2->15->1->1"
       ]
@@ -27804,7 +28119,8 @@
       "nl": "codering",
       "pt": "codificação",
       "ru": "кодирование",
-      "zh-chs": "編碼方式"
+      "zh-chs": "編碼方式",
+      "es": "codificación"
     },
     {
       "cs": "eventslist.csv",
@@ -27863,7 +28179,7 @@
       "cs": "volné",
       "de": "frei",
       "en": "free",
-      "es": "Gratis",
+      "es": "libre",
       "fr": "libre",
       "hi": "नि: शुल्क",
       "ja": "無料",
@@ -28069,6 +28385,7 @@
       "pt": "id, nome, rname, host, ícone, ip, osdesc, estado, nome do grupo, conn, pwr",
       "ru": "идентификатор, имя, имя, хост, значок, ip, osdesc, состояние, имя группы, conn, pwr",
       "zh-chs": "id，名稱，rname，主機，圖標，ip，osdesc，狀態，組名，conn，pwr",
+      "es": "id, nombre, nombrer, anfitrión, icon, ip, osdesc, estado, nombre del grupo, conn, pwr",
       "xloc": [
         "default.handlebars->27->395"
       ]
@@ -28100,6 +28417,7 @@
       "ja": "がアカウントパスワードのリセットを要求している場合は、次のリンクをクリックしてプロセスを完了します。",
       "ru": "запрашивает сброс пароля учетной записи, нажмите на следующую ссылку, чтобы завершить процесс.",
       "zh-chs": "正在要求重置帐户密码，请单击以下链接以完成该过程。",
+      "es": "solicita restablecer la contraseña de la cuenta, haga clic en el siguiente enlace para completar el proceso.",
       "xloc": [
         "account-reset.html->2->3"
       ]
@@ -28113,6 +28431,7 @@
       "ja": "がメールの確認をリクエストしている場合は、次のリンクをクリックしてプロセスを完了してください。",
       "ru": "запрашивает подтверждение по электронной почте, нажмите на следующую ссылку, чтобы завершить процесс.",
       "zh-chs": "正在请求电子邮件验证，请单击以下链接以完成该过程。",
+      "es": "solicita la verificación por correo electrónico, haga clic en el siguiente enlace para completar el proceso.",
       "xloc": [
         "account-check.html->2->3"
       ]
@@ -28126,6 +28445,7 @@
       "ja": "リモートコントロールセッションを開始するソフトウェアをインストールするように要求しています。",
       "ru": "просит вас установить программное обеспечение, чтобы начать сеанс удаленного управления.",
       "zh-chs": "正在要求您安装软件以启动远程控制会话。",
+      "es": "le solicita que instale software para iniciar una sesión de control remoto.\n",
       "xloc": [
         "mesh-invite.html->2->5"
       ]
@@ -28139,6 +28459,7 @@
       "nl": "k max, blank voor standaard",
       "ru": "k max, пусто по умолчанию",
       "zh-chs": "k max，默认为空白",
+      "es": "k max, en blanco por defecto",
       "xloc": [
         "default.handlebars->27->1406"
       ]
@@ -28275,6 +28596,7 @@
       "pt": "tempo, conn.agente, conn.usuários.usersessions, conn.relaysession, conn.intelamt, mem.externo mem.amontoado, mem.heaptotal, mem.rss",
       "ru": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "zh-chs": "時間，conn.agent，conn.users，conn.usersessions，conn.relaysession，conn.intelamt，mem.external，mem.heapused，mem.heaptotal，mem.rss",
+      "es": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "xloc": [
         "default.handlebars->27->1595"
       ]
@@ -28356,7 +28678,8 @@
       "nl": "onbepaald",
       "pt": "Indefinido",
       "ru": "не определено",
-      "zh-chs": "未定義"
+      "zh-chs": "未定義",
+      "es": "indefinida"
     },
     {
       "cs": "uživatel:",
@@ -28424,6 +28747,7 @@
       "pt": "utc, hora, tipo, ação, usuário, dispositivo, mensagem",
       "ru": "utc, время, тип, действие, пользователь, устройство, сообщение",
       "zh-chs": "utc，時間，類型，操作，用戶，設備，消息",
+      "es": "uta, hora, tipo, acción, usuario, dispositivo, mensaje",
       "xloc": [
         "default.handlebars->27->1330"
       ]
@@ -28440,6 +28764,7 @@
       "pt": "{0} - Instalação do agente",
       "ru": "{0} - установка агента",
       "zh-chs": "{0}-代理安裝",
+      "es": "{0} - Instalación del agente",
       "xloc": [
         "agentinvite.handlebars->3->2"
       ]
