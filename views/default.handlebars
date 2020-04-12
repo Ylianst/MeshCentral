@@ -2427,6 +2427,7 @@
                                 node.tags = message.event.node.tags;
                                 node.userloc = message.event.node.userloc;
                                 node.rdpport = message.event.node.rdpport;
+                                node.consent = message.event.node.consent;
                                 if (message.event.node.links != null) { node.links = message.event.node.links; } else { delete node.links; }
                                 if (message.event.node.agent != null) {
                                     if (node.agent == null) node.agent = {};
@@ -4910,6 +4911,23 @@
 
                 // Active Users
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(format("Active User{0}", ((node.users.length > 1)?'s':'')), node.users.join(', ')); }
+
+                // Display device user consent
+                if (node.agent != null) {
+                    var meshFeatures = [];
+                    var consent = 0;
+                    if (node.consent) { consent = node.consent; }
+                    if (serverinfo.consent) { consent |= serverinfo.consent; }
+                    if ((consent & 0x0040) && (consent & 0x0008)) { meshFeatures.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { meshFeatures.push("Desktop Toolbar"); } else if (consent & 0x0008) { meshFeatures.push("Desktop Prompt"); } else { if (consent & 0x0001) { meshFeatures.push("Desktop Notify"); } }
+                    if (consent & 0x0010) { meshFeatures.push("Terminal Prompt"); } else { if (consent & 0x0002) { meshFeatures.push("Terminal Notify"); } }
+                    if (consent & 0x0020) { meshFeatures.push("Files Prompt"); } else { if (consent & 0x0004) { meshFeatures.push("Files Notify"); } }
+                    if (consent == 7) { meshFeatures = ["Always Notify"]; }
+                    if ((consent & 56) == 56) { meshFeatures = ["Always Prompt"]; }
+
+                    meshFeatures = meshFeatures.join(', ');
+                    if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
+                    x += addDeviceAttribute("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(3)', meshrights & 1));
+                }
 
                 // Attribute: Connectivity (Only show this if more than just the agent is connected).
                 var connectivity = node.conn;
@@ -8215,9 +8233,9 @@
                 x += addHtmlValue("Features", addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1));
             }
 
-            // Display user consent
+            // Display device group user consent
             if (currentMesh.mtype == 2) {
-                meshFeatures = [];
+                var meshFeatures = [];
                 var consent = 0;
                 if (currentMesh.consent) { consent = currentMesh.consent; }
                 if (serverinfo.consent) { consent |= serverinfo.consent; }
@@ -8229,7 +8247,7 @@
 
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
-                x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent()', meshrights & 1));
+                x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1));
             }
 
             // Display user notification
@@ -8444,9 +8462,13 @@
             if (e && e.key == 'Enter') { Q('dp20meshdesc').focus(); }
         }
 
-        function p20editmeshconsent() {
+        // editType: 1 = currentMesh, 2 = currentUser, 3 = currentDevice
+        function p20editmeshconsent(editType) {
             if (xxdialogMode) return;
-            var x = '', consent = (currentMesh.consent) ? currentMesh.consent : 0;
+            var x = '', consent = 0, title = '';
+            if (editType == 1) { consent = (currentMesh.consent) ? currentMesh.consent : 0; title = "Edit Device Group User Consent"; }
+            if (editType == 2) { consent = (currentUser.consent) ? currentUser.consent : 0; title = "Edit User Consent"; }
+            if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
@@ -8457,7 +8479,7 @@
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Files" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
-            setDialogMode(2, "Edit Device Group User Consent", 3, p20editmeshconsentEx, x);
+            setDialogMode(2, title, 3, p20editmeshconsentEx, x, editType);
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
                 if (serverinfo.consent & 0x0008) { Q('d20flag2').checked = true; }
@@ -8476,7 +8498,7 @@
             }
         }
 
-        function p20editmeshconsentEx() {
+        function p20editmeshconsentEx(b, editType) {
             var consent = 0;
             if (Q('d20flag1').checked) { consent += 0x0001; }
             if (Q('d20flag2').checked) { consent += 0x0008; }
@@ -8485,7 +8507,9 @@
             if (Q('d20flag5').checked) { consent += 0x0004; }
             if (Q('d20flag6').checked) { consent += 0x0020; }
             if (Q('d20flag7').checked) { consent += 0x0040; }
-            meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent });
+            if (editType == 1) { meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent }); }
+            if (editType == 2) { meshserver.send({ action: 'edituser', id: currentUser._id, consent: consent }); }
+            if (editType == 3) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, consent: consent }); }
         }
 
         function p20editmeshfeatures() {
@@ -10301,6 +10325,22 @@
                 var xuserGroups = '<i>' + "None" + '</i>';
                 if (user.groups) { xuserGroups = ''; for (var i in user.groups) { xuserGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
                 x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
+            }
+
+            // Display device user consent
+            {
+                var meshFeatures = [], consent = 0;
+                if (user.consent) { consent = user.consent; }
+                if (serverinfo.consent) { consent |= serverinfo.consent; }
+                if ((consent & 0x0040) && (consent & 0x0008)) { meshFeatures.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { meshFeatures.push("Desktop Toolbar"); } else if (consent & 0x0008) { meshFeatures.push("Desktop Prompt"); } else { if (consent & 0x0001) { meshFeatures.push("Desktop Notify"); } }
+                if (consent & 0x0010) { meshFeatures.push("Terminal Prompt"); } else { if (consent & 0x0002) { meshFeatures.push("Terminal Notify"); } }
+                if (consent & 0x0020) { meshFeatures.push("Files Prompt"); } else { if (consent & 0x0004) { meshFeatures.push("Files Notify"); } }
+                if (consent == 7) { meshFeatures = ["Always Notify"]; }
+                if ((consent & 56) == 56) { meshFeatures = ["Always Prompt"]; }
+
+                meshFeatures = meshFeatures.join(', ');
+                if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
+                x += addDeviceAttribute("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(2)', true));
             }
 
             var multiFactor = 0;
