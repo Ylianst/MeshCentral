@@ -985,12 +985,12 @@
       "es": "12.5%",
       "fr": "12.5%",
       "hi": "12.5%",
-      "ja": "12.5％",
+      "ja": "12.5%",
       "ko": "12.5%",
       "nl": "12.5%",
       "pt": "12.5%",
       "ru": "12.5%",
-      "zh-chs": "12.5％",
+      "zh-chs": "12.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->15",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15"
@@ -1075,12 +1075,12 @@
       "es": "25%",
       "fr": "25%",
       "hi": "25%",
-      "ja": "25％",
-      "ko": "25 %",
+      "ja": "25%",
+      "ko": "25%",
       "nl": "25%",
       "pt": "25%",
       "ru": "25%",
-      "zh-chs": "25％",
+      "zh-chs": "25%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->13",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13"
@@ -1137,7 +1137,17 @@
     },
     {
       "en": "3. All advertising materials mentioning features or use of this software must display the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
+      "ja": "3. このソフトウェアの機能または使用について言及するすべての広告資料には、「この製品には、OpenSSL Toolkitで使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます。（http://www.openssl.org/）」",
+      "ko": "3. 이 소프트웨어의 기능이나 사용을 언급하는 모든 광고 자료에는 다음 인정이 표시되어야합니다. \"이 제품에는 OpenSSL Toolkit에서 사용하기 위해 OpenSSL Project에서 개발 한 소프트웨어가 포함되어 있습니다. (http://www.openssl.org/)\"",
+      "nl": "3. Alle advertentiematerialen die functies of gebruik van deze software maken, moeten de volgende tekst bevatten: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit. (Http://www.openssl.org/)\"",
+      "pt": "3. Todos os materiais publicitários que mencionam os recursos ou o uso deste software devem exibir o seguinte reconhecimento: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
+      "ru": "3. Все рекламные материалы, в которых упоминаются функции или использование этого программного обеспечения, должны отображать следующее подтверждение: \"Этот продукт включает программное обеспечение, разработанное OpenSSL Project для использования в OpenSSL Toolkit. (http://www.openssl.org/)\"",
       "es": "3. Todos los materiales publicitarios que mencionen características o el uso de este software deben mostrar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit. (Http://www.openssl.org/)\"",
+      "fr": "3. Tous les supports publicitaires mentionnant des fonctionnalités ou l'utilisation de ce logiciel doivent afficher la mention suivante: \"Ce produit inclut un logiciel développé par le projet OpenSSL pour une utilisation dans l'OpenSSL Toolkit. (Http://www.openssl.org/)\"",
+      "hi": "3. इस सॉफ्टवेयर की विशेषताओं या उपयोग के बारे में सभी विज्ञापन सामग्री में निम्नलिखित स्वीकार्यता प्रदर्शित होनी चाहिए: \"इस उत्पाद में ओपनएसएसएल टूलकिट में उपयोग के लिए ओपनएसएसएल प्रोजेक्ट द्वारा विकसित सॉफ्टवेयर शामिल है। (http://www.openssl.org/)\"",
+      "cs": "3. Všechny reklamní materiály zmiňující funkce nebo použití tohoto softwaru musí obsahovat následující oznámení: „Tento produkt zahrnuje software vyvinutý projektem OpenSSL pro použití v sadě OpenSSL Toolkit. (http://www.openssl.org/)“",
+      "de": "3. Alle Werbematerialien, in denen Funktionen oder die Verwendung dieser Software erwähnt werden, müssen die folgende Bestätigung aufweisen: \"Dieses Produkt enthält Software, die vom OpenSSL-Projekt zur Verwendung im OpenSSL Toolkit entwickelt wurde (http://www.openssl.org/).\"",
+      "zh-chs": "3. 所有提及該功能或使用該軟件的廣告材料都必須顯示以下確認：“此產品包括由OpenSSL Project開發並在OpenSSL Toolkit中使用的軟件。（http://www.openssl.org/）”",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->35->1",
         "terms.handlebars->container->column_l->35->1"
@@ -1146,6 +1156,16 @@
     {
       "en": "3. Neither the name of CodePlex Foundation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
       "es": "3. Ni el nombre de la Fundación CodePlex ni los nombres de sus colaboradores pueden utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito específico.",
+      "cs": "3. Název nadace CodePlex Foundation ani jména jejích přispěvatelů nesmí být bez předchozího písemného svolení použita k doporučování nebo propagaci produktů odvozených od tohoto softwaru.",
+      "de": "3. Weder der Name der CodePlex Foundation noch die Namen ihrer Mitwirkenden dürfen verwendet werden, um Produkte, die von dieser Software abgeleitet sind, ohne ausdrückliche vorherige schriftliche Genehmigung zu unterstützen oder zu bewerben.",
+      "fr": "3. Ni le nom de la Fondation CodePlex ni les noms de ses contributeurs ne peuvent être utilisés pour approuver ou promouvoir des produits dérivés de ce logiciel sans autorisation écrite préalable spécifique.",
+      "hi": "3. न तो कोडप्लेक्स फाउंडेशन का नाम और न ही इसके योगदानकर्ताओं के नाम का उपयोग विशिष्ट पूर्व लिखित अनुमति के बिना इस सॉफ्टवेयर से प्राप्त उत्पादों को समर्थन या बढ़ावा देने के लिए किया जा सकता है।",
+      "ja": "3. CodePlex Foundationの名前もその貢献者の名前も、書面による事前の許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用することはできません。",
+      "ko": "3. CodePlex Foundation의 이름이나 기여자의 이름을 사전 서면 허가없이이 소프트웨어에서 파생 된 제품을 보증하거나 홍보하는 데 사용할 수 없습니다.",
+      "nl": "3. Noch de naam van CodePlex Foundation, noch de namen van haar bijdragers mogen worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder specifieke voorafgaande schriftelijke toestemming.",
+      "pt": "3. Nem o nome da CodePlex Foundation nem os nomes de seus colaboradores podem ser usados \\u200b\\u200bpara endossar ou promover produtos derivados deste software sem permissão prévia por escrito específica.",
+      "ru": "3. Ни имя CodePlex Foundation, ни имена его участников не могут использоваться для поддержки или продвижения продуктов, созданных на основе данного программного обеспечения, без специального предварительного письменного разрешения.",
+      "zh-chs": "3. 未經事先特別書面許可，不得使用CodePlex Foundation的名稱或其貢獻者的名稱來認可或促銷從該軟件衍生的產品。",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->19->1",
         "terms.handlebars->container->column_l->19->1"
@@ -1154,6 +1174,15 @@
     {
       "en": "3. jQuery Foundation - MIT License",
       "es": "3. jQuery Foundation - Licencia MIT",
+      "de": "3. jQuery Foundation - MIT-Lizenz",
+      "fr": "3. jQuery Foundation - Licence MIT",
+      "hi": "3. jQuery फाउंडेशन - एमआईटी लाइसेंस",
+      "ja": "3. jQuery Foundation-MITライセンス",
+      "ko": "3. jQuery Foundation-MIT 라이센스",
+      "nl": "3. jQuery Foundation - MIT Licentie",
+      "pt": "3. jQuery Foundation - Licença MIT",
+      "ru": "3. jQuery Foundation - MIT Лицензия",
+      "zh-chs": "3. jQuery Foundation-MIT許可證",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->45->1->0",
         "terms.handlebars->container->column_l->45->1->0"
@@ -1184,12 +1213,12 @@
       "es": "37.5%",
       "fr": "37.5%",
       "hi": "37.5%",
-      "ja": "37.5％",
-      "ko": "37.5 %",
+      "ja": "37.5%",
+      "ko": "37.5%",
       "nl": "37.5%",
       "pt": "37.5%",
       "ru": "37.5%",
-      "zh-chs": "37.5％",
+      "zh-chs": "37.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->11",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11"
@@ -1198,6 +1227,16 @@
     {
       "en": "4. The names \"OpenSSL Toolkit\" and \"OpenSSL Project\" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact openssl-core@openssl.org.",
       "es": "4. Los nombres \"OpenSSL Toolkit\" y \"OpenSSL Project\" no deben utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito. Para obtener un permiso por escrito, comuníquese con openssl-core@openssl.org.",
+      "cs": "4. Názvy „OpenSSL Toolkit“ a „OpenSSL Project“ nesmí být bez předchozího písemného souhlasu použity k doporučování nebo propagaci produktů odvozených z tohoto softwaru. Pro písemné povolení kontaktujte na openssl-core@openssl.org.",
+      "de": "4. Die Namen \"OpenSSL Toolkit\" und \"OpenSSL Project\" dürfen ohne vorherige schriftliche Genehmigung nicht verwendet werden, um von dieser Software abgeleitete Produkte zu unterstützen oder zu bewerben. Für eine schriftliche Genehmigung wenden Sie sich bitte an openssl-core@openssl.org.",
+      "fr": "4. Les noms «OpenSSL Toolkit» et «OpenSSL Project» ne doivent pas être utilisés pour approuver ou promouvoir des produits dérivés de ce logiciel sans autorisation écrite préalable. Pour une autorisation écrite, veuillez contacter openssl-core@openssl.org.",
+      "hi": "4. \"ओपनएसएसएल टूलकिट\" और \"ओपनएसएसएल प्रोजेक्ट\" नामों का उपयोग पूर्व लिखित अनुमति के बिना इस सॉफ्टवेयर से प्राप्त उत्पादों को समर्थन या बढ़ावा देने के लिए नहीं किया जाना चाहिए। लिखित अनुमति के लिए, कृपया खुलता है- whatsl-core@openssl.org।",
+      "ja": "4.「OpenSSL Toolkit」および「OpenSSL Project」という名前は、事前の書面による許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用しないでください。書面による許可については、openssl-core @ openssl.orgにお問い合わせください。",
+      "ko": "4. 사전 서면 허가없이 \"OpenSSL Toolkit\"및 \"OpenSSL Project\"라는 이름을 사용하여이 소프트웨어에서 파생 된 제품을 보증하거나 홍보해서는 안됩니다. 서면 허가를 받으려면 openssl-core@openssl.org에 문의하십시오.",
+      "nl": "4. De namen \"OpenSSL Toolkit\" en \"OpenSSL Project\" mogen niet worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder voorafgaande schriftelijke toestemming. Neem voor schriftelijke toestemming contact op met openssl-core@openssl.org.",
+      "pt": "4. Os nomes \"OpenSSL Toolkit\" e \"OpenSSL Project\" não devem ser usados ​​para endossar ou promover produtos derivados deste software sem permissão prévia por escrito. Para permissão por escrito, entre em contato com openssl-core@openssl.org.",
+      "ru": "4. Наименования «OpenSSL Toolkit» и «OpenSSL Project» не должны использоваться для поддержки или продвижения продуктов, созданных на основе данного программного обеспечения, без предварительного письменного разрешения. Для получения письменного разрешения, пожалуйста, свяжитесь с openssl-core@openssl.org.",
+      "zh-chs": "4. 未經事先書面許可，不得使用名稱“ OpenSSL Toolkit”和“ OpenSSL Project”來認可或促銷從該軟件衍生的產品。要獲得書面許可，請聯繫openssl-core@openssl.org。",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->37->1",
         "terms.handlebars->container->column_l->37->1"
@@ -1206,6 +1245,15 @@
     {
       "en": "4. jQuery User Interface - MIT License",
       "es": "4. jQuery User Interface - Licencia MIT",
+      "de": "4. jQuery-Benutzeroberfläche - MIT-Lizenz",
+      "fr": "4. Interface utilisateur jQuery - Licence MIT",
+      "hi": "4. jQuery उपयोगकर्ता इंटरफ़ेस - एमआईटी लाइसेंस",
+      "ja": "4. jQueryユーザーインターフェイス-MITライセンス",
+      "ko": "4. jQuery 사용자 인터페이스-MIT 라이센스",
+      "nl": "4. jQuery Gebruikers Interface - MIT Licentie",
+      "pt": "4. Interface do Usuário jQuery - Licença MIT",
+      "ru": "4. jQuery User Interface - MIT Лицензия",
+      "zh-chs": "4. jQuery用戶界面-MIT許可證",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->51->1->0",
         "terms.handlebars->container->column_l->51->1->0"
@@ -1249,6 +1297,16 @@
     {
       "en": "5. Products derived from this software may not be called \"OpenSSL\" nor may \"OpenSSL\" appear in their names without prior written permission of the OpenSSL Project.",
       "es": "5. Los productos derivados de este software no pueden llamarse \"OpenSSL\" ni \"OpenSSL\" aparecer en sus nombres sin el permiso previo por escrito del Proyecto OpenSSL.",
+      "cs": "5. Produkty odvozené od tohoto softwaru nesmí být nazývány „OpenSSL“ ani se nesmí „OpenSSL“ objevit v jejich názvech bez předchozího písemného souhlasu projektu OpenSSL.",
+      "de": "5. Von dieser Software abgeleitete Produkte dürfen ohne vorherige schriftliche Genehmigung des OpenSSL-Projekts weder \"OpenSSL\" genannt noch \"OpenSSL\" in ihren Namen angezeigt werden.",
+      "fr": "5. Les produits dérivés de ce logiciel ne peuvent pas être appelés \"OpenSSL\" ni \"OpenSSL\" apparaître dans leurs noms sans l'autorisation écrite préalable du projet OpenSSL.",
+      "hi": "5. इस सॉफ्टवेयर से प्राप्त उत्पादों को \"ओपनएसएसएल\" नहीं कहा जा सकता है और न ही ओपनएसएसएल परियोजना की पूर्व लिखित अनुमति के बिना उनके नाम में \"ओपनएसएसएल\" दिखाई दे सकता है।",
+      "ja": "5. このソフトウェアから派生した製品は、OpenSSL Projectの事前の書面による許可なしに、「OpenSSL」と呼ばれたり、名前に「OpenSSL」が表示されたりすることはありません。",
+      "ko": "5. OpenSSL Project의 사전 서면 승인없이이 소프트웨어에서 파생 된 제품을 \"OpenSSL\"이라고하거나 이름에 \"OpenSSL\"을 표시 할 수 없습니다.",
+      "nl": "5. Producten die zijn afgeleid van deze software mogen niet \"OpenSSL\" worden genoemd, noch mag \"OpenSSL\" in hun naam worden weergegeven zonder voorafgaande schriftelijke toestemming van het OpenSSL-project.",
+      "pt": "5. Os produtos derivados deste software não podem ser chamados de \"OpenSSL\" nem \"OpenSSL\" aparece em seus nomes sem a permissão prévia por escrito do OpenSSL Project.",
+      "ru": "5. Продукты, полученные из этого программного обеспечения, не могут называться «OpenSSL», а также «OpenSSL» не может появляться в их названиях без предварительного письменного разрешения OpenSSL Project.",
+      "zh-chs": "5. 未經OpenSSL Project事先書面許可，從該軟件派生的產品不得稱為“ OpenSSL”，也不得在其名稱中出現“ OpenSSL”。",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->39->1",
         "terms.handlebars->container->column_l->39->1"
@@ -1257,6 +1315,16 @@
     {
       "en": "5. noVNC - Mozilla Public License 2.0",
       "es": "5. noVNC - Mozilla Public License 2.0",
+      "cs": "5. noVNC – Mozilla Public licence 2.0",
+      "de": "5. noVNC - Mozilla Public License 2.0",
+      "fr": "5. noVNC - Mozilla Public License 2.0",
+      "hi": "5. noVNC - मोज़िला पब्लिक लाइसेंस 2.0",
+      "ja": "5. noVNC-Mozilla Public License 2.0",
+      "ko": "5. noVNC-Mozilla Public License 2.0",
+      "nl": "5. noVNC - Mozilla Public Licentie 2.0",
+      "pt": "5. noVNC - Licença Pública Mozilla 2.0 0",
+      "ru": "5. noVNC - Mozilla Public License 2.0",
+      "zh-chs": "5. noVNC-Mozilla公共許可證2.0",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->59->1->0",
         "terms.handlebars->container->column_l->59->1->0"
@@ -1269,12 +1337,12 @@
       "es": "50%",
       "fr": "50%",
       "hi": "50%",
-      "ja": "50％",
-      "ko": "50 %",
+      "ja": "50%",
+      "ko": "50%",
       "nl": "50%",
       "pt": "50%",
       "ru": "50%",
-      "zh-chs": "50％",
+      "zh-chs": "50%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->9",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9"
@@ -1283,6 +1351,16 @@
     {
       "en": "6. Rcarousel - MIT LIcense",
       "es": "6. Rcarousel - Licencia MIT",
+      "cs": "6. Rcarousel – MIT licence",
+      "de": "6. Karussell - MIT LIcense",
+      "fr": "6. Carrousel - Licence MIT",
+      "hi": "6. रॉसेल - MIT LIcense",
+      "ja": "6. Rcarousel - MITライセンス",
+      "ko": "6. 회전 목마-MIT 라이센스",
+      "nl": "6. Rcarousel - MIT Licentie",
+      "pt": "6. Rcarousel - License MIT",
+      "ru": "6. Rcarousel - MIT Лицензия",
+      "zh-chs": "6.Rcarousel-麻省理工學院執照",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->65->1->0",
         "terms.handlebars->container->column_l->65->1->0"
@@ -1291,6 +1369,16 @@
     {
       "en": "6. Redistributions of any form whatsoever must retain the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)\".",
       "es": "6. Las redistribuciones de cualquier forma deben conservar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit (http://www.openssl.org/)\".",
+      "cs": "6. Šíření dál v jakékoli formě si musí zachovat následující prohlášení: „Tento produkt zahrnuje software vyvinutý v rámci projektu OpenSSL pro použití v sadě OpenSSL Toolkit (http://www.openssl.org/)“.",
+      "de": "6. Weiterverteilungen jeglicher Art müssen die folgende Bestätigung behalten: \"Dieses Produkt enthält Software, die vom OpenSSL-Projekt zur Verwendung im OpenSSL Toolkit (http://www.openssl.org/) entwickelt wurde.\"",
+      "fr": "6.Les redistributions sous quelque forme que ce soit doivent conserver la mention suivante: \"Ce produit comprend un logiciel développé par le projet OpenSSL pour une utilisation dans la boîte à outils OpenSSL (http://www.openssl.org/)\".",
+      "fr": "6. Les redistributions sous quelque forme que ce soit doivent conserver la mention suivante: \"Ce produit comprend un logiciel développé par le projet OpenSSL pour une utilisation dans la boîte à outils OpenSSL (http://www.openssl.org/)\".",
+      "hi": "6. किसी भी रूप के 6.Redistributions जो भी निम्नलिखित स्वीकार्यता को बनाए रखने चाहिए: \"इस उत्पाद में OpenSSL टूलकिट (http://www.openssl.org/) में उपयोग के लिए OpenSSL प्रोजेक्ट द्वारा विकसित सॉफ्टवेयर शामिल है\"।",
+      "ja": "6. いかなる形式の再配布でも、「この製品には、OpenSSL Toolkit（http://www.openssl.org/）で使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます」という承認を保持する必要があります。",
+      "ko": "6. \"이 제품에는 OpenSSL 툴킷 (http://www.openssl.org/)에서 사용하기 위해 OpenSSL Project에서 개발 한 소프트웨어가 포함되어 있습니다.\"",
+      "nl": "6. Herdistributies in welke vorm dan ook moet de volgende tekst behouden: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit (http://www.openssl.org/)\".","pt": "6. As redistribuições de qualquer forma devem manter o seguinte reconhecimento: \"Este produto inclui software desenvolvido pelo OpenSSL Project para uso no OpenSSL Toolkit (http://www.openssl.org/)\".",
+      "ru": "6. Распространение в любой форме должно включать следующее подтверждение: \"Этот продукт включает программное обеспечение, разработанное OpenSSL Project для использования в OpenSSL Toolkit (http://www.openssl.org/)\".",
+      "zh-chs": "6. 任何形式的重新分發都必須保留以下聲明：“此產品包括由OpenSSL Project開發的，用於OpenSSL Toolkit（http://www.openssl.org/）的軟件”。",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->41->1",
         "terms.handlebars->container->column_l->41->1"
@@ -1303,12 +1391,12 @@
       "es": "62.5%",
       "fr": "62.5%",
       "hi": "62.5%",
-      "ja": "62.5％",
-      "ko": "62.5 %",
+      "ja": "62.5%",
+      "ko": "62.5%",
       "nl": "62.5%",
       "pt": "62.5%",
       "ru": "62.5%",
-      "zh-chs": "62.5％",
+      "zh-chs": "62.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7"
@@ -1383,6 +1471,16 @@
     {
       "en": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK License",
       "es": "7. Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 UK Licencia",
+      "cs": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK licence",
+      "de": "7. Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 UK-Lizenz",
+      "fr": "7. Webtoolkit Javascript Base 64 - Licence Creative Commons Attribution 2.0 UK",
+      "hi": "7. वेबटूलकिट जावास्क्रिप्ट बेस 64 - क्रिएटिव कॉमन्स एट्रिब्यूशन 2.0 यूके लाइसेंस",
+      "ja": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UKライセンス",
+      "ko": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 영국 라이센스",
+      "nl": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK Licentie",
+      "pt": "7. Webtoolkit Javascript Base 64 - Licença Creative Commons Attribution 2.0 UK",
+      "ru": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK Лицензия",
+      "zh-chs": "7. Webtoolkit Javascript Base 64 –知識共享署名2.0英國許可證",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->73->1->0",
         "terms.handlebars->container->column_l->73->1->0"
@@ -1395,12 +1493,12 @@
       "es": "75%",
       "fr": "75%",
       "hi": "75%",
-      "ja": "75％",
-      "ko": "75 %",
+      "ja": "75%",
+      "ko": "75%",
       "nl": "75%",
       "pt": "75%",
       "ru": "75%",
-      "zh-chs": "75％",
+      "zh-chs": "75%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5"
