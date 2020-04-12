@@ -162,40 +162,46 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                //var meshrights = parent.GetMeshRights(user, agent.dbMeshKey); // TODO: We will need to get the rights for this specific node.
-                var mesh = parent.meshes[agent.dbMeshKey];
-                var meshrights = parent.GetNodeRights(user, mesh, agent.dbNodeKey);
-                if ((mesh != null) && ((meshrights & MESHRIGHT_REMOTECONTROL) || (meshrights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
-                    command.sessionid = ws.sessionId;   // Set the session id, required for responses
-                    command.rights = meshrights;        // Add user rights flags to the message
-                    command.consent = mesh.consent;     // Add user consent
-                    if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
-                    command.username = user.name;       // Add user name
-                    command.userid = user._id;          // Add user id
-                    command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
-                    if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
-                    delete command.nodeid;              // Remove the nodeid since it's implied
-                    try { agent.send(JSON.stringify(command)); } catch (ex) { }
-                }
+                parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
+                    var mesh = parent.meshes[agent.dbMeshKey];
+                    if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
+                        command.sessionid = ws.sessionId;   // Set the session id, required for responses
+                        command.rights = rights;            // Add user rights flags to the message
+                        command.consent = 0;
+                        if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                        if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
+                        if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
+                        if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
+                        command.username = user.name;       // Add user name
+                        command.userid = user._id;          // Add user id
+                        command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
+                        if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                        delete command.nodeid;              // Remove the nodeid since it's implied
+                        try { agent.send(JSON.stringify(command)); } catch (ex) { }
+                    }
+                });
             } else {
                 // Check if a peer server is connected to this agent
                 var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    //var meshrights = parent.GetMeshRights(user, routing.meshid); // TODO: We will need to get the rights for this specific node.
-                    var mesh = parent.meshes[routing.meshid];
-                    var meshrights = parent.GetNodeRights(user, mesh, agent.dbNodeKey);
-                    if ((mesh != null) && ((meshrights & MESHRIGHT_REMOTECONTROL) || (meshrights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
-                        command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
-                        command.rights = meshrights;         // Add user rights flags to the message
-                        command.consent = mesh.consent;         // Add user consent
-                        if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
-                        command.username = user.name;           // Add user name
-                        command.userid = user._id;              // Add user id
-                        command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
-                        if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
-                        parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
-                    }
+                    parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
+                        var mesh = parent.meshes[routing.meshid];
+                        if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
+                            command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
+                            command.rights = rights;                // Add user rights flags to the message
+                            command.consent = 0;
+                            if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                            if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
+                            if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
+                            if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
+                            command.username = user.name;           // Add user name
+                            command.userid = user._id;              // Add user id
+                            command.remoteaddr = cleanRemoteAddr(req.ip); // User's IP address
+                            if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                            parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
+                        }
+                    });
                 }
             }
         }
@@ -1586,6 +1592,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Make changes
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
+                            if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
 
                             // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
                             if (chguser._id !== user._id) { // We can't change our own siteadmin permissions.
@@ -1593,7 +1600,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
                             }
 
-                            // Went sending a notification about a group change, we need to send to all the previous and new groups.
+                            // When sending a notification about a group change, we need to send to all the previous and new groups.
                             var allTargetGroups = chguser.groups;
                             if ((Array.isArray(command.groups)) && ((user._id != command.id) || (user.siteadmin == 0xFFFFFFFF))) {
                                 if (command.groups.length == 0) {
@@ -3037,9 +3044,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((args.wanonly == true) && (command.host)) { delete command.host; }
 
                         // Look for a change
-                        if (command.icon && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
-                        if (command.name && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
-                        if (command.host && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
+                        if ((typeof command.icon == 'number') && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
+                        if ((typeof command.name == 'string') && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
+                        if ((typeof command.host == 'string') && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
+                        if (typeof command.consent == 'number') { if (((command.consent != 0) && ((node.consent == null) || (node.consent == 0))) || ((command.consent == 0) && (node.consent != null) && (node.consent != 0))) { change = 1; if (command.consent == 0) { delete node.consent; } else { node.consent = command.consent; } changes.push('consent'); } }
+
                         if ((typeof command.rdpport == 'number') && (command.rdpport > 0) && (command.rdpport < 65536)) {
                             if ((command.rdpport == 3389) && (node.rdpport != null)) {
                                 delete node.rdpport; change = 1; changes.push('rdpport'); // Delete the RDP port

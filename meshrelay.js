@@ -80,36 +80,44 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             var agent = parent.wsagents[command.nodeid];
             if (agent != null) {
                 // Check if we have permission to send a message to that node
-                rights = parent.GetNodeRights(user, agent.dbMeshKey, agent.dbNodeKey);
-                mesh = parent.meshes[agent.dbMeshKey];
-                if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
-                    if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
-                    command.rights = rights.rights;     // Add user rights flags to the message
-                    command.consent = mesh.consent;     // Add user consent
-                    if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
-                    command.username = user.name;       // Add user name
-                    if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
-                    delete command.nodeid;              // Remove the nodeid since it's implyed.
-                    agent.send(JSON.stringify(command));
-                    return true;
-                }
+                parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
+                    mesh = parent.meshes[agent.dbMeshKey];
+                    if ((node != null) && (rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                        if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
+                        command.rights = rights.rights;     // Add user rights flags to the message
+                        command.consent = 0;
+                        if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                        if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
+                        if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
+                        if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
+                        command.username = user.name;       // Add user name
+                        if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                        delete command.nodeid;              // Remove the nodeid since it's implyed.
+                        agent.send(JSON.stringify(command));
+                        return true;
+                    }
+                });
             } else {
                 // Check if a peer server is connected to this agent
                 var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    rights = parent.GetNodeRights(user, routing.meshid, command.nodeid);
-                    mesh = parent.meshes[routing.meshid];
-                    if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
-                        if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
-                        command.rights = rights.rights;         // Add user rights flags to the message
-                        command.consent = mesh.consent;         // Add user consent
-                        if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
-                        command.username = user.name;           // Add user name
-                        if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
-                        parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
-                        return true;
-                    }
+                    parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
+                        mesh = parent.meshes[routing.meshid];
+                        if ((node != null) && (rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                            if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
+                            command.rights = rights.rights;         // Add user rights flags to the message
+                            command.consent = 0;
+                            if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
+                            if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
+                            if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
+                            if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
+                            command.username = user.name;           // Add user name
+                            if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                            parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
+                            return true;
+                        }
+                    });
                 }
             }
         }
