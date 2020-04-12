@@ -260,7 +260,7 @@
 
             // Linux Setup
             if (serverHttps == 1) {
-                var portStr = (serverPort == 443) ? '' : (":" + serverPort);
+                var portStr = (serverPort == 443) ? '' : (':' + serverPort);
                 if (serverNoProxy == 0) {
                     linuxInstall = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid + '\'\r\n';
                     linuxUnInstall = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-check-certificate -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy --no-check-certificate -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';

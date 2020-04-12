@@ -91,20 +91,6 @@
       ]
     },
     {
-      "cs": " - Reset v {0} den{1}.",
-      "de": " - Zurücksetzen in {0} Tag{1}.",
-      "en": " - Reset in {0} day{1}.",
-      "es": " - Reiniciar en {0} dias{1}.",
-      "fr": " - Réinitialiser dans le {0} jour {1}.",
-      "hi": " - {0} दिन {1} में रीसेट करें।",
-      "ja": " - {0}日でリセット{1}。",
-      "ko": " - {0} 일 {1}에 재설정하십시오.",
-      "nl": " - Reset in {0} dag(en){1}.",
-      "pt": " - Redefinir em {0} dia {1}.",
-      "ru": " - Сброс через {0} дней.",
-      "zh-chs": " - 在{0}天{1}中重置。"
-    },
-    {
       "cs": " - Resetovat za {0} hodin.",
       "de": " - Zurücksetzen in {0} Stunden.",
       "en": " - Reset in {0} hours.",
@@ -121,20 +107,6 @@
         "default-mobile.handlebars->9->14",
         "default.handlebars->27->56"
       ]
-    },
-    {
-      "cs": " - Reset v {0} hodin{1}.",
-      "de": " - Zurücksetzen in {0} Stunde{1}.",
-      "en": " - Reset in {0} hour{1}.",
-      "es": " - Reiniciar en {0} horas{1}.",
-      "fr": " - Réinitialisation dans {0} heure {1}.",
-      "hi": " - {0} घंटे {1} में रीसेट करें।",
-      "ja": " - {0}時間でリセット{1}。",
-      "ko": " - {0} 시간 {1}에 재설정하십시오.",
-      "nl": " - Reset in {0} uur{1}.",
-      "pt": " - Redefinir em {0} hora {1}.",
-      "ru": " - Сброс через {0} часов.",
-      "zh-chs": " - 在{0}小時{1}內重置。"
     },
     {
       "cs": " - Resetovat za {0} minut.",
@@ -155,20 +127,6 @@
       ]
     },
     {
-      "cs": " - Resetovat za {0} minut{1}.",
-      "de": " - Zurücksetzen in {0} Minute{1}.",
-      "en": " - Reset in {0} minute{1}.",
-      "es": " - Reiniciar en {0} minutos{1}.",
-      "fr": " - Réinitialisation en {0} minute {1}.",
-      "hi": " - {0} मिनट {1} में रीसेट करें।",
-      "ja": " - {0}分でリセット{1}。",
-      "ko": " - {0} 분 {1}에 재설정하십시오.",
-      "nl": " - Reset in {0} minuten{1}.",
-      "pt": " - Redefinir em {0} minuto {1}.",
-      "ru": " - Сброс через {0} минут.",
-      "zh-chs": " - 在{0}分鐘{1}內重置。"
-    },
-    {
       "cs": " - Resetovat při příštím přihlášení.",
       "de": " - Beim nächsten Anmelden zurücksetzen.",
       "en": " - Reset on next login.",
@@ -186,23 +144,6 @@
         "default-mobile.handlebars->9->9",
         "default.handlebars->27->51",
         "default.handlebars->27->52"
-      ]
-    },
-    {
-      "cs": " / ",
-      "de": " / ",
-      "en": " / ",
-      "es": " / ",
-      "fr": " / ",
-      "hi": " / ",
-      "ja": " / ",
-      "ko": " / ",
-      "nl": " / ",
-      "pt": " / ",
-      "ru": " / ",
-      "zh-chs": " / ",
-      "xloc": [
-        "default-mobile.handlebars->9->98"
       ]
     },
     {
@@ -302,7 +243,7 @@
       "ru": " устройство",
       "zh-chs": " 節點",
       "xloc": [
-        "default-mobile.handlebars->9->131"
+        "default-mobile.handlebars->9->130"
       ]
     },
     {
@@ -319,7 +260,7 @@
       "ru": " устройства",
       "zh-chs": " 節點",
       "xloc": [
-        "default-mobile.handlebars->9->132"
+        "default-mobile.handlebars->9->131"
       ]
     },
     {
@@ -466,7 +407,7 @@
       "ru": ", ",
       "zh-chs": "，",
       "xloc": [
-        "default-mobile.handlebars->9->334",
+        "default-mobile.handlebars->9->331",
         "default.handlebars->27->1248"
       ]
     },
@@ -536,8 +477,8 @@
       "ru": ", WebRTC",
       "zh-chs": "，WebRTC",
       "xloc": [
-        "default-mobile.handlebars->9->232",
-        "default-mobile.handlebars->9->242",
+        "default-mobile.handlebars->9->231",
+        "default-mobile.handlebars->9->239",
         "default.handlebars->27->655",
         "default.handlebars->27->686",
         "default.handlebars->27->698",
@@ -622,7 +563,6 @@
       "pt": "-",
       "ru": "-",
       "xloc": [
-        "default-mobile.handlebars->9->235",
         "xterm.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -662,7 +602,7 @@
       "ru": "...",
       "zh-chs": "...",
       "xloc": [
-        "default-mobile.handlebars->9->247",
+        "default-mobile.handlebars->9->244",
         "default-mobile.handlebars->9->70",
         "default.handlebars->27->1285",
         "default.handlebars->27->1547",
@@ -680,7 +620,6 @@
       "pt": "0",
       "ru": "0",
       "xloc": [
-        "default-mobile.handlebars->9->236",
         "default.handlebars->container->masthead->7->notificationCount"
       ]
     },
@@ -732,7 +671,7 @@
       "ru": "1 байт",
       "zh-chs": "1個字節",
       "xloc": [
-        "default-mobile.handlebars->9->338",
+        "default-mobile.handlebars->9->335",
         "default-mobile.handlebars->9->80",
         "default.handlebars->27->1304"
       ]
@@ -916,17 +855,17 @@
       ]
     },
     {
-      "cs": "1.AJAX Control Toolkit – Nová BSD licence",
-      "de": "1.AJAX Control Toolkit - Neue BSD-Lizenz",
-      "en": "1.AJAX Control Toolkit - New BSD License",
-      "es": "1.AJAX Control Toolkit - New BSD License",
-      "fr": "1.AJAX Control Toolkit - Nouvelle licence BSD",
-      "hi": "1.जैक्स कंट्रोल टूलकिट - न्यू बीएसडी लाइसेंस",
-      "ja": "1.AJAX Control Toolkit-新しいBSDライセンス",
-      "ko": "1.AJAX Control Toolkit-새로운 BSD 라이센스",
-      "nl": "1.AJAX Control Toolkit - Nieuwe BSD Licentie",
-      "pt": "1.AJAX Control Toolkit - Nova licença BSD",
-      "ru": "1.AJAX Control Toolkit - Новая BSD Лицензия",
+      "cs": "1. AJAX Control Toolkit – Nová BSD licence",
+      "de": "1. AJAX Control Toolkit - Neue BSD-Lizenz",
+      "en": "1. AJAX Control Toolkit - New BSD License",
+      "es": "1. AJAX Control Toolkit - New BSD License",
+      "fr": "1. AJAX Control Toolkit - Nouvelle licence BSD",
+      "hi": "1. जैक्स कंट्रोल टूलकिट - न्यू बीएसडी लाइसेंस",
+      "ja": "1. AJAX Control Toolkit-新しいBSDライセンス",
+      "ko": "1. AJAX Control Toolkit-새로운 BSD 라이센스",
+      "nl": "1. AJAX Control Toolkit - Nieuwe BSD Licentie",
+      "pt": "1. AJAX Control Toolkit - Nova licença BSD",
+      "ru": "1. AJAX Control Toolkit - Новая BSD Лицензия",
       "zh-chs": "1.AJAX控制工具包-新的BSD許可證",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->9->1->0",
@@ -934,18 +873,18 @@
       ]
     },
     {
-      "cs": "1.Při šíření zdrojového kódu dál musí být zachováno výše uvedené upozornění o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti.",
+      "cs": "1. Při šíření zdrojového kódu dál musí být zachováno výše uvedené upozornění o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti.",
       "de": "1. Bei der Weiterverteilung des Quellcodes müssen der oben genannte Copyright-Hinweis, diese Liste der Bedingungen und der folgende Haftungsausschluss erhalten bleiben.",
-      "en": "1.Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.",
-      "es": "1.Las redistribuciones del código fuente deben conservar el aviso de copyright anterior, esta lista de condiciones y el siguiente descargo de responsabilidad.",
-      "fr": "1.La redistribution du code source doit contenir le copyright, la liste des conditions et le la décharge de responsabilité suivante.",
+      "en": "1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.",
+      "es": "1. Las redistribuciones del código fuente deben conservar el aviso de copyright anterior, esta lista de condiciones y el siguiente descargo de responsabilidad.",
+      "fr": "1. La redistribution du code source doit contenir le copyright, la liste des conditions et le la décharge de responsabilité suivante.",
       "hi": "स्रोत कोड के 1.Ristributions उपरोक्त कॉपीराइट नोटिस, शर्तों की सूची और निम्नलिखित अस्वीकरण को बनाए रखना चाहिए।",
-      "ja": "1.ソースコードの再配布には、上記の著作権表示、この条件リスト、および以下の免責事項を保持する必要があります。",
-      "ko": "1.소스 코드의 재배포에는 위의 저작권 표시,이 조건 목록 및 다음 면책 사항이 유지되어야합니다.",
-      "nl": "1.Herdistributies van broncode moeten de bovenstaande copyright kennisgeving en deze lijst met voorwaarden en de volgende disclaimer bevatten.",
-      "pt": "1.As redistribuições do código-fonte devem manter o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir.",
-      "ru": "1.Распространение исходного кода должно включать указанное выше уведомление об авторских правах, этот список условий и следующий отказ от ответственности.",
-      "zh-chs": "1.重新分發源代碼必須保留以上版權聲明，此條件列表和以下免責聲明。",
+      "ja": "1. ソースコードの再配布には、上記の著作権表示、この条件リスト、および以下の免責事項を保持する必要があります。",
+      "ko": "1. 소스 코드의 재배포에는 위의 저작권 표시,이 조건 목록 및 다음 면책 사항이 유지되어야합니다.",
+      "nl": "1. Herdistributies van broncode moeten de bovenstaande copyright kennisgeving en deze lijst met voorwaarden en de volgende disclaimer bevatten.",
+      "pt": "1. As redistribuições do código-fonte devem manter o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir.",
+      "ru": "1. Распространение исходного кода должно включать указанное выше уведомление об авторских правах, этот список условий и следующий отказ от ответственности.",
+      "zh-chs": "1. 重新分發源代碼必須保留以上版權聲明，此條件列表和以下免責聲明。",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->15->1",
         "terms-mobile.handlebars->container->page_content->column_l->31->1",
@@ -1093,17 +1032,17 @@
     },
     {
       "cs": "2. OpenSSL – OpenSSL a SSLeay licence",
-      "de": "2.OpenSSL - OpenSSL- und SSLeay-Lizenz",
-      "en": "2.OpenSSL – OpenSSL and SSLeay License",
-      "es": "2.OpenSSL – Licencia OpenSSL and SSLeay",
-      "fr": "2.OpenSSL - Licence OpenSSL et SSLeay",
-      "hi": "2.OpenSSL - OpenSSL और SSLeay लाइसेंस",
-      "ja": "2.OpenSSL – OpenSSLおよびSSLeayライセンス",
+      "de": "2. OpenSSL - OpenSSL- und SSLeay-Lizenz",
+      "en": "2. OpenSSL – OpenSSL and SSLeay License",
+      "es": "2. OpenSSL – Licencia OpenSSL and SSLeay",
+      "fr": "2. OpenSSL - Licence OpenSSL et SSLeay",
+      "hi": "2. OpenSSL - OpenSSL और SSLeay लाइसेंस",
+      "ja": "2. OpenSSL – OpenSSLおよびSSLeayライセンス",
       "ko": "2. OpenSSL – OpenSSL 및 SSLeay 라이센스",
-      "nl": "2.OpenSSL – OpenSSL en SSLeay Licentie",
-      "pt": "2.OpenSSL - Licença OpenSSL e SSLeay",
-      "ru": "2.OpenSSL – OpenSSL и SSLeay Лицензия",
-      "zh-chs": "2.OpenSSL – OpenSSL和SSLeay許可證",
+      "nl": "2. OpenSSL – OpenSSL en SSLeay Licentie",
+      "pt": "2. OpenSSL - Licença OpenSSL e SSLeay",
+      "ru": "2. OpenSSL – OpenSSL и SSLeay Лицензия",
+      "zh-chs": "2. OpenSSL – OpenSSL和SSLeay許可證",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->23->1->0",
         "terms.handlebars->container->column_l->23->1->0"
@@ -1112,16 +1051,16 @@
     {
       "cs": "2. Šíření dál ve zkompilované podobě musí reprodukovat výše uvedené oznámení o autorských právech, tento seznam podmínek a následující vyloučení odpovědnosti v dokumentaci a / nebo jiných materiálech dodávaných s distribucí.",
       "de": "2. Weiterverteilungen in binärer Form müssen den obigen Copyright-Hinweis, diese Liste von Bedingungen und den folgenden Haftungsausschluss in der Dokumentation und / oder anderen Materialien, die mit der Verteilung bereitgestellt werden, wiedergeben.",
-      "en": "2.Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
+      "en": "2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
       "es": "2. Las redistribuciones en forma binaria deben reproducir el aviso de copyright anterior, esta lista de condiciones y el siguiente descargo de responsabilidad en la documentación y / u otros materiales proporcionados con la distribución.",
-      "fr": "2.Les redistributions sous forme binaire doivent reproduire l'avis de droit d'auteur ci-dessus, cette liste de conditions et la clause de non-responsabilité suivante dans la documentation et / ou les autres documents fournis avec la distribution.",
+      "fr": "2. Les redistributions sous forme binaire doivent reproduire l'avis de droit d'auteur ci-dessus, cette liste de conditions et la clause de non-responsabilité suivante dans la documentation et / ou les autres documents fournis avec la distribution.",
       "hi": "2. द्विआधारी रूप में सहायताएं उपरोक्त कॉपीराइट नोटिस, शर्तों की इस सूची और वितरण के साथ प्रदान किए गए प्रलेखन और / या अन्य सामग्रियों में निम्नलिखित अस्वीकरण को पुन: प्रस्तुत करना चाहिए।",
-      "ja": "2.バイナリ形式での再配布では、上記の著作権表示、この条件リスト、および以下の免責事項を、配布物とともに提供されるドキュメントおよび/またはその他の資料に複製する必要があります。",
+      "ja": "2. バイナリ形式での再配布では、上記の著作権表示、この条件リスト、および以下の免責事項を、配布物とともに提供されるドキュメントおよび/またはその他の資料に複製する必要があります。",
       "ko": "2. 이진 형태의 배포는 배포와 함께 제공된 설명서 및 / 또는 기타 자료에 위의 저작권 표시,이 조건 목록 및 다음 면책 사항을 재현해야합니다.",
-      "nl": "2.Herdistributies in binaire vorm moeten de bovenstaande copyright kennisgeving, deze lijst met voorwaarden en de volgende disclaimer reproduceren in de documentatie en / of andere materialen die bij de distributie worden geleverd.",
-      "pt": "2.As redistribuições em formato binário devem reproduzir o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir na documentação e / ou outros materiais fornecidos com a distribuição.",
+      "nl": "2. Herdistributies in binaire vorm moeten de bovenstaande copyright kennisgeving, deze lijst met voorwaarden en de volgende disclaimer reproduceren in de documentatie en / of andere materialen die bij de distributie worden geleverd.",
+      "pt": "2. As redistribuições em formato binário devem reproduzir o aviso de direitos autorais acima, esta lista de condições e o aviso de isenção de responsabilidade a seguir na documentação e / ou outros materiais fornecidos com a distribuição.",
       "ru": "2. Распространение в двоичной форме должно включать указанное выше уведомление об авторских правах, этот список условий и следующий отказ от ответственности в документации и/или других материалов дистрибутива.",
-      "zh-chs": "2.以二進制形式進行的再分發必須在分發隨附的文檔和/或其他材料中復制上述版權聲明，此條件列表以及以下免責聲明。",
+      "zh-chs": "2. 以二進制形式進行的再分發必須在分發隨附的文檔和/或其他材料中復制上述版權聲明，此條件列表以及以下免責聲明。",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->17->1",
         "terms-mobile.handlebars->container->page_content->column_l->33->1",
@@ -1193,53 +1132,11 @@
       "pt": "3",
       "ru": "3",
       "xloc": [
-        "default-mobile.handlebars->9->273"
+        "default-mobile.handlebars->9->270"
       ]
     },
     {
-      "cs": "3. Všechny reklamní materiály zmiňující funkce nebo použití tohoto softwaru musí obsahovat následující oznámení: „Tento produkt zahrnuje software vyvinutý projektem OpenSSL pro použití v sadě OpenSSL Toolkit. (http://www.openssl.org/)“",
-      "de": "3. Alle Werbematerialien, in denen Funktionen oder die Verwendung dieser Software erwähnt werden, müssen die folgende Bestätigung aufweisen: \"Dieses Produkt enthält Software, die vom OpenSSL-Projekt zur Verwendung im OpenSSL Toolkit entwickelt wurde (http://www.openssl.org/).\"",
       "en": "3. All advertising materials mentioning features or use of this software must display the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
-      "es": "3. Todos los materiales publicitarios que mencionen características o el uso de este software deben mostrar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit. (Http://www.openssl.org/)\"",
-      "fr": "3. Tous les supports publicitaires mentionnant des fonctionnalités ou l'utilisation de ce logiciel doivent afficher la mention suivante: \"Ce produit inclut un logiciel développé par le projet OpenSSL pour une utilisation dans l'OpenSSL Toolkit. (Http://www.openssl.org/)\"",
-      "hi": "3. इस सॉफ्टवेयर की विशेषताओं या उपयोग के बारे में सभी विज्ञापन सामग्री में निम्नलिखित स्वीकार्यता प्रदर्शित होनी चाहिए: \"इस उत्पाद में ओपनएसएसएल टूलकिट में उपयोग के लिए ओपनएसएसएल प्रोजेक्ट द्वारा विकसित सॉफ्टवेयर शामिल है। (http://www.openssl.org/)\"",
-      "ja": "3. このソフトウェアの機能または使用について言及するすべての広告資料には、「この製品には、OpenSSL Toolkitで使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます。（http://www.openssl.org/）」",
-      "ko": "3. 이 소프트웨어의 기능이나 사용을 언급하는 모든 광고 자료에는 다음 인정이 표시되어야합니다. \"이 제품에는 OpenSSL Toolkit에서 사용하기 위해 OpenSSL Project에서 개발 한 소프트웨어가 포함되어 있습니다. (http://www.openssl.org/)\"",
-      "nl": "3. Alle advertentiematerialen die functies of gebruik van deze software maken, moeten de volgende tekst bevatten: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit. (Http://www.openssl.org/)\"",
-      "pt": "3. Todos os materiais publicitários que mencionam os recursos ou o uso deste software devem exibir o seguinte reconhecimento: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
-      "ru": "3. Все рекламные материалы, в которых упоминаются функции или использование этого программного обеспечения, должны отображать следующее подтверждение: \"Этот продукт включает программное обеспечение, разработанное OpenSSL Project для использования в OpenSSL Toolkit. (http://www.openssl.org/)\"",
-      "zh-chs": "3. 所有提及該功能或使用該軟件的廣告材料都必須顯示以下確認：“此產品包括由OpenSSL Project開發並在OpenSSL Toolkit中使用的軟件。（http://www.openssl.org/）”"
-    },
-    {
-      "cs": "3. Název nadace CodePlex Foundation ani jména jejích přispěvatelů nesmí být bez předchozího písemného svolení použita k doporučování nebo propagaci produktů odvozených od tohoto softwaru.",
-      "de": "3. Weder der Name der CodePlex Foundation noch die Namen ihrer Mitwirkenden dürfen verwendet werden, um Produkte, die von dieser Software abgeleitet sind, ohne ausdrückliche vorherige schriftliche Genehmigung zu unterstützen oder zu bewerben.",
-      "en": "3. Neither the name of CodePlex Foundation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
-      "es": "3. Ni el nombre de la Fundación CodePlex ni los nombres de sus colaboradores pueden utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito específico.",
-      "fr": "3. Ni le nom de la Fondation CodePlex ni les noms de ses contributeurs ne peuvent être utilisés pour approuver ou promouvoir des produits dérivés de ce logiciel sans autorisation écrite préalable spécifique.",
-      "hi": "3. न तो कोडप्लेक्स फाउंडेशन का नाम और न ही इसके योगदानकर्ताओं के नाम का उपयोग विशिष्ट पूर्व लिखित अनुमति के बिना इस सॉफ्टवेयर से प्राप्त उत्पादों को समर्थन या बढ़ावा देने के लिए किया जा सकता है।",
-      "ja": "3. CodePlex Foundationの名前もその貢献者の名前も、書面による事前の許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用することはできません。",
-      "ko": "3. CodePlex Foundation의 이름이나 기여자의 이름을 사전 서면 허가없이이 소프트웨어에서 파생 된 제품을 보증하거나 홍보하는 데 사용할 수 없습니다.",
-      "nl": "3. Noch de naam van CodePlex Foundation, noch de namen van haar bijdragers mogen worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder specifieke voorafgaande schriftelijke toestemming.",
-      "pt": "3. Nem o nome da CodePlex Foundation nem os nomes de seus colaboradores podem ser usados \\u200b\\u200bpara endossar ou promover produtos derivados deste software sem permissão prévia por escrito específica.",
-      "ru": "3. Ни имя CodePlex Foundation, ни имена его участников не могут использоваться для поддержки или продвижения продуктов, созданных на основе данного программного обеспечения, без специального предварительного письменного разрешения.",
-      "zh-chs": "3. 未經事先特別書面許可，不得使用CodePlex Foundation的名稱或其貢獻者的名稱來認可或促銷從該軟件衍生的產品。"
-    },
-    {
-      "cs": "3. jQuery Foundation – MIT licence",
-      "de": "3. jQuery Foundation - MIT-Lizenz",
-      "en": "3. jQuery Foundation - MIT License",
-      "es": "3. jQuery Foundation - Licencia MIT",
-      "fr": "3. jQuery Foundation - Licence MIT",
-      "hi": "3. jQuery फाउंडेशन - एमआईटी लाइसेंस",
-      "ja": "3. jQuery Foundation-MITライセンス",
-      "ko": "3. jQuery Foundation-MIT 라이센스",
-      "nl": "3. jQuery Foundation - MIT Licentie",
-      "pt": "3. jQuery Foundation - Licença MIT",
-      "ru": "3. jQuery Foundation - MIT Лицензия",
-      "zh-chs": "3. jQuery Foundation-MIT許可證"
-    },
-    {
-      "en": "3.All advertising materials mentioning features or use of this software must display the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)\"",
       "es": "3. Todos los materiales publicitarios que mencionen características o el uso de este software deben mostrar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit. (Http://www.openssl.org/)\"",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->35->1",
@@ -1247,7 +1144,7 @@
       ]
     },
     {
-      "en": "3.Neither the name of CodePlex Foundation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
+      "en": "3. Neither the name of CodePlex Foundation nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
       "es": "3. Ni el nombre de la Fundación CodePlex ni los nombres de sus colaboradores pueden utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito específico.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->19->1",
@@ -1255,8 +1152,8 @@
       ]
     },
     {
-      "en": "3.jQuery Foundation - MIT License",
-      "es": "3.jQuery Foundation - Licencia MIT",
+      "en": "3. jQuery Foundation - MIT License",
+      "es": "3. jQuery Foundation - Licencia MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->45->1->0",
         "terms.handlebars->container->column_l->45->1->0"
@@ -1299,35 +1196,7 @@
       ]
     },
     {
-      "cs": "4. Názvy „OpenSSL Toolkit“ a „OpenSSL Project“ nesmí být bez předchozího písemného souhlasu použity k doporučování nebo propagaci produktů odvozených z tohoto softwaru. Pro písemné povolení kontaktujte na openssl-core@openssl.org.",
-      "de": "4. Die Namen \"OpenSSL Toolkit\" und \"OpenSSL Project\" dürfen ohne vorherige schriftliche Genehmigung nicht verwendet werden, um von dieser Software abgeleitete Produkte zu unterstützen oder zu bewerben. Für eine schriftliche Genehmigung wenden Sie sich bitte an openssl-core@openssl.org.",
       "en": "4. The names \"OpenSSL Toolkit\" and \"OpenSSL Project\" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact openssl-core@openssl.org.",
-      "es": "4. Los nombres \"OpenSSL Toolkit\" y \"OpenSSL Project\" no deben utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito. Para obtener un permiso por escrito, comuníquese con openssl-core@openssl.org.",
-      "fr": "4. Les noms «OpenSSL Toolkit» et «OpenSSL Project» ne doivent pas être utilisés pour approuver ou promouvoir des produits dérivés de ce logiciel sans autorisation écrite préalable. Pour une autorisation écrite, veuillez contacter openssl-core@openssl.org.",
-      "hi": "4. \"ओपनएसएसएल टूलकिट\" और \"ओपनएसएसएल प्रोजेक्ट\" नामों का उपयोग पूर्व लिखित अनुमति के बिना इस सॉफ्टवेयर से प्राप्त उत्पादों को समर्थन या बढ़ावा देने के लिए नहीं किया जाना चाहिए। लिखित अनुमति के लिए, कृपया खुलता है- whatsl-core@openssl.org।",
-      "ja": "4.「OpenSSL Toolkit」および「OpenSSL Project」という名前は、事前の書面による許可なしに、このソフトウェアから派生した製品を推奨または宣伝するために使用しないでください。書面による許可については、openssl-core @ openssl.orgにお問い合わせください。",
-      "ko": "4. 사전 서면 허가없이 \"OpenSSL Toolkit\"및 \"OpenSSL Project\"라는 이름을 사용하여이 소프트웨어에서 파생 된 제품을 보증하거나 홍보해서는 안됩니다. 서면 허가를 받으려면 openssl-core@openssl.org에 문의하십시오.",
-      "nl": "4. De namen \"OpenSSL Toolkit\" en \"OpenSSL Project\" mogen niet worden gebruikt om producten die zijn afgeleid van deze software te ondersteunen of promoten zonder voorafgaande schriftelijke toestemming. Neem voor schriftelijke toestemming contact op met openssl-core@openssl.org.",
-      "pt": "4. Os nomes \"OpenSSL Toolkit\" e \"OpenSSL Project\" não devem ser usados ​​para endossar ou promover produtos derivados deste software sem permissão prévia por escrito. Para permissão por escrito, entre em contato com openssl-core@openssl.org.",
-      "ru": "4. Наименования «OpenSSL Toolkit» и «OpenSSL Project» не должны использоваться для поддержки или продвижения продуктов, созданных на основе данного программного обеспечения, без предварительного письменного разрешения. Для получения письменного разрешения, пожалуйста, свяжитесь с openssl-core@openssl.org.",
-      "zh-chs": "4. 未經事先書面許可，不得使用名稱“ OpenSSL Toolkit”和“ OpenSSL Project”來認可或促銷從該軟件衍生的產品。要獲得書面許可，請聯繫openssl-core@openssl.org。"
-    },
-    {
-      "cs": "4. jQuery uživatelské rozhraní – MIT Licence",
-      "de": "4. jQuery-Benutzeroberfläche - MIT-Lizenz",
-      "en": "4. jQuery User Interface - MIT License",
-      "es": "4. jQuery User Interface - Licencia MIT",
-      "fr": "4. Interface utilisateur jQuery - Licence MIT",
-      "hi": "4. jQuery उपयोगकर्ता इंटरफ़ेस - एमआईटी लाइसेंस",
-      "ja": "4. jQueryユーザーインターフェイス-MITライセンス",
-      "ko": "4. jQuery 사용자 인터페이스-MIT 라이센스",
-      "nl": "4. jQuery Gebruikers Interface - MIT Licentie",
-      "pt": "4. Interface do Usuário jQuery - Licença MIT",
-      "ru": "4. jQuery User Interface - MIT Лицензия",
-      "zh-chs": "4. jQuery用戶界面-MIT許可證"
-    },
-    {
-      "en": "4.The names \"OpenSSL Toolkit\" and \"OpenSSL Project\" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact openssl-core@openssl.org.",
       "es": "4. Los nombres \"OpenSSL Toolkit\" y \"OpenSSL Project\" no deben utilizarse para respaldar o promocionar productos derivados de este software sin un permiso previo por escrito. Para obtener un permiso por escrito, comuníquese con openssl-core@openssl.org.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->37->1",
@@ -1335,8 +1204,8 @@
       ]
     },
     {
-      "en": "4.jQuery User Interface - MIT License",
-      "es": "4.jQuery User Interface - Licencia MIT",
+      "en": "4. jQuery User Interface - MIT License",
+      "es": "4. jQuery User Interface - Licencia MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->51->1->0",
         "terms.handlebars->container->column_l->51->1->0"
@@ -1378,35 +1247,7 @@
       ]
     },
     {
-      "cs": "5. Produkty odvozené od tohoto softwaru nesmí být nazývány „OpenSSL“ ani se nesmí „OpenSSL“ objevit v jejich názvech bez předchozího písemného souhlasu projektu OpenSSL.",
-      "de": "5. Von dieser Software abgeleitete Produkte dürfen ohne vorherige schriftliche Genehmigung des OpenSSL-Projekts weder \"OpenSSL\" genannt noch \"OpenSSL\" in ihren Namen angezeigt werden.",
       "en": "5. Products derived from this software may not be called \"OpenSSL\" nor may \"OpenSSL\" appear in their names without prior written permission of the OpenSSL Project.",
-      "es": "5. Los productos derivados de este software no pueden llamarse \"OpenSSL\" ni \"OpenSSL\" aparecer en sus nombres sin el permiso previo por escrito del Proyecto OpenSSL.",
-      "fr": "5. Les produits dérivés de ce logiciel ne peuvent pas être appelés \"OpenSSL\" ni \"OpenSSL\" apparaître dans leurs noms sans l'autorisation écrite préalable du projet OpenSSL.",
-      "hi": "5. इस सॉफ्टवेयर से प्राप्त उत्पादों को \"ओपनएसएसएल\" नहीं कहा जा सकता है और न ही ओपनएसएसएल परियोजना की पूर्व लिखित अनुमति के बिना उनके नाम में \"ओपनएसएसएल\" दिखाई दे सकता है।",
-      "ja": "5. このソフトウェアから派生した製品は、OpenSSL Projectの事前の書面による許可なしに、「OpenSSL」と呼ばれたり、名前に「OpenSSL」が表示されたりすることはありません。",
-      "ko": "5. OpenSSL Project의 사전 서면 승인없이이 소프트웨어에서 파생 된 제품을 \"OpenSSL\"이라고하거나 이름에 \"OpenSSL\"을 표시 할 수 없습니다.",
-      "nl": "5. Producten die zijn afgeleid van deze software mogen niet \"OpenSSL\" worden genoemd, noch mag \"OpenSSL\" in hun naam worden weergegeven zonder voorafgaande schriftelijke toestemming van het OpenSSL-project.",
-      "pt": "5. Os produtos derivados deste software não podem ser chamados de \"OpenSSL\" nem \"OpenSSL\" aparece em seus nomes sem a permissão prévia por escrito do OpenSSL Project.",
-      "ru": "5. Продукты, полученные из этого программного обеспечения, не могут называться «OpenSSL», а также «OpenSSL» не может появляться в их названиях без предварительного письменного разрешения OpenSSL Project.",
-      "zh-chs": "5. 未經OpenSSL Project事先書面許可，從該軟件派生的產品不得稱為“ OpenSSL”，也不得在其名稱中出現“ OpenSSL”。"
-    },
-    {
-      "cs": "5. noVNC – Mozilla Public licence 2.0",
-      "de": "5. noVNC - Mozilla Public License 2.0",
-      "en": "5. noVNC - Mozilla Public License 2.0",
-      "es": "5. noVNC - Mozilla Public License 2.0",
-      "fr": "5. noVNC - Mozilla Public License 2.0",
-      "hi": "5. noVNC - मोज़िला पब्लिक लाइसेंस 2.0",
-      "ja": "5. noVNC-Mozilla Public License 2.0",
-      "ko": "5. noVNC-Mozilla Public License 2.0",
-      "nl": "5. noVNC - Mozilla Public Licentie 2.0",
-      "pt": "5. noVNC - Licença Pública Mozilla 2.0 0",
-      "ru": "5. noVNC - Mozilla Public License 2.0",
-      "zh-chs": "5. noVNC-Mozilla公共許可證2.0"
-    },
-    {
-      "en": "5.Products derived from this software may not be called \"OpenSSL\" nor may \"OpenSSL\" appear in their names without prior written permission of the OpenSSL Project.",
       "es": "5. Los productos derivados de este software no pueden llamarse \"OpenSSL\" ni \"OpenSSL\" aparecer en sus nombres sin el permiso previo por escrito del Proyecto OpenSSL.",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->39->1",
@@ -1414,8 +1255,8 @@
       ]
     },
     {
-      "en": "5.noVNC - Mozilla Public License 2.0",
-      "es": "5.noVNC - Mozilla Public License 2.0",
+      "en": "5. noVNC - Mozilla Public License 2.0",
+      "es": "5. noVNC - Mozilla Public License 2.0",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->59->1->0",
         "terms.handlebars->container->column_l->59->1->0"
@@ -1440,43 +1281,15 @@
       ]
     },
     {
-      "cs": "6. Rcarousel – MIT licence",
-      "de": "6. Karussell - MIT LIcense",
       "en": "6. Rcarousel - MIT LIcense",
       "es": "6. Rcarousel - Licencia MIT",
-      "fr": "6. Carrousel - Licence MIT",
-      "hi": "6. रॉसेल - MIT LIcense",
-      "ja": "6. Rcarousel - MITライセンス",
-      "ko": "6. 회전 목마-MIT 라이센스",
-      "nl": "6. Rcarousel - MIT Licentie",
-      "pt": "6. Rcarousel - License MIT",
-      "ru": "6. Rcarousel - MIT Лицензия",
-      "zh-chs": "6.Rcarousel-麻省理工學院執照"
-    },
-    {
-      "cs": "6. Šíření dál v jakékoli formě si musí zachovat následující prohlášení: „Tento produkt zahrnuje software vyvinutý v rámci projektu OpenSSL pro použití v sadě OpenSSL Toolkit (http://www.openssl.org/)“.",
-      "de": "6. Weiterverteilungen jeglicher Art müssen die folgende Bestätigung behalten: \"Dieses Produkt enthält Software, die vom OpenSSL-Projekt zur Verwendung im OpenSSL Toolkit (http://www.openssl.org/) entwickelt wurde.\"",
-      "en": "6. Redistributions of any form whatsoever must retain the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)\".",
-      "es": "6. Las redistribuciones de cualquier forma deben conservar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit (http://www.openssl.org/)\".",
-      "fr": "6. Les redistributions sous quelque forme que ce soit doivent conserver la mention suivante: \"Ce produit comprend un logiciel développé par le projet OpenSSL pour une utilisation dans la boîte à outils OpenSSL (http://www.openssl.org/)\".",
-      "hi": "किसी भी रूप के 6.Redistributions जो भी निम्नलिखित स्वीकार्यता को बनाए रखने चाहिए: \"इस उत्पाद में OpenSSL टूलकिट (http://www.openssl.org/) में उपयोग के लिए OpenSSL प्रोजेक्ट द्वारा विकसित सॉफ्टवेयर शामिल है\"।",
-      "ja": "6. いかなる形式の再配布でも、「この製品には、OpenSSL Toolkit（http://www.openssl.org/）で使用するためにOpenSSL Projectによって開発されたソフトウェアが含まれます」という承認を保持する必要があります。",
-      "ko": "6. \"이 제품에는 OpenSSL 툴킷 (http://www.openssl.org/)에서 사용하기 위해 OpenSSL Project에서 개발 한 소프트웨어가 포함되어 있습니다.\"",
-      "nl": "6. Herdistributies in welke vorm dan ook moet de volgende tekst behouden: \"Dit product bevat software die is ontwikkeld door het OpenSSL-project voor gebruik in de OpenSSL Toolkit (http://www.openssl.org/)\".",
-      "pt": "6. As redistribuições de qualquer forma devem manter o seguinte reconhecimento: \"Este produto inclui software desenvolvido pelo OpenSSL Project para uso no OpenSSL Toolkit (http://www.openssl.org/)\".",
-      "ru": "6. Распространение в любой форме должно включать следующее подтверждение: \"Этот продукт включает программное обеспечение, разработанное OpenSSL Project для использования в OpenSSL Toolkit (http://www.openssl.org/)\".",
-      "zh-chs": "6. 任何形式的重新分發都必須保留以下聲明：“此產品包括由OpenSSL Project開發的，用於OpenSSL Toolkit（http://www.openssl.org/）的軟件”。"
-    },
-    {
-      "en": "6.Rcarousel - MIT LIcense",
-      "es": "6.Rcarousel - Licencia MIT",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->65->1->0",
         "terms.handlebars->container->column_l->65->1->0"
       ]
     },
     {
-      "en": "6.Redistributions of any form whatsoever must retain the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)\".",
+      "en": "6. Redistributions of any form whatsoever must retain the following acknowledgment: \"This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)\".",
       "es": "6. Las redistribuciones de cualquier forma deben conservar el siguiente reconocimiento: \"Este producto incluye software desarrollado por OpenSSL Project para su uso en OpenSSL Toolkit (http://www.openssl.org/)\".",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->41->1",
@@ -1568,22 +1381,8 @@
       ]
     },
     {
-      "cs": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK licence",
-      "de": "7. Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 UK-Lizenz",
       "en": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK License",
       "es": "7. Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 UK Licencia",
-      "fr": "7. Webtoolkit Javascript Base 64 - Licence Creative Commons Attribution 2.0 UK",
-      "hi": "7. वेबटूलकिट जावास्क्रिप्ट बेस 64 - क्रिएटिव कॉमन्स एट्रिब्यूशन 2.0 यूके लाइसेंस",
-      "ja": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UKライセンス",
-      "ko": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 영국 라이센스",
-      "nl": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK Licentie",
-      "pt": "7. Webtoolkit Javascript Base 64 - Licença Creative Commons Attribution 2.0 UK",
-      "ru": "7. Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK Лицензия",
-      "zh-chs": "7. Webtoolkit Javascript Base 64 –知識共享署名2.0英國許可證"
-    },
-    {
-      "en": "7.Webtoolkit Javascript Base 64 – Creative Commons Attribution 2.0 UK License",
-      "es": "7.Webtoolkit Javascript Base 64 - Creative Commons Attribution 2.0 UK Licencia",
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->73->1->0",
         "terms.handlebars->container->column_l->73->1->0"
@@ -1672,10 +1471,7 @@
       "ru": ":",
       "hi": ":",
       "ko": ":",
-      "zh-chs": ":",
-      "xloc": [
-        "agentinvite.handlebars->3->4"
-      ]
+      "zh-chs": ":"
     },
     {
       "cs": "<<",
@@ -1810,7 +1606,7 @@
       "ru": "ACM",
       "zh-chs": "ACM",
       "xloc": [
-        "default-mobile.handlebars->9->186",
+        "default-mobile.handlebars->9->185",
         "default.handlebars->27->469"
       ]
     },
@@ -1846,7 +1642,7 @@
       "ru": "ARM-Linaro",
       "zh-chs": "ARM-Linaro",
       "xloc": [
-        "default-mobile.handlebars->9->171",
+        "default-mobile.handlebars->9->170",
         "default.handlebars->27->37"
       ]
     },
@@ -1864,7 +1660,7 @@
       "ru": "ARMv6l / ARMv7l",
       "zh-chs": "ARMv6l / ARMv7l",
       "xloc": [
-        "default-mobile.handlebars->9->172",
+        "default-mobile.handlebars->9->171",
         "default.handlebars->27->38"
       ]
     },
@@ -1882,7 +1678,7 @@
       "ru": "ARMv6l / ARMv7l / NoKVM",
       "zh-chs": "ARMv6l / ARMv7l / NoKVM",
       "xloc": [
-        "default-mobile.handlebars->9->174",
+        "default-mobile.handlebars->9->173",
         "default.handlebars->27->40"
       ]
     },
@@ -1900,7 +1696,7 @@
       "ru": "ARMv8 64bit",
       "zh-chs": "ARMv8 64位",
       "xloc": [
-        "default-mobile.handlebars->9->173",
+        "default-mobile.handlebars->9->172",
         "default.handlebars->27->39"
       ]
     },
@@ -2023,8 +1819,8 @@
       "ru": "Безопасность учетной записи",
       "zh-chs": "帳號安全",
       "xloc": [
-        "default-mobile.handlebars->9->133",
-        "default-mobile.handlebars->9->135",
+        "default-mobile.handlebars->9->132",
+        "default-mobile.handlebars->9->134",
         "default-mobile.handlebars->9->55",
         "default-mobile.handlebars->9->57",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->1->0",
@@ -2243,8 +2039,8 @@
       "ru": "Активировано",
       "zh-chs": "活性",
       "xloc": [
-        "default-mobile.handlebars->9->181",
-        "default-mobile.handlebars->9->183",
+        "default-mobile.handlebars->9->180",
+        "default-mobile.handlebars->9->182",
         "default.handlebars->27->462",
         "default.handlebars->27->464",
         "default.handlebars->27->766"
@@ -2528,7 +2324,7 @@
       "ru": "Добавить пользователя",
       "zh-chs": "添加用戶",
       "xloc": [
-        "default-mobile.handlebars->9->284",
+        "default-mobile.handlebars->9->281",
         "default.handlebars->27->536"
       ]
     },
@@ -2579,7 +2375,7 @@
       "ru": "Добавить пользователя в Mesh",
       "zh-chs": "將用戶添加到網格",
       "xloc": [
-        "default-mobile.handlebars->9->313"
+        "default-mobile.handlebars->9->310"
       ]
     },
     {
@@ -2925,9 +2721,9 @@
       "ru": "Агент",
       "zh-chs": "代理人",
       "xloc": [
-        "default-mobile.handlebars->9->125",
-        "default-mobile.handlebars->9->178",
-        "default-mobile.handlebars->9->194",
+        "default-mobile.handlebars->9->124",
+        "default-mobile.handlebars->9->177",
+        "default-mobile.handlebars->9->193",
         "default.handlebars->27->1273",
         "default.handlebars->27->1279",
         "default.handlebars->27->168",
@@ -2984,7 +2780,7 @@
       "ru": "Консоль агента",
       "zh-chs": "代理控制台",
       "xloc": [
-        "default-mobile.handlebars->9->319",
+        "default-mobile.handlebars->9->316",
         "default.handlebars->27->1231"
       ]
     },
@@ -3036,7 +2832,7 @@
       "ru": "Ретранслятор агента",
       "zh-chs": "代理中繼",
       "xloc": [
-        "default-mobile.handlebars->9->197"
+        "default-mobile.handlebars->9->196"
       ]
     },
     {
@@ -3088,7 +2884,7 @@
       "ru": "Тег агента",
       "zh-chs": "代理商標籤",
       "xloc": [
-        "default-mobile.handlebars->9->193",
+        "default-mobile.handlebars->9->192",
         "default.handlebars->27->481"
       ]
     },
@@ -3228,8 +3024,8 @@
       "ru": "Все",
       "zh-chs": "所有",
       "xloc": [
-        "default-mobile.handlebars->9->248",
-        "default-mobile.handlebars->9->250",
+        "default-mobile.handlebars->9->245",
+        "default-mobile.handlebars->9->247",
         "default-mobile.handlebars->9->79"
       ]
     },
@@ -3247,7 +3043,7 @@
       "ru": "Все экраны",
       "zh-chs": "所有顯示",
       "xloc": [
-        "default-mobile.handlebars->9->237"
+        "default-mobile.handlebars->9->234"
       ]
     },
     {
@@ -3452,7 +3248,7 @@
       "ru": "Android APK",
       "zh-chs": "Android APK",
       "xloc": [
-        "default-mobile.handlebars->9->161",
+        "default-mobile.handlebars->9->160",
         "default.handlebars->27->27"
       ]
     },
@@ -3470,7 +3266,7 @@
       "ru": "Android ARM",
       "zh-chs": "Android ARM",
       "xloc": [
-        "default-mobile.handlebars->9->156",
+        "default-mobile.handlebars->9->155",
         "default.handlebars->27->22"
       ]
     },
@@ -3488,7 +3284,7 @@
       "ru": "Android x86",
       "zh-chs": "安卓x86",
       "xloc": [
-        "default-mobile.handlebars->9->159",
+        "default-mobile.handlebars->9->158",
         "default.handlebars->27->25"
       ]
     },
@@ -3931,7 +3727,7 @@
       "ru": "Вы действительно хотите удалить группу \\\"{0}\\\"? Удаление группы приведет к удалению всей информации связанной с устройствами в этой группе.",
       "zh-chs": "您確定要刪除組{0}嗎？刪除設備組還將刪除該組中有關設備的所有信息。",
       "xloc": [
-        "default-mobile.handlebars->9->290",
+        "default-mobile.handlebars->9->287",
         "default.handlebars->27->1167"
       ]
     },
@@ -4638,7 +4434,7 @@
       "ru": "CCM",
       "zh-chs": "CCM",
       "xloc": [
-        "default-mobile.handlebars->9->185",
+        "default-mobile.handlebars->9->184",
         "default.handlebars->27->467"
       ]
     },
@@ -4656,7 +4452,7 @@
       "ru": "CIRA",
       "zh-chs": "CIRA",
       "xloc": [
-        "default-mobile.handlebars->9->126",
+        "default-mobile.handlebars->9->125",
         "default.handlebars->27->1155",
         "default.handlebars->27->1160",
         "default.handlebars->27->170",
@@ -5155,8 +4951,8 @@
       "ru": "Чаты и уведомления",
       "zh-chs": "聊天並通知",
       "xloc": [
-        "default-mobile.handlebars->9->311",
-        "default-mobile.handlebars->9->329",
+        "default-mobile.handlebars->9->308",
+        "default-mobile.handlebars->9->326",
         "default.handlebars->27->1214",
         "default.handlebars->27->1242"
       ]
@@ -5361,7 +5157,7 @@
       "ru": "ChromeOS",
       "zh-chs": "ChromeOS",
       "xloc": [
-        "default-mobile.handlebars->9->164",
+        "default-mobile.handlebars->9->163",
         "default.handlebars->27->30"
       ]
     },
@@ -5413,10 +5209,10 @@
       "ru": "Очистить",
       "zh-chs": "明確",
       "xloc": [
-        "default-mobile.handlebars->9->266",
-        "default-mobile.handlebars->9->268",
-        "default-mobile.handlebars->9->270",
-        "default-mobile.handlebars->9->272",
+        "default-mobile.handlebars->9->263",
+        "default-mobile.handlebars->9->265",
+        "default-mobile.handlebars->9->267",
+        "default-mobile.handlebars->9->269",
         "default-mobile.handlebars->9->28",
         "default-mobile.handlebars->9->94",
         "default.handlebars->27->1319",
@@ -5759,8 +5555,8 @@
       "ru": "Подтвердить",
       "zh-chs": "確認",
       "xloc": [
-        "default-mobile.handlebars->9->224",
-        "default-mobile.handlebars->9->291",
+        "default-mobile.handlebars->9->223",
+        "default-mobile.handlebars->9->288",
         "default.handlebars->27->1168",
         "default.handlebars->27->1367",
         "default.handlebars->27->1453",
@@ -5783,7 +5579,7 @@
       "ru": "Подтвердить копирование 1 записи в это расположение?",
       "zh-chs": "確認將1個副本複製到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->261",
+        "default-mobile.handlebars->9->258",
         "default.handlebars->27->714"
       ]
     },
@@ -5801,7 +5597,7 @@
       "ru": "Подтвердить копирование {0} записей в это расположение?",
       "zh-chs": "確認{0}個條目的副本到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->260",
+        "default-mobile.handlebars->9->257",
         "default.handlebars->27->713"
       ]
     },
@@ -5860,7 +5656,7 @@
       "ru": "Подтвердить перемещение 1 записи в это расположение?",
       "zh-chs": "確認將1個入口移動到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->263",
+        "default-mobile.handlebars->9->260",
         "default.handlebars->27->716"
       ]
     },
@@ -5878,7 +5674,7 @@
       "ru": "Подтвердить перемещение {0} записей в это расположение?",
       "zh-chs": "確認將{0}個條目移到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->262",
+        "default-mobile.handlebars->9->259",
         "default.handlebars->27->715"
       ]
     },
@@ -5980,7 +5776,7 @@
       "ru": "Подтвердить удаление пользователя {0}?",
       "zh-chs": "確認刪除用戶{0}？",
       "xloc": [
-        "default-mobile.handlebars->9->337",
+        "default-mobile.handlebars->9->334",
         "default.handlebars->27->1251",
         "default.handlebars->27->1456",
         "default.handlebars->27->1538"
@@ -6000,7 +5796,7 @@
       "ru": "Подключиться",
       "zh-chs": "連接",
       "xloc": [
-        "default-mobile.handlebars->9->240",
+        "default-mobile.handlebars->9->237",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->27->1107",
@@ -6184,7 +5980,7 @@
       "zh-chs": "正在連線...",
       "xloc": [
         "default-mobile.handlebars->9->2",
-        "default-mobile.handlebars->9->276",
+        "default-mobile.handlebars->9->273",
         "default-mobile.handlebars->9->6",
         "default.handlebars->27->195",
         "default.handlebars->27->198",
@@ -6276,7 +6072,7 @@
       "ru": "Связь",
       "zh-chs": "連接性",
       "xloc": [
-        "default-mobile.handlebars->9->199",
+        "default-mobile.handlebars->9->198",
         "default.handlebars->27->1282",
         "default.handlebars->27->186",
         "default.handlebars->27->499",
@@ -7119,7 +6915,7 @@
       "ru": "Глубокий сон",
       "zh-chs": "沉睡",
       "xloc": [
-        "default-mobile.handlebars->9->114",
+        "default-mobile.handlebars->9->113",
         "default.handlebars->27->346"
       ]
     },
@@ -7137,7 +6933,7 @@
       "ru": "Удалить",
       "zh-chs": "刪除",
       "xloc": [
-        "default-mobile.handlebars->9->253",
+        "default-mobile.handlebars->9->250",
         "default-mobile.handlebars->9->84",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
@@ -7191,7 +6987,7 @@
       "ru": "Удалить устройство",
       "zh-chs": "刪除裝置",
       "xloc": [
-        "default-mobile.handlebars->9->203",
+        "default-mobile.handlebars->9->202",
         "default.handlebars->27->510"
       ]
     },
@@ -7209,8 +7005,8 @@
       "ru": "Удалить группу",
       "zh-chs": "刪除群組",
       "xloc": [
+        "default-mobile.handlebars->9->286",
         "default-mobile.handlebars->9->289",
-        "default-mobile.handlebars->9->292",
         "default.handlebars->27->1139",
         "default.handlebars->27->1169"
       ]
@@ -7229,7 +7025,7 @@
       "ru": "Удалить устройство",
       "zh-chs": "刪除節點",
       "xloc": [
-        "default-mobile.handlebars->9->222",
+        "default-mobile.handlebars->9->221",
         "default.handlebars->27->617"
       ]
     },
@@ -7369,7 +7165,7 @@
       "ru": "Удалить выбранные элементы?",
       "zh-chs": "刪除所選項目？",
       "xloc": [
-        "default-mobile.handlebars->9->255",
+        "default-mobile.handlebars->9->252",
         "default-mobile.handlebars->9->86",
         "default.handlebars->27->1310",
         "default.handlebars->27->708"
@@ -7406,7 +7202,7 @@
       "ru": "Удалить {0} выбранных элементов?",
       "zh-chs": "刪除{0}個所選項目？",
       "xloc": [
-        "default-mobile.handlebars->9->254",
+        "default-mobile.handlebars->9->251",
         "default-mobile.handlebars->9->85",
         "default.handlebars->27->1309",
         "default.handlebars->27->707"
@@ -7426,7 +7222,7 @@
       "ru": "Удалить {0}?",
       "zh-chs": "刪除{0}？",
       "xloc": [
-        "default-mobile.handlebars->9->223"
+        "default-mobile.handlebars->9->222"
       ]
     },
     {
@@ -7503,11 +7299,11 @@
       "ru": "Описание",
       "zh-chs": "描述",
       "xloc": [
+        "default-mobile.handlebars->9->144",
         "default-mobile.handlebars->9->145",
-        "default-mobile.handlebars->9->146",
-        "default-mobile.handlebars->9->228",
-        "default-mobile.handlebars->9->281",
-        "default-mobile.handlebars->9->294",
+        "default-mobile.handlebars->9->227",
+        "default-mobile.handlebars->9->278",
+        "default-mobile.handlebars->9->291",
         "default-mobile.handlebars->9->63",
         "default.handlebars->27->1064",
         "default.handlebars->27->1088",
@@ -7728,7 +7524,7 @@
       "ru": "Управление устройством",
       "zh-chs": "設備動作",
       "xloc": [
-        "default-mobile.handlebars->9->215",
+        "default-mobile.handlebars->9->214",
         "default.handlebars->27->590"
       ]
     },
@@ -7767,7 +7563,7 @@
       "ru": "Пользователь группы устройств",
       "zh-chs": "設備組用戶",
       "xloc": [
-        "default-mobile.handlebars->9->335",
+        "default-mobile.handlebars->9->332",
         "default.handlebars->27->1249"
       ]
     },
@@ -7841,7 +7637,7 @@
       "ru": "Имя устройства",
       "zh-chs": "設備名稱",
       "xloc": [
-        "default-mobile.handlebars->9->226",
+        "default-mobile.handlebars->9->225",
         "default.handlebars->27->222",
         "default.handlebars->27->647",
         "player.handlebars->3->9"
@@ -7878,7 +7674,7 @@
       "ru": "Уведомление устройства в трее",
       "zh-chs": "設備吐司",
       "xloc": [
-        "default-mobile.handlebars->9->208"
+        "default-mobile.handlebars->9->207"
       ]
     },
     {
@@ -7965,7 +7761,7 @@
       "ru": "Устройство находится в режиме гибернации (S4)",
       "zh-chs": "設備正在休眠（S4）",
       "xloc": [
-        "default-mobile.handlebars->9->122",
+        "default-mobile.handlebars->9->121",
         "default.handlebars->27->357"
       ]
     },
@@ -7983,7 +7779,7 @@
       "ru": "Устройство находится в состоянии глубокого сна (S3)",
       "zh-chs": "設備處於深度睡眠狀態（S3）",
       "xloc": [
-        "default-mobile.handlebars->9->121",
+        "default-mobile.handlebars->9->120",
         "default.handlebars->27->356"
       ]
     },
@@ -8052,7 +7848,7 @@
       "ru": "Устройство находится в спящем режиме (S1)",
       "zh-chs": "設備處於睡眠狀態（S1）",
       "xloc": [
-        "default-mobile.handlebars->9->119",
+        "default-mobile.handlebars->9->118",
         "default.handlebars->27->354"
       ]
     },
@@ -8087,7 +7883,7 @@
       "ru": "Устройство находится в спящем режиме (S2)",
       "zh-chs": "設備處於睡眠狀態（S2）",
       "xloc": [
-        "default-mobile.handlebars->9->120",
+        "default-mobile.handlebars->9->119",
         "default.handlebars->27->355"
       ]
     },
@@ -8122,7 +7918,7 @@
       "ru": "Устройство находится в выключенном состоянии (S5)",
       "zh-chs": "設備處於軟斷開狀態（S5）",
       "xloc": [
-        "default-mobile.handlebars->9->123",
+        "default-mobile.handlebars->9->122",
         "default.handlebars->27->358"
       ]
     },
@@ -8140,7 +7936,7 @@
       "ru": "Устройство включено",
       "zh-chs": "設備已上電",
       "xloc": [
-        "default-mobile.handlebars->9->118",
+        "default-mobile.handlebars->9->117",
         "default.handlebars->27->353"
       ]
     },
@@ -8175,7 +7971,7 @@
       "ru": "Устройство присутствует, но состояние питания не может быть определено",
       "zh-chs": "設備存在，但無法確定電源狀態",
       "xloc": [
-        "default-mobile.handlebars->9->124",
+        "default-mobile.handlebars->9->123",
         "default.handlebars->27->359"
       ]
     },
@@ -8244,7 +8040,7 @@
       "ru": "Разъединить",
       "zh-chs": "斷開",
       "xloc": [
-        "default-mobile.handlebars->9->241",
+        "default-mobile.handlebars->9->238",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default.handlebars->27->1108",
         "default.handlebars->27->697",
@@ -8483,7 +8279,7 @@
       "ru": "Скачать файл",
       "zh-chs": "下載文件",
       "xloc": [
-        "default-mobile.handlebars->9->274",
+        "default-mobile.handlebars->9->271",
         "default.handlebars->27->726"
       ]
     },
@@ -8996,7 +8792,7 @@
       "ru": "Редактировать устройство",
       "zh-chs": "編輯裝置",
       "xloc": [
-        "default-mobile.handlebars->9->231",
+        "default-mobile.handlebars->9->230",
         "default.handlebars->27->652"
       ]
     },
@@ -9014,9 +8810,9 @@
       "ru": "Редактировать группу устройств",
       "zh-chs": "編輯設備組",
       "xloc": [
-        "default-mobile.handlebars->9->295",
-        "default-mobile.handlebars->9->297",
-        "default-mobile.handlebars->9->315",
+        "default-mobile.handlebars->9->292",
+        "default-mobile.handlebars->9->294",
+        "default-mobile.handlebars->9->312",
         "default.handlebars->27->1172",
         "default.handlebars->27->1199",
         "default.handlebars->27->1227"
@@ -9087,7 +8883,7 @@
       "ru": "Редактировать примечания устройства",
       "zh-chs": "編輯設備說明",
       "xloc": [
-        "default-mobile.handlebars->9->309",
+        "default-mobile.handlebars->9->306",
         "default.handlebars->27->1212"
       ]
     },
@@ -9133,7 +8929,7 @@
       "ru": "Редактировать учетные данные Intel&reg; AMT",
       "zh-chs": "編輯英特爾&reg;AMT憑據",
       "xloc": [
-        "default-mobile.handlebars->9->221",
+        "default-mobile.handlebars->9->220",
         "default.handlebars->27->472",
         "default.handlebars->27->475",
         "default.handlebars->27->599"
@@ -9153,7 +8949,7 @@
       "ru": "Редактировать примечания",
       "zh-chs": "編輯筆記",
       "xloc": [
-        "default-mobile.handlebars->9->322",
+        "default-mobile.handlebars->9->319",
         "default.handlebars->27->1234"
       ]
     },
@@ -10198,7 +9994,7 @@
       "ru": "Редактор файлов",
       "zh-chs": "文件編輯器",
       "xloc": [
-        "default-mobile.handlebars->9->258",
+        "default-mobile.handlebars->9->255",
         "default.handlebars->27->415",
         "default.handlebars->27->711"
       ]
@@ -10561,7 +10357,7 @@
       "ru": "FreeBSD x86-64",
       "zh-chs": "FreeBSD x86-64",
       "xloc": [
-        "default-mobile.handlebars->9->177",
+        "default-mobile.handlebars->9->176",
         "default.handlebars->27->43"
       ]
     },
@@ -10732,9 +10528,9 @@
       "ru": "Администратор с полным доступом",
       "zh-chs": "正式管理員",
       "xloc": [
-        "default-mobile.handlebars->9->287",
-        "default-mobile.handlebars->9->296",
-        "default-mobile.handlebars->9->314",
+        "default-mobile.handlebars->9->284",
+        "default-mobile.handlebars->9->293",
+        "default-mobile.handlebars->9->311",
         "default-mobile.handlebars->9->67",
         "default.handlebars->27->1073",
         "default.handlebars->27->1198",
@@ -11220,7 +11016,7 @@
       "ru": "Группа",
       "zh-chs": "組",
       "xloc": [
-        "default-mobile.handlebars->9->138",
+        "default-mobile.handlebars->9->137",
         "default.handlebars->27->447",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->1"
       ]
@@ -11310,7 +11106,7 @@
       "ru": "Группа1, Группа2, Группа3",
       "zh-chs": "組1，組2，組3",
       "xloc": [
-        "default-mobile.handlebars->9->230"
+        "default-mobile.handlebars->9->229"
       ]
     },
     {
@@ -11558,8 +11354,8 @@
       "ru": "Гибернация",
       "zh-chs": "冬眠",
       "xloc": [
-        "default-mobile.handlebars->9->108",
-        "default-mobile.handlebars->9->115",
+        "default-mobile.handlebars->9->107",
+        "default-mobile.handlebars->9->114",
         "default.handlebars->27->348",
         "default.handlebars->27->5"
       ]
@@ -11613,7 +11409,7 @@
       "ru": "Задержана 1 запись для копирования",
       "zh-chs": "持有1份副本",
       "xloc": [
-        "default-mobile.handlebars->9->267",
+        "default-mobile.handlebars->9->264",
         "default.handlebars->27->720"
       ]
     },
@@ -11631,7 +11427,7 @@
       "ru": "Задержана 1 запись для перемещения",
       "zh-chs": "持有1個搬家公司",
       "xloc": [
-        "default-mobile.handlebars->9->271",
+        "default-mobile.handlebars->9->268",
         "default.handlebars->27->724"
       ]
     },
@@ -11649,7 +11445,7 @@
       "ru": "Задержано {0} записей для копирования",
       "zh-chs": "保留{0}個條目進行複制",
       "xloc": [
-        "default-mobile.handlebars->9->265",
+        "default-mobile.handlebars->9->262",
         "default.handlebars->27->718"
       ]
     },
@@ -11667,7 +11463,7 @@
       "ru": "Задержано {0} записей для перемещения",
       "zh-chs": "保留{0}個條目以進行移動",
       "xloc": [
-        "default-mobile.handlebars->9->269",
+        "default-mobile.handlebars->9->266",
         "default.handlebars->27->722"
       ]
     },
@@ -11703,10 +11499,10 @@
       "ru": "Имя хоста",
       "zh-chs": "主機名",
       "xloc": [
+        "default-mobile.handlebars->9->139",
         "default-mobile.handlebars->9->140",
-        "default-mobile.handlebars->9->141",
-        "default-mobile.handlebars->9->143",
-        "default-mobile.handlebars->9->227",
+        "default-mobile.handlebars->9->142",
+        "default-mobile.handlebars->9->226",
         "default.handlebars->27->223",
         "default.handlebars->27->452",
         "default.handlebars->27->453",
@@ -11917,7 +11713,7 @@
       "ru": "Выбор иконки",
       "zh-chs": "圖標選擇",
       "xloc": [
-        "default-mobile.handlebars->9->225",
+        "default-mobile.handlebars->9->224",
         "default.handlebars->27->646"
       ]
     },
@@ -12397,9 +12193,9 @@
       "ru": "Intel&reg; AMT",
       "zh-chs": "英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->127",
-        "default-mobile.handlebars->9->191",
-        "default-mobile.handlebars->9->196",
+        "default-mobile.handlebars->9->126",
+        "default-mobile.handlebars->9->190",
+        "default-mobile.handlebars->9->195",
         "default.handlebars->27->1109",
         "default.handlebars->27->1119",
         "default.handlebars->27->425",
@@ -12421,7 +12217,7 @@
       "ru": "Intel&reg; AMT CIRA",
       "zh-chs": "英特爾&reg;AMT CIRA",
       "xloc": [
-        "default-mobile.handlebars->9->195",
+        "default-mobile.handlebars->9->194",
         "default.handlebars->27->492"
       ]
     },
@@ -12563,7 +12359,7 @@
       "ru": "Intel&reg; AMT подключен",
       "zh-chs": "英特爾&reg;AMT已連接",
       "xloc": [
-        "default-mobile.handlebars->9->205",
+        "default-mobile.handlebars->9->204",
         "default.handlebars->27->529",
         "default.handlebars->27->530"
       ]
@@ -12600,7 +12396,7 @@
       "ru": "Intel&reg; AMT обнаружен",
       "zh-chs": "檢測到英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->206",
+        "default-mobile.handlebars->9->205",
         "default.handlebars->27->531",
         "default.handlebars->27->532"
       ]
@@ -12671,7 +12467,7 @@
       "ru": "Только Intel&reg; AMT, без агента",
       "zh-chs": "僅限英特爾&reg;AMT，無代理",
       "xloc": [
-        "default-mobile.handlebars->9->278",
+        "default-mobile.handlebars->9->275",
         "default.handlebars->27->1063",
         "default.handlebars->27->1085"
       ]
@@ -12724,7 +12520,7 @@
       "ru": "Intel&reg; ME",
       "zh-chs": "英特爾&reg;ME",
       "xloc": [
-        "default-mobile.handlebars->9->190",
+        "default-mobile.handlebars->9->189",
         "default.handlebars->27->476"
       ]
     },
@@ -12742,7 +12538,7 @@
       "ru": "Intel&reg; SM",
       "zh-chs": "英特爾&reg;SM",
       "xloc": [
-        "default-mobile.handlebars->9->192",
+        "default-mobile.handlebars->9->191",
         "default.handlebars->27->480"
       ]
     },
@@ -14139,7 +13935,7 @@
       "ru": "Ограниченный ввод",
       "zh-chs": "有限輸入",
       "xloc": [
-        "default-mobile.handlebars->9->327",
+        "default-mobile.handlebars->9->324",
         "default.handlebars->27->1240",
         "default.handlebars->27->546",
         "default.handlebars->27->565"
@@ -14159,7 +13955,7 @@
       "ru": "Ограничить элементы ввода",
       "zh-chs": "僅限於輸入",
       "xloc": [
-        "default-mobile.handlebars->9->302",
+        "default-mobile.handlebars->9->299",
         "default.handlebars->27->1204"
       ]
     },
@@ -14273,7 +14069,7 @@
       "ru": "Linux 32bit",
       "zh-chs": "Linux 32位",
       "xloc": [
-        "default-mobile.handlebars->9->152",
+        "default-mobile.handlebars->9->151",
         "default.handlebars->27->18"
       ]
     },
@@ -14291,7 +14087,7 @@
       "ru": "Linux 64bit",
       "zh-chs": "Linux 64位",
       "xloc": [
-        "default-mobile.handlebars->9->153",
+        "default-mobile.handlebars->9->152",
         "default.handlebars->27->19"
       ]
     },
@@ -14309,7 +14105,7 @@
       "ru": "Linux ARM",
       "zh-chs": "Linux ARM",
       "xloc": [
-        "default-mobile.handlebars->9->157",
+        "default-mobile.handlebars->9->156",
         "default.handlebars->27->23"
       ]
     },
@@ -14344,7 +14140,7 @@
       "ru": "Linux NoKVM x86-32bit",
       "zh-chs": "Linux NoKVM x86-32位",
       "xloc": [
-        "default-mobile.handlebars->9->166",
+        "default-mobile.handlebars->9->165",
         "default.handlebars->27->32"
       ]
     },
@@ -14362,7 +14158,7 @@
       "ru": "Linux NoKVM x86-64bit",
       "zh-chs": "Linux NoKVM x86-64位",
       "xloc": [
-        "default-mobile.handlebars->9->167",
+        "default-mobile.handlebars->9->166",
         "default.handlebars->27->33"
       ]
     },
@@ -14380,7 +14176,7 @@
       "ru": "Linux Poky x86-32bit",
       "zh-chs": "Linux Poky x86-32位",
       "xloc": [
-        "default-mobile.handlebars->9->162",
+        "default-mobile.handlebars->9->161",
         "default.handlebars->27->28"
       ]
     },
@@ -14398,7 +14194,7 @@
       "ru": "Linux Poky x86-64bit",
       "zh-chs": "Linux Poky x86-64位",
       "xloc": [
-        "default-mobile.handlebars->9->165",
+        "default-mobile.handlebars->9->164",
         "default.handlebars->27->31"
       ]
     },
@@ -14929,7 +14725,7 @@
       "ru": "MIPS",
       "zh-chs": "MIPS",
       "xloc": [
-        "default-mobile.handlebars->9->154",
+        "default-mobile.handlebars->9->153",
         "default.handlebars->27->20"
       ]
     },
@@ -14965,8 +14761,8 @@
       "ru": "MQTT",
       "zh-chs": "MQTT",
       "xloc": [
-        "default-mobile.handlebars->9->129",
-        "default-mobile.handlebars->9->198",
+        "default-mobile.handlebars->9->128",
+        "default-mobile.handlebars->9->197",
         "default.handlebars->27->176",
         "default.handlebars->27->369",
         "default.handlebars->27->498",
@@ -15023,7 +14819,7 @@
       "ru": "Подключен MQTT канал",
       "zh-chs": "MQTT通道已連接",
       "xloc": [
-        "default-mobile.handlebars->9->207",
+        "default-mobile.handlebars->9->206",
         "default.handlebars->27->534"
       ]
     },
@@ -15129,7 +14925,7 @@
       "ru": "MacOS 32bit",
       "zh-chs": "MacOS 32位",
       "xloc": [
-        "default-mobile.handlebars->9->158",
+        "default-mobile.handlebars->9->157",
         "default.handlebars->27->24"
       ]
     },
@@ -15147,7 +14943,7 @@
       "ru": "MacOS 64bit",
       "zh-chs": "MacOS 64位",
       "xloc": [
-        "default-mobile.handlebars->9->163",
+        "default-mobile.handlebars->9->162",
         "default.handlebars->27->29"
       ]
     },
@@ -15251,8 +15047,8 @@
       "ru": "Управление компьютерами группы устройств",
       "zh-chs": "管理設備組計算機",
       "xloc": [
-        "default-mobile.handlebars->9->299",
-        "default-mobile.handlebars->9->317",
+        "default-mobile.handlebars->9->296",
+        "default-mobile.handlebars->9->314",
         "default.handlebars->27->1201",
         "default.handlebars->27->1229"
       ]
@@ -15271,8 +15067,8 @@
       "ru": "Управление пользователями группы устройств",
       "zh-chs": "管理設備組用戶",
       "xloc": [
-        "default-mobile.handlebars->9->298",
-        "default-mobile.handlebars->9->316",
+        "default-mobile.handlebars->9->295",
+        "default-mobile.handlebars->9->313",
         "default.handlebars->27->1200",
         "default.handlebars->27->1228"
       ]
@@ -15445,7 +15241,7 @@
       "ru": "Управляется с помощью программного агента",
       "zh-chs": "使用軟件代理進行管理",
       "xloc": [
-        "default-mobile.handlebars->9->279",
+        "default-mobile.handlebars->9->276",
         "default.handlebars->27->1086"
       ]
     },
@@ -15656,7 +15452,7 @@
       "ru": "Mesh Agent",
       "zh-chs": "網格代理",
       "xloc": [
-        "default-mobile.handlebars->9->204",
+        "default-mobile.handlebars->9->203",
         "default.handlebars->27->312",
         "default.handlebars->27->316",
         "default.handlebars->27->325",
@@ -15682,7 +15478,7 @@
       "ru": "Консоль Mesh Agent",
       "zh-chs": "網格代理控制台",
       "xloc": [
-        "default-mobile.handlebars->9->306",
+        "default-mobile.handlebars->9->303",
         "default.handlebars->27->1209"
       ]
     },
@@ -16608,9 +16404,9 @@
       "ru": "Имя",
       "zh-chs": "名稱",
       "xloc": [
-        "default-mobile.handlebars->9->139",
-        "default-mobile.handlebars->9->280",
-        "default-mobile.handlebars->9->293",
+        "default-mobile.handlebars->9->138",
+        "default-mobile.handlebars->9->277",
+        "default-mobile.handlebars->9->290",
         "default-mobile.handlebars->9->59",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->1",
         "default.handlebars->27->1060",
@@ -16837,7 +16633,7 @@
       "ru": "Новая папка",
       "zh-chs": "新建文件夾",
       "xloc": [
-        "default-mobile.handlebars->9->251",
+        "default-mobile.handlebars->9->248",
         "default-mobile.handlebars->9->82",
         "default.handlebars->27->1306",
         "default.handlebars->27->704",
@@ -16961,8 +16757,8 @@
       "ru": "Учетных данных нет",
       "zh-chs": "沒有憑證",
       "xloc": [
+        "default-mobile.handlebars->9->187",
         "default-mobile.handlebars->9->188",
-        "default-mobile.handlebars->9->189",
         "default.handlebars->27->473",
         "default.handlebars->27->474"
       ]
@@ -17036,7 +16832,7 @@
       "ru": "Нет доступа к файлам",
       "zh-chs": "沒有文件訪問",
       "xloc": [
-        "default-mobile.handlebars->9->304",
+        "default-mobile.handlebars->9->301",
         "default.handlebars->27->1207"
       ]
     },
@@ -17054,7 +16850,7 @@
       "ru": "Файлов нет",
       "zh-chs": "沒有文件",
       "xloc": [
-        "default-mobile.handlebars->9->325",
+        "default-mobile.handlebars->9->322",
         "default.handlebars->27->1238",
         "default.handlebars->27->544",
         "default.handlebars->27->563"
@@ -17089,8 +16885,8 @@
       "ru": "Нет Intel&reg; AMT",
       "zh-chs": "沒有英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->305",
-        "default-mobile.handlebars->9->326",
+        "default-mobile.handlebars->9->302",
+        "default-mobile.handlebars->9->323",
         "default.handlebars->27->1208",
         "default.handlebars->27->1239"
       ]
@@ -17109,7 +16905,7 @@
       "ru": "Intel&reg; AMT устройств в этой группе нет",
       "zh-chs": "該組中沒有英特爾&reg;AMT設備",
       "xloc": [
-        "default-mobile.handlebars->9->100"
+        "default-mobile.handlebars->9->99"
       ]
     },
     {
@@ -17213,8 +17009,8 @@
       "ru": "Нет прав",
       "zh-chs": "沒有權利",
       "xloc": [
-        "default-mobile.handlebars->9->288",
-        "default-mobile.handlebars->9->331",
+        "default-mobile.handlebars->9->285",
+        "default-mobile.handlebars->9->328",
         "default-mobile.handlebars->9->68",
         "default.handlebars->27->1074",
         "default.handlebars->27->1244",
@@ -17235,7 +17031,7 @@
       "ru": "Нет безопасности TLS",
       "zh-chs": "沒有TLS安全性",
       "xloc": [
-        "default-mobile.handlebars->9->219",
+        "default-mobile.handlebars->9->218",
         "default.handlebars->27->229",
         "default.handlebars->27->597"
       ]
@@ -17254,7 +17050,7 @@
       "ru": "Нет терминала",
       "zh-chs": "沒有終端",
       "xloc": [
-        "default-mobile.handlebars->9->324",
+        "default-mobile.handlebars->9->321",
         "default.handlebars->27->1237",
         "default.handlebars->27->543",
         "default.handlebars->27->562"
@@ -17274,7 +17070,7 @@
       "ru": "Нет доступа к терминалу",
       "zh-chs": "沒有終端訪問",
       "xloc": [
-        "default-mobile.handlebars->9->303",
+        "default-mobile.handlebars->9->300",
         "default.handlebars->27->1206"
       ]
     },
@@ -17346,7 +17142,7 @@
       "ru": "Устройств нет",
       "zh-chs": "沒有裝置",
       "xloc": [
-        "default-mobile.handlebars->9->102"
+        "default-mobile.handlebars->9->101"
       ]
     },
     {
@@ -17431,7 +17227,7 @@
       "ru": "В этой группе нет устройств",
       "zh-chs": "該組中沒有設備",
       "xloc": [
-        "default-mobile.handlebars->9->101",
+        "default-mobile.handlebars->9->100",
         "default.handlebars->27->182"
       ]
     },
@@ -17667,7 +17463,7 @@
       "ru": "NodeJS",
       "zh-chs": "節點JS",
       "xloc": [
-        "default-mobile.handlebars->9->170",
+        "default-mobile.handlebars->9->169",
         "default.handlebars->27->36"
       ]
     },
@@ -17685,15 +17481,15 @@
       "ru": "Пусто",
       "zh-chs": "沒有",
       "xloc": [
-        "default-mobile.handlebars->9->137",
-        "default-mobile.handlebars->9->142",
-        "default-mobile.handlebars->9->144",
-        "default-mobile.handlebars->9->200",
-        "default-mobile.handlebars->9->249",
-        "default-mobile.handlebars->9->282",
+        "default-mobile.handlebars->9->136",
+        "default-mobile.handlebars->9->141",
+        "default-mobile.handlebars->9->143",
+        "default-mobile.handlebars->9->199",
+        "default-mobile.handlebars->9->246",
+        "default-mobile.handlebars->9->279",
         "default-mobile.handlebars->9->78",
         "default-mobile.handlebars->9->97",
-        "default-mobile.handlebars->9->99",
+        "default-mobile.handlebars->9->98",
         "default.handlebars->27->1089",
         "default.handlebars->27->1093",
         "default.handlebars->27->1105",
@@ -17796,7 +17592,7 @@
       "zh-chs": "未激活（輸入）",
       "es": "(entrada) No activada",
       "xloc": [
-        "default-mobile.handlebars->9->180",
+        "default-mobile.handlebars->9->179",
         "default.handlebars->27->461",
         "default.handlebars->27->765"
       ]
@@ -17815,7 +17611,7 @@
       "zh-chs": "未激活（預）",
       "es": "(Pre) No activada",
       "xloc": [
-        "default-mobile.handlebars->9->179",
+        "default-mobile.handlebars->9->178",
         "default.handlebars->27->460",
         "default.handlebars->27->764"
       ]
@@ -18211,7 +18007,7 @@
       "ru": "Редактировать файлы можно только размером менее 200КБ.",
       "zh-chs": "只能編輯小於200k的文件。",
       "xloc": [
-        "default-mobile.handlebars->9->259",
+        "default-mobile.handlebars->9->256",
         "default.handlebars->27->416",
         "default.handlebars->27->712"
       ]
@@ -18337,7 +18133,7 @@
       "ru": "Операция",
       "zh-chs": "運作方式",
       "xloc": [
-        "default-mobile.handlebars->9->214",
+        "default-mobile.handlebars->9->213",
         "default.handlebars->27->1361",
         "default.handlebars->27->376",
         "default.handlebars->27->589"
@@ -18557,7 +18353,7 @@
       "ru": "Частичные права",
       "zh-chs": "部分權利",
       "xloc": [
-        "default-mobile.handlebars->9->286",
+        "default-mobile.handlebars->9->283",
         "default-mobile.handlebars->9->66",
         "default.handlebars->27->1072"
       ]
@@ -18610,7 +18406,7 @@
       "ru": "Пароль",
       "zh-chs": "密碼",
       "xloc": [
-        "default-mobile.handlebars->9->217",
+        "default-mobile.handlebars->9->216",
         "default.handlebars->27->1392",
         "default.handlebars->27->1393",
         "default.handlebars->27->1478",
@@ -18831,7 +18627,7 @@
       "ru": "Вставить",
       "zh-chs": "糊",
       "xloc": [
-        "default-mobile.handlebars->9->264",
+        "default-mobile.handlebars->9->261",
         "default-mobile.handlebars->9->90",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
@@ -18998,7 +18794,7 @@
       "ru": "Права",
       "zh-chs": "權限",
       "xloc": [
-        "default-mobile.handlebars->9->333",
+        "default-mobile.handlebars->9->330",
         "default.handlebars->27->1247",
         "default.handlebars->27->1336"
       ]
@@ -19256,7 +19052,7 @@
       "ru": "PogoPlug ARM",
       "zh-chs": "PogoPlug ARM",
       "xloc": [
-        "default-mobile.handlebars->9->160",
+        "default-mobile.handlebars->9->159",
         "default.handlebars->27->26"
       ]
     },
@@ -19396,8 +19192,8 @@
       "ru": "Выключить",
       "zh-chs": "斷電",
       "xloc": [
-        "default-mobile.handlebars->9->109",
-        "default-mobile.handlebars->9->213",
+        "default-mobile.handlebars->9->108",
+        "default-mobile.handlebars->9->212",
         "default.handlebars->27->586",
         "default.handlebars->27->6"
       ]
@@ -19433,8 +19229,8 @@
       "ru": "Включено",
       "zh-chs": "供電",
       "xloc": [
-        "default-mobile.handlebars->9->104",
-        "default-mobile.handlebars->9->111",
+        "default-mobile.handlebars->9->103",
+        "default-mobile.handlebars->9->110",
         "default.handlebars->27->1",
         "default.handlebars->27->340"
       ]
@@ -19453,8 +19249,8 @@
       "ru": "Текущее состояние",
       "zh-chs": "當下",
       "xloc": [
-        "default-mobile.handlebars->9->110",
-        "default-mobile.handlebars->9->117",
+        "default-mobile.handlebars->9->109",
+        "default-mobile.handlebars->9->116",
         "default.handlebars->27->352",
         "default.handlebars->27->7"
       ]
@@ -19508,7 +19304,7 @@
       "ru": "Управление процессами",
       "zh-chs": "過程控制",
       "xloc": [
-        "default-mobile.handlebars->9->238",
+        "default-mobile.handlebars->9->235",
         "default.handlebars->27->682"
       ]
     },
@@ -19954,7 +19750,7 @@
       "ru": "Рекурсивное удаление",
       "zh-chs": "遞歸刪除",
       "xloc": [
-        "default-mobile.handlebars->9->252",
+        "default-mobile.handlebars->9->249",
         "default-mobile.handlebars->9->83",
         "default.handlebars->27->1307",
         "default.handlebars->27->705"
@@ -20034,7 +19830,7 @@
       "ru": "Ретранслятор",
       "zh-chs": "中繼",
       "xloc": [
-        "default-mobile.handlebars->9->128",
+        "default-mobile.handlebars->9->127",
         "default.handlebars->27->174",
         "default.handlebars->27->367"
       ]
@@ -20205,8 +20001,8 @@
       "ru": "Удаленное управление",
       "zh-chs": "遙控",
       "xloc": [
-        "default-mobile.handlebars->9->300",
-        "default-mobile.handlebars->9->318",
+        "default-mobile.handlebars->9->297",
+        "default-mobile.handlebars->9->315",
         "default.handlebars->27->1202",
         "default.handlebars->27->1230"
       ]
@@ -20225,7 +20021,7 @@
       "ru": "Настройки удаленного рабочего стола",
       "zh-chs": "遠程桌面設置",
       "xloc": [
-        "default-mobile.handlebars->9->233",
+        "default-mobile.handlebars->9->232",
         "default.handlebars->27->206",
         "default.handlebars->27->657"
       ]
@@ -20261,7 +20057,7 @@
       "ru": "Удаленный пользователь Mesh",
       "zh-chs": "遠程網狀用戶",
       "xloc": [
-        "default-mobile.handlebars->9->336",
+        "default-mobile.handlebars->9->333",
         "default.handlebars->27->1250"
       ]
     },
@@ -20296,8 +20092,8 @@
       "ru": "Только просмотр экрана без ввода",
       "zh-chs": "僅遠程查看",
       "xloc": [
-        "default-mobile.handlebars->9->301",
-        "default-mobile.handlebars->9->323",
+        "default-mobile.handlebars->9->298",
+        "default-mobile.handlebars->9->320",
         "default.handlebars->27->1203",
         "default.handlebars->27->1235"
       ]
@@ -20572,7 +20368,7 @@
       "ru": "Переименовать",
       "zh-chs": "改名",
       "xloc": [
-        "default-mobile.handlebars->9->256",
+        "default-mobile.handlebars->9->253",
         "default-mobile.handlebars->9->87",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
@@ -20669,7 +20465,7 @@
       "ru": "Перезагрузить",
       "zh-chs": "重啟",
       "xloc": [
-        "default-mobile.handlebars->9->212",
+        "default-mobile.handlebars->9->211",
         "default.handlebars->27->585",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar"
       ]
@@ -20913,7 +20709,7 @@
       "ru": "Root/Корень",
       "zh-chs": "根",
       "xloc": [
-        "default-mobile.handlebars->9->246",
+        "default-mobile.handlebars->9->243",
         "default-mobile.handlebars->9->69",
         "default.handlebars->27->1284",
         "default.handlebars->27->699"
@@ -21399,7 +21195,7 @@
       "ru": "Защита",
       "zh-chs": "安全",
       "xloc": [
-        "default-mobile.handlebars->9->218",
+        "default-mobile.handlebars->9->217",
         "default.handlebars->27->1491",
         "default.handlebars->27->228",
         "default.handlebars->27->596",
@@ -21576,7 +21372,7 @@
       "ru": "Выберите действие для осуществления на этом устройстве.",
       "zh-chs": "選擇要在此設備上執行的操作。",
       "xloc": [
-        "default-mobile.handlebars->9->209",
+        "default-mobile.handlebars->9->208",
         "default.handlebars->27->582"
       ]
     },
@@ -21612,7 +21408,7 @@
       "ru": "Только собственные события",
       "zh-chs": "僅自我事件",
       "xloc": [
-        "default-mobile.handlebars->9->328",
+        "default-mobile.handlebars->9->325",
         "default.handlebars->27->1241"
       ]
     },
@@ -21903,8 +21699,8 @@
       "ru": "Серверные файлы",
       "zh-chs": "服務器文件",
       "xloc": [
-        "default-mobile.handlebars->9->307",
-        "default-mobile.handlebars->9->320",
+        "default-mobile.handlebars->9->304",
+        "default-mobile.handlebars->9->317",
         "default.handlebars->27->1210",
         "default.handlebars->27->1232",
         "default.handlebars->27->1405",
@@ -22488,7 +22284,7 @@
       "ru": "Показывать только собственные события",
       "zh-chs": "只顯示自己的事件",
       "xloc": [
-        "default-mobile.handlebars->9->310",
+        "default-mobile.handlebars->9->307",
         "default.handlebars->27->1213"
       ]
     },
@@ -22747,10 +22543,10 @@
       "ru": "Отправить в сон",
       "zh-chs": "睡覺",
       "xloc": [
+        "default-mobile.handlebars->9->104",
         "default-mobile.handlebars->9->105",
         "default-mobile.handlebars->9->106",
-        "default-mobile.handlebars->9->107",
-        "default-mobile.handlebars->9->211",
+        "default-mobile.handlebars->9->210",
         "default.handlebars->27->2",
         "default.handlebars->27->3",
         "default.handlebars->27->4",
@@ -22788,8 +22584,8 @@
       "ru": "В режиме сна",
       "zh-chs": "睡眠",
       "xloc": [
+        "default-mobile.handlebars->9->111",
         "default-mobile.handlebars->9->112",
-        "default-mobile.handlebars->9->113",
         "default.handlebars->27->342",
         "default.handlebars->27->344"
       ]
@@ -22912,7 +22708,7 @@
       "ru": "Soft-Off",
       "zh-chs": "軟關",
       "xloc": [
-        "default-mobile.handlebars->9->116",
+        "default-mobile.handlebars->9->115",
         "default.handlebars->27->350"
       ]
     },
@@ -23434,7 +23230,7 @@
       "ru": "Специальные клавиши",
       "zh-chs": "特殊鍵",
       "xloc": [
-        "default-mobile.handlebars->9->234",
+        "default-mobile.handlebars->9->233",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
     },
@@ -23553,7 +23349,7 @@
       "ru": "Прервать процесс #{0} \\\"{1}\\\"?",
       "zh-chs": "停止進程＃{0} \\“ {1} \\”？",
       "xloc": [
-        "default-mobile.handlebars->9->239",
+        "default-mobile.handlebars->9->236",
         "default.handlebars->27->683"
       ]
     },
@@ -23870,7 +23666,7 @@
       "ru": "TLS",
       "zh-chs": "TLS",
       "xloc": [
-        "default-mobile.handlebars->9->187",
+        "default-mobile.handlebars->9->186",
         "default.handlebars->27->471"
       ]
     },
@@ -23905,7 +23701,7 @@
       "ru": "Требуется безопасность TLS",
       "zh-chs": "需要TLS安全",
       "xloc": [
-        "default-mobile.handlebars->9->220",
+        "default-mobile.handlebars->9->219",
         "default.handlebars->27->230",
         "default.handlebars->27->598"
       ]
@@ -23958,9 +23754,9 @@
       "ru": "Теги",
       "zh-chs": "標籤",
       "xloc": [
+        "default-mobile.handlebars->9->200",
         "default-mobile.handlebars->9->201",
-        "default-mobile.handlebars->9->202",
-        "default-mobile.handlebars->9->229",
+        "default-mobile.handlebars->9->228",
         "default.handlebars->27->650",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->7"
       ]
@@ -25118,7 +24914,7 @@
       "ru": "Удаленный ввод",
       "zh-chs": "類型",
       "xloc": [
-        "default-mobile.handlebars->9->283",
+        "default-mobile.handlebars->9->280",
         "default-mobile.handlebars->9->60",
         "default.handlebars->27->1061",
         "default.handlebars->27->1090",
@@ -25228,7 +25024,7 @@
       "ru": "Невозможно получить доступ к устройству, пока адрес email не подтвержден. Это необходимо для восстановления пароля. Перейдите в раздел \\\"Моя учетная запись\\\", чтобы изменить и подтвердить адрес email.",
       "zh-chs": "在驗證電子郵件地址之前，無法訪問設備。這是密碼恢復所必需的。轉到“我的帳戶”以更改並驗證電子郵件地址。",
       "xloc": [
-        "default-mobile.handlebars->9->134",
+        "default-mobile.handlebars->9->133",
         "default-mobile.handlebars->9->56"
       ]
     },
@@ -25246,7 +25042,7 @@
       "ru": "Невозможно получить доступ к устройству, пока не включена двухфакторная аутентификация. Это требуется для дополнительной безопасности. Перейдите в раздел \\\"Моя учетная запись\\\" и посмотрите \\\"Безопасность учетной записи\\\".",
       "zh-chs": "在啟用兩因素身份驗證之前，無法訪問設備。這是額外的安全性所必需的。轉到“我的帳戶”，然後查看“帳戶安全性”部分。",
       "xloc": [
-        "default-mobile.handlebars->9->136",
+        "default-mobile.handlebars->9->135",
         "default-mobile.handlebars->9->58"
       ]
     },
@@ -25371,7 +25167,7 @@
       "ru": "Удаление",
       "zh-chs": "卸載",
       "xloc": [
-        "default-mobile.handlebars->9->330",
+        "default-mobile.handlebars->9->327",
         "default.handlebars->27->1243",
         "default.handlebars->27->555",
         "default.handlebars->27->574"
@@ -25391,7 +25187,7 @@
       "ru": "Удаление агента",
       "zh-chs": "卸載代理",
       "xloc": [
-        "default-mobile.handlebars->9->312",
+        "default-mobile.handlebars->9->309",
         "default.handlebars->27->1215",
         "default.handlebars->27->374",
         "default.handlebars->27->588"
@@ -25428,10 +25224,10 @@
       "ru": "Неизвестно",
       "zh-chs": "未知",
       "xloc": [
-        "default-mobile.handlebars->9->130",
-        "default-mobile.handlebars->9->147",
+        "default-mobile.handlebars->9->129",
+        "default-mobile.handlebars->9->146",
+        "default-mobile.handlebars->9->174",
         "default-mobile.handlebars->9->175",
-        "default-mobile.handlebars->9->176",
         "default.handlebars->27->13",
         "default.handlebars->27->1539",
         "default.handlebars->27->370",
@@ -25457,7 +25253,7 @@
       "ru": "Неизвестно #{0}",
       "zh-chs": "未知＃{0}",
       "xloc": [
-        "default-mobile.handlebars->9->277",
+        "default-mobile.handlebars->9->274",
         "default.handlebars->27->1084"
       ]
     },
@@ -25545,7 +25341,7 @@
       "ru": "Состояние неизвестно",
       "zh-chs": "未知狀態",
       "xloc": [
-        "default-mobile.handlebars->9->182",
+        "default-mobile.handlebars->9->181",
         "default.handlebars->27->463"
       ]
     },
@@ -25580,7 +25376,7 @@
       "ru": "Версия и состояние неизвестны",
       "zh-chs": "未知版本和狀態",
       "xloc": [
-        "default-mobile.handlebars->9->184",
+        "default-mobile.handlebars->9->183",
         "default.handlebars->27->465"
       ]
     },
@@ -25682,8 +25478,8 @@
       "ru": "Загрузить файл",
       "zh-chs": "上傳文件",
       "xloc": [
-        "default-mobile.handlebars->9->257",
-        "default-mobile.handlebars->9->275",
+        "default-mobile.handlebars->9->254",
+        "default-mobile.handlebars->9->272",
         "default-mobile.handlebars->9->88",
         "default.handlebars->27->1312",
         "default.handlebars->27->1320",
@@ -25877,7 +25673,7 @@
       "ru": "Чтобы добавить устройства, используйте настольную версию этого сайта.",
       "zh-chs": "使用此網站的桌面版本添加設備。",
       "xloc": [
-        "default-mobile.handlebars->9->103"
+        "default-mobile.handlebars->9->102"
       ]
     },
     {
@@ -25912,7 +25708,7 @@
       "ru": "Пользователь",
       "zh-chs": "用戶",
       "xloc": [
-        "default-mobile.handlebars->9->332",
+        "default-mobile.handlebars->9->329",
         "default.handlebars->27->1138",
         "default.handlebars->27->1348",
         "default.handlebars->27->1438",
@@ -25988,7 +25784,7 @@
       "ru": "Полномочия пользователя",
       "zh-chs": "用戶授權",
       "xloc": [
-        "default-mobile.handlebars->9->285",
+        "default-mobile.handlebars->9->282",
         "default.handlebars->27->1136",
         "default.handlebars->27->537"
       ]
@@ -26299,7 +26095,7 @@
       "ru": "Имя пользователя",
       "zh-chs": "用戶名",
       "xloc": [
-        "default-mobile.handlebars->9->216",
+        "default-mobile.handlebars->9->215",
         "default.handlebars->27->1390",
         "default.handlebars->27->225",
         "default.handlebars->27->255",
@@ -26720,8 +26516,8 @@
       "ru": "Разбудить устройства",
       "zh-chs": "喚醒設備",
       "xloc": [
-        "default-mobile.handlebars->9->308",
-        "default-mobile.handlebars->9->321",
+        "default-mobile.handlebars->9->305",
+        "default-mobile.handlebars->9->318",
         "default.handlebars->27->1211",
         "default.handlebars->27->1233"
       ]
@@ -26740,7 +26536,7 @@
       "ru": "Разбудить",
       "zh-chs": "醒來",
       "xloc": [
-        "default-mobile.handlebars->9->210",
+        "default-mobile.handlebars->9->209",
         "default.handlebars->27->583"
       ]
     },
@@ -27265,7 +27061,7 @@
       "ru": "Консоль Windows 32bit",
       "zh-chs": "Windows 32位控制台",
       "xloc": [
-        "default-mobile.handlebars->9->148",
+        "default-mobile.handlebars->9->147",
         "default.handlebars->27->14"
       ]
     },
@@ -27283,7 +27079,7 @@
       "ru": "Служба Windows 32bit",
       "zh-chs": "Windows 32位服務",
       "xloc": [
-        "default-mobile.handlebars->9->150",
+        "default-mobile.handlebars->9->149",
         "default.handlebars->27->16"
       ]
     },
@@ -27318,7 +27114,7 @@
       "ru": "Консоль Windows 64bit",
       "zh-chs": "Windows 64位控制台",
       "xloc": [
-        "default-mobile.handlebars->9->149",
+        "default-mobile.handlebars->9->148",
         "default.handlebars->27->15"
       ]
     },
@@ -27336,7 +27132,7 @@
       "ru": "Служба Windows 64bit",
       "zh-chs": "Windows 64位服務",
       "xloc": [
-        "default-mobile.handlebars->9->151",
+        "default-mobile.handlebars->9->150",
         "default.handlebars->27->17"
       ]
     },
@@ -27354,7 +27150,7 @@
       "ru": "Консоль Windows MinCore",
       "zh-chs": "Windows MinCore控制台",
       "xloc": [
-        "default-mobile.handlebars->9->168",
+        "default-mobile.handlebars->9->167",
         "default.handlebars->27->34"
       ]
     },
@@ -27372,7 +27168,7 @@
       "ru": "Служба Windows MinCore",
       "zh-chs": "Windows MinCore服務",
       "xloc": [
-        "default-mobile.handlebars->9->169",
+        "default-mobile.handlebars->9->168",
         "default.handlebars->27->35"
       ]
     },
@@ -27510,7 +27306,7 @@
       "ru": "XENx86",
       "zh-chs": "XENx86",
       "xloc": [
-        "default-mobile.handlebars->9->155",
+        "default-mobile.handlebars->9->154",
         "default.handlebars->27->21"
       ]
     },
@@ -27716,39 +27512,6 @@
       ]
     },
     {
-      "cs": "[[[ACCOUNTNAME]]]",
-      "de": "[[[ACCOUNTNAME]]]",
-      "en": "[[[ACCOUNTNAME]]]",
-      "fr": "[[[ACCOUNTNAME]]]",
-      "nl": "[[[ACCOUNTNAME]]]",
-      "ja": "[[[ACCOUNTNAME]]]",
-      "ru": "[[[ACCOUNTNAME]]]",
-      "zh-chs": "[[[ACCOUNTNAME]]]",
-      "es": "[[[ACCOUNTNAME]]]"
-    },
-    {
-      "cs": "[[[MSG]]]",
-      "de": "[[[MSG]]]",
-      "en": "[[[MSG]]]",
-      "fr": "[[[MSG]]]",
-      "nl": "[[[MSG]]]",
-      "ja": "[[[MSG]]]",
-      "ru": "[[[MSG]]]",
-      "zh-chs": "[[[MSG]]]",
-      "es": "[[[MSG]]]"
-    },
-    {
-      "cs": "[[[PASSWORD]]]",
-      "de": "[[[PASSWORD]]]",
-      "en": "[[[PASSWORD]]]",
-      "fr": "[[[PASSWORD]]]",
-      "nl": "[[[PASSWORD]]]",
-      "ja": "[[[PASSWORD]]]",
-      "ru": "[[[PASSWORD]]]",
-      "zh-chs": "[[[PASSWORD]]]",
-      "es": "[[[PASSWORD]]]"
-    },
-    {
       "cs": "[[[SERVERNAME]]]",
       "de": "[[[SERVERNAME]]]",
       "en": "[[[SERVERNAME]]]",
@@ -27899,9 +27662,9 @@
       "ru": "\\\\",
       "zh-chs": "\\\\",
       "xloc": [
-        "default-mobile.handlebars->9->243",
-        "default-mobile.handlebars->9->244",
-        "default-mobile.handlebars->9->245"
+        "default-mobile.handlebars->9->240",
+        "default-mobile.handlebars->9->241",
+        "default-mobile.handlebars->9->242"
       ]
     },
     {
@@ -29039,20 +28802,6 @@
       "xloc": [
         "default.handlebars->27->62"
       ]
-    },
-    {
-      "cs": "{0} minut{1} do odpojení",
-      "de": "{0} Minute{1} bis zur Trennung",
-      "en": "{0} minute{1} until disconnect",
-      "es": "{0} minutes {1} hasta desconectar",
-      "fr": "{0} minute{1} avant déconnexion",
-      "hi": "डिस्कनेक्ट होने तक {0} मिनट {1}",
-      "ja": "切断するまで{0}分{1}",
-      "ko": "연결을 끊을 때까지 {0} 분 {1}",
-      "nl": "{0} minuut {1} tot verbreken",
-      "pt": "{0} minutos{1} até desconectar",
-      "ru": "{0} минут до разъединения",
-      "zh-chs": "{0}分鐘{1}，直到斷開連接"
     },
     {
       "cs": "{0} dalších uživatelů není zobrazeno, vyhledejte je pomocí kolonky pro vyhledávání…",
