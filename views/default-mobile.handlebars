@@ -1788,7 +1788,7 @@
                 count++;
                 var title = EscapeHtml(nodes[i].name);
                 if (title.length == 0) { title = '<i>' + "None" + '</i>'; }
-                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += " / " + EscapeHtml(nodes[i].rname); }
+                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += ' / ' + EscapeHtml(nodes[i].rname); }
                 var name = EscapeHtml(nodes[i].name);
                 if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
                 if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
@@ -2667,7 +2667,7 @@
         function deskSaveImage() {
             setSessionActivity();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
+            var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
             Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.jpg'); });
         }
 
