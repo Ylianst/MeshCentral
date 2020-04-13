@@ -2715,7 +2715,7 @@
             }
         }
 
-        // Go tot he correct starting view page
+        // Go to the correct starting view page
         function gotoStartViewPage() {
             if (xxcurrentView != -1) return;
             if ('{{currentNode}}' != '') {
@@ -2736,7 +2736,7 @@
                 go(parseInt('{{viewmode}}'));
                 goBackStack.push(4);
             } else if (args.gotougrp != null) {
-                if (usergroups['ugrp/' + domain + '/' + args.gotougrp] == null) return; // This user group is not loaded yet
+                if ((usergroups == null) || usergroups['ugrp/' + domain + '/' + args.gotougrp] == null) return; // This user group is not loaded yet
                 gotoUserGroup('ugrp/' + domain + '/' + args.gotougrp);
                 go(parseInt('{{viewmode}}'));
                 goBackStack.push(50);
@@ -4812,15 +4812,7 @@
 
                 // Attribute: Host
                 if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
-                    if ((meshrights & 4) != 0) {
-                        if (node.host) {
-                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + EscapeHtml(node.host) + '</span>');
-                        } else {
-                            x += addDeviceAttribute("Hostname", '<span onclick=showEditNodeValueDialog(1) style=cursor:pointer><i>' + "None" + '</i></span>');
-                        }
-                    } else {
-                        x += addDeviceAttribute("Hostname", EscapeHtml(node.host));
-                    }
+                    x += addDeviceAttribute("Hostname", addLinkConditional('<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + (node.host?EscapeHtml(node.host):('<i>' + "None" + '</i>')) + '</span>', 'showEditNodeValueDialog(1)', meshrights & 4));
                 }
 
                 // Attribute: Description
@@ -8583,7 +8575,7 @@
                 var y = '';
                 for (var i in meshes) { if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(meshes[i].name) + '</option>'; } }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
-            } else if (userid === 4) {
+            } else if ((userid === 4) || (userid == 7)) {
                 var y = '', selectedMeshId = null, selectedNode = null;
                 if (selected != null) { selectedNode = getNodeFromId(decodeURIComponent(selected)); if (selectedNode != null) { selectedMeshId = selectedNode.meshid; } }
                 for (var i in meshes) {
@@ -8591,10 +8583,10 @@
                         if (selectedMeshId == null) { selectedMeshId = meshes[i]._id; } y += '<option value=' + encodeURIComponent(meshes[i]._id) + ((selectedMeshId == meshes[i]._id)?' selected':' ') + '>' + EscapeHtml(meshes[i].name) + '</option>';
                     }
                 }
-                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(4) id=dp2meshid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(' + userid + ') id=dp2meshid style=width:100%>' + y + '</select></div>');
                 y = '';
                 for (var i in nodes) { if (nodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + ((selectedNode == nodes[i])?' selected':' ') + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
-                x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(4) id=dp2nodeid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2nodeid style=width:100%>' + y + '</select></div>');
             } else {
                 userid = decodeURIComponent(userid);
                 var uname = userid.split('/')[2];
@@ -8608,7 +8600,7 @@
                 }
             }
             x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray">';
-            if ((userid != 4) && (userid != 5) && (userid != 6)) {
+            if ((userid != 4) && (userid != 5) && (userid != 6) && (userid != 7)) {
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
@@ -8639,6 +8631,11 @@
             } else if (userid === 3) {
                 setDialogMode(2, "Add Device Group", 3, p20showAddMeshUserDialogEx, x, userid);
             } else if (userid === 4) {
+                setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('dp2meshid', selected == null);
+                QE('dp2nodeid', selected == null);
+            } else if (userid === 7) {
+                console.log('a1');
                 setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
@@ -8742,6 +8739,7 @@
         }
 
         function p20validateAddMeshUserDialog(updateId) {
+            console.log('p20validateAddMeshUserDialog', updateId);
             var ok = true;
 
             if (updateId === 4) {
@@ -8871,6 +8869,9 @@
                 } else if (t === 6) {
                     var ugrpid = decodeURIComponent(Q('dp2groupid').value);
                     if (currentNode != null) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ ugrpid ], rights: meshadmin }); }
+                } else if (t === 7) {
+                    var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
+                    if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentGroup._id ], rights: meshadmin }); }
                 } else {
                     if (t == null) {
                         var users = Q('dp20username').value.split(','), users2 = [];
@@ -10180,10 +10181,8 @@
             x += '</tbody></table>';
 
             count = 1;
-            //var deviceGroupCount = 0, newDeviceGroup = false;
-            //for (var i in meshes) { deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
-            //if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device Group" + '</a>'; }
-            x += '<br /><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            x += '<br /><a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
             if (currentUserGroup.links) {
                 for (var i in currentUserGroup.links) {
                     if (i.startsWith('node/')) {
