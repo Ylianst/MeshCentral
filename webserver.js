@@ -274,7 +274,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check device links, if a link points to an unknown user, remove it.
         if (device.links != null) {
             for (var j in device.links) {
-                if (obj.users[j] == null) {
+                if ((obj.users[j] == null) && (obj.userGroups[j] == null)) {
                     delete device.links[j];
                     if (Object.keys(device.links).length == 0) { delete device.links; }
                 }
