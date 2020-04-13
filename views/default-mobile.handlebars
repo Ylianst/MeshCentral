@@ -3539,6 +3539,13 @@
             // Check direct device rights using device data
             if ((node.links != null) && (node.links[userid] != null)) { r |= node.links[userid].rights; } // TODO: Deal with reverse permissions
 
+            // Check direct device rights thru user groups
+            if ((node.links != null) && (userinfo.links != null)) {
+                for (var i in node.links) {
+                    if (i.startsWith('ugrp/') && (userinfo.links[i] != null) && (node.links[i].rights != null)) { r |= node.links[i].rights; }
+                }
+            }
+
             // Check direct device rights using user data
             /*
             if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }

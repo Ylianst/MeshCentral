@@ -487,8 +487,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Request a list of all meshes this user as rights to
                             links = parent.GetAllMeshIdWithRights(user);
 
-                            // Add any nodes with direct rights
-                            if (obj.user.links != null) { for (var i in obj.user.links) { if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); } } }
+                            // Add any nodes with direct rights or any nodes with user group direct rights
+                            if (obj.user.links != null) {
+                                for (var i in obj.user.links) {
+                                    if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
+                                    else if (i.startsWith('ugrp/')) {
+                                        const g = parent.userGroups[i];
+                                        if ((g != null) && (g.links != null)) {
+                                            for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
+                                        }
+                                    }
+                                }
+                            }
                         } else {
                             // Request list of all nodes for one specific meshid
                             meshid = command.meshid;

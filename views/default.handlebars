@@ -8635,7 +8635,6 @@
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
             } else if (userid === 7) {
-                console.log('a1');
                 setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
@@ -8739,7 +8738,6 @@
         }
 
         function p20validateAddMeshUserDialog(updateId) {
-            console.log('p20validateAddMeshUserDialog', updateId);
             var ok = true;
 
             if (updateId === 4) {
@@ -8871,7 +8869,7 @@
                     if (currentNode != null) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ ugrpid ], rights: meshadmin }); }
                 } else if (t === 7) {
                     var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
-                    if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentGroup._id ], rights: meshadmin }); }
+                    if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUserGroup._id ], rights: meshadmin }); }
                 } else {
                     if (t == null) {
                         var users = Q('dp20username').value.split(','), users2 = [];
@@ -9762,6 +9760,15 @@
             element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
         }
 
+        // Highlights the user being hovered
+        function userMouseHover2(element, over) {
+            var e = element.children[0].children[0];
+            e.children[1].classList.remove('g1s');
+            e.children[2].classList.remove('g2s');
+            if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('g2s'); }
+            element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
+        }
+
         function userChat(e, userid, name) {
             haltEvent(e);
             var url = '/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponent(userinfo._id) + '&title=' + name;
@@ -10057,7 +10064,7 @@
         function addUserGroupHtml(group) {
             var usercount = 0, meshcount = 0;
             if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } } }
-            var x = '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")>';
+            var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")>';
             x += '<div class=bar style=width:100%>';
             x += '<div class=baricon><div class=m4></div></div>';
             x += '<div class=g1></div><div class=g2></div>';
@@ -11360,7 +11367,7 @@
                 } else if ((xxcurrentView >= 30) && (xxcurrentView <= 39)) { // User Link
                     if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 51) && (xxcurrentView <= 59)) { // User Group Link
-                    if (currentUserGroup != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
+                    if ((currentUserGroup != null) && (currentUserGroup._id != null)) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
                 } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
                 for (var i in urlargs) { urlviewmode += (((urlviewmode == '')?'?':'&') + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -11687,13 +11694,20 @@
             if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return 0; } }
             var r = GetMeshRights(node.meshid, userid);
             if (r == 0xFFFFFFFF) return r;
-            var user = null;
 
             // Check direct device rights using device data
             if ((node.links != null) && (node.links[userid] != null)) { r |= node.links[userid].rights; } // TODO: Deal with reverse permissions
             
+            // Check direct device rights thru user groups
+            if ((node.links != null) && (userinfo.links != null)) {
+                for (var i in node.links) {
+                    if (i.startsWith('ugrp/') && (userinfo.links[i] != null) && (node.links[i].rights != null)) { r |= node.links[i].rights; }
+                }
+            }
+
             // Check direct device rights using user data
             /*
+            var user = null;
             if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
             if ((user != null) && (user.links != null)) {
                 var r2 = user.links[node._id];
