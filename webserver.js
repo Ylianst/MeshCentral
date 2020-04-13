@@ -4274,6 +4274,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             rights |= r.rights; // TODO: Deal with reverse rights
                             visible = true;
                         }
+                        r = g.links[nodeid];
+                        if (r != null) {
+                            if (r.rights == 0xFFFFFFFF) { func(nodes[0], 0xFFFFFFFF, true); return; } // User has full rights thru a user group direct link, stop here.
+                            rights |= r.rights; // TODO: Deal with reverse rights
+                            visible = true;
+                        }
                     }
                 }
             }
@@ -4438,6 +4444,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check direct device rights using device data
         if ((user.links != null) && (user.links[nodeid] != null)) { r |= user.links[nodeid].rights; } // TODO: Deal with reverse permissions
+        if (r == 0xFFFFFFFF) return r;
+
+        // Check direct device rights thru a user group
+        for (var i in user.links) {
+            if (i.startsWith('ugrp')) {
+                const g = obj.userGroups[i];
+                if (g && (g.links[nodeid] != null)) { r |= g.links[nodeid].rights; }
+            }
+        }
+
         return r;
     }
 
