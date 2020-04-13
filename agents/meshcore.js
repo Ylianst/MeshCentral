@@ -1963,6 +1963,8 @@ function createMeshCore(agent) {
                 case 'help': { // Displays available commands
                     var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
+                    if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
+
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
                         if (f.length > 90) { fin += (f + ',\r\n'); f = ''; }
@@ -1974,6 +1976,24 @@ function createMeshCore(agent) {
                 }
                 case 'startupoptions':
                     response = JSON.stringify(require('MeshAgent').getStartupOptions());
+                    break;
+                case 'kvmmode':
+                    if (require('MeshAgent').maxKvmTileSize == null)
+                    {
+                        response = "Unknown command \"kvmmode\", type \"help\" for list of avaialble commands.";
+                    }
+                    else
+                    {
+                        if(require('MeshAgent').maxKvmTileSize == 0)
+                        {
+                            response = 'KVM Mode: Full JUMBO';
+                        }
+                        else 
+                        {
+                            response = 'KVM Mode: ' + (require('MeshAgent').maxKvmTileSize <= 65500 ? 'NO JUMBO' : 'Partial JUMBO');
+                            response += (', TileLimit: ' + (require('MeshAgent').maxKvmTileSize < 1024 ? (require('MeshAgent').maxKvmTileSize + ' bytes') : (Math.round(require('MeshAgent').maxKvmTileSize/1024) + ' Kbytes')));
+                        }
+                    }
                     break;
                 case 'alert':
                     if (args['_'].length ==  0)
