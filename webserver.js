@@ -4463,10 +4463,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var targets = (addedTargets != null) ? addedTargets : [];
         if (targets.indexOf('*') == -1) { targets.push('*'); }
         if (typeof mesh == 'string') { mesh = obj.meshes[mesh]; }
-        if (mesh != null) {
-            targets.push(mesh._id);
-            for (var i in mesh.links) { if (i.startsWith('ugrp/')) { targets.push(i); } }
-        }
+        if (mesh != null) { targets.push(mesh._id); for (var i in mesh.links) { if (i.startsWith('ugrp/')) { targets.push(i); } } }
+        return targets;
+    }
+
+    // Returns a list of displatch targets for a given mesh
+    // We have to target the meshid and all user groups for this mesh, plus any added targets
+    obj.CreateNodeDispatchTargets = function (mesh, nodeid, addedTargets) {
+        var targets = (addedTargets != null) ? addedTargets : [];
+        targets.push(nodeid);
+        if (targets.indexOf('*') == -1) { targets.push('*'); }
+        if (typeof mesh == 'string') { mesh = obj.meshes[mesh]; }
+        if (mesh != null) { targets.push(mesh._id); for (var i in mesh.links) { if (i.startsWith('ugrp/')) { targets.push(i); } } }
+        for (var i in obj.userGroups) { const g = obj.userGroups[i]; if ((g != null) && (g.links != null) && (g.links[nodeid] != null)) { targets.push(i); } }
         return targets;
     }
 
