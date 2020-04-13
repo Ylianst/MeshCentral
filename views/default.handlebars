@@ -3429,8 +3429,8 @@
                 }
             }
             if (mesh.mtype == 2) {
-                r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Add a new computer to this mesh by installing the mesh agent." + '\" onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "Add Agent" + '</a>';
-                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Invite someone to install the mesh agent on this mesh." + '\" onclick=\'return inviteAgentToMesh(\"' + mesh._id + '\")\'>' + "Invite" + '</a>'; }
+                r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Add a new computer to this device group by installing the mesh agent." + '\" onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "Add Agent" + '</a>';
+                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Invite someone to install the mesh agent on this device group." + '\" onclick=\'return inviteAgentToMesh(\"' + mesh._id + '\")\'>' + "Invite" + '</a>'; }
             }
             return r;
         }
@@ -4973,7 +4973,7 @@
                 {{{StartGeoLocationJS}}}
                 if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
                 {{{EndGeoLocationJS}}}
-                if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "Router" + '</a>&nbsp;';
+                if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "MeshCmd" + '</a>&nbsp;';
                 if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
@@ -5574,7 +5574,7 @@
             if (mode == 0) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=generic' + (urlargs.key?('&key=' + urlargs.key):'') + '" download>' + "MeshAction (.txt)" + '</a>'); }
             if (mode == 1) { x += addHtmlValue("Action File", '<a href="meshagents?meshaction=route&nodeid=' + nodeid + (urlargs.key?('&key=' + urlargs.key):'') + '" download>' + "MeshAction (.txt)" + '</a>'); }
             x += '</div>';
-            setDialogMode(2, [ "Download MeshCmd", "Network Router" ][mode], 9, null, x, 'fileDownload');
+            setDialogMode(2, "Download MeshCmd", 9, null, x, 'fileDownload');
             meshCmdOsClick();
         }
 
@@ -8319,8 +8319,8 @@
                     }
                 }
                 if (currentMesh.mtype == 2) {
-                    x += '<a href=# onclick=\'return addAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Add a new computer to this mesh by installing the mesh agent." + '\"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Install" + '</a>';
-                    x += '<a href=# onclick=\'return inviteAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Invite someone to install the mesh agent on this mesh." + '\"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
+                    x += '<a href=# onclick=\'return addAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Add a new computer to this device group by installing the mesh agent." + '\"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
+                    x += '<a href=# onclick=\'return inviteAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Invite someone to install the mesh agent on this device group." + '\"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
                 }
             }
 
