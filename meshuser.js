@@ -2514,7 +2514,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Convert user names to userid's
                 if (command.userids == null) {
                     command.userids = [];
-                    for (var i in command.usernames) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                    for (var i in command.usernames) {
+                        if (command.usernames[i] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                    }
                 }
 
                 // Get the node and the rights for this node
@@ -2530,12 +2532,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var nodeChanged = false;
                     for (var i in command.userids) {
                         var newuserid = command.userids[i];
-                        var newuser = parent.users[newuserid];
 
-                        // Search for a user name in that windows domain is the username starts with *\
-                        if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
-                            var search = newuserid.split('/')[2].substring(1);
-                            for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { newuser = parent.users[i]; command.userids[i] = newuserid = newuser._id; break; } }
+                        // Add a user
+                        var newuser = null;
+                        if (newuserid.startsWith('ugrp/')) { newuser = parent.userGroups[newuserid]; }
+                        if (newuserid.startsWith('user/')) {
+                            newuser = parent.users[newuserid];
+
+                            // Search for a user name in that windows domain is the username starts with *\
+                            if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
+                                var search = newuserid.split('/')[2].substring(1);
+                                for (var i in parent.users) { if (i.endsWith(search) && (parent.users[i].domain == domain.id)) { newuser = parent.users[i]; command.userids[i] = newuserid = newuser._id; break; } }
+                            }
                         }
 
                         if (newuser != null) {
@@ -2565,16 +2573,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 node.links[newuserid] = { rights: command.rights }
                                 nodeChanged = true;
                             }
-
+                            
                             // Save the user to the database
-                            db.SetUser(newuser);
-                            parent.parent.DispatchEvent([newuser], obj, 'resubscribe');
+                            if (newuserid.startsWith('user/')) {
+                                db.SetUser(newuser);
+                                parent.parent.DispatchEvent([newuser], obj, 'resubscribe');
 
-                            // Notify user change
-                            var targets = ['*', 'server-users', newuserid];
-                            var event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + newuser.name) : ('Changed user device rights for ' + newuser.name), domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.parent.DispatchEvent(targets, obj, event);
+                                // Notify user change
+                                var targets = ['*', 'server-users', newuserid];
+                                var event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + newuser.name) : ('Changed user device rights for ' + newuser.name), domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                parent.parent.DispatchEvent(targets, obj, event);
+                            } else if (newuserid.startsWith('ugrp/')) {
+                                db.Set(newuser);
+
+                                // Notify user group change
+                                var targets = ['*', 'server-ugroups', newuser._id];
+                                var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, action: 'usergroupchange', links: newuser.links, msg: 'User group changed: ' + newuser.name, domain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                parent.parent.DispatchEvent(targets, obj, event);
+                            }
                         }
                     }
 
