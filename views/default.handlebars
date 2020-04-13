@@ -980,8 +980,10 @@
                             <div style="float:right">
                             </div>
                             <div>
-                                <input id=NewUserGroupButton type=button style=margin-left:6px onclick=showCreateUserGroupDialog(1) value="New Group..." />
-                                <input id=DuplicateUserGroupButton type=button style=margin-left:6px;display:none onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
+                                <input type=button id=UsersGroupsSelectAllButton onclick="p50usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupsGroupActionButton disabled="disabled" value="Group Action" onclick=p50usersGroupActionFunction() />
+                                <input id=NewUserGroupButton type=button onclick=showCreateUserGroupDialog(1) value="New Group..." />
+                                <input id=DuplicateUserGroupButton type=button style=display:none onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
                             </div>
                         </td>
                         <td class="h2"></td>
@@ -9763,9 +9765,9 @@
         // Highlights the user being hovered
         function userMouseHover2(element, over) {
             var e = element.children[0].children[0];
-            e.children[1].classList.remove('g1s');
-            e.children[2].classList.remove('g2s');
-            if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('g2s'); }
+            e.children[2].classList.remove('g1s');
+            e.children[3].classList.remove('g2s');
+            if (over == 1) { e.children[2].classList.add('g1s'); e.children[3].classList.add('g2s'); }
             element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
         }
 
@@ -10044,32 +10046,90 @@
             if (usergroups) { for (var i in usergroups) { sortedGroups.push(usergroups[i]); } }
             sortedGroups.sort(nameSort);
 
+            // Save the list of currently checked users
+            var checkedUserGroupids = [], elements = document.getElementsByClassName('UserGroupCheckbox');
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedUserGroupids.push(elements[i].value); } }
+
             if (sortedGroups.length == 0) {
                 x += '<br />' + "No groups found." + '<br />';
                 QV('DuplicateUserGroupButton', false);
             } else {
                 // Display the groups using the sorted list
                 x += '<table class=p3usersTable cellpadding=0 cellspacing=0>';
-                x += '<th>' + "Name" + '<th style=width:80px>' + "Device Groups" + '<th style=width:80px>' + "Users";
+                x += '<th>' + "Name" + '<th style=width:80px>' + "Devices" + '<th style=width:80px>' + "Device Groups" + '<th style=width:80px>' + "Users";
                 for (var i in sortedGroups) { x += addUserGroupHtml(sortedGroups[i]); }
                 x += '</table>';
                 QV('DuplicateUserGroupButton', true);
             }
             QH('p50groups', x);
 
+            // Re-check userid's
+            elements = document.getElementsByClassName('UserGroupCheckbox');
+            for (var i=0;i<elements.length;i++) { elements[i].checked = ((checkedUserGroupids.indexOf(elements[i].value) >= 0)); }
+            p50updateInfo();
+
             // Update current user panel if needed
             if ((currentUserGroup != null) && (xxcurrentView == 51)) { gotoUserGroup(encodeURIComponent(currentUserGroup._id), true); }
         }
         
         function addUserGroupHtml(group) {
-            var usercount = 0, meshcount = 0;
-            if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } } }
-            var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")>';
+            var usercount = 0, meshcount = 0, devicecount = 0;
+            if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } if (i.startsWith('node/')) { devicecount++; } } }
+            var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
-            x += '<div class=baricon><div class=m4></div></div>';
-            x += '<div class=g1></div><div class=g2></div>';
-            x += '<div><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + meshcount + '<td style=text-align:center>' + usercount;
+            x += '<div class=baricon><input class=UserGroupCheckbox value=' + encodeURIComponent(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
+            x += '<div class=baricon onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")><div class=m4></div></div>';
+            x += '<div class=g1 onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")></div><div class=g2 onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")></div>';
+            x += '<div onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + devicecount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + usercount;
             return x;
+        }
+
+        function p50updateInfo() {
+            var elements = document.getElementsByClassName('UserGroupCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            QE('UsersGroupsGroupActionButton', checkcount > 0);
+            Q('UsersGroupsSelectAllButton').value = (checkcount > 0)?"Select None":"Select All";
+        }
+
+        // Called to select all or unselect all users
+        function p50usersSelectallButtonFunction() {
+            var eself = encodeURIComponent(userinfo._id);
+            var elements = document.getElementsByClassName('UserGroupCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0) && (elements[i].value != eself); }
+            p50updateInfo();
+        }
+        
+        // Called to perform a group action on many users
+        function p50usersGroupActionFunction() {
+            var elements = document.getElementsByClassName('UserGroupCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
+            if (checkcount == 0) return;
+
+            var x = "Select an operation to perform on all selected users." + '<br /><br />';
+            x += addHtmlValue("Operation", '<select style=width:240px id=d50groupop><option value=1>' + "Delete group" + '</option></select>');
+            setDialogMode(2, "Group Action", 3, p50usersGroupActionFunctionEx, x);
+        }
+
+        function p50usersGroupActionFunctionEx() {
+            var elements = document.getElementsByClassName('UserGroupCheckbox'), userids = [];
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { userids.push(decodeURIComponent(elements[i].value)); } }
+            var op = Q('d50groupop').value;
+            if (op == 1) {
+                // Delete user groups, ask for confirmation
+                var x = "Confirm delete selected user groups(s)?" + '<br /><br />';
+                x += '<label><input id=d3check type=checkbox onchange=p50usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
+                setDialogMode(2, "Delete User Groups", 3, p50groupActionFunctionDelExec, x);
+                QE('idx_dlgOkButton', false);
+            }
+        }
+
+        function p50usersGroupActionFunctionDelCheck() { QE('idx_dlgOkButton', Q('d3check').checked); }
+
+        // Delete a batch of user accounts
+        function p50groupActionFunctionDelExec(b) {
+            var elements = document.getElementsByClassName('UserGroupCheckbox');
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { meshserver.send({ action: 'deleteusergroup', ugrpid: decodeURIComponent(elements[i].value) }); } }
         }
 
         function showCreateUserGroupDialog(mode) {
@@ -10565,7 +10625,8 @@
 
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)));
+            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
+            p10validateDeleteNodeDialog();
         }
 
         function p30showDeleteUserDialogEx() {
