@@ -1323,7 +1323,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
                                     var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                    parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, event);
+                                    parent.parent.DispatchEvent(parent.obj.CreateMeshDispatchTargets(mesh, [deluser._id, user._id]), obj, event);
                                 }
                             } else if (i.startsWith('node/')) {
                                 // Get the node and the rights for this node
@@ -1338,7 +1338,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Event the node change
                                     var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                    parent.parent.DispatchEvent(['*', node.meshid, node._id], obj, event);
+                                    parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
                                 });
                             }
                         }
@@ -1742,7 +1742,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Added group ' + ugrp.name + ' to mesh ' + xmesh.name, domain: domain.id, invite: mesh.invite };
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                             //parent.parent.DispatchEvent(['*', xmesh._id, user._id], obj, event);
-                                            pendingDispatchEvents.push([['*', xmesh._id, user._id], obj, event]);
+                                            pendingDispatchEvents.push([parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event]);
                                         }
                                     }
                                 }
@@ -1802,7 +1802,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         // Notify mesh change
                                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: domain.id, invite: mesh.invite };
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                        parent.parent.DispatchEvent(['*', xmesh._id, user._id], obj, event);
+                                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event);
                                     }
                                 }
                             }
@@ -2292,7 +2292,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Fire the removal event first, because after this, the event will not route
                     var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Device group deleted: ' + command.meshname, domain: domain.id };
-                    parent.parent.DispatchEvent(['*', command.meshid], obj, event); // Even if DB change stream is active, this event need to be acted on.
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid), obj, event); // Even if DB change stream is active, this event need to be acted on.
 
                     // Remove all user links to this mesh
                     for (var j in mesh.links) {
@@ -2391,7 +2391,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(mesh);
                             var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                            parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, event);
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
                         }
                     }
                     break;
@@ -2481,7 +2481,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Notify mesh change
                             var event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                            parent.parent.DispatchEvent(['*', mesh._id, user._id, newuserid], obj, event);
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, newuserid]), obj, event);
                             msgs.push("Added user " + newuserid.split('/')[2]);
                             successCount++;
                         } else {
@@ -2706,7 +2706,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else {
                             event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                         }
-                        parent.parent.DispatchEvent(['*', mesh._id, user._id, command.userid], obj, event);
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh [user._id, command.userid]), obj, event);
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removemeshuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     } else {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removemeshuser', responseid: command.responseid, result: 'User not in group' })); } catch (ex) { } }
@@ -2747,7 +2747,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         delete amtpolicy2.password;
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                        parent.parent.DispatchEvent(['*', mesh._id, user._id], obj, event);
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
 
                         // Send new policy to all computers on this mesh
                         //routeCommandToMesh(command.meshid, { action: 'amtPolicy', amtPolicy: amtpolicy });
@@ -2791,7 +2791,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(device);
 
                             // Event the new node
-                            parent.parent.DispatchEvent(['*', command.meshid, nodeid], obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
                         });
                     }
                     break;
@@ -2860,7 +2860,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var newMesh = parent.meshes[command.meshid];
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                            parent.parent.DispatchEvent(['*', oldMeshId, command.meshid, node._id], obj, event);
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
                         });
                     }
                     break;
@@ -2913,7 +2913,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + parent.meshes[node.meshid].name, domain: domain.id };
                             // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
                             //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
-                            parent.parent.DispatchEvent(['*', node.meshid, node._id], obj, event);
+                            parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
 
                             // Disconnect all connections if needed
                             var state = parent.parent.GetConnectivityState(nodeid);
@@ -3117,7 +3117,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event.node = parent.CloneSafeNode(node);
                             if (command.rdpport == 3389) { event.node.rdpport = 3389; }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                            parent.parent.DispatchEvent(['*', node.meshid, user._id, node._id], obj, event);
+                            parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         }
                     });
                     break;
@@ -3249,7 +3249,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (rights == 0) return;
 
                         // Add an event for this device
-                        var targets = ['*', 'server-users', user._id, node.meshid, node._id];
+                        var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                         var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
                         parent.parent.DispatchEvent(targets, obj, event);
                     });
