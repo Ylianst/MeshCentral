@@ -7556,6 +7556,12 @@
       ]
     },
     {
+      "en": "Desktop Session Latency",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
       "cs": "Panel nástrojů na ploše",
       "de": "Desktop-Werkzeugleiste",
       "en": "Desktop Toolbar",
