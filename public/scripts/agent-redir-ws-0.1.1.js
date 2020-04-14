@@ -74,7 +74,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if (controlMsg.type == 'console') {
             obj.consoleMessage = controlMsg.msg;
             if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
-        } else if ((controlMsg.type = 'latency') && (typeof controlMsg.time == 'number')) {
+        } else if ((controlMsg.type = 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
             if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
         } else if (obj.webrtc != null) {
@@ -95,7 +95,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
 
     function performWebRtcSwitch() {
         if ((obj.webSwitchOk == true) && (obj.webRtcActive == true)) {
-            obj.latency.current = -1;
+            obj.latency.current = -1; // RTT will no longer be calculated when WebRTC is enabled
             obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"webrtc0"}'); // Indicate to the meshagent that it can start traffic switchover
             obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"webrtc1"}'); // Indicate to the meshagent that data traffic will no longer be sent over websocket.
             // TODO: Hold/Stop sending data over websocket
@@ -178,7 +178,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         // Request RTT mesure, don't use this if WebRTC is active
         if (obj.webRtcActive != true) {
             var ticks = new Date().getTime();
-            if ((obj.latency.lastSend == null) || ((ticks - obj.latency.lastSend) > 5000)) { obj.latency.lastSend = ticks; obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"latency","time":' + ticks + '}'); }
+            if ((obj.latency.lastSend == null) || ((ticks - obj.latency.lastSend) > 5000)) { obj.latency.lastSend = ticks; obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"rtt","time":' + ticks + '}'); }
         }
     };
 
