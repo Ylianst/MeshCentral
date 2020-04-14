@@ -1041,10 +1041,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         case 'relays': {
                             for (var i in parent.wsrelays) {
-                                r += 'id: ' + i + ', state: ' + parent.wsrelays[i].state;
-                                if (parent.wsrelays[i].peer1 != null) { r += ', peer1: ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.ip); }
-                                if (parent.wsrelays[i].peer2 != null) { r += ', peer2: ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.ip); }
-                                if (parent.wsrelays[i].metadata != null) { r += ', ' + parent.wsrelays[i].metadata.authUser._id + ' connected to ' + parent.wsrelays[i].metadata.peer2.name; }
+                                r += 'id: ' + i + ', ' + ((parent.wsrelays[i].state == 2)?'connected':'pending');
+                                if (parent.wsrelays[i].peer1 != null) {
+                                    r += ', ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.ip);
+                                    if (parent.wsrelays[i].peer1.user) { r += ' (User:' + parent.wsrelays[i].peer1.user.name + ')' }
+                                }
+                                if (parent.wsrelays[i].peer2 != null) {
+                                    r += ' to ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.ip);
+                                    if (parent.wsrelays[i].peer2.user) { r += ' (User:' + parent.wsrelays[i].peer2.user.name + ')' }
+                                }
                                 r += '\r\n';
                             }
                             if (r == '') { r = 'No relays.'; }

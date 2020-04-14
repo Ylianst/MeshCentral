@@ -515,7 +515,6 @@
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             &nbsp;<span id="deskstatus">Disconnected</span>
-                            <span id="connectLatency">(Ping: <span id="connectLatencyTime">0</span>ms)</span>
                         </div>
                     </div>
                     <div id=deskarea2 style="">
@@ -554,6 +553,7 @@
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
+                            <span id="DeskLatency" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" title="Session time"></span>&nbsp;
                             <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />&nbsp;
@@ -5861,7 +5861,7 @@
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
-                    desktop.latency.onUpdate(function(ms) { QH('connectLatencyTime', ms); });
+                    desktop.latency.callback = function(ms) { console.log('latency', ms); updateSessionTime(); };
                     desktop.contype = 1;
                 } else if (contype == 3) {
                     // Ask for user sessions
@@ -5941,10 +5941,11 @@
 
         function updateSessionTime() {
             // Desktop
-            var seconds = 0;
+            var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
-                QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
             } else {
                 QH('DeskTimer', '');
             }
@@ -5952,8 +5953,9 @@
             // Terminal
             seconds = 0;
             if (terminal && terminal.startTime) {
+                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
                 seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
             } else {
                 QH('TermTimer', '');
             }
