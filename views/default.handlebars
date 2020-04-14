@@ -9876,10 +9876,10 @@
         function showCreateNewAccountDialog() {
             if (xxdialogMode) return;
             var x = '';
-            if ((features & 0x200000) == 0) { x += addHtmlValue("Username", '<input id=p4name maxlength=64 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
-            x += addHtmlValue("Email", '<input id=p4email maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue("Password", '<input id=p4pass1 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue("Password", '<input id=p4pass2 type=password maxlength=256 onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
+            x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
             x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
             x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Remove all previous events for this userid." + '</label></div>';
@@ -9900,20 +9900,29 @@
         }
 
         function showCreateNewAccountDialogValidate() {
-            var ve = validateEmail(Q('p4email').value);
+            var emailok = validateEmail(Q('p4email').value);
+            var nameok = true; 
+            var passok =  (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
+
+            if ((features & 0x200000) == 0) {
+                nameok = (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1)));
+                QS('p4hname').color = nameok?'black':'#7b241c';
+            }
+            QS('p4hemail').color = emailok?'black':'#7b241c';
+
             if (serverinfo.emailcheck) {
                 QE('p4verifiedEmail', ve);
                 QE('p4invitationEmail', ve && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
-                if (ve == false) { Q('p4verifiedEmail').checked = false; }
+                if (emailok == false) { Q('p4verifiedEmail').checked = false; }
                 if ((Q('p4resetNextLogin').checked == false) || (Q('p4verifiedEmail').checked == false)) { Q('p4invitationEmail').checked = false; }
             }
             QE('p4pass1', !Q('p4randomPassword').checked);
             QE('p4pass2', !Q('p4randomPassword').checked);
-            if (ve == false) { QE('idx_dlgOkButton', false); return; }
+            QS('p4hp1').color = (passok || Q('p4randomPassword').checked)?'black':'#7b241c';
+            QS('p4hp2').color = (passok || Q('p4randomPassword').checked)?'black':'#7b241c';
 
-            var ok = true;
-            if ((features & 0x200000) == 0) { ok &= (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1))); } // Username is not email address
-            if (Q('p4randomPassword').checked == false) { ok &= (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements)); }
+            var ok = nameok & emailok;
+            if (Q('p4randomPassword').checked == false) { ok &= passok; }
             QE('idx_dlgOkButton', ok);
         }
 
