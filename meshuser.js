@@ -1044,6 +1044,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 r += 'id: ' + i + ', state: ' + parent.wsrelays[i].state;
                                 if (parent.wsrelays[i].peer1 != null) { r += ', peer1: ' + cleanRemoteAddr(parent.wsrelays[i].peer1.req.ip); }
                                 if (parent.wsrelays[i].peer2 != null) { r += ', peer2: ' + cleanRemoteAddr(parent.wsrelays[i].peer2.req.ip); }
+                                if (parent.wsrelays[i].metadata != null) { r += ', ' + parent.wsrelays[i].metadata.authUser._id + ' connected to ' + parent.wsrelays[i].metadata.peer2.name; }
                                 r += '\r\n';
                             }
                             if (r == '') { r = 'No relays.'; }
