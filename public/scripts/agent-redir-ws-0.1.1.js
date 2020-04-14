@@ -28,6 +28,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.webrtc = null;
     obj.debugmode = 0;
     obj.serverIsRecording = false;
+    obj.latency = { timer: null, lastSend: 0, current: 0, send: false, callbacks: [] };
     if (domainUrl == null) { domainUrl = '/'; }
 
     // Console Message
@@ -73,6 +74,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if (controlMsg.type == 'console') {
             obj.consoleMessage = controlMsg.msg;
             if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
+        } else if (controlMsg.type = 'latency') {
+            obj.latency.current = (new Date().getTime()) - controlMsg.time;
+            obj.latency.onUpdate();
         } else if (obj.webrtc != null) {
             if (controlMsg.type == 'answer') {
                 obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
@@ -97,7 +101,18 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
         }
     }
-
+    
+    obj.latencyTimer = function() {
+        obj.latency.send = true;
+    }
+    
+    obj.latency.onUpdate = function(func) {
+        if (func != null) { obj.latency.callbacks.push(func); return; }
+        if (obj.latency.callbacks.length > 0) {
+            for (var x in obj.latency.callbacks) obj.latency.callbacks[x](obj.latency.current);
+        } 
+    };
+    
     obj.xxOnMessage = function (e) {
         //console.log('Recv', e.data, e.data.byteLength, obj.State);
         if (obj.State < 3) {
@@ -149,6 +164,11 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         }
 
         if (typeof e.data == 'object') {
+            if (obj.latency.timer == null) {
+                obj.latency.timer = setInterval(obj.latencyTimer, 3000);
+            }
+            if (obj.latency.send) { obj.latency.send = false; obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"latency","time":'+ new Date().getTime() +'}'); }
+            
             if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
             if (fileReader.readAsBinaryString && (obj.m.ProcessBinaryData == null)) {
                 // Chrome & Firefox (Draft)
@@ -248,7 +268,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
 
     obj.Stop = function (x) {
         if (obj.debugmode == 1) { console.log('stop', x); }
-
+        obj.latency.current = 0;
+        obj.latency.onUpdate();
         // Clean up WebRTC
         obj.xxCloseWebRTC();
 
