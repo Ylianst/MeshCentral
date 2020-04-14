@@ -2466,6 +2466,7 @@
     },
     {
       "en": "Add User to Device Group",
+      "nl": "Gebruiker toevoegen aan apparaatgroep",
       "xloc": [
         "default-mobile.handlebars->9->310"
       ]
@@ -2625,6 +2626,7 @@
     },
     {
       "en": "Add a new computer to this device group by installing the mesh agent.",
+      "nl": "Voeg een nieuwe computer toe aan deze apparaatgroep door de mesh-agent te installeren.",
       "xloc": [
         "default.handlebars->27->1144",
         "default.handlebars->27->217"
@@ -5729,6 +5731,7 @@
     },
     {
       "en": "Confirm delete selected user groups(s)?",
+      "nl": "Bevestig verwijdering geselecteerde gebruikersgroep(en)?",
       "xloc": [
         "default.handlebars->27->1447"
       ]
@@ -5873,6 +5876,7 @@
     },
     {
       "en": "Confirm removal of user group {0}?",
+      "nl": "Verwijderen van gebruikersgroep {0} bevestigen?",
       "xloc": [
         "default.handlebars->27->1590"
       ]
@@ -7123,7 +7127,8 @@
         "default-mobile.handlebars->9->286",
         "default-mobile.handlebars->9->289",
         "default.handlebars->27->1151",
-        "default.handlebars->27->1181"
+        "default.handlebars->27->1181",
+        "default.handlebars->27->1445"
       ]
     },
     {
@@ -7198,6 +7203,7 @@
     },
     {
       "en": "Delete User Groups",
+      "nl": "Gebruikersgroepen verwijderen",
       "xloc": [
         "default.handlebars->27->1449"
       ]
@@ -7253,12 +7259,6 @@
       "zh-chs": "刪除設備",
       "xloc": [
         "default.handlebars->27->383"
-      ]
-    },
-    {
-      "en": "Delete group",
-      "xloc": [
-        "default.handlebars->27->1445"
       ]
     },
     {
@@ -7557,6 +7557,7 @@
     },
     {
       "en": "Desktop Session Latency",
+      "nl": "Desktop sessie wachttijd",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -8153,6 +8154,7 @@
     },
     {
       "en": "Devices",
+      "nl": "Apparaten",
       "xloc": [
         "default.handlebars->27->1438"
       ]
@@ -9052,6 +9054,7 @@
     },
     {
       "en": "Edit Device User Consent",
+      "nl": "Gebruikerstoestemming apparaat bewerken",
       "xloc": [
         "default.handlebars->27->1187"
       ]
@@ -9110,6 +9113,7 @@
     },
     {
       "en": "Edit User Consent",
+      "nl": "Gebruikerstoestemming bewerken",
       "xloc": [
         "default.handlebars->27->1186"
       ]
@@ -13189,6 +13193,7 @@
     },
     {
       "en": "Invite someone to install the mesh agent on this device group.",
+      "nl": "Nodig iemand uit om de mesh-agent in deze apparaatgroep te installeren.",
       "xloc": [
         "default.handlebars->27->1146",
         "default.handlebars->27->219"
@@ -20474,6 +20479,7 @@
     },
     {
       "en": "Remove user group rights to this device",
+      "nl": "Gebruikersrechten voor dit apparaat verwijderen",
       "xloc": [
         "default.handlebars->27->1478"
       ]
