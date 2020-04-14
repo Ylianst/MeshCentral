@@ -1912,6 +1912,10 @@ function createMeshCore(agent) {
                 if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
                 break;
             }
+            case 'latency': {
+                ws.write({ type: 'latency', ctrlChannel: '102938', time: obj.time });
+                break;
+            }
         }
     }
 
