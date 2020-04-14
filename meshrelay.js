@@ -20,7 +20,6 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     obj.user = user;
     obj.ruserid = null;
     obj.req = req; // Used in multi-server.js
-    obj.metadata = {};
 
     // Check relay authentication
     if ((user == null) && (obj.req.query != null) && (obj.req.query.rauth != null)) {
@@ -269,7 +268,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             } else {
                 // Wait for other relay connection
                 ws._socket.pause(); // Hold traffic until the other connection
-                parent.wsrelays[obj.id] = { peer1: obj, state: 1, metadata: obj.metadata, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
+                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
                 parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
@@ -421,8 +420,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 
                 // Check if this user has permission to manage this computer
                 if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (e) { } return; }
-                obj.metadata.peer2 = { name: node.name };
-                obj.metadata.authUser = user;
+
                 // Send connection request to agent
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
                 if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
@@ -440,8 +438,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 
                 // Check if this user has permission to manage this computer
                 if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
-                obj.metadata.peer2 = { name: node.name };
-                obj.metadata.authUser = user;
+
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);

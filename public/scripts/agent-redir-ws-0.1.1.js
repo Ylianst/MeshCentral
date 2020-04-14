@@ -28,7 +28,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.webrtc = null;
     obj.debugmode = 0;
     obj.serverIsRecording = false;
-    obj.latency = { timer: null, lastSend: 0, current: 0, send: false, callbacks: [] };
+    obj.latency = { lastSend: null, current: -1, callback: null };
     if (domainUrl == null) { domainUrl = '/'; }
 
     // Console Message
@@ -74,9 +74,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if (controlMsg.type == 'console') {
             obj.consoleMessage = controlMsg.msg;
             if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
-        } else if (controlMsg.type = 'latency') {
+        } else if ((controlMsg.type = 'latency') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
-            obj.latency.onUpdate();
+            if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
         } else if (obj.webrtc != null) {
             if (controlMsg.type == 'answer') {
                 obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
@@ -95,24 +95,14 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
 
     function performWebRtcSwitch() {
         if ((obj.webSwitchOk == true) && (obj.webRtcActive == true)) {
+            obj.latency.current = -1;
             obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"webrtc0"}'); // Indicate to the meshagent that it can start traffic switchover
             obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"webrtc1"}'); // Indicate to the meshagent that data traffic will no longer be sent over websocket.
             // TODO: Hold/Stop sending data over websocket
             if (obj.onStateChanged != null) { obj.onStateChanged(obj, obj.State); }
         }
     }
-    
-    obj.latencyTimer = function() {
-        obj.latency.send = true;
-    }
-    
-    obj.latency.onUpdate = function(func) {
-        if (func != null) { obj.latency.callbacks.push(func); return; }
-        if (obj.latency.callbacks.length > 0) {
-            for (var x in obj.latency.callbacks) obj.latency.callbacks[x](obj.latency.current);
-        } 
-    };
-    
+        
     obj.xxOnMessage = function (e) {
         //console.log('Recv', e.data, e.data.byteLength, obj.State);
         if (obj.State < 3) {
@@ -153,6 +143,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                         }, obj.xxCloseWebRTC, { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false } });
                     }
                 }
+
                 return;
             }
         }
@@ -164,11 +155,6 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         }
 
         if (typeof e.data == 'object') {
-            if (obj.latency.timer == null) {
-                obj.latency.timer = setInterval(obj.latencyTimer, 3000);
-            }
-            if (obj.latency.send) { obj.latency.send = false; obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"latency","time":'+ new Date().getTime() +'}'); }
-            
             if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
             if (fileReader.readAsBinaryString && (obj.m.ProcessBinaryData == null)) {
                 // Chrome & Firefox (Draft)
@@ -187,6 +173,12 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         } else {
             // If we get a string object, it maybe the WebRTC confirm. Ignore it.
             obj.xxOnSocketData(e.data);
+        }
+
+        // Request RTT mesure, don't use this if WebRTC is active
+        if (obj.webRtcActive != true) {
+            var ticks = new Date().getTime();
+            if ((obj.latency.lastSend == null) || ((ticks - obj.latency.lastSend) > 5000)) { obj.latency.lastSend = ticks; obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"latency","time":' + ticks + '}'); }
         }
     };
 
@@ -268,8 +260,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
 
     obj.Stop = function (x) {
         if (obj.debugmode == 1) { console.log('stop', x); }
-        obj.latency.current = 0;
-        obj.latency.onUpdate();
+
         // Clean up WebRTC
         obj.xxCloseWebRTC();
 
