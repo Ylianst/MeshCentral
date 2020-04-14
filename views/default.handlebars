@@ -515,6 +515,7 @@
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             &nbsp;<span id="deskstatus">Disconnected</span>
+                            <span id="connectLatency">(Ping: <span id="connectLatencyTime">0</span>ms)</span>
                         </div>
                     </div>
                     <div id=deskarea2 style="">
@@ -5860,6 +5861,7 @@
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
+                    desktop.latency.onUpdate(function(ms) { QH('connectLatencyTime', ms); });
                     desktop.contype = 1;
                 } else if (contype == 3) {
                     // Ask for user sessions
