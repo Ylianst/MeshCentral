@@ -1521,6 +1521,10 @@ a {
     padding: 3px;
 }
 
+.night .style6 {
+    background-color: #333;
+}
+
 .style7 {
     font-size: large;
     width: 180px;
@@ -1649,6 +1653,10 @@ a {
     .filelist:hover {
         background: #EEE;
         border-radius: 3px;
+    }
+
+    .night .filelist:hover {
+        background: #444;
     }
 
 .noselect {
@@ -2065,6 +2073,11 @@ a {
     background: #C0C0C0;
 }
 
+.night .areaHead {
+    color: #CCC;
+    background: #333;
+}
+
 .areaProgress {
     background-color: gray;
 }
@@ -2079,6 +2092,11 @@ a {
     padding-top: 2px;
     padding-bottom: 2px;
     background: #C0C0C0;
+}
+
+.night .areaFoot {
+    color: #CCC;
+    background: #333;
 }
 
 .toright2 {
@@ -2365,9 +2383,17 @@ a {
         padding: 4px;
     }
 
+    .night #p13toolbar .areaHead2 {
+        background-color: #333;
+    }
+
     #p13toolbar .areaHead3 {
         background-color: #E4E9E7;
         height: 28px;
+    }
+
+    .night #p13toolbar .areaHead3 {
+        background-color: #333;
     }
 
 #p13filetable {
