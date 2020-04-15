@@ -3924,6 +3924,7 @@
     },
     {
       "en": "Ask Consent",
+      "en": "Vraag toestemming",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
       ]
@@ -7306,6 +7307,7 @@
     },
     {
       "en": "Delete group",
+      "nl": "Verwijder groep",
       "xloc": [
         "default.handlebars->29->1448"
       ]
@@ -7728,7 +7730,7 @@
       "hi": "डिवाइस समूह",
       "ja": "デバイスグループ",
       "ko": "장치 그룹",
-      "nl": "Apparaat Groep",
+      "nl": "Apparaat groep",
       "pt": "Grupo de dispositivos",
       "ru": "Группа устройства",
       "zh-chs": "設備組",
@@ -8474,7 +8476,7 @@
       "hi": "फ़ाइल डाउनलोड करें",
       "ja": "ダウンロードファイル",
       "ko": "파일 다운로드",
-      "nl": "Download Bestand",
+      "nl": "Download bestand",
       "pt": "⇬ Fazer download do arquivo",
       "ru": "Скачать файл",
       "zh-chs": "下載文件",
@@ -8793,7 +8795,7 @@
     {
       "cs": "Duplikovat agenta",
       "de": "Agent-Duplikat",
-      "en": "Duplicate Agent",
+      "en": "Duplicate agent",
       "es": "Agente duplicado",
       "fr": "Cloner l'agent",
       "hi": "डुप्लीकेट एजेंट",
@@ -8816,7 +8818,7 @@
       "hi": "डुप्लीकेट समूह ...",
       "ja": "グループを複製...",
       "ko": "중복 그룹 ...",
-      "nl": "Dupliceer Groep...",
+      "nl": "Dupliceer groep...",
       "pt": "Grupo duplicado ...",
       "ru": "Скопировать группу...",
       "zh-chs": "重複的群組...",
@@ -8833,7 +8835,7 @@
       "hi": "डुप्लिकेट उपयोगकर्ता समूह",
       "ja": "重複ユーザーグループ",
       "ko": "중복 된 사용자 그룹",
-      "nl": "Dupliceer Gebruikers Groep",
+      "nl": "Dupliceer gebruikers groep",
       "pt": "Grupo de usuários duplicados",
       "ru": "Скопировать группу пользователей",
       "zh-chs": "重複的用戶組",
