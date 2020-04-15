@@ -74,7 +74,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if (controlMsg.type == 'console') {
             obj.consoleMessage = controlMsg.msg;
             if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
-        } else if ((controlMsg.type = 'rtt') && (typeof controlMsg.time == 'number')) {
+        } else if ((controlMsg.type == 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
             if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
         } else if (obj.webrtc != null) {

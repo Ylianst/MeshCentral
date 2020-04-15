@@ -1823,8 +1823,7 @@ function createMeshCore(agent) {
                     if (ws.httprequest._dispatcher == null) return;
                     //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
                     if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
-                } else
-                {
+                } else {
                     if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
                     //sendConsoleText('Linux Resize: ' + obj.cols + 'x' + obj.rows);
 
