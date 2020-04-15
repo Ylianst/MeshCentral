@@ -1836,7 +1836,7 @@
                     }
 
                     // If we are currently looking at a node this is now gone, change the view.
-                    if ((currentNode != null) && (getNodeFromId(currentNode._id) == null)) { currentNode = null; go(1); }
+                    if ((currentNode != null) && (IsNodeViewable(currentNode) == false)) { currentNode = null; go(1); }
 
                     // Change the reference to the current node
                     if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); }
@@ -2345,12 +2345,12 @@
                                     for (var i in nodes) { if ((nodes[i].meshid != message.event.meshid) || ((userinfo.links != null) && (userinfo.links[nodes[i]._id] != null))) { newnodes.push(nodes[i]); } }
                                     nodes = newnodes;
 
-                                    // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
+                                    // If we are looking at a node that is no longer visible, move back to "My Devices"
+                                    if ((xxcurrentView >= 10) && (xxcurrentView < 20) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                                 }
                             }
                             masterUpdate(4 + 128 + 8192 + 16384);
-                            if (currentNode && (currentNode.meshid == message.event.meshid)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
+                            if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -2374,7 +2374,7 @@
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(1); }
+                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                             break;
                         }
                         case 'addnode': {
@@ -2476,7 +2476,7 @@
                                     // We don't see the new mesh, remove this device
 
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
-                                    if (currentNode == node) { if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(1); } currentNode = null; }
+                                    if ((xxcurrentView >= 10) && (xxcurrentView < 20) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
                                     nodes.splice(index, 1);
                                     masterUpdate(4 | 16);
                                 } else {
@@ -11818,6 +11818,24 @@
             }
             */
             return r;
+        }
+
+        // Return true if the device is visible to the user
+        function IsNodeViewable(node, userid) {
+            if (node == null) { return false; }
+            if (userid == null) { userid = userinfo._id; }
+            if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return false; } }
+            if (IsMeshViewable(node.meshid, userid)) return true;
+
+            // Check direct device visibility using device data
+            if ((node.links != null) && (node.links[userid] != null)) { return true; }
+            
+            // Check direct device visibility thru user groups
+            if ((node.links != null) && (userinfo.links != null)) {
+                for (var i in node.links) { if (i.startsWith('ugrp/') && (userinfo.links[i] != null) && (node.links[i].rights != null)) { return true; } }
+            }
+
+            return false;
         }
 
         //

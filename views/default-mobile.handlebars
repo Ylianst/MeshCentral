@@ -991,7 +991,7 @@
                                     nodes = newnodes;
 
                                     // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(2); }
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(2); currentNode = null; }
                                 }
                             }
                             updateMeshes();
@@ -1019,7 +1019,7 @@
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && currentNode.meshid == message.event.meshid) { setDialogMode(0); go(2); }
+                            if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(2); }
 
                             break;
                         }
@@ -1117,7 +1117,7 @@
                                     // We don't see the new mesh, remove this device
 
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
-                                    if (currentNode == node) { if (xxcurrentView >= 10 && xxcurrentView < 20) { setDialogMode(0); go(2); } currentNode = null; }
+                                    if (xxcurrentView >= 10 && xxcurrentView < 20 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(2); currentNode = null; }
                                     nodes.splice(index, 1);
                                 } else {
                                     // We see the new mesh, move this device
@@ -3558,6 +3558,24 @@
             }
             */
             return r;
+        }
+
+        // Return true if the device is visible to the user
+        function IsNodeViewable(node, userid) {
+            if (node == null) { return false; }
+            if (userid == null) { userid = userinfo._id; }
+            if (typeof node == 'string') { node = getNodeFromId(node); if (node == null) { return false; } }
+            if (IsMeshViewable(node.meshid, userid)) return true;
+
+            // Check direct device visibility using device data
+            if ((node.links != null) && (node.links[userid] != null)) { return true; }
+
+            // Check direct device visibility thru user groups
+            if ((node.links != null) && (userinfo.links != null)) {
+                for (var i in node.links) { if (i.startsWith('ugrp/') && (userinfo.links[i] != null) && (node.links[i].rights != null)) { return true; } }
+            }
+
+            return false;
         }
 
         //
