@@ -3065,7 +3065,7 @@
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
                         r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=\"j' + icon + '\" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                        r += '<div style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div></td>';
+                        r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div></td>';
                         r += '<td style=text-align:center>' + getUserShortStr(node);
                         r += '<td style=text-align:center>' + (node.ip != null ? node.ip : '');
                         r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;');
@@ -7526,7 +7526,7 @@
                 x += '<table style=width:100%>';
                 for (var i in network.netif) {
                     var m = network.netif[i];
-                    x += '<tr><td><div style=color:black;background-color:lightgray;border-radius:5px;padding:8px>';
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.name + (m.dnssuffix?(', ' + m.dnssuffix):'')) + '</b></div>';
                     if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
                     //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
@@ -7591,7 +7591,7 @@
                     for (var i in hardware.windows.memory) {
                         var m = hardware.windows.memory[i];
                         x += '<tr>';//<td VALIGN=Top style=width:38px><img src="images/ram2.png" />'
-                        x += '<td><div style=color:black;background-color:lightgray;border-radius:5px;padding:8px>';
+                        x += '<td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.BankLabel) + '</b></div>';
                         if (m.Capacity) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
@@ -9489,9 +9489,10 @@
         // Highlights the device being hovered
         function eventMouseHover(e, over) {
             e.children[1].classList.remove('g1s');
-            e.children[2].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
+            e.children[2].classList.remove('style10s');
+            //e.children[2].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
             e.children[3].classList.remove('g2s');
-            if (over == 1) { e.children[1].classList.add('g1s'); e.children[3].classList.add('g2s'); }
+            if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('style10s'); e.children[3].classList.add('g2s'); }
         }
 
         function eventsUpdate() {
@@ -9778,13 +9779,15 @@
         // Highlights the user being hovered
         function userMouseHover(element, over) {
             var e = element.children[0].children[0].children[1];
+            element.children[0].children[0].classList.remove('sbar');
             e.children[1].classList.remove('g1s');
             e.children[2].classList.remove('g2s');
             if (over == 1) {
                 e.children[1].classList.add('g1s');
                 e.children[2].classList.add('g2s');
+                element.children[0].children[0].classList.add('sbar');
             }
-            element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
+            //element.children[0].children[0].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
         }
 
         // Highlights the user being hovered

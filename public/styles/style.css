@@ -889,9 +889,17 @@ NoMeshesPanel img {
     padding: 4px;
 }
 
+.night #p5filehead {
+    background-color: #333;
+}
+
 #p5filesubhead {
     background-color: #E4E9E7;
     height: 28px;
+}
+
+.night #p5filesubhead {
+    background-color: #222;
 }
 
 #p5rightOfButtons {
@@ -1525,10 +1533,20 @@ a {
 
 .style10 {
     background-color: #C9C9C9;
+    color: #000;
 }
 
 .night .style10 {
-    color: #333;
+    background-color: #333;
+    color: #CCC;
+}
+
+.style10s {
+    background-color: #b9b9b9;
+}
+
+.night .style10s {
+    background-color: #444;
 }
 
 .style11 {
@@ -1542,7 +1560,13 @@ a {
     background-color: #D3D9D6;
 }
 
+.night .style14 {
+    background-color: #333;
+    color: #CCC;
+}
+
 .auto-style1 {
+    background-color: #D3D9D6;
     text-align: right;
 }
 
@@ -1552,7 +1576,8 @@ a {
 }
 
 .night .auto-style1 {
-    color: black;
+    background-color: #333;
+    color: #CCC;
 }
 
 .night #pTable {
@@ -1665,7 +1690,7 @@ a {
 }
 
 .night .g1 {
-    background-image: linear-gradient(to right, #000 0%, #c9c9c9 100%);
+    background-image: linear-gradient(to right, #000 0%, #333 100%);
 }
 
 #p3events .g1 {
@@ -1690,7 +1715,7 @@ a {
 }
 
 .night .g1s {
-    background-image: linear-gradient(to right, #000 0%, #b9b9b9 100%);
+    background-image: linear-gradient(to right, #000 0%, #444 100%);
 }
 
 .g2 {
@@ -1708,7 +1733,7 @@ a {
 }
 
 .night .g2 {
-    background-image: linear-gradient(to right, #c9c9c9 0%, #000 100%);
+    background-image: linear-gradient(to right, #333 0%, #000 100%);
 }
 
 #p3events .g2 {
@@ -1733,7 +1758,7 @@ a {
 }
 
 .night .g2s {
-    background-image: linear-gradient(to right, #b9b9b9 0%, #000 100%);
+    background-image: linear-gradient(to right, #444 0%, #000 100%);
 }
 
 .h1pre {
@@ -1762,7 +1787,7 @@ a {
 }
 
 .night .h1 {
-    background-image: linear-gradient(to right, #000 0%, #d3d9d6 100%);
+    background-image: linear-gradient(to right, #000 0%, #333 100%);
 }
 
 .h2end {
@@ -1786,7 +1811,7 @@ a {
 }
 
 .night .h2 {
-    background-image: linear-gradient(to right, #d3d9d6 0%, #000 100%);
+    background-image: linear-gradient(to right, #333 0%, #000 100%);
 }
 
 .e1 {
@@ -1806,11 +1831,16 @@ a {
 }
 
 .night .e2 {
-    color: black;
+    color: #CCC;
+    background-color: #333;
 }
 
 .e2s {
     background-color: #b9b9b9;
+}
+
+.night .e2s {
+    background-color: #444;
 }
 
 .bar {
@@ -1822,9 +1852,17 @@ a {
 }
 
 .night .bar {
-    color: black;
+    color: #CCC;
+    background-color: #333;
 }
 
+.sbar {
+    background-color: #b9b9b9;
+}
+
+.night .sbar {
+    background-color: #444;
+}
 
 #p3users .bar {
     width: 100%;
@@ -1863,6 +1901,11 @@ a {
     float: left;
     margin-bottom: 2px;
     color: black;
+}
+
+.night .bar18 {
+    background-color: #333;
+    color: #CCC;
 }
 
 .bar182 {
@@ -2261,7 +2304,8 @@ a {
 }
 
 .night .serverStateTableCell {
-    color: black;
+    background-color: #333;
+    color: #CCC;
 }
 
 .userTableHeader {
@@ -2645,6 +2689,10 @@ a {
     padding: 3px;
     border-radius: 3px;
     background-color: #DDD;
+}
+
+.night .traceEvent {
+    background-color: #222;
 }
 
 .p42tblRow {
