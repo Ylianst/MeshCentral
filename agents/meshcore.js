@@ -1806,7 +1806,7 @@ function createMeshCore(agent) {
                 ws.httprequest.xoptions = obj;
 
                 // Set additional user consent options if present
-                if ((obj != null) && (typeof obj.consent == 'number')) { ws.httprequest.consent += obj.consent; }
+                if ((obj != null) && (typeof obj.consent == 'number')) { ws.httprequest.consent |= obj.consent; }
 
                 break;
             }
