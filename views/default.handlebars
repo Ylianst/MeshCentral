@@ -551,8 +551,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p11clearConsoleMsg()></div>
-                        <div id=p11DeskSessionSelector style="display:none;position:absolute;left:30px;top:17px;right:30px"></div>
+                        <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px;text-align:left" onclick=p11clearConsoleMsg()></div>
+                        <div id=p11DeskSessionSelector style="display:none;position:absolute;left:30px;top:17px;right:30px;bottom:17px;overflow-y:auto"></div>
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
@@ -5865,10 +5865,10 @@
                     if (consent != null) { desktop.options.consent = consent; }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onConsoleMessageChange = function () {
-                        p11clearConsoleMsg();
                         if (desktop.consoleMessage) {
-                            QH('p11DeskConsoleMsg', EscapeHtml(desktop.consoleMessage).split('\n').join('<br />'));
+                            Q('p11DeskConsoleMsg').innerHTML += EscapeHtml(desktop.consoleMessage).split('\n').join('<br />') + '<br /><br />';
                             QV('p11DeskConsoleMsg', true);
+                            if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
                             p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
                         }
                     }
@@ -5893,9 +5893,9 @@
             }
         }
 
-        function p11clearConsoleMsg() { QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
-        function p12clearConsoleMsg() { QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
-        function p13clearConsoleMsg() { QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
+        function p11clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
+        function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
+        function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
 
         var webRtcDesktop = null;
         function webRtcDesktopReset() {
@@ -6699,10 +6699,10 @@
                         terminal.contype = 1;
                         terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                         terminal.onConsoleMessageChange = function (server, msg) {
-                            p12clearConsoleMsg();
                             if (terminal.consoleMessage) {
-                                QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
+                                Q('p12TermConsoleMsg').innerHTML += EscapeHtml(terminal.consoleMessage).split('\n').join('<br />') + '<br /><br />';
                                 QV('p12TermConsoleMsg', true);
+                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
                                 p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
                             }
                         };
@@ -6720,10 +6720,10 @@
                         terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                         terminal.onStateChanged = onTerminalStateChange;
                         terminal.onConsoleMessageChange = function () {
-                            p12clearConsoleMsg();
                             if (terminal.consoleMessage) {
-                                QH('p12TermConsoleMsg', EscapeHtml(terminal.consoleMessage).split('\n').join('<br />'));
+                                Q('p12TermConsoleMsg').innerHTML += EscapeHtml(terminal.consoleMessage).split('\n').join('<br />') + '<br /><br />';
                                 QV('p12TermConsoleMsg', true);
+                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
                                 p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
                             }
                         }
@@ -6870,10 +6870,10 @@
                 files.attemptWebRTC = attemptWebRTC;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
-                    p13clearConsoleMsg();
                     if (files.consoleMessage) {
-                        QH('p13FilesConsoleMsg', EscapeHtml(files.consoleMessage).split('\n').join('<br />'));
+                        Q('p13FilesConsoleMsg').innerHTML += EscapeHtml(files.consoleMessage).split('\n').join('<br />') + '<br /><br />';
                         QV('p13FilesConsoleMsg', true);
+                        if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
                         p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
                     }
                 }
