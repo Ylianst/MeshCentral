@@ -3482,7 +3482,7 @@
             // Check device group link permission
             var rights = 0, r = mesh.links[userid];
             if (r != null) {
-                if (rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device group link, stop here.
+                if (r.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device group link, stop here.
                 rights = r.rights;
             }
 

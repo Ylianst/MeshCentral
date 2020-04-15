@@ -795,7 +795,7 @@ function createMeshCore(agent) {
                             if (process.platform != 'win32') break;
                             var p = require('user-sessions').enumerateUsers();
                             p.sessionid = data.sessionid;
-                            p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: u }); });
+                            p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: u, tag: data.tag }); });
                             break;
                         }
                         default:
@@ -1804,6 +1804,10 @@ function createMeshCore(agent) {
                 //sendConsoleText('options: ' + JSON.stringify(obj));
                 delete obj.type;
                 ws.httprequest.xoptions = obj;
+
+                // Set additional user consent options if present
+                if ((obj != null) && (typeof obj.consent == 'number')) { ws.httprequest.consent += obj.consent; }
+
                 break;
             }
             case 'close': {
