@@ -1135,6 +1135,9 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    var prom = require('promise');
+                    this.httprequest.tpromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
+
                     this.end = function () {
                         if (process.platform == 'win32') {
                             // Unpipe the web socket
@@ -1184,12 +1187,14 @@ function createMeshCore(agent) {
                                         this.ws._term = c;
                                         c.pipe(this.ws, { dataTypeSkip: 1 });
                                         this.ws.pipe(c, { dataTypeSkip: 1 });
+                                        this.ws.httprequest.tpromise._res();
                                     });
                                 }
                                 else
                                 {
                                     // Legacy Terminal
                                     this.httprequest._term = require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows);
+                                    this.httprequest.tpromise._res(this.httprequest._term);
                                 }
                             }
                             else
@@ -1219,6 +1224,7 @@ function createMeshCore(agent) {
                                             this.ws._term = c;
                                             c.pipe(this.ws, { dataTypeSkip: 1 });
                                             this.ws.pipe(c, { dataTypeSkip: 1 });
+                                            this.ws.httprequest.tpromise._res();
                                         });
                                     }
                                 });                       
@@ -1235,6 +1241,7 @@ function createMeshCore(agent) {
                             this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
                             this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
                             this.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
+                            this.httprequest.tpromise._res();
                         }
                     }
                     else
@@ -1272,6 +1279,7 @@ function createMeshCore(agent) {
                             else
                             {
                                 MeshServerLog("Failed to start remote terminal session, no shell found");
+                                this.httprequest.tpromise._rej()
                                 return;
                             }
                         } catch (e)
@@ -1279,6 +1287,7 @@ function createMeshCore(agent) {
                             MeshServerLog("Failed to start remote terminal session, " + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
                             this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             this.end();
+                            this.httprequest.tpromise._rej();
                             return;
                         }
 
@@ -1288,45 +1297,60 @@ function createMeshCore(agent) {
                         this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                         this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                         this.prependListener('end', function () { this.httprequest.process.kill(); });
+                        this.httprequest.tpromise._res();
                     }
 
-                    // Perform notification if needed. Toast messages may not be supported on all platforms.
-                    if (this.httprequest.consent && (this.httprequest.consent & 16)) {
-                        // User Consent Prompt is required
-                        // Send a console message back using the console channel, "\n" is supported.
-                        this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access..." }));
-                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting Terminal Access. Grant access?", 30);
-                        pr.ws = this;
-                        this.pause();
+                    this.httprequest.tpromise.that = this;
+                    this.httprequest.tpromise.then(function ()
+                    {
+                        var that = this.that;
 
-                        pr.then(
-                            function () {
-                                // Success
-                                MeshServerLog("Starting remote terminal after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
-                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
-                                    // User Notifications is required
-                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote terminal session."); } catch (ex) { }
-                                }
-                                this.ws.resume();
-                            },
-                            function (e) {
-                                // User Consent Denied/Failed
-                                MeshServerLog("Failed to start remote terminal after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
-                                this.ws.end();
-                            });
-                    } else {
-                        // User Consent Prompt is not required
-                        if (this.httprequest.consent && (this.httprequest.consent & 2)) {
-                            // User Notifications is required
-                            MeshServerLog('Started remote terminal with toast notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
-                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
-                        } else {
-                            MeshServerLog('Started remote terminal without notification (' + this.httprequest.remoteaddr + ')', this.httprequest);
+                        // Perform notification if needed. Toast messages may not be supported on all platforms.
+                        if (that.httprequest.consent && (that.httprequest.consent & 16))
+                        {
+                            // User Consent Prompt is required
+                            // Send a console message back using the console channel, "\n" is supported.
+                            that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access..." }));
+                            var pr = require('message-box').create('MeshCentral', that.httprequest.username + " requesting Terminal Access. Grant access?", 30);
+                            pr.ws = that;
+                            that.pause();
+
+                            pr.then(
+                                function ()
+                                {
+                                    // Success
+                                    MeshServerLog("Starting remote terminal after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
+                                    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
+                                    {
+                                        // User Notifications is required
+                                        try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote terminal session."); } catch (ex) { }
+                                    }
+                                    this.ws.resume();
+                                },
+                                function (e)
+                                {
+                                    // User Consent Denied/Failed
+                                    MeshServerLog("Failed to start remote terminal after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
+                                    this.ws.end();
+                                });
                         }
-                        this.resume();
-                    }
+                        else
+                        {
+                            // User Consent Prompt is not required
+                            if (that.httprequest.consent && (that.httprequest.consent & 2))
+                            {
+                                // User Notifications is required
+                                MeshServerLog('Started remote terminal with toast notification (' + that.httprequest.remoteaddr + ')', that.httprequest);
+                                try { require('toaster').Toast('MeshCentral', that.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
+                            } else
+                            {
+                                MeshServerLog('Started remote terminal without notification (' + that.httprequest.remoteaddr + ')', that.httprequest);
+                            }
+                            that.resume();
+                        }
+                    }, function () { });             
 
                     this.removeAllListeners('data');
                     this.on('data', onTunnelControlData);
@@ -1823,7 +1847,8 @@ function createMeshCore(agent) {
                     if (ws.httprequest._dispatcher == null) return;
                     //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
                     if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
-                } else {
+                } else
+                {
                     if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
                     //sendConsoleText('Linux Resize: ' + obj.cols + 'x' + obj.rows);
 
