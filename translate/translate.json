@@ -3924,7 +3924,12 @@
     },
     {
       "en": "Ask Consent",
-      "en": "Vraag toestemming",
+      "xloc": [
+        "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
+      ]
+    },
+    {
+      "en": "Ask Consent + Bar",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
       ]
@@ -8207,7 +8212,7 @@
       "en": "Devices",
       "nl": "Apparaten",
       "xloc": [
-        "default.handlebars->29->1441",
+        "default.handlebars->29->1443",
         "default.handlebars->29->1465"
       ]
     },
@@ -8793,18 +8798,7 @@
       ]
     },
     {
-      "cs": "Duplikovat agenta",
-      "de": "Agent-Duplikat",
-      "en": "Duplicate agent",
-      "es": "Agente duplicado",
-      "fr": "Cloner l'agent",
-      "hi": "डुप्लीकेट एजेंट",
-      "ja": "重複エージェント",
-      "ko": "중복 에이전트",
-      "nl": "Duplicaat Agent",
-      "pt": "Agente duplicado",
-      "ru": "Скопировать агент",
-      "zh-chs": "代理重複",
+      "en": "Duplicate Agent",
       "xloc": [
         "default.handlebars->29->1623"
       ]
@@ -8842,6 +8836,20 @@
       "xloc": [
         "default.handlebars->29->1457"
       ]
+    },
+    {
+      "cs": "Duplikovat agenta",
+      "de": "Agent-Duplikat",
+      "en": "Duplicate agent",
+      "es": "Agente duplicado",
+      "fr": "Cloner l'agent",
+      "hi": "डुप्लीकेट एजेंट",
+      "ja": "重複エージェント",
+      "ko": "중복 에이전트",
+      "nl": "Duplicaat Agent",
+      "pt": "Agente duplicado",
+      "ru": "Скопировать агент",
+      "zh-chs": "代理重複"
     },
     {
       "cs": "Délka trvání",
@@ -26413,7 +26421,7 @@
       "ru": "Пользователи",
       "zh-chs": "用戶數",
       "xloc": [
-        "default.handlebars->29->1443",
+        "default.handlebars->29->1441",
         "default.handlebars->29->1463",
         "default.handlebars->29->1642",
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral"
@@ -26709,6 +26717,9 @@
       "xloc": [
         "default.handlebars->29->1028"
       ]
+    },
+    {
+      "en": "Vraag toestemming"
     },
     {
       "cs": "VAROVÁNÍ: ",
