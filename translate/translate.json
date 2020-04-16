@@ -2273,6 +2273,7 @@
     },
     {
       "en": "Add Device Group Permissions",
+      "nl": "Machtigingen voor apparaatgroep toevoegen",
       "xloc": [
         "default.handlebars->29->1232"
       ]
@@ -3924,12 +3925,14 @@
     },
     {
       "en": "Ask Consent",
+      "nl": "Vraag toestemming",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
       ]
     },
     {
       "en": "Ask Consent + Bar",
+      "nl": "Vraag toestemming + informatiebalk",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
       ]
@@ -5772,12 +5775,14 @@
     },
     {
       "en": "Confirm membership removal of user \\\"{0}\\\"?",
+      "nl": "Bevestig lidmaatschap verwijderen van gebruiker \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1497"
       ]
     },
     {
       "en": "Confirm membership removal of user group \\\"{0}\\\"?",
+      "nl": "Bevestig lidmaatschap verwijdering van gebruikergroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1597"
       ]
@@ -5837,6 +5842,7 @@
     },
     {
       "en": "Confirm removal of access rights for device \\\"{0}\\\"?",
+      "nl": "Bevestig verwijdering van toegangsrechten voor apparaat \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1487",
         "default.handlebars->29->1590"
@@ -5844,6 +5850,7 @@
     },
     {
       "en": "Confirm removal of access rights for device group \\\"{0}\\\"?",
+      "nl": "Bevestig verwijdering van toegangsrechten voor apparaatgroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1489",
         "default.handlebars->29->1601"
@@ -5851,12 +5858,14 @@
     },
     {
       "en": "Confirm removal of access rights for user \\\"{0}\\\"?",
+      "nl": "Bevestig verwijdering van toegangsrechten voor gebruiker \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1592"
       ]
     },
     {
       "en": "Confirm removal of access rights for user group \\\"{0}\\\"?",
+      "nl": "Bevestig verwijdering van toegangsrechten voor gebruikergroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1594"
       ]
@@ -5920,12 +5929,14 @@
     },
     {
       "en": "Confirm removal of rights for user \\\"{0}\\\"?",
+      "nl": "Bevestig de verwijdering van rechten voor gebruiker \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1271"
       ]
     },
     {
       "en": "Confirm removal of rights for user group \\\"{0}\\\"?",
+      "nl": "Bevestig de verwijdering van rechten voor de gebruikergroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1273"
       ]
@@ -8799,6 +8810,7 @@
     },
     {
       "en": "Duplicate Agent",
+      "nl": "Dubbele agent",
       "xloc": [
         "default.handlebars->29->1623"
       ]
@@ -20393,6 +20405,7 @@
     },
     {
       "en": "Remove Device Group Permissions",
+      "nl": "Apparaatgroepmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1488",
         "default.handlebars->29->1600"
@@ -20400,6 +20413,7 @@
     },
     {
       "en": "Remove Device Permissions",
+      "nl": "Apparaatmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1486",
         "default.handlebars->29->1589"
@@ -20421,12 +20435,14 @@
     },
     {
       "en": "Remove User Group Membership",
+      "nl": "Lidmaatschap van gebruikersgroep verwijderen",
       "xloc": [
         "default.handlebars->29->1596"
       ]
     },
     {
       "en": "Remove User Group Permissions",
+      "nl": "Gebruikersgroepmachtigingen verwijderen"
       "xloc": [
         "default.handlebars->29->1272",
         "default.handlebars->29->1593"
@@ -20434,12 +20450,14 @@
     },
     {
       "en": "Remove User Membership",
+      "nl": "Gebruikerslidmaatschap verwijderen",
       "xloc": [
         "default.handlebars->29->1496"
       ]
     },
     {
       "en": "Remove User Permissions",
+      "nl": "Gebruikersmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1270",
         "default.handlebars->29->1591"
@@ -26717,9 +26735,6 @@
       "xloc": [
         "default.handlebars->29->1028"
       ]
-    },
-    {
-      "en": "Vraag toestemming"
     },
     {
       "cs": "VAROVÁNÍ: ",
