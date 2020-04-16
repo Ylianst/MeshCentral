@@ -61,6 +61,14 @@ body {
     grid-template-areas: "header header" "nav nav" "content content" "footer footer";
 }
 
+.nofooter.fullscreen.menu_stack #container {
+    -ms-grid-rows: 66px minmax(24px, max-content) 1fr 0px;
+    grid-template-rows: 66px minmax(24px, max-content) auto 0px;
+    -ms-grid-columns: 90px 1fr;
+    /*grid-template-columns: 90px repeat(auto-fit, minmax(900px, 1fr));*/
+    grid-template-areas: "header header" "nav nav" "content content" "footer footer";
+}
+
 .fullscreen #container {
     width: 100%;
     min-width: 100%;
@@ -77,6 +85,11 @@ body {
     grid-template-columns: 90px auto;
     -ms-grid-rows: 66px 24px 1fr 45px;
     grid-template-rows: 66px 24px auto 45px;
+}
+
+.nofooter #container {
+    -ms-grid-rows: 66px 24px 1fr 0px;
+    grid-template-rows: 66px 24px auto 0px;
 }
 
 .fulldesk #container {
@@ -294,6 +307,7 @@ body {
     background-color: #fff;
     /* max-height: calc(100vh - 151px); */
     min-width: unset;
+    overflow: hidden;
 }
 
 .night #column_l {
@@ -314,7 +328,7 @@ body {
     width: unset;
     /* height: calc(100vh - 111px);
         width: calc(100% - 30px); */
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .menu_stack.fullscreen #column_l, .login #column_l, .arg_hide #column_l {

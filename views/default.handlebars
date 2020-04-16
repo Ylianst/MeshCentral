@@ -812,7 +812,7 @@
                     <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
-                <div id=p17info></div>
+                <div id=p17info style="overflow-y:auto"></div>
             </div>
             <div id=p19 style="display:none">
                 <div id="p19title">
@@ -1383,17 +1383,7 @@
             QV('p40title', !(hide & 8));
             QV('p41title', !(hide & 8));
             //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
-
-            if (hide != 0) {
-                // Fix the main grid to zero-height elements we want to hide.
-                if (uiMode == 2) {
-                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
-                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
-                } else {
-                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
-                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
-                }
-            }
+            if (!footerBar) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
 
             // Adjust height of remote desktop, files and Intel AMT
             // 1 = Top bar, 2 = Tool Bar, 4 = Bottom Bar, 8 = Tab Title
@@ -1435,6 +1425,8 @@
             }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            QS('p17info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p17info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p16events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p16events')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p31events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
