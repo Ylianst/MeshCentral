@@ -115,7 +115,17 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
         return false;
     };
-    
+
+    // Send a PING/PONG message
+    function sendPing() {
+        try { obj.ws.send('{"ctrlChannel":"102938","type":"ping"}'); } catch (ex) { }
+        try { if (obj.peer != null) { obj.peer.ws.send('{"ctrlChannel":"102938","type":"ping"}'); } } catch (ex) { }
+    }
+    function sendPong() {
+        try { obj.ws.send('{"ctrlChannel":"102938","type":"pong"}'); } catch (ex) { }
+        try { if (obj.peer != null) { obj.peer.ws.send('{"ctrlChannel":"102938","type":"pong"}'); } } catch (ex) { }
+    }
+
     function performRelay() {
         if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
@@ -194,6 +204,10 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     
                     // Remove the timeout
                     if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
+
+                    // Setup the agent PING/PONG timers
+                    if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
+                    else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
 
                     // Setup session recording
                     var sessionUser = obj.user;
@@ -355,6 +369,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     delete peer.id;
                     delete peer.ws;
                     delete peer.peer;
+                    if (peer.pingtimer != null) { clearInterval(peer.pingtimer); delete peer.pingtimer; }
+                    if (peer.pongtimer != null) { clearInterval(peer.pongtimer); delete peer.pongtimer; }
                 } else {
                     parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ')');
                 }
@@ -380,6 +396,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         delete obj.id;
         delete obj.ws;
         delete obj.peer;
+        if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
+        if (obj.pongtimer != null) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
     }
 
     // Record a new entry in a recording log
