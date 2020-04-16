@@ -1341,11 +1341,6 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.config.settings.autobackup == null) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
                 else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
 
-                // Setup auto-backup timer
-                if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupintervalhours == 'number')) {
-                    setInterval(obj.db.performBackup, obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000);
-                }
-
                 // Setup users that can see all device groups
                 obj.config.settings.managealldevicegroups = [];
                 for (i in obj.config.domains) { if (Array.isArray(obj.config.domains[i].managealldevicegroups)) { for (var j in obj.config.domains[i].managealldevicegroups) { if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') { obj.config.settings.managealldevicegroups.push('user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j]); } } } }
@@ -1421,10 +1416,31 @@ function CreateMeshCentralServer(config, args) {
                     performSelfUpdate.value--;
                     obj.db.Set(performSelfUpdate);
                     obj.getLatestServerVersion(function (currentVer, latestVer) { if (currentVer != latestVer) { obj.performServerUpdate(); return; } });
+                } else {
+                    checkAutobackup();
+                }
+            });
+        } else {
+            checkAutobackup();
+        }
+    };
+
+    // Check if we need to perform an automatic backup
+    function checkAutobackup() {
+        if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupintervalhours == 'number')) {
+            obj.db.Get('LastAutoBackupTime', function (err, docs) {
+                if (err != null) return;
+                var lastBackup = 0, now = new Date().getTime();
+                if (docs.length == 1) { lastBackup = docs[0].value; }
+                var delta = now - lastBackup;
+                if (delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) {
+                    // A new auto-backup is required.
+                    obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
+                    obj.db.performBackup(); // Perform the backup
                 }
             });
         }
-    };
+    }
 
     // Stop the Meshcentral server
     obj.Stop = function (restoreFile) {
