@@ -1385,6 +1385,18 @@
             //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
             if (!footerBar) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
 
+            console.log('args.hide', args.hide);
+            if (args.hide != 0) {
+                // Fix the main grid to zero-height elements we want to hide.
+                if (uiMode == 2) {
+                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px fit-content(48px) auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                } else {
+                    QS('container')['grid-template-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                    QS('container')['-ms-grid-rows'] = ((hide & 1) ? '0' : '66') + 'px ' + ((hide & 2) ? '0' : '24') + 'px auto ' + ((hide & 4) ? '0' : '45') + 'px';
+                }
+            }
+
             // Adjust height of remote desktop, files and Intel AMT
             // 1 = Top bar, 2 = Tool Bar, 4 = Bottom Bar, 8 = Tab Title
             var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
