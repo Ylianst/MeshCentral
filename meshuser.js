@@ -3081,7 +3081,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((typeof command.icon == 'number') && (command.icon != node.icon)) { change = 1; node.icon = command.icon; changes.push('icon'); }
                         if ((typeof command.name == 'string') && (command.name != node.name)) { change = 1; node.name = command.name; changes.push('name'); }
                         if ((typeof command.host == 'string') && (command.host != node.host)) { change = 1; node.host = command.host; changes.push('host'); }
-                        if (typeof command.consent == 'number') { if (((command.consent != 0) && ((node.consent == null) || (node.consent == 0))) || ((command.consent == 0) && (node.consent != null) && (node.consent != 0))) { change = 1; if (command.consent == 0) { delete node.consent; } else { node.consent = command.consent; } changes.push('consent'); } }
+                        if (typeof command.consent == 'number') {
+                            var oldConsent = node.consent;
+                            if (command.consent != node.consent) { node.consent = command.consent; }
+                            if (command.consent == 0) { delete node.consent; }
+                            if (oldConsent != node.consent) { change = 1; changes.push('consent'); }
+                        }
 
                         if ((typeof command.rdpport == 'number') && (command.rdpport > 0) && (command.rdpport < 65536)) {
                             if ((command.rdpport == 3389) && (node.rdpport != null)) {

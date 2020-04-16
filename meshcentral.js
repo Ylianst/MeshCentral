@@ -2458,13 +2458,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
-        if (config.letsencrypt != null) {
-            if (config.letsencrypt.lib == 'greenlock') {
-                if ((nodeVersion < 10) || (require('crypto').generateKeyPair == null)) { addServerWarning("Let's Encrypt support requires Node v10.12 or higher.", !args.launch); } else { modules.push('greenlock@4.0.4'); }
-            } else {
-                if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); }
-            }
-        } // Add Greenlock Module or acme-client module
+        if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.
         if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
