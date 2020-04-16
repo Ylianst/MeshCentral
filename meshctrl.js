@@ -213,7 +213,8 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl ListDevices");
                         console.log("  MeshCtrl ListDevices -id [groupid] --json");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --id [groupid]         - Filter by device group identifier.");
+                        console.log("  --id [groupid]         - Filter by  group identifier (or --group).");
+                        console.log("  --group [groupname]    - Filter by  group name (or --id).");
                         console.log("  --count                - Only return the device count.");
                         console.log("  --json                 - Show result as JSON.");
                         break;
@@ -565,7 +566,9 @@ function serverConnect() {
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'listdevices': {
-                if (args.id) {
+                if (args.group) {
+                    ws.send(JSON.stringify({ action: 'nodes', meshname: args.group, responseid: 'meshctrl' })); break;
+                } else if (args.id) {
                     ws.send(JSON.stringify({ action: 'nodes', meshid: args.id, responseid: 'meshctrl' })); break;
                 } else {
                     ws.send(JSON.stringify({ action: 'meshes' }));

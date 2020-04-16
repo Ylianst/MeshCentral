@@ -5607,14 +5607,17 @@
             if (xxdialogMode) return;
             if ((GetNodeRights(currentNode) & 4) == 0) return;
 
-            var x = '<br><div style=display:inline-block;width:16px></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i1 onclick=p10setIcon(1) onkeypress="if (event.key==\'Enter\') p10setIcon(1)"></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i2 onclick=p10setIcon(2) onkeypress="if (event.key==\'Enter\') p10setIcon(2)"></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i3 onclick=p10setIcon(3) onkeypress="if (event.key==\'Enter\') p10setIcon(3)"></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i4 onclick=p10setIcon(4) onkeypress="if (event.key==\'Enter\') p10setIcon(4)"></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i5 onclick=p10setIcon(5) onkeypress="if (event.key==\'Enter\') p10setIcon(5)"></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i6 onclick=p10setIcon(6) onkeypress="if (event.key==\'Enter\') p10setIcon(6)"></div>';
-            x += '<div tabindex=0 style=display:inline-block class=i7 onclick=p10setIcon(7) onkeypress="if (event.key==\'Enter\') p10setIcon(7)"></div><br><br>';
+            var x = '<div style=text-align:center><br />';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i1 onclick=p10setIcon(1) onkeypress="if (event.key==\'Enter\') p10setIcon(1)"></div>';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i2 onclick=p10setIcon(2) onkeypress="if (event.key==\'Enter\') p10setIcon(2)"></div>';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i3 onclick=p10setIcon(3) onkeypress="if (event.key==\'Enter\') p10setIcon(3)"></div>';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i4 onclick=p10setIcon(4) onkeypress="if (event.key==\'Enter\') p10setIcon(4)"></div>';
+            x += '<br />';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i5 onclick=p10setIcon(5) onkeypress="if (event.key==\'Enter\') p10setIcon(5)"></div>';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i6 onclick=p10setIcon(6) onkeypress="if (event.key==\'Enter\') p10setIcon(6)"></div>';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i7 onclick=p10setIcon(6) onkeypress="if (event.key==\'Enter\') p10setIcon(7)"></div>';
+            x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i8 onclick=p10setIcon(8) onkeypress="if (event.key==\'Enter\') p10setIcon(8)"></div>';
+            x += '<br /><br /></div>';
             setDialogMode(2, "Icon Selection", 0, null, x);
             QV('id_dialogclose', true);
         }

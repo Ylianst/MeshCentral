@@ -1194,6 +1194,14 @@ a {
     border: none;
 }
 
+.i8 {
+    background: url(../images/icons50.png) -350px 0px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+    border: none;
+}
+
 .j1 {
     background: url(../images/icons16.png) 0px 0px;
     height: 16px;
@@ -1244,6 +1252,14 @@ a {
 
 .j7 {
     background: url(../images/icons16.png) -96px 0px;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+}
+
+.j8 {
+    background: url(../images/icons16.png) -112px 0px;
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1452,6 +1468,14 @@ a {
 
 .si7 {
     background: url(../images/icons16.png) -96px 0px;
+    height: 16px;
+    width: 16px;
+    border: none;
+    float: left;
+}
+
+.si8 {
+    background: url(../images/icons16.png) -112px 0px;
     height: 16px;
     width: 16px;
     border: none;

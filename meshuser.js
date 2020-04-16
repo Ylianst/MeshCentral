@@ -482,32 +482,46 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'nodes':
                 {
                     var links = [], extraids = null, err = null;
-                    try {
-                        if (command.meshid == null) {
-                            // Request a list of all meshes this user as rights to
-                            links = parent.GetAllMeshIdWithRights(user);
 
-                            // Add any nodes with direct rights or any nodes with user group direct rights
-                            if (obj.user.links != null) {
-                                for (var i in obj.user.links) {
-                                    if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
-                                    else if (i.startsWith('ugrp/')) {
-                                        const g = parent.userGroups[i];
-                                        if ((g != null) && (g.links != null)) {
-                                            for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                            }
+                        }
+                        if (command.meshid == null) { err = 'Invalid group id'; }
+                    }
+
+                    if (err == null) {
+                        try {
+                            if (command.meshid == null) {
+                                // Request a list of all meshes this user as rights to
+                                links = parent.GetAllMeshIdWithRights(user);
+
+                                // Add any nodes with direct rights or any nodes with user group direct rights
+                                if (obj.user.links != null) {
+                                    for (var i in obj.user.links) {
+                                        if (i.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(i); }
+                                        else if (i.startsWith('ugrp/')) {
+                                            const g = parent.userGroups[i];
+                                            if ((g != null) && (g.links != null)) {
+                                                for (var j in g.links) { if (j.startsWith('node/')) { if (extraids == null) { extraids = []; } extraids.push(j); } }
+                                            }
                                         }
                                     }
                                 }
+                            } else {
+                                // Request list of all nodes for one specific meshid
+                                meshid = command.meshid;
+                                if (common.validateString(meshid, 0, 128) == false) { err = 'Invalid group id'; } else {
+                                    if (meshid.split('/').length == 1) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                                    if (parent.IsMeshViewable(user, meshid)) { links.push(meshid); } else { err = 'Invalid group id'; }
+                                }
                             }
-                        } else {
-                            // Request list of all nodes for one specific meshid
-                            meshid = command.meshid;
-                            if (common.validateString(meshid, 0, 128) == false) { err = 'Invalid group id'; } else {
-                                if (meshid.split('/').length == 1) { meshid = 'mesh/' + domain.id + '/' + command.meshid; }
-                                if (obj.IsMeshViewable(user, meshid)) { links.push(meshid); } else { err = 'Invalid group id'; }
-                            }
-                        }
-                    } catch (ex) { err = 'Validation exception: ' + ex; }
+                        } catch (ex) { err = 'Validation exception: ' + ex; }
+                    }
 
                     // Handle any errors
                     if (err != null) {
