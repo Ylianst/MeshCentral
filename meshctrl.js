@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
-const crypto = require('crypto');
+// Make sure we have the dependency modules
+try { require('minimist'); } catch (ex) { console.log('Missing module "minimist", type "npm install minimist" to install it.'); return; }
+try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm install ws" to install it.'); return; }
+
 var settings = {};
+const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
 const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config'];
-//console.log(args);
+if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
     console.log("MeshCtrl performs command line actions on a MeshCentral server.");
@@ -39,6 +43,7 @@ if (args['_'].length == 0) {
     console.log("  --loginkey [hex]          - Server login key in hex.");
     console.log("  --loginkeyfile [file]     - File containing server login key in hex.");
     console.log("  --domain [domainid]       - Domain id, default is empty.");
+    console.log("  --proxy [http://proxy:1]  - Specify an HTTP proxy.");
     return;
 } else {
     settings.cmd = args['_'][0].toLowerCase();
@@ -493,6 +498,12 @@ function serverConnect() {
     // TODO: checkServerIdentity does not work???
     var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
 
+    // Setup the HTTP proxy if needed
+    if (args.proxy != null) {
+        const HttpsProxyAgent = require('https-proxy-agent');
+        options.agent = new HttpsProxyAgent(require('url').parse(args.proxy));
+    }
+
     // Password authentication
     if (args.loginpass != null) {
         var username = 'admin';
@@ -661,7 +672,13 @@ function serverConnect() {
         }
     });
 
-    ws.on('close', function close() { process.exit(); });
+    ws.on('close', function() { process.exit(); });
+    ws.on('error', function (err) {
+        if (err.code == 'ENOTFOUND') { console.log('Unable to resolve ' + url); }
+        else if (err.code == 'ECONNREFUSED') { console.log('Unable to connect to ' + url); }
+        else { console.log(err); }
+        process.exit();
+    });
 
     ws.on('message', function incoming(rawdata) {
         //console.log(rawdata);

@@ -5874,6 +5874,8 @@
                             QV('p11DeskConsoleMsg', true);
                             if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
                             p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+                        } else {
+                            p11clearConsoleMsg();
                         }
                     }
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
