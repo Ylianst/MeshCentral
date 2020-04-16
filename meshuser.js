@@ -2817,22 +2817,62 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changeDeviceMesh':
                 {
-                    if (common.validateStrArray(command.nodeids, 1, 256) == false) break; // Check nodeid strings
-                    if (common.validateString(command.meshid, 1, 256) == false) break; // Check target meshid string
+                    var err = null;
+
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
+                            }
+                        }
+                    }
+
+                    // Perform input validation
+                    try {
+                        if (common.validateStrArray(command.nodeids, 1, 256) == false) { err = "Invalid nodeids"; } // Check nodeids
+                        if (common.validateString(command.meshid, 1, 1024) == false) { err = "Invalid groupid"; } // Check meshid
+                        else {
+                            if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                            mesh = parent.meshes[command.meshid];
+                            if (mesh == null) { err = "Unknown device group"; }
+                            else if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) { err = "Permission denied"; }
+                            else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = "Invalid domain"; } // Invalid domain, operation only valid for current domain
+                        }
+                    } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addmeshuser', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // For each nodeid, change the group
                     for (var i = 0; i < command.nodeids.length; i++) {
+                        var xnodeid = command.nodeids[i];
+                        if (xnodeid.indexOf('/') == -1) { xnodeid = 'node/' + domain.id + '/' + xnodeid; }
+
                         // Get the node and the rights for this node
-                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        parent.GetNodeWithRights(domain, user, xnodeid, function (node, rights, visible) {
+                            // Check if we found this device
+                            if (node == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device not found' })); } catch (ex) { } } return; }
+
                             // Check if already in the right mesh
-                            if ((node == null) || (node.meshid == command.meshid)) return;
+                            if (node.meshid == command.meshid) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device already in correct group' })); } catch (ex) { } } return; }
 
                             // Make sure both source and target mesh are the same type
-                            try { if (parent.meshes[node.meshid].mtype != parent.meshes[command.meshid].mtype) return; } catch (e) { return; };
+                            try { if (parent.meshes[node.meshid].mtype != parent.meshes[command.meshid].mtype) return; } catch (e) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Device groups are of different types' })); } catch (ex) { } }
+                                return;
+                            };
 
                             // Make sure that we have rights on both source and destination mesh
                             const targetMeshRights = parent.GetMeshRights(user, command.meshid);
-                            if (((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) || ((targetMeshRights & MESHRIGHT_MANAGECOMPUTERS) == 0)) return;
+                            if (((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) || ((targetMeshRights & MESHRIGHT_MANAGECOMPUTERS) == 0)) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Permission denied' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // Perform the switch, start by saving the node with the new meshid.
                             const oldMeshId = node.meshid;
@@ -2867,6 +2907,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
+
+                            // Send response if required
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                         });
                     }
                     break;
