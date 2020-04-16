@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -27,6 +27,7 @@ if (args['_'].length == 0) {
     console.log("  RemoveUser                - Delete a user account.");
     console.log("  AddDeviceGroup            - Create a new device group.");
     console.log("  RemoveDeviceGroup         - Delete a device group.");
+    console.log("  MoveToDeviceGroup         - Move a device to a different device group.");
     console.log("  AddUserToDeviceGroup      - Add a user to a device group.");
     console.log("  RemoveUserFromDeviceGroup - Remove a user from a device group.");
     console.log("  AddUserToDevice           - Add a user to a device.");
@@ -94,6 +95,12 @@ if (args['_'].length == 0) {
         }
         case 'removedevicegroup': {
             if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'movetodevicegroup': {
+            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
+            else if (args.devid == null) { console.log("Device identifier missing, use --devid [deviceid]"); }
             else { ok = true; }
             break;
         }
@@ -264,6 +271,15 @@ if (args['_'].length == 0) {
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --id [groupid]         - Device group identifier (or --group).");
                         console.log("  --group [groupname]    - Device group name (or --id).");
+                        break;
+                    }
+                    case 'movetodevicegroup': {
+                        console.log("Move a device to a new device group, Example usages:\r\n");
+                        console.log("  MeshCtrl MoveToDeviceGroup --devid deviceid --id groupid");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        console.log("  --group [groupname]    - Device group name (or --id).");
+                        console.log("  --devid [deviceid]     - Device identifier.");
                         break;
                     }
                     case 'addusertodevicegroup': {
@@ -591,6 +607,12 @@ function serverConnect() {
                 ws.send(JSON.stringify(op));
                 break;
             }
+            case 'movetodevicegroup': {
+                var op = { action: 'changeDeviceMesh', responseid: 'meshctrl', nodeids: [ args.devid ] };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
+                ws.send(JSON.stringify(op));
+                break;
+            }
             case 'addusertodevicegroup': {
                 var meshrights = 0;
                 if (args.fullrights) { meshrights = 0xFFFFFFFF; }
@@ -716,6 +738,7 @@ function serverConnect() {
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
             case 'deletemesh': // REMOVEDEVICEGROUP
+            case 'changeDeviceMesh':
             case 'addmeshuser': //
             case 'removemeshuser': //
             case 'inviteAgent': //

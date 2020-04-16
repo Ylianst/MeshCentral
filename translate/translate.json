@@ -20442,7 +20442,7 @@
     },
     {
       "en": "Remove User Group Permissions",
-      "nl": "Gebruikersgroepmachtigingen verwijderen"
+      "nl": "Gebruikersgroepmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1272",
         "default.handlebars->29->1593"
