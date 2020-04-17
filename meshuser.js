@@ -1343,7 +1343,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
                                     var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                    parent.parent.DispatchEvent(parent.obj.CreateMeshDispatchTargets(mesh, [deluser._id, user._id]), obj, event);
+                                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [deluser._id, user._id]), obj, event);
                                 }
                             } else if (i.startsWith('node/')) {
                                 // Get the node and the rights for this node
