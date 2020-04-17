@@ -1847,7 +1847,7 @@
                     if ((currentNode != null) && (IsNodeViewable(currentNode) == false)) { currentNode = null; go(1); }
 
                     // Change the reference to the current node
-                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); gotoDevice(currentNode._id, xxcurrentView, true); }
+                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); } else { go(1); } }
 
                     masterUpdate(1 | 2 | 4 | 64);
                     break;
