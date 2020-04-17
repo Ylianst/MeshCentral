@@ -301,37 +301,39 @@
             </div>
             <div id=p2 style="display:none">
                 <div id="p2title"><h1>My Account</h1></div>
-                <img id="p2AccountImage" alt="" src="images/clipboard-128.png" />
-                <div id="p2AccountSecurity" style="display:none">
-                    <p><strong>Account security</strong></p>
-                    <div style="margin-left:25px">
-                        <div id="manageEmail2FA"><div class="p2AccountActions"><span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthEmail()">Manage email authentication</a><br /></span></div>
-                        <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
-                        <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
-                        <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
+                <div id="p2info" style="overflow-y:auto">
+                    <img id="p2AccountImage" alt="" src="images/clipboard-128.png" />
+                    <div id="p2AccountSecurity" style="display:none">
+                        <p><strong>Account security</strong></p>
+                        <div style="margin-left:25px">
+                            <div id="manageEmail2FA"><div class="p2AccountActions"><span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthEmail()">Manage email authentication</a><br /></span></div>
+                            <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
+                            <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
+                            <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
+                        </div>
                     </div>
-                </div>
-                <div id="p2AccountActions">
-                    <p><strong>Account actions</strong></p>
-                    <p class="mL">
-                        <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
-                        <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
-                        <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
-                        <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
-                        <span id="p2AccountPassActions">
-                            <span id="accountChangeEmailAddressSpan" style="display:none"><a href=# onclick="return account_showChangeEmail()">Change email address</a><br /></span>
-                            <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
-                            <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
-                        </span>
-                    </p>
+                    <div id="p2AccountActions">
+                        <p><strong>Account actions</strong></p>
+                        <p class="mL">
+                            <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
+                            <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
+                            <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
+                            <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
+                            <span id="p2AccountPassActions">
+                                <span id="accountChangeEmailAddressSpan" style="display:none"><a href=# onclick="return account_showChangeEmail()">Change email address</a><br /></span>
+                                <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
+                                <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
+                            </span>
+                        </p>
+                        <br style=clear:both />
+                    </div>
+                    <strong>Device Groups</strong>
+                    <span id="p2createMeshLink1">( <a href=# onclick="return account_createMesh()" class="newMeshBtn"> New</a> )</span>
+                    <br /><br />
+                    <div id=p2meshes></div>
+                    <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=# onclick="return account_createMesh()"><strong>Get started here!</strong></a></span></div>
                     <br style=clear:both />
                 </div>
-                <strong>Device Groups</strong>
-                <span id="p2createMeshLink1">( <a href=# onclick="return account_createMesh()" class="newMeshBtn"> New</a> )</span>
-                <br /><br />
-                <div id=p2meshes></div>
-                <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=# onclick="return account_createMesh()"><strong>Get started here!</strong></a></span></div>
-                <br style=clear:both />
             </div>
             <div id=p3 style="display:none">
                 <div id="p3title"><h1>My Events</h1></div>
@@ -1400,6 +1402,8 @@
             // 1 = Top bar, 2 = Tool Bar, 4 = Bottom Bar, 8 = Tab Title
             var xh = (((hide & 1) ? 0 : 66) + ((hide & 2) ? 0 : 24) + ((hide & 4) ? 0 : 45) + ((hide & 8) ? 0 : 60)); // 0 to 195
             var xh2 = (uiMode > 1)?24:0;
+            QS('p2info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p2info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p3users')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p5filetable')['height'] = 'calc(100vh - ' + (99 + xh) + 'px)'; // 160
@@ -1843,7 +1847,7 @@
                     if ((currentNode != null) && (IsNodeViewable(currentNode) == false)) { currentNode = null; go(1); }
 
                     // Change the reference to the current node
-                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); }
+                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); gotoDevice(currentNode._id, xxcurrentView, true); }
 
                     masterUpdate(1 | 2 | 4 | 64);
                     break;
@@ -5179,7 +5183,7 @@
             if (rights & 8192) str.push("Limit Events");
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
-            if (str.length == 0) return "No Added Rights";
+            if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
 
@@ -8617,7 +8621,7 @@
                 var y = '';
                 if (selected) { selected = decodeURIComponent(selected); }
                 var omeshs = getOrderedList(meshes, 'name');
-                for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { y += '<option value=' + encodeURIComponent(omeshs[i]._id) + ((selected == omeshs[i]._id)?' selected':' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
+                for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponent(omeshs[i]._id) + ((selected == omeshs[i]._id)?' selected':' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if ((userid == 4) || (userid == 7)) {
                 var y = '', selectedMeshId = null, selectedNode = null;
@@ -8675,27 +8679,27 @@
                 setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
                 Q('dp20username').focus();
             } else if (userid === 1) {
-                setDialogMode(2, (selected == null)?"Add Device Group Permissions":"Edit Device Group Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, (selected == null)?"Add Device Group Permissions":"Edit Device Group Permissions", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 if (selected != null) { urights = meshes[decodeURIComponent(selected)].links[currentUser._id].rights; }
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 2) {
                 setDialogMode(2, "Add User Group", 3, p20showAddMeshUserDialogEx, x, userid);
             } else if (userid === 3) {
-                setDialogMode(2, "Add Device Group", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, (selected == null)?"Add Device Group":"Edit Device Group", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2groupid', selected == null);
                 if (selected != null) { urights = currentUserGroup.links[decodeURIComponent(selected)].rights; }
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 4) {
-                setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
             } else if (userid === 7) {
-                setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, (selected == null)?"Add Device Permissions":"Edit Device Permissions", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
                 if (selected != null) { urights = currentUserGroup.links[decodeURIComponent(selected)].rights; QE('dp20username', false); }
             } else if (userid === 5) {
-                setDialogMode(2, selected?"Edit User Device Permissions":"Add User Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, selected?"Edit User Device Permissions":"Add User Device Permissions", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 if (selected != null) {
                     selected = decodeURIComponent(selected);
                     if ((users != null) && (users[selected] != null)) { Q('dp20username').value = users[selected].name; } else { Q('dp20username').value = selected.split('/')[2]; }
@@ -8704,7 +8708,7 @@
                 }
                 Q('dp20username').focus();
             } else if (userid === 6) {
-                setDialogMode(2, selected?"Edit User Device Permissions":"Add User Device Permissions", 3, p20showAddMeshUserDialogEx, x, userid);
+                setDialogMode(2, selected?"Edit User Group Device Permissions":"Add User Group Device Permissions", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 if (selected != null) { urights = currentNode.links[decodeURIComponent(selected)].rights; }
             } else {
                 if (userid.startsWith('ugrp/')) {
@@ -8767,7 +8771,6 @@
             if (updateId === 4) {
                 // Update user device rights
                 var devrights = 0, nodeid = decodeURIComponent(Q('dp2nodeid').value);
-                console.log('nodeid', nodeid);
                 if ((nodeid != '') && (currentUser.links != null) && (currentUser.links[nodeid] != null)) { devrights = currentUser.links[nodeid].rights; }
                 Q('p20remotecontrol').checked = ((devrights & 8) != 0);
                 Q('p20meshagentconsole').checked = ((devrights & 16) != 0);
@@ -8853,83 +8856,79 @@
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
-            if (b == 2) {
-                p20viewuserEx(b, t);
+            // Get the currently selected rights
+            var meshadmin = 0;
+            if ((Q('p20fulladmin') != null) && (Q('p20fulladmin').checked == true)) { meshadmin = 0xFFFFFFFF; } else {
+                if (Q('p20fulladmin') != null) {
+                    if (Q('p20editmesh').checked == true) meshadmin += 1;
+                    if (Q('p20manageusers').checked == true) meshadmin += 2;
+                    if (Q('p20managecomputers').checked == true) meshadmin += 4;
+                }
+                if (Q('p20remotecontrol').checked == true) meshadmin += 8;
+                if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
+                if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
+                if (Q('p20wakedevices').checked == true) meshadmin += 64;
+                if (Q('p20editnotes').checked == true) meshadmin += 128;
+                if (Q('p20remoteview').checked == true) meshadmin += 256;
+                if (Q('p20nodesktop').checked == true) meshadmin += 65536;
+                if (Q('p20noterminal').checked == true) meshadmin += 512;
+                if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                if (Q('p20noamt').checked == true) meshadmin += 2048;
+                if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
+                if (Q('p20limitevents').checked == true) meshadmin += 8192;
+                if (Q('p20chatnotify').checked == true) meshadmin += 16384;
+                if (Q('p20uninstall').checked == true) meshadmin += 32768;
+            }
+
+            // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
+            if ((meshadmin & 8) == 0) {
+                // Remove 256, 512, 1024, 2048, 4096, 65536
+                if (meshadmin & 256) { meshadmin -= 256; }
+                if (meshadmin & 512) { meshadmin -= 512; }
+                if (meshadmin & 1024) { meshadmin -= 1024; }
+                if (meshadmin & 2048) { meshadmin -= 2048; }
+                if (meshadmin & 4096) { meshadmin -= 4096; }
+                if (meshadmin & 65536) { meshadmin -= 65536; }
+            }
+
+            // Send the action to the server
+            if (t === 1) {
+                // Add current user to device group
+                var meshid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[meshid];
+                if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: meshid, meshname: mesh.name, userids: [ currentUser._id ], meshadmin: meshadmin, remove: (b == 2) }); }
+            } else if (t === 2) {
+                // Add user group to device group
+                var ugrpid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[currentMesh._id];
+                if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: ugrpid, meshadmin: meshadmin, remove: (b == 2) }); }
+            } else if (t === 3) {
+                // Add device group to current user group
+                var meshid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[meshid];
+                if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: meshid, meshname: mesh.name, userids: [ currentUserGroup._id ], meshadmin: meshadmin, remove: (b == 2) }); }
+            } else if (t === 4) {
+                // Add current user to device
+                var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
+                if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUser._id ], rights: meshadmin, remove: (b == 2) }); }
+            } else if (t === 5) {
+                // Add users to device
+                var users = Q('dp20username').value.split(','), users2 = [];
+                for (var i in users) { users2.push(users[i].trim()); }
+                meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, usernames: users2, rights: meshadmin, remove: (b == 2) });
+            } else if (t === 6) {
+                // Add user group to device
+                var ugrpid = decodeURIComponent(Q('dp2groupid').value);
+                if (currentNode != null) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ ugrpid ], rights: meshadmin, remove: (b == 2) }); }
+            } else if (t === 7) {
+                // Add current user group to device
+                var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
+                if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUserGroup._id ], rights: meshadmin, remove: (b == 2) }); }
             } else {
-                // Get the currently selected rights
-                var meshadmin = 0;
-                if ((Q('p20fulladmin') != null) && (Q('p20fulladmin').checked == true)) { meshadmin = 0xFFFFFFFF; } else {
-                    if (Q('p20fulladmin') != null) {
-                        if (Q('p20editmesh').checked == true) meshadmin += 1;
-                        if (Q('p20manageusers').checked == true) meshadmin += 2;
-                        if (Q('p20managecomputers').checked == true) meshadmin += 4;
-                    }
-                    if (Q('p20remotecontrol').checked == true) meshadmin += 8;
-                    if (Q('p20meshagentconsole').checked == true) meshadmin += 16;
-                    if (Q('p20meshserverfiles').checked == true) meshadmin += 32;
-                    if (Q('p20wakedevices').checked == true) meshadmin += 64;
-                    if (Q('p20editnotes').checked == true) meshadmin += 128;
-                    if (Q('p20remoteview').checked == true) meshadmin += 256;
-                    if (Q('p20nodesktop').checked == true) meshadmin += 65536;
-                    if (Q('p20noterminal').checked == true) meshadmin += 512;
-                    if (Q('p20nofiles').checked == true) meshadmin += 1024;
-                    if (Q('p20noamt').checked == true) meshadmin += 2048;
-                    if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
-                    if (Q('p20limitevents').checked == true) meshadmin += 8192;
-                    if (Q('p20chatnotify').checked == true) meshadmin += 16384;
-                    if (Q('p20uninstall').checked == true) meshadmin += 32768;
-                }
-
-                // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
-                if ((meshadmin & 8) == 0) {
-                    // Remove 256, 512, 1024, 2048, 4096, 65536
-                    if (meshadmin & 256) { meshadmin -= 256; }
-                    if (meshadmin & 512) { meshadmin -= 512; }
-                    if (meshadmin & 1024) { meshadmin -= 1024; }
-                    if (meshadmin & 2048) { meshadmin -= 2048; }
-                    if (meshadmin & 4096) { meshadmin -= 4096; }
-                    if (meshadmin & 65536) { meshadmin -= 65536; }
-                }
-
-                // Send the action to the server
-                if (t === 1) {
-                    // Add current user to device group
-                    var meshid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[meshid];
-                    if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: meshid, meshname: mesh.name, userids: [ currentUser._id ], meshadmin: meshadmin }); }
-                } else if (t === 2) {
-                    // Add user group to device group
-                    var ugrpid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[currentMesh._id];
-                    if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: ugrpid, meshadmin: meshadmin }); }
-                } else if (t === 3) {
-                    // Add device group to current user group
-                    var meshid = decodeURIComponent(Q('dp2groupid').value), mesh = meshes[meshid];
-                    if (mesh != null) { meshserver.send({ action: 'addmeshuser', meshid: meshid, meshname: mesh.name, userids: [ currentUserGroup._id ], meshadmin: meshadmin }); }
-                } else if (t === 4) {
-                    // Add current user to device
-                    var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
-                    if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUser._id ], rights: meshadmin }); }
-                } else if (t === 5) {
-                    // Add users to device
+                // Add user to device group
+                if (t == null) {
                     var users = Q('dp20username').value.split(','), users2 = [];
                     for (var i in users) { users2.push(users[i].trim()); }
-                    meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, usernames: users2, rights: meshadmin });
-                } else if (t === 6) {
-                    // Add user group to device
-                    var ugrpid = decodeURIComponent(Q('dp2groupid').value);
-                    if (currentNode != null) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ ugrpid ], rights: meshadmin }); }
-                } else if (t === 7) {
-                    // Add current user group to device
-                    var nodeid = decodeURIComponent(Q('dp2nodeid').value), node = getNodeFromId(nodeid);
-                    if (node != null) { meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, nodename: node.name, userids: [ currentUserGroup._id ], rights: meshadmin }); }
+                    meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, usernames: users2, meshadmin: meshadmin, remove: (b == 2) });
                 } else {
-                    // Add user to device group
-                    if (t == null) {
-                        var users = Q('dp20username').value.split(','), users2 = [];
-                        for (var i in users) { users2.push(users[i].trim()); }
-                        meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, usernames: users2, meshadmin: meshadmin });
-                    } else {
-                        meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userids: [ t ], meshadmin: meshadmin });
-                    }
+                    meshserver.send({ action: 'addmeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userids: [ t ], meshadmin: meshadmin, remove: (b == 2) });
                 }
             }
         }
@@ -10306,7 +10305,7 @@
                 omeshes = getOrderedList(omeshes, 'name');
                 for (var i in omeshes) {
                     var cr = 0, mesh = omeshes[i], r = currentUserGroup.links[mesh._id].rights, trash = '', rights = makeDeviceGroupRightsString(r);
-                    if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
+                    if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else {}
                     if ((cr & 2) != 0) {
@@ -10365,7 +10364,7 @@
         }
 
         function p51removeDeviceFromUserGroupEx(b, nodeid) {
-            meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, userids: [ currentUserGroup._id ], rights: 0 });
+            meshserver.send({ action: 'adddeviceuser', nodeid: nodeid, userids: [ currentUserGroup._id ], rights: 0, remove: true });
         }
 
         function p51removeMeshFromUserGroup(e, meshid) {
@@ -10720,10 +10719,10 @@
                 for (var i in omeshes) {
                     var cr = 0, mesh = omeshes[i], r = currentUser.links[mesh._id].rights, trash = '', rights = makeDeviceGroupRightsString(r);
                     if (mesh == null) { continue; }
-                    if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
+                    if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
-                    if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; } else {}
-                    if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) {
+                    if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; }
+                    if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { // 2 = MESHRIGHT_MANAGEUSERS
                         trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponent(mesh._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,\"' + encodeURIComponent(mesh._id) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
@@ -10748,13 +10747,13 @@
                     for (var i in currentUser.links) { if (i.startsWith('ugrp/')) { if (usergroups[i] != null) { ougroups.push(usergroups[i]); } } }
                     ougroups = getOrderedList(ougroups, 'name');
                     for (var i in ougroups) {
-                        var group = usergroups[i], r = currentUser.links[ougroups[i]._id].rights, trash = '';
+                        var group = ougroups[i], r = currentUser.links[ougroups[i]._id].rights, trash = '';
                         var groupname = '<i>' + "Unknown User Group" + '</i>';
                         if (group != null) {
                             groupname = EscapeHtml(group.name);
-                            if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponent(i) + '");haltEvent(event);\'>' + groupname + '</a>'; }
+                            if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponent(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponent(i) + '")\' title=\"' + "Remove user group membership" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponent(ougroups[i]._id) + '")\' title=\"' + "Remove user group membership" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User Group" + '\" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
@@ -10792,17 +10791,17 @@
         function p30removeNodeFromUser(event, nodeid) {
             if (xxdialogMode) return;
             var node = getNodeFromId(decodeURIComponent(nodeid));
-            setDialogMode(2, "Remove Device Permissions", 3, function(b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [ currentUser._id ], rights: 0 }); }, format("Confirm removal of access rights for device \"{0}\"?", node.name), node);
+            setDialogMode(2, "Remove Device Permissions", 3, function(b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [ currentUser._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for device \"{0}\"?", node.name), node);
         }
 
         function p30removeUserFromNode(event, userid) {
             if (xxdialogMode) return;
             var user = users[decodeURIComponent(userid)];
             if (user != null) {
-                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0 }); }, format("Confirm removal of access rights for user \"{0}\"?", user.name), user);
+                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for user \"{0}\"?", user.name), user);
             } else if (usergroups != null) {
                 user = usergroups[decodeURIComponent(userid)];
-                if (user != null) { setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0 }); }, format("Confirm removal of access rights for user group \"{0}\"?", user.name), user); }
+                if (user != null) { setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for user group \"{0}\"?", user.name), user); }
             }
         }
 
