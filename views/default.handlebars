@@ -1385,7 +1385,6 @@
             //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
             if (!footerBar) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
 
-            console.log('args.hide', args.hide);
             if (args.hide != 0) {
                 // Fix the main grid to zero-height elements we want to hide.
                 if (uiMode == 2) {

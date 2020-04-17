@@ -1359,7 +1359,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var installflags = cookie.f;
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags }, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).split('\'').join('%27'), installflags: installflags }, domain));
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
             var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
@@ -1368,7 +1368,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name), installflags: installflags }, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).split('\'').join('%27'), installflags: installflags }, domain));
         }
     }
 
