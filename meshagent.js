@@ -464,7 +464,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.agentInfo.agentId = common.ReadInt(msg, 6);
                 obj.agentInfo.agentVersion = common.ReadInt(msg, 10);
                 obj.agentInfo.platformType = common.ReadInt(msg, 14);
-                if (obj.agentInfo.platformType > 6 || obj.agentInfo.platformType < 1) { obj.agentInfo.platformType = 1; }
+                if (obj.agentInfo.platformType > 8 || obj.agentInfo.platformType < 1) { obj.agentInfo.platformType = 1; }
                 if (msg.substring(50, 66) == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0') {
                     obj.meshid = Buffer.from(msg.substring(18, 50), 'binary').toString('hex'); // Older HEX MeshID
                 } else {
