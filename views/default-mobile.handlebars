@@ -815,10 +815,10 @@
                     }
 
                     // If we are currently looking at a node this is now gone, change the view.
-                    //if ((currentNode != null) && (getNodeFromId(currentNode._id) == null)) { currentNode = null; go(1); }
+                    if ((currentNode != null) && (IsNodeViewable(currentNode) == false)) { currentNode = null; go(2); }
 
                     // Change the reference to the current node
-                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); }
+                    if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); } else { go(2); } }
 
                     //onSortSelectChange();
                     //onSearchInputChanged();
@@ -2103,6 +2103,7 @@
             meshserver.send({ action: 'toast', nodeids: [currentNode._id], title: 'MeshCentral', msg: Q('d2devToast').value });
         }
 
+        // && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0))
         function setupDeviceMenu(op, obj) {
             var meshrights = GetNodeRights(currentNode);
             if (op != null) { currentDevicePanel = op; }
@@ -2111,11 +2112,13 @@
             QV('p10files', currentDevicePanel == 2);
             var menus = [];
             if (currentDevicePanel != 0) { menus.push({ n: 'General', f: 'setupDeviceMenu(0)' }); }
+
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
-                ((meshrights & 8) || (meshrights & 256)) &&
+                ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
             ) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
+
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
             updateFooterMenu(menus);
         }

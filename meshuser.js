@@ -45,6 +45,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_LIMITEVENTS = 8192;
     const MESHRIGHT_CHATNOTIFY = 16384;
     const MESHRIGHT_UNINSTALL = 32768;
+    const MESHRIGHT_NODESKTOP = 65536;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;           // 0x00000001
