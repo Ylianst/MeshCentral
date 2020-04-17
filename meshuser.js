@@ -1705,7 +1705,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Email verification required'; } // User must verify it's email first.
 
                         // Create user group
-                        else if ((common.validateString(command.name, 1, 64) == false) || (command.name.indexOf(' ') >= 0)) { err = 'Invalid group name'; } // User group name is between 1 and 64 characters
+                        else if (common.validateString(command.name, 1, 64) == false) { err = 'Invalid group name'; } // User group name is between 1 and 64 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // User group description is between 0 and 1024 characters
 
                         // If we are cloning from an existing user group, check that.
@@ -1854,7 +1854,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Get the user group
                     var group = parent.userGroups[command.ugrpid];
                     if (group != null) {
-                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name) && (command.name.indexOf(' ') == -1)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
+                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
                         if (change != '') {
                             db.Set(group);

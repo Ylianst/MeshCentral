@@ -2289,7 +2289,7 @@
                                 if (message.event.desc) { ugroup.desc = message.event.desc; } else { delete ugroup.desc; }
                                 if (message.event.links) { ugroup.links = message.event.links; } else { delete ugroup.links; }
                             }
-                            masterUpdate(8192 + 16384);
+                            masterUpdate(4096 + 8192 + 16384);
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
@@ -8383,7 +8383,8 @@
                 }
                 if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
-                if (users != null) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                if ((usergroups != null) && sortedusers[i].id.startsWith('ugrp/')) { username = '<a tabindex=0 href=# onclick=\'gotoUserGroup("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                if ((users != null) && sortedusers[i].id.startsWith('user/')) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
                 x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "User" + '\" class=m' + icon + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
@@ -10211,9 +10212,7 @@
             Q('p4name').focus();
         }
 
-        function showCreateUserGroupDialogValidate() {
-            QE('idx_dlgOkButton', (Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1));
-        }
+        function showCreateUserGroupDialogValidate() { QE('idx_dlgOkButton', Q('p4name').value.length > 0); }
 
         function showCreateUserGroupDialogEx(b, mode) {
             var x = { action: 'createusergroup', name: Q('p4name').value, desc: Q('p4desc').value };
@@ -10394,8 +10393,7 @@
         }
 
         function p51editgroupValidate(e) {
-            QE('idx_dlgOkButton', (Q('dp51name').value.length > 0) && (Q('dp51name').value.indexOf(' ') == -1));
-            if (e && e.key == 'Enter') { Q('dp51desc').focus(); }
+            QE('idx_dlgOkButton', Q('dp51name').value.length > 0); if (e && e.key == 'Enter') { Q('dp51desc').focus(); }
         }
 
         function p51showDeleteUserGroupDialog() {
