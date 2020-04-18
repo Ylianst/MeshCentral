@@ -2471,7 +2471,7 @@
     },
     {
       "en": "Add User Group Device Permissions",
-      "en": "Gebruikersmachtigingen voor apparaatgroep toevoegens",
+      "nl": "Gebruikersmachtigingen voor apparaatgroep toevoegens",
       "xloc": [
         "default.handlebars->29->1248"
       ]
