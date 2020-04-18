@@ -876,10 +876,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'updatecheck': {
-                            parent.parent.getLatestServerVersion(function (currentVer, newVer, error) {
-                                var r2 = 'Current Version: ' + currentVer + '\r\n';
-                                if (newVer != null) { r2 += 'Available Version: ' + newVer + '\r\n'; }
+                            parent.parent.getServerTags(function (tags, error) {
+                                var r2 = '';
                                 if (error != null) { r2 += 'Exception: ' + error + '\r\n'; }
+                                else { for (var i in tags) { r2 += i + ': ' + tags[i] + '\r\n'; } }
                                 try { ws.send(JSON.stringify({ action: 'serverconsole', value: r2, tag: command.tag })); } catch (ex) { }
                             });
                             r = "Checking server update...";
@@ -2198,14 +2198,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Check the server version
                     if ((user.siteadmin & 16) == 0) break;
-                    parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
+                    //parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
+                    parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
                     break;
                 }
             case 'serverupdate':
                 {
                     // Perform server update
                     if ((user.siteadmin & 16) == 0) break;
-                    parent.parent.performServerUpdate();
+                    if ((command.version != null) && (typeof command.version != 'string')) break;
+                    parent.parent.performServerUpdate(command.version);
                     break;
                 }
             case 'servererrors':

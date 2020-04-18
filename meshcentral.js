@@ -416,6 +416,7 @@ function CreateMeshCentralServer(config, args) {
             else if (data.indexOf('Server Ctrl-C exit...') >= 0) { childProcess.xrestart = 2; }
             else if (data.indexOf('Starting self upgrade...') >= 0) { childProcess.xrestart = 3; }
             else if (data.indexOf('Server restart...') >= 0) { childProcess.xrestart = 1; }
+            else if (data.indexOf('Starting self upgrade to: ') >= 0) { obj.args.selfupdate = data.substring(26).split('\r')[0].split('\n')[0]; childProcess.xrestart = 3; }
             var datastr = data;
             while (datastr.endsWith('\r') || datastr.endsWith('\n')) { datastr = datastr.substring(0, datastr.length - 1); }
             console.log(datastr);
@@ -457,10 +458,39 @@ function CreateMeshCentralServer(config, args) {
         } catch (ex) { callback(getCurrentVerion(), null, ex); } // If the system is running out of memory, an exception here can easily happen.
     };
 
+    // Get current version and all MeshCentral server tags using NPM
+    obj.getServerTags = function (callback) {
+        if (callback == null) return;
+        try {
+            if (typeof obj.args.selfupdate == 'string') { callback(getCurrentVerion(), obj.args.selfupdate); return; } // If we are targetting a specific version, return that one as current.
+            var child_process = require('child_process');
+            var npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+            var npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            var env = Object.assign({}, process.env); // Shallow clone
+            if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
+            var xxprocess = child_process.exec(npmpath + npmproxy + ' dist-tag ls meshcentral', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+            xxprocess.data = '';
+            xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+            xxprocess.stderr.on('data', function (data) { });
+            xxprocess.on('close', function (code) {
+                var tags = { current: getCurrentVerion() };
+                if (code == 0) {
+                    try {
+                        var lines = xxprocess.data.split('\r\n').join('\n').split('\n');
+                        for (var i in lines) { var s = lines[i].split(': '); if ((s.length == 2) && (obj.args.npmtag == null) || (obj.args.npmtag == s[0])) { tags[s[0]] = s[1]; } }
+                    } catch (e) { }
+                }
+                callback(tags);
+            });
+        } catch (ex) { callback({ current: getCurrentVerion() }, ex); } // If the system is running out of memory, an exception here can easily happen.
+    };
+
     // Initiate server self-update
-    obj.performServerUpdate = function () {
-        if (obj.serverSelfWriteAllowed == true) { console.log('Starting self upgrade...'); process.exit(200); return true; }
-        return false;
+    obj.performServerUpdate = function (version) {
+        if (obj.serverSelfWriteAllowed != true) return false;
+        if ((version == null) || (version == '') || (typeof version != 'string')) { console.log('Starting self upgrade...'); } else { console.log('Starting self upgrade to: ' + version); }
+        process.exit(200); 
+        return true;
     };
 
     // Initiate server self-update

@@ -1985,15 +1985,19 @@
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate'))  {
                         var x = '<div class=dialogText>';
-                        if (!message.current) { message.current = "Unknown"; }
-                        if (!message.latest) { message.latest = "Unknown"; }
-                        x += addHtmlValue2("Current Version", '<b>' + EscapeHtml(message.current) + '</b>');
-                        x += addHtmlValue2("Latest Version", '<b>' + EscapeHtml(message.latest) + '</b>');
+                        if (!message.tags.current) { message.tags.current = "Unknown"; }
+                        if (!message.tags.stable) { message.tags.stable = "Unknown"; }
+                        if (!message.tags.latest) { message.tags.latest = "Unknown"; }
+                        x += addHtmlValue2("Current Version", '<b>' + EscapeHtml(message.tags.current) + '</b>');
+                        x += '<hr />';
+                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable))?' disabled':'') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest))?' disabled':'') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
                         x += '</div>';
-                        if ((message.latest.indexOf('.') == -1) || (message.current == message.latest) || ((features & 2048) == 0)) {
+                        if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
                             setDialogMode(2, "MeshCentral Version", 1, null, x);
                         } else {
-                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x + '<br /><label><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> ' + "Check and click OK to start server self-update." + '</label>');
+                            x += '<hr />' + "Check and click OK to start server self-update.";
+                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x, message.tags);
                             server_showVersionDlgUpdate();
                         }
                     }
@@ -2004,9 +2008,11 @@
                         if (message.data == null) {
                             setDialogMode(2, "MeshCentral Server Errors", 1, null, "Server has no error log.");
                         } else {
-                            var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + message.data + '<pre></div>';
-                            setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x + '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div><div><label><input id=d2updateCheck type=checkbox onclick=server_showVersionDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>');
-                            server_showVersionDlgUpdate();
+                            var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
+                            x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
+                            x += '<div><label><input id=d2clearErrorsCheck type=checkbox onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
+                            setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
+                            server_showErrorsDlgUpdate();
                         }
                     }
                     break;
@@ -8239,8 +8245,16 @@
             return false;
         }
 
-        function server_showVersionDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
-        function server_showVersionDlgEx() { meshserver.send({ action: 'serverupdate' }); }
+        function server_showVersionDlgUpdate() {
+            var stableCheck = Q('d2updateCheck1').checked;
+            var latestCheck = Q('d2updateCheck2').checked;
+            QE('idx_dlgOkButton', ((stableCheck) && (!latestCheck)) || ((!stableCheck) && (latestCheck)));
+        }
+
+        function server_showVersionDlgEx(b, tags) {
+            if (Q('d2updateCheck1').checked) { meshserver.send({ action: 'serverupdate', tag: 'stable', version: tags.stable }); }
+            if (Q('d2updateCheck2').checked) { meshserver.send({ action: 'serverupdate', tag: 'latest', version: tags.latest }); }
+        }
 
         function server_showErrorsDlg() {
             if (xxdialogMode) return false;
@@ -8248,7 +8262,7 @@
             meshserver.send({ action: 'servererrors' });
             return false;
         }
-        function server_showErrorsDlgUpdate() { QE('idx_dlgOkButton', Q('d2updateCheck').checked); }
+        function server_showErrorsDlgUpdate() { QE('idx_dlgOkButton', Q('d2clearErrorsCheck').checked); }
         function server_showErrorsDlgEx() { meshserver.send({ action: 'serverclearerrorlog' }); }
         function d2CopyServerErrorsToClip() { saveAs(new Blob([Q('d2ServerErrorsLogPre').innerText], { type: 'application/octet-stream' }), "servererrors.txt"); }
 
@@ -9623,7 +9637,7 @@
 
             // Display the users using the sorted list
             var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
-            x += '<th>' + "Name" + '<th style=width:80px>' + "Groups" + '<th style=width:120px>' + nobreak("Last Access") + '<th style=width:120px>' + "Permissions";
+            x += '<th>' + "Name" + '<th style=width:80px>' + "Device Groups" + '<th style=width:120px>' + nobreak("Last Access") + '<th style=width:120px>' + "Permissions";
 
             // Save the list of currently checked users
             var checkedUserids = [], elements = document.getElementsByClassName('UserCheckbox');
