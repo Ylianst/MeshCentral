@@ -2471,6 +2471,7 @@
     },
     {
       "en": "Add User Group Device Permissions",
+      "en": "Gebruikersmachtigingen voor apparaatgroep toevoegens",
       "xloc": [
         "default.handlebars->29->1248"
       ]
@@ -9248,6 +9249,7 @@
     },
     {
       "en": "Edit User Group Device Permissions",
+      "nl": "Gebruikersmachtigingen voor apparaatgroep bewerken",
       "xloc": [
         "default.handlebars->29->1247"
       ]
@@ -23519,6 +23521,7 @@
     },
     {
       "en": "Stable Version",
+      "nl": "Stabiele versie",
       "xloc": [
         "default.handlebars->29->96"
       ]
