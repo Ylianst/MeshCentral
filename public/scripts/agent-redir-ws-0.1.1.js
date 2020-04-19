@@ -72,8 +72,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         //console.log(controlMsg);
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
-            obj.consoleMessage = controlMsg.msg;
-            if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
+            setConsoleMessage(controlMsg.msg);
         } else if ((controlMsg.type == 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
             if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
@@ -89,6 +88,13 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                 // TODO: Resume/Start sending data over WebRTC
             }
         }
+    }
+
+    // Set the console message
+    obj.setConsoleMessage = function (str) {
+        if (obj.consoleMessage == str) return;
+        obj.consoleMessage = str;
+        if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
     }
 
     obj.sendCtrlMsg = function (x) { if (obj.ctrlMsgAllowed == true) { if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirSend', typeof x, x); } try { obj.socket.send(x); } catch (ex) { } } }
