@@ -2471,7 +2471,7 @@
     },
     {
       "en": "Add User Group Device Permissions",
-      "nl": "Gebruikersmachtigingen voor apparaatgroep toevoegens",
+      "nl": "Gebruikersmachtigingen voor apparaatgroep toevoegen",
       "xloc": [
         "default.handlebars->29->1248"
       ]
@@ -5878,6 +5878,7 @@
     },
     {
       "en": "Confirm removal of access rights?",
+      "nl": "Verwijdering van toegangsrechten bevestigen?",
       "xloc": [
         "default.handlebars->29->1598",
         "default.handlebars->29->1601"
@@ -22640,7 +22641,7 @@
       "hi": "ऑपरेटिंग सिस्टम नाम डिवाइस दिखाएं",
       "ja": "デバイスのオペレーティングシステム名を表示する",
       "ko": "장치 운영 체제 이름 표시",
-      "nl": "Toon apparaten besturingssysteemnaam",
+      "nl": "Toon apparaatnaam besturingssysteem ",
       "pt": "Mostrar o nome do sistema operacional dos dispositivos",
       "ru": "Фильтр по имени хоста, заданному в настройках ОС",
       "zh-chs": "顯示設備操作系統名稱",
