@@ -5371,6 +5371,7 @@
     },
     {
       "en": "Clear all",
+      "nl": "Wis alle meldingen",
       "xloc": [
         "default.handlebars->29->1614"
       ]
