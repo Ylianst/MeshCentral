@@ -212,7 +212,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             jumboAdd = 8;
         }
         if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
-        if ((command >= 18) && (command != 65) && (command != 88)) { console.error("Invalid KVM command " + command + " of size " + cmdsize); console.log("Invalid KVM data", str.length, rstr2hex(str.substring(0, 40)) + '...'); return; }
+        if ((command >= 18) && (command != 65) && (command != 88)) {
+            console.error("Invalid KVM command " + command + " of size " + cmdsize);
+            console.log("Invalid KVM data", str.length, rstr2hex(str.substring(0, 40)) + '...');
+            if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage("Invalid KVM command " + command + " of size " + cmdsize); }
+            return;
+        }
         if (cmdsize > str.length) {
             //console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
             obj.accumulator = str;
@@ -287,10 +292,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 str = str.substring(4);
                 if (str[0] != '.') {
                     console.log(str); //alert('KVM: ' + str);
-                    if (obj.parent != null) {
-                        obj.parent.consoleMessage = str;
-                        if (obj.parent.onConsoleMessageChange) { obj.parent.onConsoleMessageChange(obj.parent, str); }
-                    }
+                    if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage(str); }
                 } else {
                     console.log('KVM: ' + str.substring(1));
                 }
