@@ -5092,7 +5092,7 @@
 
                 // Update the web page title
                 if ((currentNode) && (xxcurrentView >= 10) && (xxcurrentView < 20)) {
-                    document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + (mesh?(' - ' + mesh.name):'');
+                    document.title = currentNode.name + (mesh?(' - ' + mesh.name):'') + ' - ' + decodeURIComponent('{{{extitle}}}');
                 } else {
                     document.title = decodeURIComponent('{{{extitle}}}');
                 }
@@ -11615,7 +11615,7 @@
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
-                document.title = decodeURIComponent('{{{extitle}}}') + ' - ' + currentNode.name + ((meshes[currentNode.meshid])?(' - ' + meshes[currentNode.meshid].name):'');
+                document.title = currentNode.name + ((meshes[currentNode.meshid])?(' - ' + meshes[currentNode.meshid].name):'') + ' - ' + decodeURIComponent('{{{extitle}}}');
             } else {
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
