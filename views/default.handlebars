@@ -1811,11 +1811,11 @@
                     var groupCount = 0;
                     if (Array.isArray(message.ugroups)) {
                         usergroups = {};
-                        for (var i in message.ugroups) { groupCount++; usergroups[message.ugroups[i]._id] = message.ugroups[i]; }
+                        for (var i in message.ugroups) {  groupCount++; usergroups[message.ugroups[i]._id] = message.ugroups[i]; }
                         if (groupCount == 0) { usergroups = null; }
                     } else {
                         usergroups = message.ugroups;
-                        for (var i in message.ugroups) { groupCount++; }
+                        for (var i in message.ugroups) { groupCount++; message.ugroups[i]._id = i; }
                         if (groupCount == 0) { usergroups = null; }
                     }
                     masterUpdate(8192);
@@ -8692,6 +8692,7 @@
 
             if (userid == null) {
                 setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
+                QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
                 Q('dp20username').focus();
             } else if (userid === 1) {
                 setDialogMode(2, (selected == null)?"Add Device Group Permissions":"Edit Device Group Permissions", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
@@ -8699,6 +8700,7 @@
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 2) {
                 setDialogMode(2, "Add User Group", 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
             } else if (userid === 3) {
                 setDialogMode(2, (selected == null)?"Add Device Group":"Edit Device Group", selected?7:3, p20showAddMeshUserDialogEx, x, userid);
                 QE('dp2groupid', selected == null);
@@ -8733,6 +8735,7 @@
                 }
                 var cmeshrights = GetMeshRights(currentMesh), urights = GetMeshRights(currentMesh, userid);
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
+                QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
             }
 
             if (urights != -1) {
@@ -10808,12 +10811,14 @@
 
         function p30removeUserFromNode(event, userid) {
             if (xxdialogMode) return;
-            var user = users[decodeURIComponent(userid)];
-            if (user != null) {
-                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for user \"{0}\"?", user.name), user);
-            } else if (usergroups != null) {
-                user = usergroups[decodeURIComponent(userid)];
-                if (user != null) { setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ user._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for user group \"{0}\"?", user.name), user); }
+            var user = null, name = '';
+            userid = decodeURIComponent(userid);
+            if (userid.startsWith('user/')) {
+                if (users) { user = users[userid]; if (user != null) { name = user.name; } }
+                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user \"{0}\"?", name):"Confirm removal of access rights?", user);
+            } else if (userid.startsWith('ugrp/')) {
+                if (usergroups) { user = usergroups[userid]; if (user != null) { name = user.name; } }
+                setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user group \"{0}\"?", name):"Confirm removal of access rights?", user);
             }
         }
 
@@ -11483,8 +11488,14 @@
             if (event && (event.shiftKey == true) && (x != 15) && ('{{currentNode}}' == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
-                    if (currentNode) { window.open(window.location.origin + '?node=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
-                } else if (x < 10) {
+                    if (currentNode) { window.open(window.location.origin + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
+                } else if ((x >= 20) && (x <= 29)) {
+                    if (currentMesh) { window.open(window.location.origin + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
+                } else if ((x >= 30) && (x <= 39)) {
+                    if (currentUser) { window.open(window.location.origin + '?gotouser=' + currentUser._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
+                } else if ((x >= 50) && (x <= 59)) {
+                    if (currentUserGroup) { window.open(window.location.origin + '?gotougrp=' + currentUserGroup._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
+                } else { // if (x < 10))
                     window.open(window.location.origin + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
                 }
                 return;

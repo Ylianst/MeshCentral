@@ -2436,6 +2436,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
+                    var selfMeshRights = 0;
                     try {
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid groupid'; } // Check the meshid
                         else if (common.validateInt(command.meshadmin) == false) { err = 'Invalid group rights'; } // Mesh rights must be an integer
@@ -2444,7 +2445,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                             mesh = parent.meshes[command.meshid];
                             if (mesh == null) { err = 'Unknown group'; }
-                            else if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGEUSERS) == 0) { err = 'Permission denied'; }
+                            else if (((selfMeshRights = parent.GetMeshRights(user, mesh)) & MESHRIGHT_MANAGEUSERS) == 0) { err = 'Permission denied'; }
                             else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
                         }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -2475,16 +2476,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         if (newuser != null) {
                             // Can't add or modify self
-                            if (newuserid == obj.user._id) { errors.push("Can't change self."); continue; }
+                            if (newuserid == obj.user._id) { msgs.push("Can't change self"); continue; }
+
+                            var targetMeshRights = 0;
+                            if (newuser.links[command.meshid]) { targetMeshRights = newuser.links[command.meshid].rights; }
+                            if ((targetMeshRights == 0xFFFFFFFF) && (selfMeshRights != 0xFFFFFFFF)) { msgs.push("Can't change rights of device group administrator"); continue; } // A non-admin can't kick out an admin
 
                             if (command.remove === true) {
                                 // Remove mesh from user or user group
-                                var selfMeshRights = parent.GetMeshRights(user, mesh);
-                                var delmeshrights = 0;
-                                if (newuser.links[command.meshid]) { delmeshrights = newuser.links[command.meshid].rights; }
-                                if ((delmeshrights == 0xFFFFFFFF) && (selfMeshRights != 0xFFFFFFFF)) { console.log('ttt', delmeshrights, selfMeshRights); errors.push("Can't remove device group administrator."); continue; } // A non-admin can't kick out an admin
                                 delete newuser.links[command.meshid];
                             } else {
+                                // Adjust rights since we can't add more rights that we have outself for MESHRIGHT_MANAGEUSERS
+                                if ((selfMeshRights != 0xFFFFFFFF) && (command.meshadmin == 0xFFFFFFFF)) { msgs.push("Can't set device group administrator, if not administrator"); continue; }
+                                if (((selfMeshRights & 2) == 0) && ((command.meshadmin & 2) != 0) && ((targetMeshRights & 2) == 0)) { command.meshadmin -= 2; }
+
                                 // Add mesh to user or user group
                                 if (newuser.links == null) { newuser.links = {}; }
                                 if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = command.meshadmin; } else { newuser.links[command.meshid] = { rights: command.meshadmin }; }
