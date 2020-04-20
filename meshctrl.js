@@ -43,7 +43,7 @@ if (args['_'].length == 0) {
     console.log("  --token [number]          - 2nd factor authentication token.");
     console.log("  --loginkey [hex]          - Server login key in hex.");
     console.log("  --loginkeyfile [file]     - File containing server login key in hex.");
-    console.log("  --domain [domainid]       - Domain id, default is empty.");
+    console.log("  --domain [domainid]       - Domain id, default is empty, only used with loginkey.");
     console.log("  --proxy [http://proxy:1]  - Specify an HTTP proxy.");
     return;
 } else {
@@ -552,10 +552,12 @@ function serverConnect() {
         if (args.domain != null) { domainid = args.domain; }
         if (args.loginuser != null) { username = args.loginuser; }
         url += '?auth=' + encodeCookie({ userid: 'user/' + domainid + '/' + username, domainid: domainid }, ckey);
+    } else {
+        if (args.domain != null) { console.log("--domain can only be used along with --loginkey."); process.exit(); return; }
     }
 
     const ws = new WebSocket(url, options);
-    //console.log('Connecting...');
+    //console.log('Connecting to ' + url);
 
     ws.on('open', function open() {
         //console.log('Connected.');
@@ -706,7 +708,6 @@ function serverConnect() {
     });
 
     ws.on('message', function incoming(rawdata) {
-        //console.log(rawdata);
         var data = null;
         try { data = JSON.parse(rawdata); } catch (ex) { }
         if (data == null) { console.log('Unable to parse data: ' + rawdata); }
@@ -809,15 +810,18 @@ function serverConnect() {
                             console.log(JSON.stringify(nodes, ' ', 2));
                         } else {
                             // Display the list of nodes in text format
+                            var nodecount = 0;
                             for (var i in data.nodes) {
                                 var devicesInMesh = data.nodes[i];
                                 if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name + '\"'); }
                                 console.log('id, name, icon, conn, pwr, ip\r\n-----------------------------');
                                 for (var j in devicesInMesh) {
                                     var n = devicesInMesh[j];
+                                    nodecount++;
                                     console.log(n._id.split('/')[2] + ', \"' + n.name + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
                                 }
                             }
+                            if (nodecount == 0) { console.log('None'); }
                         }
                     }
                     process.exit();
