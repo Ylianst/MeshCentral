@@ -606,9 +606,10 @@ function CreateMeshCentralServer(config, args) {
         //wincmd.list(function (svc) { console.log(svc); }, true);
 
         // Setup syslog support
-        if ((require('os').platform() != 'win32') && ((config.settings.syslog != null) || (config.settings.syslogjson != null))) {
+        if ((require('os').platform() != 'win32') && ((config.settings.syslog != null) || (config.settings.syslogjson != null) || (config.settings.syslogauth != null))) {
             if (config.settings.syslog === true) { config.settings.syslog = 'meshcentral'; }
             if (config.settings.syslogjson === true) { config.settings.syslogjson = 'meshcentral-json'; }
+            if (config.settings.syslogauth === true) { config.settings.syslogauth = 'meshcentral-auth'; }
             if (typeof config.settings.syslog == 'string') {
                 obj.syslog = require('modern-syslog');
                 console.log('Starting ' + config.settings.syslog + ' syslog.');
@@ -620,6 +621,12 @@ function CreateMeshCentralServer(config, args) {
                 console.log('Starting ' + config.settings.syslogjson + ' JSON syslog.');
                 obj.syslogjson.init(config.settings.syslogjson, obj.syslogjson.LOG_PID | obj.syslogjson.LOG_ODELAY, obj.syslogjson.LOG_LOCAL0);
                 obj.syslogjson.log(obj.syslogjson.LOG_INFO, "MeshCentral v" + getCurrentVerion() + " Server Start");
+            }
+            if (typeof config.settings.syslogauth == 'string') {
+                obj.syslogauth = require('modern-syslog');
+                console.log('Starting ' + config.settings.syslogauth + ' auth syslog.');
+                obj.syslogauth.init(config.settings.syslogauth, obj.syslogauth.LOG_PID | obj.syslogauth.LOG_ODELAY, obj.syslogauth.LOG_LOCAL0);
+                obj.syslogauth.log(obj.syslogauth.LOG_INFO, "MeshCentral v" + getCurrentVerion() + " Server Start");
             }
         }
 
@@ -2311,12 +2318,16 @@ function CreateMeshCentralServer(config, args) {
     obj.addServerWarning = function(msg, print) { serverWarnings.push(msg); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
-    obj.authLog = function(server, msg) {
-        if (obj.authlog == null) return;
-        var d = new Date();
-        var month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
-        var msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(),2) + ':' + obj.common.zeroPad(d.getMinutes(),2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32')?'\r\n':'\n');
-        obj.fs.write(obj.authlog, msg, function (err, written, string) { });
+    obj.authLog = function (server, msg) {
+        if (typeof msg != 'string') return;
+        if (obj.syslogauth) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, msg); } catch (ex) { } }
+        if (obj.authlog != null) { // Write authlog to file
+            try {
+                var d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+                var msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
+                obj.fs.write(obj.authlog, msg, function (err, written, string) { });
+            } catch (ex) { }
+        }
     }
 
     // Return the path of a file into the meshcentral-data path
