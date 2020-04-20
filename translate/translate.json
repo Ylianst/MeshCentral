@@ -5462,6 +5462,7 @@
     },
     {
       "en": "Click here to edit the device group name",
+      "nl": "Klik hier om de apparaatgroepsnaam te bewerken",
       "xloc": [
         "default.handlebars->29->1101",
         "default.handlebars->29->1305"
@@ -5486,6 +5487,7 @@
     },
     {
       "en": "Click here to edit the user group name",
+      "nl": "Klik hier om de gebruikersgroepsnaam te bewerken",
       "xloc": [
         "default.handlebars->29->1467"
       ]
