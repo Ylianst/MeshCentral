@@ -623,6 +623,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.syslogjson.log(obj.syslogjson.LOG_INFO, "MeshCentral v" + getCurrentVerion() + " Server Start");
             }
             if (typeof config.settings.syslogauth == 'string') {
+                obj.authlog = true;
                 obj.syslogauth = require('modern-syslog');
                 console.log('Starting ' + config.settings.syslogauth + ' auth syslog.');
                 obj.syslogauth.init(config.settings.syslogauth, obj.syslogauth.LOG_PID | obj.syslogauth.LOG_ODELAY, obj.syslogauth.LOG_LOCAL0);
@@ -946,7 +947,7 @@ function CreateMeshCentralServer(config, args) {
         // Linux format /var/log/auth.log
         if (obj.config.settings.authlog != null) {
             obj.fs.open(obj.config.settings.authlog, 'a', function (err, fd) {
-                if (err == null) { obj.authlog = fd; } else { console.log('ERROR: Unable to open: ' + obj.config.settings.authlog); }
+                if (err == null) { obj.authlogfile = fd; obj.authlog = true; } else { console.log('ERROR: Unable to open: ' + obj.config.settings.authlog); }
             })
         }
 
@@ -2320,12 +2321,12 @@ function CreateMeshCentralServer(config, args) {
     // auth.log functions
     obj.authLog = function (server, msg) {
         if (typeof msg != 'string') return;
-        if (obj.syslogauth) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, msg); } catch (ex) { } }
-        if (obj.authlog != null) { // Write authlog to file
+        if (obj.syslogauth != null) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, msg); } catch (ex) { } }
+        if (obj.authlogfile != null) { // Write authlog to file
             try {
                 var d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
                 var msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
-                obj.fs.write(obj.authlog, msg, function (err, written, string) { });
+                obj.fs.write(obj.authlogfile, msg, function (err, written, string) { });
             } catch (ex) { }
         }
     }
