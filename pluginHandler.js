@@ -274,9 +274,8 @@ module.exports.pluginHandler = function (parent) {
         })
     };
 
-    // MeshCentral doesn't adhere to semantic versioning (due to the -<alpha_char> at the end of the version)
-    // Convert 1.2.3-a to 1.2.3-3 where the letter is converted to a number.
-    obj.versionToNumber = function(ver) { var x = ver.split('-'); if (x.length != 2) return ver; x[1] = x[1].toLowerCase().charCodeAt(0) - 96; return x.join('.'); }
+    // MeshCentral now adheres to semver, drop the -<alpha> off the version number for later versions for comparing plugins prior to this change
+    obj.versionToNumber = function(ver) { var x = ver.split('-'); if (x.length != 2) return ver; return x[0]; }
 
     // Check if the current version of MeshCentral is at least the minimal required.
     obj.versionCompare = function(current, minimal) {
