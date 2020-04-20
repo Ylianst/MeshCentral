@@ -8273,15 +8273,18 @@
         var currentMesh;
         function p20updateMesh() {
             if (currentMesh == null) return;
-            QH('p20meshName', EscapeHtml(currentMesh.name));
+
+            // Add device group name
+            var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
+            if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
+            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title=\"' + "Click here to edit the device group name" + '\" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            QH('p20meshName', mname);
+
             var meshtype = format("Unknown #{0}", currentMesh.mtype);
-            var meshrights = GetMeshRights(currentMesh);
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
 
-            var x = '';
-            x += addHtmlValue("Name", addLinkConditional(EscapeHtml(currentMesh.name), 'p20editmesh(1)', (meshrights & 1) != 0));
-            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            var x = addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
 
             // Display group type
             x += addHtmlValue("Type", meshtype);
@@ -9127,7 +9130,12 @@
 
         function p21updateMesh() {
             if (currentMesh == null) return;
-            QH('p21meshName', EscapeHtml(currentMesh.name));
+
+            // Add device group name
+            var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
+            if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
+            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title=\"' + "Click here to edit the device group name" + '\" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            QH('p21meshName', mname);
 
             // Update charts
             var power = {};
@@ -10248,7 +10256,13 @@
             if (xxdialogMode && !force) return;
             var group = currentUserGroup = usergroups?usergroups[decodeURIComponent(groupid)]:null;
             if (group == null) { if (xxcurrentView == 51) { setDialogMode(0); go(50); } return; }
-            QH('p51groupName', group.name);
+            
+            // Add user group name
+            var gname = EscapeHtml(group.name);
+            if (gname.length == 0) { gname = '<i>' + "None" + '</i>'; }
+            if ((userinfo.siteadmin & 256) != 0) { gname = '<span tabindex=0 title=\"' + "Click here to edit the user group name" + '\" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)" style=cursor:pointer>' + gname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            QH('p51groupName', gname);
+
             var usercount = 0, meshcount = 0, devicecount = 0;
             if (group.links) {
                 for (var i in group.links) {
@@ -10262,10 +10276,8 @@
 
             var x = '<div style=min-height:80px><table style=width:100%>';
             if ((userinfo.siteadmin & 256) != 0) {
-                x += addDeviceAttribute("Name", '<span onclick=p51editgroup(1) style=cursor:pointer>' + EscapeHtml(group.name) + ' <img class=hoverButton src="images/link5.png" /></span>');
                 x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2) style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
             } else {
-                x += addDeviceAttribute("Name", EscapeHtml(group.name));
                 x += addDeviceAttribute("Description", desc);
             }
             x += addDeviceAttribute("Users", usercount);
