@@ -56,8 +56,9 @@
     "_MpsTlsOffload": true,
     "_No2FactorAuth": true,
     "_Log": "main,web,webrequest,cert",
-    "_syslog": true,
-    "_syslogjson": true,
+    "_syslog": "meshcentral",
+    "_syslogauth": "meshcentral-auth",
+    "_syslogjson": "meshcentral-json",
     "_WebRtConfig": {
       "iceServers": [
         { "urls": "stun:stun.services.mozilla.com" },
