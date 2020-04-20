@@ -268,7 +268,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Handle events
             ws.HandleEvent = function (source, event, ids, id) {
-                if (!event.domain || event.domain == domain.id) {
+                if ((event.domain == null) || (event.domain == domain.id)) {
                     try {
                         if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
                         else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
