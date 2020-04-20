@@ -3535,7 +3535,7 @@
                 if (elements[i].checked) {
                     var ipaddr = elements[i].getAttribute('tag');
                     var amtinfo = amtScanResults[ipaddr];
-                    meshserver.send({ action: 'addamtdevice', meshid: meshid, devicename: ipaddr, hostname: amtinfo.hostname, amtusername: '', amtpassword: '', amttls: amtinfo.tls });
+                    meshserver.send({ action: 'addamtdevice', meshid: meshid, devicename: amtinfo.hostname, hostname: amtinfo.hostname, amtusername: '', amtpassword: '', amttls: amtinfo.tls });
                 }
             }
         }

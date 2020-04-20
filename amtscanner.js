@@ -296,9 +296,9 @@ module.exports.CreateAmtScanner = function (parent) {
         //var provisioningStates = { 0: 'Pre', 1: 'in', 2: 'Post' };
         //var provisioningStateStr = provisioningStates[provisioningState];
         //console.log(rinfo.address + ': Intel AMT ' + majorVersion + '.' + minorVersion + ', ' + provisioningStateStr + '-Provisioning, Open Ports: [' + openPorts.join(', ') + ']');
-        obj.dns.reverse(rinfo.address, function (err, hostname) {
-            if ((err != undefined) && (hostname != undefined)) {
-                user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: hostname[0] };
+        obj.dns.reverse(rinfo.address, function (err, hostnames) {
+            if ((err == null) && (hostnames != null) && (hostnames.length > 0)) {
+                user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: hostnames[0] };
             } else {
                 user.results[rinfo.address] = { ver: majorVersion + '.' + minorVersion, tls: (((openPort == 16993) || (dualPorts == true)) ? 1 : 0), state: provisioningState, hostname: rinfo.address };
             }
