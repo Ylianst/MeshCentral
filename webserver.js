@@ -1933,7 +1933,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
         // Check if we can use OTP tokens with email
-        var otpemail = (parent.mailserver != null) && (req.session.tokenemail);
+        var otpemail = (parent.mailserver != null) && (req.session != null) && (req.session.tokenemail != null);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
 
         // Render the login page
