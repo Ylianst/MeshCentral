@@ -1275,6 +1275,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                                                 // Send a notification
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(user.email) + '</b>.', nolog: 1, id: Math.random() });
+
+                                                // Send to authlog
+                                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Verified email address ' + user.email + ' for user ' + user.name); }
                                             }
                                         });
                                     }
@@ -1309,6 +1312,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 // Send the new password
                                                 render(req, res, getRenderPage('message', req, domain), getRenderArgs({ title3: 'Account Verification', message: '<div>Password for account <b>' + EscapeHtml(user.name) + '</b> has been reset to:</div><div style=padding:14px;font-size:18px><b>' + EscapeHtml(newpass) + '</b></div>Login and go to the \"My Account\" tab to update your password. <a href="' + domain.url + '">Go to login page</a>.' }, domain));
                                                 parent.debug('web', 'handleCheckMailRequest: send temporary password.');
+
+                                                // Send to authlog
+                                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Performed account reset for user ' + user.name); }
                                             }, 0);
                                         });
                                     }
