@@ -2584,19 +2584,20 @@
                             var x = '';
                             if (message.event.results == null) {
                                 // The scan could not occur because of an error. Likely the user range was invalid.
-                                x = '<div style=width:100%;text-align:center;margin-top:12px>' + "Unable to scan this address range." + '</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Sample IP range values<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100" + '</div>';
+                                x = '<div style=width:100%;text-align:center;margin-top:12px>' + "Unable to scan this address range." + '</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Sample IP range values" + '<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>';
                             } else {
                                 // Go thru all the results and populate the dialog box
                                 amtScanResults = message.event.results;
                                 for (var i in message.event.results) {
                                     var r = message.event.results[i], shortname = r.hostname;
+                                    if (r.hosttype == 'host') { shortname = capitalizeFirstLetter(shortname.split('.')[0]); }
                                     if (shortname.length > 20) { shortname = shortname.substring(0, 20) + '...'; }
                                     var str = '<b title="' + EscapeHtml(r.hostname) + '">' + EscapeHtml(shortname) + '</b> - v' + r.ver;
                                     if (r.state == 2) { if (r.tls == 1) { str += " with TLS."; } else { str += " without TLS."; } } else { str += ' not activated.'; }
                                     x += '<div style=width:100%;margin-bottom:2px;background-color:lightgray><div style=padding:4px><div style=display:inline-block;margin-right:5px><input class=DevScanCheckbox name=dp1checkbox tag="' + EscapeHtml(i) + '" type=checkbox onclick=addAmtScanToMeshCheckbox() /></div><div class=j1 style=display:inline-block></div><div style=display:inline-block;margin-left:5px;overflow-x:auto;white-space:nowrap>' + str + '</div></div></div>';
                                 }
                                 // If no results where found, display a nice message
-                                if (x == '') { x = '<div style=width:100%;text-align:center;margin-top:12px>Scan returned no results.</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>Sample IP range values<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>'; }
+                                if (x == '') { x = '<div style=width:100%;text-align:center;margin-top:12px>' + "Scan returned no results." + '</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Sample IP range values" + '<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>'; }
                             }
                             // Set the html in the dialog box and re-enable the scan button
                             QH('dp1results', x);
@@ -3535,7 +3536,9 @@
                 if (elements[i].checked) {
                     var ipaddr = elements[i].getAttribute('tag');
                     var amtinfo = amtScanResults[ipaddr];
-                    meshserver.send({ action: 'addamtdevice', meshid: meshid, devicename: amtinfo.hostname, hostname: amtinfo.hostname, amtusername: '', amtpassword: '', amttls: amtinfo.tls });
+                    var name = amtinfo.hostname;
+                    if (amtinfo.hosttype == 'host') { name = capitalizeFirstLetter(name.split('.')[0]); }
+                    meshserver.send({ action: 'addamtdevice', meshid: meshid, devicename: name, hostname: amtinfo.hostname, amtusername: '', amtpassword: '', amttls: amtinfo.tls });
                 }
             }
         }
@@ -12019,6 +12022,7 @@
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function getOrderedList(objList, oname) { var r = []; for (var i in objList) { r.push(objList[i]); } r.sort(function(a, b) { var aa = a[oname].toLowerCase(), bb = b[oname].toLowerCase(); if (aa > bb) return 1; if (aa < bb) return -1; return 0; }); return r; }
+        function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
 
     </script>

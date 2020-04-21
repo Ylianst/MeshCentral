@@ -222,6 +222,31 @@
                                     <input id=resetpasswordformargs name="urlargs" type="hidden" value="" />
                                 </form>
                             </div>
+                            <div id=checkemailpanel style="display:none;position:relative">
+                                <form method=post>
+                                    <input type=hidden name=action value=checkemail />
+                                    <div id=message7></div>
+                                    <table id="checkCheckOperations" style="width:100%;display:none">
+                                        <tr>
+                                            <td>
+                                                <div id="unconfirmedEmail"></div><br />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <input id=changeEmailButton type=button value="Change Email Address" onclick="changeEmailAddress()" />
+                                                    <input id=checkEmailButton2 type=button value="Resend Confirmation Email" onclick="resentEmailConfirmation()" />
+                                                    <input id=checkEmailButton type=submit style="display:none" />
+                                                    <input id=checkEmailVal name=email type="hidden" value="" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <hr /><a onclick="return xgo(1,event);" href="#" style=cursor:pointer>Back to login</a>
+                                    <input id=checkemailformargs name="urlargs" type="hidden" value="" />
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 </table>
@@ -277,7 +302,7 @@
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Hold on, reset mail sent.", "Email sent."];
+        var okmessages = ['', "Hold on, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link."];
         var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
@@ -285,7 +310,7 @@
             else if ((messageid >= 100) && ((messageid - 100) < failmessages.length)) { msg = failmessages[messageid - 100]; }
             if (msg != '') {
                 if (messageid >= 100) { msg = ('<span class="msg error"><b style=color:#8C001A>' + msg + '<b></span><br /><br />'); } else { msg = ('<span class="msg success"><b>' + msg + '</b></span><br /><br />'); }
-                for (var i = 1; i < 7; i++) { QH('message' + i, msg); }
+                for (var i = 1; i < 8; i++) { QH('message' + i, msg); }
             }
         }
 
@@ -304,6 +329,7 @@
             Q('tokenformargs').value = xurlargs;
             Q('resettokenformargs').value = xurlargs;
             Q('resetpasswordformargs').value = xurlargs;
+            Q('checkemailformargs').value = xurlargs;
         }
 
         //var webPageFullScreen = getstore('webPageFullScreen', true);
@@ -446,6 +472,7 @@
             QV('message4', false);
             QV('message5', false);
             QV('message6', false);
+            QV('message7', false);
             go(x);
             haltEvent(e);
             return false;
@@ -461,12 +488,18 @@
             QV('tokenpanel', x == 4);
             QV('resettokenpanel', x == 5);
             QV('resetpasswordpanel', x == 6);
+            QV('checkemailpanel', x == 7);
             if (x == 1) { Q('username').focus(); }
             if (x == 2) { if (features & 0x200000) { Q('aemail').focus(); } else { Q('ausername').focus(); } } // Email is username
             if (x == 3) { Q('remail').focus(); }
             if (x == 4) { Q('tokenInput').focus(); }
             if (x == 5) { Q('resetTokenInput').focus(); }
             if (x == 6) { Q('rapassword1').focus(); }
+            if (x == 7) {
+                QH('unconfirmedEmail', passhint);
+                QV('checkCheckOperations', Q('unconfirmedEmail').innerHTML != '');
+                QH('checkEmailVal', passhint);
+            }
         }
 
         function validateLogin(box, e) {
@@ -654,6 +687,28 @@
             QE('resetTokenOkButton', (Q('resetTokenInput').value.length == 6) || (Q('resetTokenInput').value.length == 8) || (Q('resetTokenInput').value.length == 44));
         }
 
+        function changeEmailAddress() {
+            var email = Q('unconfirmedEmail').innerHTML;
+            var x = addHtmlValue("Email", '<input id=dp1email style=width:230px maxlength=256 value="' + email + '" autocomplete=off onchange=validateEmailAddress() onkeyup=validateEmailAddress() />');
+            setDialogMode(1, "Email Confirmation", 3, changeEmailAddressEx, x);
+            validateEmailAddress();
+        }
+
+        function validateEmailAddress() {
+            QE('idx_dlgOkButton', (validateEmail(Q('dp1email').value) == true));
+        }
+
+        function changeEmailAddressEx() {
+            Q('checkEmailVal').value = Q('dp1email').value;
+            QH('unconfirmedEmail', Q('dp1email').value);
+            Q('checkEmailButton').click();
+        }
+
+        function resentEmailConfirmation() {
+            Q('checkEmailVal').value = Q('unconfirmedEmail').innerHTML;
+            Q('checkEmailButton').click();
+        }
+
         //
         // POPUP DIALOG
         //
@@ -750,6 +805,7 @@
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
+        function addHtmlValue(t, v) { return '<table><td style=width:120px;text-align:left>' + t + '<td><b>' + v + '</b></table>'; }
 
     </script>
 </body>
