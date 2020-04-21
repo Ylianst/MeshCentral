@@ -4846,6 +4846,7 @@
     },
     {
       "en": "Change Email Address",
+      "en": "E-mailadres wijzigen",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->checkemailpanel->1->checkCheckOperations->1->2->1->1"
@@ -9403,6 +9404,7 @@
     },
     {
       "en": "Email Confirmation",
+      "nl": "E-mail bevestigen",
       "xloc": [
         "login-mobile.handlebars->5->39",
         "login.handlebars->5->40"
@@ -9535,6 +9537,7 @@
     },
     {
       "en": "Email verification required, check your mailbox and click the confirmation link.",
+      "nl": "E-mailverificatie vereist, controleer uw mailbox en klik op de bevestigingslink.",
       "xloc": [
         "login-mobile.handlebars->5->3",
         "login.handlebars->5->3"
@@ -20829,6 +20832,7 @@
     },
     {
       "en": "Resend Confirmation Email",
+      "nl": "Verzend bevestigingsmail opnieuw",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->checkemailpanel->1->checkCheckOperations->1->2->1->1"
@@ -21273,6 +21277,7 @@
     },
     {
       "en": "Sample IP range values",
+      "nl": "Voorbeeld IP bereikwaarden",
       "xloc": [
         "default.handlebars->29->150",
         "default.handlebars->29->154"
@@ -21465,6 +21470,7 @@
     },
     {
       "en": "Scan returned no results.",
+      "nl": "Scan leverde geen resultaten op.",
       "xloc": [
         "default.handlebars->29->153"
       ]
