@@ -820,12 +820,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 res.cookie('twofactor', twoFactorCookie, { maxAge: (30 * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
                             }
 
+                            // Check if email address needs to be confirmed
+                            var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                            if (emailcheck && (user.emailVerified !== true)) {
+                                parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
+                                req.session.messageid = 3; // "Email verification required" message
+                                req.session.loginmode = '7';
+                                req.session.passhint = user.email;
+                                req.session.cuserid = userid;
+                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                                return;
+                            }
+
                             // Login successful
                             if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
                             parent.debug('web', 'handleLoginRequest: successful 2FA login');
                             completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
                         }
                     });
+                    return;
+                }
+
+                // Check if email address needs to be confirmed
+                var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+                if (emailcheck && (user.emailVerified !== true)) {
+                    parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
+                    req.session.messageid = 3; // "Email verification required" message
+                    req.session.loginmode = '7';
+                    req.session.passhint = user.email;
+                    req.session.cuserid = userid;
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     return;
                 }
 
@@ -902,6 +926,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete req.session.tokenemail;
         delete req.session.messageid;
         delete req.session.passhint;
+        delete req.session.cuserid;
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
@@ -1060,6 +1085,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete req.session.tokenemail;
             delete req.session.messageid;
             delete req.session.passhint;
+            delete req.session.cuserid;
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             return;
         }
@@ -1122,6 +1148,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.tokenemail;
                 delete req.session.messageid;
                 delete req.session.passhint;
+                delete req.session.cuserid;
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
@@ -1218,6 +1245,80 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     }
                 }
+            });
+        }
+    }
+
+    // Handle account email change and email verification request
+    function handleCheckAccountEmailRequest(req, res, direct) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((obj.parent.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(req.body.email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+
+        // Always lowercase the email address
+        if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
+
+        // Get the email from the body or session.
+        var email = req.body.email;
+        if ((email == null) || (email == '')) { email = req.session.tokenemail; }
+
+        // Check if this request is for an allows email domain
+        if ((domain.newaccountemaildomains != null) && Array.isArray(domain.newaccountemaildomains)) {
+            var i = -1;
+            if (typeof req.body.email == 'string') { i = req.body.email.indexOf('@'); }
+            if (i == -1) {
+                parent.debug('web', 'handleCreateAccountRequest: unable to create account (1)');
+                req.session.loginmode = '7';
+                req.session.messageid = 106; // Invalid email.
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                return;
+            }
+            var emailok = false, emaildomain = req.body.email.substring(i + 1).toLowerCase();
+            for (var i in domain.newaccountemaildomains) { if (emaildomain == domain.newaccountemaildomains[i].toLowerCase()) { emailok = true; } }
+            if (emailok == false) {
+                parent.debug('web', 'handleCreateAccountRequest: unable to create account (2)');
+                req.session.loginmode = '7';
+                req.session.messageid = 106; // Invalid email.
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                return;
+            }
+        }
+
+        // Check the email string format
+        if (!email || checkEmail(email) == false) {
+            parent.debug('web', 'handleCheckAccountEmailRequest: Invalid email');
+            req.session.loginmode = '7';
+            req.session.messageid = 106; // Invalid email.
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+        } else {
+            // Check is email already exists
+            obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
+                if ((err != null) || (docs.length > 0)) {
+                    // Email already exitst
+                    req.session.messageid = 102; // Existing account with this email address.
+                } else {
+                    // Update the user and notify of user email address change
+                    var user = obj.users[req.session.cuserid];
+                    if (user.email != email) {
+                        user.email = email;
+                        db.SetUser(user);
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed: ' + user.name, domain: domain.id };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.DispatchEvent(targets, obj, event);
+                    }
+
+                    // Send the verification email
+                    obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, obj.getLanguageCodes(req));
+
+                    // Send the response
+                    req.session.messageid = 2; // Email sent.
+                }
+                req.session.loginmode = '7';
+                delete req.session.cuserid;
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             });
         }
     }
@@ -1678,6 +1779,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.domainid;
                 delete req.session.currentNode;
                 delete req.session.passhint;
+                delete req.session.cuserid;
                 req.session.messageid = 110; // Account locked.
                 res.redirect(domain.url + getQueryPortion(req)); // BAD***
                 return;
@@ -1816,7 +1918,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var passhint = null, msgid = 0;
         if (req.session != null) {
             msgid = req.session.messageid;
-            if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true)) { passhint = EscapeHtml(req.session.passhint); }
+            if ((loginmode == '7') || ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true))) { passhint = EscapeHtml(req.session.passhint); }
             delete req.session.messageid;
             delete req.session.passhint;
         }
@@ -1859,6 +1961,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             case 'createaccount': { handleCreateAccountRequest(req, res, true); break; }
             case 'resetpassword': { handleResetPasswordRequest(req, res, true); break; }
             case 'resetaccount': { handleResetAccountRequest(req, res, true); break; }
+            case 'checkemail': { handleCheckAccountEmailRequest(req, res, true); break; }
             default: { handleLoginRequest(req, res, true); break; }
         }
     }
@@ -3898,6 +4001,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (domain == null) { return; }
             }
 
+            var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
+
             // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
             if ((req.query.user != null) && (req.query.pass != null)) {
                 // A user/pass is provided in URL arguments
@@ -3928,13 +4033,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                                     } else {
                                         // We are authenticated with 2nd factor.
-                                        func(ws, req, domain, user);
+                                        // Check email verification
+                                        if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                        } else {
+                                            func(ws, req, domain, user);
+                                        }
                                     }
                                 });
                             }
                         } else {
-                            // We are authenticated
-                            func(ws, req, domain, user);
+                            // Check email verification
+                            if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                            } else {
+                                // We are authenticated
+                                func(ws, req, domain, user);
+                            }
                         }
                     } else {
                         // Failed to authenticate, see if a default user is active
@@ -4000,14 +4115,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         }
                                     } else {
                                         // We are authenticated with 2nd factor.
-                                        func(ws, req, domain, user);
+                                        // Check email verification
+                                        if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                        } else {
+                                            func(ws, req, domain, user);
+                                        }
                                     }
                                 });
                             }
                         } else {
                             // We are authenticated
-                            func(ws, req, domain, user);
-                        }
+                            // Check email verification
+                            if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                            } else {
+                                func(ws, req, domain, user);
+                            }                        }
                     } else {
                         // Failed to authenticate, see if a default user is active
                         if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
