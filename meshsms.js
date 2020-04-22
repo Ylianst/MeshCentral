@@ -43,7 +43,6 @@ module.exports.CreateMeshSMS = function (parent) {
     // Send an SMS message
     obj.sendSMS = function (to, msg, func) {
         parent.debug('email', 'Sending SMS to: ' + to + ': ' + msg);
-        console.log({ from: parent.config.sms.from, to: to, body: msg });
         if (parent.config.sms.provider == 'twilio') {
             obj.provider.messages.create({
                 from: parent.config.sms.from,
@@ -78,7 +77,7 @@ module.exports.CreateMeshSMS = function (parent) {
         }
 
         // Get the english email
-        if ((htmlfile == null) || (txtfile == null)) {
+        if (txtfile == null) {
             var pathTxt = obj.parent.path.join(emailsPath, 'sms-messages.txt');
             if (obj.parent.fs.existsSync(pathTxt)) {
                 txtfile = obj.parent.fs.readFileSync(pathTxt).toString();
@@ -89,8 +88,8 @@ module.exports.CreateMeshSMS = function (parent) {
         if (txtfile == null) { return null; }
 
         // Decode the TXT file
-        lines = txtfile.split('\r\n').join('\n').split('\n')
-        if (lines.length >= templateNumber) return null;
+        var lines = txtfile.split('\r\n').join('\n').split('\n')
+        if (lines.length <= templateNumber) return null;
 
         return lines[templateNumber];
     }
@@ -99,22 +98,16 @@ module.exports.CreateMeshSMS = function (parent) {
     obj.sendPhoneCheck = function (domain, phoneNumber, verificationCode, language, func) {
         parent.debug('email', "Sending verification SMS to " + phoneNumber);
 
-        var template = getTemplate(0, domain, language);
-        if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
-            parent.debug('email', "Error: Failed to get SMS template"); // No SMS template found
-            return;
-        }
+        var sms = getTemplate(0, domain, language);
+        if (sms == null) { parent.debug('email', "Error: Failed to get SMS template"); return; } // No SMS template found
 
         // Setup the template
-        template.split("[[0]]").join(domain.title ? domain.title : 'MeshCentral');
-        template.split("[[1]]").join(verificationCode);
+        sms = sms.split('[[0]]').join(domain.title ? domain.title : 'MeshCentral');
+        sms = sms.split('[[1]]').join(verificationCode);
 
         // Send the SMS
-        obj.sendSMS(phoneNumber, template, func);
+        obj.sendSMS(phoneNumber, sms, func);
     };
 
     return obj;
 };
-
-// +18632703894
-// SMS 5032700426 "This is a test"

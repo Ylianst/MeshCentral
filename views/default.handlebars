@@ -9799,6 +9799,7 @@
             }
 
             if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
+            if (user.phone != null) { username += ' <img src="images/phone12.png" height=12 width=7 title="' + "Verified phone number" + '" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
 
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
@@ -9906,6 +9907,16 @@
             meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
             return false;
         }
+
+        function showSendSMS(userid) {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Send SMS", 3, showSendSMSEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', decodeURIComponent(userid));
+            Q('d2smsText').focus();
+            showSendSMSValidate();
+        }
+
+        function showSendSMSValidate() { QE('idx_dlgOkButton', Q('d2smsText').value.length > 0); }
+        function showSendSMSEx(b, tag) { if (Q('d2smsText').value.length > 0) { meshserver.send({ action: 'smsuser', userid: tag, msg: Q('d2smsText').value }); } }
 
         function showUserAlertDialog(e, userid) {
             if (xxdialogMode) return;
@@ -10657,6 +10668,7 @@
 
             // Add action buttons
             x += '<input type=button value=\"' + "Notes" + '\" title=\"' + "View notes about this user" + '\" onclick=showNotes(false,"' + userid + '") />';
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button value=\"' + "SMS" + '\" title=\"' + "Send a SMS message to this user" + '\" onclick=showSendSMS("' + encodeURIComponent(userid) + '") />'; }
             if (!self && (activeSessions > 0)) { x += '<input type=button value=\"' + "Notify" + '\" title=\"' + "Send user notification" + '\" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
 
             // Setup the panel
