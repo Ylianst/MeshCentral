@@ -280,7 +280,7 @@ function createMeshCore(agent) {
     */
 
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-    var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ('MeshCore CRC[' + crc32c(require('MeshAgent').coreHash) + ']') : ('MeshCore v6')), caps: 14 }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+    var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ('MeshCore CRC-' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14 }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
 
 
     // Get the operating system description string
@@ -1995,7 +1995,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,version,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
 
@@ -2058,9 +2058,6 @@ function createMeshCore(agent) {
                             try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize); } catch (x2) { response = x2; }
                         } else { response = "Agent Size: " + actualSize + " kb"; }
                     } else { response = "Agent Size: " + actualSize + " kb"; }
-                    break;
-                case 'version':
-                    response = "Mesh Agent Version: " + process.versions.meshAgent;
                     break;
                 case 'versions':
                     response = JSON.stringify(process.versions, null, '  ');

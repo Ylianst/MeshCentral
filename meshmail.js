@@ -160,7 +160,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 var template = getTemplate('account-login', domain, language);
                 if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
-                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    parent.debug('email', "Error: Failed to get mail template."); // No email template found
                     return; 
                 }
 
@@ -187,7 +187,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 var template = getTemplate('account-invite', domain, language);
                 if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
-                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    parent.debug('email', "Error: Failed to get mail template."); // No email template found
                     return;
                 }
 
@@ -214,7 +214,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 var template = getTemplate('account-check', domain, language);
                 if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
-                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    parent.debug('email', "Error: Failed to get mail template."); // No email template found
                     return;
                 }
 
@@ -242,7 +242,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 var template = getTemplate('account-reset', domain, language);
                 if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
-                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    parent.debug('email', "Error: Failed to get mail template."); // No email template found
                     return;
                 }
 
@@ -270,7 +270,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 var template = getTemplate('mesh-invite', domain, language);
                 if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
-                    parent.debug('email', "Error: Failed to get mail template."); // Not email template found
+                    parent.debug('email', "Error: Failed to get mail template."); // No email template found
                     return;
                 }
 

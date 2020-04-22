@@ -755,6 +755,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             break;
                         }
+                        case 'sms': {
+                            if (parent.parent.smsserver == null) {
+                                r = "No SMS gateway in use.";
+                            } else {
+                                if (cmdargs['_'].length != 2) {
+                                    r = "Usage: SMS \"PhoneNumber\" \"Message\".";
+                                } else {
+                                    parent.parent.smsserver.sendSMS(cmdargs['_'][0], cmdargs['_'][1], function (status) {
+                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status?'Success':'Failed', tag: command.tag })); } catch (ex) { }
+                                    });
+                                }
+                            }
+                            break;
+                        }
                         case 'le': {
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
@@ -3695,6 +3709,55 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete obj.hardwareKeyRegistrationRequest;
                     break;
                 }
+            case 'verifyPhone': {
+                if (parent.parent.smsserver == null) return;
+                if (common.validateString(command.phone, 1, 18) == false) break; // Check phone length
+                if (command.phone.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) == false) break; // Check phone
+                var code = getRandomEightDigitInteger();
+                //console.log(code);
+
+                // TODO: We need to tie this cookie to this session and limit how many times we can guess the code
+                const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone });
+
+                ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: true })); // DEBUG
+                /*
+                parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
+                    ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
+                });
+                */
+                break;
+            }
+            case 'confirmPhone': {
+                if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'number')) break; // Input checks
+                var cookie = parent.parent.decodeCookie(command.cookie);
+                if (cookie == null) break; // Invalid cookie
+                if (cookie.c != command.code) { ws.send(JSON.stringify({ action: 'verifyPhone', cookie: command.cookie, success: true })); break; } // Code does not match
+
+                // Set the user's phone
+                user.phone = cookie.p;
+                db.SetUser(user);
+
+                // Event the change
+                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Verified phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+
+                break;
+            }
+            case 'removePhone': {
+                if (user.phone == null) break;
+
+                // Clear the user's phone
+                delete user.phone;
+                db.SetUser(user);
+
+                // Event the change
+                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+
+                break;
+            }
             case 'getClip': {
                 if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
 

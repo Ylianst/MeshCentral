@@ -306,6 +306,7 @@
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
+                            <div id="managePhoneNumber"><div class="p2AccountActions"><span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span></div>
                             <div id="manageEmail2FA"><div class="p2AccountActions"><span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthEmail()">Manage email authentication</a><br /></span></div>
                             <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
                             <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
@@ -1608,6 +1609,7 @@
 
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode, domain authentication to 2 factor auth not supported.
+            QV('managePhoneNumber', features & 0x02000000);
             QV('manageEmail2FA', features & 0x00800000);
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
@@ -1679,6 +1681,7 @@
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('manageOtp', (userinfo.otpsecret == 1) || (userinfo.otphkeys > 0));
+            QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
@@ -2180,6 +2183,16 @@
                                 setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
                             });
                     }, 100);
+                    break;
+                }
+                case 'verifyPhone': {
+                    if (xxdialogMode && (xxdialogTag != 'verifyPhone')) return;
+                    var x = '<table><tr><td><img src="images/phone80.png" style=padding:8px>';
+                    x += '<td>Check your phone and enter the verification code.';
+                    x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=8 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
+                    setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
+                    Q('d2phoneCodeInput').focus();
+                    account_managePhoneCodeValidate();
                     break;
                 }
                 case 'event': {
@@ -7871,6 +7884,33 @@
         // MY ACCOUNT
         //
 
+        function account_managePhone() {
+            if (xxdialogMode || ((features & 0x02000000) == 0)) return;
+            var x;
+            if (userinfo.phone != null) {
+                x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + userinfo.phone + '</div>';
+                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
+                setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
+                account_managePhoneRemoveValidate();
+            } else {
+                x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
+                x += '<td>Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.';
+                x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]{9}" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
+                setDialogMode(2, "Phone Notifications", 3, account_managePhoneAdd, x, 'verifyPhone');
+                Q('d2phoneinput').focus();
+                account_managePhoneValidate();
+            }
+        }
+        
+        function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
+        function account_managePhoneValidate(x) { var ok = isPhoneNumber(Q('d2phoneinput').value); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
+        function account_managePhoneCodeValidate(x) { var ok = Q('d2phoneCodeInput').value.match(/[0-9]/); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
+        function account_managePhoneConfirm(b, tag) { meshserver.send({ action: 'confirmPhone', code: parseInt(Q('d2phoneCodeInput').value), cookie: tag }); }
+        function account_managePhoneAdd() { if (isPhoneNumber(Q('d2phoneinput').value) == false) return; QE('d2phoneinput', false); meshserver.send({ action: 'verifyPhone', phone: Q('d2phoneinput').value }); }
+        function account_managePhoneRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removePhone' }); } }
+        function account_managePhoneRemoveValidate() { QE('idx_dlgOkButton', Q('d2delPhone').checked); }
+
         function account_manageAuthEmail() {
             if (xxdialogMode || ((features & 0x00800000) == 0)) return;
             var emailU2Fenabled = ((userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
@@ -10564,6 +10604,7 @@
             } else {
                 x += addDeviceAttribute("Email", everify + email + ' <a href=# style=cursor:pointer onclick=\'return doemail(event,\"' + user.email + '\")\'><img class=hoverButton src="images/link1.png" /></a>');
             }
+            if (user.phone != null) { x += addDeviceAttribute("Phone Number", user.phone); }
             x += addDeviceAttribute("Server Rights", premsg + '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,\"' + userid + '\")\'>' + msg.join(', ') + '</a>');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));

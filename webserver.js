@@ -1838,6 +1838,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (parent.mqttbroker != null) { features += 0x00400000; } // This server supports MQTT channels
             if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
             if (domain.agentinvitecodes == true) { features += 0x01000000; } // Support for agent invite codes
+            if (parent.smsserver != null) { features += 0x02000000; } // SMS messaging is supported
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
