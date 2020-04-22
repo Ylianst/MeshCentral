@@ -2062,6 +2062,9 @@ function createMeshCore(agent) {
                 case 'version':
                     response = "Mesh Agent Version: " + process.versions.meshAgent;
                     break;
+                case 'versions':
+                    response = JSON.stringify(process.versions, null, '  ');
+                    break;
                 case 'wpfhwacceleration':
                     if (process.platform != 'win32') { throw ("wpfhwacceleration setting is only supported on Windows"); }
                     if (args['_'].length != 1) {
