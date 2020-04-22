@@ -306,7 +306,7 @@
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
-                            <div id="managePhoneNumber"><div class="p2AccountActions"><span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span></div>
+                            <div id="managePhoneNumber1"><div class="p2AccountActions"><span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span></div>
                             <div id="manageEmail2FA"><div class="p2AccountActions"><span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthEmail()">Manage email authentication</a><br /></span></div>
                             <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
                             <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
@@ -316,6 +316,7 @@
                     <div id="p2AccountActions">
                         <p><strong>Account actions</strong></p>
                         <p class="mL">
+                            <span id="managePhoneNumber2" style="display:none"><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span>
                             <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
                             <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
                             <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
@@ -1609,7 +1610,8 @@
 
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode, domain authentication to 2 factor auth not supported.
-            QV('managePhoneNumber', features & 0x02000000);
+            QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
+            QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
             QV('manageEmail2FA', features & 0x00800000);
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
@@ -1691,6 +1693,7 @@
             // Check if none or at least 2 factors are enabled.
             var authFactorCount = 0;
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount += 1; }
+            if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount += 1; }
             if (userinfo.otpkeys == 1) { authFactorCount += 1; }
             if (userinfo.otpsecret == 1) { authFactorCount += 1; }
             if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; }
@@ -2189,7 +2192,7 @@
                     if (xxdialogMode && (xxdialogTag != 'verifyPhone')) return;
                     var x = '<table><tr><td><img src="images/phone80.png" style=padding:8px>';
                     x += '<td>Check your phone and enter the verification code.';
-                    x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=8 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
+                    x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
                     setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
                     Q('d2phoneCodeInput').focus();
                     account_managePhoneCodeValidate();
@@ -7896,17 +7899,17 @@
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
                 x += '<td>Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.';
-                x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]{9}" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
+                x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneAdd, x, 'verifyPhone');
                 Q('d2phoneinput').focus();
                 account_managePhoneValidate();
             }
         }
         
-        function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
+        function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3,4})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
         function account_managePhoneValidate(x) { var ok = isPhoneNumber(Q('d2phoneinput').value); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
-        function account_managePhoneCodeValidate(x) { var ok = Q('d2phoneCodeInput').value.match(/[0-9]/); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
-        function account_managePhoneConfirm(b, tag) { meshserver.send({ action: 'confirmPhone', code: parseInt(Q('d2phoneCodeInput').value), cookie: tag }); }
+        function account_managePhoneCodeValidate(x) { var ok = (Q('d2phoneCodeInput').value.length == 6) && Q('d2phoneCodeInput').value.match(/[0-9]/); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
+        function account_managePhoneConfirm(b, tag) { meshserver.send({ action: 'confirmPhone', code: Q('d2phoneCodeInput').value, cookie: tag }); }
         function account_managePhoneAdd() { if (isPhoneNumber(Q('d2phoneinput').value) == false) return; QE('d2phoneinput', false); meshserver.send({ action: 'verifyPhone', phone: Q('d2phoneinput').value }); }
         function account_managePhoneRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removePhone' }); } }
         function account_managePhoneRemoveValidate() { QE('idx_dlgOkButton', Q('d2delPhone').checked); }
@@ -8159,7 +8162,7 @@
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return false; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below." + '<br /><br />';
@@ -9798,10 +9801,9 @@
                 }
             }
 
-            if ((user.otpsecret > 0) || (user.otphkeys > 0)) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
             if (user.phone != null) { username += ' <img src="images/phone12.png" height=12 width=7 title="' + "Verified phone number" + '" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
-
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
             x += '<div class=bar>';
             x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
@@ -9910,7 +9912,7 @@
 
         function showSendSMS(userid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Send SMS", 3, showSendSMSEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', decodeURIComponent(userid));
+            setDialogMode(2, "Send SMS", 3, showSendSMSEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', userid);
             Q('d2smsText').focus();
             showSendSMSValidate();
         }
@@ -10661,6 +10663,7 @@
                 if (user.otpsecret > 0) { factors.push("Authentication App"); }
                 if (user.otphkeys > 0) { factors.push("Security Key"); }
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
+                if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
                 x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title=\"' + "2nd factor authentication enabled" + '\" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
@@ -10668,7 +10671,7 @@
 
             // Add action buttons
             x += '<input type=button value=\"' + "Notes" + '\" title=\"' + "View notes about this user" + '\" onclick=showNotes(false,"' + userid + '") />';
-            if (user.phone && (features & 0x02000000)) { x += '<input type=button value=\"' + "SMS" + '\" title=\"' + "Send a SMS message to this user" + '\" onclick=showSendSMS("' + encodeURIComponent(userid) + '") />'; }
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button value=\"' + "SMS" + '\" title=\"' + "Send a SMS message to this user" + '\" onclick=showSendSMS("' + userid + '") />'; }
             if (!self && (activeSessions > 0)) { x += '<input type=button value=\"' + "Notify" + '\" title=\"' + "Send user notification" + '\" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
 
             // Setup the panel
@@ -11459,7 +11462,7 @@
             x += '<div><label><input type=checkbox id=p41c14 ' + ((serverTraceSources.indexOf('agentupdate') >= 0) ? 'checked' : '') + '>' + "MeshAgent update" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c16 ' + ((serverTraceSources.indexOf('cert') >= 0) ? 'checked' : '') + '>' + "Server Certificate" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c17 ' + ((serverTraceSources.indexOf('db') >= 0) ? 'checked' : '') + '>' + "Server Database" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c18 ' + ((serverTraceSources.indexOf('email') >= 0) ? 'checked' : '') + '>' + "Email Traffic" + '</label></div>';
+            x += '<div><label><input type=checkbox id=p41c18 ' + ((serverTraceSources.indexOf('email') >= 0) ? 'checked' : '') + '>' + "Email/SMS Traffic" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Web Server" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c5 ' + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + '>' + "Web Server" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';

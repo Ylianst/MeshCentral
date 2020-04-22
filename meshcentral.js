@@ -2571,6 +2571,7 @@ function mainStart() {
 
         // SMS support
         if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
+        if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
