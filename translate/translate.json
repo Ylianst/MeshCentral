@@ -4846,6 +4846,7 @@
     },
     {
       "en": "Change Email Address",
+      "nl": "Verander e-mailadres",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->checkemailpanel->1->checkCheckOperations->1->2->1->1"
@@ -9002,9 +9003,6 @@
       "xloc": [
         "default.handlebars->29->889"
       ]
-    },
-    {
-      "en": "E-mailadres wijzigen"
     },
     {
       "cs": "CHYBA: ",
@@ -27939,12 +27937,14 @@
     },
     {
       "en": "[[0]] access token is: [[1]]",
+      "nl": "[[0]] Toegangs token is: [[1]]",
       "xloc": [
         "sms-messages.txt"
       ]
     },
     {
       "en": "[[0]] verification code is: [[1]]",
+      "nl": "[[0]] verificatie code is: [[1]]",
       "xloc": [
         "sms-messages.txt"
       ]
@@ -27958,6 +27958,7 @@
       "ja": "[[[SERVERNAME]]]",
       "nl": "[[[SERVERNAME]]]",
       "ru": "[[[SERVERNAME]]]",
+      "pt": "[[[SERVERNAME]]]",
       "zh-chs": "[[[SERVERNAME]]]",
       "xloc": [
         "account-check.html->2->3->1",
