@@ -14,6 +14,24 @@
 /*jshint esversion: 6 */
 "use strict";
 
+/*
+// For Twilio, add this in config.json
+"sms": {
+    "provider": "twilio",
+    "sid": "ACxxxxxxxxx",
+    "auth": "xxxxxxx",
+    "from": "+15555555555"
+},
+
+// For Plivo, add this in config.json
+"sms": {
+    "provider": "plivo",
+    "id": "xxxxxxx",
+    "token": "xxxxxxx",
+    "from": "15555555555"
+}
+*/
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshSMS = function (parent) {
     var obj = {};
@@ -33,6 +51,17 @@ module.exports.CreateMeshSMS = function (parent) {
             obj.provider = new Twilio(parent.config.sms.sid, parent.config.sms.auth);
             break;
         }
+        case 'plivo': {
+            // Validate Plivo configuration values
+            if (typeof parent.config.sms.id != 'string') { console.log('Invalid or missing SMS gateway provider id.'); return null; }
+            if (typeof parent.config.sms.token != 'string') { console.log('Invalid or missing SMS gateway provider token.'); return null; }
+            if (typeof parent.config.sms.from != 'string') { console.log('Invalid or missing SMS gateway provider from.'); return null; }
+
+            // Setup Twilio
+            var plivo = require('plivo');
+            obj.provider = new plivo.Client(parent.config.sms.id, parent.config.sms.token);
+            break;
+        }
         default: {
             // Unknown SMS gateway provider
             console.log('Unknown SMS gateway provider: ' + parent.config.sms.provider);
@@ -43,15 +72,32 @@ module.exports.CreateMeshSMS = function (parent) {
     // Send an SMS message
     obj.sendSMS = function (to, msg, func) {
         parent.debug('email', 'Sending SMS to: ' + to + ': ' + msg);
-        if (parent.config.sms.provider == 'twilio') {
+        if (parent.config.sms.provider == 'twilio') { // Twilio
             obj.provider.messages.create({
                 from: parent.config.sms.from,
                 to: to,
                 body: msg
             }, function (err, result) {
-                if (err != null) { parent.debug('email', 'SMS error: ' + JSON.stringify(err)); } else { parent.debug('email', 'SMS result: ' + JSON.stringify(result)); }
-                if (func != null) { func((err == null) && (result.status == 'queued'), err, result); }
+                if (err != null) { parent.debug('email', 'SMS error: ' + err.message); } else { parent.debug('email', 'SMS result: ' + JSON.stringify(result)); }
+                if (func != null) { func((err == null) && (result.status == 'queued'), err ? err.message : null, result); }
             });
+        } else if (parent.config.sms.provider == 'plivo') { // Plivo
+            if (to.split('-').join('').split(' ').join('').split('+').join('').length == 10) { to = '1' + to; } // If we only have 10 digits, add a 1 in front.
+            obj.provider.messages.create(
+                parent.config.sms.from,
+                to,
+                msg
+            ).then(function (result) {
+                parent.debug('email', 'SMS result: ' + JSON.stringify(result));
+                if (func != null) { func((result != null) && (result.messageUuid != null), null, result); }
+            }
+            ).catch(function (err) {
+                var msg = null;
+                if ((err != null) && err.message) { msg = JSON.parse(err.message).error; }
+                parent.debug('email', 'SMS error: ' + msg);
+                if (func != null) { func(false, msg, null); }
+            }
+            );
         }
     }
 
@@ -99,6 +145,21 @@ module.exports.CreateMeshSMS = function (parent) {
         parent.debug('email', "Sending verification SMS to " + phoneNumber);
 
         var sms = getTemplate(0, domain, language);
+        if (sms == null) { parent.debug('email', "Error: Failed to get SMS template"); return; } // No SMS template found
+
+        // Setup the template
+        sms = sms.split('[[0]]').join(domain.title ? domain.title : 'MeshCentral');
+        sms = sms.split('[[1]]').join(verificationCode);
+
+        // Send the SMS
+        obj.sendSMS(phoneNumber, sms, func);
+    };
+
+    // Send phone number verification SMS
+    obj.sendToken = function (domain, phoneNumber, verificationCode, language, func) {
+        parent.debug('email', "Sending login token SMS to " + phoneNumber);
+
+        var sms = getTemplate(1, domain, language);
         if (sms == null) { parent.debug('email', "Error: Failed to get SMS template"); return; } // No SMS template found
 
         // Setup the template

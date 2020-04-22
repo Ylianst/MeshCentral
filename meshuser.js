@@ -762,8 +762,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (cmdargs['_'].length != 2) {
                                     r = "Usage: SMS \"PhoneNumber\" \"Message\".";
                                 } else {
-                                    parent.parent.smsserver.sendSMS(cmdargs['_'][0], cmdargs['_'][1], function (status) {
-                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status?'Success':'Failed', tag: command.tag })); } catch (ex) { }
+                                    parent.parent.smsserver.sendSMS(cmdargs['_'][0], cmdargs['_'][1], function (status, msg) {
+                                        if (typeof msg == 'string') {
+                                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: command.tag })); } catch (ex) { }
+                                        } else {
+                                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: command.tag })); } catch (ex) { }
+                                        }
                                     });
                                 }
                             }
@@ -3713,9 +3717,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (parent.parent.smsserver == null) return;
                 if (common.validateString(command.phone, 1, 18) == false) break; // Check phone length
                 if (command.phone.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) == false) break; // Check phone
-                const code = getRandomEightDigitInteger();
-
-                // TODO: We need limit how many times we can guess the code
+                const code = common.zeroPad(getRandomSixDigitInteger(), 6)
                 const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
                 parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
                     ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
@@ -3723,11 +3725,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'confirmPhone': {
-                if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'number')) break; // Input checks
+                if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedSmsCookieCheck == 1)) break; // Input checks
                 var cookie = parent.parent.decodeCookie(command.cookie);
                 if (cookie == null) break; // Invalid cookie
                 if (cookie.s != ws.sessionId) break; // Invalid session
-                if (cookie.c != command.code) { ws.send(JSON.stringify({ action: 'verifyPhone', cookie: command.cookie, success: true })); break; } // Code does not match
+                if (cookie.c != command.code) {
+                    obj.failedSmsCookieCheck = 1;
+                    // Code does not match, delay the response to limit how many guesses we can make and don't allow more than 1 guess at any given time.
+                    setTimeout(function () {
+                        ws.send(JSON.stringify({ action: 'verifyPhone', cookie: command.cookie, success: true }));
+                        delete obj.failedSmsCookieCheck;
+                    }, 2000 + (parent.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+                    break;
+                }
 
                 // Set the user's phone
                 user.phone = cookie.p;
@@ -3755,14 +3765,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'smsuser': { // Send a SMS message to a user
-                if (parent.parent.smsserver == null) break;
-                if ((user.siteadmin & 2) == 0) break;
-                if (common.validateString(command.userid, 1, 2048) == false) break;
-                if (common.validateString(command.msg, 1, 160) == false) break;
-                var smsuser = parent.users[command.userid];
-                if ((smsuser == null) || (smsuser.phone == null)) break;
-                parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success) {
-                    // TODO
+                var errMsg = null, smsuser = null;
+                if (parent.parent.smsserver == null) { errMsg = 'SMS gateway not enabled'; }
+                else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
+                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
+                else if (common.validateString(command.msg, 1, 160) == false) { errMsg = 'Invalid SMS message'; }
+                else {
+                    smsuser = parent.users[command.userid];
+                    if (smsuser == null) { errMsg = 'Invalid userid'; }
+                    else if (smsuser.phone == null) { errMsg = 'No phone number for this user'; }
+                }
+
+                if (errMsg != null) { displayNotificationMessage(errMsg); break; }
+
+                parent.parent.smsserver.sendSMS(smsuser.phone, command.msg, function (success, msg) {
+                    if (success) {
+                        displayNotificationMessage('SMS succesfuly sent.');
+                    } else {
+                        if (typeof msg == 'string') { displayNotificationMessage('SMS error: ' + msg); } else { displayNotificationMessage('SMS error'); }
+                    }
                 });
                 break;
             }
@@ -4179,11 +4200,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Generate a 8 digit integer with even random probability for each value.
-    function getRandomEightDigitInteger() {
-        var bigInt;
-        do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000);
-        return bigInt % 100000000;
-    }
+    function getRandomEightDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 100000000; }
+    function getRandomSixDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 1000000; }
 
     // Parse arguments string array into an object
     function parseArgs(argv) {

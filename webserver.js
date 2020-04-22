@@ -598,8 +598,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
+        // See if SMS 2FA is available
+        var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+
         // Check if a 2nd factor is present
-        return ((parent.config.settings.no2factorauth !== true) && ((user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null)) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
+        return ((parent.config.settings.no2factorauth !== true) && (sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null)) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
     // Check the 2-step auth token
@@ -611,6 +614,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if we can use OTP tokens with email
         var otpemail = (parent.mailserver != null);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+        var otpsms = (parent.smsserver != null);
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
 
         // Check email key
         if ((otpemail) && (user.otpekey != null) && (user.otpekey.d != null) && (user.otpekey.k === token)) {
@@ -619,6 +624,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 user.otpekey = {};
                 obj.db.SetUser(user);
                 parent.debug('web', 'checkUserOneTimePassword: success (email).');
+                func(true);
+                return;
+            }
+        }
+
+        // Check sms key
+        if ((otpsms) && (user.phone != null) && (user.otpsms != null) && (user.otpsms.d != null) && (user.otpsms.k === token)) {
+            var deltaTime = (Date.now() - user.otpsms.d);
+            if ((deltaTime > 0) && (deltaTime < 300000)) { // Allow 5 minutes to use the SMS token (10000 * 60 * 5).
+                delete user.otpsms;
+                obj.db.SetUser(user);
+                parent.debug('web', 'checkUserOneTimePassword: success (SMS).');
                 func(true);
                 return;
             }
@@ -776,14 +793,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (userid) {
                 var user = obj.users[userid];
 
+                var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.email != null) && (user.emailVerified == true) && (user.otpekey != null));
+                var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+
                 // Check if this user has 2-step login active
                 if ((req.session.loginmode != '6') && checkUserOneTimePasswordRequired(domain, user, req)) {
-                    if ((req.body.hwtoken == '**email**') && (user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null)) {
+                    if ((req.body.hwtoken == '**email**') && email2fa) {
                         user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                         obj.db.SetUser(user);
                         parent.debug('web', 'Sending 2FA email to: ' + user.email);
                         parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                         req.session.messageid = 2; // "Email sent" message
+                        req.session.loginmode = '4';
+                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                        return;
+                    }
+
+                    if ((req.body.hwtoken == '**sms**') && sms2fa) {
+                        // Cause a token to be sent to the user's phone number
+                        user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
+                        obj.db.SetUser(user);
+                        parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
+                        parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
+                        // Ask for a login token & confirm sms was sent
+                        req.session.messageid = 4; // "SMS sent" message
                         req.session.loginmode = '4';
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         return;
@@ -809,6 +842,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             setTimeout(function () {
                                 req.session.loginmode = '4';
                                 req.session.tokenemail = ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null));
+                                req.session.tokensms = ((user.phone != null) && (parent.smsserver != null));
                                 req.session.tokenusername = xusername;
                                 req.session.tokenpassword = xpassword;
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -920,7 +954,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         //req.session.regenerate(function () {
         // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
         delete req.session.loginmode;
-        delete req.session.tokenemail;
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
         delete req.session.tokenemail;
@@ -1140,7 +1173,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Failed, error out.
                 parent.debug('web', 'handleResetPasswordRequest: failed authenticate()');
                 delete req.session.loginmode;
-                delete req.session.tokenemail;
                 delete req.session.tokenusername;
                 delete req.session.tokenpassword;
                 delete req.session.resettokenusername;
@@ -1839,6 +1871,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null)) { features += 0x00800000; } // using email for 2FA is allowed
             if (domain.agentinvitecodes == true) { features += 0x01000000; } // Support for agent invite codes
             if (parent.smsserver != null) { features += 0x02000000; } // SMS messaging is supported
+            if ((parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false))) { features += 0x04000000; } // SMS 2FA is allowed
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
@@ -1936,9 +1969,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if we can use OTP tokens with email
         var otpemail = (parent.mailserver != null) && (req.session != null) && (req.session.tokenemail != null);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+        var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms != null);
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
 
         // Render the login page
-        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail }, domain));
+        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms }, domain));
     }
 
     // Handle a post request on the root
@@ -4014,7 +4049,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             // Figure out if email 2FA is allowed
                             var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
-                            if ((typeof req.query.token != 'string') || (req.query.token == '**email**')) {
+                            var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+                            if ((typeof req.query.token != 'string') || (req.query.token == '**email**') || (req.query.token == '**sms**')) {
                                 if ((req.query.token == '**email**') && (email2fa == true)) {
                                     // Cause a token to be sent to the user's registered email
                                     user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
@@ -4023,6 +4059,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                                     // Ask for a login token & confirm email was sent
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                } else if ((req.query.token == '**sms**') && (sms2fa == true)) {
+                                    // Cause a token to be sent to the user's phone number
+                                    user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
+                                    obj.db.SetUser(user);
+                                    parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
+                                    parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
+                                    // Ask for a login token & confirm sms was sent
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true })); ws.close(); } catch (e) { }
                                 } else {
                                     // Ask for a login token
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
@@ -4097,6 +4141,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             // Figure out if email 2FA is allowed
                             var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
+                            var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                             if (s.length != 3) {
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                             } else {
@@ -4110,6 +4155,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                                             // Ask for a login token & confirm email was sent
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                        } else if ((s[2] == '**sms**') && (sms2fa == true)) {
+                                            // Cause a token to be sent to the user's phone number
+                                            user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
+                                            obj.db.SetUser(user);
+                                            parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
+                                            parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
+                                            // Ask for a login token & confirm sms was sent
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true })); ws.close(); } catch (e) { }
                                         } else {
                                             // Ask for a login token
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
@@ -4621,6 +4674,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete user2.domain;
         delete user2.subscriptions;
         delete user2.passtype;
+        delete user2.otpsms;
         if ((typeof user2.otpekey == 'object') && (user2.otpekey != null)) { user2.otpekey = 1; } // Indicates that email 2FA is enabled.
         if ((typeof user2.otpsecret == 'string') && (user2.otpsecret != null)) { user2.otpsecret = 1; } // Indicates a time secret is present.
         if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
@@ -4974,6 +5028,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Generate a 8 digit integer with even random probability for each value.
     function getRandomEightDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 100000000; }
+    function getRandomSixDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 1000000; }
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }
