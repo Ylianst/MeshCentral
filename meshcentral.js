@@ -632,7 +632,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -2558,6 +2558,9 @@ function mainStart() {
             if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
             if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
+
+        // SMS support
+        if ((config.sms != null) && (config.sms.provider == 'twilio') && (typeof config.sms.sid == 'string') && (typeof config.sms.auth == 'string')) { modules.push('twilio'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
