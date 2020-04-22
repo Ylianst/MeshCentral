@@ -41,7 +41,8 @@ var meshCentralSourceFiles = [
     "../emails/account-invite.txt",
     "../emails/account-login.txt",
     "../emails/account-reset.txt",
-    "../emails/mesh-invite.txt"
+    "../emails/mesh-invite.txt",
+    "../emails/sms-messages.txt"
 ];
 
 var minifyMeshCentralSourceFiles = [

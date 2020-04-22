@@ -108,6 +108,7 @@
     <Compile Include="meshaccelerator.js" />
     <Compile Include="meshctrl.js" />
     <Compile Include="meshmail.js" />
+    <Compile Include="meshsms.js" />
     <Compile Include="meshscanner.js" />
     <Compile Include="certoperations.js" />
     <Compile Include="common.js" />

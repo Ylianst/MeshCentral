@@ -30,6 +30,7 @@ function CreateMeshCentralServer(config, args) {
     obj.mqttbroker = null;
     obj.swarmserver = null;
     obj.mailserver = null;
+    obj.smsserver = null;
     obj.amtEventHandler = null;
     obj.pluginHandler = null;
     obj.amtScanner = null;
@@ -1323,6 +1324,15 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
                 }
 
+                // Setup SMS gateway
+                if (config.sms != null) {
+                    obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
+                    if (obj.smsserver != null) {
+                        //obj.smsserver.verify();
+                        if (obj.args.lanonly == true) { addServerWarning("SMS gateway has limited use in LAN mode."); }
+                    }
+                }
+
                 // Start periodic maintenance
                 obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
 
@@ -2560,7 +2570,7 @@ function mainStart() {
         }
 
         // SMS support
-        if ((config.sms != null) && (config.sms.provider == 'twilio') && (typeof config.sms.sid == 'string') && (typeof config.sms.auth == 'string')) { modules.push('twilio'); }
+        if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }

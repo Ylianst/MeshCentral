@@ -30,6 +30,7 @@
   ],
   "dependencies": {
     "archiver": "^3.0.0",
+    "archiver-zip-encrypted": "^1.0.8",
     "body-parser": "^1.19.0",
     "cbor": "^4.1.5",
     "compression": "^1.7.4",
