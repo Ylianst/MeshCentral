@@ -294,7 +294,16 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                                     if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
                                                                 }
                                                                 var options = { type: childProcess.SpawnTypes.TERM, env: env };
-                                                                this.httprequest.process = childProcess.execFile('/bin/bash', ['bash'], options); // Start bash
+
+                                                                if(require('fs').existsSync('/bin/bash'))
+                                                                {
+                                                                    this.httprequest.process = childProcess.execFile('/bin/bash', ['bash'], options); // Start bash
+                                                                }
+                                                                else
+                                                                {
+                                                                    this.httprequest.process = childProcess.execFile('/bin/sh', ['sh'], options); // Start sh
+                                                                }
+
                                                                 // Spaces at the beginning of lines are needed to hide commands from the command history
                                                                 if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                                                 this.httprequest.process.tunnel = this;
