@@ -21292,6 +21292,7 @@
     },
     {
       "en": "SMS",
+      "nl": "SMS",
       "xloc": [
         "default.handlebars->29->1564",
         "default.handlebars->29->1569",
@@ -21301,6 +21302,7 @@
     },
     {
       "en": "SMS sent.",
+      "nl": "SMS verzonden.",
       "xloc": [
         "login-mobile.handlebars->5->4",
         "login.handlebars->5->4"
@@ -22069,6 +22071,7 @@
     },
     {
       "en": "Send token to registed phone number?",
+      "nl": "Token naar geregistreerd telefoonnummer verzenden?",
       "xloc": [
         "login-mobile.handlebars->5->25",
         "login.handlebars->5->25"
@@ -26745,6 +26748,7 @@
     },
     {
       "en": "Verification code:",
+      "nl": "Verificatie code:",
       "xloc": [
         "default-mobile.handlebars->9->30",
         "default.handlebars->29->141"
@@ -26769,6 +26773,7 @@
     },
     {
       "en": "Verified phone number",
+      "nl": "Geverifieerd telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->9->32",
         "default.handlebars->29->1396",
