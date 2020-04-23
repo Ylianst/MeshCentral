@@ -57,7 +57,7 @@ module.exports.CreateMeshSMS = function (parent) {
             if (typeof parent.config.sms.token != 'string') { console.log('Invalid or missing SMS gateway provider token.'); return null; }
             if (typeof parent.config.sms.from != 'string') { console.log('Invalid or missing SMS gateway provider from.'); return null; }
 
-            // Setup Twilio
+            // Setup Plivo
             var plivo = require('plivo');
             obj.provider = new plivo.Client(parent.config.sms.id, parent.config.sms.token);
             break;

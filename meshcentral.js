@@ -1327,10 +1327,7 @@ function CreateMeshCentralServer(config, args) {
                 // Setup SMS gateway
                 if (config.sms != null) {
                     obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
-                    if (obj.smsserver != null) {
-                        //obj.smsserver.verify();
-                        if (obj.args.lanonly == true) { addServerWarning("SMS gateway has limited use in LAN mode."); }
-                    }
+                    if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode."); }
                 }
 
                 // Start periodic maintenance
