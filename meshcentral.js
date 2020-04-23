@@ -2571,7 +2571,10 @@ function mainStart() {
 
         // SMS support
         if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
-        if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
+        if ((config.sms != null) && (config.sms.provider == 'plivo')) {
+            const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+            if (NodeJSVer < 8) { console.log("SMS Plivo support requires Node v8 or above, current version is " + process.version + "."); } else { modules.push('plivo'); }
+        }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }

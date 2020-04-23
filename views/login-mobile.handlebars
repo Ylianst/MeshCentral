@@ -167,6 +167,7 @@
                                                 <div style=float:right>
                                                     <input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey()" />
                                                     <input style="display:none;float:right" id=emailKeyButton type=button value="Email" onclick="useEmailToken()" />
+                                                    <input style="display:none;float:right" id=smsKeyButton type=button value="SMS" onclick="useSMSToken()" />
                                                 </div>
                                             </td>
                                         </tr>
@@ -300,10 +301,11 @@
         var publicKeyCredentialRequestOptions = null;
         var currentpanel = 0;
         var otpemail = ('{{{otpemail}}}' === 'true');
+        var otpsms = ('{{{otpsms}}}' === 'true');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
-        var okmessages = ['', "Hold on, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link."];
+        var okmessages = ['', "Hold on, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent."];
         var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later."];
         if (messageid > 0) {
             var msg = '';
@@ -357,7 +359,8 @@
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
-                QV('emailKeyButton', otpemail && (messageid != 2)); // TODO
+                QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4));
+                QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4));
             }
 
             if (loginMode == '5') {
@@ -432,6 +435,17 @@
 
         function useEmailKeyEx() {
             Q('hwtokenInput').value = '**email**';
+            QE('tokenOkButton', true);
+            Q('tokenOkButton').click();
+        }
+
+        function useSMSToken() {
+            if (otpsms != true) return;
+            setDialogMode(1, "Secure Login", 3, useSMSTokenEx, "Send token to registed phone number?");
+        }
+
+        function useSMSTokenEx() {
+            Q('hwtokenInput').value = '**sms**';
             QE('tokenOkButton', true);
             Q('tokenOkButton').click();
         }
