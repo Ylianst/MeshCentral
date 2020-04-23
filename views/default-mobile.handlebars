@@ -259,12 +259,14 @@
                             <div id="p3AccountActions">
                                 <p><strong>Account Security</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
+                                    <div id="managePhoneNumber1" style="margin-top:5px;display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a></div>
                                     <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a></div>
                                     <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a></div>
                                     <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a></div>
                                 </div>
                                 <p><strong>Account Actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
+                                    <div style="margin-top:5px"><span id="managePhoneNumber2" style="display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a></span></div>
                                     <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
                                     <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
                                     <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
@@ -677,6 +679,8 @@
 
             // Arrange the user interface
             QV('manageEmail2FA', features & 0x00800000);
+            QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
+            QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
         }
 
         function onStateChanged(server, state, prevState, errorCode) {
@@ -879,6 +883,16 @@
                     if (message.passwords != null) { x += '<input type=button value=\'' + "Clear" + '\' onclick=\'account_manageOtp(2);\'></input>'; }
                     x += '</div><br />';
                     setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
+                    break;
+                }
+                case 'verifyPhone': {
+                    if (xxdialogMode && (xxdialogTag != 'verifyPhone')) return;
+                    var x = '<table><tr><td><img src="images/phone80.png" style=padding:8px>';
+                    x += '<td>Check your phone and enter the verification code.';
+                    x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
+                    setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
+                    Q('d2phoneCodeInput').focus();
+                    account_managePhoneCodeValidate();
                     break;
                 }
                 case 'event': {
@@ -1235,6 +1249,33 @@
         //
         // MY ACCOUNT
         //
+
+        function account_managePhone() {
+            if (xxdialogMode || ((features & 0x02000000) == 0)) return;
+            var x;
+            if (userinfo.phone != null) {
+                x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + userinfo.phone + '</div>';
+                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
+                setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
+                account_managePhoneRemoveValidate();
+            } else {
+                x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
+                x += '<td>Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.';
+                x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
+                setDialogMode(2, "Phone Notifications", 3, account_managePhoneAdd, x, 'verifyPhone');
+                Q('d2phoneinput').focus();
+                account_managePhoneValidate();
+            }
+        }
+
+        function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3,4})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
+        function account_managePhoneValidate(x) { var ok = isPhoneNumber(Q('d2phoneinput').value); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
+        function account_managePhoneCodeValidate(x) { var ok = (Q('d2phoneCodeInput').value.length == 6) && Q('d2phoneCodeInput').value.match(/[0-9]/); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
+        function account_managePhoneConfirm(b, tag) { meshserver.send({ action: 'confirmPhone', code: Q('d2phoneCodeInput').value, cookie: tag }); }
+        function account_managePhoneAdd() { if (isPhoneNumber(Q('d2phoneinput').value) == false) return; QE('d2phoneinput', false); meshserver.send({ action: 'verifyPhone', phone: Q('d2phoneinput').value }); }
+        function account_managePhoneRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removePhone' }); } }
+        function account_managePhoneRemoveValidate() { QE('idx_dlgOkButton', Q('d2delPhone').checked); }
 
         function account_manageAuthEmail() {
             if (xxdialogMode || ((features & 0x00800000) == 0)) return;

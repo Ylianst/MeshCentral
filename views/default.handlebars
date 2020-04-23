@@ -466,25 +466,27 @@
                 </div>
             </div>
             <div id=p10 style="display:none">
-                <table style="width:100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style=width:auto valign=top>
-                            <div id=p10title>
-                                <div id="p10BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                                <h1>General - <span id=p10deviceName></span></h1>
-                            </div>
-                            <div id=p10html></div>
-                        </td>
-                        <td style=width:20px></td>
-                        <td style=width:200px>
-                            <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
-                            <div id=MainComputerState></div>
-                        </td>
-                    </tr>
-                </table><br />
-                <div id=p10html2></div>
-                <div id=p10html3></div>
-                <div id=p10html4></div>
+                <div id=p10title>
+                    <div id="p10BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>General - <span id=p10deviceName></span></h1>
+                </div>
+                <div id=p10info style="overflow-y:auto">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id=p10html></div>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px;vertical-align:top valign=top>
+                                <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
+                                <div id=MainComputerState></div>
+                            </td>
+                        </tr>
+                    </table><br />
+                    <div id=p10html2></div>
+                    <div id=p10html3></div>
+                    <div id=p10html4></div>
+                </div>
             </div>
             <div id=p11 class="noselect" style="display:none">
                 <div id="p11title">
@@ -1442,6 +1444,8 @@
             }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            QS('p10info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p10info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p16events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';

@@ -381,8 +381,8 @@
             if (loginMode == '4') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 QV('securityKeyButton', (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn'));
-                QV('emailKeyButton', otpemail && (messageid != 2));
-                QV('smsKeyButton', otpsms && (messageid != 2));
+                QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4));
+                QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4));
             }
 
             if (loginMode == '5') {

@@ -243,7 +243,7 @@
       "ru": " устройство",
       "zh-chs": " 節點",
       "xloc": [
-        "default-mobile.handlebars->9->130"
+        "default-mobile.handlebars->9->137"
       ]
     },
     {
@@ -260,7 +260,7 @@
       "ru": " устройства",
       "zh-chs": " 節點",
       "xloc": [
-        "default-mobile.handlebars->9->131"
+        "default-mobile.handlebars->9->138"
       ]
     },
     {
@@ -407,7 +407,7 @@
       "ru": ", ",
       "zh-chs": "，",
       "xloc": [
-        "default-mobile.handlebars->9->331",
+        "default-mobile.handlebars->9->338",
         "default.handlebars->29->1283"
       ]
     },
@@ -425,7 +425,7 @@
       "ru": ", только для Intel&reg; AMT",
       "zh-chs": "，僅限Intel&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->95",
+        "default-mobile.handlebars->9->102",
         "default.handlebars->29->171"
       ]
     },
@@ -477,8 +477,8 @@
       "ru": ", WebRTC",
       "zh-chs": "，WebRTC",
       "xloc": [
-        "default-mobile.handlebars->9->231",
-        "default-mobile.handlebars->9->239",
+        "default-mobile.handlebars->9->238",
+        "default-mobile.handlebars->9->246",
         "default.handlebars->29->675",
         "default.handlebars->29->706",
         "default.handlebars->29->718",
@@ -602,8 +602,8 @@
       "ru": "...",
       "zh-chs": "...",
       "xloc": [
-        "default-mobile.handlebars->9->244",
-        "default-mobile.handlebars->9->70",
+        "default-mobile.handlebars->9->251",
+        "default-mobile.handlebars->9->77",
         "default.handlebars->29->1324",
         "default.handlebars->29->1628",
         "default.handlebars->29->720"
@@ -671,8 +671,8 @@
       "ru": "1 байт",
       "zh-chs": "1個字節",
       "xloc": [
-        "default-mobile.handlebars->9->335",
-        "default-mobile.handlebars->9->80",
+        "default-mobile.handlebars->9->342",
+        "default-mobile.handlebars->9->87",
         "default.handlebars->29->1343"
       ]
     },
@@ -1132,7 +1132,7 @@
       "pt": "3",
       "ru": "3",
       "xloc": [
-        "default-mobile.handlebars->9->270"
+        "default-mobile.handlebars->9->277"
       ]
     },
     {
@@ -1704,7 +1704,7 @@
       "ru": "ACM",
       "zh-chs": "ACM",
       "xloc": [
-        "default-mobile.handlebars->9->185",
+        "default-mobile.handlebars->9->192",
         "default.handlebars->29->475"
       ]
     },
@@ -1740,7 +1740,7 @@
       "ru": "ARM-Linaro",
       "zh-chs": "ARM-Linaro",
       "xloc": [
-        "default-mobile.handlebars->9->170",
+        "default-mobile.handlebars->9->177",
         "default.handlebars->29->37"
       ]
     },
@@ -1758,7 +1758,7 @@
       "ru": "ARMv6l / ARMv7l",
       "zh-chs": "ARMv6l / ARMv7l",
       "xloc": [
-        "default-mobile.handlebars->9->171",
+        "default-mobile.handlebars->9->178",
         "default.handlebars->29->38"
       ]
     },
@@ -1776,7 +1776,7 @@
       "ru": "ARMv6l / ARMv7l / NoKVM",
       "zh-chs": "ARMv6l / ARMv7l / NoKVM",
       "xloc": [
-        "default-mobile.handlebars->9->173",
+        "default-mobile.handlebars->9->180",
         "default.handlebars->29->40"
       ]
     },
@@ -1794,7 +1794,7 @@
       "ru": "ARMv8 64bit",
       "zh-chs": "ARMv8 64位",
       "xloc": [
-        "default-mobile.handlebars->9->172",
+        "default-mobile.handlebars->9->179",
         "default.handlebars->29->39"
       ]
     },
@@ -1829,7 +1829,7 @@
       "ru": "Отказано в доступе.",
       "zh-chs": "拒絕訪問。",
       "xloc": [
-        "login-mobile.handlebars->5->15",
+        "login-mobile.handlebars->5->16",
         "login.handlebars->5->16"
       ]
     },
@@ -1917,10 +1917,10 @@
       "ru": "Безопасность учетной записи",
       "zh-chs": "帳號安全",
       "xloc": [
-        "default-mobile.handlebars->9->132",
-        "default-mobile.handlebars->9->134",
-        "default-mobile.handlebars->9->55",
-        "default-mobile.handlebars->9->57",
+        "default-mobile.handlebars->9->139",
+        "default-mobile.handlebars->9->141",
+        "default-mobile.handlebars->9->62",
+        "default-mobile.handlebars->9->64",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->1->0",
         "default.handlebars->29->1080",
         "default.handlebars->29->1082",
@@ -1974,7 +1974,7 @@
       "ru": "Достигнуто ограничение учетных записей.",
       "zh-chs": "達到帳戶限制。",
       "xloc": [
-        "login-mobile.handlebars->5->5",
+        "login-mobile.handlebars->5->6",
         "login.handlebars->5->6"
       ]
     },
@@ -1992,7 +1992,7 @@
       "ru": "Учетная запись заблокирована.",
       "zh-chs": "帳戶被鎖定。",
       "xloc": [
-        "login-mobile.handlebars->5->14",
+        "login-mobile.handlebars->5->15",
         "login.handlebars->5->15"
       ]
     },
@@ -2010,7 +2010,7 @@
       "ru": "Учетная запись не найдена.",
       "zh-chs": "找不到帳戶。",
       "xloc": [
-        "login-mobile.handlebars->5->11",
+        "login-mobile.handlebars->5->12",
         "login.handlebars->5->12"
       ]
     },
@@ -2137,8 +2137,8 @@
       "ru": "Активировано",
       "zh-chs": "活性",
       "xloc": [
-        "default-mobile.handlebars->9->180",
-        "default-mobile.handlebars->9->182",
+        "default-mobile.handlebars->9->187",
+        "default-mobile.handlebars->9->189",
         "default.handlebars->29->468",
         "default.handlebars->29->470",
         "default.handlebars->29->786"
@@ -2432,7 +2432,7 @@
       "ru": "Добавить пользователя",
       "zh-chs": "添加用戶",
       "xloc": [
-        "default-mobile.handlebars->9->281",
+        "default-mobile.handlebars->9->288",
         "default.handlebars->29->554"
       ]
     },
@@ -2483,7 +2483,7 @@
       "en": "Add User to Device Group",
       "nl": "Gebruiker toevoegen aan apparaatgroep",
       "xloc": [
-        "default-mobile.handlebars->9->310"
+        "default-mobile.handlebars->9->317"
       ]
     },
     {
@@ -2834,9 +2834,9 @@
       "ru": "Агент",
       "zh-chs": "代理人",
       "xloc": [
-        "default-mobile.handlebars->9->124",
-        "default-mobile.handlebars->9->177",
-        "default-mobile.handlebars->9->193",
+        "default-mobile.handlebars->9->131",
+        "default-mobile.handlebars->9->184",
+        "default-mobile.handlebars->9->200",
         "default.handlebars->29->1310",
         "default.handlebars->29->1318",
         "default.handlebars->29->176",
@@ -2893,7 +2893,7 @@
       "ru": "Консоль агента",
       "zh-chs": "代理控制台",
       "xloc": [
-        "default-mobile.handlebars->9->316",
+        "default-mobile.handlebars->9->323",
         "default.handlebars->29->1266"
       ]
     },
@@ -2945,7 +2945,7 @@
       "ru": "Ретранслятор агента",
       "zh-chs": "代理中繼",
       "xloc": [
-        "default-mobile.handlebars->9->196"
+        "default-mobile.handlebars->9->203"
       ]
     },
     {
@@ -2997,7 +2997,7 @@
       "ru": "Тег агента",
       "zh-chs": "代理商標籤",
       "xloc": [
-        "default-mobile.handlebars->9->192",
+        "default-mobile.handlebars->9->199",
         "default.handlebars->29->487"
       ]
     },
@@ -3137,9 +3137,9 @@
       "ru": "Все",
       "zh-chs": "所有",
       "xloc": [
-        "default-mobile.handlebars->9->245",
-        "default-mobile.handlebars->9->247",
-        "default-mobile.handlebars->9->79"
+        "default-mobile.handlebars->9->252",
+        "default-mobile.handlebars->9->254",
+        "default-mobile.handlebars->9->86"
       ]
     },
     {
@@ -3156,7 +3156,7 @@
       "ru": "Все экраны",
       "zh-chs": "所有顯示",
       "xloc": [
-        "default-mobile.handlebars->9->234"
+        "default-mobile.handlebars->9->241"
       ]
     },
     {
@@ -3366,7 +3366,7 @@
       "ru": "Android APK",
       "zh-chs": "Android APK",
       "xloc": [
-        "default-mobile.handlebars->9->160",
+        "default-mobile.handlebars->9->167",
         "default.handlebars->29->27"
       ]
     },
@@ -3384,7 +3384,7 @@
       "ru": "Android ARM",
       "zh-chs": "Android ARM",
       "xloc": [
-        "default-mobile.handlebars->9->155",
+        "default-mobile.handlebars->9->162",
         "default.handlebars->29->22"
       ]
     },
@@ -3402,7 +3402,7 @@
       "ru": "Android x86",
       "zh-chs": "安卓x86",
       "xloc": [
-        "default-mobile.handlebars->9->158",
+        "default-mobile.handlebars->9->165",
         "default.handlebars->29->25"
       ]
     },
@@ -3845,7 +3845,7 @@
       "ru": "Вы действительно хотите удалить группу \\\"{0}\\\"? Удаление группы приведет к удалению всей информации связанной с устройствами в этой группе.",
       "zh-chs": "您確定要刪除組{0}嗎？刪除設備組還將刪除該組中有關設備的所有信息。",
       "xloc": [
-        "default-mobile.handlebars->9->287",
+        "default-mobile.handlebars->9->294",
         "default.handlebars->29->1193"
       ]
     },
@@ -4017,8 +4017,8 @@
       "xloc": [
         "default-mobile.handlebars->9->18",
         "default-mobile.handlebars->9->21",
-        "default-mobile.handlebars->9->33",
-        "default-mobile.handlebars->9->35",
+        "default-mobile.handlebars->9->40",
+        "default-mobile.handlebars->9->42",
         "default.handlebars->29->109",
         "default.handlebars->29->114",
         "default.handlebars->29->837",
@@ -4178,7 +4178,7 @@
       "ru": "Назад",
       "zh-chs": "背部",
       "xloc": [
-        "default.handlebars->container->column_l->p10->1->1->0->1->p10title->p10BackButton",
+        "default.handlebars->container->column_l->p10->p10title->p10BackButton",
         "default.handlebars->container->column_l->p11->p11title->p11deviceNameHeader->p11BackButton",
         "default.handlebars->container->column_l->p12->p12title->p12BackButton",
         "default.handlebars->container->column_l->p13->p13title->p13BackButton",
@@ -4570,7 +4570,7 @@
       "ru": "CCM",
       "zh-chs": "CCM",
       "xloc": [
-        "default-mobile.handlebars->9->184",
+        "default-mobile.handlebars->9->191",
         "default.handlebars->29->473"
       ]
     },
@@ -4588,7 +4588,7 @@
       "ru": "CIRA",
       "zh-chs": "CIRA",
       "xloc": [
-        "default-mobile.handlebars->9->125",
+        "default-mobile.handlebars->9->132",
         "default.handlebars->29->1181",
         "default.handlebars->29->1186",
         "default.handlebars->29->178",
@@ -4766,7 +4766,7 @@
       "ru": "Отмена",
       "zh-chs": "取消",
       "xloc": [
-        "default-mobile.handlebars->9->44",
+        "default-mobile.handlebars->9->51",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->29->1101",
         "default.handlebars->container->dialog->idx_dlgButtonBar",
@@ -4902,7 +4902,7 @@
       "ru": "Смена пароля",
       "zh-chs": "更改密碼",
       "xloc": [
-        "default-mobile.handlebars->9->52",
+        "default-mobile.handlebars->9->59",
         "default.handlebars->29->1077",
         "default.handlebars->29->1576"
       ]
@@ -4938,7 +4938,7 @@
       "ru": "Смена email",
       "zh-chs": "更改電子郵件地址",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->3->changeEmailId->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->5->changeEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->accountChangeEmailAddressSpan->0"
       ]
     },
@@ -4956,7 +4956,7 @@
       "ru": "Смена пароля",
       "zh-chs": "更改密碼",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->5->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->7->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->3"
       ]
     },
@@ -5095,8 +5095,8 @@
       "ru": "Чаты и уведомления",
       "zh-chs": "聊天並通知",
       "xloc": [
-        "default-mobile.handlebars->9->308",
-        "default-mobile.handlebars->9->326",
+        "default-mobile.handlebars->9->315",
+        "default-mobile.handlebars->9->333",
         "default.handlebars->29->1243",
         "default.handlebars->29->1277"
       ]
@@ -5301,7 +5301,7 @@
       "ru": "ChromeOS",
       "zh-chs": "ChromeOS",
       "xloc": [
-        "default-mobile.handlebars->9->163",
+        "default-mobile.handlebars->9->170",
         "default.handlebars->29->30"
       ]
     },
@@ -5353,12 +5353,12 @@
       "ru": "Очистить",
       "zh-chs": "明確",
       "xloc": [
-        "default-mobile.handlebars->9->263",
-        "default-mobile.handlebars->9->265",
-        "default-mobile.handlebars->9->267",
-        "default-mobile.handlebars->9->269",
+        "default-mobile.handlebars->9->101",
+        "default-mobile.handlebars->9->270",
+        "default-mobile.handlebars->9->272",
+        "default-mobile.handlebars->9->274",
+        "default-mobile.handlebars->9->276",
         "default-mobile.handlebars->9->28",
-        "default-mobile.handlebars->9->94",
         "default.handlebars->29->1358",
         "default.handlebars->29->739",
         "default.handlebars->29->741",
@@ -5544,7 +5544,7 @@
       "ru": "Нажмите ОК для отправки подтверждения по электронной почте:",
       "zh-chs": "單擊確定將驗證郵件發送到：",
       "xloc": [
-        "default-mobile.handlebars->9->37",
+        "default-mobile.handlebars->9->44",
         "default.handlebars->29->1061"
       ]
     },
@@ -5705,7 +5705,7 @@
       "ru": "Подтвердить {0} из {1} записей в это расположение?",
       "zh-chs": "將{1}入口{2}中的{0}限製到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->89",
+        "default-mobile.handlebars->9->96",
         "default.handlebars->29->1353"
       ]
     },
@@ -5723,8 +5723,8 @@
       "ru": "Подтвердить",
       "zh-chs": "確認",
       "xloc": [
-        "default-mobile.handlebars->9->223",
-        "default-mobile.handlebars->9->288",
+        "default-mobile.handlebars->9->230",
+        "default-mobile.handlebars->9->295",
         "default.handlebars->29->1194",
         "default.handlebars->29->1407",
         "default.handlebars->29->1470",
@@ -5749,7 +5749,7 @@
       "ru": "Подтвердить копирование 1 записи в это расположение?",
       "zh-chs": "確認將1個副本複製到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->258",
+        "default-mobile.handlebars->9->265",
         "default.handlebars->29->734"
       ]
     },
@@ -5767,7 +5767,7 @@
       "ru": "Подтвердить копирование {0} записей в это расположение?",
       "zh-chs": "確認{0}個條目的副本到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->257",
+        "default-mobile.handlebars->9->264",
         "default.handlebars->29->733"
       ]
     },
@@ -5851,7 +5851,7 @@
       "ru": "Подтвердить перемещение 1 записи в это расположение?",
       "zh-chs": "確認將1個入口移動到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->260",
+        "default-mobile.handlebars->9->267",
         "default.handlebars->29->736"
       ]
     },
@@ -5869,7 +5869,7 @@
       "ru": "Подтвердить перемещение {0} записей в это расположение?",
       "zh-chs": "確認將{0}個條目移到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->259",
+        "default-mobile.handlebars->9->266",
         "default.handlebars->29->735"
       ]
     },
@@ -5947,7 +5947,7 @@
       "ru": "Подтвердить удаление приложения аутентификации двухэтапного входа в систему?",
       "zh-chs": "確認刪除身份驗證器應用程序兩步登錄？",
       "xloc": [
-        "default-mobile.handlebars->9->36",
+        "default-mobile.handlebars->9->43",
         "default.handlebars->29->840"
       ]
     },
@@ -6025,7 +6025,7 @@
       "ru": "Подтвердить удаление пользователя {0}?",
       "zh-chs": "確認刪除用戶{0}？",
       "xloc": [
-        "default-mobile.handlebars->9->334"
+        "default-mobile.handlebars->9->341"
       ]
     },
     {
@@ -6042,7 +6042,7 @@
       "ru": "Подключиться",
       "zh-chs": "連接",
       "xloc": [
-        "default-mobile.handlebars->9->237",
+        "default-mobile.handlebars->9->244",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->29->1133",
@@ -6226,7 +6226,7 @@
       "zh-chs": "正在連線...",
       "xloc": [
         "default-mobile.handlebars->9->2",
-        "default-mobile.handlebars->9->273",
+        "default-mobile.handlebars->9->280",
         "default-mobile.handlebars->9->6",
         "default.handlebars->29->203",
         "default.handlebars->29->206",
@@ -6318,7 +6318,7 @@
       "ru": "Связь",
       "zh-chs": "連接性",
       "xloc": [
-        "default-mobile.handlebars->9->198",
+        "default-mobile.handlebars->9->205",
         "default.handlebars->29->1321",
         "default.handlebars->29->194",
         "default.handlebars->29->517",
@@ -6746,7 +6746,7 @@
       "ru": "Создать группу устройств",
       "zh-chs": "創建設備組",
       "xloc": [
-        "default-mobile.handlebars->9->64"
+        "default-mobile.handlebars->9->71"
       ]
     },
     {
@@ -7161,7 +7161,7 @@
       "ru": "Глубокий сон",
       "zh-chs": "沉睡",
       "xloc": [
-        "default-mobile.handlebars->9->113",
+        "default-mobile.handlebars->9->120",
         "default.handlebars->29->354"
       ]
     },
@@ -7179,8 +7179,8 @@
       "ru": "Удалить",
       "zh-chs": "刪除",
       "xloc": [
-        "default-mobile.handlebars->9->250",
-        "default-mobile.handlebars->9->84",
+        "default-mobile.handlebars->9->257",
+        "default-mobile.handlebars->9->91",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
         "default.handlebars->29->1347",
@@ -7208,7 +7208,7 @@
       "ru": "Удалить учетную запись",
       "zh-chs": "刪除帳戶",
       "xloc": [
-        "default-mobile.handlebars->9->46",
+        "default-mobile.handlebars->9->53",
         "default.handlebars->29->1069"
       ]
     },
@@ -7234,7 +7234,7 @@
       "ru": "Удалить устройство",
       "zh-chs": "刪除裝置",
       "xloc": [
-        "default-mobile.handlebars->9->202",
+        "default-mobile.handlebars->9->209",
         "default.handlebars->29->528"
       ]
     },
@@ -7252,8 +7252,8 @@
       "ru": "Удалить группу",
       "zh-chs": "刪除群組",
       "xloc": [
-        "default-mobile.handlebars->9->286",
-        "default-mobile.handlebars->9->289",
+        "default-mobile.handlebars->9->293",
+        "default-mobile.handlebars->9->296",
         "default.handlebars->29->1165",
         "default.handlebars->29->1195"
       ]
@@ -7272,7 +7272,7 @@
       "ru": "Удалить устройство",
       "zh-chs": "刪除節點",
       "xloc": [
-        "default-mobile.handlebars->9->221",
+        "default-mobile.handlebars->9->228",
         "default.handlebars->29->638"
       ]
     },
@@ -7367,7 +7367,7 @@
       "ru": "Удалить учетную запись",
       "zh-chs": "刪除帳戶",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->7->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->9->0",
         "default.handlebars->29->1404",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->7"
       ]
@@ -7428,8 +7428,8 @@
       "ru": "Удалить выбранные элементы?",
       "zh-chs": "刪除所選項目？",
       "xloc": [
-        "default-mobile.handlebars->9->252",
-        "default-mobile.handlebars->9->86",
+        "default-mobile.handlebars->9->259",
+        "default-mobile.handlebars->9->93",
         "default.handlebars->29->1349",
         "default.handlebars->29->728"
       ]
@@ -7465,8 +7465,8 @@
       "ru": "Удалить {0} выбранных элементов?",
       "zh-chs": "刪除{0}個所選項目？",
       "xloc": [
-        "default-mobile.handlebars->9->251",
-        "default-mobile.handlebars->9->85",
+        "default-mobile.handlebars->9->258",
+        "default-mobile.handlebars->9->92",
         "default.handlebars->29->1348",
         "default.handlebars->29->727"
       ]
@@ -7485,7 +7485,7 @@
       "ru": "Удалить {0}?",
       "zh-chs": "刪除{0}？",
       "xloc": [
-        "default-mobile.handlebars->9->222"
+        "default-mobile.handlebars->9->229"
       ]
     },
     {
@@ -7562,12 +7562,12 @@
       "ru": "Описание",
       "zh-chs": "描述",
       "xloc": [
-        "default-mobile.handlebars->9->144",
-        "default-mobile.handlebars->9->145",
-        "default-mobile.handlebars->9->227",
-        "default-mobile.handlebars->9->278",
-        "default-mobile.handlebars->9->291",
-        "default-mobile.handlebars->9->63",
+        "default-mobile.handlebars->9->151",
+        "default-mobile.handlebars->9->152",
+        "default-mobile.handlebars->9->234",
+        "default-mobile.handlebars->9->285",
+        "default-mobile.handlebars->9->298",
+        "default-mobile.handlebars->9->70",
         "default.handlebars->29->1089",
         "default.handlebars->29->1114",
         "default.handlebars->29->1197",
@@ -7803,7 +7803,7 @@
       "ru": "Управление устройством",
       "zh-chs": "設備動作",
       "xloc": [
-        "default-mobile.handlebars->9->214",
+        "default-mobile.handlebars->9->221",
         "default.handlebars->29->611"
       ]
     },
@@ -7843,7 +7843,7 @@
       "ru": "Пользователь группы устройств",
       "zh-chs": "設備組用戶",
       "xloc": [
-        "default-mobile.handlebars->9->332",
+        "default-mobile.handlebars->9->339",
         "default.handlebars->29->1284"
       ]
     },
@@ -7918,7 +7918,7 @@
       "ru": "Имя устройства",
       "zh-chs": "設備名稱",
       "xloc": [
-        "default-mobile.handlebars->9->225",
+        "default-mobile.handlebars->9->232",
         "default.handlebars->29->230",
         "default.handlebars->29->667",
         "player.handlebars->3->9"
@@ -7955,7 +7955,7 @@
       "ru": "Уведомление устройства в трее",
       "zh-chs": "設備吐司",
       "xloc": [
-        "default-mobile.handlebars->9->207"
+        "default-mobile.handlebars->9->214"
       ]
     },
     {
@@ -8042,7 +8042,7 @@
       "ru": "Устройство находится в режиме гибернации (S4)",
       "zh-chs": "設備正在休眠（S4）",
       "xloc": [
-        "default-mobile.handlebars->9->121",
+        "default-mobile.handlebars->9->128",
         "default.handlebars->29->365"
       ]
     },
@@ -8060,7 +8060,7 @@
       "ru": "Устройство находится в состоянии глубокого сна (S3)",
       "zh-chs": "設備處於深度睡眠狀態（S3）",
       "xloc": [
-        "default-mobile.handlebars->9->120",
+        "default-mobile.handlebars->9->127",
         "default.handlebars->29->364"
       ]
     },
@@ -8129,7 +8129,7 @@
       "ru": "Устройство находится в спящем режиме (S1)",
       "zh-chs": "設備處於睡眠狀態（S1）",
       "xloc": [
-        "default-mobile.handlebars->9->118",
+        "default-mobile.handlebars->9->125",
         "default.handlebars->29->362"
       ]
     },
@@ -8164,7 +8164,7 @@
       "ru": "Устройство находится в спящем режиме (S2)",
       "zh-chs": "設備處於睡眠狀態（S2）",
       "xloc": [
-        "default-mobile.handlebars->9->119",
+        "default-mobile.handlebars->9->126",
         "default.handlebars->29->363"
       ]
     },
@@ -8199,7 +8199,7 @@
       "ru": "Устройство находится в выключенном состоянии (S5)",
       "zh-chs": "設備處於軟斷開狀態（S5）",
       "xloc": [
-        "default-mobile.handlebars->9->122",
+        "default-mobile.handlebars->9->129",
         "default.handlebars->29->366"
       ]
     },
@@ -8217,7 +8217,7 @@
       "ru": "Устройство включено",
       "zh-chs": "設備已上電",
       "xloc": [
-        "default-mobile.handlebars->9->117",
+        "default-mobile.handlebars->9->124",
         "default.handlebars->29->361"
       ]
     },
@@ -8252,7 +8252,7 @@
       "ru": "Устройство присутствует, но состояние питания не может быть определено",
       "zh-chs": "設備存在，但無法確定電源狀態",
       "xloc": [
-        "default-mobile.handlebars->9->123",
+        "default-mobile.handlebars->9->130",
         "default.handlebars->29->367"
       ]
     },
@@ -8330,7 +8330,7 @@
       "ru": "Разъединить",
       "zh-chs": "斷開",
       "xloc": [
-        "default-mobile.handlebars->9->238",
+        "default-mobile.handlebars->9->245",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default.handlebars->29->1134",
         "default.handlebars->29->717",
@@ -8569,7 +8569,7 @@
       "ru": "Скачать файл",
       "zh-chs": "下載文件",
       "xloc": [
-        "default-mobile.handlebars->9->271",
+        "default-mobile.handlebars->9->278",
         "default.handlebars->29->746"
       ]
     },
@@ -9087,7 +9087,7 @@
       "ru": "Редактировать устройство",
       "zh-chs": "編輯裝置",
       "xloc": [
-        "default-mobile.handlebars->9->230",
+        "default-mobile.handlebars->9->237",
         "default.handlebars->29->672"
       ]
     },
@@ -9105,9 +9105,9 @@
       "ru": "Редактировать группу устройств",
       "zh-chs": "編輯設備組",
       "xloc": [
-        "default-mobile.handlebars->9->292",
-        "default-mobile.handlebars->9->294",
-        "default-mobile.handlebars->9->312",
+        "default-mobile.handlebars->9->299",
+        "default-mobile.handlebars->9->301",
+        "default-mobile.handlebars->9->319",
         "default.handlebars->29->1198",
         "default.handlebars->29->1228",
         "default.handlebars->29->1250",
@@ -9180,7 +9180,7 @@
       "ru": "Редактировать примечания устройства",
       "zh-chs": "編輯設備說明",
       "xloc": [
-        "default-mobile.handlebars->9->306",
+        "default-mobile.handlebars->9->313",
         "default.handlebars->29->1241"
       ]
     },
@@ -9235,7 +9235,7 @@
       "ru": "Редактировать учетные данные Intel&reg; AMT",
       "zh-chs": "編輯英特爾&reg;AMT憑據",
       "xloc": [
-        "default-mobile.handlebars->9->220",
+        "default-mobile.handlebars->9->227",
         "default.handlebars->29->478",
         "default.handlebars->29->481",
         "default.handlebars->29->620"
@@ -9255,7 +9255,7 @@
       "ru": "Редактировать примечания",
       "zh-chs": "編輯筆記",
       "xloc": [
-        "default-mobile.handlebars->9->319",
+        "default-mobile.handlebars->9->326",
         "default.handlebars->29->1269"
       ]
     },
@@ -9354,13 +9354,13 @@
       "ru": "Email",
       "zh-chs": "電子郵件",
       "xloc": [
-        "default-mobile.handlebars->9->40",
+        "default-mobile.handlebars->9->47",
         "default.handlebars->29->1432",
         "default.handlebars->29->1532",
         "default.handlebars->29->1533",
         "default.handlebars->29->1579",
         "default.handlebars->29->278",
-        "login-mobile.handlebars->5->38",
+        "login-mobile.handlebars->5->41",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->5->42",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3"
@@ -9380,7 +9380,7 @@
       "ru": "Изменение адреса email",
       "zh-chs": "電郵地址變更",
       "xloc": [
-        "default-mobile.handlebars->9->41",
+        "default-mobile.handlebars->9->48",
         "default.handlebars->29->1065"
       ]
     },
@@ -9398,7 +9398,7 @@
       "ru": "Аутентификация электронной почты",
       "zh-chs": "郵件認證",
       "xloc": [
-        "default-mobile.handlebars->9->30",
+        "default-mobile.handlebars->9->37",
         "default.handlebars->29->834"
       ]
     },
@@ -9406,7 +9406,7 @@
       "en": "Email Confirmation",
       "nl": "E-mail bevestigen",
       "xloc": [
-        "login-mobile.handlebars->5->39",
+        "login-mobile.handlebars->5->42",
         "login.handlebars->5->43"
       ]
     },
@@ -9435,7 +9435,7 @@
       "ru": "Подтверждение email",
       "zh-chs": "電子郵件驗證",
       "xloc": [
-        "default-mobile.handlebars->9->39",
+        "default-mobile.handlebars->9->46",
         "default.handlebars->29->1063"
       ]
     },
@@ -9560,7 +9560,7 @@
       "ru": "Email:",
       "zh-chs": "電子郵件：",
       "xloc": [
-        "login-mobile.handlebars->5->19",
+        "login-mobile.handlebars->5->20",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->2->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpanel->1->7->1->0->1",
         "login.handlebars->5->20",
@@ -9616,7 +9616,7 @@
       "ru": "Включить двухфакторную аутентификацию электронной почты.",
       "zh-chs": "啟用電子郵件兩因素驗證。",
       "xloc": [
-        "default-mobile.handlebars->9->32",
+        "default-mobile.handlebars->9->39",
         "default.handlebars->29->836"
       ]
     },
@@ -10132,7 +10132,7 @@
       "ru": "Существующий аккаунт с этим адресом email.",
       "zh-chs": "使用此電子郵件地址的現有帳戶。",
       "xloc": [
-        "login-mobile.handlebars->5->6",
+        "login-mobile.handlebars->5->7",
         "login.handlebars->5->7"
       ]
     },
@@ -10338,7 +10338,7 @@
       "ru": "Редактор файлов",
       "zh-chs": "文件編輯器",
       "xloc": [
-        "default-mobile.handlebars->9->255",
+        "default-mobile.handlebars->9->262",
         "default.handlebars->29->423",
         "default.handlebars->29->731"
       ]
@@ -10618,7 +10618,7 @@
       "ru": "Забыли пароль?",
       "zh-chs": "忘記密碼？",
       "xloc": [
-        "login-mobile.handlebars->5->20",
+        "login-mobile.handlebars->5->21",
         "login.handlebars->5->21"
       ]
     },
@@ -10705,7 +10705,7 @@
       "ru": "FreeBSD x86-64",
       "zh-chs": "FreeBSD x86-64",
       "xloc": [
-        "default-mobile.handlebars->9->176",
+        "default-mobile.handlebars->9->183",
         "default.handlebars->29->43"
       ]
     },
@@ -10876,10 +10876,10 @@
       "ru": "Администратор с полным доступом",
       "zh-chs": "正式管理員",
       "xloc": [
-        "default-mobile.handlebars->9->284",
-        "default-mobile.handlebars->9->293",
-        "default-mobile.handlebars->9->311",
-        "default-mobile.handlebars->9->67",
+        "default-mobile.handlebars->9->291",
+        "default-mobile.handlebars->9->300",
+        "default-mobile.handlebars->9->318",
+        "default-mobile.handlebars->9->74",
         "default.handlebars->29->1098",
         "default.handlebars->29->1227",
         "default.handlebars->29->1448"
@@ -11085,7 +11085,7 @@
       "ru": "Сводка - ",
       "zh-chs": "一般 -",
       "xloc": [
-        "default.handlebars->container->column_l->p10->1->1->0->1->p10title->3",
+        "default.handlebars->container->column_l->p10->p10title->3",
         "default.handlebars->container->column_l->p20->p20title->5",
         "default.handlebars->container->column_l->p30->1->1->0->1->p30title->3"
       ]
@@ -11327,8 +11327,8 @@
       "ru": "Хороший пароль",
       "zh-chs": "好的密碼",
       "xloc": [
-        "login-mobile.handlebars->5->25",
-        "login-mobile.handlebars->5->29",
+        "login-mobile.handlebars->5->28",
+        "login-mobile.handlebars->5->32",
         "login.handlebars->5->28",
         "login.handlebars->5->32"
       ]
@@ -11364,7 +11364,7 @@
       "ru": "Группа",
       "zh-chs": "組",
       "xloc": [
-        "default-mobile.handlebars->9->137",
+        "default-mobile.handlebars->9->144",
         "default.handlebars->29->455",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->1"
       ]
@@ -11456,7 +11456,7 @@
       "ru": "Группа1, Группа2, Группа3",
       "zh-chs": "組1，組2，組3",
       "xloc": [
-        "default-mobile.handlebars->9->229"
+        "default-mobile.handlebars->9->236"
       ]
     },
     {
@@ -11703,8 +11703,8 @@
       "ru": "Гибернация",
       "zh-chs": "冬眠",
       "xloc": [
-        "default-mobile.handlebars->9->107",
         "default-mobile.handlebars->9->114",
+        "default-mobile.handlebars->9->121",
         "default.handlebars->29->356",
         "default.handlebars->29->5"
       ]
@@ -11758,7 +11758,7 @@
       "ru": "Задержана 1 запись для копирования",
       "zh-chs": "持有1份副本",
       "xloc": [
-        "default-mobile.handlebars->9->264",
+        "default-mobile.handlebars->9->271",
         "default.handlebars->29->740"
       ]
     },
@@ -11776,7 +11776,7 @@
       "ru": "Задержана 1 запись для перемещения",
       "zh-chs": "持有1個搬家公司",
       "xloc": [
-        "default-mobile.handlebars->9->268",
+        "default-mobile.handlebars->9->275",
         "default.handlebars->29->744"
       ]
     },
@@ -11794,7 +11794,7 @@
       "ru": "Задержано {0} записей для копирования",
       "zh-chs": "保留{0}個條目進行複制",
       "xloc": [
-        "default-mobile.handlebars->9->262",
+        "default-mobile.handlebars->9->269",
         "default.handlebars->29->738"
       ]
     },
@@ -11812,7 +11812,7 @@
       "ru": "Задержано {0} записей для перемещения",
       "zh-chs": "保留{0}個條目以進行移動",
       "xloc": [
-        "default-mobile.handlebars->9->266",
+        "default-mobile.handlebars->9->273",
         "default.handlebars->29->742"
       ]
     },
@@ -11830,7 +11830,7 @@
       "ru": "Задержано {0} записей для {2}",
       "zh-chs": "保持{2}的{0}入口{1}",
       "xloc": [
-        "default-mobile.handlebars->9->91",
+        "default-mobile.handlebars->9->98",
         "default.handlebars->29->1355"
       ]
     },
@@ -11848,10 +11848,10 @@
       "ru": "Имя хоста",
       "zh-chs": "主機名",
       "xloc": [
-        "default-mobile.handlebars->9->139",
-        "default-mobile.handlebars->9->140",
-        "default-mobile.handlebars->9->142",
-        "default-mobile.handlebars->9->226",
+        "default-mobile.handlebars->9->146",
+        "default-mobile.handlebars->9->147",
+        "default-mobile.handlebars->9->149",
+        "default-mobile.handlebars->9->233",
         "default.handlebars->29->231",
         "default.handlebars->29->460",
         "default.handlebars->29->668"
@@ -11922,7 +11922,7 @@
       "ru": "IP адрес заблокирован, повторите попытку позже.",
       "zh-chs": "IP位址已封鎖，請稍後再試。",
       "xloc": [
-        "login-mobile.handlebars->5->18",
+        "login-mobile.handlebars->5->19",
         "login.handlebars->5->19"
       ]
     },
@@ -12060,7 +12060,7 @@
       "ru": "Выбор иконки",
       "zh-chs": "圖標選擇",
       "xloc": [
-        "default-mobile.handlebars->9->224",
+        "default-mobile.handlebars->9->231",
         "default.handlebars->29->666"
       ]
     },
@@ -12159,7 +12159,7 @@
       "ru": "Индивидуальные устройства",
       "zh-chs": "个别装置",
       "xloc": [
-        "default-mobile.handlebars->9->96",
+        "default-mobile.handlebars->9->103",
         "default.handlebars->29->172"
       ]
     },
@@ -12537,9 +12537,9 @@
       "ru": "Intel&reg; AMT",
       "zh-chs": "英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->126",
-        "default-mobile.handlebars->9->190",
-        "default-mobile.handlebars->9->195",
+        "default-mobile.handlebars->9->133",
+        "default-mobile.handlebars->9->197",
+        "default-mobile.handlebars->9->202",
         "default.handlebars->29->1135",
         "default.handlebars->29->1145",
         "default.handlebars->29->433",
@@ -12561,7 +12561,7 @@
       "ru": "Intel&reg; AMT CIRA",
       "zh-chs": "英特爾&reg;AMT CIRA",
       "xloc": [
-        "default-mobile.handlebars->9->194",
+        "default-mobile.handlebars->9->201",
         "default.handlebars->29->510"
       ]
     },
@@ -12703,7 +12703,7 @@
       "ru": "Intel&reg; AMT подключен",
       "zh-chs": "英特爾&reg;AMT已連接",
       "xloc": [
-        "default-mobile.handlebars->9->204",
+        "default-mobile.handlebars->9->211",
         "default.handlebars->29->547",
         "default.handlebars->29->548"
       ]
@@ -12740,7 +12740,7 @@
       "ru": "Intel&reg; AMT обнаружен",
       "zh-chs": "檢測到英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->205",
+        "default-mobile.handlebars->9->212",
         "default.handlebars->29->549",
         "default.handlebars->29->550"
       ]
@@ -12794,7 +12794,7 @@
       "ru": "Только Intel&reg; AMT",
       "zh-chs": "僅限英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->62"
+        "default-mobile.handlebars->9->69"
       ]
     },
     {
@@ -12811,7 +12811,7 @@
       "ru": "Только Intel&reg; AMT, без агента",
       "zh-chs": "僅限英特爾&reg;AMT，無代理",
       "xloc": [
-        "default-mobile.handlebars->9->275",
+        "default-mobile.handlebars->9->282",
         "default.handlebars->29->1088",
         "default.handlebars->29->1112"
       ]
@@ -12864,7 +12864,7 @@
       "ru": "Intel&reg; ME",
       "zh-chs": "英特爾&reg;ME",
       "xloc": [
-        "default-mobile.handlebars->9->189",
+        "default-mobile.handlebars->9->196",
         "default.handlebars->29->482"
       ]
     },
@@ -12882,7 +12882,7 @@
       "ru": "Intel&reg; SM",
       "zh-chs": "英特爾&reg;SM",
       "xloc": [
-        "default-mobile.handlebars->9->191",
+        "default-mobile.handlebars->9->198",
         "default.handlebars->29->486"
       ]
     },
@@ -13175,7 +13175,7 @@
       "ru": "Некорректный токен создания учетной записи.",
       "zh-chs": "無效的帳戶創建令牌。",
       "xloc": [
-        "login-mobile.handlebars->5->7",
+        "login-mobile.handlebars->5->8",
         "login.handlebars->5->8"
       ]
     },
@@ -13193,7 +13193,7 @@
       "ru": "Некорректный email.",
       "zh-chs": "不合規電郵。",
       "xloc": [
-        "login-mobile.handlebars->5->10",
+        "login-mobile.handlebars->5->11",
         "login.handlebars->5->11"
       ]
     },
@@ -13228,7 +13228,7 @@
       "ru": "Некорректный токен, попробуйте еще.",
       "zh-chs": "令牌無效，請重試。",
       "xloc": [
-        "login-mobile.handlebars->5->12",
+        "login-mobile.handlebars->5->13",
         "login.handlebars->5->13"
       ]
     },
@@ -14270,7 +14270,7 @@
       "ru": "Ограниченный ввод",
       "zh-chs": "有限輸入",
       "xloc": [
-        "default-mobile.handlebars->9->324",
+        "default-mobile.handlebars->9->331",
         "default.handlebars->29->1275",
         "default.handlebars->29->567",
         "default.handlebars->29->586"
@@ -14290,7 +14290,7 @@
       "ru": "Ограничить элементы ввода",
       "zh-chs": "僅限於輸入",
       "xloc": [
-        "default-mobile.handlebars->9->299",
+        "default-mobile.handlebars->9->306",
         "default.handlebars->29->1233"
       ]
     },
@@ -14308,7 +14308,7 @@
       "ru": "Ссылка",
       "zh-chs": "鏈接",
       "xloc": [
-        "default-mobile.handlebars->9->71",
+        "default-mobile.handlebars->9->78",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->4"
       ]
     },
@@ -14405,7 +14405,7 @@
       "ru": "Linux 32bit",
       "zh-chs": "Linux 32位",
       "xloc": [
-        "default-mobile.handlebars->9->151",
+        "default-mobile.handlebars->9->158",
         "default.handlebars->29->18"
       ]
     },
@@ -14423,7 +14423,7 @@
       "ru": "Linux 64bit",
       "zh-chs": "Linux 64位",
       "xloc": [
-        "default-mobile.handlebars->9->152",
+        "default-mobile.handlebars->9->159",
         "default.handlebars->29->19"
       ]
     },
@@ -14441,7 +14441,7 @@
       "ru": "Linux ARM",
       "zh-chs": "Linux ARM",
       "xloc": [
-        "default-mobile.handlebars->9->156",
+        "default-mobile.handlebars->9->163",
         "default.handlebars->29->23"
       ]
     },
@@ -14476,7 +14476,7 @@
       "ru": "Linux NoKVM x86-32bit",
       "zh-chs": "Linux NoKVM x86-32位",
       "xloc": [
-        "default-mobile.handlebars->9->165",
+        "default-mobile.handlebars->9->172",
         "default.handlebars->29->32"
       ]
     },
@@ -14494,7 +14494,7 @@
       "ru": "Linux NoKVM x86-64bit",
       "zh-chs": "Linux NoKVM x86-64位",
       "xloc": [
-        "default-mobile.handlebars->9->166",
+        "default-mobile.handlebars->9->173",
         "default.handlebars->29->33"
       ]
     },
@@ -14512,7 +14512,7 @@
       "ru": "Linux Poky x86-32bit",
       "zh-chs": "Linux Poky x86-32位",
       "xloc": [
-        "default-mobile.handlebars->9->161",
+        "default-mobile.handlebars->9->168",
         "default.handlebars->29->28"
       ]
     },
@@ -14530,7 +14530,7 @@
       "ru": "Linux Poky x86-64bit",
       "zh-chs": "Linux Poky x86-64位",
       "xloc": [
-        "default-mobile.handlebars->9->164",
+        "default-mobile.handlebars->9->171",
         "default.handlebars->29->31"
       ]
     },
@@ -14634,7 +14634,7 @@
       "ru": "Загрузка...",
       "zh-chs": "載入中...",
       "xloc": [
-        "default-mobile.handlebars->9->34",
+        "default-mobile.handlebars->9->41",
         "default.handlebars->29->1105",
         "default.handlebars->29->1107",
         "default.handlebars->29->641",
@@ -14918,7 +14918,7 @@
       "ru": "Вход не выполнен, проверьте имя пользователя и пароль.",
       "zh-chs": "登錄失敗，請檢查用戶名和密碼。",
       "xloc": [
-        "login-mobile.handlebars->5->16",
+        "login-mobile.handlebars->5->17",
         "login.handlebars->5->17"
       ]
     },
@@ -15061,7 +15061,7 @@
       "ru": "MIPS",
       "zh-chs": "MIPS",
       "xloc": [
-        "default-mobile.handlebars->9->153",
+        "default-mobile.handlebars->9->160",
         "default.handlebars->29->20"
       ]
     },
@@ -15097,8 +15097,8 @@
       "ru": "MQTT",
       "zh-chs": "MQTT",
       "xloc": [
-        "default-mobile.handlebars->9->128",
-        "default-mobile.handlebars->9->197",
+        "default-mobile.handlebars->9->135",
+        "default-mobile.handlebars->9->204",
         "default.handlebars->29->184",
         "default.handlebars->29->377",
         "default.handlebars->29->516",
@@ -15155,7 +15155,7 @@
       "ru": "Подключен MQTT канал",
       "zh-chs": "MQTT通道已連接",
       "xloc": [
-        "default-mobile.handlebars->9->206",
+        "default-mobile.handlebars->9->213",
         "default.handlebars->29->552"
       ]
     },
@@ -15261,7 +15261,7 @@
       "ru": "MacOS 32bit",
       "zh-chs": "MacOS 32位",
       "xloc": [
-        "default-mobile.handlebars->9->157",
+        "default-mobile.handlebars->9->164",
         "default.handlebars->29->24"
       ]
     },
@@ -15279,7 +15279,7 @@
       "ru": "MacOS 64bit",
       "zh-chs": "MacOS 64位",
       "xloc": [
-        "default-mobile.handlebars->9->162",
+        "default-mobile.handlebars->9->169",
         "default.handlebars->29->29"
       ]
     },
@@ -15383,8 +15383,8 @@
       "ru": "Управление компьютерами группы устройств",
       "zh-chs": "管理設備組計算機",
       "xloc": [
-        "default-mobile.handlebars->9->296",
-        "default-mobile.handlebars->9->314",
+        "default-mobile.handlebars->9->303",
+        "default-mobile.handlebars->9->321",
         "default.handlebars->29->1230",
         "default.handlebars->29->1264"
       ]
@@ -15403,8 +15403,8 @@
       "ru": "Управление пользователями группы устройств",
       "zh-chs": "管理設備組用戶",
       "xloc": [
-        "default-mobile.handlebars->9->295",
-        "default-mobile.handlebars->9->313",
+        "default-mobile.handlebars->9->302",
+        "default-mobile.handlebars->9->320",
         "default.handlebars->29->1229",
         "default.handlebars->29->1263"
       ]
@@ -15532,6 +15532,8 @@
     {
       "en": "Manage phone number",
       "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->managePhoneNumber1->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->1->managePhoneNumber2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->managePhoneNumber2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->managePhoneNumber1->1->0"
       ]
@@ -15584,7 +15586,7 @@
       "ru": "Управляется с помощью программного агента",
       "zh-chs": "使用軟件代理進行管理",
       "xloc": [
-        "default-mobile.handlebars->9->276",
+        "default-mobile.handlebars->9->283",
         "default.handlebars->29->1113"
       ]
     },
@@ -15722,7 +15724,7 @@
       "ru": "Максимальная длина {0}",
       "zh-chs": "最大長度為{0}",
       "xloc": [
-        "login-mobile.handlebars->5->33",
+        "login-mobile.handlebars->5->36",
         "login.handlebars->5->36"
       ]
     },
@@ -15795,7 +15797,7 @@
       "ru": "Mesh Agent",
       "zh-chs": "網格代理",
       "xloc": [
-        "default-mobile.handlebars->9->203",
+        "default-mobile.handlebars->9->210",
         "default.handlebars->29->320",
         "default.handlebars->29->324",
         "default.handlebars->29->333",
@@ -15821,7 +15823,7 @@
       "ru": "Консоль Mesh Agent",
       "zh-chs": "網格代理控制台",
       "xloc": [
-        "default-mobile.handlebars->9->303",
+        "default-mobile.handlebars->9->310",
         "default.handlebars->29->1238"
       ]
     },
@@ -16374,7 +16376,7 @@
       "ru": "Минимальная длина {0}",
       "zh-chs": "最小長度為{0}",
       "xloc": [
-        "login-mobile.handlebars->5->32",
+        "login-mobile.handlebars->5->35",
         "login.handlebars->5->35"
       ]
     },
@@ -16748,10 +16750,10 @@
       "ru": "Имя",
       "zh-chs": "名稱",
       "xloc": [
-        "default-mobile.handlebars->9->138",
-        "default-mobile.handlebars->9->277",
-        "default-mobile.handlebars->9->290",
-        "default-mobile.handlebars->9->59",
+        "default-mobile.handlebars->9->145",
+        "default-mobile.handlebars->9->284",
+        "default-mobile.handlebars->9->297",
+        "default-mobile.handlebars->9->66",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->1",
         "default.handlebars->29->1085",
         "default.handlebars->29->1196",
@@ -16951,7 +16953,7 @@
       "ru": "Новая группа устройств",
       "zh-chs": "新設備組",
       "xloc": [
-        "default-mobile.handlebars->9->53",
+        "default-mobile.handlebars->9->60",
         "default.handlebars->29->1078",
         "default.handlebars->29->1090",
         "default.handlebars->29->632"
@@ -16971,8 +16973,8 @@
       "ru": "Новая папка",
       "zh-chs": "新建文件夾",
       "xloc": [
-        "default-mobile.handlebars->9->248",
-        "default-mobile.handlebars->9->82",
+        "default-mobile.handlebars->9->255",
+        "default-mobile.handlebars->9->89",
         "default.handlebars->29->1345",
         "default.handlebars->29->724",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -17027,8 +17029,8 @@
       "ru": "Новый пароль:",
       "zh-chs": "新密碼：",
       "xloc": [
-        "default-mobile.handlebars->9->48",
-        "default-mobile.handlebars->9->49",
+        "default-mobile.handlebars->9->55",
+        "default-mobile.handlebars->9->56",
         "default.handlebars->29->1073",
         "default.handlebars->29->1074"
       ]
@@ -17092,8 +17094,8 @@
       "ru": "Учетных данных нет",
       "zh-chs": "沒有憑證",
       "xloc": [
-        "default-mobile.handlebars->9->187",
-        "default-mobile.handlebars->9->188",
+        "default-mobile.handlebars->9->194",
+        "default-mobile.handlebars->9->195",
         "default.handlebars->29->479",
         "default.handlebars->29->480"
       ]
@@ -17167,7 +17169,7 @@
       "ru": "Нет доступа к файлам",
       "zh-chs": "沒有文件訪問",
       "xloc": [
-        "default-mobile.handlebars->9->301",
+        "default-mobile.handlebars->9->308",
         "default.handlebars->29->1236"
       ]
     },
@@ -17185,7 +17187,7 @@
       "ru": "Файлов нет",
       "zh-chs": "沒有文件",
       "xloc": [
-        "default-mobile.handlebars->9->322",
+        "default-mobile.handlebars->9->329",
         "default.handlebars->29->1273",
         "default.handlebars->29->565",
         "default.handlebars->29->584"
@@ -17220,8 +17222,8 @@
       "ru": "Нет Intel&reg; AMT",
       "zh-chs": "沒有英特爾&reg;AMT",
       "xloc": [
-        "default-mobile.handlebars->9->302",
-        "default-mobile.handlebars->9->323",
+        "default-mobile.handlebars->9->309",
+        "default-mobile.handlebars->9->330",
         "default.handlebars->29->1237",
         "default.handlebars->29->1274"
       ]
@@ -17240,7 +17242,7 @@
       "ru": "Intel&reg; AMT устройств в этой группе нет",
       "zh-chs": "該組中沒有英特爾&reg;AMT設備",
       "xloc": [
-        "default-mobile.handlebars->9->99"
+        "default-mobile.handlebars->9->106"
       ]
     },
     {
@@ -17344,9 +17346,9 @@
       "ru": "Нет прав",
       "zh-chs": "沒有權利",
       "xloc": [
-        "default-mobile.handlebars->9->285",
-        "default-mobile.handlebars->9->328",
-        "default-mobile.handlebars->9->68",
+        "default-mobile.handlebars->9->292",
+        "default-mobile.handlebars->9->335",
+        "default-mobile.handlebars->9->75",
         "default.handlebars->29->1099",
         "default.handlebars->29->1279",
         "default.handlebars->29->577",
@@ -17367,7 +17369,7 @@
       "ru": "Нет безопасности TLS",
       "zh-chs": "沒有TLS安全性",
       "xloc": [
-        "default-mobile.handlebars->9->218",
+        "default-mobile.handlebars->9->225",
         "default.handlebars->29->237",
         "default.handlebars->29->618"
       ]
@@ -17386,7 +17388,7 @@
       "ru": "Нет терминала",
       "zh-chs": "沒有終端",
       "xloc": [
-        "default-mobile.handlebars->9->321",
+        "default-mobile.handlebars->9->328",
         "default.handlebars->29->1272",
         "default.handlebars->29->564",
         "default.handlebars->29->583"
@@ -17406,7 +17408,7 @@
       "ru": "Нет доступа к терминалу",
       "zh-chs": "沒有終端訪問",
       "xloc": [
-        "default-mobile.handlebars->9->300",
+        "default-mobile.handlebars->9->307",
         "default.handlebars->29->1235"
       ]
     },
@@ -17478,7 +17480,7 @@
       "ru": "Устройств нет",
       "zh-chs": "沒有裝置",
       "xloc": [
-        "default-mobile.handlebars->9->101"
+        "default-mobile.handlebars->9->108"
       ]
     },
     {
@@ -17564,7 +17566,7 @@
       "ru": "В этой группе нет устройств",
       "zh-chs": "該組中沒有設備",
       "xloc": [
-        "default-mobile.handlebars->9->100",
+        "default-mobile.handlebars->9->107",
         "default.handlebars->29->190"
       ]
     },
@@ -17800,7 +17802,7 @@
       "ru": "NodeJS",
       "zh-chs": "節點JS",
       "xloc": [
-        "default-mobile.handlebars->9->169",
+        "default-mobile.handlebars->9->176",
         "default.handlebars->29->36"
       ]
     },
@@ -17818,15 +17820,15 @@
       "ru": "Пусто",
       "zh-chs": "沒有",
       "xloc": [
-        "default-mobile.handlebars->9->136",
-        "default-mobile.handlebars->9->141",
+        "default-mobile.handlebars->9->104",
+        "default-mobile.handlebars->9->105",
         "default-mobile.handlebars->9->143",
-        "default-mobile.handlebars->9->199",
-        "default-mobile.handlebars->9->246",
-        "default-mobile.handlebars->9->279",
-        "default-mobile.handlebars->9->78",
-        "default-mobile.handlebars->9->97",
-        "default-mobile.handlebars->9->98",
+        "default-mobile.handlebars->9->148",
+        "default-mobile.handlebars->9->150",
+        "default-mobile.handlebars->9->206",
+        "default-mobile.handlebars->9->253",
+        "default-mobile.handlebars->9->286",
+        "default-mobile.handlebars->9->85",
         "default.handlebars->29->1109",
         "default.handlebars->29->1115",
         "default.handlebars->29->1119",
@@ -17934,7 +17936,7 @@
       "ru": "Не активированно (In)",
       "zh-chs": "未激活（輸入）",
       "xloc": [
-        "default-mobile.handlebars->9->179",
+        "default-mobile.handlebars->9->186",
         "default.handlebars->29->467",
         "default.handlebars->29->785"
       ]
@@ -17953,7 +17955,7 @@
       "ru": "Не активированно (Pre)",
       "zh-chs": "未激活（預）",
       "xloc": [
-        "default-mobile.handlebars->9->178",
+        "default-mobile.handlebars->9->185",
         "default.handlebars->29->466",
         "default.handlebars->29->784"
       ]
@@ -18203,7 +18205,7 @@
       "ru": "ОК",
       "zh-chs": "好",
       "xloc": [
-        "default-mobile.handlebars->9->45",
+        "default-mobile.handlebars->9->52",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->29->1102",
         "default.handlebars->29->492",
@@ -18296,7 +18298,7 @@
       "ru": "Старый пароль:",
       "zh-chs": "舊密碼：",
       "xloc": [
-        "default-mobile.handlebars->9->47",
+        "default-mobile.handlebars->9->54",
         "default.handlebars->29->1072"
       ]
     },
@@ -18349,7 +18351,7 @@
       "ru": "Редактировать файлы можно только размером менее 200КБ.",
       "zh-chs": "只能編輯小於200k的文件。",
       "xloc": [
-        "default-mobile.handlebars->9->256",
+        "default-mobile.handlebars->9->263",
         "default.handlebars->29->424",
         "default.handlebars->29->732"
       ]
@@ -18475,7 +18477,7 @@
       "ru": "Операция",
       "zh-chs": "運作方式",
       "xloc": [
-        "default-mobile.handlebars->9->213",
+        "default-mobile.handlebars->9->220",
         "default.handlebars->29->1401",
         "default.handlebars->29->1466",
         "default.handlebars->29->384",
@@ -18696,8 +18698,8 @@
       "ru": "Частичные права",
       "zh-chs": "部分權利",
       "xloc": [
-        "default-mobile.handlebars->9->283",
-        "default-mobile.handlebars->9->66",
+        "default-mobile.handlebars->9->290",
+        "default-mobile.handlebars->9->73",
         "default.handlebars->29->1097"
       ]
     },
@@ -18749,7 +18751,7 @@
       "ru": "Пароль",
       "zh-chs": "密碼",
       "xloc": [
-        "default-mobile.handlebars->9->216",
+        "default-mobile.handlebars->9->223",
         "default.handlebars->29->1433",
         "default.handlebars->29->1434",
         "default.handlebars->29->1539",
@@ -18775,7 +18777,7 @@
       "ru": "Подсказка пароля",
       "zh-chs": "密碼提示",
       "xloc": [
-        "login-mobile.handlebars->5->23",
+        "login-mobile.handlebars->5->26",
         "login.handlebars->5->26"
       ]
     },
@@ -18812,8 +18814,8 @@
       "ru": "Политика пароля",
       "zh-chs": "密碼政策",
       "xloc": [
-        "login-mobile.handlebars->5->27",
-        "login-mobile.handlebars->5->31",
+        "login-mobile.handlebars->5->30",
+        "login-mobile.handlebars->5->34",
         "login.handlebars->5->30",
         "login.handlebars->5->34",
         "login.handlebars->5->41"
@@ -18833,7 +18835,7 @@
       "ru": "Требуется смена пароля.",
       "zh-chs": "要求更改密碼。",
       "xloc": [
-        "login-mobile.handlebars->5->17",
+        "login-mobile.handlebars->5->18",
         "login.handlebars->5->18"
       ]
     },
@@ -18868,7 +18870,7 @@
       "ru": "Подсказка пароля:",
       "zh-chs": "密碼提示：",
       "xloc": [
-        "default-mobile.handlebars->9->50",
+        "default-mobile.handlebars->9->57",
         "default.handlebars->29->1075"
       ]
     },
@@ -18903,7 +18905,7 @@
       "ru": "Пароль не принят, используйте другой.",
       "zh-chs": "密碼被拒絕，請使用其他密碼。",
       "xloc": [
-        "login-mobile.handlebars->5->9",
+        "login-mobile.handlebars->5->10",
         "login.handlebars->5->10"
       ]
     },
@@ -18940,8 +18942,8 @@
       "zh-chs": "密碼：",
       "xloc": [
         "account-invite.html->2->5",
-        "default-mobile.handlebars->9->42",
-        "default-mobile.handlebars->9->43",
+        "default-mobile.handlebars->9->49",
+        "default-mobile.handlebars->9->50",
         "default.handlebars->29->1067",
         "default.handlebars->29->1068",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->4->1",
@@ -18970,8 +18972,8 @@
       "ru": "Вставить",
       "zh-chs": "糊",
       "xloc": [
-        "default-mobile.handlebars->9->261",
-        "default-mobile.handlebars->9->90",
+        "default-mobile.handlebars->9->268",
+        "default-mobile.handlebars->9->97",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
         "default.handlebars->29->1354",
@@ -19137,7 +19139,7 @@
       "ru": "Права",
       "zh-chs": "權限",
       "xloc": [
-        "default-mobile.handlebars->9->330",
+        "default-mobile.handlebars->9->337",
         "default.handlebars->29->1282",
         "default.handlebars->29->1375"
       ]
@@ -19162,6 +19164,9 @@
     {
       "en": "Phone Notifications",
       "xloc": [
+        "default-mobile.handlebars->9->31",
+        "default-mobile.handlebars->9->34",
+        "default-mobile.handlebars->9->36",
         "default.handlebars->29->142",
         "default.handlebars->29->831",
         "default.handlebars->29->833"
@@ -19176,6 +19181,7 @@
     {
       "en": "Phone number:",
       "xloc": [
+        "default-mobile.handlebars->9->35",
         "default.handlebars->29->832"
       ]
     },
@@ -19293,7 +19299,7 @@
       "ru": "Подождите пару минут для получения подтверждения.",
       "zh-chs": "請等待幾分鐘以接收驗證。",
       "xloc": [
-        "default-mobile.handlebars->9->38",
+        "default-mobile.handlebars->9->45",
         "default.handlebars->29->1062"
       ]
     },
@@ -19415,7 +19421,7 @@
       "ru": "PogoPlug ARM",
       "zh-chs": "PogoPlug ARM",
       "xloc": [
-        "default-mobile.handlebars->9->159",
+        "default-mobile.handlebars->9->166",
         "default.handlebars->29->26"
       ]
     },
@@ -19433,7 +19439,7 @@
       "ru": "Политика",
       "zh-chs": "政策",
       "xloc": [
-        "default-mobile.handlebars->9->65",
+        "default-mobile.handlebars->9->72",
         "default.handlebars->29->1096"
       ]
     },
@@ -19555,8 +19561,8 @@
       "ru": "Выключить",
       "zh-chs": "斷電",
       "xloc": [
-        "default-mobile.handlebars->9->108",
-        "default-mobile.handlebars->9->212",
+        "default-mobile.handlebars->9->115",
+        "default-mobile.handlebars->9->219",
         "default.handlebars->29->6",
         "default.handlebars->29->607"
       ]
@@ -19592,8 +19598,8 @@
       "ru": "Включено",
       "zh-chs": "供電",
       "xloc": [
-        "default-mobile.handlebars->9->103",
         "default-mobile.handlebars->9->110",
+        "default-mobile.handlebars->9->117",
         "default.handlebars->29->1",
         "default.handlebars->29->348"
       ]
@@ -19612,8 +19618,8 @@
       "ru": "Текущее состояние",
       "zh-chs": "當下",
       "xloc": [
-        "default-mobile.handlebars->9->109",
         "default-mobile.handlebars->9->116",
+        "default-mobile.handlebars->9->123",
         "default.handlebars->29->360",
         "default.handlebars->29->7"
       ]
@@ -19667,7 +19673,7 @@
       "ru": "Управление процессами",
       "zh-chs": "過程控制",
       "xloc": [
-        "default-mobile.handlebars->9->235",
+        "default-mobile.handlebars->9->242",
         "default.handlebars->29->702"
       ]
     },
@@ -19770,7 +19776,7 @@
       "ru": "Публичная ссылка",
       "zh-chs": "公開連結",
       "xloc": [
-        "default-mobile.handlebars->9->77",
+        "default-mobile.handlebars->9->84",
         "default.handlebars->29->1339"
       ]
     },
@@ -20113,8 +20119,8 @@
       "ru": "Рекурсивное удаление",
       "zh-chs": "遞歸刪除",
       "xloc": [
-        "default-mobile.handlebars->9->249",
-        "default-mobile.handlebars->9->83",
+        "default-mobile.handlebars->9->256",
+        "default-mobile.handlebars->9->90",
         "default.handlebars->29->1346",
         "default.handlebars->29->725"
       ]
@@ -20193,7 +20199,7 @@
       "ru": "Ретранслятор",
       "zh-chs": "中繼",
       "xloc": [
-        "default-mobile.handlebars->9->127",
+        "default-mobile.handlebars->9->134",
         "default.handlebars->29->182",
         "default.handlebars->29->375"
       ]
@@ -20364,8 +20370,8 @@
       "ru": "Удаленное управление",
       "zh-chs": "遙控",
       "xloc": [
-        "default-mobile.handlebars->9->297",
-        "default-mobile.handlebars->9->315",
+        "default-mobile.handlebars->9->304",
+        "default-mobile.handlebars->9->322",
         "default.handlebars->29->1231",
         "default.handlebars->29->1265"
       ]
@@ -20384,7 +20390,7 @@
       "ru": "Настройки удаленного рабочего стола",
       "zh-chs": "遠程桌面設置",
       "xloc": [
-        "default-mobile.handlebars->9->232",
+        "default-mobile.handlebars->9->239",
         "default.handlebars->29->214",
         "default.handlebars->29->677"
       ]
@@ -20420,7 +20426,7 @@
       "ru": "Удаленный пользователь Mesh",
       "zh-chs": "遠程網狀用戶",
       "xloc": [
-        "default-mobile.handlebars->9->333"
+        "default-mobile.handlebars->9->340"
       ]
     },
     {
@@ -20451,8 +20457,8 @@
       "ru": "Только просмотр экрана без ввода",
       "zh-chs": "僅遠程查看",
       "xloc": [
-        "default-mobile.handlebars->9->298",
-        "default-mobile.handlebars->9->320",
+        "default-mobile.handlebars->9->305",
+        "default-mobile.handlebars->9->327",
         "default.handlebars->29->1232",
         "default.handlebars->29->1270"
       ]
@@ -20671,6 +20677,7 @@
     {
       "en": "Remove phone number",
       "xloc": [
+        "default-mobile.handlebars->9->33",
         "default.handlebars->29->830"
       ]
     },
@@ -20783,8 +20790,8 @@
       "ru": "Переименовать",
       "zh-chs": "改名",
       "xloc": [
-        "default-mobile.handlebars->9->253",
-        "default-mobile.handlebars->9->87",
+        "default-mobile.handlebars->9->260",
+        "default-mobile.handlebars->9->94",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->1",
         "default.handlebars->29->1350",
@@ -20826,7 +20833,7 @@
       "ru": "Требования: {0}.",
       "zh-chs": "要求：{0}。",
       "xloc": [
-        "default-mobile.handlebars->9->51",
+        "default-mobile.handlebars->9->58",
         "default.handlebars->29->1440",
         "default.handlebars->29->1587"
       ]
@@ -20888,7 +20895,7 @@
       "ru": "Перезагрузить",
       "zh-chs": "重啟",
       "xloc": [
-        "default-mobile.handlebars->9->211",
+        "default-mobile.handlebars->9->218",
         "default.handlebars->29->606",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devMapToolbar"
       ]
@@ -21132,8 +21139,8 @@
       "ru": "Root/Корень",
       "zh-chs": "根",
       "xloc": [
-        "default-mobile.handlebars->9->243",
-        "default-mobile.handlebars->9->69",
+        "default-mobile.handlebars->9->250",
+        "default-mobile.handlebars->9->76",
         "default.handlebars->29->1323",
         "default.handlebars->29->719"
       ]
@@ -21282,12 +21289,14 @@
       "xloc": [
         "default.handlebars->29->1564",
         "default.handlebars->29->1569",
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3"
       ]
     },
     {
       "en": "SMS sent.",
       "xloc": [
+        "login-mobile.handlebars->5->4",
         "login.handlebars->5->4"
       ]
     },
@@ -21608,7 +21617,8 @@
       "ru": "Безопасный вход",
       "zh-chs": "安全登錄",
       "xloc": [
-        "login-mobile.handlebars->5->21",
+        "login-mobile.handlebars->5->22",
+        "login-mobile.handlebars->5->24",
         "login.handlebars->5->22",
         "login.handlebars->5->24"
       ]
@@ -21644,7 +21654,7 @@
       "ru": "Защита",
       "zh-chs": "安全",
       "xloc": [
-        "default-mobile.handlebars->9->217",
+        "default-mobile.handlebars->9->224",
         "default.handlebars->29->1565",
         "default.handlebars->29->236",
         "default.handlebars->29->617",
@@ -21826,7 +21836,7 @@
       "ru": "Выберите действие для осуществления на этом устройстве.",
       "zh-chs": "選擇要在此設備上執行的操作。",
       "xloc": [
-        "default-mobile.handlebars->9->208",
+        "default-mobile.handlebars->9->215",
         "default.handlebars->29->603"
       ]
     },
@@ -21862,7 +21872,7 @@
       "ru": "Только собственные события",
       "zh-chs": "僅自我事件",
       "xloc": [
-        "default-mobile.handlebars->9->325",
+        "default-mobile.handlebars->9->332",
         "default.handlebars->29->1276"
       ]
     },
@@ -22045,13 +22055,14 @@
       "ru": "Отправить токен на зарегистрированный адрес электронной почты?",
       "zh-chs": "將令牌發送到註冊的電子郵件地址？",
       "xloc": [
-        "login-mobile.handlebars->5->22",
+        "login-mobile.handlebars->5->23",
         "login.handlebars->5->23"
       ]
     },
     {
       "en": "Send token to registed phone number?",
       "xloc": [
+        "login-mobile.handlebars->5->25",
         "login.handlebars->5->25"
       ]
     },
@@ -22171,8 +22182,8 @@
       "ru": "Серверные файлы",
       "zh-chs": "服務器文件",
       "xloc": [
-        "default-mobile.handlebars->9->304",
-        "default-mobile.handlebars->9->317",
+        "default-mobile.handlebars->9->311",
+        "default-mobile.handlebars->9->324",
         "default.handlebars->29->1239",
         "default.handlebars->29->1267",
         "default.handlebars->29->1446",
@@ -22756,7 +22767,7 @@
       "ru": "Показывать только собственные события",
       "zh-chs": "只顯示自己的事件",
       "xloc": [
-        "default-mobile.handlebars->9->307",
+        "default-mobile.handlebars->9->314",
         "default.handlebars->29->1242"
       ]
     },
@@ -23015,10 +23026,10 @@
       "ru": "Отправить в сон",
       "zh-chs": "睡覺",
       "xloc": [
-        "default-mobile.handlebars->9->104",
-        "default-mobile.handlebars->9->105",
-        "default-mobile.handlebars->9->106",
-        "default-mobile.handlebars->9->210",
+        "default-mobile.handlebars->9->111",
+        "default-mobile.handlebars->9->112",
+        "default-mobile.handlebars->9->113",
+        "default-mobile.handlebars->9->217",
         "default.handlebars->29->2",
         "default.handlebars->29->3",
         "default.handlebars->29->4",
@@ -23056,8 +23067,8 @@
       "ru": "В режиме сна",
       "zh-chs": "睡眠",
       "xloc": [
-        "default-mobile.handlebars->9->111",
-        "default-mobile.handlebars->9->112",
+        "default-mobile.handlebars->9->118",
+        "default-mobile.handlebars->9->119",
         "default.handlebars->29->350",
         "default.handlebars->29->352"
       ]
@@ -23180,7 +23191,7 @@
       "ru": "Soft-Off",
       "zh-chs": "軟關",
       "xloc": [
-        "default-mobile.handlebars->9->115",
+        "default-mobile.handlebars->9->122",
         "default.handlebars->29->358"
       ]
     },
@@ -23198,7 +23209,7 @@
       "ru": "Группа программных агентов",
       "zh-chs": "軟件代理組",
       "xloc": [
-        "default-mobile.handlebars->9->61"
+        "default-mobile.handlebars->9->68"
       ]
     },
     {
@@ -23702,7 +23713,7 @@
       "ru": "Специальные клавиши",
       "zh-chs": "特殊鍵",
       "xloc": [
-        "default-mobile.handlebars->9->233",
+        "default-mobile.handlebars->9->240",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
     },
@@ -23829,7 +23840,7 @@
       "ru": "Прервать процесс #{0} \\\"{1}\\\"?",
       "zh-chs": "停止進程＃{0} \\“ {1} \\”？",
       "xloc": [
-        "default-mobile.handlebars->9->236",
+        "default-mobile.handlebars->9->243",
         "default.handlebars->29->703"
       ]
     },
@@ -23847,7 +23858,7 @@
       "ru": "Место для хранения превышено",
       "zh-chs": "儲存空間超過",
       "xloc": [
-        "default-mobile.handlebars->9->72"
+        "default-mobile.handlebars->9->79"
       ]
     },
     {
@@ -23898,8 +23909,8 @@
       "ru": "Надежный пароль",
       "zh-chs": "強密碼",
       "xloc": [
-        "login-mobile.handlebars->5->24",
-        "login-mobile.handlebars->5->28",
+        "login-mobile.handlebars->5->27",
+        "login-mobile.handlebars->5->31",
         "login.handlebars->5->27",
         "login.handlebars->5->31"
       ]
@@ -24146,7 +24157,7 @@
       "ru": "TLS",
       "zh-chs": "TLS",
       "xloc": [
-        "default-mobile.handlebars->9->186",
+        "default-mobile.handlebars->9->193",
         "default.handlebars->29->477"
       ]
     },
@@ -24181,7 +24192,7 @@
       "ru": "Требуется безопасность TLS",
       "zh-chs": "需要TLS安全",
       "xloc": [
-        "default-mobile.handlebars->9->219",
+        "default-mobile.handlebars->9->226",
         "default.handlebars->29->238",
         "default.handlebars->29->619"
       ]
@@ -24234,9 +24245,9 @@
       "ru": "Теги",
       "zh-chs": "標籤",
       "xloc": [
-        "default-mobile.handlebars->9->200",
-        "default-mobile.handlebars->9->201",
-        "default-mobile.handlebars->9->228",
+        "default-mobile.handlebars->9->207",
+        "default-mobile.handlebars->9->208",
+        "default-mobile.handlebars->9->235",
         "default.handlebars->29->670",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->7"
       ]
@@ -24558,7 +24569,7 @@
       "ru": "Эта учетная запись не имеет прав для создания новой группы устройств.",
       "zh-chs": "該帳戶無權創建新的設備組。",
       "xloc": [
-        "default-mobile.handlebars->9->54",
+        "default-mobile.handlebars->9->61",
         "default.handlebars->29->1079"
       ]
     },
@@ -25398,8 +25409,8 @@
       "ru": "Удаленный ввод",
       "zh-chs": "類型",
       "xloc": [
-        "default-mobile.handlebars->9->280",
-        "default-mobile.handlebars->9->60",
+        "default-mobile.handlebars->9->287",
+        "default-mobile.handlebars->9->67",
         "default.handlebars->29->1086",
         "default.handlebars->29->1116",
         "default.handlebars->29->1167",
@@ -25508,8 +25519,8 @@
       "ru": "Невозможно получить доступ к устройству, пока адрес email не подтвержден. Это необходимо для восстановления пароля. Перейдите в раздел \\\"Моя учетная запись\\\", чтобы изменить и подтвердить адрес email.",
       "zh-chs": "在驗證電子郵件地址之前，無法訪問設備。這是密碼恢復所必需的。轉到“我的帳戶”以更改並驗證電子郵件地址。",
       "xloc": [
-        "default-mobile.handlebars->9->133",
-        "default-mobile.handlebars->9->56"
+        "default-mobile.handlebars->9->140",
+        "default-mobile.handlebars->9->63"
       ]
     },
     {
@@ -25526,8 +25537,8 @@
       "ru": "Невозможно получить доступ к устройству, пока не включена двухфакторная аутентификация. Это требуется для дополнительной безопасности. Перейдите в раздел \\\"Моя учетная запись\\\" и посмотрите \\\"Безопасность учетной записи\\\".",
       "zh-chs": "在啟用兩因素身份驗證之前，無法訪問設備。這是額外的安全性所必需的。轉到“我的帳戶”，然後查看“帳戶安全性”部分。",
       "xloc": [
-        "default-mobile.handlebars->9->135",
-        "default-mobile.handlebars->9->58"
+        "default-mobile.handlebars->9->142",
+        "default-mobile.handlebars->9->65"
       ]
     },
     {
@@ -25580,7 +25591,7 @@
       "ru": "Невозможно создать учетную запись.",
       "zh-chs": "無法創建帳戶。",
       "xloc": [
-        "login-mobile.handlebars->5->4",
+        "login-mobile.handlebars->5->5",
         "login.handlebars->5->5"
       ]
     },
@@ -25633,7 +25644,7 @@
       "ru": "Не удалось отправить email.",
       "zh-chs": "無法發送電子郵件。",
       "xloc": [
-        "login-mobile.handlebars->5->13",
+        "login-mobile.handlebars->5->14",
         "login.handlebars->5->14"
       ]
     },
@@ -25651,7 +25662,7 @@
       "ru": "Удаление",
       "zh-chs": "卸載",
       "xloc": [
-        "default-mobile.handlebars->9->327",
+        "default-mobile.handlebars->9->334",
         "default.handlebars->29->1278",
         "default.handlebars->29->576",
         "default.handlebars->29->595"
@@ -25671,7 +25682,7 @@
       "ru": "Удаление агента",
       "zh-chs": "卸載代理",
       "xloc": [
-        "default-mobile.handlebars->9->309",
+        "default-mobile.handlebars->9->316",
         "default.handlebars->29->1244",
         "default.handlebars->29->382",
         "default.handlebars->29->609"
@@ -25708,10 +25719,10 @@
       "ru": "Неизвестно",
       "zh-chs": "未知",
       "xloc": [
-        "default-mobile.handlebars->9->129",
-        "default-mobile.handlebars->9->146",
-        "default-mobile.handlebars->9->174",
-        "default-mobile.handlebars->9->175",
+        "default-mobile.handlebars->9->136",
+        "default-mobile.handlebars->9->153",
+        "default-mobile.handlebars->9->181",
+        "default-mobile.handlebars->9->182",
         "default.handlebars->29->13",
         "default.handlebars->29->1620",
         "default.handlebars->29->378",
@@ -25740,7 +25751,7 @@
       "ru": "Неизвестно #{0}",
       "zh-chs": "未知＃{0}",
       "xloc": [
-        "default-mobile.handlebars->9->274",
+        "default-mobile.handlebars->9->281",
         "default.handlebars->29->1111"
       ]
     },
@@ -25829,7 +25840,7 @@
       "ru": "Состояние неизвестно",
       "zh-chs": "未知狀態",
       "xloc": [
-        "default-mobile.handlebars->9->181",
+        "default-mobile.handlebars->9->188",
         "default.handlebars->29->469"
       ]
     },
@@ -25864,7 +25875,7 @@
       "ru": "Версия и состояние неизвестны",
       "zh-chs": "未知版本和狀態",
       "xloc": [
-        "default-mobile.handlebars->9->183",
+        "default-mobile.handlebars->9->190",
         "default.handlebars->29->471"
       ]
     },
@@ -25967,9 +25978,9 @@
       "ru": "Загрузить файл",
       "zh-chs": "上傳文件",
       "xloc": [
-        "default-mobile.handlebars->9->254",
-        "default-mobile.handlebars->9->272",
-        "default-mobile.handlebars->9->88",
+        "default-mobile.handlebars->9->261",
+        "default-mobile.handlebars->9->279",
+        "default-mobile.handlebars->9->95",
         "default.handlebars->29->1351",
         "default.handlebars->29->1359",
         "default.handlebars->29->730",
@@ -26162,7 +26173,7 @@
       "ru": "Чтобы добавить устройства, используйте настольную версию этого сайта.",
       "zh-chs": "使用此網站的桌面版本添加設備。",
       "xloc": [
-        "default-mobile.handlebars->9->102"
+        "default-mobile.handlebars->9->109"
       ]
     },
     {
@@ -26197,7 +26208,7 @@
       "ru": "Пользователь",
       "zh-chs": "用戶",
       "xloc": [
-        "default-mobile.handlebars->9->329",
+        "default-mobile.handlebars->9->336",
         "default.handlebars->29->1164",
         "default.handlebars->29->1387",
         "default.handlebars->29->1490",
@@ -26273,7 +26284,7 @@
       "ru": "Полномочия пользователя",
       "zh-chs": "用戶授權",
       "xloc": [
-        "default-mobile.handlebars->9->282",
+        "default-mobile.handlebars->9->289",
         "default.handlebars->29->1162",
         "default.handlebars->29->556"
       ]
@@ -26588,7 +26599,7 @@
       "ru": "Имя пользователя",
       "zh-chs": "用戶名",
       "xloc": [
-        "default-mobile.handlebars->9->215",
+        "default-mobile.handlebars->9->222",
         "default.handlebars->29->1431",
         "default.handlebars->29->233",
         "default.handlebars->29->263",
@@ -26610,7 +26621,7 @@
       "ru": "Имя пользователя уже существует.",
       "zh-chs": "此用戶名已存在。",
       "xloc": [
-        "login-mobile.handlebars->5->8",
+        "login-mobile.handlebars->5->9",
         "login.handlebars->5->9"
       ]
     },
@@ -26727,6 +26738,7 @@
     {
       "en": "Verification code:",
       "xloc": [
+        "default-mobile.handlebars->9->30",
         "default.handlebars->29->141"
       ]
     },
@@ -26750,6 +26762,7 @@
     {
       "en": "Verified phone number",
       "xloc": [
+        "default-mobile.handlebars->9->32",
         "default.handlebars->29->1396",
         "default.handlebars->29->829"
       ]
@@ -26785,7 +26798,7 @@
       "ru": "Подтвердить email",
       "zh-chs": "驗證郵件",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->1->verifyEmailId->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->3->verifyEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->verifyEmailId->0"
       ]
     },
@@ -27022,8 +27035,8 @@
       "ru": "Разбудить устройства",
       "zh-chs": "喚醒設備",
       "xloc": [
-        "default-mobile.handlebars->9->305",
-        "default-mobile.handlebars->9->318",
+        "default-mobile.handlebars->9->312",
+        "default-mobile.handlebars->9->325",
         "default.handlebars->29->1240",
         "default.handlebars->29->1268"
       ]
@@ -27042,7 +27055,7 @@
       "ru": "Разбудить",
       "zh-chs": "醒來",
       "xloc": [
-        "default-mobile.handlebars->9->209",
+        "default-mobile.handlebars->9->216",
         "default.handlebars->29->604"
       ]
     },
@@ -27111,8 +27124,8 @@
       "ru": "Слабый пароль",
       "zh-chs": "密碼強度低",
       "xloc": [
-        "login-mobile.handlebars->5->26",
-        "login-mobile.handlebars->5->30",
+        "login-mobile.handlebars->5->29",
+        "login-mobile.handlebars->5->33",
         "login.handlebars->5->29",
         "login.handlebars->5->33"
       ]
@@ -27253,7 +27266,7 @@
       "ru": "При включении при каждом входе в систему вам будет предоставлена возможность получать токен для входа в свою учетную запись электронной почты для обеспечения дополнительной безопасности.",
       "zh-chs": "啟用後，每次登錄時，您都可以選擇向電子郵件帳戶接收登錄令牌，以提高安全性。",
       "xloc": [
-        "default-mobile.handlebars->9->31",
+        "default-mobile.handlebars->9->38",
         "default.handlebars->29->835"
       ]
     },
@@ -27567,7 +27580,7 @@
       "ru": "Консоль Windows 32bit",
       "zh-chs": "Windows 32位控制台",
       "xloc": [
-        "default-mobile.handlebars->9->147",
+        "default-mobile.handlebars->9->154",
         "default.handlebars->29->14"
       ]
     },
@@ -27585,7 +27598,7 @@
       "ru": "Служба Windows 32bit",
       "zh-chs": "Windows 32位服務",
       "xloc": [
-        "default-mobile.handlebars->9->149",
+        "default-mobile.handlebars->9->156",
         "default.handlebars->29->16"
       ]
     },
@@ -27620,7 +27633,7 @@
       "ru": "Консоль Windows 64bit",
       "zh-chs": "Windows 64位控制台",
       "xloc": [
-        "default-mobile.handlebars->9->148",
+        "default-mobile.handlebars->9->155",
         "default.handlebars->29->15"
       ]
     },
@@ -27638,7 +27651,7 @@
       "ru": "Служба Windows 64bit",
       "zh-chs": "Windows 64位服務",
       "xloc": [
-        "default-mobile.handlebars->9->150",
+        "default-mobile.handlebars->9->157",
         "default.handlebars->29->17"
       ]
     },
@@ -27656,7 +27669,7 @@
       "ru": "Консоль Windows MinCore",
       "zh-chs": "Windows MinCore控制台",
       "xloc": [
-        "default-mobile.handlebars->9->167",
+        "default-mobile.handlebars->9->174",
         "default.handlebars->29->34"
       ]
     },
@@ -27674,7 +27687,7 @@
       "ru": "Служба Windows MinCore",
       "zh-chs": "Windows MinCore服務",
       "xloc": [
-        "default-mobile.handlebars->9->168",
+        "default-mobile.handlebars->9->175",
         "default.handlebars->29->35"
       ]
     },
@@ -27812,7 +27825,7 @@
       "ru": "XENx86",
       "zh-chs": "XENx86",
       "xloc": [
-        "default-mobile.handlebars->9->154",
+        "default-mobile.handlebars->9->161",
         "default.handlebars->29->21"
       ]
     },
@@ -28183,9 +28196,9 @@
       "ru": "\\\\",
       "zh-chs": "\\\\",
       "xloc": [
-        "default-mobile.handlebars->9->240",
-        "default-mobile.handlebars->9->241",
-        "default-mobile.handlebars->9->242"
+        "default-mobile.handlebars->9->247",
+        "default-mobile.handlebars->9->248",
+        "default-mobile.handlebars->9->249"
       ]
     },
     {
@@ -28352,7 +28365,7 @@
       "ru": "копировать",
       "zh-chs": "複製",
       "xloc": [
-        "default-mobile.handlebars->9->92",
+        "default-mobile.handlebars->9->99",
         "default.handlebars->29->1356"
       ]
     },
@@ -28780,7 +28793,7 @@
       "ru": "переместить",
       "zh-chs": "移動",
       "xloc": [
-        "default-mobile.handlebars->9->93",
+        "default-mobile.handlebars->9->100",
         "default.handlebars->29->1357"
       ]
     },
@@ -29169,7 +29182,7 @@
       "ru": "{0} байт",
       "zh-chs": "{0}個字節",
       "xloc": [
-        "default-mobile.handlebars->9->81",
+        "default-mobile.handlebars->9->88",
         "default.handlebars->29->1344"
       ]
     },
@@ -29286,7 +29299,7 @@
       "ru": "{0} букв в нижнем регистре",
       "zh-chs": "{0}小寫",
       "xloc": [
-        "login-mobile.handlebars->5->35",
+        "login-mobile.handlebars->5->38",
         "login.handlebars->5->38"
       ]
     },
@@ -29372,7 +29385,7 @@
       "ru": "{0} спец. символы",
       "zh-chs": "{0}非字母數字",
       "xloc": [
-        "login-mobile.handlebars->5->37",
+        "login-mobile.handlebars->5->40",
         "login.handlebars->5->40"
       ]
     },
@@ -29390,7 +29403,7 @@
       "ru": "{0} цифры",
       "zh-chs": "{0}數字",
       "xloc": [
-        "login-mobile.handlebars->5->36",
+        "login-mobile.handlebars->5->39",
         "login.handlebars->5->39"
       ]
     },
@@ -29521,7 +29534,7 @@
       "ru": "{0} заглавных букв",
       "zh-chs": "{0}大寫",
       "xloc": [
-        "login-mobile.handlebars->5->34",
+        "login-mobile.handlebars->5->37",
         "login.handlebars->5->37"
       ]
     },
@@ -29556,7 +29569,7 @@
       "ru": "{0} байт осталось",
       "zh-chs": "還剩{0} b",
       "xloc": [
-        "default-mobile.handlebars->9->73"
+        "default-mobile.handlebars->9->80"
       ]
     },
     {
@@ -29573,7 +29586,7 @@
       "ru": "{0} гигабайт осталось",
       "zh-chs": "還剩{0} g",
       "xloc": [
-        "default-mobile.handlebars->9->76"
+        "default-mobile.handlebars->9->83"
       ]
     },
     {
@@ -29623,7 +29636,7 @@
       "ru": "{0} килобайт осталось",
       "zh-chs": "還剩{0} k",
       "xloc": [
-        "default-mobile.handlebars->9->74"
+        "default-mobile.handlebars->9->81"
       ]
     },
     {
@@ -29640,7 +29653,7 @@
       "ru": "{0} мегабайт осталось",
       "zh-chs": "還有{0} m",
       "xloc": [
-        "default-mobile.handlebars->9->75"
+        "default-mobile.handlebars->9->82"
       ]
     },
     {
