@@ -249,7 +249,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                         // Take a look at the protocol
                                                         this.httprequest.protocol = parseInt(data);
                                                         if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                                                        if (this.httprequest.protocol == 1) {
+                                                        if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
+                                                        {
                                                             // Remote terminal using native pipes
                                                             if (process.platform == "win32")
                                                             {
