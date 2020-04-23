@@ -435,34 +435,36 @@
                 </table>
             </div>
             <div id=p6 style="display:none">
-                <div id="p6title">
-                    <img id=MainMeshImage src="serverpic.ashx">
-                    <h1>My Server</h1>
-                </div>
-                <div id="p2ServerActions">
-                    <p><strong>Server actions</strong></p>
-                    <div class="mL">
-                        <div id="p2ServerActionsBackup"><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
-                        <div id="p2ServerActionsRestore"><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
-                        <div id="p2ServerActionsVersion"><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
-                        <div id="p2ServerActionsErrors"><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
+                <div id="p6info" style="overflow-y:auto">
+                    <div id="p6title">
+                        <img id=MainMeshImage src="serverpic.ashx">
+                        <h1>My Server</h1>
                     </div>
-                </div>
-                <br /><strong>Server Statistics</strong><br /><br />
-                <div id="serverStats">
-                    <div id="serverCpuChartView" style="display:none">
-                        <div class="chartViewCanvas"><canvas id="serverCpuChart"></canvas></div>
-                        <div class="chartViewText" id="serverCpuChartText"></div>
+                    <div id="p2ServerActions">
+                        <p><strong>Server actions</strong></p>
+                        <div class="mL">
+                            <div id="p2ServerActionsBackup"><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                            <div id="p2ServerActionsRestore"><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
+                            <div id="p2ServerActionsVersion"><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
+                            <div id="p2ServerActionsErrors"><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
+                        </div>
                     </div>
-                    <div id="serverMemoryChartView" style="display:none">
-                        <div class="chartViewCanvas"><canvas id="serverMemoryChart"></canvas></div>
-                        <div class="chartViewText" id="serverMemoryChartText"></div>
-                    </div><br /><br />
-                    <div id="serverStatsTable"></div>
-                </div>
-                <div id="serverWarningsDiv" style="display:none">
-                    <br /><strong>Server Warnings</strong><br /><br />
-                    <div id="serverWarnings"></div>
+                    <br /><strong>Server Statistics</strong><br /><br />
+                    <div id="serverStats">
+                        <div id="serverCpuChartView" style="display:none">
+                            <div class="chartViewCanvas"><canvas id="serverCpuChart"></canvas></div>
+                            <div class="chartViewText" id="serverCpuChartText"></div>
+                        </div>
+                        <div id="serverMemoryChartView" style="display:none">
+                            <div class="chartViewCanvas"><canvas id="serverMemoryChart"></canvas></div>
+                            <div class="chartViewText" id="serverMemoryChartText"></div>
+                        </div><br /><br />
+                        <div id="serverStatsTable"></div>
+                    </div>
+                    <div id="serverWarningsDiv" style="display:none">
+                        <br /><strong>Server Warnings</strong><br /><br />
+                        <div id="serverWarnings"></div>
+                    </div>
                 </div>
             </div>
             <div id=p10 style="display:none">
@@ -863,27 +865,29 @@
                 <p id=p21info></p>
             </div>
             <div id=p30 style="display:none">
-                <table style="width:100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style=width:auto valign=top>
-                            <div id="p30title">
-                                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                                <h1>General - <span id=p30userName></span></h1>
-                            </div>
-                            <div id=p30html></div>
-                        </td>
-                        <td style=width:20px></td>
-                        <td style=width:200px>
-                            <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
-                                <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
-                                <img alt="" width=200 height=200 src=images/user-256.png />
-                            </picture>
-                            <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
-                        </td>
-                    </tr>
-                </table><br />
-                <div id=p30html2></div>
-                <div id=p30html3></div>
+                <div id="p30title">
+                    <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>General - <span id=p30userName></span></h1>
+                </div>
+                <div id="p30info" style="overflow-y:auto">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id=p30html></div>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px valign=top>
+                                <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
+                                    <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
+                                    <img alt="" width=200 height=200 src=images/user-256.png />
+                                </picture>
+                                <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
+                            </td>
+                        </tr>
+                    </table><br />
+                    <div id=p30html2></div>
+                    <div id=p30html3></div>
+                </div>
             </div>
             <div id=p31 style="display:none">
                 <div id="p31title">
@@ -1003,27 +1007,29 @@
                 <div id="p50groups"></div>
             </div>
             <div id=p51 style="display:none">
-                <table style="width:100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style=width:auto valign=top>
-                            <div id="p30title">
-                                <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                                <h1>User Group - <span id=p51groupName></span></h1>
-                            </div>
-                            <div id=p51group></div>
-                        </td>
-                        <td style=width:20px></td>
-                        <td style=width:200px>
-                            <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
-                                <source type="image/webp" width=200 height=200 srcset="images/webp/group-256.webp" />
-                                <img alt="" width=200 height=200 src=images/group-256.png />
-                            </picture>
-                            <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
-                        </td>
-                    </tr>
-                </table>
-                <div id=p51group2></div>
-                <br />
+                <div id="p30title">
+                    <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>User Group - <span id=p51groupName></span></h1>
+                </div>
+                <div id="p51info" style="overflow-y:auto">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id=p51group></div>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px valign=top>
+                                <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
+                                    <source type="image/webp" width=200 height=200 srcset="images/webp/group-256.webp" />
+                                    <img alt="" width=200 height=200 src=images/group-256.png />
+                                </picture>
+                                <div style="width:100%;text-align:center"><strong><span id=MainUserState></span></strong></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p51group2></div>
+                    <br />
+                </div>
             </div>
             <br id="column_l_bottomgap" />
         </div>
@@ -1444,10 +1450,16 @@
             }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            QS('p6info')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
+            QS('p6info')['max-height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p10info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p10info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p30info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p30info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p51info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p51info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p16events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p16events')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p31events')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
