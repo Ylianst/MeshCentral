@@ -4189,10 +4189,10 @@
         "default.handlebars->container->column_l->p19->p19title->p19BackButton",
         "default.handlebars->container->column_l->p20->p20title->3",
         "default.handlebars->container->column_l->p21->p21title->1",
-        "default.handlebars->container->column_l->p30->1->1->0->1->p30title->1",
+        "default.handlebars->container->column_l->p30->p30title->1",
         "default.handlebars->container->column_l->p31->p31title->1",
         "default.handlebars->container->column_l->p43->p43BackButton",
-        "default.handlebars->container->column_l->p51->1->1->0->1->p30title->1",
+        "default.handlebars->container->column_l->p51->p30title->1",
         "error404-mobile.handlebars->container->footer->1->1->0->3->1",
         "error404.handlebars->container->footer->1->1->0->3->0",
         "terms-mobile.handlebars->container->footer->1->1->0->3->1",
@@ -5166,7 +5166,7 @@
       "ru": "Проверить наличие обновлений",
       "zh-chs": "檢查服務器版本",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsVersion->0"
+        "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsVersion->0"
       ]
     },
     {
@@ -8740,7 +8740,7 @@
       "ru": "Скачать резервную копию сервера",
       "zh-chs": "下載服務器備份",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsBackup->0"
+        "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsBackup->0"
       ]
     },
     {
@@ -11087,7 +11087,7 @@
       "xloc": [
         "default.handlebars->container->column_l->p10->p10title->3",
         "default.handlebars->container->column_l->p20->p20title->5",
-        "default.handlebars->container->column_l->p30->1->1->0->1->p30title->3"
+        "default.handlebars->container->column_l->p30->p30title->3"
       ]
     },
     {
@@ -16592,7 +16592,7 @@
       "ru": "Мой сервер",
       "zh-chs": "我的服務器",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p6title->3",
+        "default.handlebars->container->column_l->p6->p6info->p6title->3",
         "default.handlebars->container->page_leftbar",
         "default.handlebars->container->topbar->1->1->MainMenuSpan->1->0->MainMenuMyServer"
       ]
@@ -21037,7 +21037,7 @@
       "ru": "Восстановить сервер из резервной копии",
       "zh-chs": "通過備份還原服務器",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsRestore->0"
+        "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsRestore->0"
       ]
     },
     {
@@ -22291,7 +22291,7 @@
       "ru": "Статистика сервера",
       "zh-chs": "服務器統計",
       "xloc": [
-        "default.handlebars->container->column_l->p6->6"
+        "default.handlebars->container->column_l->p6->p6info->6"
       ]
     },
     {
@@ -22342,7 +22342,7 @@
       "ru": "Предупреждения сервера",
       "zh-chs": "服務器警告",
       "xloc": [
-        "default.handlebars->container->column_l->p6->serverWarningsDiv->2"
+        "default.handlebars->container->column_l->p6->p6info->serverWarningsDiv->2"
       ]
     },
     {
@@ -22359,7 +22359,7 @@
       "ru": "Действия сервера",
       "zh-chs": "服務器動作",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p2ServerActions->1->0"
+        "default.handlebars->container->column_l->p6->p6info->p2ServerActions->1->0"
       ]
     },
     {
@@ -22853,7 +22853,7 @@
       "ru": "Показать журнал ошибок сервера",
       "zh-chs": "顯示服務器錯誤日誌",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p2ServerActions->3->p2ServerActionsErrors->0"
+        "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsErrors->0"
       ]
     },
     {
@@ -26344,7 +26344,7 @@
       "ru": "Группа пользователей -",
       "zh-chs": "用戶組-",
       "xloc": [
-        "default.handlebars->container->column_l->p51->1->1->0->1->p30title->3"
+        "default.handlebars->container->column_l->p51->p30title->3"
       ]
     },
     {
