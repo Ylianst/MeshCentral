@@ -259,10 +259,10 @@
                             <div id="p3AccountActions">
                                 <p><strong>Account Security</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
-                                    <div id="managePhoneNumber1" style="margin-top:5px;display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a></div>
-                                    <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a></div>
-                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a></div>
-                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a></div>
+                                    <div id="managePhoneNumber1" style="margin-top:5px;display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a> <span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div>
+                                    <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a> <span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div>
+                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
+                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
                                 </div>
                                 <p><strong>Account Actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
@@ -720,6 +720,11 @@
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('manageAuthApp', features & 4096);
             QV('manageOtp', ((features & 4096) != 0) && ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)));
+            QV('authPhoneNumberCheck', (userinfo.phone != null));
+            QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
+            QV('authAppSetupCheck', userinfo.otpsecret == 1);
+            //QV('authKeySetupCheck', userinfo.otphkeys > 0);
+            QV('authCodesSetupCheck', userinfo.otpkeys > 0);
 
             // On the mobile app, don't allow group creation (for now).
             QV('p3createMeshLink1', false);
@@ -1309,7 +1314,7 @@
 
         function account_manageOtp(action) {
             if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-manage')) { dialogclose(0); }
-            if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
+            if (xxdialogMode || ((features & 4096) == 0) || ((userinfo.otpsecret != 1) && (userinfo.otphkeys < 1))) return;
             meshserver.send({ action: 'otpauth-getpasswords', subaction: action });
         }
 
