@@ -29746,6 +29746,10 @@
       "pt": "✓",
       "ru": "✓",
       "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageAuthApp->authAppSetupCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageEmail2FA->authEmailSetupCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageOtp->authCodesSetupCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->managePhoneNumber1->authPhoneNumberCheck->0",
         "default.handlebars->container->column_l->p13->p13filetable->p13bigok->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageAuthApp->0->authAppSetupCheck->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageEmail2FA->0->authEmailSetupCheck->0",
