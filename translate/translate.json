@@ -9542,6 +9542,7 @@
     },
     {
       "en": "Email/SMS Traffic",
+      "nl": "Email/SMS verkeer",
       "xloc": [
         "default.handlebars->29->1688"
       ]
@@ -15531,6 +15532,7 @@
     },
     {
       "en": "Manage phone number",
+      "nl": "Beheer telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->managePhoneNumber1->0",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->1->managePhoneNumber2->0",
@@ -19163,6 +19165,7 @@
     },
     {
       "en": "Phone Notifications",
+      "nl": "Telefonische meldingen",
       "xloc": [
         "default-mobile.handlebars->9->31",
         "default-mobile.handlebars->9->34",
@@ -19174,12 +19177,14 @@
     },
     {
       "en": "Phone Number",
+      "nl": "Telefoonnummer",
       "xloc": [
         "default.handlebars->29->1534"
       ]
     },
     {
       "en": "Phone number:",
+      "nl": "Telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->9->35",
         "default.handlebars->29->832"
@@ -20676,6 +20681,7 @@
     },
     {
       "en": "Remove phone number",
+      "nl": "Verwijder telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->9->33",
         "default.handlebars->29->830"
@@ -21932,12 +21938,14 @@
     },
     {
       "en": "Send SMS",
+      "nl": "verstuur SMS",
       "xloc": [
         "default.handlebars->29->1409"
       ]
     },
     {
       "en": "Send a SMS message to this user",
+      "nl": "Stuur een SMS bericht naar deze gebruiker",
       "xloc": [
         "default.handlebars->29->1570"
       ]
@@ -25127,7 +25135,7 @@
       "hi": "दूरस्थ डेस्कटॉप पृष्ठभूमि टॉगल करें",
       "ja": "リモートデスクトップの背景を切り替える",
       "ko": "원격 데스크톱 배경 전환",
-      "nl": "Wissel bureaubladachtergrond op afstand in",
+      "nl": "Wissel externe bureaublad achtergrond",
       "pt": "Alternar plano de fundo da área de trabalho remota",
       "ru": "Переключить фон удаленного рабочего стола",
       "zh-chs": "切換遠程桌面背景",
