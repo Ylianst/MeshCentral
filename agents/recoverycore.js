@@ -116,8 +116,80 @@ function onTunnelUpgrade(response, s, head) {
     }
 }
 
+// Called when receiving control data on websocket
+function onTunnelControlData(data, ws)
+{
+    var obj;
+    if (ws == null) { ws = this; }
+    if (typeof data == 'string') { try { obj = JSON.parse(data); } catch (e) { sendConsoleText('Invalid control JSON: ' + data); return; } }
+    else if (typeof data == 'object') { obj = data; } else { return; }
+    //sendConsoleText('onTunnelControlData(' + ws.httprequest.protocol + '): ' + JSON.stringify(data));
+    //console.log('onTunnelControlData: ' + JSON.stringify(data));
+
+    if (obj.action)
+    {
+        switch (obj.action)
+        {
+            case 'lock': {
+                // Lock the current user out of the desktop
+                try
+                {
+                    if (process.platform == 'win32')
+                    {
+                        MeshServerLog("Locking remote user out of desktop", ws.httprequest);
+                        var child = require('child_process');
+                        child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
+                    }
+                } catch (e) { }
+                break;
+            }
+            default:
+                // Unknown action, ignore it.
+                break;
+        }
+        return;
+    }
+
+    switch (obj.type)
+    {
+        case 'options': {
+            // These are additional connection options passed in the control channel.
+            //sendConsoleText('options: ' + JSON.stringify(obj));
+            delete obj.type;
+            ws.httprequest.xoptions = obj;
+
+            // Set additional user consent options if present
+            if ((obj != null) && (typeof obj.consent == 'number')) { ws.httprequest.consent |= obj.consent; }
+
+            break;
+        }
+        case 'close': {
+            // We received the close on the websocket
+            //sendConsoleText('Tunnel #' + ws.tunnel.index + ' WebSocket control close');
+            try { ws.close(); } catch (e) { }
+            break;
+        }
+        case 'termsize': {
+            // Indicates a change in terminal size
+            if (process.platform == 'win32')
+            {
+                if (ws.httprequest._dispatcher == null) return;
+                if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
+            }
+            else
+            {
+                if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
+                if (ws.httprequest.process.tcsetsize) { ws.httprequest.process.tcsetsize(obj.rows, obj.cols); }
+            }
+            break;
+        }
+    }
+}
+
+
 require('MeshAgent').AddCommandHandler(function (data) {
-    if (typeof data == 'object') {
+    if (typeof data == 'object')
+    {
         // If this is a console command, parse it and call the console handler
         switch (data.action) {
             case 'msg':
@@ -171,20 +243,60 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                     if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid); }
                                                 } else {
                                                     // Handle tunnel data
-                                                    if (this.httprequest.protocol == 0) {
+                                                    if (this.httprequest.protocol == 0)
+                                                    {
+                                                        if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
                                                         // Take a look at the protocol
                                                         this.httprequest.protocol = parseInt(data);
                                                         if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
                                                         if (this.httprequest.protocol == 1) {
                                                             // Remote terminal using native pipes
-                                                            if (process.platform == "win32") {
-                                                                this.httprequest._term = require('win-terminal').Start(80, 25);
-                                                                this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
-                                                                this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
-                                                                this.prependListener('end', function () { this.httprequest._term.end(function () { sendConsoleText('Terminal was closed'); }); });
+                                                            if (process.platform == "win32")
+                                                            {
+                                                                var cols = 80, rows = 25;
+                                                                if (this.httprequest.xoptions)
+                                                                {
+                                                                    if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
+                                                                    if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
+                                                                }
+
+                                                                // Admin Terminal
+                                                                if (require('win-virtual-terminal').supported)
+                                                                {
+                                                                    // ConPTY PseudoTerminal
+                                                                    // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+
+                                                                    // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
+                                                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: 'Start', args: [cols, rows] } });
+                                                                    this.httprequest._dispatcher.ws = this;
+                                                                    this.httprequest._dispatcher.on('connection', function (c)
+                                                                    {
+                                                                        this.ws._term = c;
+                                                                        c.pipe(this.ws, { dataTypeSkip: 1 });
+                                                                        this.ws.pipe(c, { dataTypeSkip: 1 });
+                                                                    });
+                                                                }
+                                                                else
+                                                                {
+                                                                    // Legacy Terminal
+                                                                    this.httprequest._term = require('win-terminal').Start(80, 25);
+                                                                    this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
+                                                                    this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
+                                                                    this.prependListener('end', function () { this.httprequest._term.end(function () { sendConsoleText('Terminal was closed'); }); });
+                                                                }
                                                             }
-                                                            else {
-                                                                this.httprequest.process = childProcess.execFile("/bin/sh", ["sh"], { type: childProcess.SpawnTypes.TERM });
+                                                            else
+                                                            {
+                                                                var env = { HISTCONTROL: 'ignoreboth' };
+                                                                if (this.httprequest.xoptions)
+                                                                {
+                                                                    if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
+                                                                    if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
+                                                                }
+                                                                var options = { type: childProcess.SpawnTypes.TERM, env: env };
+                                                                this.httprequest.process = childProcess.execFile('/bin/bash', ['bash'], options); // Start bash
+                                                                // Spaces at the beginning of lines are needed to hide commands from the command history
+                                                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                                                 this.httprequest.process.tunnel = this;
                                                                 this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
                                                                 this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
@@ -192,18 +304,6 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                                 this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                                                                 this.prependListener('end', function () { this.httprequest.process.kill(); });
                                                             }
-
-                                                            this.on('end', function () {
-                                                                if (process.platform == "win32") {
-                                                                    // Unpipe the web socket
-                                                                    this.unpipe(this.httprequest._term);
-                                                                    this.httprequest._term.unpipe(this);
-
-                                                                    // Clean up
-                                                                    this.httprequest._term.end();
-                                                                    this.httprequest._term = null;
-                                                                }
-                                                            });
                                                         }
                                                     }
                                                     else if (this.httprequest.protocol == 5) {
@@ -318,11 +418,15 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'osinfo': { // Return the operating system information
                 var i = 1;
-                if (args['_'].length > 0) { i = parseInt(args['_'][0]); if (i > 8) { i = 8; } response = "Calling " + i + " times."; }
-                for (var j = 0; j < i; j++) {
+                if (args['_'].length > 0) { i = parseInt(args['_'][0]); if (i > 8) { i = 8; } response = 'Calling ' + i + ' times.'; }
+                for (var j = 0; j < i; j++)
+                {
                     var pr = require('os').name();
                     pr.sessionid = sessionid;
-                    pr.then(function (v) { sendConsoleText("OS: " + v, this.sessionid); });
+                    pr.then(function (v)
+                    {
+                        sendConsoleText("OS: " + v + (process.platform == 'win32' ? (require('win-virtual-terminal').supported ? ' [ConPTY: YES]' : ' [ConPTY: NO]') : ''), this.sessionid);
+                    });
                 }
                 break;
             }
