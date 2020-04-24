@@ -26,6 +26,8 @@ function CreateDesktopDecoder() {
     obj.images = {};
     obj.lastScreenSizeCmd = null;
     obj.lastScreenSizeCounter = 0;
+    obj.firstData = null;
+    obj.lastData = null;
 
     obj.processAgentData = function (data) {
         if ((typeof data != 'object') || (data.length < 4)) return;
@@ -37,7 +39,7 @@ function CreateDesktopDecoder() {
                 command = data.readUInt16BE(8);
                 cmdsize = data.readUInt32BE(4);
                 if (data.length == (cmdsize + 8)) {
-                    data = data.slice(8, block.data.length);
+                    data = data.slice(8, data.length);
                 } else {
                     console.log('TODO-PARTIAL-JUMBO', command, cmdsize, data.length);
                     return; // TODO
@@ -47,30 +49,48 @@ function CreateDesktopDecoder() {
             
         switch (command) {
             case 3: // Tile, check dimentions and store
-                var x = data.readUInt16BE(4);
-                var y = data.readUInt16BE(6);
+                var x = data.readUInt16BE(4), y = data.readUInt16BE(6);
                 var dimensions = require('image-size')(data.slice(8));
-                obj.counter++;
-                console.log("Tile", x, y, dimensions.width, dimensions.height);
-                    
-                // Update the screen with the correct pointers.
                 var sx = (x / 16), sy = (y / 16), sw = (dimensions.width / 16), sh = (dimensions.height / 16);
+                obj.counter++;
+                //console.log("Tile", x, y, dimensions.width, dimensions.height);
+                
+                // Keep a reference to this image & how many tiles it covers
+                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: data };
+                obj.images[obj.lastData].next = obj.counter;
+                obj.lastData = obj.counter;
+                obj.imagesCounters[obj.counter] = (sw * sh);
+                obj.imagesCount++;
+                if (obj.imagesCount == 2000000000) { obj.imagesCount = 1; } // Loop the counter if needed
+                
+                // Update the screen with the correct pointers.
                 for (var i = 0; i < sw; i++) {
                     for (var j = 0; j < sh; j++) {
                         var k = ((obj.swidth * (j + sy)) + (i + sx)), oi = obj.screen[k];
-                        if (--obj.imagesCounters[oi] == 0) { obj.imagesCount--; delete obj.images[oi]; delete obj.imagesCounters[oi]; }
+                        if ((oi != null) && (--obj.imagesCounters[oi] == 0)) {
+                            // Remove data from the link list
+                            obj.imagesCount--;
+                            var d = obj.images[oi];
+                            obj.images[d.prev].next = d.next;
+                            obj.images[d.next].prev = d.prev;
+                            delete obj.images[oi];
+                            delete obj.imagesCounters[oi];
+
+                            // If any viewers are currently on image "oi" must be moved to "d.next"
+                            // TODO
+                        }
                         obj.screen[k] = obj.counter;
                     }
                 }
                 
-                // Keep a reference to this image & how many tiles it covers
-                obj.images[obj.counter] = data;
-                obj.imagesCounters[obj.counter] = (sw * sh);
-                obj.imagesCount++;
-                console.log('images', obj.imagesCount);
-
+                // Debug, display the link list
+                //var xx = '', xptr = obj.firstData;
+                //while (xptr != null) { xx += '>' + xptr; xptr = obj.images[xptr].next; }
+                //console.log('list', xx);
+                //console.log('images', obj.imagesCount);
+                
                 break;
-            case 7:// Screen Size, clear the screen state and compute the tile count
+            case 7: // Screen Size, clear the screen state and compute the tile count
                 obj.counter++;
                 obj.lastScreenSizeCmd = data;
                 obj.lastScreenSizeCounter = obj.counter;
@@ -86,8 +106,18 @@ function CreateDesktopDecoder() {
                 obj.imagesCount = 0;
                 obj.imagesCounters = {};
                 obj.images = {};
+                obj.images[obj.counter] = { next: null, prev: null, data: data};
+                obj.firstData = obj.counter;
+                obj.lastData = obj.counter;
+                
+                // Add viewers must be set to start at "obj.counter"
+                // TODO
 
-                console.log("ScreenSize", obj.width, obj.height, obj.swidth, obj.sheight, obj.swidth * obj.sheight);
+                //console.log("ScreenSize", obj.width, obj.height, obj.swidth, obj.sheight, obj.swidth * obj.sheight);
+                break;
+            default:
+                // 11, 14, 88
+                console.log('Un-handled command: ' + command);
                 break;
         }
     }

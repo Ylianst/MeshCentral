@@ -107,6 +107,7 @@
     <Compile Include="mcrec.js" />
     <Compile Include="meshaccelerator.js" />
     <Compile Include="meshctrl.js" />
+    <Compile Include="meshdesktopmultiplex.js" />
     <Compile Include="meshmail.js" />
     <Compile Include="meshsms.js" />
     <Compile Include="meshscanner.js" />
