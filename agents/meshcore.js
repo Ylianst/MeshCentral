@@ -2011,6 +2011,7 @@ function createMeshCore(agent) {
                 case 'help': { // Displays available commands
                     var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
+		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
 
                     availcommands = availcommands.split(',').sort();
@@ -2022,6 +2023,9 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+		        case 'vm':
+			        response = 'Virtual Machine = ' + require('identifiers').isVM();
+			        break;
                 case 'startupoptions':
                     response = JSON.stringify(require('MeshAgent').getStartupOptions());
                     break;
