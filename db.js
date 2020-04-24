@@ -726,19 +726,19 @@ module.exports.CreateDB = function (parent, func) {
                             conn.release();
                             const docs = [];
                             for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt(JSON.parse(rows[i].doc))); } }
-                            if (func) try { func(null, docs); } catch (ex) { console.log(ex); }
+                            if (func) try { func(null, docs); } catch (ex) { console.log('SQLERR1', ex); }
                         })
-                        .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log(ex); } });
-                }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
+                        .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log('SQLERR2', ex); } });
+                }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log('SQLERR3', ex); } } });
         } else if (obj.databaseType == 5) { // MySQL
             Datastore.query(query, args, function (error, results, fields) {
                 if (error != null) {
-                    if (func) try { func(error); } catch (ex) { console.log(ex); }
+                    if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
                 } else {
                     var docs = [];
                     for (var i in results) { if (results[i].doc) { docs.push(JSON.parse(results[i].doc)); } }
                     //console.log(docs);
-                    if (func) { try { func(null, docs); } catch (ex) { console.log(ex); } }
+                    if (func) { try { func(null, docs); } catch (ex) { console.log('SQLERR5', ex); } }
                 }
             });
         }

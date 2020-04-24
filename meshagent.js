@@ -1125,12 +1125,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'smbios':
                     {
-                        // Store the RAW SMBios table of this computer
-                        // Perform sanity checks before storing
-                        try {
-                            for (var i in command.value) { var k = parseInt(i); if ((k != i) || (i > 255) || (typeof command.value[i] != 'object') || (command.value[i].length == null) || (command.value[i].length > 1024) || (command.value[i].length < 0)) { delete command.value[i]; } }
-                            db.SetSMBIOS({ _id: obj.dbNodeKey, domain: domain.id, time: new Date(), value: command.value });
-                        } catch (ex) { }
+                        // See if we need to save SMBIOS information
+                        if (domain.smbios !== false) {
+                            // Store the RAW SMBios table of this computer
+                            // Perform sanity checks before storing
+                            try {
+                                for (var i in command.value) { var k = parseInt(i); if ((k != i) || (i > 255) || (typeof command.value[i] != 'object') || (command.value[i].length == null) || (command.value[i].length > 1024) || (command.value[i].length < 0)) { delete command.value[i]; } }
+                                db.SetSMBIOS({ _id: obj.dbNodeKey, domain: domain.id, time: new Date(), value: command.value });
+                            } catch (ex) { }
+                        }
 
                         // Event the node interface information change (This is a lot of traffic, probably don't need this).
                         //parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), obj, { action: 'smBiosChange', nodeid: obj.dbNodeKey, domain: domain.id, smbios: command.value,  nolog: 1 });
