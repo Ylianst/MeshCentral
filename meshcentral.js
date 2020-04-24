@@ -1190,6 +1190,7 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 // Check Let's Encrypt settings
                 var leok = true;
+                if ((typeof obj.config.letsencrypt.names != 'string') && (typeof obj.config.settings.cert == 'string')) { obj.config.letsencrypt.names = obj.config.settings.cert; }
                 if (typeof obj.config.letsencrypt.email != 'string') { leok = false; addServerWarning("Missing Let's Encrypt email address."); }
                 else if (typeof obj.config.letsencrypt.names != 'string') { leok = false; addServerWarning("Invalid Let's Encrypt host names."); }
                 else if (obj.config.letsencrypt.names.indexOf('*') >= 0) { leok = false; addServerWarning("Invalid Let's Encrypt names, can't contain a *."); }
