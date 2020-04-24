@@ -326,7 +326,21 @@ function createMeshCore(agent) {
         childProcess = require('child_process');
         if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
             // Check if this computer supports a desktop
-            try { if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) { meshCoreObj.caps |= 1; } } catch (ex) { }
+            try
+            {
+                if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support))
+                {
+                    meshCoreObj.caps |= 1;
+                }
+                else if(process.platform == 'linux' || process.platform == 'freebsd')
+                {
+                    require('monitor-info').on('kvmSupportDetected', function (value)
+                    {
+                        meshCoreObj.caps |= 1;
+                        mesh.SendCommand(meshCoreObj);
+                    });
+                }
+            } catch (ex) { }
         }
     } else {
         // Running in nodejs
