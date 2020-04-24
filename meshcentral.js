@@ -2548,7 +2548,7 @@ function mainStart() {
         if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module
         if (config.settings.mqtt != null) { modules.push('aedes'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL, official driver.
-        if (config.settings.mongodb != null) { modules.push('mongodb'); } // Add MongoDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb'); modules.push('saslprep'); } // Add MongoDB, official driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) {  modules.push('semver'); } // Required for version compat testing and update checks
