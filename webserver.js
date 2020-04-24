@@ -57,6 +57,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.express = require('express');
     obj.meshAgentHandler = require('./meshagent.js');
     obj.meshRelayHandler = require('./meshrelay.js');
+    obj.meshDesktopMultiplexHandler = require('./meshdesktopmultiplex.js');
     obj.meshIderHandler = require('./amt/amt-ider.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
@@ -3877,7 +3878,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
             obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.apfserver.onConnection(ws); })
-            obj.app.ws(url + 'meshrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) { obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); }); });
             obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
             obj.app.get(url + 'health.ashx', function (req, res) { res.send('ok'); }); // TODO: Perform more server checking.
             obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
@@ -3889,6 +3889,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
+            obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
+                PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                    if ((parent.config.settings.desktopmultiplex === true) && (req.query.p == 2)) {
+                        obj.meshDesktopMultiplexHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Desktop multiplexor 1-to-n
+                    } else {
+                        obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Normal relay 1-to-1
+                    }
+                });
+            });
             if (parent.config.domains[i].agentinvitecodes == true) {
                 obj.app.get(url + 'invite', handleInviteRequest);
                 obj.app.post(url + 'invite', handleInviteRequest);

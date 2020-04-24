@@ -2570,6 +2570,9 @@ function mainStart() {
             if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
+        // Desktop multiplexor support
+        if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
+
         // SMS support
         if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
         if ((config.sms != null) && (config.sms.provider == 'plivo')) {
