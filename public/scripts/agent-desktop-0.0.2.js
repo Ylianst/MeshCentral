@@ -39,7 +39,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.oldie = false;
     obj.CompressionLevel = 50;
     obj.ScalingLevel = 1024;
-    obj.FrameRateTimer = 50;
+    obj.FrameRateTimer = 100;
     obj.FirstDraw = false;
 
     obj.ScreenWidth = 960;

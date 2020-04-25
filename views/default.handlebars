@@ -1150,7 +1150,7 @@
         // Process server-side web state
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
-        for (var i in webState) { localStorage.setItem(i, webState[i]); }
+        for (var i in webState) { if (i != 'desktopsettings') { localStorage.setItem(i, webState[i]); } }
         if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
@@ -3404,7 +3404,7 @@
             QV('d7meshkvm', true);
             d7bitmapquality.value = multidesktopsettings.quality;
             d7bitmapscaling.value = multidesktopsettings.scaling;
-            if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 1000; }
+            if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
             setDialogMode(7, "Remote Desktop Settings", 3, showMultiDesktopSettingsChanged);
         }
 
@@ -3447,7 +3447,7 @@
                     //desk.onConsoleMessageChange = function () { console.log('CONSOLEMSG:', desk.consoleMessage); }
                     desk.m.CompressionLevel = multidesktopsettings.quality;
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
-                    desk.m.FrameRateTimer = multidesktopsettings.framerate;
+                    if (multidesktopsettings.framerate) { desk.m.FrameRateTimer = multidesktopsettings.framerate; }
                     //desk.m.onDisplayinfo = deskDisplayInfo;
                     //desk.m.onScreenSizeChange = deskAdjust;
                     if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
@@ -5931,7 +5931,7 @@
                     }
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
-                    desktop.m.FrameRateTimer = desktopsettings.framerate;
+                    if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
@@ -6077,7 +6077,7 @@
             d7bitmapquality.value = 40; // Default value
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
-            if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
+            if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; } else { d7framelimiter.value = 100; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }
