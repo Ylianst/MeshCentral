@@ -180,11 +180,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.ProcessData = function (str) {
         var ptr = 0;
-        //console.log('x0', str.length);
         while (ptr < str.length) {
-            //console.log('x1', ptr, str.length);
-            ptr += obj.ProcessDataEx(str.substring(ptr));
-            //console.log('x2', ptr, str.length);
+            var r = obj.ProcessDataEx(str.substring(ptr));
+            if ((r == null) || (r == 0)) break;
+            ptr += r;
         }
     }
 
