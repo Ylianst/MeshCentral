@@ -4631,6 +4631,15 @@
     },
     {
       "en": "CPU",
+      "nl": "CPU",
+      "de": "CPU",
+      "es": "CPU",
+      "fr": "CPU",
+      "ja": "CPU",
+      "ko": "CPU",
+      "pt": "CPU",
+      "ru": "CPU",
+      "zh-chs": "CPU",
       "xloc": [
         "default.handlebars->29->806"
       ]
@@ -4784,6 +4793,7 @@
     },
     {
       "en": "Capacity",
+      "nl": "Capaciteit",
       "xloc": [
         "default.handlebars->29->814",
         "default.handlebars->29->816"
@@ -10999,6 +11009,7 @@
     },
     {
       "en": "GPU",
+      "nl": "GPU",
       "xloc": [
         "default.handlebars->29->807"
       ]
@@ -16403,6 +16414,7 @@
     },
     {
       "en": "Model",
+      "nl": "Model",
       "xloc": [
         "default.handlebars->29->813"
       ]
@@ -23882,6 +23894,7 @@
     },
     {
       "en": "Storage",
+      "nl": "Opslag",
       "xloc": [
         "default.handlebars->29->817"
       ]
