@@ -7634,6 +7634,8 @@
                 if (ident.board_serial && (ident.board_serial != '')) { x += addDetailItem("Serial", EscapeHtml(ident.board_serial), s); }
                 if (ident.board_version) { x += addDetailItem("Version", EscapeHtml(ident.board_version), s); }
                 if (ident.product_uuid) { x += addDetailItem("Identifier", EscapeHtml(ident.product_uuid), s); }
+                if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
+                if (ident.gpu_name) {  for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard64.png'}); }
             }
 
@@ -7647,8 +7649,7 @@
                     x += '<table style=width:100%>';
                     for (var i in hardware.windows.memory) {
                         var m = hardware.windows.memory[i];
-                        x += '<tr>';//<td VALIGN=Top style=width:38px><img src="images/ram2.png" />'
-                        x += '<td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.BankLabel) + '</b></div>';
                         if (m.Capacity) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
@@ -7658,11 +7659,33 @@
 
                     if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram64.png'}); }
                 }
+            }
 
-                // Disks
-                //x += '<div class=DevSt style=margin-bottom:3px><b>Disks</b></div>';
-                //x += '<br />';
-                //console.log(message);
+            // Storage
+            if (hardware.identifiers && ident.storage_devices) {
+                var x = '';
+                // Sort Memory
+                function storageSort(a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; }
+                ident.storage_devices.sort(storageSort);
+
+                x += '<table style=width:100%>';
+                for (var i in ident.storage_devices) {
+                    var m = ident.storage_devices[i];
+                    if (m.Size) {
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.Caption) + '</b></div>';
+                        if (m.Model && (m.Model != m.Caption)) { x += addDetailItem("Model", EscapeHtml(m.Model), s); }
+                        if (m.Size) {
+                            if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
+                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
+                            if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
+                        }
+                        x += '</div>';
+                    }
+                }
+                x += '</table>';
+
+                if (x != '') { sections.push({ name: "Storage", html: x, img: 'storage64.png'}); }
             }
 
             // Render the sections
