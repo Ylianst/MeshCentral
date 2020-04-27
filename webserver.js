@@ -172,6 +172,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.wsPeerSessions3 = {};         // ServerId --> UserId --> [ SessionId ]
     obj.sessionsCount = {};           // Merged session counters, used when doing server peering. UserId --> SessionCount
     obj.wsrelays = {};                // Id -> Relay
+    obj.desktoprelays = {};           // Id -> Desktop Multiplexor Relay
     obj.wsPeerRelays = {};            // Id -> { ServerId, Time }
     var tlsSessionStore = {};         // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
