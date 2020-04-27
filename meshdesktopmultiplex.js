@@ -59,27 +59,31 @@ MNG_ENCAPSULATE_AGENT_COMMAND = 70
 
 function CreateDesktopDecoder() {
     var obj = {};
-    obj.agent = null;
-    obj.viewers = [];
-    obj.width = 0;
-    obj.height = 0;
-    obj.swidth = 0;
-    obj.sheight = 0;
-    obj.screen = null;
-    obj.counter = 1;
-    obj.imagesCount = 0;
-    obj.imagesCounters = {};
-    obj.images = {};
-    obj.lastScreenSizeCmd = null;
-    obj.lastScreenSizeCounter = 0;
-    obj.firstData = null;
-    obj.lastData = null;
-    obj.lastDisplayInfoData = null;
-    obj.desktopPaused = true;
-    obj.imageCompression = 50;
-    obj.imageScaling = 1024;
-    obj.imageFrameRate = 50;
+    obj.agent = null;                   // Reference to the connection object that is the agent.
+    obj.viewers = [];                   // Array of references to all viewers.
+    obj.viewersSendingCount = 0;        // Number of viewers currently activaly sending something.
+    obj.width = 0;                      // Current width of the display in pixels.
+    obj.height = 0;                     // Current height of the display in pixels.
+    obj.swidth = 0;                     // Current width of the display in tiles.
+    obj.sheight = 0;                    // Current height of the display in tiles.
+    obj.screen = null;                  // The main screen, (x * y) --> tile index. Indicates this image is covering each tile on the screen.
+    obj.counter = 1;                    // The main counter, used as index for the obj.images table when now images come in.
+    obj.imagesCount = 0;                // Total number of images in the obj.images table.
+    obj.imagesCounters = {};            // Main table of indexes --> tile count, the number of tiles still using this image.
+    obj.images = {};                    // Main table of indexes --> image data object.
+    obj.lastScreenSizeCmd = null;       // Pointer to the last screen size command from the agent.
+    obj.lastScreenSizeCounter = 0;      // Index into the image table of the screen size command, this is generally also the first command.
+    obj.firstData = null;               // Index in the image table of the first image in the table, generally this points to the display resolution command.
+    obj.lastData = null;                // Index in the images table of the last image in the table.
+    obj.lastDisplayInfoData = null;     // Pointer to the last display information command from the agent (Number of displays).
+    obj.desktopPaused = true;           // Current desktop pause state, it's true if all viewers are paused.
+    obj.imageCompression = 50;          // Current image compression, this is the highest value of all viewers.
+    obj.imageScaling = 1024;            // Current image scaling, this is the highest value of all viewers.
+    obj.imageFrameRate = 50;            // Current framerate setting, this is the lowest values of all viewers.
+    obj.protocolOptions = null;         // Set to the protocol options of the first viewer that connected.
+    obj.viewerConnected = false;        // Set to true if one viewer attempted to connect to the agent.
 
+    // Add an agent or viewer
     obj.addPeer = function (peer) {
         if (peer.req.query.browser) {
             console.log('addPeer-viewer');
@@ -93,7 +97,10 @@ function CreateDesktopDecoder() {
             peer.imageCompression = 30;
             peer.imageScaling = 1024;
             peer.imageFrameRate = 100;
+            peer.lastImageNumberSent = null;
             peer.dataPtr = obj.firstData;
+            peer.sending = false;
+            peer.sendQueue = [];
         } else {
             console.log('addPeer-agent');
             if (obj.agent != null) return false;
@@ -102,11 +109,20 @@ function CreateDesktopDecoder() {
             obj.agent = peer;
 
             // Setup the agent
+            peer.sending = false;
+            peer.sendQueue = [];
+            //peer.ws.send('{"tsid":10,"type":"options"}');
+            //peer.ws.send('2');
 
+            if (obj.viewerConnected == true) {
+                if (obj.protocolOptions != null) { obj.sendToAgent(JSON.stringify(obj.protocolOptions)); } // Send connection options
+                obj.sendToAgent('2'); // Send remote desktop connect
+            }
         }
         return true;
     }
-    
+
+    // Remove an agent or viewer
     obj.removePeer = function (peer) {
         if (peer == agent) {
             console.log('removePeer-agent');
@@ -125,7 +141,75 @@ function CreateDesktopDecoder() {
         }
         return true;
     }
-    
+
+    // Send data to the agent or queue it up for sending
+    obj.sendToAgent = function (data) {
+        if (obj.agent == null) return;
+        //console.log('SendToAgent', data.length);
+        if (obj.agent.sending) {
+            obj.agent.sendQueue.push(data);
+            // TODO: Flow control, stop all viewers
+        } else {
+            obj.agent.ws.send(data, sendAgentNext);
+        }
+    }
+
+    // Send more data to the agent
+    function sendAgentNext() {
+        if (obj.agent.sendQueue.length > 0) {
+            // Send from the pending send queue
+            obj.agent.ws.send(obj.agent.sendQueue.shift(), sendAgentNext);
+        } else {
+            // Nothing to send
+            obj.agent.sending = false;
+            // TODO: Flow control, start all viewers
+        }
+    }
+
+    // Send this command to all viewers
+    obj.sendToAllViewers = function (data) {
+        for (var i in obj.viewers) { obj.sendToViewer(obj.viewers[i], data); }
+    }
+
+    // Send data to the viewer or queue it up for sending
+    obj.sendToViewer = function (viewer, data) {
+        if (viewer == null) return;
+        //console.log('SendToViewer', data.length);
+        if (viewer.sending) {
+            viewer.sendQueue.push(data);
+            // TODO: Flow control, stop the agent
+        } else {
+            viewer.sending = true;
+            obj.viewersSendingCount++;
+            viewer.ws.send(data, function () { sendViewerNext(viewer); });
+        }
+    }
+
+    // Send more data to the viewer
+    function sendViewerNext(viewer) {
+        if (viewer.sendQueue.length > 0) {
+            // Send from the pending send queue
+            if (viewer.sending == false) { viewer.sending = true; obj.viewersSendingCount++; }
+            viewer.ws.send(viewer.sendQueue.shift(), function () { sendViewerNext(viewer); });
+        } else {
+            if (viewer.dataPtr != null) {
+                // Send the next image
+                if ((viewer.lastImageNumberSent != null) && ((viewer.lastImageNumberSent + 1) != (viewer.dataPtr))) { console.log('SVIEW-S1', viewer.lastImageNumberSent, viewer.dataPtr); } // DEBUG
+                var image = obj.images[viewer.dataPtr];
+                viewer.lastImageNumberSent = viewer.dataPtr;
+                if ((image.next != null) && ((viewer.dataPtr + 1) != image.next)) { console.log('SVIEW-S2', viewer.dataPtr, image.next); } // DEBUG
+                viewer.dataPtr = image.next;
+                if (viewer.sending == false) { viewer.sending = true; obj.viewersSendingCount++; }
+                viewer.ws.send(image.data, function () { sendViewerNext(viewer); });
+            } else {
+                // Nothing to send
+                viewer.sending = false;
+                obj.viewersSendingCount--;
+                // TODO: Flow control, start agent
+            }
+        }
+    }
+
     // Process data coming from the agent or any viewers
     obj.processData = function (peer, data) {
         if (peer == obj.agent) { obj.processAgentData(data); } else { obj.processViewerData(peer, data); }
@@ -133,16 +217,37 @@ function CreateDesktopDecoder() {
 
     // Process incoming viewer data
     obj.processViewerData = function (viewer, data) {
-        //console.log('ViewerData', data.length);
+        if (typeof data == 'string') {
+            if (data == '2') {
+                if (obj.viewerConnected == false) {
+                    if (obj.agent != null) {
+                        if (obj.protocolOptions != null) { obj.sendToAgent(JSON.stringify(obj.protocolOptions)); } // Send connection options
+                        obj.sendToAgent('2'); // Send remote desktop connect
+                    }
+                    obj.viewerConnected = true;
+                }
+                return;
+            }
+            var json = null;
+            try { json = JSON.parse(data); } catch (ex) { }
+            if (json == null) return;
+            if ((json.type == 'options') && (obj.protocolOptions == null)) { obj.protocolOptions = json; }
+            return;
+        }
+
+        //console.log('ViewerData', data.length, typeof data, data);
         if ((typeof data != 'object') || (data.length < 4)) return; // Ignore all control traffic for now (WebRTC)
         var command = data.readUInt16BE(0);
         var cmdsize = data.readUInt16BE(2);
+        //console.log('ViewerData', data.length, command, cmdsize);
         switch (command) {
             case 1:// Key Events, forward to agent
                 //console.log('Viewer-Keys');
+                obj.sendToAgent(data);
                 break;
             case 2:// Mouse events, forward to agent
                 //console.log('Viewer-Mouse');
+                obj.sendToAgent(data);
                 break;
             case 5:// Compression
                 if (data.length < 10) return;
@@ -166,14 +271,21 @@ function CreateDesktopDecoder() {
                     obj.imageCompression = viewersimageCompression;
                     obj.imageScaling = viewersimageScaling;
                     obj.imageFrameRate = viewersimageFrameRate
-                    console.log('Send-Agent-Compression', obj.imageCompression, obj.imageScaling, obj.imageFrameRate);
-                    // obj.send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
+                    //console.log('Send-Agent-Compression', obj.imageCompression, obj.imageScaling, obj.imageFrameRate);
+                    var cmd = Buffer.alloc(10);
+                    cmd.writeUInt16BE(5, 0); // Command 5, compression
+                    cmd.writeUInt16BE(10, 2); // Command size, 10 bytes long
+                    cmd[4] = 1; // Image type, 1 = JPEN
+                    cmd[5] = obj.imageCompression; // Image compression level
+                    cmd.writeUInt16BE(obj.imageScaling, 6); // Scaling level
+                    cmd.writeUInt16BE(obj.imageFrameRate, 8); // Frame rate timer
+                    obj.sendToAgent(cmd);
                 }
                 break;
             case 6:// Refresh, handle this on the server
-                console.log('Viewer-Refresh');
+                //console.log('Viewer-Refresh');
                 viewer.dataPtr = obj.firstData; // Start over
-                // TODO
+                if (viewer.sending == false) { sendViewerNext(viewer); }
                 break;
             case 8:// Pause and unpause
                 if (data.length != 5) break;
@@ -185,15 +297,13 @@ function CreateDesktopDecoder() {
                 for (var i in obj.viewers) { if (obj.viewers[i].desktopPaused == false) { viewersPaused = false; }; }
                 if (viewersPaused != obj.desktopPaused) {
                     obj.desktopPaused = viewersPaused;
-                    console.log('Send-Agent-' + ((viewersPaused == 1)?'Pause':'UnPause'));
-                    // TODO
-                }
-                if (viewer.desktopPaused == false) {
-                    viewer.dataPtr = obj.firstData; // Start over
-                    // TODO
+                    //console.log('Send-Agent-' + ((viewersPaused == true) ? 'Pause' : 'UnPause'));
+                    data[4] = (viewersPaused == true) ? 1 : 0;
+                    obj.sendToAgent(data);
                 }
                 break;
             case 10:// CTRL-ALT-DEL, forward to agent
+                obj.sendToAgent(data);
                 break;
             case 14:// Touch setup
                 break;
@@ -202,13 +312,14 @@ function CreateDesktopDecoder() {
                 break;
         }
     }
-    
+
     // Process incoming agent data
     obj.processAgentData = function (data) {
-        //console.log('AgentData', data.length);
         if ((typeof data != 'object') || (data.length < 4)) return; // Ignore all control traffic for now (WebRTC)
+        const jumboData = data;
         var command = data.readUInt16BE(0);
         var cmdsize = data.readUInt16BE(2);
+        //console.log('AgentData', data.length, command, cmdsize);
         if ((command == 27) && (cmdsize == 8)) {
             // Jumbo packet
             if (data.length >= 12) {
@@ -232,33 +343,47 @@ function CreateDesktopDecoder() {
                 //console.log("Tile", x, y, dimensions.width, dimensions.height);
                 
                 // Keep a reference to this image & how many tiles it covers
-                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: data };
+                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: jumboData };
                 obj.images[obj.lastData].next = obj.counter;
                 obj.lastData = obj.counter;
                 obj.imagesCounters[obj.counter] = (sw * sh);
                 obj.imagesCount++;
                 if (obj.imagesCount == 2000000000) { obj.imagesCount = 1; } // Loop the counter if needed
-                
+
+                //console.log('Adding Image ' + obj.counter);
+
+                var skips = [];
+
                 // Update the screen with the correct pointers.
                 for (var i = 0; i < sw; i++) {
                     for (var j = 0; j < sh; j++) {
-                        var k = ((obj.swidth * (j + sy)) + (i + sx)), oi = obj.screen[k];
+                        var k = ((obj.swidth * (j + sy)) + (i + sx));
+                        const oi = obj.screen[k];
+                        obj.screen[k] = obj.counter;
                         if ((oi != null) && (--obj.imagesCounters[oi] == 0)) {
                             // Remove data from the link list
                             obj.imagesCount--;
                             var d = obj.images[oi];
+                            //console.log('Removing Image', oi, obj.images[oi].prev, obj.images[oi].next);
                             obj.images[d.prev].next = d.next;
                             obj.images[d.next].prev = d.prev;
                             delete obj.images[oi];
                             delete obj.imagesCounters[oi];
 
                             // If any viewers are currently on image "oi" must be moved to "d.next"
-                            // TODO
+                            for (var l in obj.viewers) { const v = obj.viewers[l]; if (v.dataPtr == oi) { skips.push(oi); v.dataPtr = d.next; } }
                         }
-                        obj.screen[k] = obj.counter;
                     }
                 }
-                
+
+                if (skips.length > 0) { console.log('SKIPS', skips.length); }
+
+                // Any viewer on dataPtr null, change to this image
+                for (var i in obj.viewers) {
+                    const v = obj.viewers[i];
+                    if (v.dataPtr == null) { v.dataPtr = obj.counter; if (v.sending == false) { sendViewerNext(v); } }
+                }
+
                 // Debug, display the link list
                 //var xx = '', xptr = obj.firstData;
                 //while (xptr != null) { xx += '>' + xptr; xptr = obj.images[xptr].next; }
@@ -284,14 +409,15 @@ function CreateDesktopDecoder() {
                 obj.imagesCount = 0;
                 obj.imagesCounters = {};
                 obj.images = {};
-                obj.images[obj.counter] = { next: null, prev: null, data: data};
+                obj.images[obj.counter] = { next: null, prev: null, data: data };
                 obj.firstData = obj.counter;
                 obj.lastData = obj.counter;
                 
                 // Add viewers must be set to start at "obj.counter"
                 for (var i in obj.viewers) {
-                    obj.viewers[i].dataPtr = obj.counter;
-                    // TODO
+                    const v = obj.viewers[i];
+                    v.dataPtr = obj.counter;
+                    if (v.sending == false) { sendViewerNext(v); }
                 }
 
                 //console.log("ScreenSize", obj.width, obj.height, obj.swidth, obj.sheight, obj.swidth * obj.sheight);
@@ -299,8 +425,7 @@ function CreateDesktopDecoder() {
             case 11: // GetDisplays
                 // Store and send this to all viewers right away
                 obj.lastDisplayInfoData = data;
-                // TODO
-
+                obj.sendToAllViewers(data);
                 break;
             case 14: // KVM_INIT_TOUCH
                 break;
@@ -309,22 +434,16 @@ function CreateDesktopDecoder() {
             case 16: // MNG_KVM_CONNECTCOUNT
                 break;
             case 17: // MNG_KVM_MESSAGE
-                
                 // Send this to all viewers right away
-                // TODO
-
+                obj.sendToAllViewers(data);
                 break;
             case 65: // Alert
-                
                 // Send this to all viewers right away
-                // TODO
-
+                obj.sendToAllViewers(data);
                 break;
             case 88: // MNG_KVM_MOUSE_CURSOR
-                
                 // Send this to all viewers right away
-                // TODO
-                
+                obj.sendToAllViewers(data);
                 break;
             default:
                 console.log('Un-handled agent command: ' + command);
@@ -636,6 +755,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         // If this data was received by the agent, decode it.  
         if (this.me.deskDecoder != null) { this.me.deskDecoder.processData(this.me, data); }
 
+        /*
         //console.log(typeof data, data.length);
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
@@ -651,6 +771,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 }
             } catch (ex) { console.log(ex); }
         }
+        */
     });
 
     // If error, close both sides of the relay.
