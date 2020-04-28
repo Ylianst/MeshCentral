@@ -461,6 +461,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             
         switch (command) {
             case 3: // Tile, check dimentions and store
+                if (data.length < 10) break;
                 var x = data.readUInt16BE(4), y = data.readUInt16BE(6);
                 var dimensions = require('image-size')(data.slice(8));
                 var sx = (x / 16), sy = (y / 16), sw = (dimensions.width / 16), sh = (dimensions.height / 16);
@@ -475,7 +476,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 obj.imagesCount++;
                 if (obj.imagesCount == 2000000000) { obj.imagesCount = 1; } // Loop the counter if needed
 
-                //console.log('Adding Image ' + obj.counter);
+                //console.log('Adding Image ' + obj.counter, x, y, dimensions.width, dimensions.height);
 
                 var skips = [];
 
@@ -519,6 +520,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             case 4: // Tile Copy, do nothing.
                 break;
             case 7: // Screen Size, clear the screen state and compute the tile count
+                if (data.length < 8) break;
+                if ((obj.width === data.readUInt16BE(4)) && (obj.height === data.readUInt16BE(6))) break; // Same screen size as before, skip this.
                 obj.counter++;
                 obj.lastScreenSizeCmd = data;
                 obj.lastScreenSizeCounter = obj.counter;
@@ -550,6 +553,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             case 11: // GetDisplays
                 // Store and send this to all viewers right away
                 obj.lastDisplayInfoData = data;
+                obj.sendToAllViewers(data);
+                break;
+            case 12: // SetDisplay
                 obj.sendToAllViewers(data);
                 break;
             case 14: // KVM_INIT_TOUCH
