@@ -57,7 +57,7 @@ MNG_ERROR = 65,
 MNG_ENCAPSULATE_AGENT_COMMAND = 70
 */
 
-function CreateDesktopDecoder(parent, domain, id, func) {
+function CreateDesktopMultiplexor(parent, domain, id, func) {
     var obj = {};
     obj.id = id;
     obj.parent = parent;
@@ -90,7 +90,7 @@ function CreateDesktopDecoder(parent, domain, id, func) {
     // Add an agent or viewer
     obj.addPeer = function (peer) {
         if (peer.req.query.browser) {
-            //console.log('addPeer-viewer');
+            //console.log('addPeer-viewer', obj.id);
                         
             // Setup the viewer
             if (obj.viewers.indexOf(peer) >= 0) return true;
@@ -106,9 +106,9 @@ function CreateDesktopDecoder(parent, domain, id, func) {
             peer.paused = false;
 
             // Indicated we are connected
-            obj.sendToViewer(peer, 'c');
+            obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
         } else {
-            //console.log('addPeer-agent');
+            //console.log('addPeer-agent', obj.id);
             if (obj.agent != null) return false;
             
             // Setup the agent
@@ -118,7 +118,7 @@ function CreateDesktopDecoder(parent, domain, id, func) {
             peer.paused = false;
 
             // Indicated we are connected and send connection options and protocol if needed
-            obj.sendToAgent('c');
+            obj.sendToAgent(obj.recordingFile?'cr':'c');
             if (obj.viewerConnected == true) {
                 if (obj.protocolOptions != null) { obj.sendToAgent(JSON.stringify(obj.protocolOptions)); } // Send connection options
                 obj.sendToAgent('2'); // Send remote desktop connect
@@ -131,7 +131,7 @@ function CreateDesktopDecoder(parent, domain, id, func) {
     // Return true if this multiplexor is no longer needed.
     obj.removePeer = function (peer) {
         if (peer == obj.agent) {
-            //console.log('removePeer-agent');
+            //console.log('removePeer-agent', obj.id);
             // Clean up the agent
             obj.agent = null;
 
@@ -140,7 +140,7 @@ function CreateDesktopDecoder(parent, domain, id, func) {
             dispose();
             return true;
         } else {
-            //console.log('removePeer-viewer');
+            //console.log('removePeer-viewer', obj.id);
             // Remove a viewer
             var i = obj.viewers.indexOf(peer);
             if (i == -1) return false;
@@ -171,6 +171,7 @@ function CreateDesktopDecoder(parent, domain, id, func) {
 
     // Clean up ourselves
     function dispose() {
+        //console.log('dispose', obj.id);
         delete obj.viewers;
         delete obj.imagesCounters;
         delete obj.images;
@@ -253,10 +254,10 @@ function CreateDesktopDecoder(parent, domain, id, func) {
         } else {
             if (viewer.dataPtr != null) {
                 // Send the next image
-                if ((viewer.lastImageNumberSent != null) && ((viewer.lastImageNumberSent + 1) != (viewer.dataPtr))) { console.log('SVIEW-S1', viewer.lastImageNumberSent, viewer.dataPtr); } // DEBUG
+                //if ((viewer.lastImageNumberSent != null) && ((viewer.lastImageNumberSent + 1) != (viewer.dataPtr))) { console.log('SVIEW-S1', viewer.lastImageNumberSent, viewer.dataPtr); } // DEBUG
                 var image = obj.images[viewer.dataPtr];
                 viewer.lastImageNumberSent = viewer.dataPtr;
-                if ((image.next != null) && ((viewer.dataPtr + 1) != image.next)) { console.log('SVIEW-S2', viewer.dataPtr, image.next); } // DEBUG
+                //if ((image.next != null) && ((viewer.dataPtr + 1) != image.next)) { console.log('SVIEW-S2', viewer.dataPtr, image.next); } // DEBUG
                 viewer.dataPtr = image.next;
                 viewer.ws.send(image.data, function () { sendViewerNext(viewer); });
 
@@ -745,7 +746,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         // Create if needed and add this peer to the desktop multiplexor
         obj.deskDecoder = parent.desktoprelays[obj.id];
         if (obj.deskDecoder == null) {
-            CreateDesktopDecoder(parent, domain, obj.id, function (deskDecoder) {
+            CreateDesktopMultiplexor(parent, domain, obj.id, function (deskDecoder) {
                 obj.deskDecoder = deskDecoder;
                 parent.desktoprelays[obj.id] = obj.deskDecoder;
                 obj.deskDecoder.addPeer(obj);
