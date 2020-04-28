@@ -57,9 +57,9 @@ MNG_ERROR = 65,
 MNG_ENCAPSULATE_AGENT_COMMAND = 70
 */
 
-function CreateDesktopMultiplexor(parent, domain, id, func) {
+function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     var obj = {};
-    obj.id = id;
+    obj.nodeid = nodeid;
     obj.parent = parent;
     obj.agent = null;                   // Reference to the connection object that is the agent.
     obj.viewers = [];                   // Array of references to all viewers.
@@ -75,6 +75,7 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
     obj.images = {};                    // Main table of indexes --> image data object.
     obj.lastScreenSizeCmd = null;       // Pointer to the last screen size command from the agent.
     obj.lastScreenSizeCounter = 0;      // Index into the image table of the screen size command, this is generally also the first command.
+    obj.lastConsoleMessage = null;      // Last agent console message.
     obj.firstData = null;               // Index in the image table of the first image in the table, generally this points to the display resolution command.
     obj.lastData = null;                // Index in the images table of the last image in the table.
     obj.lastDisplayInfoData = null;     // Pointer to the last display information command from the agent (Number of displays).
@@ -86,11 +87,12 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
     obj.viewerConnected = false;        // Set to true if one viewer attempted to connect to the agent.
     obj.recordingFile = null;           // Present if we are recording to file.
     obj.recordingFileWriting = false;   // Set to true is we are in the process if writing to the recording file.
+    obj.startTime = null;               // Starting time of the multiplex session.
 
     // Add an agent or viewer
     obj.addPeer = function (peer) {
         if (peer.req.query.browser) {
-            //console.log('addPeer-viewer', obj.id);
+            //console.log('addPeer-viewer', obj.nodeid);
                         
             // Setup the viewer
             if (obj.viewers.indexOf(peer) >= 0) return true;
@@ -107,8 +109,18 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
 
             // Indicated we are connected
             obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
+
+            // If the agent sent display information or console message, send it to the viewer
+            if (obj.lastDisplayInfoData != null) { obj.sendToViewer(peer, obj.lastDisplayInfoData); }
+            if (obj.lastConsoleMessage != null) { obj.sendToViewer(peer, obj.lastConsoleMessage); }
+
+            // Log joining the multiplex session
+            if (obj.startTime != null) {
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Joined desktop multiplex session", protocol: 2 };
+                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id], obj, event); // TODO: Add Node MeshID to targets
+            }
         } else {
-            //console.log('addPeer-agent', obj.id);
+            //console.log('addPeer-agent', obj.nodeid);
             if (obj.agent != null) return false;
             
             // Setup the agent
@@ -124,6 +136,13 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
                 obj.sendToAgent('2'); // Send remote desktop connect
             }
         }
+
+        // Log multiplex session start
+        if ((obj.agent != null) && (obj.viewers.length > 0) && (obj.startTime == null)) {
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.viewers[0].user._id, username: obj.viewers[0].user.name, msg: "Started desktop multiplex session", protocol: 2 };
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.viewers[0].user._id], obj, event);  // TODO: Add Node MeshID to targets
+            obj.startTime = Date.now();
+        }
         return true;
     }
 
@@ -131,7 +150,7 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
     // Return true if this multiplexor is no longer needed.
     obj.removePeer = function (peer) {
         if (peer == obj.agent) {
-            //console.log('removePeer-agent', obj.id);
+            //console.log('removePeer-agent', obj.nodeid);
             // Clean up the agent
             obj.agent = null;
 
@@ -140,7 +159,7 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
             dispose();
             return true;
         } else {
-            //console.log('removePeer-viewer', obj.id);
+            //console.log('removePeer-viewer', obj.nodeid);
             // Remove a viewer
             var i = obj.viewers.indexOf(peer);
             if (i == -1) return false;
@@ -163,6 +182,12 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
                 if ((obj.viewersSendingCount < obj.viewers.length) && (obj.recordingFileWriting == false) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
             }
 
+            // Log leaving the multiplex session
+            if (obj.startTime != null) {
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Left the desktop multiplex session", protocol: 2 };
+                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id], obj, event); // TODO: Add Node MeshID to targets
+            }
+
             // If this is the last viewer, disconnect the agent
             if ((obj.viewers.length == 0) && (obj.agent != null)) { obj.agent.close(); dispose(); return true; }
         }
@@ -171,7 +196,7 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
 
     // Clean up ourselves
     function dispose() {
-        //console.log('dispose', obj.id);
+        //console.log('dispose', obj.nodeid);
         delete obj.viewers;
         delete obj.imagesCounters;
         delete obj.images;
@@ -185,6 +210,13 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
                 // Now that the recording file is closed, check if we need to index this file.
                 if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', filename); }
             }, rf.filename);
+        }
+
+        // Log end of multiplex session
+        if (obj.startTime != null) {
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msg: "Closed desktop multiplex session" + ', ' + Math.floor((Date.now() - obj.startTime) / 1000) + ' second(s)', protocol: 2 };
+            parent.parent.DispatchEvent(['*', obj.nodeid], obj, event); // TODO: Add Node MeshID to targets
+            obj.startTime = null;
         }
     }
 
@@ -382,6 +414,9 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
             case 10:// CTRL-ALT-DEL, forward to agent
                 obj.sendToAgent(data);
                 break;
+            case 12:// SET DISPLAY, forward to agent
+                obj.sendToAgent(data);
+                break;
             case 14:// Touch setup
                 break;
             default:
@@ -392,7 +427,20 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
 
     // Process incoming agent data
     obj.processAgentData = function (data) {
-        if ((typeof data != 'object') || (data.length < 4)) return; // Ignore all control traffic for now (WebRTC)
+        if ((typeof data != 'object') || (data.length < 4)) {
+            if (typeof data == 'string') {
+                var json = null;
+                try { json = JSON.parse(data); } catch (ex) { }
+                if (json == null) return;
+                if (json.type == 'console') {
+                    // This is a console message, store it and forward this to all viewers
+                    if (json.msg != null) { obj.lastConsoleMessage = data; } else { obj.lastConsoleMessage = null; }
+                    obj.sendToAllViewers(data);
+                }
+                // All other control messages (notably WebRTC), are ignored for now.
+            }
+            return; // Ignore all other traffic
+        }
         const jumboData = data;
         var command = data.readUInt16BE(0);
         var cmdsize = data.readUInt16BE(2);
@@ -532,7 +580,7 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
         // Setup session recording
         if ((domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
             var now = new Date(Date.now());
-            var recFilename = 'desktopSession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.id + '.mcrec'
+            var recFilename = 'desktopSession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.nodeid.split('/')[2] + '.mcrec'
             var recFullFilename = null;
             if (domain.sessionrecording.filepath) {
                 try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
@@ -544,7 +592,7 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
             parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
                 if (err != null) { func(false); return; }
                 // Write the recording file header
-                var metadata = { magic: 'MeshCentralRelaySession', ver: 1, sessionid: obj.id, time: new Date().toLocaleString(), protocol: 2 };
+                var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, time: new Date().toLocaleString(), protocol: 2 };
                 var firstBlock = JSON.stringify(metadata);
                 recordingEntry(fd, 1, 0, firstBlock, function () {
                     obj.recordingFile = { fd: fd, filename: recFullFilename };
@@ -599,10 +647,12 @@ function CreateDesktopMultiplexor(parent, domain, id, func) {
 }
 
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
+    if ((req.query.nodeid == null) || (req.query.p != '2') || (req.query.id == null) || (domain == null)) { try { ws.close(); } catch (e) { } return; } // Not is not a valid remote desktop connection.
     var obj = {};
     obj.ws = ws;
     obj.ws.me = obj;
     obj.id = req.query.id;
+    obj.nodeid = req.query.nodeid;
     obj.user = user;
     obj.ruserid = null;
     obj.req = req; // Used in multi-server.js
@@ -611,6 +661,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     if ((user == null) && (obj.req.query != null) && (obj.req.query.rauth != null)) {
         const rcookie = parent.parent.decodeCookie(obj.req.query.rauth, parent.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
         if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; }
+        if (rcookie.nodeid != null) { obj.nodeid = rcookie.nodeid; }
     }
 
     // If there is no authentication, drop this connection
@@ -650,13 +701,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
-        if (obj.deskDecoder != null) { if (obj.deskDecoder.removePeer(obj) == true) { delete parent.desktoprelays[obj.id]; } }
+        if (obj.deskDecoder != null) { if (obj.deskDecoder.removePeer(obj) == true) { delete parent.desktoprelays[obj.nodeid]; } }
 
         // Aggressive cleanup
         delete obj.id;
         delete obj.ws;
         delete obj.req;
         delete obj.user;
+        delete obj.nodeid;
         delete obj.ruserid;
         delete obj.deskDecoder;
 
@@ -744,11 +796,11 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
 
         // Create if needed and add this peer to the desktop multiplexor
-        obj.deskDecoder = parent.desktoprelays[obj.id];
+        obj.deskDecoder = parent.desktoprelays[obj.nodeid];
         if (obj.deskDecoder == null) {
-            CreateDesktopMultiplexor(parent, domain, obj.id, function (deskDecoder) {
+            CreateDesktopMultiplexor(parent, domain, obj.nodeid, function (deskDecoder) {
                 obj.deskDecoder = deskDecoder;
-                parent.desktoprelays[obj.id] = obj.deskDecoder;
+                parent.desktoprelays[obj.nodeid] = obj.deskDecoder;
                 obj.deskDecoder.addPeer(obj);
                 ws._socket.resume(); // Release the traffic
             });
@@ -793,7 +845,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (e) { } return; }
 
                 // Send connection request to agent
-                const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
+                const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
                 if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr };
                 parent.parent.debug('relay', 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
@@ -812,7 +864,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                 // Send connection request to agent
                 if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
-                const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
+                const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
 
                 if (obj.req.query.tcpport != null) {
                     const command = { nodeid: obj.req.query.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: obj.req.query.tcpport, tcpaddr: ((obj.req.query.tcpaddr == null) ? '127.0.0.1' : obj.req.query.tcpaddr) };
