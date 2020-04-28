@@ -57,8 +57,10 @@ MNG_ERROR = 65,
 MNG_ENCAPSULATE_AGENT_COMMAND = 70
 */
 
-function CreateDesktopDecoder() {
+function CreateDesktopDecoder(parent, domain, id, func) {
     var obj = {};
+    obj.id = id;
+    obj.parent = parent;
     obj.agent = null;                   // Reference to the connection object that is the agent.
     obj.viewers = [];                   // Array of references to all viewers.
     obj.viewersSendingCount = 0;        // Number of viewers currently activaly sending something.
@@ -82,6 +84,8 @@ function CreateDesktopDecoder() {
     obj.imageFrameRate = 50;            // Current framerate setting, this is the lowest values of all viewers.
     obj.protocolOptions = null;         // Set to the protocol options of the first viewer that connected.
     obj.viewerConnected = false;        // Set to true if one viewer attempted to connect to the agent.
+    obj.recordingFile = null;           // Present if we are recording to file.
+    obj.recordingFileWriting = false;   // Set to true is we are in the process if writing to the recording file.
 
     // Add an agent or viewer
     obj.addPeer = function (peer) {
@@ -152,11 +156,11 @@ function CreateDesktopDecoder() {
             delete peer.sending;
             delete peer.sendQueue;
 
-            // Resume flow control if this was the peer 
+            // Resume flow control if this was the peer that was limiting traffic (because it was the fastest one).
             if (peer.sending == true) {
                 obj.viewersSendingCount--;
                 peer.sending = false;
-                if ((obj.viewersSendingCount < obj.viewers.length) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
+                if ((obj.viewersSendingCount < obj.viewers.length) && (obj.recordingFileWriting == false) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
             }
 
             // If this is the last viewer, disconnect the agent
@@ -170,6 +174,17 @@ function CreateDesktopDecoder() {
         delete obj.viewers;
         delete obj.imagesCounters;
         delete obj.images;
+
+        // Close the recording file if needed
+        if (obj.recordingFile != null) {
+            var rf = obj.recordingFile;
+            delete obj.recordingFile;
+            recordingEntry(rf.fd, 3, 0, 'MeshCentralMCREC', function (fd, filename) {
+                parent.parent.fs.close(fd);
+                // Now that the recording file is closed, check if we need to index this file.
+                if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', filename); }
+            }, rf.filename);
+        }
     }
 
     // Send data to the agent or queue it up for sending
@@ -249,7 +264,7 @@ function CreateDesktopDecoder() {
                 if (viewer.sending == false) {
                     viewer.sending = true;
                     obj.viewersSendingCount++;
-                    if ((obj.viewersSendingCount >= obj.viewers.length) && obj.agent && (obj.agent.paused == false)) { obj.agent.paused = true; obj.agent.ws._socket.pause(); }
+                    if (((obj.viewersSendingCount >= obj.viewers.length) || (obj.recordingFileWriting == true)) && obj.agent && (obj.agent.paused == false)) { obj.agent.paused = true; obj.agent.ws._socket.pause(); }
                 }
             } else {
                 // Nothing to send
@@ -257,14 +272,23 @@ function CreateDesktopDecoder() {
 
                 // Flow control, resume agent if needed
                 obj.viewersSendingCount--;
-                if ((obj.viewersSendingCount < obj.viewers.length) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
+                if ((obj.viewersSendingCount < obj.viewers.length) && (obj.recordingFileWriting == false) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
             }
         }
     }
 
     // Process data coming from the agent or any viewers
     obj.processData = function (peer, data) {
-        if (peer == obj.agent) { obj.processAgentData(data); } else { obj.processViewerData(peer, data); }
+        if (peer == obj.agent) {
+            obj.recordingFileWriting = true;
+            recordData(true, data, function () {
+                obj.recordingFileWriting = false;
+                if ((obj.viewersSendingCount < obj.viewers.length) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
+                obj.processAgentData(data);
+            });
+        } else {
+            obj.processViewerData(peer, data);
+        }
     }
 
     // Process incoming viewer data
@@ -503,6 +527,73 @@ function CreateDesktopDecoder() {
         }
     }
 
+    function recordingSetup(domain, func) {
+        // Setup session recording
+        if ((domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
+            var now = new Date(Date.now());
+            var recFilename = 'desktopSession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.id + '.mcrec'
+            var recFullFilename = null;
+            if (domain.sessionrecording.filepath) {
+                try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
+                recFullFilename = parent.parent.path.join(domain.sessionrecording.filepath, recFilename);
+            } else {
+                try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
+                recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
+            }
+            parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
+                if (err != null) { func(false); return; }
+                // Write the recording file header
+                var metadata = { magic: 'MeshCentralRelaySession', ver: 1, sessionid: obj.id, time: new Date().toLocaleString(), protocol: 2 };
+                var firstBlock = JSON.stringify(metadata);
+                recordingEntry(fd, 1, 0, firstBlock, function () {
+                    obj.recordingFile = { fd: fd, filename: recFullFilename };
+                    obj.recordingFileWriting = false;
+                    func(true);
+                });
+            });
+        } else {
+            func(false);
+        }
+    }
+
+    // Record data to the recording file
+    function recordData(isAgent, data, func) {
+        try {
+            if (obj.recordingFile != null) {
+                // Write data to recording file
+                recordingEntry(obj.recordingFile.fd, 2, (isAgent ? 0 : 2), data, function () { func(data); });
+            } else {
+                func(data);
+            }
+        } catch (ex) { console.log(ex); }
+    }
+
+    // Record a new entry in a recording log
+    function recordingEntry(fd, type, flags, data, func, tag) {
+        try {
+            if (typeof data == 'string') {
+                // String write
+                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(blockData.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, blockData]);
+                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
+            } else {
+                // Binary write
+                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(data.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, data]);
+                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
+            }
+        } catch (ex) { console.log(ex); func(fd, tag); }
+    }
+
+    recordingSetup(domain, function () { func(obj); });
     return obj;
 }
 
@@ -654,186 +745,16 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         // Create if needed and add this peer to the desktop multiplexor
         obj.deskDecoder = parent.desktoprelays[obj.id];
         if (obj.deskDecoder == null) {
-            obj.deskDecoder = CreateDesktopDecoder();
-            parent.desktoprelays[obj.id] = obj.deskDecoder;
+            CreateDesktopDecoder(parent, domain, obj.id, function (deskDecoder) {
+                obj.deskDecoder = deskDecoder;
+                parent.desktoprelays[obj.id] = obj.deskDecoder;
+                obj.deskDecoder.addPeer(obj);
+                ws._socket.resume(); // Release the traffic
+            });
+        } else {
+            obj.deskDecoder.addPeer(obj);
+            ws._socket.resume(); // Release the traffic
         }
-        obj.deskDecoder.addPeer(obj);
-        ws._socket.resume(); // Release the traffic
-
-        /*
-        // If this is a MeshMessenger session, the ID is the two userid's and authentication must match one of them.
-        if (obj.id.startsWith('meshmessenger/')) {
-            if ((obj.id.startsWith('meshmessenger/user/') == true) && (user == null)) { try { obj.close(); } catch (e) { } return null; } // If user-to-user, both sides need to be authenticated.
-            var x = obj.id.split('/'), user1 = x[1] + '/' + x[2] + '/' + x[3], user2 = x[4] + '/' + x[5] + '/' + x[6];
-            if ((x[1] != 'user') && (x[4] != 'user')) { try { obj.close(); } catch (e) { } return null; } // MeshMessenger session must have at least one authenticated user
-            if ((x[1] == 'user') && (x[4] == 'user')) {
-                // If this is a user-to-user session, you must be authenticated to join.
-                if ((user._id != user1) && (user._id != user2)) { try { obj.close(); } catch (e) { } return null; }
-            } else {
-                // If only one side of the session is a user
-                // !!!!! TODO: Need to make sure that one of the two sides is the correct user. !!!!!
-            }
-        }
-
-        // Validate that the id is valid, we only need to do this on non-authenticated sessions.
-        // TODO: Figure out when this needs to be done.
-        if (!parent.args.notls) {
-            // Check the identifier, if running without TLS, skip this.
-            var ids = obj.id.split(':');
-            if (ids.length != 3) { ws.close(); delete obj.id; return null; } // Invalid ID, drop this.
-            if (parent.crypto.createHmac('SHA384', parent.relayRandom).update(ids[0] + ':' + ids[1]).digest('hex') != ids[2]) { ws.close(); delete obj.id; return null; } // Invalid HMAC, drop this.
-            if ((Date.now() - parseInt(ids[1])) > 120000) { ws.close(); delete obj.id; return null; } // Expired time, drop this.
-            obj.id = ids[0];
-        }
-
-        // Check the peer connection status
-        {
-            var relayinfo = parent.wsrelays[obj.id];
-            if (relayinfo) {
-                if (relayinfo.state == 1) {
-                    // Check that at least one connection is authenticated
-                    if ((obj.authenticated != true) && (relayinfo.peer1.authenticated != true)) {
-                        ws.close();
-                        parent.parent.debug('relay', 'Relay without-auth: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ')');
-                        delete obj.id;
-                        delete obj.ws;
-                        delete obj.peer;
-                        return null;
-                    }
-                    
-                    // Check that both connection are for the same user
-                    if (!obj.id.startsWith('meshmessenger/')) {
-                        var u1 = obj.user ? obj.user._id : obj.ruserid;
-                        var u2 = relayinfo.peer1.user ? relayinfo.peer1.user._id : relayinfo.peer1.ruserid;
-                        if (parent.args.user != null) { // If the server is setup with a default user, correct the userid now.
-                            if (u1 != null) { u1 = 'user/' + domain.id + '/' + parent.args.user.toLowerCase(); }
-                            if (u2 != null) { u2 = 'user/' + domain.id + '/' + parent.args.user.toLowerCase(); }
-                        }
-                        if (u1 != u2) {
-                            ws.close();
-                            parent.parent.debug('relay', 'Relay auth mismatch (' + u1 + ' != ' + u2 + '): ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ')');
-                            delete obj.id;
-                            delete obj.ws;
-                            delete obj.peer;
-                            return null;
-                        }
-                    }
-                    
-                    // Connect to peer
-                    obj.peer = relayinfo.peer1;
-                    obj.peer.peer = obj;
-                    relayinfo.peer2 = obj;
-                    relayinfo.state = 2;
-                    relayinfo.peer1.ws._socket.resume(); // Release the traffic
-                    relayinfo.peer2.ws._socket.resume(); // Release the traffic
-                    ws.time = relayinfo.peer1.ws.time = Date.now();
-                    
-                    relayinfo.peer1.ws.peer = relayinfo.peer2.ws;
-                    relayinfo.peer2.ws.peer = relayinfo.peer1.ws;
-                    
-                    // Remove the timeout
-                    if (relayinfo.timeout) { clearTimeout(relayinfo.timeout); delete relayinfo.timeout; }
-                    
-                    // Setup the agent PING/PONG timers
-                    if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
-                    else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
-                    
-                    // Setup the desktop decoder
-                    obj.deskDecoder = obj.peer.deskDecoder = CreateDesktopDecoder();
-                    obj.deskDecoder.addPeer(obj);
-                    obj.deskDecoder.addPeer(obj.peer);
-
-                    // Setup session recording
-                    var sessionUser = obj.user;
-                    if (sessionUser == null) { sessionUser = obj.peer.user; }
-                    if ((sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) {
-                        // Get the computer name
-                        parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
-                            var xusername = '', xdevicename = '', xdevicename2 = null;
-                            if ((nodes != null) && (nodes.length == 1)) { xdevicename2 = nodes[0].name; xdevicename = '-' + parent.common.makeFilename(nodes[0].name); }
-                            
-                            // Get the username and make it acceptable as a filename
-                            if (sessionUser._id) { xusername = '-' + parent.common.makeFilename(sessionUser._id.split('/')[2]); }
-
-                            var now = new Date(Date.now());
-                            var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + obj.id + '.mcrec'
-                            var recFullFilename = null;
-                            if (domain.sessionrecording.filepath) {
-                                try { parent.parent.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
-                                recFullFilename = parent.parent.path.join(domain.sessionrecording.filepath, recFilename);
-                            } else {
-                                try { parent.parent.fs.mkdirSync(parent.parent.recordpath); } catch (e) { }
-                                recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
-                            }
-                            parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
-                                if (err != null) {
-                                    // Unable to record
-                                    try { ws.send('c'); } catch (ex) { } // Send connect to both peers
-                                    try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
-                                } else {
-                                    // Write the recording file header
-                                    var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(obj.req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p), nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid ) };
-                                    if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
-                                    var firstBlock = JSON.stringify(metadata);
-                                    recordingEntry(fd, 1, 0, firstBlock, function () {
-                                        try { relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false, filename: recFullFilename }; } catch (ex) {
-                                            try { ws.send('c'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
-                                            try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
-                                            return;
-                                        }
-                                        try { ws.send('cr'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
-                                        try { relayinfo.peer1.ws.send('cr'); } catch (ex) { }
-                                    });
-                                }
-                            });
-                        });
-                    } else {
-                        // Send session start
-                        try { ws.send('c'); } catch (ex) { } // Send connect to both peers
-                        try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
-                    }
-
-                    parent.parent.debug('relay', 'Relay connected: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ' --> ' + cleanRemoteAddr(obj.peer.req.ip) + ')');
-
-                    // Log the connection
-                    if (sessionUser != null) {
-                        var msg = 'Started relay session';
-                        if (obj.req.query.p == 1) { msg = 'Started terminal session'; }
-                        else if (obj.req.query.p == 2) { msg = 'Started desktop session'; }
-                        else if (obj.req.query.p == 5) { msg = 'Started file management session'; }
-                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.req.ip) + ' to ' + cleanRemoteAddr(req.ip), protocol: req.query.p, nodeid: req.query.nodeid };
-                        parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
-                    }
-                } else {
-                    // Connected already, drop (TODO: maybe we should re-connect?)
-                    ws.close();
-                    parent.parent.debug('relay', 'Relay duplicate: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ')');
-                    delete obj.id;
-                    delete obj.ws;
-                    delete obj.peer;
-                    return null;
-                }
-            } else {
-                // Wait for other relay connection
-                ws._socket.pause(); // Hold traffic until the other connection
-                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
-                parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ') ' + (obj.authenticated ? 'Authenticated' : ''));
-
-                // Check if a peer server has this connection
-                if (parent.parent.multiServer != null) {
-                    var rsession = parent.wsPeerRelays[obj.id];
-                    if ((rsession != null) && (rsession.serverId > parent.parent.serverId)) {
-                        // We must initiate the connection to the peer
-                        parent.parent.multiServer.createPeerRelay(ws, req, rsession.serverId, obj.req.session.userid);
-                        delete parent.wsrelays[obj.id];
-                    } else {
-                        // Send message to other peers that we have this connection
-                        parent.parent.multiServer.DispatchMessage(JSON.stringify({ action: 'relay', id: obj.id }));
-                    }
-                }
-            }
-        }
-        */
     }
 
     // When data is received from the mesh relay web socket
@@ -855,97 +776,6 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         //console.log('ws-close', req);
         obj.close();
     });
-
-    /*
-    // Close both our side and the peer side.
-    function closeBothSides() {
-        if (obj.id != null) {
-            var relayinfo = parent.wsrelays[obj.id];
-            if (relayinfo != null) {
-                if (relayinfo.state == 2) {
-                    var peer = (relayinfo.peer1 == obj) ? relayinfo.peer2 : relayinfo.peer1;
-
-                    // Disconnect the peer
-                    try { if (peer.relaySessionCounted) { parent.relaySessionCount--; delete peer.relaySessionCounted; } } catch (ex) { console.log(ex); }
-                    parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ' --> ' + cleanRemoteAddr(peer.req.ip) + ')');
-                    try { peer.ws.close(); } catch (e) { } // Soft disconnect
-                    try { peer.ws._socket._parent.end(); } catch (e) { } // Hard disconnect
-
-                    // Log the disconnection
-                    if (ws.time) {
-                        var msg = 'Ended relay session';
-                        if (obj.req.query.p == 1) { msg = 'Ended terminal session'; }
-                        else if (obj.req.query.p == 2) { msg = 'Ended desktop session'; }
-                        else if (obj.req.query.p == 5) { msg = 'Ended file management session'; }
-                        if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.req.ip) + ' to ' + cleanRemoteAddr(obj.req.ip) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
-                            parent.parent.DispatchEvent(['*', user._id], obj, event);
-                        } else if (peer.user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.req.ip) + ' to ' + cleanRemoteAddr(obj.req.ip) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
-                            parent.parent.DispatchEvent(['*', peer.user._id], obj, event);
-                        }
-                    }
-
-                    // Aggressive peer cleanup
-                    delete peer.id;
-                    delete peer.ws;
-                    delete peer.peer;
-                    if (peer.pingtimer != null) { clearInterval(peer.pingtimer); delete peer.pingtimer; }
-                    if (peer.pongtimer != null) { clearInterval(peer.pongtimer); delete peer.pongtimer; }
-                } else {
-                    parent.parent.debug('relay', 'Relay disconnect: ' + obj.id + ' (' + cleanRemoteAddr(obj.req.ip) + ')');
-                }
-
-                // Close the recording file if needed
-                if (ws.logfile != null) {
-                    var logfile = ws.logfile;
-                    delete ws.logfile;
-                    if (peer.ws) { delete peer.ws.logfile; }
-                    recordingEntry(logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) {
-                        parent.parent.fs.close(fd);
-                        // Now that the recording file is closed, check if we need to index this file.
-                        if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
-                    }, { ws: ws, pws: peer.ws, logfile: logfile });
-                }
-
-                try { ws.close(); } catch (ex) { }
-                delete parent.wsrelays[obj.id];
-            }
-        }
-
-        // Aggressive cleanup
-        delete obj.id;
-        delete obj.ws;
-        delete obj.peer;
-        if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
-        if (obj.pongtimer != null) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
-    }
-
-    // Record a new entry in a recording log
-    function recordingEntry(fd, type, flags, data, func, tag) {
-        try {
-            if (typeof data == 'string') {
-                // String write
-                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
-                header.writeInt32BE(blockData.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
-                var block = Buffer.concat([header, blockData]);
-                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
-            } else {
-                // Binary write
-                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
-                header.writeInt32BE(data.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
-                var block = Buffer.concat([header, data]);
-                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
-            }
-        } catch (ex) { console.log(ex); func(fd, tag); }
-    }
-    */
 
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (user != null);
