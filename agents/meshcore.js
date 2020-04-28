@@ -1395,13 +1395,26 @@ function createMeshCore(agent) {
                         --this.desktop.kvm.connectionCount;
 
                         // Unpipe the web socket
-                        this.unpipe(this.httprequest.desktop.kvm);
-                        this.httprequest.desktop.kvm.unpipe(this);
+                        try
+                        {
+                            this.unpipe(this.httprequest.desktop.kvm);
+                            this.httprequest.desktop.kvm.unpipe(this);
+                        }
+                        catch(xx)
+                        {
+                        }
 
                         // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                        if (this.rtcchannel) {
-                            this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
-                            this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
+                        if (this.rtcchannel)
+                        {
+                            try
+                            {
+                                this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
+                                this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
+                            }
+                            catch(xx)
+                            {
+                            }
                         }
 
                         // Place wallpaper back if needed
@@ -1944,9 +1957,15 @@ function createMeshCore(agent) {
                     this.websocket.rtcchannel.on('end', function () {
                         // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
                         //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
-                        if (this.websocket.desktop && this.websocket.desktop.kvm) {
-                            this.unpipe(this.websocket.desktop.kvm);
-                            this.websocket.httprequest.desktop.kvm.unpipe(this);
+                        if (this.websocket.desktop && this.websocket.desktop.kvm)
+                        {
+                            try
+                            {
+                                this.unpipe(this.websocket.desktop.kvm);
+                                this.websocket.httprequest.desktop.kvm.unpipe(this);
+                            }
+                            catch (xx)
+                            { }
                         }
                     });
                     this.websocket.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}'); // Indicate we are ready for WebRTC switch-over.
