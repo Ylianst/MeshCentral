@@ -1589,10 +1589,13 @@ function createMeshCore(agent) {
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting remote file access. Grant access?", 30);
                         pr.ws = this;
                         this.pause();
-
+                        this._consentpromise = pr;
+                        this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
                         pr.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
@@ -1601,8 +1604,10 @@ function createMeshCore(agent) {
                                 }
                                 this.ws.resume();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // User Consent Denied/Failed
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
