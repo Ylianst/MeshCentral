@@ -107,6 +107,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             peer.sendQueue = [];
             peer.paused = false;
 
+            // Setup slow relay is requested. This will show down sending any data to this viewer.
+            if ((peer.req.query.slowrelay != null)) {
+                var sr = null;
+                try { sr = parseInt(peer.req.query.slowrelay); } catch (ex) { }
+                if ((typeof sr == 'number') && (sr > 0) && (sr < 1000)) { peer.slowRelay = sr; }
+            }
+
             // Indicated we are connected
             obj.sendToViewer(peer, obj.recordingFile ? 'cr' : 'c');
 
@@ -268,7 +275,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             viewer.sendQueue.push(data);
         } else {
             viewer.sending = true;
-            viewer.ws.send(data, function () { sendViewerNext(viewer); });
+            if (viewer.slowRelay) {
+                setTimeout(function () { try { viewer.ws.send(data, function () { sendViewerNext(viewer); }); } catch (ex) { } }, viewer.slowRelay);
+            } else {
+                try { viewer.ws.send(data, function () { sendViewerNext(viewer); }); } catch (ex) { }
+            }
 
             // Flow control, pause the agent if needed
             obj.viewersSendingCount++;
@@ -282,7 +293,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         if (viewer.sendQueue.length > 0) {
             // Send from the pending send queue
             if (viewer.sending == false) { viewer.sending = true; obj.viewersSendingCount++; }
-            viewer.ws.send(viewer.sendQueue.shift(), function () { sendViewerNext(viewer); });
+            if (viewer.slowRelay) {
+                setTimeout(function () { try { viewer.ws.send(viewer.sendQueue.shift(), function () { sendViewerNext(viewer); }); } catch (ex) { } }, viewer.slowRelay);
+            } else {
+                try { viewer.ws.send(viewer.sendQueue.shift(), function () { sendViewerNext(viewer); }); } catch (ex) { }
+            }
         } else {
             if (viewer.dataPtr != null) {
                 // Send the next image
@@ -291,7 +306,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 viewer.lastImageNumberSent = viewer.dataPtr;
                 //if ((image.next != null) && ((viewer.dataPtr + 1) != image.next)) { console.log('SVIEW-S2', viewer.dataPtr, image.next); } // DEBUG
                 viewer.dataPtr = image.next;
-                viewer.ws.send(image.data, function () { sendViewerNext(viewer); });
+                if (viewer.slowRelay) {
+                    setTimeout(function () { try { viewer.ws.send(image.data, function () { sendViewerNext(viewer); }); } catch (ex) { } }, viewer.slowRelay);
+                } else {
+                    try { viewer.ws.send(image.data, function () { sendViewerNext(viewer); }); } catch (ex) { }
+                }
 
                 // Flow control, pause the agent if needed
                 if (viewer.sending == false) {
@@ -478,8 +497,6 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 //console.log('Adding Image ' + obj.counter, x, y, dimensions.width, dimensions.height);
 
-                var skips = [];
-
                 // Update the screen with the correct pointers.
                 for (var i = 0; i < sw; i++) {
                     for (var j = 0; j < sh; j++) {
@@ -497,12 +514,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                             delete obj.imagesCounters[oi];
 
                             // If any viewers are currently on image "oi" must be moved to "d.next"
-                            for (var l in obj.viewers) { const v = obj.viewers[l]; if (v.dataPtr == oi) { skips.push(oi); v.dataPtr = d.next; } }
+                            for (var l in obj.viewers) { const v = obj.viewers[l]; if (v.dataPtr == oi) { v.dataPtr = d.next; } }
                         }
                     }
                 }
-
-                if (skips.length > 0) { console.log('SKIPS', skips.length); }
 
                 // Any viewer on dataPtr null, change to this image
                 for (var i in obj.viewers) {
