@@ -34,6 +34,13 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     obj.relaySessionCounted = true;
     parent.relaySessionCount++;
 
+    // Setup slow relay is requested. This will show down sending any data to this peer.
+    if ((req.query.slowrelay != null)) {
+        var sr = null;
+        try { sr = parseInt(req.query.slowrelay); } catch (ex) { }
+        if ((typeof sr == 'number') && (sr > 0) && (sr < 1000)) { obj.ws.slowRelay = sr; }
+    }
+
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
     const MESHRIGHT_MANAGEUSERS = 2;
@@ -308,17 +315,34 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         //console.log(typeof data, data.length);
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
-            try {
-                this._socket.pause();
-                if (this.logfile != null) {
-                    // Write data to log file then perform relay
-                    var xthis = this;
-                    recordingEntry(this.logfile.fd, 2, ((obj.req.query.browser) ? 2 : 0), data, function () { xthis.peer.send(data, ws.flushSink); });
-                } else {
-                    // Perform relay
-                    this.peer.send(data, ws.flushSink);
-                }
-            } catch (ex) { console.log(ex); }
+            if (this.peer.slowRelay == null) {
+                try {
+                    this._socket.pause();
+                    if (this.logfile != null) {
+                        // Write data to log file then perform relay
+                        var xthis = this;
+                        recordingEntry(this.logfile.fd, 2, ((obj.req.query.browser) ? 2 : 0), data, function () { xthis.peer.send(data, ws.flushSink); });
+                    } else {
+                        // Perform relay
+                        this.peer.send(data, ws.flushSink);
+                    }
+                } catch (ex) { console.log(ex); }
+            } else {
+                try {
+                    this._socket.pause();
+                    if (this.logfile != null) {
+                        // Write data to log file then perform slow relay
+                        var xthis = this;
+                        recordingEntry(this.logfile.fd, 2, ((obj.req.query.browser) ? 2 : 0), data, function () {
+                            setTimeout(function () { xthis.peer.send(data, ws.flushSink); }, xthis.peer.slowRelay);
+                        });
+                    } else {
+                        // Perform slow relay
+                        var xthis = this;
+                        setTimeout(function () { xthis.peer.send(data, ws.flushSink); }, xthis.peer.slowRelay);
+                    }
+                } catch (ex) { console.log(ex); }
+            }
         }
     });
 
