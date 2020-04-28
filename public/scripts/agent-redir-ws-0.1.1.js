@@ -42,6 +42,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         var url2, url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/meshrelay.ashx?browser=1&p=' + obj.protocol + '&nodeid=' + nodeid + '&id=' + obj.tunnelid;
         //if (serverPublicNamePort) { url2 = window.location.protocol.replace('http', 'ws') + '//' + serverPublicNamePort + '/meshrelay.ashx?id=' + obj.tunnelid; } else { url2 = url; }
         if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
+        if ((urlargs != null) && (urlargs.slowrelay != null)) { url += '&slowrelay=' + urlargs.slowrelay; }
         obj.nodeid = nodeid;
         obj.connectstate = 0;
         obj.socket = new WebSocket(url);
