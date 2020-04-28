@@ -1110,6 +1110,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'msg':
                 {
+                    // Before routing this command, let's do some security checking.
+                    // If this is a tunnel request, we need to make sure the NodeID in the URL matches the NodeID in the command.
+                    if (command.type == 'tunnel') {
+                        if ((typeof command.value != 'string') || (typeof command.nodeid != 'string')) break;
+                        var url = null;
+                        try { url = require('url').parse(command.value, true); } catch (ex) { }
+                        if (url == null) break; // Bad URL
+                        if (url.query && url.query.nodeid && (url.query.nodeid != command.nodeid)) break; // Bad NodeID in URL query string
+                    }
+
                     // Route this command to a target node
                     routeCommandToNode(command);
                     break;
