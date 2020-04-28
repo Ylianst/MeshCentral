@@ -801,6 +801,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
 
+        /*
         // Validate that the id is valid, we only need to do this on non-authenticated sessions.
         // TODO: Figure out when this needs to be done.
         if ((user == null) && (!parent.args.notls)) {
@@ -811,6 +812,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             if ((Date.now() - parseInt(ids[1])) > 120000) { ws.close(); delete obj.id; return null; } // Expired time, drop this.
             obj.id = ids[0];
         }
+        */
 
         // Setup the agent PING/PONG timers
         if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
