@@ -1330,11 +1330,14 @@ function createMeshCore(agent) {
                             var pr = require('message-box').create('MeshCentral', that.httprequest.username + " requesting Terminal Access. Grant access?", 30);
                             pr.ws = that;
                             that.pause();
+                            that._consentpromise = pr;
+                            that.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
 
                             pr.then(
                                 function ()
                                 {
                                     // Success
+                                    this.ws._consentpromise = null;
                                     MeshServerLog("Starting remote terminal after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                     if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
@@ -1347,6 +1350,7 @@ function createMeshCore(agent) {
                                 function (e)
                                 {
                                     // User Consent Denied/Failed
+                                    this.ws._consentpromise = null;
                                     MeshServerLog("Failed to start remote terminal after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                                     this.ws.end();
@@ -1395,13 +1399,26 @@ function createMeshCore(agent) {
                         --this.desktop.kvm.connectionCount;
 
                         // Unpipe the web socket
-                        this.unpipe(this.httprequest.desktop.kvm);
-                        this.httprequest.desktop.kvm.unpipe(this);
+                        try
+                        {
+                            this.unpipe(this.httprequest.desktop.kvm);
+                            this.httprequest.desktop.kvm.unpipe(this);
+                        }
+                        catch(xx)
+                        {
+                        }
 
                         // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                        if (this.rtcchannel) {
-                            this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
-                            this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
+                        if (this.rtcchannel)
+                        {
+                            try
+                            {
+                                this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
+                                this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
+                            }
+                            catch(xx)
+                            {
+                            }
                         }
 
                         // Place wallpaper back if needed
@@ -1456,17 +1473,21 @@ function createMeshCore(agent) {
                     }
 
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
-                    if (this.httprequest.consent && (this.httprequest.consent & 8)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 8))
+                    {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access..." }));
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting KVM Access. Grant access?", 30);
                         pr.ws = this;
                         this.pause();
-
+                        this._consentpromise = pr;
+                        this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); }});
                         pr.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
@@ -1502,8 +1523,10 @@ function createMeshCore(agent) {
                                 this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
                                 this.ws.resume();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // User Consent Denied/Failed
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
@@ -1566,10 +1589,13 @@ function createMeshCore(agent) {
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting remote file access. Grant access?", 30);
                         pr.ws = this;
                         this.pause();
-
+                        this._consentpromise = pr;
+                        this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
                         pr.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
@@ -1578,8 +1604,10 @@ function createMeshCore(agent) {
                                 }
                                 this.ws.resume();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // User Consent Denied/Failed
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
@@ -1944,9 +1972,15 @@ function createMeshCore(agent) {
                     this.websocket.rtcchannel.on('end', function () {
                         // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
                         //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
-                        if (this.websocket.desktop && this.websocket.desktop.kvm) {
-                            this.unpipe(this.websocket.desktop.kvm);
-                            this.websocket.httprequest.desktop.kvm.unpipe(this);
+                        if (this.websocket.desktop && this.websocket.desktop.kvm)
+                        {
+                            try
+                            {
+                                this.unpipe(this.websocket.desktop.kvm);
+                                this.websocket.httprequest.desktop.kvm.unpipe(this);
+                            }
+                            catch (xx)
+                            { }
                         }
                     });
                     this.websocket.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}'); // Indicate we are ready for WebRTC switch-over.
