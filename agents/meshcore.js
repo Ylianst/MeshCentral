@@ -1330,11 +1330,14 @@ function createMeshCore(agent) {
                             var pr = require('message-box').create('MeshCentral', that.httprequest.username + " requesting Terminal Access. Grant access?", 30);
                             pr.ws = that;
                             that.pause();
+                            that._consentpromise = pr;
+                            that.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
 
                             pr.then(
                                 function ()
                                 {
                                     // Success
+                                    this.ws._consentpromise = null;
                                     MeshServerLog("Starting remote terminal after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                     if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
@@ -1347,6 +1350,7 @@ function createMeshCore(agent) {
                                 function (e)
                                 {
                                     // User Consent Denied/Failed
+                                    this.ws._consentpromise = null;
                                     MeshServerLog("Failed to start remote terminal after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                                     this.ws.end();
@@ -1469,17 +1473,21 @@ function createMeshCore(agent) {
                     }
 
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
-                    if (this.httprequest.consent && (this.httprequest.consent & 8)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 8))
+                    {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access..." }));
                         var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting KVM Access. Grant access?", 30);
                         pr.ws = this;
                         this.pause();
-
+                        this._consentpromise = pr;
+                        this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); }});
                         pr.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
@@ -1515,8 +1523,10 @@ function createMeshCore(agent) {
                                 this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
                                 this.ws.resume();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // User Consent Denied/Failed
+                                this.ws._consentpromise = null;
                                 MeshServerLog("Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
                             });
