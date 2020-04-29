@@ -959,6 +959,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
         delete req.session.tokenemail;
+        delete req.session.tokensms;
         delete req.session.messageid;
         delete req.session.passhint;
         delete req.session.cuserid;
@@ -1118,6 +1119,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             delete req.session.resettokenusername;
             delete req.session.resettokenpassword;
             delete req.session.tokenemail;
+            delete req.session.tokensms;
             delete req.session.messageid;
             delete req.session.passhint;
             delete req.session.cuserid;
@@ -1180,6 +1182,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 delete req.session.resettokenusername;
                 delete req.session.resettokenpassword;
                 delete req.session.tokenemail;
+                delete req.session.tokensms;
                 delete req.session.messageid;
                 delete req.session.passhint;
                 delete req.session.cuserid;
@@ -1969,9 +1972,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
         // Check if we can use OTP tokens with email
-        var otpemail = (parent.mailserver != null) && (req.session != null) && (req.session.tokenemail != null);
+        var otpemail = (parent.mailserver != null) && (req.session != null) && (req.session.tokenemail == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
-        var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms != null);
+        var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
 
         // Render the login page
