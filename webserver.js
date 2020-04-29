@@ -595,7 +595,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
                     var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // 30 day timeout
-                    if ((twoFactorCookie != null) && (obj.args.cookieipcheck !== false) && ((twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
+                    if ((twoFactorCookie != null) && ((obj.args.cookieipcheck === false) || (twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
                 }
             }
         }
@@ -851,9 +851,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }, randomWaitTime);
                         } else {
                             // Check if we need to remember this device
-                            if (req.body.remembertoken === 'on') {
-                                const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id /*, ip: cleanRemoteAddr(req.ip)*/ }, obj.parent.loginCookieEncryptionKey);
-                                res.cookie('twofactor', twoFactorCookie, { maxAge: (30 * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
+                            if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
+                                var maxCookieAge = domain.twofactorcookiedurationdays;
+                                if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
+                                console.log('maxCookieAge', maxCookieAge);
+                                const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: cleanRemoteAddr(req.ip)*/ }, obj.parent.loginCookieEncryptionKey);
+                                res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
                             }
 
                             // Check if email address needs to be confirmed
@@ -1977,8 +1980,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
 
+        // See if we support two-factor trusted cookies
+        var twoFactorCookieDays = 30;
+        if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
+
         // Render the login page
-        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms }, domain));
+        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays }, domain));
     }
 
     // Handle a post request on the root
