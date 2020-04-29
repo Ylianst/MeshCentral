@@ -158,7 +158,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2" style="align-content:center">
-                                                <label><input id=tokenInputRemember name=remembertoken type=checkbox />Remember this device for 30 days.</label>
+                                                <label id=tokenInputRememberLabel><input id=tokenInputRemember name=remembertoken type=checkbox /><span id=tokenInputRememberSpan></span></label>
                                             </td>
                                         </tr>
                                         <tr>
@@ -302,6 +302,7 @@
         var currentpanel = 0;
         var otpemail = ('{{{otpemail}}}' === 'true');
         var otpsms = ('{{{otpsms}}}' === 'true');
+        var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
@@ -326,6 +327,14 @@
             Q('tokenformargs').value = urlargs;
             Q('resettokenformargs').value = urlargs;
             Q('resetpasswordformargs').value = urlargs;
+        }
+
+        // Setup two factor cookie time
+        if (twoFactorCookieDays > 0) {
+            QV('tokenInputRememberLabel', true);
+            QH('tokenInputRememberSpan', format("Remember this device for {0} days.", twoFactorCookieDays));
+        } else {
+            QV('tokenInputRememberLabel', false);
         }
 
         function startup() {
