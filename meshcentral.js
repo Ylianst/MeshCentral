@@ -633,7 +633,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -1009,6 +1009,10 @@ function CreateMeshCentralServer(config, args) {
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in config.json."); return; } } }
         for (i in obj.config.domains) {
+            // Apply default domain settings if present
+            if (typeof obj.config.domaindefaults == 'object') { for (var j in obj.config.domaindefaults) { if (obj.config.domains[i][j] == null) { obj.config.domains[i][j] = obj.config.domaindefaults[j]; } } }
+
+            // Perform domain setup
             if (typeof obj.config.domains[i] != 'object') { console.log("ERROR: Invalid domain configuration in config.json."); process.exit(); return; }
             if ((i.length > 0) && (i[0] == '_')) { delete obj.config.domains[i]; continue; } // Remove any domains with names that start with _
             if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); }
