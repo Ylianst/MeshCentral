@@ -3569,7 +3569,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (actionTaken) { parent.db.SetUser(user); }
 
                     // Return one time passwords for this user
-                    if (user.otpsecret || ((user.otphkeys != null) && (user.otphkeys.length > 0))) {
+                    if (count2factoraAuths() > 0) {
                         ws.send(JSON.stringify({ action: 'otpauth-getpasswords', passwords: user.otpkeys ? user.otpkeys.keys : null }));
                     }
 
@@ -4258,6 +4258,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Do nothing
             }
         }
+    }
+
+    // Return the number of 2nd factor for this account
+    function count2factoraAuths() {
+        var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.parent.mailserver != null));
+        var sms2fa = ((parent.parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)));
+        var authFactorCount = 0;
+        if (user.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+        if (email2fa && (user.otpekey != null)) { authFactorCount++; } // EMail factor
+        if (sms2fa && (user.phone != null)) { authFactorCount++; } // SMS factor
+        if (user.otphkeys != null) { authFactorCount += user.otphkeys.length; } // FIDO hardware factor
+        if ((authFactorCount > 0) && (user.otpkeys != null)) { authFactorCount++; } // Backup keys
+        return authFactorCount;
     }
 
     return obj;

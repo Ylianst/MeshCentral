@@ -408,6 +408,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         parent.parent.fs.close(fd);
                         // Now that the recording file is closed, check if we need to index this file.
                         if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+                        cleanUpRecordings();
                     }, { ws: ws, pws: peer.ws, logfile: logfile });
                 }
 
@@ -497,6 +498,34 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 performRelay();
             });
             return obj;
+        }
+    }
+
+    // If there is a recording quota, remove any old recordings if needed
+    function cleanUpRecordings() {
+        if (domain.sessionrecording && ((typeof domain.sessionrecording.maxrecordings == 'number') || (typeof domain.sessionrecording.maxrecordingsizemegabytes == 'number'))) {
+            var recPath = null, fs = require('fs');
+            if (domain.sessionrecording.filepath) { recPath = domain.sessionrecording.filepath; } else { recPath = parent.parent.recordpath; }
+            fs.readdir(recPath, function (err, files) {
+                if ((err != null) || (files == null)) return;
+                var recfiles = [];
+                for (var i in files) {
+                    if (files[i].endsWith('.mcrec')) {
+                        var j = files[i].indexOf('-');
+                        if (j > 0) { recfiles.push({ n: files[i], r: files[i].substring(j + 1), s: fs.statSync(parent.parent.path.join(recPath, files[i])).size }); }
+                    }
+                }
+                recfiles.sort(function (a, b) { if (a.r < b.r) return 1; if (a.r > b.r) return -1; return 0; });
+                var totalFiles = 0, totalSize = 0;
+                for (var i in recfiles) {
+                    var overQuota = false;
+                    if ((typeof domain.sessionrecording.maxrecordings == 'number') && (totalFiles >= domain.sessionrecording.maxrecordings)) { overQuota = true; }
+                    else if ((typeof domain.sessionrecording.maxrecordingsizemegabytes == 'number') && (totalSize >= (domain.sessionrecording.maxrecordingsizemegabytes * 1048576))) { overQuota = true; }
+                    if (overQuota) { fs.unlinkSync(parent.parent.path.join(recPath, recfiles[i].n)); }
+                    totalFiles++;
+                    totalSize += recfiles[i].s;
+                }
+            });
         }
     }
 

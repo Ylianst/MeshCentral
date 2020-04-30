@@ -39,6 +39,7 @@
     "_NpmPath": "c:\\npm.exe",
     "_NpmProxy": "http://1.2.3.4:80",
     "_AllowHighQualityDesktop": true,
+    "_DesktopMultiplex": true,
     "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
     "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
     "_AgentAllowedIP": "192.168.0.100/24",
@@ -77,6 +78,12 @@
     "__MaxInvalidLogin": "Time in minutes, max amount of bad logins from a source IP in the time before logins are rejected.",
     "_MaxInvalidLogin": { "time": 10, "count": 10, "coolofftime": 10 },
     "_Plugins": { "enabled": true }
+  },
+  "_domaindefaults": {
+    "__comment__": "Any settings in this section is used as default setting for all domains",
+    "Title": "MyDefaultTitle",
+    "Footer": "Default page footer",
+    "NewAccounts": false
   },
   "_domains": {
     "": {
@@ -137,6 +144,8 @@
       "_SessionRecording": {
         "_filepath": "C:\\temp",
         "_index": true,
+        "_maxRecordings": 10,
+        "_maxRecordingSizeMegabytes": 3,
         "__protocols__": "Is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection",
         "protocols": [ 1, 2, 101 ]
       }

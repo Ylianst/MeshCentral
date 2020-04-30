@@ -1694,11 +1694,23 @@
             }
         }
 
+        // Return the number of 2nd factor for this account
+        function count2factoraAuths() {
+            var authFactorCount = 0;
+            if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+            if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
+            if ((features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
+            if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
+            if ((authFactorCount > 0) && (userinfo.otpkeys == 1)) { authFactorCount++; } // Backup keys
+            return authFactorCount;
+        }
+
         var backupCodesWarningDone = false;
         function updateSelf() {
+            var authFactorCount = count2factoraAuths(); // Get the number of 2nd factors
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-            QV('manageOtp', (userinfo.otpsecret == 1) || (userinfo.otphkeys > 0));
+            QV('manageOtp', authFactorCount > 0);
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
@@ -1707,12 +1719,6 @@
             masterUpdate(4 + 128 + 4096);
 
             // Check if none or at least 2 factors are enabled.
-            var authFactorCount = 0;
-            if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount += 1; }
-            if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount += 1; }
-            if (userinfo.otpkeys == 1) { authFactorCount += 1; }
-            if (userinfo.otpsecret == 1) { authFactorCount += 1; }
-            if (userinfo.otphkeys != null) { authFactorCount += userinfo.otphkeys; }
             if ((backupCodesWarningDone == false) && (authFactorCount == 1)) {
                 var n = { text: "Please add two-factor backup codes. If the current factor is lost, there is not way to recover this account.", title: "Two factor authentication" };
                 addNotification(n);
@@ -4838,7 +4844,7 @@
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access a device until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
             if (event && (event.shiftKey == true)) {
                 // Open the device in a different tab
@@ -7987,7 +7993,7 @@
         function account_manageOtp(action) {
             if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-manage')) { dialogclose(0); }
             if (xxdialogMode || ((features & 4096) == 0)) return false;
-            if ((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0)) { meshserver.send({ action: 'otpauth-getpasswords', subaction: action }); }
+            if (count2factoraAuths() > 0) { meshserver.send({ action: 'otpauth-getpasswords', subaction: action }); }
             return false;
         }
 
