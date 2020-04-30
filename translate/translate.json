@@ -9383,9 +9383,9 @@
         "default.handlebars->29->1540",
         "default.handlebars->29->1586",
         "default.handlebars->29->278",
-        "login-mobile.handlebars->5->41",
+        "login-mobile.handlebars->5->42",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
-        "login.handlebars->5->42",
+        "login.handlebars->5->43",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3"
       ]
     },
@@ -9429,8 +9429,8 @@
       "en": "Email Confirmation",
       "nl": "E-mail bevestigen",
       "xloc": [
-        "login-mobile.handlebars->5->42",
-        "login.handlebars->5->43"
+        "login-mobile.handlebars->5->43",
+        "login.handlebars->5->44"
       ]
     },
     {
@@ -9584,10 +9584,10 @@
       "ru": "Email:",
       "zh-chs": "電子郵件：",
       "xloc": [
-        "login-mobile.handlebars->5->20",
+        "login-mobile.handlebars->5->21",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->2->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpanel->1->7->1->0->1",
-        "login.handlebars->5->20",
+        "login.handlebars->5->21",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->7->1->0->1"
       ]
@@ -10642,8 +10642,8 @@
       "ru": "Забыли пароль?",
       "zh-chs": "忘記密碼？",
       "xloc": [
-        "login-mobile.handlebars->5->21",
-        "login.handlebars->5->21"
+        "login-mobile.handlebars->5->22",
+        "login.handlebars->5->22"
       ]
     },
     {
@@ -11358,10 +11358,10 @@
       "ru": "Хороший пароль",
       "zh-chs": "好的密碼",
       "xloc": [
-        "login-mobile.handlebars->5->28",
-        "login-mobile.handlebars->5->32",
-        "login.handlebars->5->28",
-        "login.handlebars->5->32"
+        "login-mobile.handlebars->5->29",
+        "login-mobile.handlebars->5->33",
+        "login.handlebars->5->29",
+        "login.handlebars->5->33"
       ]
     },
     {
@@ -15756,8 +15756,8 @@
       "ru": "Максимальная длина {0}",
       "zh-chs": "最大長度為{0}",
       "xloc": [
-        "login-mobile.handlebars->5->36",
-        "login.handlebars->5->36"
+        "login-mobile.handlebars->5->37",
+        "login.handlebars->5->37"
       ]
     },
     {
@@ -16408,8 +16408,8 @@
       "ru": "Минимальная длина {0}",
       "zh-chs": "最小長度為{0}",
       "xloc": [
-        "login-mobile.handlebars->5->35",
-        "login.handlebars->5->35"
+        "login-mobile.handlebars->5->36",
+        "login.handlebars->5->36"
       ]
     },
     {
@@ -18816,8 +18816,8 @@
       "ru": "Подсказка пароля",
       "zh-chs": "密碼提示",
       "xloc": [
-        "login-mobile.handlebars->5->26",
-        "login.handlebars->5->26"
+        "login-mobile.handlebars->5->27",
+        "login.handlebars->5->27"
       ]
     },
     {
@@ -18853,11 +18853,11 @@
       "ru": "Политика пароля",
       "zh-chs": "密碼政策",
       "xloc": [
-        "login-mobile.handlebars->5->30",
-        "login-mobile.handlebars->5->34",
-        "login.handlebars->5->30",
-        "login.handlebars->5->34",
-        "login.handlebars->5->41"
+        "login-mobile.handlebars->5->31",
+        "login-mobile.handlebars->5->35",
+        "login.handlebars->5->31",
+        "login.handlebars->5->35",
+        "login.handlebars->5->42"
       ]
     },
     {
@@ -20324,10 +20324,13 @@
       "nl": "Onthoud dit apparaat gedurende 30 dagen.",
       "pt": "Lembre-se deste dispositivo por 30 dias.",
       "ru": "Запомнить это устройство на 30 дней.",
-      "zh-chs": "記住此設備30天。",
+      "zh-chs": "記住此設備30天。"
+    },
+    {
+      "en": "Remember this device for {0} days.",
       "xloc": [
-        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->2->1->1",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->2->1->1"
+        "login-mobile.handlebars->5->20",
+        "login.handlebars->5->20"
       ]
     },
     {
@@ -21662,10 +21665,10 @@
       "ru": "Безопасный вход",
       "zh-chs": "安全登錄",
       "xloc": [
-        "login-mobile.handlebars->5->22",
-        "login-mobile.handlebars->5->24",
-        "login.handlebars->5->22",
-        "login.handlebars->5->24"
+        "login-mobile.handlebars->5->23",
+        "login-mobile.handlebars->5->25",
+        "login.handlebars->5->23",
+        "login.handlebars->5->25"
       ]
     },
     {
@@ -22102,16 +22105,16 @@
       "ru": "Отправить токен на зарегистрированный адрес электронной почты?",
       "zh-chs": "將令牌發送到註冊的電子郵件地址？",
       "xloc": [
-        "login-mobile.handlebars->5->23",
-        "login.handlebars->5->23"
+        "login-mobile.handlebars->5->24",
+        "login.handlebars->5->24"
       ]
     },
     {
       "en": "Send token to registed phone number?",
       "nl": "Token naar geregistreerd telefoonnummer verzenden?",
       "xloc": [
-        "login-mobile.handlebars->5->25",
-        "login.handlebars->5->25"
+        "login-mobile.handlebars->5->26",
+        "login.handlebars->5->26"
       ]
     },
     {
@@ -23964,10 +23967,10 @@
       "ru": "Надежный пароль",
       "zh-chs": "強密碼",
       "xloc": [
-        "login-mobile.handlebars->5->27",
-        "login-mobile.handlebars->5->31",
-        "login.handlebars->5->27",
-        "login.handlebars->5->31"
+        "login-mobile.handlebars->5->28",
+        "login-mobile.handlebars->5->32",
+        "login.handlebars->5->28",
+        "login.handlebars->5->32"
       ]
     },
     {
@@ -27181,10 +27184,10 @@
       "ru": "Слабый пароль",
       "zh-chs": "密碼強度低",
       "xloc": [
-        "login-mobile.handlebars->5->29",
-        "login-mobile.handlebars->5->33",
-        "login.handlebars->5->29",
-        "login.handlebars->5->33"
+        "login-mobile.handlebars->5->30",
+        "login-mobile.handlebars->5->34",
+        "login.handlebars->5->30",
+        "login.handlebars->5->34"
       ]
     },
     {
@@ -29357,8 +29360,8 @@
       "ru": "{0} букв в нижнем регистре",
       "zh-chs": "{0}小寫",
       "xloc": [
-        "login-mobile.handlebars->5->38",
-        "login.handlebars->5->38"
+        "login-mobile.handlebars->5->39",
+        "login.handlebars->5->39"
       ]
     },
     {
@@ -29443,8 +29446,8 @@
       "ru": "{0} спец. символы",
       "zh-chs": "{0}非字母數字",
       "xloc": [
-        "login-mobile.handlebars->5->40",
-        "login.handlebars->5->40"
+        "login-mobile.handlebars->5->41",
+        "login.handlebars->5->41"
       ]
     },
     {
@@ -29461,8 +29464,8 @@
       "ru": "{0} цифры",
       "zh-chs": "{0}數字",
       "xloc": [
-        "login-mobile.handlebars->5->39",
-        "login.handlebars->5->39"
+        "login-mobile.handlebars->5->40",
+        "login.handlebars->5->40"
       ]
     },
     {
@@ -29592,8 +29595,8 @@
       "ru": "{0} заглавных букв",
       "zh-chs": "{0}大寫",
       "xloc": [
-        "login-mobile.handlebars->5->37",
-        "login.handlebars->5->37"
+        "login-mobile.handlebars->5->38",
+        "login.handlebars->5->38"
       ]
     },
     {
