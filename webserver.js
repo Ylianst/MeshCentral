@@ -594,7 +594,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             const cookies = req.headers.cookie.split('; ');
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
-                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // 30 day timeout
+                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
                     if ((twoFactorCookie != null) && ((obj.args.cookieipcheck === false) || (twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
                 }
             }
