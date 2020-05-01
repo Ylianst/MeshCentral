@@ -7,7 +7,8 @@
     <meta name=apple-mobile-web-app-capable content=yes />
     <meta name=format-detection content="telephone=no" />
     <link type=text/css href="/styles/style.css" media="screen" rel="stylesheet" title="CSS" />
-    <title>{{{title}}} - {{{title3}}}</title>
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <title id="topTitle">{{{title}}}</title>
 </head>
 <body>
     <div id=container style=max-height:100vh>
@@ -23,8 +24,8 @@
         </div>
         <div id=page_content style=max-height:calc(100vh-138px)>
             <div id=column_l>
-                <h1>{{{title3}}}</h1>
-                <p style=margin-left:20px>{{{message}}}</p>
+                <h1 id="mainTitle"></h1>
+                <p style=margin-left:20px id="mainMessage"></p>
                 <br />
             </div>
             <div id=footer>
@@ -39,5 +40,39 @@
             </div>
         </div>
     </div>
+    <script>
+        var titleid = parseInt('{{{titleid}}}');
+        var msgid = parseInt('{{{msgid}}}');
+        var domainurl = decodeURIComponent('{{{domainurl}}}');
+        var arg1 = decodeURIComponent('{{{arg1}}}');
+        var arg2 = decodeURIComponent('{{{arg2}}}');
+
+        var title = '';
+        if (titleid == 1) { title = "Account Verification"; }
+        QH('topTitle', Q('topTitle').innerText + ' - ' + title);
+        QH('mainTitle', title);
+
+        var msg = '';
+        switch (msgid) {
+            case 1: { msg = "ERROR: Invalid domain."; break; }
+            case 2: { msg = "ERROR: Invalid username \"{0}\"."; break; }
+            case 3: { msg = format("ERROR: Invalid e-mail \"{0}\" for user \"{1}\".", arg1, arg2); break; }
+            case 4: { msg = format("E-mail \"{0}\" for user \"{1}\" already verified.", arg1, arg2); break; }
+            case 5: { msg = format("E-mail \"{0}\" already in use on a different account. Change the email address and try again.", arg1); break; }
+            case 6: { msg = format("Verified email {0} for user account {1}.", '<b>' + arg1 + '</b>', '<b>' + arg2 + '</b>'); break; }
+            case 7: { msg = format("E-mail \"{0}\" for user \"{1}\" not verified.", arg1, arg2); break; }
+            case 8: {
+                msg = '<div>' + format("Password for account {0} has been reset to:", '<b>' + arg1 + '</b>') + '</div><div style=padding:14px;font-size:18px><b>' + arg2 + '</b></div>';
+                msg += "Login and go to the \"My Account\" tab to update your password.";
+                break;
+            }
+            case 9: { msg = "ERROR: Invalid account check."; break; }
+            case 10: { msg = "ERROR: Invalid account check, verification url is only valid for 30 minutes."; break; }
+        }
+        QH('mainMessage', msg + ' <a href="' + domainurl + '">' + "Go to login page" + '</a>.');
+
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
+    </script>
 </body>
 </html>

@@ -1929,6 +1929,13 @@
       ]
     },
     {
+      "en": "Account Verification",
+      "ja": "アカウントの確認",
+      "xloc": [
+        "message.handlebars->3->1"
+      ]
+    },
+    {
       "cs": "Akce účtu",
       "de": "Konto-Aktionen",
       "en": "Account actions",
@@ -2274,6 +2281,7 @@
     {
       "de": "Gerätegruppe-Berechtigungen hinzufügen",
       "en": "Add Device Group Permissions",
+      "ja": "デバイスグループ権限を追加",
       "nl": "Machtigingen voor apparaatgroep toevoegen",
       "xloc": [
         "default.handlebars->29->1255"
@@ -2473,6 +2481,7 @@
     {
       "de": "Benutzergruppen-Geräteberechtigungen hinzufügen",
       "en": "Add User Group Device Permissions",
+      "ja": "ユーザーグループデバイスのアクセス許可を追加する",
       "nl": "Gebruikersmachtigingen voor apparaatgroep toevoegen",
       "xloc": [
         "default.handlebars->29->1267"
@@ -2481,6 +2490,7 @@
     {
       "de": "Benutzer zu Gerätegruppe hinzufügen",
       "en": "Add User to Device Group",
+      "ja": "ユーザーをデバイスグループに追加",
       "nl": "Gebruiker toevoegen aan apparaatgroep",
       "xloc": [
         "default-mobile.handlebars->9->317"
@@ -2628,9 +2638,9 @@
       "en": "Add a new Intel&reg; AMT device to device group \\\"{0}\\\".",
       "es": "Agregue un nuevo dispositivo AMT al grupo de dispositivos.",
       "fr": "Ajouter un appareil Intel® AM au groupe d'appareils \\\"{0}\\\".",
-      "hi": "उपकरण समूह \\\"{0} \\\" में एक नया Intel&reg; AMT उपकरण जोड़ें।",
+      "hi": "उपकरण समूह \\\"{0}\\\" में एक नया Intel&reg; AMT उपकरण जोड़ें।",
       "ja": "新しいIntel&reg;を追加しますAMTデバイスからデバイスグループ\\\"{0}\\\"へ。",
-      "ko": "장치 그룹 \\\"{0} \\\"에 새 Intel&reg; AMT 장치를 추가하십시오.",
+      "ko": "장치 그룹 \\\"{0}\\\"에 새 Intel&reg; AMT 장치를 추가하십시오.",
       "nl": "Voeg een nieuwe Intel&reg; AMT computer toe aan een apparaatgroep \\\"{0}\\\".",
       "pt": "Adicione um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\".",
       "ru": "Добавить новое Intel&reg; AMT устройство к группе устройств \\\"{0}\\\".",
@@ -2642,6 +2652,7 @@
     {
       "de": "Füge einen neuen Computer durch Installation des Mesh-Agenten zu dieser Gerätegruppe hinzu.",
       "en": "Add a new computer to this device group by installing the mesh agent.",
+      "ja": "メッシュエージェントをインストールして、このデバイスグループに新しいコンピューターを追加します。",
       "nl": "Voeg een nieuwe computer toe aan deze apparaatgroep door de mesh-agent te installeren.",
       "xloc": [
         "default.handlebars->29->1167",
@@ -3336,6 +3347,7 @@
       "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen \"[[[ACCOUNTNAME]]]\" und dem Passwort \"[[[PASSWORD]]]\" darauf zugreifen.",
       "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
       "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \"[[[ACCOUNTNAME]]]\" y la contraseña \"[[[PASSWORD]]]\".",
+      "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]] /）にアカウントが作成されました。ユーザー名 \"[[[ACCOUNTNAME]]]\"とパスワード \"[[[PASSWORD] ]] \"。",
       "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
       "xloc": [
         "account-invite.txt"
@@ -3937,6 +3949,7 @@
     {
       "de": "Einwilligung anfordern",
       "en": "Ask Consent",
+      "ja": "同意を求める",
       "nl": "Vraag toestemming",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
@@ -3945,6 +3958,7 @@
     {
       "de": "Einwilligung anfordern + Balken",
       "en": "Ask Consent + Bar",
+      "ja": "同意を求める+バー",
       "nl": "Vraag toestemming + informatiebalk",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
@@ -4630,13 +4644,13 @@
       ]
     },
     {
-      "en": "CPU",
-      "nl": "CPU",
       "de": "CPU",
+      "en": "CPU",
       "es": "CPU",
       "fr": "CPU",
       "ja": "CPU",
       "ko": "CPU",
+      "nl": "CPU",
       "pt": "CPU",
       "ru": "CPU",
       "zh-chs": "CPU",
@@ -4793,6 +4807,7 @@
     },
     {
       "en": "Capacity",
+      "ja": "容量",
       "nl": "Capaciteit",
       "xloc": [
         "default.handlebars->29->815",
@@ -4869,6 +4884,7 @@
     },
     {
       "en": "Change Email Address",
+      "ja": "メールアドレスを変更する",
       "nl": "Verander e-mailadres",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
@@ -5194,6 +5210,7 @@
     },
     {
       "en": "Check your phone and enter the verification code.",
+      "ja": "スマートフォンを確認し、確認コードを入力してください。",
       "xloc": [
         "default.handlebars->29->141"
       ]
@@ -5418,6 +5435,7 @@
     {
       "de": "Alles leeren",
       "en": "Clear all",
+      "ja": "すべてクリア",
       "nl": "Wis alle meldingen",
       "xloc": [
         "default.handlebars->29->1646"
@@ -5501,6 +5519,7 @@
     },
     {
       "en": "Click here to edit the device group name",
+      "ja": "ここをクリックしてデバイスグループ名を編集します",
       "nl": "Klik hier om de apparaatgroepsnaam te bewerken",
       "xloc": [
         "default.handlebars->29->1119",
@@ -5526,6 +5545,7 @@
     },
     {
       "en": "Click here to edit the user group name",
+      "ja": "ユーザーグループ名を編集するには、ここをクリックしてください",
       "nl": "Klik hier om de gebruikersgroepsnaam te bewerken",
       "xloc": [
         "default.handlebars->29->1487"
@@ -5803,6 +5823,7 @@
     {
       "de": "Bestätigen Sie das Löschen der gewählten Konten?",
       "en": "Confirm delete selected account(s)?",
+      "ja": "選択したアカウントの削除を確認しますか？",
       "nl": "Bevestig verwijdering geselecteerde account(s)?",
       "xloc": [
         "default.handlebars->29->1415"
@@ -5828,6 +5849,7 @@
     {
       "de": "Bestätigen Sie das Löschen der gewählten Benutzergruppen?",
       "en": "Confirm delete selected user groups(s)?",
+      "ja": "選択したユーザーグループの削除を確認しますか？",
       "nl": "Bevestig verwijdering geselecteerde gebruikersgroep(en)?",
       "xloc": [
         "default.handlebars->29->1478"
@@ -5853,6 +5875,7 @@
     {
       "de": "Bestätigen Sie den Mitgliedschaftsentzug für Benutzer \\\"{0}\\\"?",
       "en": "Confirm membership removal of user \\\"{0}\\\"?",
+      "ja": "ユーザー\\\"{0}\\\"のメンバーシップの削除を確認しますか？",
       "nl": "Bevestig lidmaatschap verwijderen van gebruiker \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1525"
@@ -5861,6 +5884,7 @@
     {
       "de": "Bestätigen Sie den Mitgliedschaftsentzug für Benutzergruppe \\\"{0}\\\"?",
       "en": "Confirm membership removal of user group \\\"{0}\\\"?",
+      "ja": "ユーザーグループ\\\"{0}\\\"のメンバーシップの削除を確認しますか？",
       "nl": "Bevestig lidmaatschap verwijdering van gebruikergroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1636"
@@ -5922,6 +5946,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Zugriffsrechten für Gerät \\\"{0}\\\"?",
       "en": "Confirm removal of access rights for device \\\"{0}\\\"?",
+      "ja": "デバイス「{0}」のアクセス権の削除を確認しますか？",
       "nl": "Bevestig verwijdering van toegangsrechten voor apparaat \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1515",
@@ -5931,6 +5956,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Zugriffsrechten für Gerätegruppe  \\\"{0}\\\"?",
       "en": "Confirm removal of access rights for device group \\\"{0}\\\"?",
+      "ja": "デバイスグループ「{0}」のアクセス権の削除を確認しますか？",
       "nl": "Bevestig verwijdering van toegangsrechten voor apparaatgroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1517",
@@ -5940,6 +5966,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Zugriffsrechten für Benutzer \\\"{0}\\\"?",
       "en": "Confirm removal of access rights for user \\\"{0}\\\"?",
+      "ja": "ユーザー\\\"{0}\\\"のアクセス権の削除を確認しますか？",
       "nl": "Bevestig verwijdering van toegangsrechten voor gebruiker \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1629"
@@ -5948,6 +5975,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Zugriffsrechten für Benutzergruppe \\\"{0}\\\"?",
       "en": "Confirm removal of access rights for user group \\\"{0}\\\"?",
+      "ja": "ユーザーグループ「{0}」のアクセス権の削除を確認しますか？",
       "nl": "Bevestig verwijdering van toegangsrechten voor gebruikergroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1632"
@@ -5956,6 +5984,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Zugriffsrechten?",
       "en": "Confirm removal of access rights?",
+      "ja": "アクセス権の削除を確認しますか？",
       "nl": "Verwijdering van toegangsrechten bevestigen?",
       "xloc": [
         "default.handlebars->29->1630",
@@ -6022,6 +6051,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Rechten für Benutzer \\\"{0}\\\"?",
       "en": "Confirm removal of rights for user \\\"{0}\\\"?",
+      "ja": "ユーザー「{0}」の権限の削除を確認しますか？",
       "nl": "Bevestig de verwijdering van rechten voor gebruiker \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1295"
@@ -6030,6 +6060,7 @@
     {
       "de": "Bestätigen Sie den Entzug von Rechten für Benutzergruppe \\\"{0}\\\"?",
       "en": "Confirm removal of rights for user group \\\"{0}\\\"?",
+      "ja": "ユーザーグループ「{0}」の権限の削除を確認しますか？",
       "nl": "Bevestig de verwijdering van rechten voor de gebruikergroep \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1297"
@@ -6038,6 +6069,7 @@
     {
       "de": "Bestätigen Sie das Entfernen der Benutzergruppe {0}?",
       "en": "Confirm removal of user group {0}?",
+      "ja": "ユーザーグループ{0}の削除を確認しますか？",
       "nl": "Verwijderen van gebruikersgroep {0} bevestigen?"
     },
     {
@@ -7244,6 +7276,7 @@
     {
       "de": "Konten löschen",
       "en": "Delete Accounts",
+      "ja": "アカウントを削除",
       "nl": "Verwijder accounts",
       "xloc": [
         "default.handlebars->29->1417"
@@ -7360,6 +7393,7 @@
     {
       "de": "Benutzergruppen löschen",
       "en": "Delete User Groups",
+      "ja": "ユーザーグループの削除",
       "nl": "Gebruikersgroepen verwijderen",
       "xloc": [
         "default.handlebars->29->1480"
@@ -7421,6 +7455,7 @@
     {
       "de": "Gruppe löschen",
       "en": "Delete group",
+      "ja": "グループを削除",
       "nl": "Verwijder groep",
       "xloc": [
         "default.handlebars->29->1476"
@@ -7723,6 +7758,7 @@
     {
       "de": "Desktop-Sitzungslatenz",
       "en": "Desktop Session Latency",
+      "ja": "デスクトップセッションの遅延",
       "nl": "Desktop sessie wachttijd",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -8322,6 +8358,7 @@
     {
       "de": "Geräte",
       "en": "Devices",
+      "ja": "デバイス",
       "nl": "Apparaten",
       "xloc": [
         "default.handlebars->29->1471",
@@ -8676,9 +8713,9 @@
       "en": "Download \\\"meshcmd\\\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed.",
       "es": "Descargue \\\"meshcmd\\\" con un archivo de acción para enrutar el tráfico a través de este servidor a este dispositivo. Asegúrese de editar meshaction.txt y agregue la contraseña de su cuenta o realice los cambios necesarios.",
       "fr": "Téléchargez \\\"meshcmd \\\" avec un fichier d'action pour acheminer le trafic via ce serveur vers cet appareil. Assurez-vous de modifier meshaction.txt et ajoutez le mot de passe de votre compte ou apportez les modifications nécessaires.",
-      "hi": "इस डिवाइस पर इस सर्वर के माध्यम से ट्रैफ़िक को रूट करने के लिए एक एक्शन फ़ाइल के साथ \\\"meshcmd \\\" डाउनलोड करें। Meshaction.txt को संपादित करना सुनिश्चित करें और अपना खाता पासवर्ड जोड़ें या आवश्यक बदलाव करें।",
-      "ja": "このサーバーを通過するトラフィックをこのデバイスにルーティングするには、アクションファイルとともに\\\"meshcmd \\\"をダウンロードします。 meshaction.txtを編集してアカウントパスワードを追加するか、必要な変更を加えてください。",
-      "ko": "이 서버를 통해이 장치로 트래픽을 라우팅하려면 작업 파일과 함께 \\\"meshcmd \\\"를 다운로드하십시오. meshaction.txt를 편집하고 계정 비밀번호를 추가하거나 필요한 사항을 변경하십시오.",
+      "hi": "इस डिवाइस पर इस सर्वर के माध्यम से ट्रैफ़िक को रूट करने के लिए एक एक्शन फ़ाइल के साथ \\\"meshcmd\\\" डाउनलोड करें। Meshaction.txt को संपादित करना सुनिश्चित करें और अपना खाता पासवर्ड जोड़ें या आवश्यक बदलाव करें।",
+      "ja": "このサーバーを通過するトラフィックをこのデバイスにルーティングするには、アクションファイルとともに\\\"meshcmd\\\"をダウンロードします。 meshaction.txtを編集してアカウントパスワードを追加するか、必要な変更を加えてください。",
+      "ko": "이 서버를 통해이 장치로 트래픽을 라우팅하려면 작업 파일과 함께 \\\"meshcmd\\\"를 다운로드하십시오. meshaction.txt를 편집하고 계정 비밀번호를 추가하거나 필요한 사항을 변경하십시오.",
       "nl": "Download \\\"meshcmd\\\" met het actiebestand om verkeer via deze server naar dit apparaat te leiden. Zorg ervoor dat u meshaction.txt bewerkt en uw accountwachtwoord toevoegt of breng de nodige wijzigingen aan.",
       "pt": "Faça o download de \\\"meshcmd\\\" com um arquivo de ação para rotear o tráfego desse servidor para este dispositivo. Certifique-se de editar o meshaction.txt e adicionar a senha da sua conta ou fazer as alterações necessárias.",
       "ru": "Скачайте \\\"meshcmd\\\" с файлом команд для маршрутизации трафика к этому устройству через сервер. Не забудьте указать пароль от своей учетной записи в meshaction.txt и сделать другие правки при необходимости.",
@@ -8912,6 +8949,7 @@
     {
       "de": "Agent-Duplikat",
       "en": "Duplicate Agent",
+      "ja": "エージェントの複製",
       "nl": "Dubbele agent",
       "xloc": [
         "default.handlebars->29->1663"
@@ -9034,6 +9072,27 @@
       ]
     },
     {
+      "en": "E-mail \\\"{0}\\\" already in use on a different account. Change the email address and try again.",
+      "ja": "別のアカウントですでに使用されている電子メール「{0}」。メールアドレスを変更して、もう一度お試しください。",
+      "xloc": [
+        "message.handlebars->3->6"
+      ]
+    },
+    {
+      "en": "E-mail \\\"{0}\\\" for user \\\"{1}\\\" already verified.",
+      "ja": "ユーザー\\\"{1}\\\"の電子メール\\\"{0}\\\"はすでに確認されています。",
+      "xloc": [
+        "message.handlebars->3->5"
+      ]
+    },
+    {
+      "en": "E-mail \\\"{0}\\\" for user \\\"{1}\\\" not verified.",
+      "ja": "ユーザー\\\"{1}\\\"の電子メール\\\"{0}\\\"は確認されていません。",
+      "xloc": [
+        "message.handlebars->3->8"
+      ]
+    },
+    {
       "cs": "CHYBA: ",
       "de": "FEHLER:",
       "en": "ERROR: ",
@@ -9048,6 +9107,41 @@
       "zh-chs": "錯誤：",
       "xloc": [
         "default.handlebars->29->140"
+      ]
+    },
+    {
+      "en": "ERROR: Invalid account check, verification url is only valid for 30 minutes.",
+      "ja": "エラー：アカウントチェックが無効です。確認URLは30分間のみ有効です。",
+      "xloc": [
+        "message.handlebars->3->12"
+      ]
+    },
+    {
+      "en": "ERROR: Invalid account check.",
+      "ja": "エラー：アカウントチェックが無効です。",
+      "xloc": [
+        "message.handlebars->3->11"
+      ]
+    },
+    {
+      "en": "ERROR: Invalid domain.",
+      "ja": "エラー：ドメインが無効です。",
+      "xloc": [
+        "message.handlebars->3->2"
+      ]
+    },
+    {
+      "en": "ERROR: Invalid e-mail \\\"{0}\\\" for user \\\"{1}\\\".",
+      "ja": "エラー：ユーザー\\\"{1}\\\"の電子メール\\\"{0}\\\"が無効です。",
+      "xloc": [
+        "message.handlebars->3->4"
+      ]
+    },
+    {
+      "en": "ERROR: Invalid username \\\"{0}\\\".",
+      "ja": "エラー：ユーザー名「{0}」が無効です。",
+      "xloc": [
+        "message.handlebars->3->3"
       ]
     },
     {
@@ -9231,6 +9325,7 @@
     {
       "de": "Geräte-Benutzereinwilligung bearbeiten",
       "en": "Edit Device User Consent",
+      "ja": "デバイスのユーザー同意の編集",
       "nl": "Gebruikerstoestemming apparaat bewerken",
       "xloc": [
         "default.handlebars->29->1210"
@@ -9291,6 +9386,7 @@
     {
       "de": "Benutzereinwilligung bearbeiten",
       "en": "Edit User Consent",
+      "ja": "ユーザーの同意を編集",
       "nl": "Gebruikerstoestemming bewerken",
       "xloc": [
         "default.handlebars->29->1209"
@@ -9347,6 +9443,7 @@
     {
       "de": "Benutzergruppen-Geräteberechtigungen bearbeiten",
       "en": "Edit User Group Device Permissions",
+      "ja": "ユーザーグループデバイス権限の編集",
       "nl": "Gebruikersmachtigingen voor apparaatgroep bewerken",
       "xloc": [
         "default.handlebars->29->1266"
@@ -9433,6 +9530,7 @@
     },
     {
       "en": "Email Confirmation",
+      "ja": "メール確認",
       "nl": "E-mail bevestigen",
       "xloc": [
         "login-mobile.handlebars->5->43",
@@ -9472,6 +9570,7 @@
       "de": "E-Mail-Einladung",
       "en": "Email invitation",
       "es": "Email de invitación",
+      "ja": "招待メール",
       "nl": "E-mail uitnodiging",
       "xloc": [
         "default.handlebars->29->276"
@@ -9563,6 +9662,7 @@
     },
     {
       "en": "Email verification required, check your mailbox and click the confirmation link.",
+      "ja": "メールの確認が必要です。メールボックスを確認し、確認リンクをクリックしてください。",
       "nl": "E-mailverificatie vereist, controleer uw mailbox en klik op de bevestigingslink.",
       "xloc": [
         "login-mobile.handlebars->5->3",
@@ -9571,6 +9671,7 @@
     },
     {
       "en": "Email/SMS Traffic",
+      "ja": "メール/ SMSトラフィック",
       "nl": "Email/SMS verkeer",
       "xloc": [
         "default.handlebars->29->1702"
@@ -10011,6 +10112,7 @@
     },
     {
       "en": "Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.",
+      "ja": "SMS対応の電話番号を入力します。確認後、番号はログイン確認やその他の通知に使用できます。",
       "xloc": [
         "default.handlebars->29->840"
       ]
@@ -11021,6 +11123,7 @@
     },
     {
       "en": "GPU",
+      "ja": "GPU",
       "nl": "GPU",
       "xloc": [
         "default.handlebars->29->808"
@@ -11319,6 +11422,13 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3noMeshFound->p3createMeshLink2->1->0",
         "default.handlebars->container->column_l->p2->p2info->p2noMeshFound->p2createMeshLink2->1->0"
+      ]
+    },
+    {
+      "en": "Go to login page",
+      "ja": "ログインページに移動",
+      "xloc": [
+        "message.handlebars->3->13"
       ]
     },
     {
@@ -13400,9 +13510,9 @@
       "en": "Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \\\"{0}\\\" device group. The link is public and no account for this server is needed.",
       "es": "Invite a alguien a instalar el agente de malla compartiendo un enlace de invitación. Este enlace le indica al usuario las instrucciones de instalación para el grupo de dispositivos \\\"{0}\\\". El enlace es público y no se necesita una cuenta para este servidor.",
       "fr": "Invitez quelqu'un à installer l'agent de maillage en partageant un lien d'invitation. Ce lien renvoie l'utilisateur aux instructions d'installation du groupe de périphériques \\\"{0}\\\". Le lien est public et aucun compte n'est requis pour ce serveur.",
-      "hi": "आमंत्रण लिंक साझा करके मेष एजेंट को स्थापित करने के लिए किसी को आमंत्रित करें। यह लिंक उपयोगकर्ता को \\\"{0} \\\" उपकरण समूह के लिए इंस्टॉलेशन निर्देश इंगित करता है। लिंक सार्वजनिक है और इस सर्वर के लिए किसी खाते की आवश्यकता नहीं है।",
+      "hi": "आमंत्रण लिंक साझा करके मेष एजेंट को स्थापित करने के लिए किसी को आमंत्रित करें। यह लिंक उपयोगकर्ता को \\\"{0}\\\" उपकरण समूह के लिए इंस्टॉलेशन निर्देश इंगित करता है। लिंक सार्वजनिक है और इस सर्वर के लिए किसी खाते की आवश्यकता नहीं है।",
       "ja": "招待リンクを共有して、メッシュエージェントをインストールする人を招待します。このリンクは、ユーザーに\\\"{0}\\\"デバイスグループのインストール手順を示します。リンクは公開されており、このサーバーのアカウントは必要ありません。",
-      "ko": "초대 링크를 공유하여 누군가 메쉬 에이전트를 설치하도록 초대하십시오. 이 링크는 사용자에게 \\\"{0} \\\"장치 그룹의 설치 지시 사항을 지시합니다. 링크는 공개이며이 서버에 대한 계정이 필요하지 않습니다.",
+      "ko": "초대 링크를 공유하여 누군가 메쉬 에이전트를 설치하도록 초대하십시오. 이 링크는 사용자에게 \\\"{0}\\\"장치 그룹의 설치 지시 사항을 지시합니다. 링크는 공개이며이 서버에 대한 계정이 필요하지 않습니다.",
       "nl": "Nodig iemand uit om de mesh-agent te installeren door een uitnodigingslink te delen. Deze koppeling verwijst de gebruiker naar installatie-instructies voor de apparaatgroep \\\"{0}\\\". De link is openbaar en er is geen account voor deze server nodig.",
       "pt": "Convide alguém para instalar o agente de malha compartilhando um link de convite.Este link indica ao usuário instruções de instalação para o grupo de dispositivos \\\"{0}\\\". O link é público e nenhuma conta para este servidor é necessária.",
       "ru": "Пригласите установить Mesh Agent поделившись ссылкой. Эта ссылка ведет на инструкции для установки для группы устройств \\\"{0}\\\". Ссылка общедоступна и не требует наличия учетной записи на сервере.",
@@ -13414,6 +13524,7 @@
     {
       "de": "Laden Sie jemanden ein, den Mesh-Agenten für diese Gerätegruppe zu installieren.",
       "en": "Invite someone to install the mesh agent on this device group.",
+      "ja": "このデバイスグループにメッシュエージェントをインストールするように誰かを招待します。",
       "nl": "Nodig iemand uit om de mesh-agent in deze apparaatgroep te installeren.",
       "xloc": [
         "default.handlebars->29->1169",
@@ -13426,9 +13537,9 @@
       "en": "Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \\\"{0}\\\" device group.",
       "es": "Invite a alguien a instalar el agente de mesh. Se enviará un correo electrónico con el enlace a la instalación del agente de mesh para el grupo de dispositivos \\\"{0}\\\".",
       "fr": "Invitez quelqu'un à installer l'agent de maillage. Un email doit être envoyé avec le lien vers l’installation de l’agent de maillage pour le groupe de périphériques \\\"{0}\\\".",
-      "hi": "मेष एजेंट को स्थापित करने के लिए किसी को आमंत्रित करें। \\\"{0} \\\" डिवाइस समूह के लिए मेष एजेंट स्थापना के लिंक के साथ एक ईमेल भेजा जाना चाहिए।",
+      "hi": "मेष एजेंट को स्थापित करने के लिए किसी को आमंत्रित करें। \\\"{0}\\\" डिवाइस समूह के लिए मेष एजेंट स्थापना के लिंक के साथ एक ईमेल भेजा जाना चाहिए।",
       "ja": "メッシュエージェントをインストールする人を招待します。 \\\"{0}\\\"デバイスグループのメッシュエージェントインストールへのリンクが記載されたメール。",
-      "ko": "누군가 메쉬 에이전트를 설치하도록 초대하십시오. \\\"{0} \\\"디바이스 그룹의 메시 에이전트 설치 링크가 포함 된 이메일이 발송됩니다.",
+      "ko": "누군가 메쉬 에이전트를 설치하도록 초대하십시오. \\\"{0}\\\"디바이스 그룹의 메시 에이전트 설치 링크가 포함 된 이메일이 발송됩니다.",
       "nl": "Nodig iemand uit om de mesh-agent te installeren. Er wordt een e-mail verzonden met de link naar de installatie van de mesh-agent voor de apparaatgroep \\\"{0}\\\".",
       "pt": "Convide alguém para instalar o agente de malha.Um email será enviado com o link para a instalação do agente de malha para o grupo de dispositivos \\\"{0}\\\".",
       "ru": "Пригласите установить Mesh Agent. Ссылка на установку для группы \\\"{0}\\\" будет отправлена по электронной почте.",
@@ -14229,6 +14340,7 @@
     },
     {
       "en": "Leave blank for none.",
+      "ja": "なしの場合は空白のままにします。",
       "xloc": [
         "default.handlebars->29->1590"
       ]
@@ -14383,6 +14495,7 @@
       "de": "Link-Einladung",
       "en": "Link invitation",
       "es": "Enlace de invitación",
+      "ja": "リンクへの招待",
       "nl": "Uitnodigingslink",
       "xloc": [
         "default.handlebars->29->275"
@@ -14951,6 +15064,13 @@
       "xloc": [
         "default.handlebars->termShellContextMenuLinux->cxtermps",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
+      ]
+    },
+    {
+      "en": "Login and go to the \\\"My Account\\\" tab to update your password.",
+      "ja": "ログインして[マイアカウント]タブにアクセスし、パスワードを更新します。",
+      "xloc": [
+        "message.handlebars->3->10"
       ]
     },
     {
@@ -15580,6 +15700,7 @@
     },
     {
       "en": "Manage phone number",
+      "ja": "電話番号を管理する",
       "nl": "Beheer telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->managePhoneNumber1->0",
@@ -16432,6 +16553,7 @@
     },
     {
       "en": "Model",
+      "ja": "型番",
       "nl": "Model",
       "xloc": [
         "default.handlebars->29->814"
@@ -18898,6 +19020,13 @@
       ]
     },
     {
+      "en": "Password for account {0} has been reset to:",
+      "ja": "アカウント{0}のパスワードは次のようにリセットされました：",
+      "xloc": [
+        "message.handlebars->3->9"
+      ]
+    },
+    {
       "cs": "Nápověda k heslu",
       "de": "Passwort-Tipp",
       "en": "Password hint",
@@ -19221,6 +19350,7 @@
     },
     {
       "en": "Phone Notifications",
+      "ja": "電話通知",
       "nl": "Telefonische meldingen",
       "xloc": [
         "default-mobile.handlebars->9->31",
@@ -19234,6 +19364,7 @@
     },
     {
       "en": "Phone Number",
+      "ja": "電話番号",
       "nl": "Telefoonnummer",
       "xloc": [
         "default.handlebars->29->1543"
@@ -19241,6 +19372,7 @@
     },
     {
       "en": "Phone number:",
+      "ja": "電話番号：",
       "nl": "Telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->9->35",
@@ -20349,6 +20481,7 @@
     },
     {
       "en": "Remember this device for {0} days.",
+      "ja": "このデバイスを{0}日間覚えてください。",
       "nl": "Onthoud dit apparaat {0} dagen.",
       "xloc": [
         "login-mobile.handlebars->5->20",
@@ -20610,6 +20743,7 @@
     {
       "de": "Gerätegruppenberechtigungen entfernen",
       "en": "Remove Device Group Permissions",
+      "ja": "デバイスグループの権限を削除する",
       "nl": "Apparaatgroepmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1516",
@@ -20619,6 +20753,7 @@
     {
       "de": "Geräteberechtigungen entfernen",
       "en": "Remove Device Permissions",
+      "ja": "デバイスの権限を削除",
       "nl": "Apparaatmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1514",
@@ -20642,6 +20777,7 @@
     {
       "de": "Benutzergruppenmitgliedschaft entziehen",
       "en": "Remove User Group Membership",
+      "ja": "ユーザーグループメンバーシップを削除する",
       "nl": "Lidmaatschap van gebruikersgroep verwijderen",
       "xloc": [
         "default.handlebars->29->1635"
@@ -20650,6 +20786,7 @@
     {
       "de": "Benutzergruppenberechtigungen entziehen",
       "en": "Remove User Group Permissions",
+      "ja": "ユーザーグループのアクセス許可を削除する",
       "nl": "Gebruikersgroepmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1296",
@@ -20659,6 +20796,7 @@
     {
       "de": "Benutzermitgliedschaft entziehen",
       "en": "Remove User Membership",
+      "ja": "ユーザーメンバーシップを削除",
       "nl": "Gebruikerslidmaatschap verwijderen",
       "xloc": [
         "default.handlebars->29->1524"
@@ -20667,6 +20805,7 @@
     {
       "de": "Benutzerberechtigungen entziehen",
       "en": "Remove User Permissions",
+      "ja": "ユーザー権限を削除",
       "nl": "Gebruikersmachtigingen verwijderen",
       "xloc": [
         "default.handlebars->29->1294",
@@ -20743,6 +20882,7 @@
     },
     {
       "en": "Remove phone number",
+      "ja": "電話番号を削除",
       "nl": "Verwijder telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->9->33",
@@ -20800,6 +20940,7 @@
     {
       "de": "Benutzergruppenrechte an diesem Gerät entziehen",
       "en": "Remove user group rights to this device",
+      "ja": "このデバイスへのユーザーグループ権限を削除します",
       "nl": "Gebruikersrechten voor dit apparaat verwijderen",
       "xloc": [
         "default.handlebars->29->1510"
@@ -20943,6 +21084,7 @@
     },
     {
       "en": "Resend Confirmation Email",
+      "ja": "確認メールを再送信",
       "nl": "Verzend bevestigingsmail opnieuw",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
@@ -21354,6 +21496,7 @@
     },
     {
       "en": "SMS",
+      "ja": "SMS",
       "nl": "SMS",
       "xloc": [
         "default.handlebars->29->1574",
@@ -21364,12 +21507,14 @@
     },
     {
       "en": "SMS capable phone number for this user.",
+      "ja": "このユーザーのSMS対応電話番号。",
       "xloc": [
         "default.handlebars->29->1589"
       ]
     },
     {
       "en": "SMS sent.",
+      "ja": "SMSを送信しました。",
       "nl": "SMS verzonden.",
       "xloc": [
         "login-mobile.handlebars->5->4",
@@ -21412,6 +21557,7 @@
     },
     {
       "en": "Sample IP range values",
+      "ja": "IP範囲の値の例",
       "nl": "Voorbeeld IP bereikwaarden",
       "xloc": [
         "default.handlebars->29->153",
@@ -21605,6 +21751,7 @@
     },
     {
       "en": "Scan returned no results.",
+      "ja": "スキャンは結果を返しませんでした。",
       "nl": "Scan leverde geen resultaten op.",
       "xloc": [
         "default.handlebars->29->156"
@@ -21892,6 +22039,7 @@
     {
       "de": "Wählen Sie eine Operation für die Durchführung auf alle ausgewählten Benutzer.",
       "en": "Select an operation to perform on all selected users.",
+      "ja": "選択したすべてのユーザーに対して実行する操作を選択します。",
       "nl": "Selecteer een bewerking die u op alle geselecteerde gebruikers wilt uitvoeren.",
       "xloc": [
         "default.handlebars->29->1409",
@@ -22008,6 +22156,7 @@
     },
     {
       "en": "Send SMS",
+      "ja": "SMSを送信",
       "nl": "verstuur SMS",
       "xloc": [
         "default.handlebars->29->1418"
@@ -22015,6 +22164,7 @@
     },
     {
       "en": "Send a SMS message to this user",
+      "ja": "このユーザーにSMSメッセージを送信します",
       "nl": "Stuur een SMS bericht naar deze gebruiker",
       "xloc": [
         "default.handlebars->29->1580"
@@ -22139,6 +22289,7 @@
     },
     {
       "en": "Send token to registed phone number?",
+      "ja": "登録した電話番号にトークンを送信しますか？",
       "nl": "Token naar geregistreerd telefoonnummer verzenden?",
       "xloc": [
         "login-mobile.handlebars->5->26",
@@ -23799,6 +23950,7 @@
     {
       "de": "Stabile Version",
       "en": "Stable Version",
+      "ja": "安定版",
       "nl": "Stabiele versie",
       "xloc": [
         "default.handlebars->29->96"
@@ -23925,6 +24077,7 @@
     },
     {
       "en": "Storage",
+      "ja": "ストレージ",
       "nl": "Opslag",
       "xloc": [
         "default.handlebars->29->818"
@@ -24887,9 +25040,9 @@
       "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.",
       "es": "Para agregar un nuevo Intel & reg; Dispositivo AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, descargue los siguientes archivos de comandos y use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </a> para ejecutar el script para configurar computadoras.",
       "fr": "Pour ajouter un appareil Intel® AMT au groupe \\\"{0}\\# en utilisant CIRA, téléchargez le script suivant et exécutez le à l'aide de <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>.",
-      "hi": "CIRA के साथ डिवाइस समूह \\\"{0} \\\" में एक नया Intel&reg; AMT डिवाइस जोड़ने के लिए, निम्नलिखित स्क्रिप्ट फ़ाइलों को डाउनलोड करें और <a href = 'http: //meshcommander.com' rel = 'noreferrer noopener' 'target =' कंप्यूटर को कॉन्फ़िगर करने के लिए स्क्रिप्ट चलाने के लिए _blank '> MeshCommander </a>।",
+      "hi": "CIRA के साथ डिवाइस समूह \\\"{0}\\\" में एक नया Intel&reg; AMT डिवाइस जोड़ने के लिए, निम्नलिखित स्क्रिप्ट फ़ाइलों को डाउनलोड करें और <a href = 'http: //meshcommander.com' rel = 'noreferrer noopener' 'target =' कंप्यूटर को कॉन्फ़िगर करने के लिए स्क्रिप्ट चलाने के लिए _blank '> MeshCommander </a>।",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してAMTデバイスからデバイスグループ\\\"{0}\\\"に移動し、次のスクリプトファイルをダウンロードして、<a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'> MeshCommander </を使用しますa>スクリプトを実行してコンピューターを構成します。",
-      "ko": "CIRA를 사용하여 장치 그룹 \\\"{0} \\\"에 새 인텔 &reg; AMT 장치를 추가하려면 다음 스크립트 파일을 다운로드하고 <a href = 'http : //meshcommander.com'rel = 'noreferrer noopener'target = ' 컴퓨터를 구성하기 위해 스크립트를 실행하려면 _blank '> MeshCommander </a>",
+      "ko": "CIRA를 사용하여 장치 그룹 \\\"{0}\\\"에 새 인텔 &reg; AMT 장치를 추가하려면 다음 스크립트 파일을 다운로드하고 <a href = 'http : //meshcommander.com'rel = 'noreferrer noopener'target = ' 컴퓨터를 구성하기 위해 스크립트를 실행하려면 _blank '> MeshCommander </a>",
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> om het script uit te voeren om computers te configureren.",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, baixe os seguintes arquivos de script e use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> para executar o script para configurar computadores.",
       "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующие файлы со скриптами и используйте <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>, чтобы запустить скрипт для настройки компьютеров.",
@@ -24906,7 +25059,7 @@
       "fr": "Pour ajouter un nouveau périphérique Intel&reg; AMT au groupe de périphériques \\\"{0}\\\" avec CIRA, chargez le certificat suivant en tant que racine de confiance dans Intel AMT",
       "hi": "CIRA के साथ डिवाइस समूह \\\"{0} \\\" में एक नया Intel&reg; AMT उपकरण जोड़ने के लिए, निम्नलिखित प्रमाणपत्र को Intel AMT के रूप में विश्वसनीय रूट के रूप में लोड करें",
       "ja": "新しいIntel&reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel AMT内で信頼されたルートとして次の証明書をロード",
-      "ko": "CIRA를 사용하여 장치 그룹 \\\"{0} \\\"에 새 Intel&reg; AMT 장치를 추가하려면 Intel AMT 내에서 신뢰할 수있는 루트로 다음 인증서를로드하십시오.",
+      "ko": "CIRA를 사용하여 장치 그룹 \\\"{0}\\\"에 새 Intel&reg; AMT 장치를 추가하려면 Intel AMT 내에서 신뢰할 수있는 루트로 다음 인증서를로드하십시오.",
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT",
       "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Intel AMT",
@@ -24923,11 +25076,11 @@
       "fr": "Pour ajouter un nouveau périphérique Intel&reg; AMT au groupe de périphériques \\\"{0}\\\" avec CIRA, chargez le certificat suivant en tant que racine de confiance dans Intel AMT, authentifiez-vous à l'aide d'un certificat client avec le nom commun suivant et connectez-vous au serveur suivant.",
       "hi": "CIRA के साथ डिवाइस ग्रुप \\\"{0} \\\" में एक नया इंटेल&reg; एएमटी डिवाइस जोड़ने के लिए, इंटेल एएमटी के भीतर विश्वसनीय रूट के रूप में निम्नलिखित प्रमाण पत्र को लोड करें, निम्नलिखित सामान्य नाम के साथ एक क्लाइंट प्रमाण पत्र का उपयोग करके प्रमाणित करें और निम्न सर्वर से कनेक्ट करें।",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してデバイスグループ\\\"{0}\\\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。",
-      "ko": "CIRA를 사용하여 장치 그룹 \\\"{0} \\\"에 새 Intel&reg; AMT 장치를 추가하려면 Intel AMT 내에서 신뢰할 수있는 루트로 다음 인증서를로드하고 다음 일반 이름의 클라이언트 인증서를 사용하여 인증 한 후 다음 서버에 연결하십시오.",
+      "ko": "CIRA를 사용하여 장치 그룹 \\\"{0}\\\"에 새 Intel&reg; AMT 장치를 추가하려면 Intel AMT 내에서 신뢰할 수있는 루트로 다음 인증서를로드하고 다음 일반 이름의 클라이언트 인증서를 사용하여 인증 한 후 다음 서버에 연결하십시오.",
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server.",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT, autentique usando um certificado de cliente com o seguinte nome comum e conecte-se ao servidor a seguir.",
       "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Intel AMT, выполните аутентификацию с использованием сертификата клиента со следующим общим именем и подключитесь к серверу.",
-      "zh-chs": "要將新的英特爾&reg;AMT設備添加到具有CIRA的設備組“ {0} \\”中，請將以下證書作為受信任的根加載到英特爾AMT中，使用具有以下通用名稱的客戶端證書進行身份驗證並連接到以下服務器。",
+      "zh-chs": "要將新的英特爾&reg;AMT設備添加到具有CIRA的設備組“{0}”中，請將以下證書作為受信任的根加載到英特爾AMT中，使用具有以下通用名稱的客戶端證書進行身份驗證並連接到以下服務器。",
       "xloc": [
         "default.handlebars->29->267"
       ]
@@ -24938,9 +25091,9 @@
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.",
       "es": "Para agregar una nueva computadora al grupo de dispositivos \\\"{0}\\\", descargue el agente de malla e instálelo para administrar la computadora. Este agente tiene una información de servidor y grupo de dispositivos incrustada dentro de él.",
       "fr": "Pour ajouter un nouvel appareil au groupe \\\"{0}\\\", télécharger et installer l'agent sur l'appareil à surveiller. L'agent contient le server et le groupe d'appartenance.",
-      "hi": "डिवाइस समूह में एक नया कंप्यूटर जोड़ने के लिए \\\"{0} \\\", मेष एजेंट डाउनलोड करें और इसे प्रबंधित करने के लिए कंप्यूटर स्थापित करें। इस एजेंट के पास सर्वर और डिवाइस समूह की जानकारी है।",
+      "hi": "डिवाइस समूह में एक नया कंप्यूटर जोड़ने के लिए \\\"{0}\\\", मेष एजेंट डाउनलोड करें और इसे प्रबंधित करने के लिए कंप्यूटर स्थापित करें। इस एजेंट के पास सर्वर और डिवाइस समूह की जानकारी है।",
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントには、サーバーとデバイスグループの情報が埋め込まれています。",
-      "ko": "장치 그룹 \\\"{0} \\\"에 새 컴퓨터를 추가하려면 메쉬 에이전트를 다운로드하고 관리 할 컴퓨터를 설치하십시오. 이 에이전트에는 서버 및 장치 그룹 정보가 포함되어 있습니다.",
+      "ko": "장치 그룹 \\\"{0}\\\"에 새 컴퓨터를 추가하려면 메쉬 에이전트를 다운로드하고 관리 할 컴퓨터를 설치하십시오. 이 에이전트에는 서버 및 장치 그룹 정보가 포함되어 있습니다.",
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. Deze agent heeft server- en apparaatgroepinformatie erin ingebed.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este agente possui informações de servidor e grupo de dispositivos incorporadas.",
       "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Agent и установите его для управления этим компьютером. В этот агент встроена информация о текущем сервере и группе устройств.",
@@ -24955,9 +25108,9 @@
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.",
       "es": "Para agregar una nueva computadora al grupo de dispositivos \\\"{0}\\\", descargue el agente de malla e instálelo para administrar la computadora. Este agente instalador tiene una información de grupo de servidores y dispositivos integrada.",
       "fr": "Pour ajouter un nouvel appareil au groupe \\\"{0}\\\", télécharger et installer l'agent sur l'appareil à surveiller. L'agent contient le server et le groupe d'appartenance.",
-      "hi": "डिवाइस समूह में एक नया कंप्यूटर जोड़ने के लिए \\\"{0} \\\", मेष एजेंट डाउनलोड करें और इसे प्रबंधित करने के लिए कंप्यूटर स्थापित करें। इस एजेंट इंस्टॉलर में सर्वर और डिवाइस समूह जानकारी है जो इसके भीतर एम्बेडेड है।",
+      "hi": "डिवाइस समूह में एक नया कंप्यूटर जोड़ने के लिए \\\"{0}\\\", मेष एजेंट डाउनलोड करें और इसे प्रबंधित करने के लिए कंप्यूटर स्थापित करें। इस एजेंट इंस्टॉलर में सर्वर और डिवाइस समूह जानकारी है जो इसके भीतर एम्बेडेड है।",
       "ja": "デバイスグループ\\\"{0}\\\"に新しいコンピューターを追加するには、メッシュエージェントをダウンロードし、管理するコンピューターにインストールします。このエージェントインストーラーには、サーバーとデバイスグループの情報が埋め込まれています。",
-      "ko": "장치 그룹 \\\"{0} \\\"에 새 컴퓨터를 추가하려면 메쉬 에이전트를 다운로드하고 관리 할 컴퓨터를 설치하십시오. 이 에이전트 설치 관리자에는 서버 및 장치 그룹 정보가 포함되어 있습니다.",
+      "ko": "장치 그룹 \\\"{0}\\\"에 새 컴퓨터를 추가하려면 메쉬 에이전트를 다운로드하고 관리 할 컴퓨터를 설치하십시오. 이 에이전트 설치 관리자에는 서버 및 장치 그룹 정보가 포함되어 있습니다.",
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. In dit installatieprogramma van de agent zijn server- en apparaatgroepgegevens ingebed.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este instalador do agente possui informações de servidor e grupo de dispositivos incorporadas.",
       "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Agent и установите его для управления этим компьютером. В этот установщик агента встроена информация о текущем сервере и группе устройств.",
@@ -25987,6 +26140,7 @@
     {
       "de": "Konto entsperren",
       "en": "Unlock account",
+      "ja": "アカウントのロックを解除",
       "nl": "Account ontgrendelen",
       "xloc": [
         "default.handlebars->29->1412"
@@ -26823,6 +26977,7 @@
     },
     {
       "en": "Verification code:",
+      "ja": "検証コード：",
       "nl": "Verificatie code:",
       "xloc": [
         "default-mobile.handlebars->9->30",
@@ -26847,7 +27002,15 @@
       ]
     },
     {
+      "en": "Verified email {0} for user account {1}.",
+      "ja": "ユーザーアカウント{1}の確認済みメール{0}。",
+      "xloc": [
+        "message.handlebars->3->7"
+      ]
+    },
+    {
       "en": "Verified phone number",
+      "ja": "確認済みの電話番号",
       "nl": "Geverifieerd telefoonnummer",
       "xloc": [
         "default-mobile.handlebars->9->32",
@@ -28120,6 +28283,7 @@
     },
     {
       "en": "[[0]] access token is: [[1]]",
+      "ja": "[[0]]アクセストークンは：[[1]]",
       "nl": "[[0]] Toegangs token is: [[1]]",
       "xloc": [
         "sms-messages.txt"
@@ -28127,6 +28291,7 @@
     },
     {
       "en": "[[0]] verification code is: [[1]]",
+      "ja": "[[0]]確認コード：[[1]]",
       "nl": "[[0]] verificatie code is: [[1]]",
       "xloc": [
         "sms-messages.txt"
@@ -28140,8 +28305,8 @@
       "fr": "[[[SERVERNAME]]]",
       "ja": "[[[SERVERNAME]]]",
       "nl": "[[[SERVERNAME]]]",
-      "ru": "[[[SERVERNAME]]]",
       "pt": "[[[SERVERNAME]]]",
+      "ru": "[[[SERVERNAME]]]",
       "zh-chs": "[[[SERVERNAME]]]",
       "xloc": [
         "account-check.html->2->3->1",
