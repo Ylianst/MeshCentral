@@ -1666,6 +1666,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                             if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
                             if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
+                            if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
 
                             // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
                             if (chguser._id !== user._id) { // We can't change our own siteadmin permissions.
@@ -4202,6 +4203,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Split a string taking into account the quoats. Used for command line parsing
     function splitArgs(str) { var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi; do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null); return myArray; }
     function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
+    function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3,4})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
 
     function removeAllUnderScore(obj) {
         if (typeof obj != 'object') return obj;

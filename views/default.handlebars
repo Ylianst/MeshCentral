@@ -2213,7 +2213,7 @@
                 case 'verifyPhone': {
                     if (xxdialogMode && (xxdialogTag != 'verifyPhone')) return;
                     var x = '<table><tr><td><img src="images/phone80.png" style=padding:8px>';
-                    x += '<td>Check your phone and enter the verification code.';
+                    x += '<td>' + "Check your phone and enter the verification code.";
                     x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
                     setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
                     Q('d2phoneCodeInput').focus();
@@ -7943,7 +7943,7 @@
                 account_managePhoneRemoveValidate();
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
-                x += '<td>Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.';
+                x += '<td>' + "Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.";
                 x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneAdd, x, 'verifyPhone');
                 Q('d2phoneinput').focus();
@@ -9839,10 +9839,10 @@
             if (user.email != null) {
                 if (((features & 0x200000) == 0) || (user.email.toLowerCase() != user.name.toLowerCase())) {
                     // Username & email are different
-                    username += ', <a href=# onclick=\'return doemail(event,\"' + user.email + '\")\'>' + user.email + '</a>' + emailVerified;
+                    username += ', <a href="mailto:' + user.email + '" \'>' + user.email + '</a>' + emailVerified;
                 } else {
                     // Username & email are the same
-                    username += ' <a href=# onclick=\'return doemail(event,\"' + user.email + '\")\'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
+                    username += ' <a href="mailto:' + user.email + '" \'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
                 }
             }
 
@@ -9851,7 +9851,7 @@
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
             x += '<div class=bar>';
-            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\")>';
+            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\",false,event)>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             x += '<div class=g1></div><div class=g2></div><div>';
             x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
@@ -9974,13 +9974,6 @@
         }
 
         function showUserAlertDialogEx(button, userid) { meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: Q('d2notifyText').value }); }
-
-        function doemail(e, addr) {
-            if (xxdialogMode) return false;
-            haltEvent(e);
-            window.open('mailto:' + addr);
-            return false;
-        }
 
         function p4batchAccountCreate() {
             if (xxdialogMode) return;
@@ -10633,8 +10626,9 @@
         //
 
         var currentUser = null;
-        function gotoUser(userid, force) {
+        function gotoUser(userid, force, event) {
             if (xxdialogMode && !force) return;
+            if ((event != null) && (event.originalTarget != null) && (event.originalTarget.href != null)) return;
             var user = currentUser = users[decodeURIComponent(userid)];
             if (user == null) { setDialogMode(0); go(4); return; }
             QH('p30userName', user.name);
@@ -10657,13 +10651,17 @@
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title=\"' + "Email is verified" + '\">&#x2713</b> ' : '<b style=color:red;cursor:pointer title=\"' + "Email not verified" + '\">&#x2717;</b> '); }
             if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", user._id.split('/')[2]); }
-            if (((features & 0x200000) == 0) && ((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
-                x += addDeviceAttribute("Email", everify + '<a href=# style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,\"' + userid + '\")>' + email + '</a> <a href=# style=cursor:pointer onclick=\'return doemail(event,\"' + user.email + '\")\'><img class=hoverButton src="images/link1.png" /></a>');
+            if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
+                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,\"' + userid + '\") />');
             } else {
-                x += addDeviceAttribute("Email", everify + email + ' <a href=# style=cursor:pointer onclick=\'return doemail(event,\"' + user.email + '\")\'><img class=hoverButton src="images/link1.png" /></a>');
+                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>');
             }
-            if (user.phone != null) { x += addDeviceAttribute("Phone Number", user.phone); }
-            x += addDeviceAttribute("Server Rights", premsg + '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,\"' + userid + '\")\'>' + msg.join(', ') + '</a>');
+
+            if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
+                x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
+            }
+            
+            x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,\"' + userid + '\")\' src="images/link5.png" />');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));
             if (user.login) x += addDeviceAttribute("Last Login", printDateTime(new Date(user.login * 1000)));
@@ -10755,6 +10753,25 @@
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
         }
+
+        function p30editPhone() {
+            if (xxdialogMode) return;
+            var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
+            x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
+            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone?currentUser.phone:'') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
+            setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
+            Q('d2phoneinput').focus();
+            p30editPhoneValidate();
+        }
+
+        function p30editPhoneValidate(x) {
+            var ok = (Q('d2phoneinput').value == '') || (isPhoneNumber(Q('d2phoneinput').value));
+            QE('idx_dlgOkButton', ok);
+            if ((x == 1) && ok) { dialogclose(1); }
+        }
+
+        // Send to the server the user's new phone number
+        function p30editPhoneEx() { meshserver.send({ action: 'edituser', id: currentUser._id, phone: Q('d2phoneinput').value }); }
 
         // Display the user's email change dialog box
         function p30showUserEmailChangeDialog(event) {
