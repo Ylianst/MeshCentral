@@ -203,6 +203,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Clean up ourselves
     function dispose() {
+        if (obj.viewers == null) return;
         //console.log('dispose', obj.nodeid);
         delete obj.viewers;
         delete obj.imagesCounters;
@@ -226,6 +227,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             parent.parent.DispatchEvent(['*', obj.nodeid], obj, event); // TODO: Add Node MeshID to targets
             obj.startTime = null;
         }
+
+        parent.parent.debug('relay', 'DesktopRelay: Disposing desktop multiplexor');
     }
 
     // Send data to the agent or queue it up for sending
@@ -715,7 +718,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 
     // If there is no authentication, drop this connection
-    if ((obj.id != null) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Connection with no authentication (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } return; }
+    if ((obj.id != null) && (obj.user == null) && (obj.ruserid == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Connection with no authentication (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } return; }
 
     // Relay session count (we may remove this in the future)
     obj.relaySessionCounted = true;
@@ -748,8 +751,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         if (obj.ws == null) return; // Already closed.
 
         // Close the connection
-        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Soft disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'Relay: Hard disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+        if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Soft disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
+        if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'DesktopRelay: Hard disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
         if (obj.deskDecoder != null) { if (obj.deskDecoder.removePeer(obj) == true) { delete parent.desktoprelays[obj.nodeid]; } }
 
@@ -826,9 +829,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         try { if (obj.peer != null) { obj.peer.ws.send('{"ctrlChannel":"102938","type":"pong"}'); } } catch (ex) { }
     }
 
-    function performRelay() {
-        if (obj.id == null) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
-        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
+    function performRelay(retryCount) {
+        if ((obj.id == null) || (retryCount > 20)) { try { obj.close(); } catch (e) { } return null; } // Attempt to connect without id, drop this.
+        if (retryCount == 0) { ws._socket.setKeepAlive(true, 240000); } // Set TCP keep alive
 
         /*
         // Validate that the id is valid, we only need to do this on non-authenticated sessions.
@@ -843,13 +846,19 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
         */
 
-        // Setup the agent PING/PONG timers
-        if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
-        else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
+        if (retryCount == 0) {
+            // Setup the agent PING/PONG timers
+            if ((typeof parent.parent.args.agentping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, parent.parent.args.agentping * 1000); }
+            else if ((typeof parent.parent.args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, parent.parent.args.agentpong * 1000); }
+
+            parent.parent.debug('relay', 'DesktopRelay: Connection (' + cleanRemoteAddr(obj.req.ip) + ')');
+        }
 
         // Create if needed and add this peer to the desktop multiplexor
         obj.deskDecoder = parent.desktoprelays[obj.nodeid];
         if (obj.deskDecoder == null) {
+            parent.desktoprelays[obj.nodeid] = 1; // Indicate that the creating of the desktop multiplexor is pending.
+            parent.parent.debug('relay', 'DesktopRelay: Creating new desktop multiplexor');
             CreateDesktopMultiplexor(parent, domain, obj.nodeid, function (deskDecoder) {
                 obj.deskDecoder = deskDecoder;
                 parent.desktoprelays[obj.nodeid] = obj.deskDecoder;
@@ -857,8 +866,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 ws._socket.resume(); // Release the traffic
             });
         } else {
-            obj.deskDecoder.addPeer(obj);
-            ws._socket.resume(); // Release the traffic
+            if (obj.deskDecoder == 1) {
+                // The multiplexor is being created, hold a little and try again. This is to prevent a possible race condition.
+                setTimeout(function () { performRelay(++retryCount); }, 50);
+            } else {
+                // Hook up this peer to the multiplexor and release the traffic
+                obj.deskDecoder.addPeer(obj);
+                ws._socket.resume();
+            }
         }
     }
 
@@ -902,7 +917,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr };
                 parent.parent.debug('relay', 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
                 if (obj.sendAgentMessage(command, user._id, cookie.domainid) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + cleanRemoteAddr(obj.req.ip) + ')'); }
-                performRelay();
+                performRelay(0);
             });
             return obj;
         } else if ((obj.req.query.nodeid != null) && ((obj.req.query.tcpport != null) || (obj.req.query.udpport != null))) {
@@ -927,14 +942,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     parent.parent.debug('relay', 'Relay: Sending agent UDP tunnel command: ' + JSON.stringify(command));
                     if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + cleanRemoteAddr(obj.req.ip) + ')'); }
                 }
-                performRelay();
+                performRelay(0);
             });
             return obj;
         }
     }
 
     // If this is not an authenticated session, or the session does not have routing instructions, just go ahead an connect to existing session.
-    performRelay();
+    performRelay(0);
     return obj;
 };
 
