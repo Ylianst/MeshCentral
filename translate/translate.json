@@ -20349,6 +20349,7 @@
     },
     {
       "en": "Remember this device for {0} days.",
+      "nl": "Onthoud dit apparaat {0} dagen.",
       "xloc": [
         "login-mobile.handlebars->5->20",
         "login.handlebars->5->20"
@@ -20380,7 +20381,7 @@
       "hi": "दूरस्थ एजेंट स्थापना",
       "ja": "リモートエージェントのインストール",
       "ko": "원격 에이전트 설치",
-      "nl": "Remote Agent installatie",
+      "nl": "Externe agent installatie",
       "pt": "Instalação remota do agente",
       "ru": "Установка удаленного агента",
       "zh-chs": "遠程代理安裝",
@@ -20397,7 +20398,7 @@
       "hi": "दूरस्थ एजेंट स्थापना {0} के लिए",
       "ja": "{0}のリモートエージェントインストール",
       "ko": "{0}에 대한 원격 에이전트 설치",
-      "nl": "Externe Agent Installatie voor {0}",
+      "nl": "Externe agent installatie voor {0}",
       "pt": "Instalação de agente remoto para {0}",
       "ru": "Установка агента для {0}",
       "zh-chs": "{0}的遠程代理安裝",
