@@ -299,8 +299,8 @@
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
         var publicKeyCredentialRequestOptions = null;
-        var otpemail = ('{{{otpemail}}}' === 'true');
-        var otpsms = ('{{{otpsms}}}' === 'true');
+        var otpemail = (decodeURIComponent('{{{otpemail}}}') === 'true');
+        var otpsms = (decodeURIComponent('{{{otpsms}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
 
         // Display the right server message
