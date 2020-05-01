@@ -1930,6 +1930,7 @@
     },
     {
       "en": "Account Verification",
+      "nl": "Account verificatie",
       "ja": "アカウントの確認",
       "xloc": [
         "message.handlebars->3->1"
@@ -5210,6 +5211,7 @@
     },
     {
       "en": "Check your phone and enter the verification code.",
+      "nl": "Controleer uw telefoon en voer de verificatiecode in.",
       "ja": "スマートフォンを確認し、確認コードを入力してください。",
       "xloc": [
         "default.handlebars->29->141"
@@ -9073,6 +9075,7 @@
     },
     {
       "en": "E-mail \\\"{0}\\\" already in use on a different account. Change the email address and try again.",
+      "nl": "E-mail \\\"{0}\\\" reeds in gebruik door een ander account. Wijzig het e-mailadres en probeer het opnieuw.",
       "ja": "別のアカウントですでに使用されている電子メール「{0}」。メールアドレスを変更して、もう一度お試しください。",
       "xloc": [
         "message.handlebars->3->6"
@@ -9080,6 +9083,7 @@
     },
     {
       "en": "E-mail \\\"{0}\\\" for user \\\"{1}\\\" already verified.",
+      "nl": "E-mail \\\"{0}\\\" voor gebruiker \\\"{1}\\\" al geverifieerd.",
       "ja": "ユーザー\\\"{1}\\\"の電子メール\\\"{0}\\\"はすでに確認されています。",
       "xloc": [
         "message.handlebars->3->5"
@@ -9087,6 +9091,7 @@
     },
     {
       "en": "E-mail \\\"{0}\\\" for user \\\"{1}\\\" not verified.",
+      "nl": "E-mail \\\"{0}\\\" voor gebruiker \\\"{1}\\\" niet geverifieerd.",
       "ja": "ユーザー\\\"{1}\\\"の電子メール\\\"{0}\\\"は確認されていません。",
       "xloc": [
         "message.handlebars->3->8"
@@ -9111,6 +9116,7 @@
     },
     {
       "en": "ERROR: Invalid account check, verification url is only valid for 30 minutes.",
+      "nl": "FOUT: Ongeldige accountcontrole, verificatie URL is slechts 30 minuten geldig.",
       "ja": "エラー：アカウントチェックが無効です。確認URLは30分間のみ有効です。",
       "xloc": [
         "message.handlebars->3->12"
@@ -9118,6 +9124,7 @@
     },
     {
       "en": "ERROR: Invalid account check.",
+      "nl": "FOUT: Ongeldige account controle.",
       "ja": "エラー：アカウントチェックが無効です。",
       "xloc": [
         "message.handlebars->3->11"
@@ -9125,6 +9132,7 @@
     },
     {
       "en": "ERROR: Invalid domain.",
+      "nl": "FOUT: ongeldig domein.",
       "ja": "エラー：ドメインが無効です。",
       "xloc": [
         "message.handlebars->3->2"
@@ -9132,6 +9140,7 @@
     },
     {
       "en": "ERROR: Invalid e-mail \\\"{0}\\\" for user \\\"{1}\\\".",
+      "nl": "FOUT: Ongeldige e-mail \\\"{0}\\\" voor gebruiker \\\"{1}\\\".",
       "ja": "エラー：ユーザー\\\"{1}\\\"の電子メール\\\"{0}\\\"が無効です。",
       "xloc": [
         "message.handlebars->3->4"
@@ -9139,6 +9148,7 @@
     },
     {
       "en": "ERROR: Invalid username \\\"{0}\\\".",
+      "nl": "FOUT: Ongeldige gebruikersnaam \\\"{0}\\\".",
       "ja": "エラー：ユーザー名「{0}」が無効です。",
       "xloc": [
         "message.handlebars->3->3"
@@ -10112,6 +10122,7 @@
     },
     {
       "en": "Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.",
+      "nl": "Voer uw telefoonnummer in dat geschikt is voor SMS. Na verificatie kan het nummer worden gebruikt voor inlogverificatie en andere meldingen.",
       "ja": "SMS対応の電話番号を入力します。確認後、番号はログイン確認やその他の通知に使用できます。",
       "xloc": [
         "default.handlebars->29->840"
@@ -11426,6 +11437,7 @@
     },
     {
       "en": "Go to login page",
+      "nl": "Ga naar de inlogpagina",
       "ja": "ログインページに移動",
       "xloc": [
         "message.handlebars->3->13"
@@ -14340,6 +14352,7 @@
     },
     {
       "en": "Leave blank for none.",
+      "nl": "Leeg laten voor geen.",
       "ja": "なしの場合は空白のままにします。",
       "xloc": [
         "default.handlebars->29->1590"
@@ -15068,6 +15081,7 @@
     },
     {
       "en": "Login and go to the \\\"My Account\\\" tab to update your password.",
+      "nl": "Log in en ga naar het tabblad \\\"Mijn Account\\\" om uw wachtwoord bij te werken.",
       "ja": "ログインして[マイアカウント]タブにアクセスし、パスワードを更新します。",
       "xloc": [
         "message.handlebars->3->10"
@@ -19021,6 +19035,7 @@
     },
     {
       "en": "Password for account {0} has been reset to:",
+      "nl": "Wachtwoord voor account {0} is gereset naar:",
       "ja": "アカウント{0}のパスワードは次のようにリセットされました：",
       "xloc": [
         "message.handlebars->3->9"
@@ -21507,6 +21522,7 @@
     },
     {
       "en": "SMS capable phone number for this user.",
+      "nl": "SMS geschikt telefoonnummer voor deze gebruiker.",
       "ja": "このユーザーのSMS対応電話番号。",
       "xloc": [
         "default.handlebars->29->1589"
@@ -27003,6 +27019,7 @@
     },
     {
       "en": "Verified email {0} for user account {1}.",
+      "nl": "Geverifieerd e-mailadres {0} voor gebruikersaccount {1}.",
       "ja": "ユーザーアカウント{1}の確認済みメール{0}。",
       "xloc": [
         "message.handlebars->3->7"
