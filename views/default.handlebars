@@ -1361,7 +1361,7 @@
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
-            if (('{{{lang}}}'.toLowerCase() != 'en') && ('{{{lang}}}'.toLowerCase() != '')) { QC('body').add('nonenglish'); }
+            if ((['en','ko','ja','zh-chs'].indexOf('{{{lang}}}') == -1) && ('{{{lang}}}'.toLowerCase() != '')) { QC('body').add('nonenglish'); }
             var elements = document.getElementsByClassName('topbar_td');
             for (var i in elements) { if (elements[i].innerHTML) { elements[i].innerHTML = elements[i].innerHTML.split(' ').join('&nbsp;'); } }
         }
