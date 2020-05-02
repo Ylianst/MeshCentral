@@ -616,9 +616,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'getsysinfo':
                 {
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check the nodeid
+                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) return;
+                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
                         // Query the database system information
                         db.Get('si' + command.nodeid, function (err, docs) {
                             if ((docs != null) && (docs.length > 0)) {
@@ -629,9 +633,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 delete doc.type;
                                 delete doc.domain;
                                 delete doc._id;
+                                if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
                                 try { ws.send(JSON.stringify(doc)); } catch (ex) { }
                             } else {
-                                try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true })); } catch (ex) { }
+                                try { ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { }
                             }
                         });
                     });
@@ -639,13 +644,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'lastconnect':
                 {
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check the nodeid
+                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) return;
+                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
+
                         // Query the database for the last time this node connected
                         db.Get('lc' + command.nodeid, function (err, docs) {
                             if ((docs != null) && (docs.length > 0)) {
                                 try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, time: docs[0].time, addr: docs[0].addr })); } catch (ex) { }
+                            } else {
+                                try { ws.send(JSON.stringify({ action: 'lastconnect', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'No data' })); } catch (ex) { }
                             }
                         });
                     });
@@ -3187,11 +3199,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Argument validation
                     if (common.validateString(command.nodeid, 1, 1024) == false) break; // Check nodeid
+                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                     if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if (visible == false) return;
+                        if (visible == false) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: command.nodeid, tag: command.tag, noinfo: true, result: 'Invalid device id' })); } catch (ex) { } return; }
 
                         // Get network information about this node
                         db.Get('if' + node._id, function (err, netinfos) {

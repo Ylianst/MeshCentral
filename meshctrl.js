@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup'];
+const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -22,6 +22,7 @@ if (args['_'].length == 0) {
     console.log("  ListDevices               - List devices.");
     console.log("  ListDeviceGroups          - List device groups.");
     console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
+    console.log("  DeviceInfo                - Show information about a device.");
     console.log("  Config                    - Perform operation on config.json file.");
     console.log("  AddUser                   - Create a new user account.");
     console.log("  RemoveUser                - Delete a user account.");
@@ -61,6 +62,11 @@ if (args['_'].length == 0) {
         case 'listdevices': { ok = true; break; }
         case 'listusersofdevicegroup': {
             if (args.id == null) { console.log("Missing group id, use --id [groupid]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'deviceinfo': {
+            if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
             else { ok = true; }
             break;
         }
@@ -362,6 +368,17 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl Broadcast --msg \"This is a test\"");
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --msg [message]        - Message to display.");
+                        break;
+                    }
+                    case 'deviceinfo': {
+                        console.log("Display information about a device, Example usages:\r\n");
+                        console.log("  MeshCtrl DeviceInfo --id deviceid");
+                        console.log("  MeshCtrl DeviceInfo --id deviceid --json");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --raw                  - Output raw data in JSON format.");
+                        console.log("  --json                 - Give results in JSON format.");
                         break;
                     }
                     default: {
@@ -696,6 +713,13 @@ function serverConnect() {
                 console.log('Connected. Press ctrl-c to end.');
                 break;
             }
+            case 'deviceinfo': {
+                settings.deviceinfocount = 3;
+                ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
+                ws.send(JSON.stringify({ action: 'lastconnect', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
+                ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
+                break;
+            }
         }
     });
 
@@ -735,6 +759,32 @@ function serverConnect() {
                         for (var i in data.userinfo) { console.log(i + ':', data.userinfo[i]); }
                     }
                     process.exit();
+                }
+                break;
+            }
+            case 'getsysinfo': { // DEVICEINFO
+                if (settings.cmd == 'deviceinfo') {
+                    if (data.result) {
+                        console.log(data.result);
+                        process.exit();
+                    } else {
+                        settings.sysinfo = data;
+                        if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking); process.exit(); }
+                    }
+                }
+                break;
+            }
+            case 'lastconnect': {
+                if (settings.cmd == 'deviceinfo') {
+                    settings.lastconnect = (data.result)?null:data;
+                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking); process.exit(); }
+                }
+                break;
+            }
+            case 'getnetworkinfo': {
+                if (settings.cmd == 'deviceinfo') {
+                    settings.networking = (data.result) ? null : data;
+                    if (--settings.deviceinfocount == 0) { displayDeviceInfo(settings.sysinfo, settings.lastconnect, settings.networking); process.exit(); }
                 }
                 break;
             }
@@ -919,3 +969,155 @@ function encodeCookie(o, key) {
 // Generate a random Intel AMT password
 function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
 function getRandomAmtPassword() { var p; do { p = Buffer.from(crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
+function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
+function displayDeviceInfo(sysinfo, lastconnect, network) {
+    var node = sysinfo.node;
+    var hardware = sysinfo.hardware;
+    var info = {};
+
+    if (network != null) { sysinfo.netif = network.netif; }
+    if (lastconnect != null) { node.lastconnect = lastconnect.time; node.lastaddr = lastconnect.addr; }
+    if (args.raw) { console.log(JSON.stringify(sysinfo, ' ', 2)); return; }
+
+    // Operating System
+    if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
+        var output = {}, outputCount = 0;
+        if (node.rname) { output["Name"] = node.rname; outputCount++; }
+        if (node.osdesc) { output["Version"] = node.osdesc; outputCount++; }
+        if (hardware.windows && hardware.windows.osinfo) { var m = hardware.windows.osinfo; if (m.OSArchitecture) { output["Architecture"] = m.OSArchitecture; outputCount++; } }
+        if (outputCount > 0) { info["Operating System"] = output; }
+    }
+
+    // MeshAgent
+    if (node.agent) {
+        var output = {}, outputCount = 0;
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
+        if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
+            var str = '';
+            if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
+            if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+            output["Mesh Agent"] = str; outputCount++;
+        }
+        if ((node.conn & 1) != 0) {
+            output["Last agent connection"] = "Connected now"; outputCount++;
+        } else {
+            if (node.lastconnect) { output["Last agent connection"] = new Date(node.lastconnect).toLocaleString(); outputCount++; }
+        }
+        if (node.lastaddr) {
+            var splitip = node.lastaddr.split(':');
+            if (splitip.length > 2) {
+                output["Last agent address"] = node.lastaddr; outputCount++; // IPv6
+            } else {
+                output["Last agent address"] = splitip[0]; outputCount++; // IPv4
+            }
+        }
+        if (outputCount > 0) { info["Mesh Agent"] = output; }
+    }
+
+    // Networking
+    if (network.netif != null) {
+        var output = {}, outputCount = 0, minfo = {};
+        for (var i in network.netif) {
+            var m = network.netif[i], moutput = {}, moutputCount = 0;
+            if (m.desc) { moutput["Description"] = m.desc; moutputCount++; }
+            if (m.mac) {
+                if (m.gatewaymac) {
+                    moutput["MAC Layer"] = format("MAC: {0}, Gateway: {1}", m.mac, m.gatewaymac); moutputCount++;
+                } else {
+                    moutput["MAC Layer"] = format("MAC: {0}", m.mac); moutputCount++;
+                }
+            }
+            if (m.v4addr && (m.v4addr != '0.0.0.0')) {
+                if (m.v4gateway && m.v4mask) {
+                    moutput["IPv4 Layer"] = format("IP: {0}, Mask: {1}, Gateway: {2}", m.v4addr, m.v4mask, m.v4gateway); moutputCount++;
+                } else {
+                    moutput["IPv4 Layer"] = format("IP: {0}", m.v4addr); moutputCount++;
+                }
+            }
+            if (moutputCount > 0) { minfo[m.name + (m.dnssuffix ? (', ' + m.dnssuffix) : '')] = moutput; info["Networking"] = minfo; }
+        }
+    }
+
+    // Intel AMT
+    if (node.intelamt != null) {
+        var output = {}, outputCount = 0;
+        output["Version"] = (node.intelamt.ver) ? ('v' + node.intelamt.ver) : ('<i>' + "Unknown" + '</i>'); outputCount++;
+        var provisioningStates = { 0: "Not Activated (Pre)", 1: "Not Activated (In)", 2: "Activated" };
+        var provisioningMode = '';
+        if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
+        output["Provisioning State"] = ((node.intelamt.state) ? (provisioningStates[node.intelamt.state]) : ('<i>' + "Unknown" + '</i>')) + provisioningMode; outputCount++;
+        output["Security"] = (node.intelamt.tls == 1) ? "Secured using TLS" : "TLS is not setup"; outputCount++;
+        output["Admin Credentials"] = (node.intelamt.user == null || node.intelamt.user == '') ? "Not Known" : "Known"; outputCount++;
+        if (outputCount > 0) { info["Intel Active Management Technology (Intel AMT)"] = output; }
+    }
+
+    if (hardware.identifiers) {
+        var output = {}, outputCount = 0, ident = hardware.identifiers;
+        // BIOS
+        if (ident.bios_vendor) { output["Vendor"] = ident.bios_vendor; outputCount++; }
+        if (ident.bios_version) { output["Version"] = ident.bios_version; outputCount++; }
+        if (outputCount > 0) { info["BIOS"] = output; }
+        output = {}, outputCount = 0;
+
+        // Motherboard
+        if (ident.board_vendor) { output["Vendor"] = ident.board_vendor; outputCount++; }
+        if (ident.board_name) { output["Name"] = ident.board_name; outputCount++; }
+        if (ident.board_serial && (ident.board_serial != '')) { output["Serial"] = ident.board_serial; outputCount++; }
+        if (ident.board_version) { output["Version"] = ident.board_version; }
+        if (ident.product_uuid) { output["Identifier"] = ident.product_uuid; }
+        if (ident.cpu_name) { output["CPU"] = ident.cpu_name; }
+        if (ident.gpu_name) { for (var i in ident.gpu_name) { output["GPU" + (parseInt(i) + 1)] = ident.gpu_name[i]; } }
+        if (outputCount > 0) { info["Motherboard"] = output; }
+    }
+
+    // Memory
+    if (hardware.windows) {
+        if (hardware.windows.memory) {
+            var output = {}, outputCount = 0, minfo = {};
+            hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
+            for (var i in hardware.windows.memory) {
+                var m = hardware.windows.memory[i], moutput = {}, moutputCount = 0;
+                if (m.Capacity) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                if (m.PartNumber) { moutput["Part Number"] = ((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + m.PartNumber; moutputCount++; }
+                if (moutputCount > 0) { minfo[m.BankLabel] = moutput; info["Memory"] = minfo; }
+            }
+        }
+    }
+
+    // Storage
+    if (hardware.identifiers && ident.storage_devices) {
+        var output = {}, outputCount = 0, minfo = {};
+        // Sort Storage
+        ident.storage_devices.sort(function (a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
+        for (var i in ident.storage_devices) {
+            var m = ident.storage_devices[i], moutput = {};
+            if (m.Size) {
+                if (m.Model && (m.Model != m.Caption)) { moutput["Model"] = m.Model; outputCount++; }
+                if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
+                if (typeof m.Size == 'number') { moutput["Capacity"] = Math.floor(m.Size / 1024 / 1024) + 'Mb'; outputCount++; }
+                if (typeof m.Size == 'string') { moutput["Capacity"] = m.Size; outputCount++; }
+                if (moutputCount > 0) { minfo[m.Caption] = moutput; info["Storage"] = minfo; }
+            }
+        }
+    }
+
+    // Display everything
+    if (args.json) {
+        console.log(JSON.stringify(info, ' ', 2));
+    } else {
+        for (var i in info) {
+            console.log('--- ' + i + ' ---');
+            for (var j in info[i]) {
+                if (typeof info[i][j] == 'string') {
+                    console.log('  ' + j + ': ' + info[i][j]);
+                } else {
+                    console.log('  ' + j + ':');
+                    for (var k in info[i][j]) {
+                        console.log('    ' + k + ': ' + info[i][j][k]);
+                    }
+                }
+            }
+        }
+    }
+}

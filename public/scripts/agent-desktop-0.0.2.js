@@ -196,6 +196,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.debugmode > 1) { console.log("KRecv(" + str.length + "): " + rstr2hex(str.substring(0, Math.min(str.length, 40)))); }
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2), jumboAdd = 0;
+        if (obj.recordedData != null) { obj.recordedData.push({ t: Date.now(), d: str }); }
         if ((command == 27) && (cmdsize == 8)) {
             // Jumbo packet
             if (str.length < 12) return;
@@ -775,6 +776,18 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.ScreenHeight = obj.Canvas.canvas.height;
         if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
         return true;
+    }
+
+    obj.StartRecording = function () {
+        obj.recordedData = [];
+        obj.recordedStart = Date.now();
+    }
+
+    obj.StopRecording = function () {
+        var r = obj.recordedData;
+        delete obj.recordedData;
+        delete obj.recordedStart;
+        return r;
     }
 
     // Private method
