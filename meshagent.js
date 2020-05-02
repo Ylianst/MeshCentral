@@ -83,7 +83,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
         } else {
             // Update the last connect time
-            if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: obj.connectTime, addr: obj.remoteaddrport, cause: 1 }); }
+            if (obj.authenticated == 2) { db.Set({ _id: 'lc' + obj.dbNodeKey, type: 'lastconnect', domain: domain.id, time: Date.now(), addr: obj.remoteaddrport, cause: 1 }); }
         }
 
         // Set this agent as no longer authenticated

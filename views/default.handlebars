@@ -2588,6 +2588,7 @@
                                 // Change the node connection state
                                 node.conn = message.event.conn;
                                 node.pwr = message.event.pwr;
+                                node.lastconnect = Date.now();
 
                                 // Web page update
                                 masterUpdate(4 | 16);
