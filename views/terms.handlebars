@@ -163,7 +163,8 @@
         var webPageStackMenu = false;
         var webPageFullScreen = true;
         var nightMode = (getstore('_nightMode', '0') == '1');
-        var logoutControls = {{{logoutControls}}};
+        var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
+        console.log(logoutControls);
 
         var terms = '{{{terms}}}';
         if (terms != '') { QH('column_l', decodeURIComponent(terms)); }
