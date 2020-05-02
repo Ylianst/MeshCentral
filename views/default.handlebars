@@ -8268,14 +8268,14 @@
             if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;
             if (requirements.min) { if (password.length < requirements.min) return false; }
             if (requirements.max) { if (password.length > requirements.max) return false; }
-            var num = 0, lower = 0, upper = 0, nonalpha = 0;
+            var numeric = 0, lower = 0, upper = 0, nonalpha = 0;
             for (var i = 0; i < password.length; i++) {
-                if (/\d/.test(password[i])) { num++; }
+                if (/\d/.test(password[i])) { numeric++; }
                 if (/[a-z]/.test(password[i])) { lower++; }
                 if (/[A-Z]/.test(password[i])) { upper++; }
                 if (/\W/.test(password[i])) { nonalpha++; }
             }
-            if (requirements.num && (num < requirements.num)) return false;
+            if (requirements.numeric && (numeric < requirements.numeric)) return false;
             if (requirements.lower && (lower < requirements.lower)) return false;
             if (requirements.upper && (upper < requirements.upper)) return false;
             if (requirements.nonalpha && (nonalpha < requirements.nonalpha)) return false;
