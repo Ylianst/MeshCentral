@@ -8536,6 +8536,7 @@
     },
     {
       "en": "Don't configure",
+      "nl": "Niet configureren",
       "xloc": [
         "default.handlebars->23->1192",
         "default.handlebars->23->1197"
@@ -8543,6 +8544,7 @@
     },
     {
       "en": "Don't connect to server",
+      "nl": "Maak geen verbinding met de server",
       "xloc": [
         "default.handlebars->23->1193"
       ]
@@ -13042,6 +13044,7 @@
     },
     {
       "en": "Intel&reg; Manageability Engine",
+      "nl": "Intel&reg; Manageability Engine",
       "xloc": [
         "default.handlebars->23->483"
       ]
@@ -17691,6 +17694,7 @@
     },
     {
       "en": "No devices are included in any groups, click on a device's \\\"Groups\\\" to add to a group.",
+      "nl": "Er zijn geen apparaten opgenomen in groepen, klik op het apparaat \\\"Groups\\\" om het aan een groep toe te voegen.",
       "xloc": [
         "default.handlebars->23->187"
       ]
@@ -24966,6 +24970,7 @@
     },
     {
       "en": "This will add an entry to this device's event log.",
+      "nl": "Hiermee wordt een vermelding toegevoegd aan het gebeurtenislogboek van dit apparaat.",
       "xloc": [
         "default.handlebars->23->600"
       ]
