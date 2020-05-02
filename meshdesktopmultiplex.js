@@ -640,8 +640,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 recFullFilename = parent.parent.path.join(parent.parent.recordpath, recFilename);
             }
             parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
-                if (err != null) { func(false); return; }
+                if (err != null) {
+                    parent.parent.debug('relay', 'Relay: Unable to record to file: ' + recFullFilename);
+                    func(false);
+                    return;
+                }
                 // Write the recording file header
+                parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
                 var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, time: new Date().toLocaleString(), protocol: 2 };
                 var firstBlock = JSON.stringify(metadata);
                 recordingEntry(fd, 1, 0, firstBlock, function () {

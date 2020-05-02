@@ -241,10 +241,12 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                             parent.parent.fs.open(recFullFilename, 'w', function (err, fd) {
                                 if (err != null) {
                                     // Unable to record
+                                    parent.parent.debug('relay', 'Relay: Unable to record to file: ' + recFullFilename);
                                     try { ws.send('c'); } catch (ex) { } // Send connect to both peers
                                     try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                                 } else {
                                     // Write the recording file header
+                                    parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
                                     var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(obj.req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p), nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid ) };
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
