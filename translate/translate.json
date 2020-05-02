@@ -10621,6 +10621,7 @@
       "zh-chs": "過濾",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
         "default.handlebars->container->column_l->p4->3->1->0->3->3"
       ]
     },

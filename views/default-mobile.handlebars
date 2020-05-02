@@ -850,7 +850,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                        QH('d2optinfo', format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
                         Q('d2otpauthinput').focus();
@@ -1352,8 +1352,8 @@
             x += '<td align=right>' + "Password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr><tr><td align=right>' + "Password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
             x += '</tr></table><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=\"' + "Cancel" + '\" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value=\"' + "OK" + '\" style="float:right;width:80px" onclick=dialogclose(1)>';
+            x += '<input id=account_dlgCancelButton type=button value="' + "Cancel" + '" style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgOkButton type=submit value="' + "OK" + '" style="float:right;width:80px" onclick=dialogclose(1)>';
             x += '</div><br /></form>';
             setDialogMode(2, "Delete Account", 0, null, x);
             account_validateDeleteAccount();
@@ -1561,11 +1561,11 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + name + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
-                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink(\"' + publicPath + '/' + f.nx + '\")\'>' + "Link" + '</a>)'; }
+                    if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink("' + publicPath + '/' + f.nx + '")\'>' + "Link" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -1653,7 +1653,7 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponent(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
 
@@ -2833,7 +2833,7 @@
             //console.log('p13gotFiles', data);
             data = JSON.parse(decode_utf8(data));
             if (data.action == 'download') { p13gotDownloadCommand(data); return; }
-            data.path = data.path.replace(/\//g, "\\");
+            data.path = data.path.replace(/\//g, '\\');
             if ((p13filetree != null) && (data.path == p13filetree.path)) {
                 // This is an update to the same folder
                 var checkedNames = p13getCheckedNames();
@@ -2841,7 +2841,7 @@
                 p13updateFiles(checkedNames);
             } else {
                 // Make both paths use the same seperator not start with /
-                var x1 = data.path.replace(/\//g, "\\"), x2 = p13targetpath.replace(/\//g, "\\");
+                var x1 = data.path.replace(/\//g, '\\'), x2 = p13targetpath.replace(/\//g, '\\');
                 while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
                 while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
                 if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
@@ -2887,7 +2887,7 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p13folderset(\"' + encodeURIComponent(f.nx) + '\")>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + shortname + '</a>'; }
@@ -3261,11 +3261,11 @@
             /*
             if ((meshrights & 4) != 0) {
                 if (currentMesh.mtype == 1) {
-                    x += '<a onclick=addCiraDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px><img src=images/icon-installmesh.png border=0 height=12 width=12> Install CIRA</a>';
-                    x += '<a onclick=addDeviceToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px><img src=images/icon-installmesh.png border=0 height=12 width=12> Install local</a>';
+                    x += '<a onclick=addCiraDeviceToMesh("' + currentMesh._id + '") style=cursor:pointer;margin-right:10px><img src=images/icon-installmesh.png border=0 height=12 width=12> Install CIRA</a>';
+                    x += '<a onclick=addDeviceToMesh("' + currentMesh._id + '") style=cursor:pointer;margin-right:10px><img src=images/icon-installmesh.png border=0 height=12 width=12> Install local</a>';
                 }
                 if (currentMesh.mtype == 2) {
-                    x += '<a onclick=addAgentToMesh(\"' + currentMesh._id + '\") style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
+                    x += '<a onclick=addAgentToMesh("' + currentMesh._id + '") style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> Install</a>';
                 }
             }
             */
@@ -3275,11 +3275,11 @@
                 if ((meshrights & 4) == 0) return '';
                 var r = '';
                 if (mesh.mtype == 1) {
-                    r += ' <a style=cursor:pointer;font-size:10px onclick=addCiraDeviceToMesh(\"' + mesh._id + '\")>Add CIRA</a>';
-                    r += ' <a style=cursor:pointer;font-size:10px onclick=addDeviceToMesh(\"' + mesh._id + '\")>Add Local</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px onclick=addCiraDeviceToMesh("' + mesh._id + '")>Add CIRA</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px onclick=addDeviceToMesh("' + mesh._id + '")>Add Local</a>';
                 }
                 if (mesh.mtype == 2) {
-                    r += ' <a style=cursor:pointer;font-size:10px onclick=addAgentToMesh(\"' + mesh._id + '\")>Add Agent</a>';
+                    r += ' <a style=cursor:pointer;font-size:10px onclick=addAgentToMesh("' + mesh._id + '")>Add Agent</a>';
                 }
                 return r;
             }
