@@ -60,7 +60,31 @@ var minifyMeshCentralSourceFiles = [
     "../views/xterm.handlebars",
     "../views/message.handlebars",
     "../views/messenger.handlebars",
-    "../views/player.handlebars"
+    "../views/player.handlebars",
+    "../public/scripts/agent-desktop-0.0.2.js",
+    "../public/scripts/agent-redir-rtc-0.1.0.js",
+    "../public/scripts/agent-redir-ws-0.1.1.js",
+    "../public/scripts/amt-0.2.0.js",
+    "../public/scripts/amt-desktop-0.0.2.js",
+    "../public/scripts/amt-ider-ws-0.0.1.js",
+    "../public/scripts/amt-redir-ws-0.1.0.js",
+    "../public/scripts/amt-script-0.2.0.js",
+    "../public/scripts/amt-setupbin-0.1.0.js",
+    "../public/scripts/amt-terminal-0.0.2.js",
+    "../public/scripts/amt-wsman-0.2.0.js",
+    "../public/scripts/amt-wsman-ws-0.2.0.js",
+    "../public/scripts/charts.js",
+    "../public/scripts/common-0.0.1.js",
+    "../public/scripts/meshcentral.js",
+    "../public/scripts/ol.js",
+    "../public/scripts/ol3-contextmenu.js",
+    "../public/scripts/u2f-api.js",
+    "../public/scripts/xterm-addon-fit.js",
+    "../public/scripts/xterm.js",
+    "../public/scripts/zlib-adler32.js",
+    "../public/scripts/zlib-crc32.js",
+    "../public/scripts/zlib-inflate.js",
+    "../public/scripts/zlib.js"
 ];
 
 // True is this module is run directly using NodeJS
@@ -286,14 +310,36 @@ function startEx(argv) {
                 outnamemin = (outname.substring(0, outname.length - 5) + '-min.html');
             } else if (outname.endsWith('.htm')) {
                 outnamemin = (outname.substring(0, outname.length - 4) + '-min.htm');
+            } else if (outname.endsWith('.js')) {
+                outnamemin = (outname.substring(0, outname.length - 3) + '-min.js');
             } else {
                 outnamemin = (outname, outname + '.min');
             }
             log('Generating ' + outnamemin + '...');
 
+            /*
             // Minify the file
-            if (minifyLib = 2) {
-                var minifiedOut = minify(fs.readFileSync(outname).toString(), {
+            if (minifyLib == 1) {
+                minify.file({
+                    file: outname,
+                    dist: outnamemin
+                }, function (e, compress) {
+                    if (e) { log('ERROR ', e); return done(); }
+                    compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
+                }
+                );
+            }
+            */
+
+            // Minify the file
+            if (minifyLib == 2) {
+                var inFile = fs.readFileSync(outname).toString();
+
+                // Perform minification pre-processing
+                if (outname.indexOf('default.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+                if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
+
+                var minifiedOut = minify(inFile, {
                     collapseBooleanAttributes: true,
                     collapseInlineTagWhitespace: false, // This is not good.
                     collapseWhitespace: true,
@@ -309,6 +355,11 @@ function startEx(argv) {
                     preserveLineBreaks: false,
                     useShortDoctype: true
                 });
+
+                // Perform minification post-processing
+                if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+                if (outname.indexOf('default.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+
                 fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
             }
         }
@@ -698,7 +749,7 @@ function translateFromHtml(lang, file, createSubDir) {
         minify.file({
             file: outname,
             dist: outnamemin
-        }, (e, compress) => {
+        }, function(e, compress) {
             if (e) { log('ERROR ', e); return done(); }
             compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
         }

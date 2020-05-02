@@ -11,31 +11,29 @@
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
-    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
-    <script type="text/javascript" src="scripts/meshcentral.js"></script>
-    <script type="text/javascript" src="scripts/amt-0.2.0.js"></script>
-    <script type="text/javascript" src="scripts/amt-wsman-0.2.0.js"></script>
-    <script type="text/javascript" src="scripts/amt-desktop-0.0.2.js"></script>
-    <script type="text/javascript" src="scripts/amt-terminal-0.0.2.js"></script>
-    <script type="text/javascript" src="scripts/zlib.js"></script>
-    <script type="text/javascript" src="scripts/zlib-inflate.js"></script>
-    <script type="text/javascript" src="scripts/zlib-adler32.js"></script>
-    <script type="text/javascript" src="scripts/zlib-crc32.js"></script>
-    <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0.js"></script>
-    <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0.js"></script>
-    <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1.js"></script>
-    <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0.js"></script>
-    <script type="text/javascript" src="scripts/agent-desktop-0.0.2.js"></script>
+    <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-0.2.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-wsman-0.2.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-desktop-0.0.2{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-terminal-0.0.2{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib-inflate{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib-adler32{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/zlib-crc32{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
-    <script type="text/javascript" src="scripts/xterm.js"></script>
-    <script type="text/javascript" src="scripts/xterm-addon-fit.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/u2f-api.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/charts.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/filesaver.js"></script>
-    {{{StartGeoLocation}}}
-    <script keeplink=1 type="text/javascript" src="scripts/ol.js"></script>
-    <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu.js"></script>
-    {{{EndGeoLocation}}}
+    <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/u2f-api{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/charts{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/ol{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <title>{{{title}}}</title>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px">
@@ -277,7 +275,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" />
+                                <img src="images/info.png" loading="lazy" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -302,7 +300,7 @@
             <div id=p2 style="display:none">
                 <div id="p2title"><h1>My Account</h1></div>
                 <div id="p2info" style="overflow-y:auto">
-                    <img id="p2AccountImage" alt="" src="images/clipboard-128.png" />
+                    <img id="p2AccountImage" alt="" loading="lazy" src="images/clipboard-128.png" />
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
@@ -1188,7 +1186,7 @@
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
-        var logoutControls = {{{logoutControls}}};
+        var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
         var authCookieRenewTimer = null;
         var multiDesktop = {};
         var multiDesktopFilter = null;
@@ -1273,7 +1271,7 @@
             var logoutControl = '';
             if (logoutControls)
             if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
-            if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href=\"' + logoutControls.logoutUrl + '\" style="color:white">' + "Logout" + '</a>'); }
+            if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" style="color:white">' + "Logout" + '</a>'); }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
 
             // Setup the context menu
@@ -1363,7 +1361,7 @@
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
-            if (('{{{lang}}}' != 'en') && ('{{{lang}}}' != '')) { QC('body').add('nonenglish'); }
+            if (('{{{lang}}}'.toLowerCase() != 'en') && ('{{{lang}}}'.toLowerCase() != '')) { QC('body').add('nonenglish'); }
             var elements = document.getElementsByClassName('topbar_td');
             for (var i in elements) { if (elements[i].innerHTML) { elements[i].innerHTML = elements[i].innerHTML.split(' ').join('&nbsp;'); } }
         }
@@ -1468,7 +1466,7 @@
             QS('p41events')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
 
             // We are looking at a single device, remove all the back buttons
-            if ('{{currentNode}}' != '') {
+            if ('{{currentNode}}'.toLowerCase() != '') {
                 QV('p10BackButton', false);
                 QV('p11BackButton', false);
                 QV('p12BackButton', false);
@@ -1553,7 +1551,7 @@
                 //QV('page_leftbar', false);
             } else {
                 QC('body').add('fullscreen');
-                if (args.hide & 16) QC('body').add('arg_hide'); // This is replacement for QV('page_leftbar', !(args.hide & 16));
+                if (args.hide & 16) QC('body').add('arg_hide');
                 QV('page_leftbar', !(args.hide & 16));
                 QV('MainMenuSpan', !(args.hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
@@ -1594,8 +1592,8 @@
                 meshserver.send({ action: 'meshes' });
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
-                if ('{{currentNode}}' == '') { meshserver.send({ action: 'files' }); }
-                if ('{{viewmode}}' == '') { go(1); }
+                if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
+                if ('{{viewmode}}'.toLowerCase() == '') { go(1); }
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
         }
@@ -1678,9 +1676,9 @@
                     if (updateNaggleFlags & 128) { updateMeshes(); }
                     if (updateNaggleFlags & 4) { updateDevices(); updateDeviceDetails(); if (xxcurrentView == 21) { p21updateMesh(); } }
                     if (updateNaggleFlags & 8) { drawNotifications(); }
-                    {{{StartGeoLocationJS}}}if (updateNaggleFlags & 16) { updateMapMarkers(); }{{{EndGeoLocationJS}}}
+                    if ((updateNaggleFlags & 16) && (features & 0x00008000)) { updateMapMarkers(); }
                     if (updateNaggleFlags & 32) { eventsUpdate(); }
-                    {{{StartGeoLocationJS}}}if (updateNaggleFlags & 64) { refreshMap(false, true); }{{{EndGeoLocationJS}}}
+                    if ((updateNaggleFlags & 64) && (features & 0x00008000)) { refreshMap(false, true); }
                     if (updateNaggleFlags & 256) { drawDeviceTimeline(); }
                     if (updateNaggleFlags & 1024) { deviceEventsUpdate(); }
                     if (updateNaggleFlags & 2048) { userEventsUpdate(); }
@@ -1980,13 +1978,13 @@
                                 var splitip = currentNode.lastaddr.split(':');
                                 if (splitip.length > 2) {
                                     // IPv6
-                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(currentNode.lastaddr) + '\") width=10 height=10>');
+                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(currentNode.lastaddr) + '") width=10 height=10>');
                                 } else {
                                     // IPv4
                                     if (isPrivateIP(currentNode.lastaddr)) {
-                                        x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(splitip[0]) + '\") width=10 height=10>');
+                                        x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(splitip[0]) + '") width=10 height=10>');
                                     } else {
-                                        x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(splitip[0]) + '\") width=10 height=10>');
+                                        x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(splitip[0]) + '") width=10 height=10>');
                                     }
                                 }
                             }
@@ -1997,12 +1995,12 @@
                                 x += '<hr />'
                                 if (net.name) { x += addHtmlValue2("Name", '<b>' + EscapeHtml(net.name) + '</b>'); }
                                 if (net.desc) { x += addHtmlValue2("Description", EscapeHtml(net.desc).replace('(R)', '&reg;').replace('(r)', '&reg;')); }
-                                if (net.dnssuffix) { x += addHtmlValue2("DNS suffix", EscapeHtml(net.dnssuffix) + ' <img src="images/link4.png" title="' + "Copy name to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.dnssuffix) + '\") width=10 height=10>'); }
-                                if (net.mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.mac.toLowerCase()) + '\") width=10 height=10>'); }
-                                if (net.v4addr) { x += addHtmlValue2("IPv4 address", EscapeHtml(net.v4addr) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.v4addr) + '\") width=10 height=10>'); }
-                                if (net.v4mask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(net.v4mask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.v4mask) + '\") width=10 height=10>'); }
-                                if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.v4gateway) + '\") width=10 height=10>'); }
-                                if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(net.gatewaymac.toLowerCase()) + '\") width=10 height=10>'); }
+                                if (net.dnssuffix) { x += addHtmlValue2("DNS suffix", EscapeHtml(net.dnssuffix) + ' <img src="images/link4.png" title="' + "Copy name to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.dnssuffix) + '") width=10 height=10>'); }
+                                if (net.mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.mac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (net.v4addr) { x += addHtmlValue2("IPv4 address", EscapeHtml(net.v4addr) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.v4addr) + '") width=10 height=10>'); }
+                                if (net.v4mask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(net.v4mask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.v4mask) + '") width=10 height=10>'); }
+                                if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.v4gateway) + '") width=10 height=10>'); }
+                                if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.gatewaymac.toLowerCase()) + '") width=10 height=10>'); }
                             }
                             x += '</div>';
                             QH('d2netinfo', x);
@@ -2071,7 +2069,7 @@
                             newWindow.opener = null;
                         } else {
                             // Not a trusted certificate, use HTTP port.
-                            var basicPort = '{{{serverRedirPort}}}' == '' ? '{{{serverPublicPort}}}' : '{{{serverRedirPort}}}';
+                            var basicPort = ('{{{serverRedirPort}}}'.toLowerCase() == '') ? '{{{serverPublicPort}}}' : '{{{serverRedirPort}}}';
                             var rdpurl = 'http://' + window.location.hostname + ':' + basicPort  + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
                             var newWindow = window.open(rdpurl, '_blank');
                             newWindow.opener = null;
@@ -2098,7 +2096,7 @@
                         var secret = message.secret;
                         if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                         else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />Secret<br /><tt id=d2optsecret secret=\"' + message.secret + '\" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href=\"' + message.url + '\" rel=\"noreferrer noopener\" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                        QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />Secret<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                         new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                         QV('idx_dlgOkButton', true);
                         QE('idx_dlgOkButton', false);
@@ -2776,31 +2774,32 @@
 
         // Go to the correct starting view page
         function gotoStartViewPage() {
+            var xviewmode = parseInt('{{viewmode}}');
             if (xxcurrentView != -1) return;
-            if ('{{currentNode}}' != '') {
+            if ('{{currentNode}}'.toLowerCase() != '') { // The .toLowerCase here is the minifier will not optimize this out.
                 if (getNodeFromId('{{currentNode}}') == null) return; // This node is not loaded yet
-                gotoDevice('{{currentNode}}', parseInt('{{viewmode}}'));
+                gotoDevice('{{currentNode}}', xviewmode);
             } else if (args.gotonode != null) {
                 if (getNodeFromId('node/' + domain + '/' + args.gotonode) == null) return; // This node is not loaded yet
-                gotoDevice('node/' + domain + '/' + args.gotonode, parseInt('{{viewmode}}'));
+                gotoDevice('node/' + domain + '/' + args.gotonode, xviewmode);
                 goBackStack.push(1);
             } else if (args.gotomesh != null) {
                 if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
                 gotoMesh('mesh/' + domain + '/' + args.gotomesh);
-                go(parseInt('{{viewmode}}'));
+                go(xviewmode);
                 goBackStack.push(2);
             } else if (args.gotouser != null) {
                 if ((users == null) || (users['user/' + domain + '/' + args.gotouser] == null)) return; // This user is not loaded yet
                 gotoUser('user/' + domain + '/' + args.gotouser);
-                go(parseInt('{{viewmode}}'));
+                go(xviewmode);
                 goBackStack.push(4);
             } else if (args.gotougrp != null) {
                 if ((usergroups == null) || usergroups['ugrp/' + domain + '/' + args.gotougrp] == null) return; // This user group is not loaded yet
                 gotoUserGroup('ugrp/' + domain + '/' + args.gotougrp);
-                go(parseInt('{{viewmode}}'));
+                go(xviewmode);
                 goBackStack.push(50);
-            } else if ('{{viewmode}}' != '') {
-                go(parseInt('{{viewmode}}'));
+            } else if (!isNaN(xviewmode)) {
+                go(xviewmode);
             } else {
                 setDialogMode(0);
                 go(1);
@@ -3048,7 +3047,7 @@
                             r += '</span>';
                             if ((view == 1) || (view == 2) || (view == 3)) {
                                 var collapsed = CollapsedGroups[node.meshid];
-                                r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"' + node.meshid + '\",' + view + ')></img>'; // Collapse action
+                                r += '<img class=collapseImage id="DevxColImg' + deviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId + '","' + node.meshid + '",' + view + ')></img>'; // Collapse action
                             }
                             if (meshes[node.meshid]) {
                                 r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
@@ -3074,7 +3073,7 @@
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span>';
                             if ((view == 1) || (view == 2) || (view == 3)) {
                                 var collapsed = CollapsedGroups['pwr:' + pwr];
-                                r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId + '\",\"pwr:' + pwr + '\",' + view + ')></img>'; // Collapse action
+                                r += '<img class=collapseImage id="DevxColImg' + deviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId + '","pwr:' + pwr + '",' + view + ')></img>'; // Collapse action
                             }
                             r += '<span>' + PowerStateStr2(node.pwr) + '</span></div>';
 
@@ -3103,11 +3102,11 @@
                     } else if (view == 2) {
                         var states = [];
                         if (node.conn) {
-                            if ((node.conn & 1) != 0) { states.push('<span title=\"' + "Mesh agent is connected and ready for use." + '\">' + "Agent" + '</span>'); }
-                            if ((node.conn & 2) != 0) { states.push('<span title=\"' + "Intel&reg; AMT CIRA is connected and ready for use." + '\">' + "CIRA" + '</span>'); }
-                            else if ((node.conn & 4) != 0) { states.push('<span title=\"' + "Intel&reg; AMT is routable." + '\">' + "AMT" + '</span>'); }
-                            if ((node.conn & 8) != 0) { states.push('<span title=\"' + "Mesh agent is reachable using another agent as relay." + '\">' + "Relay" + '</span>'); }
-                            if ((node.conn & 16) != 0) { states.push('<span title=\"' + "MQTT connection to the device is active." + '\">' + "MQTT" + '</span>'); }
+                            if ((node.conn & 1) != 0) { states.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Agent" + '</span>'); }
+                            if ((node.conn & 2) != 0) { states.push('<span title="' + "Intel&reg; AMT CIRA is connected and ready for use." + '">' + "CIRA" + '</span>'); }
+                            else if ((node.conn & 4) != 0) { states.push('<span title="' + "Intel&reg; AMT is routable." + '">' + "AMT" + '</span>'); }
+                            if ((node.conn & 8) != 0) { states.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Relay" + '</span>'); }
+                            if ((node.conn & 16) != 0) { states.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
                         }
 
                         var collapseName = node.meshid;
@@ -3116,7 +3115,7 @@
                         var collapsed = (sort != 3) & CollapsedGroups[collapseName];
                         r += '<tr name=DevxCol' + collapseName + (collapsed?' style=display:none':'') + '><td><div id=devs cmenu=devsContentMenu class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
-                        r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class=\"j' + icon + '\" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                        r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                         r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div></td>';
                         r += '<td style=text-align:center>' + getUserShortStr(node);
@@ -3169,12 +3168,12 @@
                         if (view == 2) {
                             r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponent(i)];
-                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + encodeURIComponent(i) + '\",2)></img>'; // Collapse action
+                            r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponent(i) + '",2)></img>'; // Collapse action
                             r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
                         } else {
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponent(i)];
-                            r += '<img class=collapseImage id=\"DevxColImg' + tagDeviceHeaderId + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + tagDeviceHeaderId + '\",\"tag:' + encodeURIComponent(i) + '\")></img>'; // Collapse action
+                            r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponent(i) + '")></img>'; // Collapse action
                             r += '<span>' + i + '</span></div>';
                             r += '<div id=DevxCol' + tagDeviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                             r += groups[i];
@@ -3189,7 +3188,7 @@
                 if ((r == '') && (nodes.length > 0) && (Q('SearchInput').value != '')) {
                     viewNothing = true;
                     if (sort == 3) {
-                        r = '<div style="margin:30px">' + "No devices are included in any groups, click on a device\'s \"Groups\" to add to a group." + '</div>';
+                        r = '<div style="margin:30px">' + "No devices are included in any groups, click on a device's \"Groups\" to add to a group." + '</div>';
                     } else {
                         r = '<div style="margin:30px">' + "No devices matching this search." + '</div>';
                     }
@@ -3211,19 +3210,19 @@
                             // Collapsing header & start collapsing area
                             deviceHeaderId2++;
                             var collapsed = CollapsedGroups[mesh._id];
-                            r += '<img class=collapseImage id=\"DevxColImg' + deviceHeaderId2 + '\" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup(\"' + deviceHeaderId2 + '\",\"' + mesh._id + '\")></img>'; // Collapse action
+                            r += '<img class=collapseImage id="DevxColImg' + deviceHeaderId2 + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId2 + '","' + mesh._id + '")></img>'; // Collapse action
 
                             r += '<span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span><span>';
                             r += getMeshActions(mesh, meshrights);
                             r += '</span></td></tr><tr>';
                             if (mesh.mtype == 1) {
                                 r += '<td><div style=padding:10px><i>' + "No Intel&reg; AMT devices in this mesh";
-                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
+                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 2) {
                                 r += '<td>';
                                 r += '<div id=DevxCol' + deviceHeaderId2 + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                                 r += '<div style=padding:10px><i>' + "No devices in this group";
-                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "add one" + '</a>'; }
+                                if ((meshrights & 4) != 0) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             }
                             r += '.</i></div></td>';
                             r += '</div>'; // End collapsing area
@@ -3248,11 +3247,11 @@
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
                 if ((view < 3) && (sort == 0) && (nodes.length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
-                    r += '<a href=# onclick="return account_createMesh()" title=\"' + "Create a new group of devices." + '\" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
+                    r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
-                    r += '<a href=# onclick=\'return p10showMeshCmdDialog(0)\' style=cursor:pointer title=\"' + "Download MeshCmd, a command line tool that performs many functions." + '\">' + "MeshCmd" + '</a>&nbsp';
-                    if (navigator.platform.toLowerCase() == 'win32') { r += '<a href=# onclick=\'return p10showMeshRouterDialog()\' style=cursor:pointer title=\"' + "Download MeshCentral Router, a TCP port mapping tool." + '\">' + "Router" + '</a>&nbsp'; }
+                    r += '<a href=# onclick=\'return p10showMeshCmdDialog(0)\' style=cursor:pointer title="' + "Download MeshCmd, a command line tool that performs many functions." + '">' + "MeshCmd" + '</a>&nbsp';
+                    if (navigator.platform.toLowerCase() == 'win32') { r += '<a href=# onclick=\'return p10showMeshRouterDialog()\' style=cursor:pointer title="' + "Download MeshCentral Router, a TCP port mapping tool." + '">' + "Router" + '</a>&nbsp'; }
                 }
                 r += '</div><br/>';
 
@@ -3472,22 +3471,22 @@
             if ((meshrights & 4) == 0) return '';
             var r = '';
             if ((features & 1024) == 0) { // If CIRA is allowed
-                r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Add a new Intel&reg; AMT computer that is located on the internet." + '\" onclick=\'return addCiraDeviceToMesh(\"' + mesh._id + '\")\'>' + "Add CIRA" + '</a>';
+                r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '" onclick=\'return addCiraDeviceToMesh("' + mesh._id + '")\'>' + "Add CIRA" + '</a>';
             }
             if (mesh.mtype == 1) {
                 if ((features & 1) == 0) { // If not WAN-Only
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Add a new Intel&reg; AMT computer that is located on the local network." + '\" onclick=\'return addDeviceToMesh(\"' + mesh._id + '\")\'>' + "Add Local" + '</a>';
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Add a new Intel&reg; AMT computer by scanning the local network." + '\" onclick=\'return addAmtScanToMesh(\"' + mesh._id + '\")\'>' + "Scan Network" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
                 }
                 if (mesh.amt && (mesh.amt.type == 2)) { // CCM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Perform Intel AMT client control mode (CCM) activation." + '\" onclick=\'return showCcmActivation(\"' + mesh._id + '\")\'>' + "Activation" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Perform Intel AMT client control mode (CCM) activation." + '" onclick=\'return showCcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
                 } else if (mesh.amt && (mesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Perform Intel AMT admin control mode (ACM) activation." + '\" onclick=\'return showAcmActivation(\"' + mesh._id + '\")\'>' + "Activation" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Perform Intel AMT admin control mode (ACM) activation." + '" onclick=\'return showAcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
                 }
             }
             if (mesh.mtype == 2) {
-                r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Add a new computer to this device group by installing the mesh agent." + '\" onclick=\'return addAgentToMesh(\"' + mesh._id + '\")\'>' + "Add Agent" + '</a>';
-                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:10px title=\"' + "Invite someone to install the mesh agent on this device group." + '\" onclick=\'return inviteAgentToMesh(\"' + mesh._id + '\")\'>' + "Invite" + '</a>'; }
+                r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
+                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
             }
             return r;
         }
@@ -3497,8 +3496,8 @@
             var mesh = meshes[meshid];
             var x = format("Add a new Intel&reg; AMT device to device group \"{0}\".", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Device Name", '<input id=dp1devicename style=width:230px maxlength=32 autocomplete=off onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
-            x += addHtmlValue("Hostname", '<input id=dp1hostname style=width:230px maxlength=32 autocomplete=off placeholder=\"' + "Same as device name" + '\" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
-            x += addHtmlValue("Username", '<input id=dp1username style=width:230px maxlength=32 autocomplete=off placeholder=\"' + "admin" + '\" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
+            x += addHtmlValue("Hostname", '<input id=dp1hostname style=width:230px maxlength=32 autocomplete=off placeholder="' + "Same as device name" + '" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
+            x += addHtmlValue("Username", '<input id=dp1username style=width:230px maxlength=32 autocomplete=off placeholder="' + "admin" + '" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlValue("Password", '<input id=dp1password type=password style=width:230px autocomplete=off maxlength=32 onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlValue("Security", '<select id=dp1tls style=width:236px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>');
             setDialogMode(2, "Add Intel&reg; AMT device", 3, addDeviceToMeshEx, x, meshid);
@@ -3554,7 +3553,7 @@
         function addAmtScanToMesh(meshid) {
             if (xxdialogMode) return false;
             var x = "Enter a range of IP addresses to scan for Intel AMT devices." + '<br /><br />';
-            x += addHtmlValue("IP Range", '<input id=dp1range style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value=\"' + "Scan" + '\" onclick=addAmtScanToMeshButton()></input>');
+            x += addHtmlValue("IP Range", '<input id=dp1range style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
             x += '<div id=dp1results style="width:100%;height:200px;background-color:white;border:1px gray solid;overflow-y:scroll"></div>';
             setDialogMode(2, "Scan for Intel&reg; AMT devices", 3, addAmtScanToMeshEx, x, meshid);
             QE('idx_dlgOkButton', false);
@@ -3620,7 +3619,7 @@
             // Setup CIRA with user/pass authentication (Somewhat difficult)
             x += '<div id=dlgAddCira1 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel AMT", EscapeHtml(mesh.name));
             if (serverinfo.mpspass) { x += (" and authenticate to the server using this username and password." + '<br /><br />'); } else { x += (" and authenticate to the server using this username and any password." + '<br /><br />'); }
-            x += addHtmlValue("Root Certificate", '<a href=\"' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '\" download>' + "Root Certificate File" + '</a>');
+            x += addHtmlValue("Root Certificate", '<a href="' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '" download>' + "Root Certificate File" + '</a>');
             x += addHtmlValue("Username", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
             if (serverinfo.mpspass) { x += addHtmlValue("Password", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpspass) + '" />'); }
             if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
@@ -3662,7 +3661,7 @@
                 x += addHtmlValue("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>') + '<hr />';
                 x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
-                x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder=\"' + "example@email.com" + '\" onkeyup=validateAgentInvite()></input>');
+                x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
                 x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple MacOS only" + '</option><option value=2>' + "Linux only" + '</option></select>');
                 x += '<div id=d2agentexpirediv>';
                 x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire style=width:236px><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
@@ -3673,7 +3672,7 @@
             }
             x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
-            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title=\"' + "Copy link to clipboard" + '\" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
             if (features & 64) { Q('d2InviteType').focus(); d2ChangedInviteType(); } else { Q('d2inviteExpire').focus(); validateAgentInvite(); }
             d2RequestInvitationLink();
@@ -3724,8 +3723,8 @@
             // Windows agent install
             //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "32bit version of the MeshAgent" + '\">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title=\"' + "64bit version of the MeshAgent" + '\">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title="' + "32bit version of the MeshAgent" + '">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title="' + "64bit version of the MeshAgent" + '">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk href="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" rel="noreferrer noopener" target="_blank">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
@@ -3839,18 +3838,18 @@
             deviceHeaderTotal = 0;
         }
 
-        var powerStateStrings = ['', '<span title=\"' + "Device is powered on." + '\">' + "Powered" + '</span>', '<span title=\"' + "Device is in sleep state (S1)." + '\">' + "Sleeping" + '</span>', '<span title=\"' + "Device is in sleep state (S2)." + '\">' + "Sleeping" + '</span>', '<span title=\"' + "Device is in deep sleep state (S3)." + '\">' + "Deep Sleep" + '</span>', '<span title=\"' + "Device is in hibernating state (S4)." + '\">' + "Hibernating" + '</span>', '<span title=\"' + "Device is in powered off state (S5)." + '\">' + "Soft-Off" + '</span>', '<span title=\"' + "Device is detected but power state could not be obtained." + '\">' + "Present" + '</span>'];
+        var powerStateStrings = ['', '<span title="' + "Device is powered on." + '">' + "Powered" + '</span>', '<span title="' + "Device is in sleep state (S1)." + '">' + "Sleeping" + '</span>', '<span title="' + "Device is in sleep state (S2)." + '">' + "Sleeping" + '</span>', '<span title="' + "Device is in deep sleep state (S3)." + '">' + "Deep Sleep" + '</span>', '<span title="' + "Device is in hibernating state (S4)." + '">' + "Hibernating" + '</span>', '<span title="' + "Device is in powered off state (S5)." + '">' + "Soft-Off" + '</span>', '<span title="' + "Device is detected but power state could not be obtained." + '">' + "Present" + '</span>'];
         var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined"];
         var powerColorTable = ['pwsTransparent', 'pwsBlack', 'pwsBlue', 'pwsBlue2', 'pwsLightblue', 'pwsBlueviolet', 'pwsDarkgreen', 'pwsLightseagreen', 'pwsLightseagreen2'];
         function NodeStateStr(node) {
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { states.push('<span title=\"' + "Mesh agent is connected and ready for use." + '\">' + "Agent" + '</span>'); }
-                if ((node.conn & 2) != 0) { states.push('<span title=\"' + "Intel&reg; AMT CIRA is connected and ready for use." + '\">' + "CIRA" + '</span>'); }
-                else if ((node.conn & 4) != 0) { states.push('<span title=\"' + "Intel&reg; AMT is routable." + '\">' + "AMT" + '</span>'); }
-                if ((node.conn & 8) != 0) { states.push('<span title=\"' + "Mesh agent is reachable using another agent as relay." + '\">' + "Relay" + '</span>'); }
-                if ((node.conn & 16) != 0) { states.push('<span title=\"' + "MQTT connection to the device is active." + '\">' + "MQTT" + '</span>'); }
+                if ((node.conn & 1) != 0) { states.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Agent" + '</span>'); }
+                if ((node.conn & 2) != 0) { states.push('<span title="' + "Intel&reg; AMT CIRA is connected and ready for use." + '">' + "CIRA" + '</span>'); }
+                else if ((node.conn & 4) != 0) { states.push('<span title="' + "Intel&reg; AMT is routable." + '">' + "AMT" + '</span>'); }
+                if ((node.conn & 8) != 0) { states.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Relay" + '</span>'); }
+                if ((node.conn & 16) != 0) { states.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
             }
             if ((node.pwr != null) && (node.pwr != 0)) { states.push(powerStateStrings[node.pwr]); }
             return states.join(', ');
@@ -3957,7 +3956,7 @@
             var csv = "id, name, rname, host, icon, ip, osdesc, state, groupname, conn, pwr" + '\r\n', chkNodeIds = getCheckedDevices(), r = [];
             for (var i in chkNodeIds) {
                 var n = getNodeFromId(chkNodeIds[i]);
-                csv += '\"' + n._id.split(',').join('') + '\",\"' + n.name.split(',').join('') + '\",\"' + (n.rname?(n.rname.split(',').join('')):'') + '\",\"' + (n.host?(n.host.split(',').join('')):'') + '\",\"' + n.icon + '\",\"' + (n.ip?n.ip:'') + '\",\"' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '\",\"' + n.state + '\",\"' + meshes[n.meshid].name.split(',').join('') + '\",\"' + (n.conn?n.conn:'') + '\",\"' + (n.pwr?n.pwr:'') + '\"\r\n';
+                csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"\r\n';
             }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
             return false;
@@ -4166,7 +4165,7 @@
 
         function cmaltportaction(action) {
             if (xxdialogMode) return;
-            var x = "RDP remote connection port:" + '<br /><br /><input type=text placeholder="3389" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" maxlength=5 id=d10rdpport type=text>';
+            var x = "RDP remote connection port:" + '<br /><br /><input type=text placeholder="3389" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rdpport type=text>';
             setDialogMode(2, "RDP Connection", 3, function() {
                 setDialogMode(0);
                 // Save the new RDP port to the server
@@ -4228,8 +4227,6 @@
         // DEVICES MAP
         //
 
-        {{{StartGeoLocationJS}}}
-
         // Maps code starts from here. Initialize all the variables
         var xxmap = {
             map: null,
@@ -4244,6 +4241,7 @@
 
         // Add a feature for every Node and change style if connection status changes
         function updateMapMarkers(selectedMesh) {
+            if ((features & 0x00008000) == 0) return;
             if ((xxmap != null) && (xxmap.map == null)) { try { loadmap(); } catch (ex) { console.error('loadmap() exception', ex); } }
             if (xxmap == null) return;
             var boundingBox = null;
@@ -4262,38 +4260,43 @@
             return boundingBox;
         }
 
-        // Show node details on hovering over a feature
-        var map_cm_popup = new ol.Overlay({ element: Q('xmap-info-window'), positioning: 'bottom-center', stopEvent: false });
+        var map_cm_popup, map_cm_editMarker, map_cm_clearMarker, map_cm_saveMarker, map_cm_nodemenu_items, contextmenu_items;
+        if (features & 0x00008000) {
+            // Show node details on hovering over a feature
+            map_cm_popup = new ol.Overlay({ element: Q('xmap-info-window'), positioning: 'bottom-center', stopEvent: false });
 
-        // Edit Marker item
-        var map_cm_editMarker = { text: "Modify node location", callback: function (obj) { modifyMarkerloc(obj.data); } };
+            // Edit Marker item
+            map_cm_editMarker = { text: "Modify node location", callback: function (obj) { modifyMarkerloc(obj.data); } };
 
-        // Clear Marker item
-        var map_cm_clearMarker = { text: "Remove node location", callback: function (obj) {
-            meshserver.send({ action: 'changedevice', nodeid: obj.data.a, userloc: [] }); // Clear the user position marker
-        }};
+            // Clear Marker item
+            map_cm_clearMarker = {
+                text: "Remove node location", callback: function (obj) {
+                    meshserver.send({ action: 'changedevice', nodeid: obj.data.a, userloc: [] }); // Clear the user position marker
+                }
+            };
 
-        // Save Marker item
-        var map_cm_saveMarker = { text: "Save node location", callback: function (obj) { saveMarkerloc(obj.data); } };
+            // Save Marker item
+            map_cm_saveMarker = { text: "Save node location", callback: function (obj) { saveMarkerloc(obj.data); } };
 
-        // Build a context menu for a feature
-        var map_cm_nodemenu_items = [
-            { text: "General information", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 10); } } },
-            { text: "Desktop", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 11); } } },
-            { text: "Terminal", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 12); } } },
-            { text: "Intel&reg; AMT", callback: function (obj) { if (obj.data !=null) { gotoDevice(obj.data, 14); } } },
-            '-',
-            { text: "Zoom-in to extent", callback: function(obj) { var coords = obj.data.getGeometry().getCoordinates(); zoomToLocation(coords, 19); } },
-            { text: "Zoom-out to extent", callback: function(obj) { var coords = obj.data.getGeometry().getCoordinates(); zoomToLocation(coords, 2); } }
-        ];
+            // Build a context menu for a feature
+            map_cm_nodemenu_items = [
+                { text: "General information", callback: function (obj) { if (obj.data != null) { gotoDevice(obj.data, 10); } } },
+                { text: "Desktop", callback: function (obj) { if (obj.data != null) { gotoDevice(obj.data, 11); } } },
+                { text: "Terminal", callback: function (obj) { if (obj.data != null) { gotoDevice(obj.data, 12); } } },
+                { text: "Intel&reg; AMT", callback: function (obj) { if (obj.data != null) { gotoDevice(obj.data, 14); } } },
+                '-',
+                { text: "Zoom-in to extent", callback: function (obj) { var coords = obj.data.getGeometry().getCoordinates(); zoomToLocation(coords, 19); } },
+                { text: "Zoom-out to extent", callback: function (obj) { var coords = obj.data.getGeometry().getCoordinates(); zoomToLocation(coords, 2); } }
+            ];
 
-        // Context menu for clicks other than on feature
-        var contextmenu_items = [
-            { text: "Refresh", callback: function () { refreshMap(true, true); } },
-            { text: "Zoom to fit extent", callback: function () { zoomToFitExtent(); } },
-            { text: "Center map here", callback: function(obj) { xxmap.mapView.animate({ center: obj.coordinate } ); } },
-            { text: "Place node here", callback: function(obj) { placeNode(obj.coordinate); } }
-        ];
+            // Context menu for clicks other than on feature
+            contextmenu_items = [
+                { text: "Refresh", callback: function () { refreshMap(true, true); } },
+                { text: "Zoom to fit extent", callback: function () { zoomToFitExtent(); } },
+                { text: "Center map here", callback: function (obj) { xxmap.mapView.animate({ center: obj.coordinate }); } },
+                { text: "Place node here", callback: function (obj) { placeNode(obj.coordinate); } }
+            ];
+        }
 
         function stringToIntHash(str) {
             var hash = 0, i;
@@ -4321,6 +4324,7 @@
 
         // Load the entire map
         function loadmap() {
+            if ((features & 0x00008000) == 0) return;
             if (xxmap == null) return;
             if ((features & 0x8000) == 0) { xxmap = null; return; } // Geolocation not supported
             QV('viewselectmapoption', true);
@@ -4822,8 +4826,6 @@
             var boundingExtent = ol.proj.transformExtent(extent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
             xxmap.map.getView().fit(boundingExtent, xxmap.map.getSize());
         }
-        
-        {{{EndGeoLocationJS}}}
 
         //
         // MY DEVICE
@@ -4863,7 +4865,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name);
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
-                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title=\"' + "Click here to edit the server-side device name" + '\" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
@@ -4879,7 +4881,7 @@
                 var x = '<table style=width:100%>';
 
                 // Attribute: Mesh
-                if (mesh) { x += addDeviceAttribute('<span title=\"' + "The name of the device group this computer belong to." + '\">' + "Group" + '</span>', '<a href=# title=\"' + "The name of the device group this computer belong to" + '\" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>'); }
+                if (mesh) { x += addDeviceAttribute('<span title="' + "The name of the device group this computer belong to." + '">' + "Group" + '</span>', '<a href=# title="' + "The name of the device group this computer belong to" + '" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>'); }
 
                 // Attribute: Name
                 if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
@@ -4915,29 +4917,29 @@
                         else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
-                            if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title=\"' + "Intel AMT is activated in Client Control Mode" + '\">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title=\"' + "Intel AMT is activated in Admin Control Mode" + '\">' + "ACM" + '</span>'; } }
+                            if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="' + "Intel AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="' + "Intel AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
                             str += (', v' + node.intelamt.ver);
                         }
 
-                    if (node.intelamt.tls == 1) { str += ', <span title=\"' + "Intel AMT is setup with TLS network security" + '\">' + "TLS" + '</span>'; }
+                    if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
-                                str += ', <i style=color:#FF0000;cursor:pointer title=\"' + "Edit Intel&reg; AMT credentials" + '\" onclick=editDeviceAmtSettings("' + node._id + '")>' + "No Credentials" + '</i>';
+                                str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "No Credentials" + '</i>';
                             } else {
                                 str += ', <i style=color:#FF0000>' + "No Credentials" + '</i>';
                             }
                         }
                         str += ' ';
                         if ((meshrights & 4) != 0) {
-                            str += '<img src=images/link4.png height=10 width=10 title=\"' + "Edit Intel&reg; AMT credentials" + '\" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
+                            str += '<img src=images/link4.png height=10 width=10 title="' + "Edit Intel&reg; AMT credentials" + '" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
 
-                    var meName = '<span title=\"Intel&reg; Manageability Engine\">' + "Intel&reg; ME" + '<span>';
+                    var meName = '<span title="' + "Intel&reg; Manageability Engine" + '">' + "Intel&reg; ME" + '<span>';
                     if (typeof node.intelamt.sku == 'number') {
-                        if ((node.intelamt.sku & 8) != 0) { meName = '<span title=\"' + "Intel&reg; Active Management Technology" + '\">' + "Intel&reg; AMT" + '<span>'; }
-                        else if ((node.intelamt.sku & 16) != 0) { meName = '<span title=\"' + "Intel&reg; Standard Manageability" + '\">' + "Intel&reg; SM" + '<span>'; }
+                        if ((node.intelamt.sku & 8) != 0) { meName = '<span title="' + "Intel&reg; Active Management Technology" + '">' + "Intel&reg; AMT" + '<span>'; }
+                        else if ((node.intelamt.sku & 16) != 0) { meName = '<span title="' + "Intel&reg; Standard Manageability" + '">' + "Intel&reg; SM" + '<span>'; }
                     }
                     x += addDeviceAttribute(meName, str);
                 }
@@ -4999,11 +5001,11 @@
                 var connectivity = node.conn;
                 if (connectivity && connectivity > 1) {
                     var cstate = [];
-                    if ((node.conn & 1) != 0) cstate.push('<span title=\"' + "Mesh agent is connected and ready for use." + '\">' + "Mesh Agent" + '</span>');
-                    if ((node.conn & 2) != 0) cstate.push('<span title=\"' + "Intel&reg; AMT CIRA is connected and ready for use." + '\">' + "Intel&reg; AMT CIRA" + '</span>');
-                    else if ((node.conn & 4) != 0) cstate.push('<span title=\"' + "Intel&reg; AMT is routable and ready for use." + '\">' + "Intel&reg; AMT" + '</span>');
-                    if ((node.conn & 8) != 0) cstate.push('<span title=\"' + "Mesh agent is reachable using another agent as relay." + '\">' + "Mesh Relay" + '</span>');
-                    if ((node.conn & 16) != 0) { cstate.push('<span title=\"' + "MQTT connection to the device is active." + '\">' + "MQTT" + '</span>'); }
+                    if ((node.conn & 1) != 0) cstate.push('<span title="' + "Mesh agent is connected and ready for use." + '">' + "Mesh Agent" + '</span>');
+                    if ((node.conn & 2) != 0) cstate.push('<span title="' + "Intel&reg; AMT CIRA is connected and ready for use." + '">' + "Intel&reg; AMT CIRA" + '</span>');
+                    else if ((node.conn & 4) != 0) cstate.push('<span title="' + "Intel&reg; AMT is routable and ready for use." + '">' + "Intel&reg; AMT" + '</span>');
+                    if ((node.conn & 8) != 0) cstate.push('<span title="' + "Mesh agent is reachable using another agent as relay." + '">' + "Mesh Relay" + '</span>');
+                    if ((node.conn & 16) != 0) { cstate.push('<span title="' + "MQTT connection to the device is active." + '">' + "MQTT" + '</span>'); }
                     x += addDeviceAttribute("Connectivity", cstate.join(', '));
                 }
 
@@ -5018,9 +5020,9 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<input type=button value=\"' + "Actions" + '\" title=\"' + "Perform power actions on the device" + '\" onclick=deviceActionFunction() />'; }
-                x += '<input type=button value=\"' + "Notes" + '\" title=\"' + "View notes about this device" + '\" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
-                x += '<input type=button value=\"' + "Log Event" + '\" title=\"' + "Write an event for this device" + '\" onclick=writeDeviceEvent("' + encodeURIComponent(node._id) + '") />';
+                if ((meshrights & 76) != 0) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
+                x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
+                x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
@@ -5037,30 +5039,28 @@
                 x = '<div class="p10html3right">';
                 if ((meshrights & 4) != 0) {
                     // TODO: Show change group only if there is another mesh of the same type.
-                    x += '&nbsp;<a href=# onclick=p10showChangeGroupDialog(["' + node._id + '"]) title=\"' + "Move this device to a different device group" + '\">' + "Change Group" + '</a>';
-                    x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title=\"' + "Remove this device" + '\">' + "Delete Device" + '</a>';
+                    x += '&nbsp;<a href=# onclick=p10showChangeGroupDialog(["' + node._id + '"]) title="' + "Move this device to a different device group" + '">' + "Change Group" + '</a>';
+                    x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title="' + "Remove this device" + '">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
-                if (node.agent) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title=\"' + "Show device network interface information" + '\">' + "Interfaces" + '</a>&nbsp;';
-                {{{StartGeoLocationJS}}}
-                if (xxmap != null) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title=\"' + "Show device locations information" + '\">' + "Location" + '</a>&nbsp;';
-                {{{EndGeoLocationJS}}}
+                if (node.agent) x += '<a href=# onclick=p10showNodeNetInfoDialog("' + node._id + '") title="' + "Show device network interface information" + '">' + "Interfaces" + '</a>&nbsp;';
+                if ((features & 0x00008000) && (xxmap != null)) x += '<a href=# onclick=p10showNodeLocationDialog("' + node._id + '") title="' + "Show device locations information" + '">' + "Location" + '</a>&nbsp;';
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) { // Check if we should view tools
-                    if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title=\"' + "Traffic router used to connect to a device thru this server" + '.\">' + "MeshCmd" + '</a>&nbsp;';
+                    if ((terminalAccess) && ((meshrights & 8) != 0) && (node.agent != null)) x += '<a href=# onclick=p10showMeshCmdDialog(1,"' + node._id + '") title="' + "Traffic router used to connect to a device thru this server" + '.">' + "MeshCmd" + '</a>&nbsp;';
                 }
-                if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title=\"' + "Open XTerm terminal" + '\">' + "XTerm" + '</a>&nbsp;'; }
+                if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title="' + "Open XTerm terminal" + '">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
                 if (((connectivity & 1) != 0) && (clickOnce == true) && (node.agent) && ((meshrights & 8) != 0)) {
-                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2") title=\"' + "Requires Microsoft ClickOnce support in your browser" + '.\">' + "RDP" + '</a>&nbsp;'; }
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2") title="' + "Requires Microsoft ClickOnce support in your browser" + '.">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
-                        x += '<a href=# onclick=p10clickOnce("' + node._id + '","PSSH",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "Putty" + '</a>&nbsp;';
-                        x += '<a href=# onclick=p10clickOnce("' + node._id + '","WSCP",22) title=\"' + "Requires Microsoft ClickOnce support in your browser." + '\">' + "WinSCP" + '</a>&nbsp;';
+                        x += '<a href=# onclick=p10clickOnce("' + node._id + '","PSSH",22) title="' + "Requires Microsoft ClickOnce support in your browser." + '">' + "Putty" + '</a>&nbsp;';
+                        x += '<a href=# onclick=p10clickOnce("' + node._id + '","WSCP",22) title="' + "Requires Microsoft ClickOnce support in your browser." + '">' + "WinSCP" + '</a>&nbsp;';
                     }
                 }
 
                 // MQTT options
-                if ((meshrights == 0xFFFFFFFF) && (features & 0x00400000)) { x += '<a href=# onclick=p10showMqttLoginDialog("' + node._id + '") title=\"' + "Get MQTT login credentials for this device." + '\">' + "MQTT Login" + '</a>&nbsp;'; }
+                if ((meshrights == 0xFFFFFFFF) && (features & 0x00400000)) { x += '<a href=# onclick=p10showMqttLoginDialog("' + node._id + '") title="' + "Get MQTT login credentials for this device." + '">' + "MQTT Login" + '</a>&nbsp;'; }
                 x += '</div><br>'
 
                 QH('p10html3', x);
@@ -5068,10 +5068,10 @@
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Agent connected" + '\">' + "Agent connected" + '</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Intel&reg; AMT connected" + '\">' + "Intel&reg; AMT connected" + '</span>'; }
-                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "Intel&reg; AMT detected" + '\">' + "Intel&reg; AMT detected" + '</span>'; }
-                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title=\"' + "MQTT connected" + '\">' + "MQTT channel connected" + '</span>'; }
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "Agent connected" + '">' + "Agent connected" + '</span>'; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "Intel&reg; AMT connected" + '">' + "Intel&reg; AMT connected" + '</span>'; }
+                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "Intel&reg; AMT detected" + '">' + "Intel&reg; AMT detected" + '</span>'; }
+                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px title="' + "MQTT connected" + '">' + "MQTT channel connected" + '</span>'; }
                 if ((powerstate == '') && node.lastconnect) { powerstate = '<span style=font-size:12px>' + "Last seen:" + '<br />' + printDateTime(new Date(node.lastconnect)) + '</span>'; }
                 QH('MainComputerState', powerstate);
 
@@ -5175,11 +5175,11 @@
                         if ((usergroups != null) && (usergroups[userid] != null)) { username = EscapeHtml(usergroups[userid].name); ugroup = true; }
                         if ((meshrights & 2) != 0) {
                             if (ugroup) {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title=\"' + "Remove user group rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,"' + encodeURIComponent(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             } else {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,\"' + encodeURIComponent(userid) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,"' + encodeURIComponent(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             }
                         }
                         if (users != null) {
@@ -5190,7 +5190,7 @@
                             }
                         }
 
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + (ugroup?"User Group":"User") + '\" class=m' + (ugroup?4:2) + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + (ugroup?"User Group":"User") + '" class=m' + (ugroup?4:2) + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                     }
                 }
                 if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No users with special device permissions" + '</i><div></div></div></td><td></td></tr>'; }
@@ -5263,7 +5263,7 @@
 
         function writeDeviceEvent(nodeid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Add Device Event", 3, writeDeviceEventEx, '<textarea id=d2devEvent style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>' + "This will add an entry to this device\'s event log." + '<span>', nodeid);
+            setDialogMode(2, "Add Device Event", 3, writeDeviceEventEx, '<textarea id=d2devEvent style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>' + "This will add an entry to this device's event log." + '<span>', nodeid);
             Q('d2devEvent').focus();
         }
 
@@ -5417,7 +5417,7 @@
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
 
-            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + (urlargs.key?('&key=' + urlargs.key):'') + '" onclick="setDialogMode(0)"><img title=\"' + "Download power events" + '\" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
+            QH('p10html2', '<table cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a download href="devicepowerevents.ashx?id=' + currentNode._id + (urlargs.key?('&key=' + urlargs.key):'') + '" onclick="setDialogMode(0)"><img title="' + "Download power events" + '" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -6503,7 +6503,7 @@
                     if (service.status.isSharedProcess === true) { serviceTypes.push("SharedProcess"); }
                     if (serviceTypes.length > 0) { x += addHtmlValue("Type", serviceTypes.join(', ')); }
                 }
-                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value=\"' + "Close" + '\" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value=\"' + "Start" + '\" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value=\"' + "Stop" + '\" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value=\"' + "Restart" + '\" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
+                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
                 setDialogMode(2, "Service Details", 8, null, x, name);
             }
         }
@@ -7018,10 +7018,10 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title=\"' + title + '\">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset(\"' + encodeURIComponent(f.nx) + '\")></div><a href=# style=cursor:pointer onclick=\'return p13folderset(\"' + encodeURIComponent(f.nx) + '\")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponent(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponent(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
-                    if (f.s > 0) { link = '<a hrf=# rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"return p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + shortname + '</a>'; }
+                    if (f.s > 0) { link = '<a hrf=# rel="noreferrer noopener" target="_blank" style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')">' + shortname + '</a>'; }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
@@ -7649,8 +7649,7 @@
                 if (hardware.windows.memory) {
                     var x = '';
                     // Sort Memory
-                    function memorySort(a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; }
-                    hardware.windows.memory.sort(memorySort);
+                    hardware.windows.memory.sort(function(a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
 
                     x += '<table style=width:100%>';
                     for (var i in hardware.windows.memory) {
@@ -7671,8 +7670,7 @@
             if (hardware.identifiers && ident.storage_devices) {
                 var x = '';
                 // Sort Memory
-                function storageSort(a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; }
-                ident.storage_devices.sort(storageSort);
+                ident.storage_devices.sort(function(a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
 
                 x += '<table style=width:100%>';
                 for (var i in ident.storage_devices) {
@@ -8042,12 +8040,12 @@
         function account_showLocalizationSettings() {
             if (xxdialogMode) return false;
             var n = getstore('loctag', 0), y = '';
-            var x = '<select id=d2locselect style=width:240px><option value=\"*\">' + "User browser value" + '</option>';
+            var x = '<select id=d2locselect style=width:240px><option value="*">' + "User browser value" + '</option>';
             for (var i in loclist) { x += '<option value="' + i + '"' + ((n == i)?' selected':'') + '>' + i + ' - ' + loclist[i] + '</option>'; }
             x += '</select>';
             if (serverinfo.languages && serverinfo.languages.length > 0) {
                 y += "Changing the language will require a refresh of the page." + '<br /><br />';
-                var z = '<select id=d2langselect style=width:240px><option value=\"*\">' + "User browser value" + '</option>';
+                var z = '<select id=d2langselect style=width:240px><option value="*">' + "User browser value" + '</option>';
                 for (var i in serverinfo.languages) {
                     var lang = serverinfo.languages[i];
                     z += '<option value="' + lang + '"' + ((userinfo.lang == lang)?' selected':'') + '>' + lang + ' - ' + (loclist[lang]?loclist[lang]:loclistex[lang]) + '</option>';
@@ -8368,7 +8366,7 @@
             // Add device group name
             var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
-            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title=\"' + "Click here to edit the device group name" + '\" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p20meshName', mname);
 
             var meshtype = format("Unknown #{0}", currentMesh.mtype);
@@ -8441,7 +8439,7 @@
             x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
 
             // Display group note support
-            if (meshrights & 1) { x += '<br><input type=button value=' + "Notes" + ' title=\"' + "View notes about this device group" + '\" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />'; }
+            if (meshrights & 1) { x += '<br><input type=button value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />'; }
 
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
@@ -8455,17 +8453,17 @@
 
             if (meshrights & 4) {
                 if (currentMesh.mtype == 1) {
-                    x += '<a href=# onclick=\'return addCiraDeviceToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Add a new Intel&reg; AMT computer that is located on the internet." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install CIRA" + '</a>';
-                    x += '<a href=# onclick=\'return addDeviceToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Add a new Intel&reg; AMT computer that is located on the local network." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
+                    x += '<a href=# onclick=\'return addCiraDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install CIRA" + '</a>';
+                    x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
                     if (currentMesh.amt && (currentMesh.amt.type == 2)) { // CCM activation
-                        x += '<a href=# onclick=\'return showCcmActivation(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Perform Intel AMT client control mode (CCM) activation." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
+                        x += '<a href=# onclick=\'return showCcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel AMT client control mode (CCM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
                     } else if (currentMesh.amt && (currentMesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                        x += '<a href=# onclick=\'return showAcmActivation(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Perform Intel AMT admin control mode (ACM) activation." + '\"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
+                        x += '<a href=# onclick=\'return showAcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel AMT admin control mode (ACM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
                     }
                 }
                 if (currentMesh.mtype == 2) {
-                    x += '<a href=# onclick=\'return addAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Add a new computer to this device group by installing the mesh agent." + '\"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
-                    x += '<a href=# onclick=\'return inviteAgentToMesh(\"' + currentMesh._id + '\")\' style=cursor:pointer;margin-right:10px title=\"' + "Invite someone to install the mesh agent on this device group." + '\"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
+                    x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
+                    x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
                 }
             }
 
@@ -8487,7 +8485,7 @@
                 var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 2;
                 if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) {
                     if ((meshrights == 0xFFFFFFFF) || (currentMesh.links[sortedusers[i].id].rights != 0xFFFFFFFF)) {
-                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                     }
                     rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                 }
@@ -8495,7 +8493,7 @@
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
                 if ((usergroups != null) && sortedusers[i].id.startsWith('ugrp/')) { username = '<a tabindex=0 href=# onclick=\'gotoUserGroup("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
                 if ((users != null) && sortedusers[i].id.startsWith('user/')) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
-                x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "User" + '\" class=m' + icon + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div title="' + "User" + '" class=m' + icon + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
 
@@ -8547,9 +8545,9 @@
                 if ((ptype == 2) && (currentMesh.mtype == 2)) { x += addHtmlValue("Password mismatch", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "Reactivate Intel&reg; AMT" + '</option></select>'); }
                 if ((features & 0x400) == 0) {
                     if (ptype == 2) {
-                        x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don\'t configure" + '</option><option value=1>' + "Don\'t connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>');
+                        x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don't configure" + '</option><option value=1>' + "Don't connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>');
                     } else {
-                        x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don\'t configure" + '</option><option value=2>' + "Connect to server" + '</option></select>');
+                        x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don't configure" + '</option><option value=2>' + "Connect to server" + '</option></select>');
                     }
                 }
                 x += '<br/><span style="font-size:10px">' + "* Leave blank to assign a random password to each device." + '</span><br/>';
@@ -9188,8 +9186,8 @@
             Chart.controllers.doughnut = Chart.controllers.doughnut.extend({
                 draw: function() {
                     draw.apply(this, arguments);
-                    let ctx = this.chart.chart.ctx;
-                    let _fill = ctx.fill;
+                    var ctx = this.chart.chart.ctx;
+                    var _fill = ctx.fill;
                     ctx.fill = function() {
                         ctx.save();
                         ctx.shadowColor = 'blue';
@@ -9225,7 +9223,7 @@
             // Add device group name
             var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
-            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title=\"' + "Click here to edit the device group name" + '\" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p21meshName', mname);
 
             // Update charts
@@ -9363,10 +9361,10 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + name + '">&nbsp;<span style=float:right title=\"' + title + '\">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset(\"' + encodeURIComponent(f.nx) + '\")></div><a href=# style=cursor:pointer onclick=\'return p5folderset(\"' + encodeURIComponent(f.nx) + '\")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + name + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponent(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponent(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '';
-                    if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponent(f.nx)) + '?download=1' + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(publicPath + '/' + encodeURIComponent(f.nx) + '?download=1') + '\") width=10 height=10>'; }
+                    if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponent(f.nx)) + '?download=1' + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(publicPath + '/' + encodeURIComponent(f.nx) + '?download=1') + '") width=10 height=10>'; }
                     if (f.s > 0) { link = publiclink + ' <a rel="noreferrer noopener" target="_blank" download href="downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '">' + shortname + '</a>'; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -9417,7 +9415,7 @@
         }
 
         function p5showPublicLink(u) {
-            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2(\"' + encodeURIComponent(u) + '\") width=10 height=10>');
+            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(u) + '") width=10 height=10>');
             return false;
         }
 
@@ -9467,7 +9465,7 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value=\"' + encodeURIComponent(filetreelinkpath) + '\" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponent(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function p5updateUploadDialogOk() {
             // Check if these are files we can upload, remove all folders.
@@ -9700,7 +9698,7 @@
             for (var i in eventList) {
                 var nodename = '';
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
-                csv += '\"' + eventList[i].time + '\",\"' + printDateTime(new Date(eventList[i].time)) + '\",\"' + eventList[i].etype + '\",\"' + ((eventList[i].action != null) ? eventList[i].action : '') + '\",\"' + ((eventList[i].username != null) ? eventList[i].username : '') + '\",\"' + EscapeHtml(nodename) + '\",\"' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '\"\r\n';
+                csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
             }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "eventslist.csv");
             return false;
@@ -9803,14 +9801,14 @@
             if (sessions != null) {
                 gray = '';
                 if (self) {
-                    msg = '<span style=float:right;margin-top:1px;margin-right:4px title=' + "Chat" + '><a href=# onclick=userChat(event,\"' + encodeURIComponent(user._id) + '\",\"' + encodeURIComponent(user.name) + '\")><img src=\'images/icon-chat.png\' height=16 width=16 style=padding-top:2px /></a></span>';
-                    msg += '<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a href=# onclick=\'return showUserAlertDialog(event,\"' + encodeURIComponent(user._id) + '\")\'><img src=\'images/icon-notify.png\' height=16 width=16 style=padding-top:2px /></a></span>';
+                    msg = '<span style=float:right;margin-top:1px;margin-right:4px title=' + "Chat" + '><a href=# onclick=userChat(event,"' + encodeURIComponent(user._id) + '","' + encodeURIComponent(user.name) + '")><img src=\'images/icon-chat.png\' height=16 width=16 style=padding-top:2px /></a></span>';
+                    msg += '<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a href=# onclick=\'return showUserAlertDialog(event,"' + encodeURIComponent(user._id) + '")\'><img src=\'images/icon-notify.png\' height=16 width=16 style=padding-top:2px /></a></span>';
                 }
                 if (sessions == 1) { lastAccess += nobreak("1 session"); } else { lastAccess += nobreak(format("{0} sessions", sessions)); }
             } else {
-                if (user.login) { lastAccess += '<span title=\"' + format("Last login: {0}", printDateTime(new Date(user.login * 1000))) + '\">' + printDate(new Date(user.login * 1000)) + '</span>'; }
+                if (user.login) { lastAccess += '<span title="' + format("Last login: {0}", printDateTime(new Date(user.login * 1000))) + '">' + printDate(new Date(user.login * 1000)) + '</span>'; }
             }
-            if (self) { permissions += '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,\"' + encodeURIComponent(user._id) + '\")\'>'; }
+            if (self) { permissions += '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,"' + encodeURIComponent(user._id) + '")\'>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked" + ',&nbsp;'; }
             permissions += '<span title=\'' + "Server Permissions" + '\'>';
 
@@ -9851,7 +9849,7 @@
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
             x += '<div class=bar>';
-            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser(\"' + encodeURIComponent(user._id) + '\",false,event)>';
+            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponent(user._id) + '",false,event)>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             x += '<div class=g1></div><div class=g2></div><div>';
             x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
@@ -10023,7 +10021,7 @@
                     if (users[i].otphkeys > 0) { factors.push('SecurityKey'); }
                     if (users[i].otpkeys > 0) { factors.push('BackupCodes'); }
                 }
-                csv += '\"' + users[i]._id + '\",\"' + users[i].name + '\",\"' + (users[i].email ? users[i].email : '') + '\",\"' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '\",\"' + (users[i].login ? new Date(users[i].login * 1000) : '') + '\",\"' + (users[i].groups ? users[i].groups.join(',') : '') + '\",\"' + (multiFactor ? factors.join(',') : '') + '\"\r\n';
+                csv += '"' + users[i]._id + '","' + users[i].name + '","' + (users[i].email ? users[i].email : '') + '","' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '","' + (users[i].login ? new Date(users[i].login * 1000) : '') + '","' + (users[i].groups ? users[i].groups.join(',') : '') + '","' + (multiFactor ? factors.join(',') : '') + '"\r\n';
             }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "userlist.csv");
             return false;
@@ -10117,7 +10115,7 @@
             var user = users[userid.toLowerCase()], groups = "";
             if (user.groups != null) { groups = user.groups.join(', ') }
             var x = "Enter a comma seperate list of administrative realms names." + '<br /><br />';
-            x += addHtmlValue("Realms", '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder=\"' + "Name1, Name2, Name3" + '\" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
+            x += addHtmlValue("Realms", '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="' + "Name1, Name2, Name3" + '" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
             setDialogMode(2, "Administrative Realms", 3, showUserGroupDialogEx, x, user);
             focusTextBox('dp4usergroups');
             p4validateUserGroups();
@@ -10126,7 +10124,7 @@
 
         function p4validateUserGroups() {
             var groups = Q('dp4usergroups').value;
-            var k = 0, i = groups.indexOf('\"') + groups.indexOf('/') + groups.indexOf('>') + groups.indexOf('<') + groups.indexOf('\'');
+            var k = 0, i = groups.indexOf('"') + groups.indexOf('/') + groups.indexOf('>') + groups.indexOf('<') + groups.indexOf('\'');
             var g = groups.split(',');
             for (var j in g) { if (g[j].trim().length == 0) k++; }
             QE('idx_dlgOkButton', (groups == '') || ((i == -5) && (k < 1)));
@@ -10265,9 +10263,9 @@
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
             x += '<div class=baricon><input class=UserGroupCheckbox value=' + encodeURIComponent(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
-            x += '<div class=baricon onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")><div class=m4></div></div>';
-            x += '<div class=g1 onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")></div><div class=g2 onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")></div>';
-            x += '<div onclick=gotoUserGroup(\"' + encodeURIComponent(group._id) + '\")><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
+            x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")><div class=m4></div></div>';
+            x += '<div class=g1 onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")></div><div class=g2 onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")></div>';
+            x += '<div onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
             return x;
         }
 
@@ -10354,7 +10352,7 @@
             // Add user group name
             var gname = EscapeHtml(group.name);
             if (gname.length == 0) { gname = '<i>' + "None" + '</i>'; }
-            if ((userinfo.siteadmin & 256) != 0) { gname = '<span tabindex=0 title=\"' + "Click here to edit the user group name" + '\" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)" style=cursor:pointer>' + gname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((userinfo.siteadmin & 256) != 0) { gname = '<span tabindex=0 title="' + "Click here to edit the user group name" + '" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)" style=cursor:pointer>' + gname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p51groupName', gname);
 
             var usercount = 0, meshcount = 0, devicecount = 0;
@@ -10381,7 +10379,7 @@
             x += '</table></div><br />';
 
             if ((userinfo.siteadmin & 256) != 0) {
-                x += '<input type=button value=\"' + "Broadcast" + '\" title=\"' + "Send a notice to all users in this group." + '\" onclick=showUserBroadcastDialog("' + encodeURIComponent(group._id) + '") />';
+                x += '<input type=button value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponent(group._id) + '") />';
             }
 
             // Setup the panel
@@ -10406,10 +10404,10 @@
 
             // Display all users for this user group
             for (var i in sortedusers) {
-                var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
                 if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
-                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User" + '\" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User" + '" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                 ++count;
             }
 
@@ -10433,10 +10431,10 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else {}
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponent(mesh._id) + '")\' title=\"' + "Remove user group rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,\"' + encodeURIComponent(mesh._id) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponent(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponent(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
-                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
             }
             if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No device groups in common" + '</i><div></div></div></td><td></td></tr>'; }
@@ -10455,10 +10453,10 @@
                     var nodename = '<i>' + "Unknown Device" + '</i>';
                     if (node) { nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '");haltEvent(event);\'>' + node.name + '</a>'; } else {}
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeDeviceFromUserGroup(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user group rights to this device" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(7,\"' + encodeURIComponent(node._id) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p51removeDeviceFromUserGroup(event,"' + encodeURIComponent(node._id) + '")\' title="' + "Remove user group rights to this device" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(7,"' + encodeURIComponent(node._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
-                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
             }
             if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
@@ -10649,10 +10647,10 @@
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
-            if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title=\"' + "Email is verified" + '\">&#x2713</b> ' : '<b style=color:red;cursor:pointer title=\"' + "Email not verified" + '\">&#x2717;</b> '); }
+            if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
             if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", user._id.split('/')[2]); }
             if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
-                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,\"' + userid + '\") />');
+                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
             } else {
                 x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>');
             }
@@ -10661,7 +10659,7 @@
                 x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
             }
             
-            x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,\"' + userid + '\")\' src="images/link5.png" />');
+            x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,"' + userid + '")\' src="images/link5.png" />');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));
             if (user.login) x += addDeviceAttribute("Last Login", printDateTime(new Date(user.login * 1000)));
@@ -10680,7 +10678,7 @@
             if ((userinfo.siteadmin == 0xFFFFFFFF) || (userinfo.siteadmin & 2)) {
                 var xuserGroups = '<i>' + "None" + '</i>';
                 if (user.groups) { xuserGroups = ''; for (var i in user.groups) { xuserGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
-                x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,\"' + userid + '\")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
+                x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,"' + userid + '")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
             }
 
             // Display device user consent
@@ -10707,15 +10705,15 @@
                 if (user.otphkeys > 0) { factors.push("Security Key"); }
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
-                x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title=\"' + "2nd factor authentication enabled" + '\" style="margin-top:2px" /> ' + factors.join(', '));
+                x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
             x += '</table></div><br />';
 
             // Add action buttons
-            x += '<input type=button value=\"' + "Notes" + '\" title=\"' + "View notes about this user" + '\" onclick=showNotes(false,"' + userid + '") />';
-            if (user.phone && (features & 0x02000000)) { x += '<input type=button value=\"' + "SMS" + '\" title=\"' + "Send a SMS message to this user" + '\" onclick=showSendSMS("' + userid + '") />'; }
-            if (!self && (activeSessions > 0)) { x += '<input type=button value=\"' + "Notify" + '\" title=\"' + "Send user notification" + '\" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
+            x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + userid + '") />';
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + userid + '") />'; }
+            if (!self && (activeSessions > 0)) { x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
 
             // Setup the panel
             QH('p30html', x);
@@ -10873,10 +10871,10 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; }
                     if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { // 2 = MESHRIGHT_MANAGEUSERS
-                        trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponent(mesh._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,\"' + encodeURIComponent(mesh._id) + '\")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponent(mesh._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,"' + encodeURIComponent(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
-                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device Group" + '\" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
             }
             if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No device groups in common" + '</i><div></div></div></td><td></td></tr>'; }
@@ -10903,8 +10901,8 @@
                             groupname = EscapeHtml(group.name);
                             if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponent(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponent(ougroups[i]._id) + '")\' title=\"' + "Remove user group membership" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
-                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title=\"' + "User Group" + '\" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponent(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User Group" + '" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
                 if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No user group memberships" + '</i><div></div></div></td><td></td></tr>'; }
@@ -10925,11 +10923,11 @@
                     if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
                     var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title=\"' + "Remove user rights to this device group" + '\" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(4,\"' + encodeURIComponent(node._id) + '\")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(4,"' + encodeURIComponent(node._id) + '")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + nodename + '</a>';
-                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title=\"' + "Device" + '\" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device" + '" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
             }
             if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
@@ -11106,7 +11104,7 @@
                 var h = '';
                 if (f.t < 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title=\"' + title + '\"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset(\"' + encodeURIComponent(f.nx) + '\")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset(\"' + encodeURIComponent(f.nx) + '\")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponent(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponent(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
@@ -11296,41 +11294,41 @@
             });
         }
 
-        var serverStatsStrings = {
-            ServerState: "Server State",
-            AgentErrorCounters: "Agent Error Counters",
-            UnknownGroup: "Unknown Group",
-            InvalidPKCSsignature: "Invalid PKCS signature",
-            InvalidRSAsiguature: "Invalid RSA siguature",
-            InvalidJSON: "Invalid JSON",
-            UnknownAction: "Unknown Action",
-            BadWebCertificate: "Bad Web Certificate",
-            BadSignature: "Bad Signature",
-            MaxSessionsReached: "Max Sessions Reached",
-            UnknownDeviceGroup: "Unknown Device Group",
-            InvalidDeviceGroupType: "Invalid Device Group Type",
-            DuplicateAgent: "Duplicate Agent",
-            ConnectedIntelAMT: "Connected Intel&reg; AMT",
-            RelayErrors: "Relay Errors",
-            UserAccounts: "User Accounts",
-            DeviceGroups: "Device Groups",
-            AgentSessions: "Agent Sessions",
-            ConnectedUsers: "Connected Users",
-            UsersSessions: "Users Sessions",
-            RelaySessions: "Relay Sessions",
-            RelayCount: "Relay Count"
-        };
-
         var lastServerStats = null;
         function updateGeneralServerStats(message) {
             if (message != null) { lastServerStats = message; } else { message = lastServerStats; }
             if (message == null) return;
 
+            var serverStatsStrings = {
+                ServerState: "Server State",
+                AgentErrorCounters: "Agent Error Counters",
+                UnknownGroup: "Unknown Group",
+                InvalidPKCSsignature: "Invalid PKCS signature",
+                InvalidRSAsiguature: "Invalid RSA siguature",
+                InvalidJSON: "Invalid JSON",
+                UnknownAction: "Unknown Action",
+                BadWebCertificate: "Bad Web Certificate",
+                BadSignature: "Bad Signature",
+                MaxSessionsReached: "Max Sessions Reached",
+                UnknownDeviceGroup: "Unknown Device Group",
+                InvalidDeviceGroupType: "Invalid Device Group Type",
+                DuplicateAgent: "Duplicate Agent",
+                ConnectedIntelAMT: "Connected Intel&reg; AMT",
+                RelayErrors: "Relay Errors",
+                UserAccounts: "User Accounts",
+                DeviceGroups: "Device Groups",
+                AgentSessions: "Agent Sessions",
+                ConnectedUsers: "Connected Users",
+                UsersSessions: "Users Sessions",
+                RelaySessions: "Relay Sessions",
+                RelayCount: "Relay Count"
+            };
+
             // Paint the pie graphs
             if (typeof message.cpuavg == 'object') {
                 var m = Math.min(message.cpuavg[0], 1);
                 window.serverStatCpu.config.data.datasets[0].data = [m, 1 - m];
-                QH('serverCpuChartText', '<div style=margin-bottom:5px>' + "CPU Load" + '</div><div><b title=\"' + "CPU load in the last minute" + '\">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title=\"' + "CPU load in the last 5 minutes" + '\">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title=\"' + "CPU load in the last 15 minutes" + '\">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
+                QH('serverCpuChartText', '<div style=margin-bottom:5px>' + "CPU Load" + '</div><div><b title="' + "CPU load in the last minute" + '">' + (Math.round(message.cpuavg[0] * 100.0) / 100.0) + '</b>, <b title="' + "CPU load in the last 5 minutes" + '">' + (Math.round(message.cpuavg[1] * 100.0) / 100.0) + '</b>, <b title="' + "CPU load in the last 15 minutes" + '">' + (Math.round(message.cpuavg[2] * 100.0) / 100.0) + '</b></div>');
                 QS('serverCpuChartView')['display'] = 'inline-block';
                 window.serverStatCpu.update();
             }
@@ -11342,7 +11340,6 @@
             }
 
             // Display all of the server values
-            // serverStatsStrings
             var x = '<div style=width:100% cellpadding=0 cellspacing=0>';
             if (typeof message.values == 'object') {
                 for (var i in message.values) {
@@ -11548,7 +11545,7 @@
 
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
-            for (var i in serverTrace) { csv += '\"' + new Date(serverTrace[i].time).toLocaleTimeString() + '\",\"' + serverTrace[i].source + '\",\"' + serverTrace[i].args.join(', ') + '\"\r\n'; }
+            for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "servertrace.csv");
             return false;
         }
@@ -11620,7 +11617,7 @@
             QV('uiMenu', false);
 
             // If "shift" is pressed, open a new tab.
-            if (event && (event.shiftKey == true) && (x != 15) && ('{{currentNode}}' == '')) {
+            if (event && (event.shiftKey == true) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
                     if (currentNode) { window.open(window.location.origin + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
@@ -11852,8 +11849,8 @@
                     }
                     p.actions += '</select>';
 
-                    let tpl = '<td><img style=margin-top:3px src=images/plugin24.png></td><td class=gradTable1>&nbsp;</td><td class=gradTable2>' + p.nameHtml + '</td><td class=gradTable2>' + p.description + '</td><td class=gradTable2 style=text-align:center><a href="' + p.homepage + '" target="_blank">Home</a></td><td class=gradTable2 style=text-align:center>' + p.version + '</td><td style=text-align:center class="pluginUpgradeAvailable gradTable2">' + p.upgradeAvail + '</td><td class=gradTable2 style="text-align:center;color:#' + p.statusColor + '">' + p.statusText + '</td><td class="pluginAction gradTable2" style=text-align:center>' + p.actions + '</td><td class=gradTable3>&nbsp;</td>';
-                    let tr = tbl.insertRow(-1);
+                    var tpl = '<td><img style=margin-top:3px src=images/plugin24.png></td><td class=gradTable1>&nbsp;</td><td class=gradTable2>' + p.nameHtml + '</td><td class=gradTable2>' + p.description + '</td><td class=gradTable2 style=text-align:center><a href="' + p.homepage + '" target="_blank">Home</a></td><td class=gradTable2 style=text-align:center>' + p.version + '</td><td style=text-align:center class="pluginUpgradeAvailable gradTable2">' + p.upgradeAvail + '</td><td class=gradTable2 style="text-align:center;color:#' + p.statusColor + '">' + p.statusText + '</td><td class="pluginAction gradTable2" style=text-align:center>' + p.actions + '</td><td class=gradTable3>&nbsp;</td>';
+                    var tr = tbl.insertRow(-1);
                     tr.innerHTML = tpl;
                     tr.classList.add('p42tblRow');
                     tr.setAttribute('data-id', p._id);
@@ -12098,7 +12095,7 @@
             }
         }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress=\"if (event.key==\'Enter\') {' + f + '} \">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
+        function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement('option'); option.text = t; option.value = i; Q(q).add(option); }
@@ -12112,8 +12109,8 @@
         function AddButton(v, f) { return '<input type=button value="' + v + '" onclick="' + f + '" style=margin:4px>'; }
         function AddButton2(v, f) { return '<input type=button value="' + v + '" onclick="' + f + '">'; }
         function AddRefreshButton(f) { return '<input type=button name=refreshbtn value=Refresh onclick="refreshButtons(false);' + f + '" style=margin:4px ' + (refreshButtonsState==false?'disabled':'') + '>'; }
-        function MoreStart() { return '<a href=# style=cursor:pointer;color:blue id=morexxx1 onclick=QV(\"morexxx1\",false);QV(\"morexxx2\",true)>&#x25BC; ' + "More" + '</a><div id=morexxx2 style=display:none><br><hr>'; };
-        function MoreEnd() { return '<a href=# style=cursor:pointer;color:blue onclick=QV(\"morexxx2\",false);QV(\"morexxx1\",true)>&#x25B2; ' + "Less" + '</a></div>'; };
+        function MoreStart() { return '<a href=# style=cursor:pointer;color:blue id=morexxx1 onclick=QV("morexxx1",false);QV("morexxx2",true)>&#x25BC; ' + "More" + '</a><div id=morexxx2 style=display:none><br><hr>'; };
+        function MoreEnd() { return '<a href=# style=cursor:pointer;color:blue onclick=QV("morexxx2",false);QV("morexxx1",true)>&#x25B2; ' + "Less" + '</a></div>'; };
         function getSelectedOptions(sel) { var opts = [], opt; for (var i = 0, len = sel.options.length; i < len; i++) { opt = sel.options[i]; if (opt.selected) { opts.push(opt.value); } } return opts; }
         function getInstance(x, y) { for (var i in x) { if (x[i]['InstanceID'] == y) return x[i]; } return null; }
         function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
@@ -12138,7 +12135,7 @@
         function printDateTime(d) { return d.toLocaleString(args.locale); }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
-        function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href=\"' + link + '\">' + subtext + '</a>' + text.substring(i + subtext.length); }
+        function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href="' + link + '">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function getOrderedList(objList, oname) { var r = []; for (var i in objList) { r.push(objList[i]); } r.sort(function(a, b) { var aa = a[oname].toLowerCase(), bb = b[oname].toLowerCase(); if (aa > bb) return 1; if (aa < bb) return -1; return 0; }); return r; }
         function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
