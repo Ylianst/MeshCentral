@@ -224,7 +224,7 @@
                         <td id=devListToolbar class=style14 style="display:none">
                             &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
-                            <input id=SearchInput type=text placeholder=Filter onchange=masterUpdate(5) onkeyup=masterUpdate(5) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                            <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
@@ -232,6 +232,7 @@
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
                             <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
+                            <input id=KvmSearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                         </td>
                         <td id=devMapToolbar class=style14 style="display:none">
                             &nbsp;&nbsp;<input type=text id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
@@ -1298,7 +1299,7 @@
             // Setup page controls
             Q('sortselect').selectedIndex = sort = getstore('sort', 0);
             Q('sizeselect').selectedIndex = getstore('viewsize', 1);
-            Q('SearchInput').value = getstore('_search', '');
+            Q('KvmSearchInput').value = Q('SearchInput').value = getstore('_search', '');
             showRealNames = (getstore('showRealNames', 0) == 1);
             Q('RealNameCheckBox').checked = showRealNames;
             Q('viewselect').value = getstore('deviceView', 1);
@@ -2868,18 +2869,18 @@
                 return;
             }
             if (e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
-            if (Q('viewselect').value < 3) {
+            if (Q('viewselect').value < 4) {
                 var processed = 0;
                 if (e.key) {
-                    if (e.key.length === 1 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + e.key)); processed = 1; }
-                    if (e.keyCode == 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = x.substring(0, x.length - 1); processed = 1; }
-                    if (e.keyCode == 27) { Q('SearchInput').value = ''; processed = 1; }
+                    if (e.key.length === 1 && searchFocus == 0) { Q('KvmSearchInput').value = Q('SearchInput').value = ((Q('SearchInput').value + e.key)); processed = 1; }
+                    if (e.keyCode == 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('KvmSearchInput').value = Q('SearchInput').value = x.substring(0, x.length - 1); processed = 1; }
+                    if (e.keyCode == 27) { Q('KvmSearchInput').value = Q('SearchInput').value = ''; processed = 1; }
                 } else {
-                    if (e.charCode != 0 && searchFocus == 0) { Q('SearchInput').value = ((Q('SearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
+                    if (e.charCode != 0 && searchFocus == 0) { Q('KvmSearchInput').value = Q('SearchInput').value = ((Q('SearchInput').value + String.fromCharCode(e.charCode))); processed = 1; }
                 }
                 if (processed > 0) { if (processed == 1) { masterUpdate(5); } return haltEvent(e); }
             }
-            if (Q('viewselect').value == 3) {
+            if (Q('viewselect').value == 4) {
                 if (e.key) {
                     if (e.key.length === 1 && mapSearchFocus == 0) { Q('mapSearchLocation').value = ((Q('mapSearchLocation').value + e.key)); processed = 1; }
                     //if (e.keyCode == 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = x.substring(0, x.length - 1); processed = 1; }
@@ -2914,12 +2915,12 @@
             }
             if (xxdialogMode || xxcurrentView != 1 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
             var processed = 0;
-            if (Q('viewselect').value < 3) {
-                if (e.keyCode === 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
-                if (e.keyCode === 27) { Q('SearchInput').value = ''; processed = 1; }
+            if (Q('viewselect').value < 4) {
+                if (e.keyCode === 8 && searchFocus == 0) { var x = Q('SearchInput').value; Q('KvmSearchInput').value = Q('SearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
+                if (e.keyCode === 27) { Q('KvmSearchInput').value = Q('SearchInput').value = ''; processed = 1; }
                 if (processed > 0) { if (processed == 1) { masterUpdate(5); } return haltEvent(e); }
             }
-            if (Q('viewselect').value == 3) {
+            if (Q('viewselect').value == 4) {
                 if (e.keyCode === 8 && mapSearchFocus == 0) { var x = Q('mapSearchLocation').value; Q('mapSearchLocation').value = (x.substring(0, x.length - 1)); processed = 1; }
                 if (e.keyCode === 27) { Q('mapSearchLocation').value = ''; mapCloseSearchWindow(); processed = 1; }
             }
@@ -2943,8 +2944,8 @@
             if (!xxdialogMode && xxcurrentView == 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && e.keyCode == 27) { dialogclose(0); }
             if (xxdialogMode || xxcurrentView != 0 || e.ctrlKey == true || e.altKey == true || e.metaKey == true) return;
-            if (Q('viewselect').value < 3) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
-            if (Q('viewselect').value == 3) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
+            if (Q('viewselect').value < 4) { if ((e.keyCode === 8 && searchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
+            if (Q('viewselect').value == 4) { if ((e.keyCode === 8 && mapSearchFocus == 0) || e.keyCode === 27) { return haltEvent(e); } }
         }
 
         //function ondocfocus() { }
@@ -3404,6 +3405,7 @@
         }
         function disconnectAllKvmFunction() { if (xxdialogMode) return false; for (var nodeid in multiDesktop) { multiDesktop[nodeid].Stop(); } multiDesktop = {}; }
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) {} }
+        function onDeviceSearchChanged(e) { if (e.target.id == 'SearchInput') { Q('KvmSearchInput').value = Q('SearchInput').value; } else { Q('SearchInput').value = Q('KvmSearchInput').value; } masterUpdate(5); }
 
         function showMultiDesktopSettings() {
             QV('d7amtkvm', false);
