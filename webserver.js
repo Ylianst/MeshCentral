@@ -4746,7 +4746,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return the correct render page given mobile, minify and override path.
     function getRenderPage(pagename, req, domain) {
-        var mobile = isMobileBrowser(req), minify = obj.args.minify && !req.query.nominify, p;
+        var mobile = isMobileBrowser(req), minify = (domain.minify == true), p;
+        if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
         if (mobile) {
             if ((domain != null) && (domain.webviewspath != null)) { // If the domain has a web views path, use that first
                 if (minify) {
@@ -4798,7 +4799,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return the correct render page arguments.
     function getRenderArgs(xargs, domain) {
-        xargs.min = obj.args.minify?'-min':'';
+        xargs.min = domain.minify?'-min':'';
         xargs.titlehtml = domain.titlehtml;
         xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
         if ((domain.titlepicture == null) && (domain.titlehtml == null)) {
