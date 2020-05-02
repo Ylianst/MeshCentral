@@ -192,7 +192,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     // Setup the file reader
     var fileReader = new FileReader();
     var fileReaderInuse = false, fileReaderAcc = [];
-    if (fileReader.readAsBinaryString) {
+    if (fileReader.readAsBinaryString && (obj.m.ProcessBinaryData == null)) {
         // Chrome & Firefox (Draft)
         fileReader.onload = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
     } else if (fileReader.readAsArrayBuffer) {
