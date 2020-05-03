@@ -2236,7 +2236,7 @@ function CreateMeshCentralServer(config, args) {
             if (key == null) { key = obj.serverKey; }
             cookie = Buffer.from(cookie.replace(/\@/g, '+').replace(/\$/g, '/'), obj.args.cookieencoding ? obj.args.cookieencoding : 'base64');
             const decipher = obj.crypto.createDecipheriv('aes-256-gcm', key.slice(0, 32), cookie.slice(0, 12));
-            decipher.setAuthTag(cookie.slice(12, 16));
+            decipher.setAuthTag(cookie.slice(12, 28));
             const o = JSON.parse(decipher.update(cookie.slice(28), 'binary', 'utf8') + decipher.final('utf8'));
             if ((o.time == null) || (o.time == null) || (typeof o.time != 'number')) { obj.debug('cookie', 'ERR: Bad cookie due to invalid time'); return null; }
             o.time = o.time * 1000; // Decode the cookie creation time

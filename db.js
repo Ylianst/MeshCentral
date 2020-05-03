@@ -296,7 +296,7 @@ module.exports.CreateDB = function (parent, func) {
         const iv = ciphertextBytes.slice(0, 12);
         const data = ciphertextBytes.slice(28);
         const aes = parent.crypto.createDecipheriv('aes-256-gcm', obj.dbRecordsDecryptKey, iv);
-        aes.setAuthTag(ciphertextBytes.slice(12, 16));
+        aes.setAuthTag(ciphertextBytes.slice(12, 28));
         var plaintextBytes, r;
         try {
             plaintextBytes = Buffer.from(aes.update(data));
