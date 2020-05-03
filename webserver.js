@@ -1376,28 +1376,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
                     parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
-                    render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url) }, domain));
+                    render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url) }, req, domain));
                 } else {
                     obj.db.Get('user/' + cookie.u.toLowerCase(), function (err, docs) {
                         if (docs.length == 0) {
                             parent.debug('web', 'handleCheckMailRequest: Invalid username.');
-                            render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(idsplit[1]) }, domain));
+                            render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(idsplit[1]) }, req, domain));
                         } else {
                             var user = docs[0];
                             if (user.email != cookie.e) {
                                 parent.debug('web', 'handleCheckMailRequest: Invalid e-mail.');
-                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 3, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email), arg2: encodeURIComponent(user.name) }, domain));
+                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 3, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email), arg2: encodeURIComponent(user.name) }, req, domain));
                             } else {
                                 if (cookie.a == 1) {
                                     // Account email verification
                                     if (user.emailVerified == true) {
                                         parent.debug('web', 'handleCheckMailRequest: email already verified.');
-                                        render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email), arg2: encodeURIComponent(user.name) }, domain));
+                                        render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email), arg2: encodeURIComponent(user.name) }, req, domain));
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
                                             if (docs.length > 0) {
                                                 parent.debug('web', 'handleCheckMailRequest: email already in use.');
-                                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email) }, domain));
+                                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email) }, req, domain));
                                             } else {
                                                 parent.debug('web', 'handleCheckMailRequest: email verification success.');
 
@@ -1412,7 +1412,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the confirmation page
-                                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 6, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email), arg2: encodeURIComponent(user.name) }, domain));
+                                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 6, domainurl: encodeURIComponent(domain.url), arg1: encodeURIComponent(user.email), arg2: encodeURIComponent(user.name) }, req, domain));
 
                                                 // Send a notification
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: 'Email verified:<br /><b>' + EscapeHtml(user.email) + '</b>.', nolog: 1, id: Math.random() });
@@ -1426,7 +1426,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Account reset
                                     if (user.emailVerified != true) {
                                         parent.debug('web', 'handleCheckMailRequest: email not verified.');
-                                        render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 7, domainurl: encodeURIComponent(domain.url), arg1: EscapeHtml(user.email), arg2: EscapeHtml(user.name) }, domain));
+                                        render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 7, domainurl: encodeURIComponent(domain.url), arg1: EscapeHtml(user.email), arg2: EscapeHtml(user.name) }, req, domain));
                                     } else {
                                         // Set a temporary password
                                         obj.crypto.randomBytes(16, function (err, buf) {
@@ -1451,7 +1451,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the new password
-                                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, domain));
+                                                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
                                                 parent.debug('web', 'handleCheckMailRequest: send temporary password.');
 
                                                 // Send to authlog
@@ -1460,14 +1460,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         });
                                     }
                                 } else {
-                                    render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url) }, domain));
+                                    render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url) }, req, domain));
                                 }
                             }
                         }
                     });
                 }
             } else {
-                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url) }, domain));
+                render(req, res, getRenderPage('message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url) }, req, domain));
             }
         }
     }
@@ -1477,7 +1477,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleInviteRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 0 }, domain)); return; } // No invitation code
+        if ((req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 0 }, req, domain)); return; } // No invitation code
 
         // Each for a device group that has this invite code.
         for (var i in obj.meshes) {
@@ -1488,7 +1488,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
 
-        render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, domain)); // Bad invitation code
+        render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, req, domain)); // Bad invitation code
     }
 
     // Called to process an agent invite request
@@ -1506,7 +1506,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var installflags = cookie.f;
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).split('\'').join('%27'), installflags: installflags }, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).split('\'').join('%27'), installflags: installflags }, req, domain));
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
             var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
@@ -1515,7 +1515,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).split('\'').join('%27'), installflags: installflags }, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).split('\'').join('%27'), installflags: installflags }, req, domain));
         }
     }
 
@@ -1904,7 +1904,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     for (var i in domain.forceduserwebstate) { webstate2[i] = domain.forceduserwebstate[i]; }
                     webstate = JSON.stringify(webstate2);
                 }
-                render(req, res, getRenderPage('default', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)), domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() }, domain));
+                render(req, res, getRenderPage('default', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)), domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() }, req, domain));
             });
         } else {
             // Send back the login application
@@ -1981,7 +1981,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
 
         // Render the login page
-        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays }, domain));
+        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays }, req, domain));
     }
 
     // Handle a post request on the root
@@ -2054,7 +2054,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
                 const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                render(req, res, getRenderPage('xterm', req, domain), getRenderArgs({ serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)), name: EscapeHtml(node.name) }, domain));
+                render(req, res, getRenderPage('xterm', req, domain), getRenderArgs({ serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)), name: EscapeHtml(node.name) }, req, domain));
             });
         } else {
             res.redirect(domain.url + getQueryPortion(req));
@@ -2078,9 +2078,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var logoutcontrols = { name: user.name };
                 var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)) }, domain));
+                render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)) }, req, domain));
             } else {
-                render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent('{}') }, domain));
+                render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent('{}') }, req, domain));
             }
         } else {
             // See if there is a terms.txt file in meshcentral-data
@@ -2097,9 +2097,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         var logoutcontrols = { name: user.name };
                         var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
                         if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                        render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)) }, domain));
+                        render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)) }, req, domain));
                     } else {
-                        render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent('{}') }, domain));
+                        render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent('{}') }, req, domain));
                     }
                 });
             } else {
@@ -2112,9 +2112,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var logoutcontrols = { name: user.name };
                     var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
                     if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                    render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)) }, domain));
+                    render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)) }, req, domain));
                 } else {
-                    render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent('{}') }, domain));
+                    render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent('{}') }, req, domain));
                 }
             }
         }
@@ -2129,7 +2129,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)); }
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        render(req, res, getRenderPage('messenger', req, domain), getRenderArgs({ webrtconfig: webRtcConfig }, domain));
+        render(req, res, getRenderPage('messenger', req, domain), getRenderArgs({ webrtconfig: webRtcConfig }, req, domain));
     }
 
     // Returns the server root certificate encoded in base64
@@ -2290,10 +2290,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                render(req, res, getRenderPage('download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." }, domain));
+                render(req, res, getRenderPage('download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), message: "<a href='" + req.path + "?download=1'>" + filename + "</a>, " + stat.size + " byte" + ((stat.size < 2) ? '' : 's') + "." }, req, domain));
             }
         } else {
-            render(req, res, getRenderPage('download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), message: "Invalid file link, please check the URL again." }, domain));
+            render(req, res, getRenderPage('download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), message: "Invalid file link, please check the URL again." }, req, domain));
         }
     }
 
@@ -2442,7 +2442,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         parent.debug('web', 'handlePlayerRequest: sending player');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        render(req, res, getRenderPage('player', req, domain), getRenderArgs({}, domain));
+        render(req, res, getRenderPage('player', req, domain), getRenderArgs({}, req, domain));
     }
 
     // Handle domain redirection
@@ -4026,7 +4026,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var domain = getDomain(req);
                 if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
                 if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-                res.status(404).render(getRenderPage('error404', req, domain), getRenderArgs({}, domain));
+                res.status(404).render(getRenderPage('error404', req, domain), getRenderArgs({}, req, domain));
             });
         }
 
@@ -4798,8 +4798,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return the correct render page arguments.
-    function getRenderArgs(xargs, domain) {
-        xargs.min = domain.minify?'-min':'';
+    function getRenderArgs(xargs, req, domain) {
+        var minify = (domain.minify == true);
+        if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
+        xargs.min = minify ? '-min' : '';
         xargs.titlehtml = domain.titlehtml;
         xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
         if ((domain.titlepicture == null) && (domain.titlehtml == null)) {
