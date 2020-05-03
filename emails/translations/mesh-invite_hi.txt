@@ -1,35 +1,35 @@
-[[[SERVERNAME]]] - Invitation
+[[[SERVERNAME]]] - निमंत्रण
 ~<area-name>
-Hello [[[NAME]]],
+नमस्कार [[[NAME]]],
 ~</area-name>
-User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/) is requesting you install software to start the remote control session.
+उपयोगकर्ता [[[USERNAME]]] सर्वर पर [[[SERVERNAME]]] ([[[SERVERURL]]] /) आपसे रिमोट कंट्रोल सेशन शुरू करने के लिए सॉफ़्टवेयर स्थापित करने का अनुरोध कर रहा है।
 ~<area-msg>
 ~
-Message: [[[MSG]]]
+संदेश: [[[एमएसजी]]]
 ~
 ~</area-msg>
 ~<area-windows>
-For Windows, nagivate to the following link to complete the process:
+विंडोज के लिए, प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक पर जाएं:
 ~
 ~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-windows>
 ~<area-osx>
-For Apple OSX, nagivate to the following link to complete the process:
+Apple OSX के लिए, इस प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक पर जाएं:
 ~
 ~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>
-For Linux, cut & paste the following in a terminal to install the agent:
+लिनक्स में, एजेंट को स्थापित करने के लिए टर्मिनल में निम्नलिखित को काटें और चिपकाएँ:
 ~
 ~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
 ~
 ~</area-linux>
 ~<area-link>
-To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]] and follow the instructions.
+सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]] [[[LINKURL]]] पर जाएँ और निर्देशों का पालन करें।
 ~</area-link>
-If you did not initiate this request, please ignore this mail.
+यदि आपने यह अनुरोध आरंभ नहीं किया है, तो कृपया इस मेल को अनदेखा करें।
 ~
-Best regards,
+सादर,
 ~[[[USERNAME]]]

@@ -1,42 +1,42 @@
-<html><head></head><body><div>[[[SERVERNAME]]] - Invitation</div>
+<html><head></head><body><div>[[[SERVERNAME]]]-초대</div>
 <div style="font-family:Arial,Helvetica,sans-serif">
     <table style="background-color:#003366;color:lightgray;width:100%" cellpadding="8">
         <tbody><tr>
             <td>
-                <b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Agent Installation</b>
+                <b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]]-에이전트 설치</b>
             </td>
         </tr>
     </tbody></table>
     <area-name>
         <p>
-            Hello [[[NAME]]],
+            [[[NAME]]] 님, 안녕하세요.
         </p>
     </area-name>
-    <p>User [[[USERNAME]]] on server <a href="[[[SERVERURL]]]">[[[SERVERNAME]]]</a> is requesting you to install software to start a remote control session.</p>
+    <p>서버의 사용자 [[[USERNAME]]] <a href="[[[SERVERURL]]]">[[[서버 이름]]]</a> 원격 제어 세션을 시작하기 위해 소프트웨어를 설치하도록 요청하고 있습니다.</p>
     <area-msg>
         <p>
-            Message: <b notrans="1">[[[MSG]]]</b>
+            메시지: <b notrans="1">[[[MSG]]]</b>
         </p>
     </area-msg>
     <area-windows>
         <p style="margin-left:30px">
-            <a href="[[[SERVERURL]]]/meshagents?id=3&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Click here to download the MeshAgent for Windows.</a>
+            <a href="[[[SERVERURL]]]/meshagents?id=3&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Windows 용 MeshAgent를 다운로드하려면 여기를 클릭하십시오.</a>
         </p>
     </area-windows>
     <area-osx>
-        <p style="margin-left:30px"><a href="[[[SERVERURL]]]/meshagents?id=16&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Click here to download the MeshAgent for Apple OSX.</a></p>
+        <p style="margin-left:30px"><a href="[[[SERVERURL]]]/meshagents?id=16&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Apple OSX 용 MeshAgent를 다운로드하려면 여기를 클릭하십시오.</a></p>
     </area-osx>
     <area-linux>
         <p>
-            For Linux, cut &amp; paste the following in a terminal to install the agent:<br>
+            Linux의 경우 터미널에서 다음을 잘라내어 붙여 넣어 에이전트를 설치하십시오.<br>
             </p><pre style="margin-left:30px" notrans="1">wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh &amp;&amp; chmod 755 ./meshinstall.sh &amp;&amp; sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHIDHEX]]]\'</pre>
         <p></p>
     </area-linux>
     <area-link>
         <p>
-            To install the software, <a href="[[[SERVERURL]]][[[LINKURL]]]">click here</a> and follow the instructions.
+            소프트웨어를 설치하려면 <a href="[[[SERVERURL]]][[[LINKURL]]]">여기를 클릭하십시오</a> 지침을 따르십시오.
         </p>
     </area-link>
-    <p>If you did not initiate this request, please ignore this mail.</p>
-    Best regards,<br>[[[USERNAME]]]<br>
+    <p>이 요청을 시작하지 않은 경우이 메일을 무시하십시오.</p>
+    친애하는,<br>[[[사용자 이름]]]<br>
 </div></body></html>

@@ -73,7 +73,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         //console.log(controlMsg);
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
-            obj.setConsoleMessage(controlMsg.msg);
+            obj.setConsoleMessage(controlMsg.msg, controlMsg.msgid, controlMsg.msgargs);
         } else if ((controlMsg.type == 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
             if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
@@ -92,10 +92,12 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     }
 
     // Set the console message
-    obj.setConsoleMessage = function (str) {
+    obj.setConsoleMessage = function (str, id, args) {
         if (obj.consoleMessage == str) return;
         obj.consoleMessage = str;
-        if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage); }
+        obj.consoleMessageId = id;
+        obj.consoleMessageArgs = args;
+        if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage, obj.consoleMessageId); }
     }
 
     obj.sendCtrlMsg = function (x) { if (obj.ctrlMsgAllowed == true) { if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirSend', typeof x, x); } try { obj.socket.send(x); } catch (ex) { } } }

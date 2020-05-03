@@ -1,6 +1,6 @@
-[[[SERVERNAME]]] - Account Reset
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
+[[[SERVERNAME]]] - खाता रीसेट
+हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] से खाता पासवर्ड रीसेट करने का अनुरोध किया जा रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
-If you did not initiate this request, please ignore this mail.
+यदि आपने यह अनुरोध आरंभ नहीं किया है, तो कृपया इस मेल को अनदेखा करें।

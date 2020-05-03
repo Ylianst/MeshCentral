@@ -1,4 +1,4 @@
-[[[SERVERNAME]]] - Account Login
-Your login token is: [[[TOKEN]]]
+[[[SERVERNAME]]] - खाता लॉगिन
+आपका लॉगिन टोकन है: [[[टोकन]]]
 ~
-This token can only be used once and is valid for 5 minutes.
+यह टोकन केवल एक बार उपयोग किया जा सकता है और 5 मिनट के लिए वैध है।

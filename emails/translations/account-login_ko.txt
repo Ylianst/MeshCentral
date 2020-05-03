@@ -1,4 +1,4 @@
-[[[SERVERNAME]]] - Account Login
-Your login token is: [[[TOKEN]]]
+[[[SERVERNAME]]]-계정 로그인
+귀하의 로그인 토큰은 [[[TOKEN]]]입니다.
 ~
-This token can only be used once and is valid for 5 minutes.
+이 토큰은 한 번만 사용할 수 있으며 5 분 동안 유효합니다.

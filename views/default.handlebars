@@ -5835,6 +5835,16 @@
         var autoConnectDesktopTimer = null;
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
+        // Used to translate incoming agent console messages
+        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})" ];
+        function formatAgentConsoleMessage(msg, msgid, msgargs) {
+            var r;
+            if (msgargs == null) { msgargs = []; }
+            while (msgargs.length < 3) { msgargs.push(''); } // We need to call the format function in a way that works with older browsers and minifier, can't use apply() or ...
+            if (msgid && (msgid < agentConsoleMessages.length)) { r = EscapeHtml(format(agentConsoleMessages[msgid], (msgargs[0]), (msgargs[1]), (msgargs[2]))); } else { r = EscapeHtml(msg); }
+            return r.split('\n').join('<br />') + '<br /><br />';
+        }
+
         function connectDesktop(e, contype, tsid, consent) {
             if (xxdialogMode) return;
             if ((e != null) && (e.shiftKey != false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
@@ -5938,10 +5948,10 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onConsoleMessageChange = function () {
                         if (desktop.consoleMessage) {
-                            Q('p11DeskConsoleMsg').innerHTML += EscapeHtml(desktop.consoleMessage).split('\n').join('<br />') + '<br /><br />';
+                            Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
                             QV('p11DeskConsoleMsg', true);
-                            if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
-                            p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+                            //if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                            //p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
                         } else {
                             p11clearConsoleMsg();
                         }
@@ -6792,10 +6802,12 @@
                         terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
                         terminal.onConsoleMessageChange = function (server, msg) {
                             if (terminal.consoleMessage) {
-                                Q('p12TermConsoleMsg').innerHTML += EscapeHtml(terminal.consoleMessage).split('\n').join('<br />') + '<br /><br />';
+                                Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
                                 QV('p12TermConsoleMsg', true);
-                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
-                                p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                                //if (p12DeskConsoleMsgTimer != null) { clearTimeout(p12DeskConsoleMsgTimer); }
+                                //p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                            } else {
+                                p12clearConsoleMsg();
                             }
                         };
                     } else {
@@ -6813,10 +6825,12 @@
                         terminal.onStateChanged = onTerminalStateChange;
                         terminal.onConsoleMessageChange = function () {
                             if (terminal.consoleMessage) {
-                                Q('p12TermConsoleMsg').innerHTML += EscapeHtml(terminal.consoleMessage).split('\n').join('<br />') + '<br /><br />';
+                                Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
                                 QV('p12TermConsoleMsg', true);
-                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
-                                p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                                //if (p12DeskConsoleMsgTimer != null) { clearTimeout(p12DeskConsoleMsgTimer); }
+                                //p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                            } else {
+                                p12clearConsoleMsg();
                             }
                         }
                         terminal.Start(terminalNode._id);
@@ -6963,10 +6977,12 @@
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
                     if (files.consoleMessage) {
-                        Q('p13FilesConsoleMsg').innerHTML += EscapeHtml(files.consoleMessage).split('\n').join('<br />') + '<br /><br />';
+                        Q('p13FilesConsoleMsg').innerHTML += formatAgentConsoleMessage(files.consoleMessage, files.consoleMessageId, files.consoleMessageArgs);
                         QV('p13FilesConsoleMsg', true);
-                        if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
-                        p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
+                        //if (p13DeskConsoleMsgTimer != null) { clearTimeout(p13DeskConsoleMsgTimer); }
+                        //p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
+                    } else {
+                        p13clearConsoleMsg();
                     }
                 }
                 files.Start(filesNode._id);

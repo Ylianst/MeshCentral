@@ -1,5 +1,5 @@
-[[[SERVERNAME]]] - Account Invitation
-An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
+[[[SERVERNAME]]]-계정 초대
+서버 [[[SERVERNAME]]] ([[[SERVERURL]]] /)에서 계정이 생성되었습니다. 사용자 이름 "[[[계정 이름]]]"및 비밀번호 "[[[비밀번호] ]] ".
 ~
-Best regards,
+친애하는,
 ~[[[USERNAME]]]

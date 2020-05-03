@@ -1,6 +1,6 @@
-[[[SERVERNAME]]] - Email Verification
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+[[[SERVERNAME]]]-이메일 확인
+[[[USERNAME]]] 님, [[[SERVERNAME]]] ([[[SERVERURL]]]) 님이 이메일 확인을 수행하고 있습니다. 프로세스를 완료하려면 다음 링크로 이동하십시오.
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
-If you did not initiate this request, please ignore this mail.
+이 요청을 시작하지 않은 경우이 메일을 무시하십시오.
