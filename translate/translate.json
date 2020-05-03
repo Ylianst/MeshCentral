@@ -20785,6 +20785,7 @@
     },
     {
       "en": "Received invalid network data",
+      "nl": "Ongeldige netwerkgegevens ontvangen",
       "xloc": [
         "default.handlebars->25->679"
       ]
@@ -25644,6 +25645,7 @@
     },
     {
       "en": "Timeout",
+      "nl": "Time-out",
       "xloc": [
         "default.handlebars->25->678"
       ]
