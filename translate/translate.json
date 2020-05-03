@@ -18607,6 +18607,7 @@
     },
     {
       "en": "Open Player...",
+      "nl": "Open speler...",
       "xloc": [
         "default.handlebars->deskPlayerContextMenu->cxopenplayer->0"
       ]
@@ -20343,6 +20344,7 @@
     },
     {
       "en": "Record remote desktop session to file",
+      "nl": "Neem externe bureaublad sessie op naar een bestand",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
