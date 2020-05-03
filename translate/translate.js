@@ -175,6 +175,9 @@ function startEx(argv) {
         log('  TRANSLATEALL (languagefile) (language code)');
         log('    Translate all MeshCentral strings using the languages.json file.');
         log('');
+        log('  MINIFY [sourcefile]');
+        log('    Minify a single file.');
+        log('');
         log('  MINIFYALL');
         log('    Minify the main MeshCentral english web pages.');
         log('');
@@ -336,7 +339,7 @@ function startEx(argv) {
                 var inFile = fs.readFileSync(outname).toString();
 
                 // Perform minification pre-processing
-                if (outname.indexOf('default.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+                if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
                 if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
 
                 var minifiedOut = minify(inFile, {
@@ -358,7 +361,7 @@ function startEx(argv) {
 
                 // Perform minification post-processing
                 if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
-                if (outname.indexOf('default.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
 
                 fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
             }
@@ -381,7 +384,9 @@ function startEx(argv) {
 
         // Minify the file
         if (minifyLib = 2) {
-            var minifiedOut = minify(fs.readFileSync(outname).toString(), {
+            var inFile = fs.readFileSync(outname).toString()
+            if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+            var minifiedOut = minify(inFile, {
                 collapseBooleanAttributes: true,
                 collapseInlineTagWhitespace: false, // This is not good.
                 collapseWhitespace: true,
@@ -397,6 +402,7 @@ function startEx(argv) {
                 preserveLineBreaks: false,
                 useShortDoctype: true
             });
+            if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
             fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
         }
     }
@@ -758,6 +764,7 @@ function translateFromHtml(lang, file, createSubDir) {
 
     // Minify the file
     if (minifyLib = 2) {
+        if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
         var minifiedOut = minify(out, {
             collapseBooleanAttributes: true,
             collapseInlineTagWhitespace: false, // This is not good.
@@ -774,6 +781,7 @@ function translateFromHtml(lang, file, createSubDir) {
             preserveLineBreaks: false,
             useShortDoctype: true
         });
+        if (outnamemin.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
         fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
     }
 }
