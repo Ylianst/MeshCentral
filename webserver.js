@@ -67,15 +67,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
 
     // Variables
+    obj.args = args;
     obj.parent = parent;
     obj.filespath = parent.filespath;
     obj.db = db;
     obj.app = obj.express();
+    if (obj.args.agentport) { obj.agentapp = obj.express(); }
     obj.app.use(require('compression')());
     obj.tlsServer = null;
     obj.tcpServer = null;
     obj.certificates = certificates;
-    obj.args = args;
     obj.users = {};                             // UserID --> User
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
     obj.userGroups = {};                        // UGrpID --> User Group
@@ -3789,6 +3790,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.expressWs = require('express-ws')(obj.app, obj.tlsServer);
         }
 
+        // Start a second agent-only server if needed
+        if (obj.args.agentport) {
+            if (obj.args.notls || obj.args.tlsoffload) {
+                // Setup the HTTP server without TLS
+                obj.expressWsAlt = require('express-ws')(obj.agentapp);
+            } else {
+                // Setup the agent HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
+                const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
+                if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
+                obj.tlsAltServer = require('https').createServer(tlsOptions, obj.agentapp);
+                obj.tlsAltServer.on('secureConnection', function () { /*console.log('tlsAltServer secureConnection');*/ });
+                obj.tlsAltServer.on('error', function (err) { console.log('tlsAltServer error', err); });
+                //obj.tlsAltServer.on('tlsClientError', function (err) { console.log('tlsClientError', err); });
+                obj.tlsAltServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+                obj.tlsAltServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
+                obj.expressWsAlt = require('express-ws')(obj.agentapp, obj.tlsAltServer);
+            }
+        }
+
         // Setup middleware
         obj.app.engine('handlebars', obj.exphbs({ defaultLayout: null })); // defaultLayout: 'main'
         obj.app.set('view engine', 'handlebars');
@@ -3970,6 +3990,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             }
 
+            // Setup the alternative agent-only port
+            if (obj.args.agentport) {
+                // Receive mesh agent connections on alternate port
+                obj.agentapp.ws(url + 'agent.ashx', function (ws, req) {
+                    var domain = checkAgentIpAddress(ws, req);
+                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
+                    //console.log('Agent connect: ' + cleanRemoteAddr(req.ip));
+                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
+                });
+
+                // Setup mesh relay on alternative agent-only port
+                obj.agentapp.ws(url + 'meshrelay.ashx', function (ws, req) {
+                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
+                        if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
+                            obj.meshDesktopMultiplexHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Desktop multiplexor 1-to-n
+                        } else {
+                            obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Normal relay 1-to-1
+                        }
+                    });
+                });
+            }
+
             // Memory Tracking
             if (typeof obj.args.memorytracking == 'number') {
                 obj.app.get(url + 'memorytracking.csv', function (req, res) {
@@ -4030,8 +4072,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             });
         }
 
-        // Start server on a free port
+        // Start server on a free port.
         CheckListenPort(obj.args.port, StartWebServer);
+
+        // Start on a second agent-only alternative port if needed.
+        if (obj.args.agentport) { CheckListenPort(obj.args.agentport, StartAltWebServer); }
     }
 
     // Authenticates a session and forwards
@@ -4281,6 +4326,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 console.log('   sudo setcap \'cap_net_bind_service= +ep\' `which node` \r\n');
                 obj.parent.addServerWarning('Server running without permissions to use ports below 1025.', false);
             }
+        }
+    }
+
+    // Start the ExpressJS web server on agent-only alternative port
+    function StartAltWebServer(port) {
+        if ((port < 1) || (port > 65535)) return;
+        if (obj.tlsAltServer != null) {
+            if (obj.args.lanonly == true) {
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            } else {
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            }
+            if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
+            obj.parent.updateServerState('https-agent-port', port);
+        } else {
+            obj.tcpAltServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            obj.parent.updateServerState('http-agent-port', port);
         }
     }
 
