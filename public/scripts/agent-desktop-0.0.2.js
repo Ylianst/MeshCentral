@@ -215,7 +215,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((command >= 18) && (command != 65) && (command != 88)) {
             console.error("Invalid KVM command " + command + " of size " + cmdsize);
             console.log("Invalid KVM data", str.length, rstr2hex(str.substring(0, 40)) + '...');
-            if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage("Invalid KVM command " + command + " of size " + cmdsize); }
+            if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage("Received invalid network data", 5); }
             return;
         }
         if (cmdsize > str.length) {

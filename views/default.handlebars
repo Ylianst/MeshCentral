@@ -5836,7 +5836,7 @@
         function autoConnectDesktop(e) { if (autoConnectDesktopTimer == null) { autoConnectDesktopTimer = setInterval(function() { connectDesktop(null, 1) }, 1000); } else { clearInterval(autoConnectDesktopTimer); autoConnectDesktopTimer = null; } }
 
         // Used to translate incoming agent console messages
-        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})" ];
+        var agentConsoleMessages = [ '', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data" ];
         function formatAgentConsoleMessage(msg, msgid, msgargs) {
             var r;
             if (msgargs == null) { msgargs = []; }
@@ -5950,8 +5950,8 @@
                         if (desktop.consoleMessage) {
                             Q('p11DeskConsoleMsg').innerHTML += formatAgentConsoleMessage(desktop.consoleMessage, desktop.consoleMessageId, desktop.consoleMessageArgs);
                             QV('p11DeskConsoleMsg', true);
-                            //if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
-                            //p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+                            if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                            if (desktop.consoleMessageTimeout) { p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, desktop.consoleMessageTimeout * 1000); }
                         } else {
                             p11clearConsoleMsg();
                         }
@@ -6804,8 +6804,8 @@
                             if (terminal.consoleMessage) {
                                 Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
                                 QV('p12TermConsoleMsg', true);
-                                //if (p12DeskConsoleMsgTimer != null) { clearTimeout(p12DeskConsoleMsgTimer); }
-                                //p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
+                                if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
                             } else {
                                 p12clearConsoleMsg();
                             }
@@ -6827,8 +6827,8 @@
                             if (terminal.consoleMessage) {
                                 Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
                                 QV('p12TermConsoleMsg', true);
-                                //if (p12DeskConsoleMsgTimer != null) { clearTimeout(p12DeskConsoleMsgTimer); }
-                                //p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, 8000);
+                                if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
+                                if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
                             } else {
                                 p12clearConsoleMsg();
                             }
@@ -6979,8 +6979,8 @@
                     if (files.consoleMessage) {
                         Q('p13FilesConsoleMsg').innerHTML += formatAgentConsoleMessage(files.consoleMessage, files.consoleMessageId, files.consoleMessageArgs);
                         QV('p13FilesConsoleMsg', true);
-                        //if (p13DeskConsoleMsgTimer != null) { clearTimeout(p13DeskConsoleMsgTimer); }
-                        //p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, 8000);
+                        if (p13DeskConsoleMsgTimer != null) { clearTimeout(p13DeskConsoleMsgTimer); }
+                        if (files.consoleMessageTimeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, files.consoleMessageTimeout * 1000); }
                     } else {
                         p13clearConsoleMsg();
                     }
