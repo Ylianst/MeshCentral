@@ -1,35 +1,35 @@
-[[[SERVERNAME]]] - Invitation
+[[[SERVERNAME]]]-초대
 ~<area-name>
-Hello [[[NAME]]],
+[[[NAME]]] 님, 안녕하세요.
 ~</area-name>
-User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/) is requesting you install software to start the remote control session.
+서버 [[[SERVERNAME]]] ([[[SERVERURL]]] /)의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해 소프트웨어를 설치하도록 요청하고 있습니다.
 ~<area-msg>
 ~
-Message: [[[MSG]]]
+메시지 : [[[MSG]]]
 ~
 ~</area-msg>
 ~<area-windows>
-For Windows, nagivate to the following link to complete the process:
+Windows의 경우 다음 링크로 이동하여 프로세스를 완료하십시오.
 ~
 ~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-windows>
 ~<area-osx>
-For Apple OSX, nagivate to the following link to complete the process:
+Apple OSX의 경우 다음 링크로 이동하여 프로세스를 완료하십시오.
 ~
 ~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>
-For Linux, cut & paste the following in a terminal to install the agent:
+Linux의 경우 터미널에서 다음을 잘라내어 붙여 넣어 에이전트를 설치하십시오.
 ~
 ~wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'
 ~
 ~</area-linux>
 ~<area-link>
-To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]] and follow the instructions.
+소프트웨어를 설치하려면 [[[SERVERURL]]] [[[LINKURL]]]으로 이동하여 지침을 따르십시오.
 ~</area-link>
-If you did not initiate this request, please ignore this mail.
+이 요청을 시작하지 않은 경우이 메일을 무시하십시오.
 ~
-Best regards,
+친애하는,
 ~[[[USERNAME]]]
