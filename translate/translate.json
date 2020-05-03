@@ -20336,6 +20336,12 @@
       ]
     },
     {
+      "en": "Record remote desktop session to file",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
       "cs": "Rekurzivní mazání",
       "de": "Rekursiv Löschen",
       "en": "Recursive delete",
@@ -21679,7 +21685,7 @@
       "ru": "Сохранить снимок экрана удаленного рабочего стола",
       "zh-chs": "保存遠程桌面的屏幕截圖",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -21711,10 +21717,7 @@
       "nl": "Opslaan...",
       "pt": "Salvar...",
       "ru": "Сохранить...",
-      "zh-chs": "保存...",
-      "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
-      ]
+      "zh-chs": "保存..."
     },
     {
       "cs": "Škálování",

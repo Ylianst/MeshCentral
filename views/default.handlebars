@@ -572,7 +572,7 @@
                             <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskBackgroundButton title="Toggle remote desktop background"><img src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskRecordButton title="Record remote desktop session to file" style="display:none"><img src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskRecordButton title="Record remote desktop session to file" style="display:none"><img id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
                             <select id="deskkeys">
@@ -5806,7 +5806,7 @@
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
-            QV('DeskRecordButton', (deskState == 3));
+            QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
             QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
 
@@ -5994,6 +5994,9 @@
             QH('deskstatus', str);
             switch (state) {
                 case 0:
+                    // Stop recording
+                    if (desktop.m.recordedData != null) { deskRecordSession(); }
+
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
                     desktopNode = desktop = null;
@@ -6530,13 +6533,13 @@
             if (desktop == null) return;
             if (desktop.m.recordedData == null) {
                 // Start recording
-                console.log('Start record');
+                Q('DeskRecordButtonImage').src = 'images/icon-film-red.png';
                 desktop.m.StartRecording();
             } else {
                 // Stop recording
-                console.log('Stop record');
-                var rec = desktop.m.StopRecording();
-                console.log('frames', rec.length);
+                Q('DeskRecordButtonImage').src = 'images/icon-film.png';
+                var d = new Date(), n = 'DesktopSesion-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
+                saveAs(data2blob(desktop.m.StopRecording().join('')), n + '.mcrec');
             }
         }
 
@@ -11658,6 +11661,9 @@
                 // Do not push into the back stack if we are changing tabs at the same level.
                 if ((xxcurrentView == 50) || (Math.floor(xxcurrentView / 10) != Math.floor(x / 10))) { goBackStack.push(xxcurrentView); }
             }
+
+            // If we are recording the desktop, stop it now.
+            if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // Edit this line when adding a new screen
             for (var i = 0; i < 52; i++) { QV('p' + i, i == x); }
