@@ -196,7 +196,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.debugmode > 1) { console.log("KRecv(" + str.length + "): " + rstr2hex(str.substring(0, Math.min(str.length, 40)))); }
         if (str.length < 4) return;
         var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2), jumboAdd = 0;
-        if (obj.recordedData != null) { obj.recordedData.push({ t: Date.now(), d: str }); }
+        if (obj.recordedData != null) { obj.recordedData.push(recordingEntry(2, 1, str.length)); obj.recordedData.push(str); }
         if ((command == 27) && (cmdsize == 8)) {
             // Jumbo packet
             if (str.length < 12) return;
@@ -779,15 +779,54 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.StartRecording = function () {
-        obj.recordedData = [];
-        obj.recordedStart = Date.now();
+        if (obj.recordedData != null) return;
+        // Take a screen shot and save it to file
+        obj.CanvasId['toBlob'](function (blob) {
+            var fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(blob);
+            fileReader.onload = function (event) {
+                // This is an ArrayBuffer, convert it to a string array
+                var binary = '', bytes = new Uint8Array(fileReader.result), length = bytes.byteLength;
+                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
+                obj.recordedData = [];
+                obj.recordedStart = Date.now();
+                obj.recordedSize = 0;
+                obj.recordedData.push(recordingEntry(1, 0, JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, time: new Date().toLocaleString(), protocol: 2 }))); // Metadata (nodeid: obj.nodeid)
+                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(7) + obj.shortToStr(8) + obj.shortToStr(obj.ScreenWidth) + obj.shortToStr(obj.ScreenHeight))); // Screen width and height
+                // Save a screenshot
+                var cmdlen = (4 + binary.length);
+                if (cmdlen > 65000) {
+                    // Jumbo Packet
+                    obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdlen) + obj.shortToStr(3) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + binary));
+                } else {
+                    // Normal packet
+                    obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(3) + obj.shortToStr(cmdlen) + obj.shortToStr(0) + obj.shortToStr(0) + binary));
+                }
+            };
+        });
     }
 
     obj.StopRecording = function () {
+        if (obj.recordedData == null) return;
         var r = obj.recordedData;
+        r.push(recordingEntry(3, 0, 'MeshCentralMCREC'));
         delete obj.recordedData;
         delete obj.recordedStart;
+        delete obj.recordedSize;
         return r;
+    }
+
+    function recordingEntry(type, flags, data) {
+        // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+        // Type (1 = Header, 2 = Network Data), Flags (1 = Binary, 2 = User), Size (4 bytes), Time (8 bytes)
+        var now = Date.now();
+        if (typeof data == 'number') {
+            obj.recordedSize += data;
+            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data) + obj.intToStr(now >> 32) + obj.intToStr(now & 32);
+        } else {
+            obj.recordedSize += data.length;
+            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data.length) + obj.intToStr(now >> 32) + obj.intToStr(now & 32) + data;
+        }
     }
 
     // Private method
