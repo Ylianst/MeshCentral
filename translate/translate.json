@@ -7737,6 +7737,7 @@
     },
     {
       "en": "Denied",
+      "nl": "Geweigerd",
       "es": "Negado",
       "fr": "Refusée",
       "hi": "निषेध",
@@ -10725,6 +10726,7 @@
     },
     {
       "en": "Failed to start remote terminal session, {0} ({1})",
+      "nl": "Kan externe terminalsessie niet starten, {0} ({1})",
       "es": "Error al iniciar sesión de terminal remota, {0} ({1})",
       "fr": "Impossible de démarrer la session de terminal distant, {0} ({1})",
       "hi": "दूरस्थ टर्मिनल सत्र शुरू करने में विफल, {0} ({1})",
@@ -27911,6 +27913,7 @@
     },
     {
       "en": "Waiting for user to grant access...",
+      "nl": "Wachten op toestemming van de gebruiker...",
       "es": "Esperando a que el usuario otorgue acceso ...",
       "fr": "En attente de l'autorisation d'accès par l'utilisateur ...",
       "hi": "उपयोगकर्ता की पहुँच की प्रतीक्षा कर रहा है ...",
