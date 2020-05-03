@@ -73,7 +73,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         //console.log(controlMsg);
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
-            obj.setConsoleMessage(controlMsg.msg, controlMsg.msgid, controlMsg.msgargs);
+            obj.setConsoleMessage(controlMsg.msg, controlMsg.msgid, controlMsg.msgargs, controlMsg.timeout);
         } else if ((controlMsg.type == 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
             if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
@@ -92,11 +92,12 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     }
 
     // Set the console message
-    obj.setConsoleMessage = function (str, id, args) {
+    obj.setConsoleMessage = function (str, id, args, timeout) {
         if (obj.consoleMessage == str) return;
         obj.consoleMessage = str;
         obj.consoleMessageId = id;
         obj.consoleMessageArgs = args;
+        obj.consoleMessageTimeout = timeout;
         if (obj.onConsoleMessageChange) { obj.onConsoleMessageChange(obj, obj.consoleMessage, obj.consoleMessageId); }
     }
 
