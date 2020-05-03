@@ -79,6 +79,9 @@
         <div id="cxfileedit" class="cmtext" onclick="cmfilesaction(2,event)"><b>Edit</b></div>
         <div id="cxfiledelete" class="cmtext" onclick="cmfilesaction(3,event)"><b>Delete</b></div>
     </div>
+    <div id="deskPlayerContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
+        <div id="cxopenplayer" class="cmtext" onclick="cmdeskplayeraction(1,event)"><b>Open Player...</b></div>
+    </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxclose" class="cmtext" onclick="pluginTabClose(event)">Close Tab</div>
@@ -572,7 +575,7 @@
                             <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskBackgroundButton title="Toggle remote desktop background"><img src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
-                            <span id=DeskRecordButton title="Record remote desktop session to file" style="display:none"><img id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
                             <select id="deskkeys">
@@ -4198,6 +4201,11 @@
             }
         }
 
+        function cmdeskplayeraction(action) {
+            if (xxdialogMode) return;
+            window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
+        }
+
         function p13deletefileCm(b, file) {
             files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: [ file.n ], rec: false });
             p13folderup(999);
@@ -4223,6 +4231,7 @@
             QV('deskConnectContextMenu', false);
             QV('altPortContextMenu', false);
             QV('filesContextMenu', false);
+            QV('deskPlayerContextMenu', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
         }
@@ -5806,7 +5815,7 @@
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
-            QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
+            QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && (desktop.m.StartRecording != null));
             QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
 
@@ -11640,15 +11649,15 @@
             if (event && (event.shiftKey == true) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
-                    if (currentNode) { window.open(window.location.origin + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
+                    if (currentNode) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
-                    if (currentMesh) { window.open(window.location.origin + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
+                    if (currentMesh) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
                 } else if ((x >= 30) && (x <= 39)) {
-                    if (currentUser) { window.open(window.location.origin + '?gotouser=' + currentUser._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
+                    if (currentUser) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + currentUser._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
                 } else if ((x >= 50) && (x <= 59)) {
-                    if (currentUserGroup) { window.open(window.location.origin + '?gotougrp=' + currentUserGroup._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
+                    if (currentUserGroup) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + currentUserGroup._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
                 } else { // if (x < 10))
-                    window.open(window.location.origin + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
+                    window.open(window.location.origin + '{{{domainurl}}}' + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
                 }
                 return;
             }
