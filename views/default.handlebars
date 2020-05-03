@@ -10128,8 +10128,8 @@
             QS('p4hemail').color = emailok?'black':'#7b241c';
 
             if (serverinfo.emailcheck) {
-                QE('p4verifiedEmail', ve);
-                QE('p4invitationEmail', ve && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
+                QE('p4verifiedEmail', emailok);
+                QE('p4invitationEmail', emailok && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
                 if (emailok == false) { Q('p4verifiedEmail').checked = false; }
                 if ((Q('p4resetNextLogin').checked == false) || (Q('p4verifiedEmail').checked == false)) { Q('p4invitationEmail').checked = false; }
             }
