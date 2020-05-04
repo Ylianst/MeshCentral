@@ -184,6 +184,7 @@
                             <tr>
                                 <td tabindex=0 id=UsersGeneral class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">Users</td>
                                 <td tabindex=0 id=UsersGroups class="topbar_td style3x" onclick=go(50,event) onkeypress="if (event.key == 'Enter') go(50)">Groups</td>
+                                <td tabindex=0 id=UsersRecordings class="topbar_td style3x" onclick=go(52,event) onkeypress="if (event.key == 'Enter') go(52)">Recordings</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -1034,6 +1035,25 @@
                     <br />
                 </div>
             </div>
+            <div id=p52 style="display:none">
+                <div id="p52title">
+                    <h1>My User Recordings</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div style="float:right">
+                                <input type=button onclick=openRecodringPlayer() value="Open Player..." />
+                            </div>
+                            <div>
+                            </div>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id=p52recordings style=""></div>
+            </div>
             <br id="column_l_bottomgap" />
         </div>
         <div id="footer">
@@ -1690,6 +1710,7 @@
                     if (updateNaggleFlags & 4096) { p20updateMesh(); }
                     if (updateNaggleFlags & 8192) { updateUserGroups(); }
                     if (updateNaggleFlags & 16384) { updateUsers(); }
+                    if (updateNaggleFlags & 32768) { updateRecordings(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
                     gotoStartViewPage();
@@ -1745,6 +1766,13 @@
                     else { var days = Math.floor(seconds / 86400); QH('p2nextPasswordUpdateTime', format((hours == 1) ? " - Reset in 1 day." : " - Reset in {0} days.", days)); }
                 }
             }
+
+            // Adjust "My Users" tabs
+            QV('MainMenuMyUsers', ((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0)));
+            QV('LeftMenuMyUsers', ((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0)));
+            QV('UsersGeneral', ((users != null) && ((features & 4) == 0)));
+            QV('UsersGroups', ((users != null) && ((features & 4) == 0)));
+            QV('UsersRecordings', ((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0));
         }
 
         function setSessionActivity() { sessionActivity = Date.now(); QH('idleTimeoutNotify', ''); }
@@ -1824,6 +1852,7 @@
                     for (var m in message.users) { users[message.users[m]._id] = message.users[m]; }
                     if (currentUser != null) { currentUser = users[currentUser._id]; }
                     masterUpdate(16384);
+                    updateSelf();
                     break;
                 }
                 case 'wssessioncount': {
@@ -9764,8 +9793,6 @@
         //
 
         function updateUsers() {
-            QV('MainMenuMyUsers', (users != null) && ((features & 4) == 0));
-            QV('LeftMenuMyUsers', (users != null) && ((features & 4) == 0));
             QV('UserNewAccountButton', ((features & 4) == 0) && (serverinfo.domainauth == false));
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
 
@@ -10196,6 +10223,7 @@
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>' + "Server Updates" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>' + "Manage Users" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusergroups>' + "Manage User Groups" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_managerecordings>' + "Manage Recordings" + '</label><br>';
             x += '<hr/></div><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
@@ -10212,11 +10240,13 @@
                 Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));       // No New Groups
                 Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));        // No Tools (MeshCMD / Router)
                 Q('ua_manageusergroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 256) != 0)); // Manage User Groups
+                Q('ua_managerecordings').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 512) != 0)); // Manage Recordings
             }
             QE('ua_fulladmin', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_serverbackup', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_manageusers', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_manageusergroups', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
+            QE('ua_managerecordings', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_serverrestore', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_fileaccess', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_fileaccessquota', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
@@ -10242,6 +10272,7 @@
                 QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
                 QE('ua_manageusergroups', !Q('ua_fulladmin').checked && Q('ua_manageusers').checked);
                 QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
+                QE('ua_managerecordings', !Q('ua_fulladmin').checked);
             }
         }
 
@@ -10257,6 +10288,7 @@
                 if (Q('ua_nonewgroups').checked == true) siteadmin += 64;
                 if (Q('ua_nomeshcmd').checked == true) siteadmin += 128;
                 if (Q('ua_manageusergroups').checked == true) siteadmin += 256;
+                if (Q('ua_managerecordings').checked == true) siteadmin += 512;
             }
             var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
@@ -11085,6 +11117,22 @@
             meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), user: currentUser.name });
         }
 
+
+        //
+        // Recordings
+        //
+
+        var p52recordings = null;
+        function updateRecordings() {
+            var x = 'Under construction';
+            QH('p52recordings', x);
+        }
+
+        function openRecodringPlayer() {
+            if (xxdialogMode) return;
+            window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
+        }
+
         //
         // FILE SELECTOR, DIALOG 3
         //
@@ -11690,8 +11738,11 @@
             // If we are recording the desktop, stop it now.
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
+            // If we are trying to go to "My Users" and we are not a user manager, move to recordings
+            if ((x == 4) && (users == null) || ((features & 4) != 0)) { x = 52; }
+
             // Edit this line when adding a new screen
-            for (var i = 0; i < 52; i++) { QV('p' + i, i == x); }
+            for (var i = 0; i < 53; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
             // Get out of fullscreen if needed
@@ -11706,7 +11757,7 @@
                     if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 30) && (xxcurrentView <= 39)) { // User Link
                     if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2]; }
-                } else if ((xxcurrentView >= 51) && (xxcurrentView <= 59)) { // User Group Link
+                } else if ((xxcurrentView >= 51) && (xxcurrentView <= 51)) { // User Group Link
                     if ((currentUserGroup != null) && (currentUserGroup._id != null)) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
                 } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
                 for (var i in urlargs) { urlviewmode += (((urlviewmode == '')?'?':'&') + i + '=' + urlargs[i]); }
@@ -11746,7 +11797,7 @@
                 // My Events
                 QC('MainMenuMyEvents').add(mainMenuActiveClass);
                 QC('LeftMenuMyEvents').add(leftMenuActiveClass);
-            } else if (x == 4 || (x >= 30 && x < 40) || (x == 50) || (x == 51)) {
+            } else if (x == 4 || (x >= 30 && x < 40) || (x == 50) || (x == 51) || (x == 52)) {
                 // My Users
                 QC('MainMenuMyUsers').add(mainMenuActiveClass);
                 QC('LeftMenuMyUsers').add(leftMenuActiveClass);
@@ -11773,8 +11824,8 @@
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
-            QV('UsersSubMenuSpan', x == 4 || x == 50);
-            var panels = { 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 115: 'ServerConsole' };
+            QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
+            var panels = { 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
@@ -11803,6 +11854,9 @@
 
             // Update Mesh Summary
             if (x == 21) { p21updateMesh(); }
+
+            // Update Recordings
+            if (x == 52) { updateRecordings(); }
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {

@@ -57,6 +57,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_NONEWGROUPS = 64;           // 0x00000040
     const SITERIGHT_NOMESHCMD = 128;            // 0x00000080
     const SITERIGHT_USERGROUPS = 256;           // 0x00000100
+    const SITERIGHT_RECORDINGS = 512;           // 0x00000200
 
     var obj = {};
     obj.user = user;
