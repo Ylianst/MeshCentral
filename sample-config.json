@@ -25,6 +25,7 @@
     "_RedirPort": 80,
     "_RedirAliasPort": 80,
     "_AgentPort": 1234,
+    "_AgentAliasPort": 1234,
     "_ExactPorts": true,
     "_AllowLoginToken": true,
     "_AllowFraming": true,

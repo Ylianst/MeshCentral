@@ -3419,7 +3419,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                 var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
+                if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
 
                 // Prepare a mesh agent file name using the device group name.
                 var meshfilename = mesh.name
@@ -3600,6 +3601,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (xdomain != '') xdomain += '/';
         var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
         if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
         if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
@@ -3687,6 +3689,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (xdomain != '') xdomain += '/';
         var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
         if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
         if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
@@ -4333,15 +4336,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     function StartAltWebServer(port) {
         if ((port < 1) || (port > 65535)) return;
         if (obj.tlsAltServer != null) {
+            var agentAliasPort = null;
+            if (args.aliasport != null) { agentAliasPort = args.aliasport; }
+            if (args.agentaliasport != null) { agentAliasPort = args.agentaliasport; }
             if (obj.args.lanonly == true) {
-                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             } else {
-                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             }
             if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
             obj.parent.updateServerState('https-agent-port', port);
         } else {
-            obj.tcpAltServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            obj.tcpAltServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             obj.parent.updateServerState('http-agent-port', port);
         }
     }
