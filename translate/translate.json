@@ -16012,6 +16012,7 @@
     },
     {
       "en": "Manage Recordings",
+      "nl": "Beheeer opnames",
       "xloc": [
         "default.handlebars->25->1469"
       ]
@@ -17318,6 +17319,7 @@
     },
     {
       "en": "My User Recordings",
+      "nl": "Mijn gebruikersopnames",
       "xloc": [
         "default.handlebars->container->column_l->p52->p52title->1"
       ]
@@ -20818,6 +20820,7 @@
     },
     {
       "en": "Recordings",
+      "nl": "Opnames",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersRecordings"
       ]
