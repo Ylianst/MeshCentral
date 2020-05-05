@@ -94,6 +94,7 @@
         var recFileMetadata = null;
         var recFileProtocol = 0;
         var recFileIndexBasePtr = null;
+        var recFileExtras = null;
         var agentDesktop = null;
         var amtDesktop = null;
         var playing = false;
@@ -427,7 +428,6 @@
             cleanup();
             recFile = files[0];
             recFilePtr = 0;
-            readNextBlock(processFirstBlock);
             readLastBlock(function (type, flags, time, extras) {
                 if (type == 3) {
                     // File is ok

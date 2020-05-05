@@ -222,8 +222,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if ((sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) {
                         // Get the computer name
                         parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
-                            var xusername = '', xdevicename = '', xdevicename2 = null;
-                            if ((nodes != null) && (nodes.length == 1)) { xdevicename2 = nodes[0].name; xdevicename = '-' + parent.common.makeFilename(nodes[0].name); }
+                            var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
+                            if ((nodes != null) && (nodes.length == 1)) { node = nodes[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); }
                             
                             // Get the username and make it acceptable as a filename
                             if (sessionUser._id) { xusername = '-' + parent.common.makeFilename(sessionUser._id.split('/')[2]); }
@@ -250,8 +250,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                     var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(obj.req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p), nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid ) };
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
-                                    recordingEntry(fd, 1, 0, firstBlock, function () {
-                                        try { relayinfo.peer1.ws.logfile = ws.logfile = { fd: fd, lock: false, filename: recFullFilename }; } catch (ex) {
+                                    var logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0, nodeid: node._id, meshid: node.meshid, name: node.name, icon: node.icon };
+                                    recordingEntry(logfile, 1, 0, firstBlock, function () {
+                                        try { relayinfo.peer1.ws.logfile = ws.logfile = logfile; } catch (ex) {
                                             try { ws.send('c'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.
                                             try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
                                             return;
@@ -323,7 +324,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if (this.logfile != null) {
                         // Write data to log file then perform relay
                         var xthis = this;
-                        recordingEntry(this.logfile.fd, 2, ((obj.req.query.browser) ? 2 : 0), data, function () { xthis.peer.send(data, ws.flushSink); });
+                        recordingEntry(this.logfile, 2, ((obj.req.query.browser) ? 2 : 0), data, function () { xthis.peer.send(data, ws.flushSink); });
                     } else {
                         // Perform relay
                         this.peer.send(data, ws.flushSink);
@@ -335,7 +336,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if (this.logfile != null) {
                         // Write data to log file then perform slow relay
                         var xthis = this;
-                        recordingEntry(this.logfile.fd, 2, ((obj.req.query.browser) ? 2 : 0), data, function () {
+                        recordingEntry(this.logfile, 2, ((obj.req.query.browser) ? 2 : 0), data, function () {
                             setTimeout(function () { xthis.peer.send(data, ws.flushSink); }, xthis.peer.slowRelay);
                         });
                     } else {
@@ -406,10 +407,29 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     var logfile = ws.logfile;
                     delete ws.logfile;
                     if (peer.ws) { delete peer.ws.logfile; }
-                    recordingEntry(logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, tag) {
-                        parent.parent.fs.close(fd);
+                    recordingEntry(logfile, 3, 0, 'MeshCentralMCREC', function (logfile, tag) {
+                        parent.parent.fs.close(logfile.fd);
+
                         // Now that the recording file is closed, check if we need to index this file.
                         if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+
+                        // Compute session length
+                        var sessionLength = null;
+                        if (tag.logfile.startTime != null) { sessionLength = Math.round((Date.now() - tag.logfile.startTime) / 1000); }
+
+                        // Add a event entry about this recording
+                        var basefile = parent.parent.path.basename(tag.logfile.filename);
+                        var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: tag.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: tag.logfile.size };
+                        if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
+                        var xprotocol = (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p);
+                        if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
+                        var mesh = parent.meshes[tag.logfile.meshid];
+                        if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+                        if (tag.logfile.startTime) { event.startTime = tag.logfile.startTime; event.lengthTime = sessionLength; }
+                        if (tag.logfile.name) { event.name = tag.logfile.name; }
+                        if (tag.logfile.icon) { event.icon = tag.logfile.icon; }
+                        parent.parent.DispatchEvent(['*', 'recording', obj.nodeid, obj.meshid], obj, event);
+
                         cleanUpRecordings();
                     }, { ws: ws, pws: peer.ws, logfile: logfile });
                 }
@@ -428,7 +448,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 
     // Record a new entry in a recording log
-    function recordingEntry(fd, type, flags, data, func, tag) {
+    function recordingEntry(logfile, type, flags, data, func, tag) {
         try {
             if (typeof data == 'string') {
                 // String write
@@ -438,7 +458,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 header.writeInt32BE(blockData.length, 4); // Size
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, blockData]);
-                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
+                parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                logfile.size += block.length;
             } else {
                 // Binary write
                 var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
@@ -447,9 +468,10 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 header.writeInt32BE(data.length, 4); // Size
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, data]);
-                parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
+                parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                logfile.size += block.length;
             }
-        } catch (ex) { console.log(ex); func(fd, tag); }
+        } catch (ex) { console.log(ex); func(logfile, tag); }
     }
 
     // Mark this relay session as authenticated if this is the user end.

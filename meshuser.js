@@ -1211,6 +1211,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'recordings': {
+                if (((user.siteadmin & SITERIGHT_RECORDINGS) == 0) || (domain.sessionrecording == null)) return; // Check if recordings is enabled and we have rights to do this.
+                var recordingsPath = null;
+                if (domain.sessionrecording.filepath) { recordingsPath = domain.sessionrecording.filepath; } else { recordingsPath = parent.parent.recordpath; }
+                if (recordingsPath == null) return;
+                fs.readdir(recordingsPath, function (err, files) {
+                    if (err != null) return;
+                    if ((command.limit == null) || (typeof command.limit != 'number')) {
+                        // Send the list of all recordings
+                        db.GetEvents(['recording'], domain.id, function (err, docs) {
+                            if (err != null) return;
+                            for (var i in docs) {
+                                delete docs[i].action; delete docs[i].etype; delete docs[i].msg; // TODO: We could make a more specific query in the DB and never have these.
+                                if (files.indexOf(docs[i].filename) >= 0) { docs[i].present = 1; }
+                            }
+                            try { ws.send(JSON.stringify({ action: 'recordings', events: docs, tag: command.tag })); } catch (ex) { }
+                        });
+                    } else {
+                        // Send the list of most recent recordings, up to 'limit' count
+                        db.GetEventsWithLimit(['recording'], domain.id, command.limit, function (err, docs) {
+                            if (err != null) return;
+                            for (var i in docs) {
+                                delete docs[i].action; delete docs[i].etype; delete docs[i].msg; // TODO: We could make a more specific query in the DB and never have these.
+                                if (files.indexOf(docs[i].filename) >= 0) { docs[i].present = 1; }
+                            }
+                            try { ws.send(JSON.stringify({ action: 'recordings', events: docs, tag: command.tag })); } catch (ex) { }
+                        });
+                    }
+                });
+                break;
+            }
             case 'users':
                 {
                     // Request a list of all users

@@ -86,8 +86,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     obj.protocolOptions = null;         // Set to the protocol options of the first viewer that connected.
     obj.viewerConnected = false;        // Set to true if one viewer attempted to connect to the agent.
     obj.recordingFile = null;           // Present if we are recording to file.
+    obj.recordingFileSize = 0;          // Current size of the recording file.
     obj.recordingFileWriting = false;   // Set to true is we are in the process if writing to the recording file.
     obj.startTime = null;               // Starting time of the multiplex session.
+    obj.userIds = [];                   // List of userid's that have intertracted with this session.
 
     // Add an agent or viewer
     obj.addPeer = function (peer) {
@@ -108,6 +110,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             peer.sendQueue = [];
             peer.paused = false;
 
+            // Add the user to the userids list if needed
+            if ((peer.user != null) && (obj.userIds.indexOf(peer.user._id) == -1)) { obj.userIds.push(peer.user._id); }
+
             // Setup slow relay is requested. This will show down sending any data to this viewer.
             if ((peer.req.query.slowrelay != null)) {
                 var sr = null;
@@ -125,7 +130,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             // Log joining the multiplex session
             if (obj.startTime != null) {
                 var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Joined desktop multiplex session", protocol: 2 };
-                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id], obj, event); // TODO: Add Node MeshID to targets
+                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
             }
         } else {
             //console.log('addPeer-agent', obj.nodeid);
@@ -149,7 +154,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         // Log multiplex session start
         if ((obj.agent != null) && (obj.viewers.length > 0) && (obj.startTime == null)) {
             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.viewers[0].user._id, username: obj.viewers[0].user.name, msg: "Started desktop multiplex session", protocol: 2 };
-            parent.parent.DispatchEvent(['*', obj.nodeid, obj.viewers[0].user._id], obj, event);  // TODO: Add Node MeshID to targets
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.viewers[0].user._id, obj.meshid], obj, event);
             obj.startTime = Date.now();
         }
         return true;
@@ -195,7 +200,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             // Log leaving the multiplex session
             if (obj.startTime != null) {
                 var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Left the desktop multiplex session", protocol: 2 };
-                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id], obj, event); // TODO: Add Node MeshID to targets
+                parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
             }
 
             // If this is the last viewer, disconnect the agent
@@ -214,12 +219,26 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
         // Close the recording file if needed
         if (obj.recordingFile != null) {
+            // Compute session length
+            if (obj.startTime != null) { obj.sessionStart = obj.startTime; obj.sessionLength = Math.round((Date.now() - obj.startTime) / 1000); }
+
+            // Write the last record of the recording file
             var rf = obj.recordingFile;
             delete obj.recordingFile;
             recordingEntry(rf.fd, 3, 0, 'MeshCentralMCREC', function (fd, filename) {
                 parent.parent.fs.close(fd);
+
                 // Now that the recording file is closed, check if we need to index this file.
                 if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', filename); }
+
+                // Add a event entry about this recording
+                var basefile = parent.parent.path.basename(filename);
+                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msg: "Finished recording session" + (obj.sessionLength ? (', ' + obj.sessionLength + ' second(s)') : ''), filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
+                var mesh = parent.meshes[obj.meshid];
+                if (mesh != null) { event.meshname = mesh.name; }
+                if (obj.sessionStart) { event.startTime = obj.sessionStart; event.lengthTime = obj.sessionLength; }
+                parent.parent.DispatchEvent(['*', 'recording', obj.nodeid, obj.meshid], obj, event);
+
                 cleanUpRecordings();
             }, rf.filename);
         }
@@ -227,7 +246,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         // Log end of multiplex session
         if (obj.startTime != null) {
             var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msg: "Closed desktop multiplex session" + ', ' + Math.floor((Date.now() - obj.startTime) / 1000) + ' second(s)', protocol: 2 };
-            parent.parent.DispatchEvent(['*', obj.nodeid], obj, event); // TODO: Add Node MeshID to targets
+            parent.parent.DispatchEvent(['*', obj.nodeid, obj.meshid], obj, event);
             obj.startTime = null;
         }
 
@@ -647,7 +666,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 }
                 // Write the recording file header
                 parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
-                var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, time: new Date().toLocaleString(), protocol: 2 };
+                var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, meshid: obj.meshid, time: new Date().toLocaleString(), protocol: 2, devicename: obj.name, devicegroup: obj.meshname };
                 var firstBlock = JSON.stringify(metadata);
                 recordingEntry(fd, 1, 0, firstBlock, function () {
                     obj.recordingFile = { fd: fd, filename: recFullFilename };
@@ -684,6 +703,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, blockData]);
                 parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
+                obj.recordingFileSize += block.length;
             } else {
                 // Binary write
                 var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
@@ -693,6 +713,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 header.writeIntBE(new Date(), 10, 6); // Time
                 var block = Buffer.concat([header, data]);
                 parent.parent.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
+                obj.recordingFileSize += block.length;
             }
         } catch (ex) { console.log(ex); func(fd, tag); }
     }
@@ -725,7 +746,14 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         }
     }
 
-    recordingSetup(domain, function () { func(obj); });
+    // Get node information
+    parent.db.Get(nodeid, function (err, nodes) {
+        if ((err != null) || (nodes.length != 1)) { func(null); }
+        obj.meshid = nodes[0].meshid;
+        obj.icon = nodes[0].icon;
+        obj.name = nodes[0].name;
+        recordingSetup(domain, function () { func(obj); });
+    });
     return obj;
 }
 
@@ -784,7 +812,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('relay', 'DesktopRelay: Soft disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('relay', 'DesktopRelay: Hard disconnect (' + cleanRemoteAddr(obj.req.ip) + ')'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
-        if (obj.deskDecoder != null) { if (obj.deskDecoder.removePeer(obj) == true) { delete parent.desktoprelays[obj.nodeid]; } }
+        if (obj.deskMultiplexor != null) { if (obj.deskMultiplexor.removePeer(obj) == true) { delete parent.desktoprelays[obj.nodeid]; } }
 
         // Aggressive cleanup
         delete obj.id;
@@ -793,7 +821,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         delete obj.user;
         delete obj.nodeid;
         delete obj.ruserid;
-        delete obj.deskDecoder;
+        delete obj.deskMultiplexor;
 
         // Clear timers if present
         if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
@@ -885,23 +913,30 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         }
 
         // Create if needed and add this peer to the desktop multiplexor
-        obj.deskDecoder = parent.desktoprelays[obj.nodeid];
-        if (obj.deskDecoder == null) {
+        obj.deskMultiplexor = parent.desktoprelays[obj.nodeid];
+        if (obj.deskMultiplexor == null) {
             parent.desktoprelays[obj.nodeid] = 1; // Indicate that the creating of the desktop multiplexor is pending.
             parent.parent.debug('relay', 'DesktopRelay: Creating new desktop multiplexor');
-            CreateDesktopMultiplexor(parent, domain, obj.nodeid, function (deskDecoder) {
-                obj.deskDecoder = deskDecoder;
-                parent.desktoprelays[obj.nodeid] = obj.deskDecoder;
-                obj.deskDecoder.addPeer(obj);
-                ws._socket.resume(); // Release the traffic
+            CreateDesktopMultiplexor(parent, domain, obj.nodeid, function (deskMultiplexor) {
+                if (deskMultiplexor != null) {
+                    // Desktop multiplexor was created, use it.
+                    obj.deskMultiplexor = deskMultiplexor;
+                    parent.desktoprelays[obj.nodeid] = obj.deskMultiplexor;
+                    obj.deskMultiplexor.addPeer(obj);
+                    ws._socket.resume(); // Release the traffic
+                } else {
+                    // An error has occured, close this connection
+                    delete parent.desktoprelays[obj.nodeid];
+                    ws.close();
+                }
             });
         } else {
-            if (obj.deskDecoder == 1) {
+            if (obj.deskMultiplexor == 1) {
                 // The multiplexor is being created, hold a little and try again. This is to prevent a possible race condition.
                 setTimeout(function () { performRelay(++retryCount); }, 50);
             } else {
                 // Hook up this peer to the multiplexor and release the traffic
-                obj.deskDecoder.addPeer(obj);
+                obj.deskMultiplexor.addPeer(obj);
                 ws._socket.resume();
             }
         }
@@ -910,7 +945,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     // When data is received from the mesh relay web socket
     ws.on('message', function (data) {
         // If this data was received by the agent, decode it.
-        if (this.me.deskDecoder != null) { this.me.deskDecoder.processData(this.me, data); }
+        if (this.me.deskMultiplexor != null) { this.me.deskMultiplexor.processData(this.me, data); }
     });
 
     // If error, close both sides of the relay.
