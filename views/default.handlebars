@@ -1047,12 +1047,13 @@
                                 <input type=button onclick=openRecodringPlayer() value="Open Player..." />
                             </div>
                             <div>
+                                <input type=button onclick=refreshRecodings() value="Refresh" />
                             </div>
                         </td>
                         <td class="h2"></td>
                     </tr>
                 </table>
-                <div id=p52recordings style=""></div>
+                <div id=p52recordings style="overflow-y:auto"></div>
             </div>
             <br id="column_l_bottomgap" />
         </div>
@@ -1489,6 +1490,8 @@
             QS('p31events')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)';
             QS('p41events')['height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
             QS('p41events')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
+            QS('p52recordings')['height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
+            QS('p52recordings')['max-height'] = 'calc(100vh - ' + (48 + xh + xh2) + 'px)';
 
             // We are looking at a single device, remove all the back buttons
             if ('{{currentNode}}'.toLowerCase() != '') {
@@ -2094,6 +2097,11 @@
                     }
                     break;
                 }
+                case 'recordings': {
+                    p52recordings = message.events;
+                    updateRecordings();
+                    break;
+                }
                 case 'getcookie': {
                     if (message.tag == 'clickonce') {
                         if (message.trustedCert == true) {
@@ -2278,6 +2286,10 @@
                     }
                     if (message.event.noact) break; // Take no action on this event
                     switch (message.event.action) {
+                        case 'recording': {
+                            if (p52recordings != null) { p52recordings.unshift(message.event); message.event.present = 1; updateRecordings(); }
+                            break;
+                        }
                         case 'userWebState': {
                             // New user web state, update the web page as needed
                             try {
@@ -6595,7 +6607,7 @@
         function deskSaveImage() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
-            Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.jpg'); });
+            Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.png'); });
         }
 
         function deskDisplayInfo(sender, displays, selDisplay) {
@@ -11124,14 +11136,91 @@
 
         var p52recordings = null;
         function updateRecordings() {
-            var x = 'Under construction';
+            // Display the users using the sorted list
+            var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
+            x += '<th>' + "Session" + '<th style=width:110px>' + nobreak("Start Time") + '<th style=width:110px>' + "Duration" + '<th style=width:110px>' + "Size";
+            if (p52recordings != null) {
+                var recdate = null;
+                for (var i in p52recordings) {
+                    var rec = p52recordings[i], rect = new Date(rec.time), day = printDate(rect);
+                    if (day != recdate) { recdate = day; x += '<tr><td class=userTableHeader colspan=4>' + day; }
+                    x += addRecordingHtml(i, rec);
+                }
+            }
+            x += '</table>';
             QH('p52recordings', x);
         }
 
-        function openRecodringPlayer() {
-            if (xxdialogMode) return;
-            window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
+        function addRecordingHtml(i, rec) {
+            var sessionLengthStr = '';
+            if (rec.lengthTime) { sessionLengthStr = pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60)); }
+            var sessionStartStr = printTime(new Date(rec.time));
+            if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
+            var sessionSize = '';
+            if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
+            var sessionName = '<i>' + "Unknown" + '</i>';
+            if (rec.name && rec.meshname) {
+                var recmesh = meshes[rec.meshid];
+                if (recmesh != null) {
+                    sessionName = '<a href=# onclick=\'gotoMesh("' + rec.meshid + '")\'>' + EscapeHtml(rec.meshname) + '</a> - <a href=# onclick=\'gotoDevice("' + rec.nodeid + '",10)\'>' + EscapeHtml(rec.name) + '</a>';
+                } else {
+                    sessionName = EscapeHtml(rec.meshname) + ' - ' + EscapeHtml(rec.name);
+                }
+            }
+            if ((rec.userids != null) && (rec.userids.length > 0)) {
+                if (rec.userids.length > 1) {
+                    sessionName += ' - ' + format('{0} users', rec.userids.length);
+                } else {
+                    var ruser = null;
+                    if (users != null) { ruser = users[rec.userids[0]]; }
+                    if (ruser != null) {
+                        sessionName += ' - <a href=# onclick=\'gotoUser("' + rec.userids[0] + '")\'>' + EscapeHtml(ruser.name) + '</a>';
+                    } else {
+                        sessionName += ' - ' + EscapeHtml(rec.userids[0].split('/')[2]);
+                    }
+                }
+            }
+            var actions = '', icon = 'm0';
+            if (rec.present == 1) { icon = 'm1'; actions = '<div style=cursor:pointer;float:right><a href=recordings.ashx?file=' + encodeURIComponent(rec.filename) + ' download><img src=images/link4.png height=10 width=10 title="Download Recording" download></a>&nbsp;</div>'; }
+            var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') showRecordingDialog(event,\'' + i + '\')"><td style=cursor:pointer>';
+            x += '<div class=bar style=width:100%>';
+            x += '<div class=baricon><input class=RecordingCheckbox value=' + i + ' onclick=p52updateInfo() type=checkbox></div>';
+            x += '<div class=baricon onclick=showRecordingDialog(event,"' + i + '")><div class=' + icon + '></div></div>';
+            x += '<div class=g1 onclick=showRecordingDialog(event,"' + i + '")></div><div class=g2 onclick=showRecordingDialog("' + i + '")></div>';
+            x += '<div onclick=showRecordingDialog(event,"' + i + '")>' + actions + '<div style=font-size:16px>' + sessionName + '</div></div></div><td style=text-align:center>' + sessionStartStr + '<td style=text-align:center>' + sessionLengthStr + '<td style=text-align:center>' + sessionSize;
+            return x;
         }
+
+        function showRecordingDialog(event, i) {
+            if (xxdialogMode) return;
+            if ((event.target.tagName == 'IMG') || (event.target.tagName == 'A')) return;
+            var rec = p52recordings[i];
+            //console.log(rec);
+            var x = '';
+            if (rec.protocol) {
+                var protocolStr = "Unknown";
+                if (rec.protocol == 1) { protocolStr = "Terminal"; }
+                if (rec.protocol == 2) { protocolStr = "Desktop"; }
+                if (rec.protocol == 5) { protocolStr = "Files"; }
+                if (rec.protocol == 100) { protocolStr = "Intel AMT WSMAN"; }
+                if (rec.protocol == 101) { protocolStr = "Intel AMT Redirection"; }
+                x += addHtmlValue4("Protocol", protocolStr);
+            }
+            x += addHtmlValue4("Status", (rec.present == 1)?"Present on server":"Not on server");
+            if (rec.name) { x += addHtmlValue4("Device Name", EscapeHtml(rec.name)); }
+            if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
+            if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
+            if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
+            if (rec.time) { x += addHtmlValue4("End Time", printTime(new Date(rec.time))); }
+            if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
+            if (rec.multiplex == true)  { x += addHtmlValue4("Multiplexor", "Enabled"); }
+            if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
+            setDialogMode(2, "Recording Details", 9, null, x);
+        }
+
+        function refreshRecodings() { meshserver.send({ action: 'recordings', limit: 1000 }); }
+        function openRecodringPlayer() { if (!xxdialogMode) window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer'); }
+        function p52updateInfo() {  }
 
         //
         // FILE SELECTOR, DIALOG 3
@@ -11856,7 +11945,7 @@
             if (x == 21) { p21updateMesh(); }
 
             // Update Recordings
-            if (x == 52) { updateRecordings(); }
+            if (x == 52) { if (p52recordings == null) { refreshRecodings(); } updateRecordings(); }
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
@@ -12223,6 +12312,7 @@
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function addHtmlValue3(t, v) { return '<div><b>' + t + '</b></div><div style=margin-left:16px>' + v + '</div>'; }
+        function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
         function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
         function focusTextBox(x) { setTimeout(function(){ Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
@@ -12241,6 +12331,7 @@
         function getOrderedList(objList, oname) { var r = []; for (var i in objList) { r.push(objList[i]); } r.sort(function(a, b) { var aa = a[oname].toLowerCase(), bb = b[oname].toLowerCase(); if (aa > bb) return 1; if (aa < bb) return -1; return 0; }); return r; }
         function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
+        function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
 
     </script>
 </body>

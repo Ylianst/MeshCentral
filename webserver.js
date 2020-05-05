@@ -2437,6 +2437,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Download a desktop recording
+    function handleGetRecordings(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+
+        // Check the query
+        if (req.query.file == null) { res.sendStatus(401); return; }
+
+        // Get the recording path
+        var recordingsPath = null;
+        if (domain.sessionrecording.filepath) { recordingsPath = domain.sessionrecording.filepath; } else { recordingsPath = parent.recordpath; }
+        if (recordingsPath == null) { res.sendStatus(401); return; }
+
+        // Get the user and check user rights
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
+        if (authUserid == null) { res.sendStatus(401); return; }
+        const user = obj.users[authUserid];
+        if (user == null) { res.sendStatus(401); return; }
+        if ((user.siteadmin & 512) == 0) { res.sendStatus(401); return; } // Check if we have right to get recordings
+
+        // Send the recorded file
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + req.query.file + '\"' });
+        try { res.sendFile(obj.path.join(recordingsPath, req.query.file)); } catch (ex) { res.sendStatus(404); }
+    }
+
     // Server the player page
     function handlePlayerRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3917,6 +3943,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.post(url + 'translations', handleTranslationsRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
+            obj.app.get(url + 'recordings.ashx', handleGetRecordings);
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
