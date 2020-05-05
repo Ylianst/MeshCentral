@@ -10101,6 +10101,7 @@
     },
     {
       "en": "Enabled",
+      "nl": "Ingeschakeld",
       "xloc": [
         "default.handlebars->25->1673"
       ]
@@ -10124,6 +10125,7 @@
     },
     {
       "en": "End Time",
+      "nl": "Eindtijd",
       "xloc": [
         "default.handlebars->25->1670"
       ]
@@ -12956,12 +12958,14 @@
     },
     {
       "en": "Intel AMT Redirection",
+      "nl": "Intel AMT omleiding",
       "xloc": [
         "default.handlebars->25->1660"
       ]
     },
     {
       "en": "Intel AMT WSMAN",
+      "nl": "Intel AMT WSMAN",
       "xloc": [
         "default.handlebars->25->1659"
       ]
@@ -17150,6 +17154,7 @@
     },
     {
       "en": "Multiplexor",
+      "nl": "Multiplexor",
       "xloc": [
         "default.handlebars->25->1672"
       ]
@@ -18677,6 +18682,7 @@
     },
     {
       "en": "Not on server",
+      "nl": "Niet op de server",
       "xloc": [
         "default.handlebars->25->1664"
       ]
@@ -20363,6 +20369,7 @@
     },
     {
       "en": "Present on server",
+      "nl": "Aanwezig op de server",
       "xloc": [
         "default.handlebars->25->1663"
       ]
