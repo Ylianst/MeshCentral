@@ -8017,7 +8017,8 @@
       "ru": "Детали",
       "zh-chs": "細節",
       "xloc": [
-        "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevInfo"
+        "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevInfo",
+        "default.handlebars->contextMenu->cxdetails"
       ]
     },
     {
@@ -20105,7 +20106,8 @@
       "zh-chs": "外掛程式",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevPlugins",
-        "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerPlugins"
+        "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerPlugins",
+        "default.handlebars->contextMenu->cxplugins"
       ]
     },
     {
