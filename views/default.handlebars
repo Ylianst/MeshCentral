@@ -44,9 +44,11 @@
         <div id="cxterminal" class="cmtext" onclick="cmaction(2,event)">Terminal</div>
         <div id="cxfiles" class="cmtext" onclick="cmaction(4,event)">Files</div>
         <div id="cxevents" class="cmtext" onclick="cmaction(5,event)">Events</div>
-        <div id="cxconsole" class="cmtext" onclick="cmaction(6,event)">Console</div>
+        <div id="cxdetails" class="cmtext" onclick="cmaction(6,event)">Details</div>
+        <div id="cxconsole" class="cmtext" onclick="cmaction(7,event)">Console</div>
+        <div id="cxplugins" class="cmtext" onclick="cmaction(8,event)" style="display:none">Plugins</div>
         <hr id="cxmgroupsplit" />
-        <div id="cxmdesktop" class="cmtext" onclick="cmaction(7,event)" style="display:none">Multi-Desktop</div>
+        <div id="cxmdesktop" class="cmtext" onclick="cmaction(9,event)" style="display:none">Multi-Desktop</div>
     </div>
     <div id="meshContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxselectall" class="cmtext" onclick="cmmeshaction(1,event)">Select All</div>
@@ -4165,9 +4167,9 @@
         function cmaction(action,event) {
             var nodeid = contextelement.children[1].attributes.onclick.value;
             nodeid = nodeid.substring(12, nodeid.length - 18);
-            if (action == 7) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
-            if ((action > 0) && (action < 7)) {
-                var panel = [0, 10, 12, 11, 13, 16, 15][action]; // (invalid), General, Desktop, Terminal, Files, Events, Console
+            if (action == 9) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
+            if ((action > 0) && (action < 9)) {
+                var panel = [0, 10, 12, 11, 13, 16, 17, 15, 19][action]; // (invalid), General, Desktop, Terminal, Files, Events, Console, Plugin
                 if (event && (event.shiftKey == true)) {
                     // Open the device in a different tab
                     window.open(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=' + panel + '&hide=16', 'meshcentral:' + nodeid);
@@ -11136,6 +11138,10 @@
 
         var p52recordings = null;
         function updateRecordings() {
+            // Save the list of currently checked recordings
+            var checkedRecordings = [], elements = document.getElementsByClassName('RecordingCheckbox');
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedRecordings.push(elements[i].value); } }
+
             // Display the users using the sorted list
             var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
             x += '<th>' + "Session" + '<th style=width:110px>' + nobreak("Start Time") + '<th style=width:110px>' + "Duration" + '<th style=width:110px>' + "Size";
@@ -11149,6 +11155,11 @@
             }
             x += '</table>';
             QH('p52recordings', x);
+
+            // Re-check recordings
+            elements = document.getElementsByClassName('RecordingCheckbox');
+            for (var i=0;i<elements.length;i++) { elements[i].checked = ((checkedRecordings.indexOf(elements[i].value) >= 0)); }
+            p52updateInfo();
         }
 
         function addRecordingHtml(i, rec) {
@@ -11184,7 +11195,8 @@
             if (rec.present == 1) { icon = 'm1'; actions = '<div style=cursor:pointer;float:right><a href=recordings.ashx?file=' + encodeURIComponent(rec.filename) + ' download><img src=images/link4.png height=10 width=10 title="Download Recording" download></a>&nbsp;</div>'; }
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') showRecordingDialog(event,\'' + i + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
-            x += '<div class=baricon><input class=RecordingCheckbox value=' + i + ' onclick=p52updateInfo() type=checkbox></div>';
+            //x += '<div class=baricon><input class=RecordingCheckbox value="' + encodeURIComponent(rec.filename) + '" onclick=p52updateInfo() type=checkbox></div>';
+            x += '<div></div>';
             x += '<div class=baricon onclick=showRecordingDialog(event,"' + i + '")><div class=' + icon + '></div></div>';
             x += '<div class=g1 onclick=showRecordingDialog(event,"' + i + '")></div><div class=g2 onclick=showRecordingDialog("' + i + '")></div>';
             x += '<div onclick=showRecordingDialog(event,"' + i + '")>' + actions + '<div style=font-size:16px>' + sessionName + '</div></div></div><td style=text-align:center>' + sessionStartStr + '<td style=text-align:center>' + sessionLengthStr + '<td style=text-align:center>' + sessionSize;
@@ -11195,7 +11207,6 @@
             if (xxdialogMode) return;
             if ((event.target.tagName == 'IMG') || (event.target.tagName == 'A')) return;
             var rec = p52recordings[i];
-            //console.log(rec);
             var x = '';
             if (rec.protocol) {
                 var protocolStr = "Unknown";
@@ -11220,7 +11231,15 @@
 
         function refreshRecodings() { meshserver.send({ action: 'recordings', limit: 1000 }); }
         function openRecodringPlayer() { if (!xxdialogMode) window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer'); }
-        function p52updateInfo() {  }
+        function p52updateInfo() {
+            var elements = document.getElementsByClassName('RecordingCheckbox'), checkcount = 0;
+            for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { checkcount++; } }
+            if (checkcount > 0) {
+
+            } else {
+
+            }
+        }
 
         //
         // FILE SELECTOR, DIALOG 3
