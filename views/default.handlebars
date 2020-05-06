@@ -1013,7 +1013,7 @@
                 <div id="p50groups"></div>
             </div>
             <div id=p51 style="display:none">
-                <div id="p30title">
+                <div id="p51title">
                     <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <h1>User Group - <span id=p51groupName></span></h1>
                 </div>
@@ -1420,6 +1420,8 @@
             QV('p31title', !(hide & 8));
             QV('p40title', !(hide & 8));
             QV('p41title', !(hide & 8));
+            QV('p50title', !(hide & 8));
+            QV('p51title', !(hide & 8));
             //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
             if (!footerBar) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
 
@@ -4919,9 +4921,10 @@
                 currentNode = node;
 
                 // Add node name
-                var nname = EscapeHtml(node.name);
+                var nname = EscapeHtml(node.name), nnameEx;
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
                 if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+                nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
@@ -4936,11 +4939,14 @@
                 // Node attributes
                 var x = '<table style=width:100%>';
 
+                // If title bar is hidden, display the device name here
+                if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", nnameEx); }
+
                 // Attribute: Mesh
                 if (mesh) { x += addDeviceAttribute('<span title="' + "The name of the device group this computer belong to." + '">' + "Group" + '</span>', '<a href=# title="' + "The name of the device group this computer belong to" + '" onclick=gotoMesh("' + node.meshid + '") style=cursor:pointer>' + EscapeHtml(meshes[node.meshid].name) + '</a>'); }
 
                 // Attribute: Name
-                if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
+                if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "OS Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
 
                 // Attribute: Host
                 if ((features & 1) == 0) { // If not WAN-only, local hostname is in use
@@ -8461,7 +8467,9 @@
             if (currentMesh.mtype == 1) meshtype = "Intel&reg; AMT only, no agent";
             if (currentMesh.mtype == 2) meshtype = "Managed using a software agent";
 
-            var x = addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            var x = '';
+            if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
+            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
 
             // Display group type
             x += addHtmlValue("Type", meshtype);
@@ -10458,6 +10466,7 @@
             if ((desc == null) || (desc == '')) { desc = '<i>' + "None" + '<i>'; } else { desc = EscapeHtml(desc); }
 
             var x = '<div style=min-height:80px><table style=width:100%>';
+            if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", gname); } // If title bar is hidden, display the user group name here
             if ((userinfo.siteadmin & 256) != 0) {
                 x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2) style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
             } else {
@@ -10737,6 +10746,7 @@
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
+            if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", user.name); } // If title bar is hidden, display the user name here
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
             if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", user._id.split('/')[2]); }
