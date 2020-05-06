@@ -1411,7 +1411,15 @@ function CreateMeshCentralServer(config, args) {
 
                 // Setup users that can see all device groups
                 obj.config.settings.managealldevicegroups = [];
-                for (i in obj.config.domains) { if (Array.isArray(obj.config.domains[i].managealldevicegroups)) { for (var j in obj.config.domains[i].managealldevicegroups) { if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') { obj.config.settings.managealldevicegroups.push('user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j]); } } } }
+                for (i in obj.config.domains) {
+                    if (Array.isArray(obj.config.domains[i].managealldevicegroups)) {
+                        for (var j in obj.config.domains[i].managealldevicegroups) {
+                            if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') {
+                                obj.config.settings.managealldevicegroups.push('user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j]);
+                            }
+                        }
+                    }
+                }
             });
         });
     };
