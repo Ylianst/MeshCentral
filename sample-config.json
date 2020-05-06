@@ -119,6 +119,7 @@
       "_UserSessionIdleTimeout" : 30,
       "__UserConsentFlags__" : "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
       "_UserConsentFlags" : 7,
+      "_UrlSwitching": false,
       "_DesktopPrivacyBarText": "Your privacy bar message",
       "_Limits": {
         "_MaxDevices": 100,
