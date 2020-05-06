@@ -342,8 +342,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
         if ((typeof (name) != 'string') || (typeof (pass) != 'string') || (typeof (domain) != 'object')) { fn(new Error('invalid fields')); return; }
-        if (!module.parent) console.log('authenticating %s:%s:%s', domain.id, name, pass);
-
         if (domain.auth == 'ldap') {
             if (domain.ldapoptions.url == 'test') {
                 // Fake LDAP login
