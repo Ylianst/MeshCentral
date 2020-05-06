@@ -1880,6 +1880,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (parent.smsserver != null) { features += 0x02000000; } // SMS messaging is supported
             if ((parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false))) { features += 0x04000000; } // SMS 2FA is allowed
             if (domain.sessionrecording != null) { features += 0x08000000; } // Server recordings enabled
+            if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);

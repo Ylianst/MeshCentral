@@ -5255,7 +5255,7 @@
 
                 // Change the URL
                 var urlviewmode = '';
-                if ((xxcurrentView >= 10) && (xxcurrentView <= 19) && (currentNode != null)) {
+                if (((features & 0x10000000) == 0) && (xxcurrentView >= 10) && (xxcurrentView <= 19) && (currentNode != null)) {
                     urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2];
                     for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                     try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -8594,7 +8594,7 @@
 
             // Change the URL
             var urlviewmode = '';
-            if ((xxcurrentView >= 20) && (xxcurrentView <= 29) && (currentMesh != null)) {
+            if (((features & 0x10000000) == 0) && (xxcurrentView >= 20) && (xxcurrentView <= 29) && (currentMesh != null)) {
                 urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2];
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -10562,7 +10562,7 @@
 
             // Change the URL
             var urlviewmode = '';
-            if ((xxcurrentView >= 51) && (xxcurrentView <= 59) && (currentUserGroup != null)) {
+            if (((features & 0x10000000) == 0) && (xxcurrentView >= 51) && (xxcurrentView <= 59) && (currentUserGroup != null)) {
                 urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2];
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -10836,7 +10836,7 @@
 
             // Change the URL
             var urlviewmode = '';
-            if ((xxcurrentView >= 30) && (xxcurrentView <= 39) && (currentUser != null)) {
+            if (((features & 0x10000000) == 0) && (xxcurrentView >= 30) && (xxcurrentView <= 39) && (currentUser != null)) {
                 urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2];
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -11857,7 +11857,7 @@
             if (fullscreen) { deskToggleFull(); }
 
             // Change the URL
-            if (xxcurrentView > 0) {
+            if (((features & 0x10000000) == 0) && (xxcurrentView > 0)) {
                 var urlviewmode = '';
                 if ((xxcurrentView >= 10) && (xxcurrentView <= 19)) { // Device Link
                     if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2]; }
