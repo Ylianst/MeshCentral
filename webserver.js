@@ -4541,6 +4541,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         db.Get(nodeid, function (err, nodes) {
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
 
+            // This is a super user that can see all device groups for a given domain
+            if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (nodes[0].domain == user.domain)) {
+                func(nodes[0], 0xFFFFFFFF, true); return;
+            }
+
             // Check device link
             var rights = 0, visible = false, r = user.links[nodeid];
             if (r != null) {
