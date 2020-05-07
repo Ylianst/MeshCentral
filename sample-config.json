@@ -54,8 +54,8 @@
       "name": "Local server name",
       "info": "Information about this server"
     },
-    "_TlsOffload": "127.0.0.1",
-    "_TrustedProxy": "127.0.0.1",
+    "_TlsOffload": "127.0.0.1,::1",
+    "_TrustedProxy": "127.0.0.1,::1",
     "_MpsPort": 44330,
     "_MpsAliasPort": 4433,
     "_MpsAliasHost": "mps.mydomain.com",

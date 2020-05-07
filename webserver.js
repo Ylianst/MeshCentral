@@ -516,11 +516,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (closeIfThis === false) { res.sendStatus(401); }
             } else if (req._socket) { // WebSocket request
                 ip = req._socket.remoteAddress;
+                var ipex = (ip.startsWith('::ffff:')) ? ip.substring(7) : ip;
 
                 // If a trusted reverse-proxy is sending us the remote IP address, use it.
                 // This is not done automatically for web socket like it's done for HTTP requests.
-                if ((obj.args.trustedproxy) && (res.headers['x-forwarded-for']) && ((obj.args.trustedproxy === true) || (obj.args.trustedproxy === ip) || (('::ffff:') + obj.args.trustedproxy === ip))) { ip = res.headers['x-forwarded-for']; }
-                else if ((obj.args.tlsoffload) && (res.headers['x-forwarded-for']) && ((obj.args.tlsoffload === true) || (obj.args.tlsoffload === ip) || (('::ffff:') + obj.args.tlsoffload === ip))) { ip = res.headers['x-forwarded-for']; }
+                if ((obj.args.trustedproxy) && (res.headers['x-forwarded-for']) && ((obj.args.trustedproxy === true) || (obj.args.trustedproxy.indexOf(ipex) >= 0))) { ip = res.headers['x-forwarded-for']; }
+                else if ((obj.args.tlsoffload) && (res.headers['x-forwarded-for']) && ((obj.args.tlsoffload === true) || (obj.args.tlsoffload.indexOf(ipex) >= 0))) { ip = res.headers['x-forwarded-for']; }
 
                 if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
                 if (closeIfThis === false) { try { req.close(); } catch (e) { } }
@@ -3842,7 +3843,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.engine('handlebars', obj.exphbs({ defaultLayout: null })); // defaultLayout: 'main'
         obj.app.set('view engine', 'handlebars');
         if (obj.args.trustedproxy) { obj.app.set('trust proxy', obj.args.trustedproxy); } // Reverse proxy should add the "X-Forwarded-*" headers
-        else if (obj.args.tlsoffload) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
+        else if (typeof obj.args.tlsoffload == 'string') { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
         obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
         var sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
