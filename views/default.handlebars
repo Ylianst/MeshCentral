@@ -530,7 +530,7 @@
                             <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                            &nbsp;<span id="deskstatus">Disconnected</span>
+                            &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                     </div>
                     <div id=deskarea2 style="">
@@ -5803,6 +5803,7 @@
                     desktop = xdesk;
                     if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                     desktop.onStateChanged = onDesktopStateChange;
+                    desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
                     desktopNode = currentNode;
                     onDesktopStateChange(desktop, desktop.State);
                     delete multiDesktop[currentNode._id];
@@ -5818,6 +5819,7 @@
             desktopNode = currentNode;
             updateDesktopButtons();
             deskAdjust();
+            updateMetadata(desktop, 'deskmetadata');
         }
 
         // Show and enable the right buttons
@@ -6005,6 +6007,7 @@
                             p11clearConsoleMsg();
                         }
                     }
+                    desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
@@ -6023,6 +6026,36 @@
                 webRtcDesktopReset();
                 desktopNode = desktop = null;
                 if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
+            }
+        }
+
+        function updateMetadata(conn, elementid) {
+            var str = '', viewerCount = 0;
+            if (conn && (conn.State == 3)) {
+                if (conn.metadata && conn.metadata.users) { for (var i in conn.metadata.users) { viewerCount++; } }
+                if (viewerCount > 1) { str = '<span onclick=showSessionMetadata(1) style=cursor:pointer>' + format(", {0} watching", viewerCount) + '</span>'; }
+            }
+            QH('deskmetadata', str);
+            if ((conn == desktop) && (xxdialogTag == ('sessionMetadata1'))) { showSessionMetadata(1); }
+        }
+
+        function showSessionMetadata(cid) {
+            if (xxdialogMode && (xxdialogTag != ('sessionMetadata' + cid))) return;
+            if (xxdialogMode) { setDialogMode(0); }
+            var conn = null;
+            if (cid == 1) { conn = desktop; }
+            if (conn && conn.metadata) {
+                var x = '';
+                if (conn.metadata.startTime)  { x += addHtmlValue4("Start Time", printDateTime(new Date(conn.metadata.startTime))); }
+                if (conn.metadata.users)  {
+                    for (var i in conn.metadata.users) {
+                        var val = (conn.metadata.users[i] == 1)?"1 connection":format("{0} connections", conn.metadata.users[i]);
+                        var username = i.split('/')[2];
+                        if ((users != null) && (users[i] != null)) { username = users[i].name; }
+                        x += addHtmlValue4(format("User \"{0}\"", username), val);
+                    }
+                }
+                setDialogMode(2, "Session Information", 1, null, x, 'sessionMetadata' + cid);
             }
         }
 
@@ -6090,6 +6123,7 @@
             updateDesktopButtons();
             deskAdjust();
             setTimeout(deskAdjust, 50);
+            updateMetadata(desktop, 'deskmetadata');
         }
 
         function updateSessionTime() {

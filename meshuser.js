@@ -431,7 +431,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         switch (command.action) {
             case 'pong': { break; } // NOP
-            case 'ping': { try { ws.send(JSON.stringify({ action: 'pong' })); } catch (ex) { } break; }
+            case 'ping': { try { ws.send('{action:"pong"}'); } catch (ex) { } break; }
             case 'intersession':
                 {
                     // Sends data between sessions of the same user

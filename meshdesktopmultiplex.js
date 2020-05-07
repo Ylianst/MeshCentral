@@ -132,6 +132,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Joined desktop multiplex session", protocol: 2 };
                 parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
             }
+
+            // Send an updated list of all peers to all viewers
+            obj.sendSessionMetadata();
         } else {
             //console.log('addPeer-agent', obj.nodeid);
             if (obj.agent != null) return false;
@@ -169,15 +172,17 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             obj.agent = null;
 
             // Agent has disconnected, disconnect everyone.
-            for (var i in obj.viewers) { obj.viewers[i].close(); }
+            if (obj.viewers != null) { for (var i in obj.viewers) { obj.viewers[i].close(); } }
             dispose();
             return true;
         } else {
             //console.log('removePeer-viewer', obj.nodeid);
             // Remove a viewer
-            var i = obj.viewers.indexOf(peer);
-            if (i == -1) return false;
-            obj.viewers.splice(i, 1);
+            if (obj.viewers != null) {
+                var i = obj.viewers.indexOf(peer);
+                if (i == -1) return false;
+                obj.viewers.splice(i, 1);
+            }
 
             // Resume flow control if this was the peer that was limiting traffic (because it was the fastest one).
             if (peer.overflow == true) {
@@ -205,6 +210,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // If this is the last viewer, disconnect the agent
             if ((obj.viewers.length == 0) && (obj.agent != null)) { obj.agent.close(); dispose(); return true; }
+
+            // Send an updated list of all peers to all viewers
+            obj.sendSessionMetadata();
         }
         return false;
     }
@@ -292,6 +300,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                 }
             }
         }
+    }
+
+    // Send the list of all users currently vieweing this session to all viewers
+    obj.sendSessionMetadata = function () {
+        var allUsers = {};
+        for (var i in obj.viewers) { var v = obj.viewers[i]; if ((v.user != null) && (v.user._id != null)) { if (allUsers[v.user._id] == null) { allUsers[v.user._id] = 1; } else { allUsers[v.user._id]++; } } }
+        obj.sendToAllViewers(JSON.stringify({ type: 'metadata', 'ctrlChannel': '102938', users: allUsers, startTime: obj.startTime }));
     }
 
     // Send this command to all viewers
