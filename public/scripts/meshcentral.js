@@ -46,6 +46,7 @@ var MeshServerCreateControl = function (domain, authCookie) {
         var message;
         try { message = JSON.parse(e.data); } catch (e) { return; }
         if ((typeof message != 'object') || (message.action == 'pong')) { return; }
+        if (message.action == 'ping') { obj.send({ action: 'pong' }); }
         if (message.action == 'close') { if (message.msg) { console.log(message.msg); } obj.Stop(message.cause); return; }
         if (obj.trace) { console.log('RECV', message); }
         if (obj.onMessage) obj.onMessage(obj, message);

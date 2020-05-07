@@ -75,10 +75,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
 
+    // Send a PING/PONG message
+    function sendPing() { obj.ws.send('{"action":"ping"}'); }
+    function sendPong() { obj.ws.send('{"action":"pong"}'); }
+
+    // Setup the agent PING/PONG timers
+    if ((typeof args.browserping == 'number') && (obj.pingtimer == null)) { obj.pingtimer = setInterval(sendPing, args.browserping * 1000); }
+    else if ((typeof args.browserpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, args.browserpong * 1000); }
+
     // Disconnect this user
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); parent.parent.debug('user', 'Soft disconnect'); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); parent.parent.debug('user', 'Hard disconnect'); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
+
+        // Perform timer cleanup
+        if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
+        if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
 
         // Perform cleanup
         parent.parent.RemoveAllEventDispatch(ws);
@@ -418,6 +430,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
 
         switch (command.action) {
+            case 'pong': { break; } // NOP
             case 'ping': { try { ws.send(JSON.stringify({ action: 'pong' })); } catch (ex) { } break; }
             case 'intersession':
                 {
