@@ -556,6 +556,7 @@
     },
     {
       "en": ", {0} watching",
+      "nl": ", {0} kijken",
       "xloc": [
         "default.handlebars->25->683"
       ]
@@ -686,6 +687,7 @@
     },
     {
       "en": "1 connection",
+      "nl": "1 verbinding",
       "xloc": [
         "default.handlebars->25->685"
       ]
@@ -23429,6 +23431,7 @@
     },
     {
       "en": "Session Information",
+      "nl": "Sessie informatie",
       "xloc": [
         "default.handlebars->25->688"
       ]
@@ -27551,6 +27554,7 @@
     },
     {
       "en": "User \\\"{0}\\\"",
+      "nl": "Gebuiker \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->25->687"
       ]
@@ -30322,6 +30326,7 @@
     },
     {
       "en": "{0} connections",
+      "nl": "{0} verbindingen",
       "xloc": [
         "default.handlebars->25->686"
       ]
