@@ -12,7 +12,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.meshserver = meshserver;
     obj.authCookie = authCookie;
     obj.rauthCookie = rauthCookie;
-    obj.State = 0;
+    obj.State = 0; // 0 = Disconnected, 1 = Connected, 2 = Connected to server, 3 = End-to-end connection.
     obj.nodeid = null;
     obj.options = null;
     obj.socket = null;
@@ -34,6 +34,10 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     // Console Message
     obj.consoleMessage = null;
     obj.onConsoleMessageChange = null;
+
+    // Session Metadata
+    obj.metadata = null;
+    obj.onMetadataChange = null;
 
     // Private method
     //obj.debug = function (msg) { console.log(msg); }
@@ -74,6 +78,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
             obj.setConsoleMessage(controlMsg.msg, controlMsg.msgid, controlMsg.msgargs, controlMsg.timeout);
+        } else if (controlMsg.type == 'metadata') {
+            obj.metadata = controlMsg;
+            if (obj.onMetadataChange) obj.onMetadataChange(obj.metadata);
         } else if ((controlMsg.type == 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
             if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }

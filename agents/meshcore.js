@@ -228,8 +228,7 @@ function createMeshCore(agent) {
         if (cert.tls) { ddb.Put('SelfNodeTlsCert', cert.tls.pfx); }
         if (proxyConfig) {
             ddb.Put('WebProxy', proxyConfig.host + ':' + proxyConfig.port);
-        }
-        else {
+        } else {
             ddb.Put('ignoreProxyFile', '1');
         }
 
@@ -1395,8 +1394,26 @@ function createMeshCore(agent) {
                     this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                     this.desktop = this.httprequest.desktop;
 
+                    // Add ourself to the list of remote desktop sessions
+                    if (this.httprequest.desktop.kvm.tunnels == null) { this.httprequest.desktop.kvm.tunnels = []; }
+                    this.httprequest.desktop.kvm.tunnels.push(this);
+
+                    // Send a metadata update to all desktop sessions
+                    var users = {};
+                    for (var i in this.httprequest.desktop.kvm.tunnels) { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } }
+                    for (var i in this.httprequest.desktop.kvm.tunnels) { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); }
+
                     this.end = function () {
                         --this.desktop.kvm.connectionCount;
+
+                        // Remove ourself from the list of remote desktop session
+                        var i = this.desktop.kvm.tunnels.indexOf(this);
+                        if (i >= 0) { this.desktop.kvm.tunnels.splice(i, 1); }
+
+                        // Send a metadata update to all desktop sessions
+                        var users = {};
+                        for (var i in this.httprequest.desktop.kvm.tunnels) { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } }
+                        for (var i in this.httprequest.desktop.kvm.tunnels) { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); }
 
                         // Unpipe the web socket
                         try
@@ -1404,9 +1421,7 @@ function createMeshCore(agent) {
                             this.unpipe(this.httprequest.desktop.kvm);
                             this.httprequest.desktop.kvm.unpipe(this);
                         }
-                        catch(xx)
-                        {
-                        }
+                        catch(ex) { }
 
                         // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
                         if (this.rtcchannel)
@@ -1416,9 +1431,7 @@ function createMeshCore(agent) {
                                 this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
                                 this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
                             }
-                            catch(xx)
-                            {
-                            }
+                            catch(ex) { }
                         }
 
                         // Place wallpaper back if needed
@@ -1434,8 +1447,7 @@ function createMeshCore(agent) {
                                 this.httprequest.desktop.kvm.connectionBar.close();
                                 this.httprequest.desktop.kvm.connectionBar = null;
                             }
-                        }
-                        else {
+                        } else {
                             for (var i in this.httprequest.desktop.kvm.users) {
                                 if (this.httprequest.desktop.kvm.users[i] == this.httprequest.username && this.httprequest.desktop.kvm.connectionBar) {
                                     this.httprequest.desktop.kvm.users.splice(i, 1);
