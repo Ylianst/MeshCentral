@@ -35,6 +35,8 @@
     "_Nice404": false,
     "_ClickOnce": false,
     "_SelfUpdate": true,
+    "_BrowserPing": 60,
+    "_BrowserPong": 60,
     "_AgentPing": 60,
     "_AgentPong": 60,
     "_AgentIdleTimeout": 150,
