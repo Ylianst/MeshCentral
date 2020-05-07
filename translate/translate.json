@@ -20882,6 +20882,7 @@
     },
     {
       "en": "Recording Details",
+      "nl": "Opname details",
       "xloc": [
         "default.handlebars->25->1679"
       ]
@@ -23409,6 +23410,7 @@
     },
     {
       "en": "Session",
+      "nl": "Sessie",
       "xloc": [
         "default.handlebars->25->1653"
       ]
@@ -24681,6 +24683,7 @@
     },
     {
       "en": "Start Time",
+      "nl": "Start tijd",
       "xloc": [
         "default.handlebars->25->1654",
         "default.handlebars->25->1673"
