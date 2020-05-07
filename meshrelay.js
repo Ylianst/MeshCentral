@@ -219,7 +219,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     // Setup session recording
                     var sessionUser = obj.user;
                     if (sessionUser == null) { sessionUser = obj.peer.user; }
-                    if ((sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) {
+                    if ((obj.req.query.p != null) && (obj.req.query.nodeid != null) && (sessionUser != null) && (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(parseInt(obj.req.query.p)) >= 0))))) {
                         // Get the computer name
                         parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
                             var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
@@ -250,7 +250,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                                     var metadata = { magic: 'MeshCentralRelaySession', ver: 1, userid: sessionUser._id, username: sessionUser.name, sessionid: obj.id, ipaddr1: cleanRemoteAddr(obj.req.ip), ipaddr2: cleanRemoteAddr(obj.peer.req.ip), time: new Date().toLocaleString(), protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p), nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid ) };
                                     if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
                                     var firstBlock = JSON.stringify(metadata);
-                                    var logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0, nodeid: node._id, meshid: node.meshid, name: node.name, icon: node.icon };
+                                    var logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0 };
+                                    if (node != null) { logfile.nodeid = node._id; logfile.meshid = node.meshid; logfile.name = node.name; logfile.icon = node.icon; }
                                     recordingEntry(logfile, 1, 0, firstBlock, function () {
                                         try { relayinfo.peer1.ws.logfile = ws.logfile = logfile; } catch (ex) {
                                             try { ws.send('c'); } catch (ex) { } // Send connect to both peers, 'cr' indicates the session is being recorded.

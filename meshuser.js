@@ -4336,7 +4336,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.parent.mailserver != null));
         var sms2fa = ((parent.parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)));
         var authFactorCount = 0;
-        if (user.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+        if (typeof user.otpsecret == 'string') { authFactorCount++; } // Authenticator time factor
         if (email2fa && (user.otpekey != null)) { authFactorCount++; } // EMail factor
         if (sms2fa && (user.phone != null)) { authFactorCount++; } // SMS factor
         if (user.otphkeys != null) { authFactorCount += user.otphkeys.length; } // FIDO hardware factor
