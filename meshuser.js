@@ -743,15 +743,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
-                            while (availcommands.length > 0) {
-                                if (f.length > 80) { fin += (f + ',\r\n'); f = ''; }
-                                f += (((f != '') ? ', ' : ' ') + availcommands.shift());
-                            }
+                            while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
                             if (f != '') { fin += f; }
                             r = 'Available commands: \r\n' + fin + '.';
+                            break;
+                        }
+                        case 'amtacm': {
+                            if ((domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (domain.amtacmactivation.acmmatch.length == 0)) {
+                                r = 'No Intel AMT activation certificates.';
+                            } else {
+                                if (domain.amtacmactivation.log != null) { r += '--- Activation Log ---\r\nFile  : ' + domain.amtacmactivation.log + '\r\n'; }
+                                for (var i in domain.amtacmactivation.acmmatch) {
+                                    var acmcert = domain.amtacmactivation.acmmatch[i];
+                                    r += '--- Activation Certificate ' + (parseInt(i) + 1) + ' ---\r\nName  : ' + acmcert.cn + '\r\nSHA1  : ' + acmcert.sha1 + '\r\nSHA256: ' + acmcert.sha256 + '\r\n';
+                                }
+                            }
                             break;
                         }
                         case 'heapdump': {
