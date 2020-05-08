@@ -3844,7 +3844,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.engine('handlebars', obj.exphbs({ defaultLayout: null })); // defaultLayout: 'main'
         obj.app.set('view engine', 'handlebars');
         if (obj.args.trustedproxy) { obj.app.set('trust proxy', obj.args.trustedproxy); } // Reverse proxy should add the "X-Forwarded-*" headers
-        else if (typeof obj.args.tlsoffload == 'string') { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
+        else if ((typeof obj.args.tlsoffload == 'string') || (typeof obj.args.tlsoffload == 'object')) { obj.app.set('trust proxy', obj.args.tlsoffload); } // Reverse proxy should add the "X-Forwarded-*" headers
         obj.app.use(obj.bodyParser.urlencoded({ extended: false }));
         var sessionOptions = {
             name: 'xid', // Recommended security practice to not use the default cookie name
