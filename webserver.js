@@ -3524,6 +3524,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else if (req.query.meshaction != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
             var user = obj.users[req.session.userid];
+            if (user == null) { res.sendStatus(404); return; }
             if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
                     if (nodes.length != 1) { res.sendStatus(401); return; }

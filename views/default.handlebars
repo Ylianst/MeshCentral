@@ -232,6 +232,7 @@
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
+                            <label><input type=checkbox id=OnlineCheckBox onclick=onDeviceSearchChanged(event) /><span title="Only show devices that are online">Online</span></label>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
                             &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
@@ -4089,6 +4090,10 @@
                     }
                 } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
             }
+
+            // Check power state
+            var onlineOnly = Q('OnlineCheckBox').checked;
+            if (onlineOnly) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } }
         }
 
         var contextelement = null;

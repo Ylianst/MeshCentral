@@ -19031,6 +19031,12 @@
       ]
     },
     {
+      "en": "Online",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9->1"
+      ]
+    },
+    {
       "cs": "Připojených uživatelů",
       "de": "Benutzer online",
       "en": "Online Users",
@@ -19064,6 +19070,12 @@
         "default-mobile.handlebars->9->260",
         "default.handlebars->25->425",
         "default.handlebars->25->746"
+      ]
+    },
+    {
+      "en": "Only show devices that are online",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9"
       ]
     },
     {
