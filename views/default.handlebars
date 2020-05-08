@@ -10186,11 +10186,11 @@
             x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
-            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
             x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Remove all previous events for this userid." + '</label></div>';
+            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
             if (serverinfo.emailcheck) {
                 x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Email is verified." + '</label></div>';
-                x += '<div><label><input id=p4invitationEmail type=checkbox />' + "Send invitation email." + '</label></div>';
+                x += '<div><label><input id=p4invitationEmail type=checkbox title=' + "Email verified and forced password reset required." + ' />' + "Send invitation email." + '</label></div>';
             }
 
             if (passRequirements) {
