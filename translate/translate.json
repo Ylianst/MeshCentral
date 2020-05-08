@@ -10011,6 +10011,7 @@
     },
     {
       "en": "Email verified and forced password reset required.",
+      "nl": "E-mail geverifieerd en geforceerd opnieuw instellen van wachtwoord vereist.",
       "xloc": [
         "default.handlebars->25->1462"
       ]
