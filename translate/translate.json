@@ -19032,6 +19032,7 @@
     },
     {
       "en": "Online",
+      "nl": "Online",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9->1"
       ]
@@ -19074,6 +19075,7 @@
     },
     {
       "en": "Only show devices that are online",
+      "nl": "Toon alleen apparaten die online zijn",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9"
       ]
