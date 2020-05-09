@@ -2,11 +2,11 @@
 <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="shortcut icon" type="image/x-icon" href="{{{domainurl}}}favicon.ico" />
+    <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon"/>
     <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
@@ -36,7 +36,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <title>{{{title}}}</title>
 </head>
-<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px">
+<body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px" onload="if (typeof(startup) !== 'undefined') startup();">
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -283,7 +283,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" loading="lazy" />
+                                <img src="images/info.png" loading="lazy" width="47" height="48" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -308,7 +308,7 @@
             <div id=p2 style="display:none">
                 <div id="p2title"><h1>My Account</h1></div>
                 <div id="p2info" style="overflow-y:auto">
-                    <img id="p2AccountImage" alt="" loading="lazy" src="images/clipboard-128.png" />
+                    <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" src="images/clipboard-128.png" />
                     <div id="p2AccountSecurity" style="display:none">
                         <p><strong>Account security</strong></p>
                         <div style="margin-left:25px">
@@ -2021,13 +2021,13 @@
                                 var splitip = currentNode.lastaddr.split(':');
                                 if (splitip.length > 2) {
                                     // IPv6
-                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(currentNode.lastaddr) + '") width=10 height=10>');
+                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '") width=10 height=10>');
                                 } else {
                                     // IPv4
                                     if (isPrivateIP(currentNode.lastaddr)) {
-                                        x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(splitip[0]) + '") width=10 height=10>');
+                                        x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
                                     } else {
-                                        x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(splitip[0]) + '") width=10 height=10>');
+                                        x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
                                     }
                                 }
                             }
@@ -2038,12 +2038,12 @@
                                 x += '<hr />'
                                 if (net.name) { x += addHtmlValue2("Name", '<b>' + EscapeHtml(net.name) + '</b>'); }
                                 if (net.desc) { x += addHtmlValue2("Description", EscapeHtml(net.desc).replace('(R)', '&reg;').replace('(r)', '&reg;')); }
-                                if (net.dnssuffix) { x += addHtmlValue2("DNS suffix", EscapeHtml(net.dnssuffix) + ' <img src="images/link4.png" title="' + "Copy name to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.dnssuffix) + '") width=10 height=10>'); }
-                                if (net.mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.mac.toLowerCase()) + '") width=10 height=10>'); }
-                                if (net.v4addr) { x += addHtmlValue2("IPv4 address", EscapeHtml(net.v4addr) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.v4addr) + '") width=10 height=10>'); }
-                                if (net.v4mask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(net.v4mask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.v4mask) + '") width=10 height=10>'); }
-                                if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.v4gateway) + '") width=10 height=10>'); }
-                                if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(net.gatewaymac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (net.dnssuffix) { x += addHtmlValue2("DNS suffix", EscapeHtml(net.dnssuffix) + ' <img src="images/link4.png" title="' + "Copy name to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.dnssuffix) + '") width=10 height=10>'); }
+                                if (net.mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.mac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (net.v4addr) { x += addHtmlValue2("IPv4 address", EscapeHtml(net.v4addr) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4addr) + '") width=10 height=10>'); }
+                                if (net.v4mask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(net.v4mask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4mask) + '") width=10 height=10>'); }
+                                if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4gateway) + '") width=10 height=10>'); }
+                                if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.gatewaymac.toLowerCase()) + '") width=10 height=10>'); }
                             }
                             x += '</div>';
                             QH('d2netinfo', x);
@@ -2188,7 +2188,7 @@
                     x += '<input type=button value="' + "Generate New Tokens" + '" onclick="account_manageOtp(1);"></input>';
                     if (message.passwords != null) {
                         x += '<input type=button value="' + "Clear Tokens" + '" onclick="account_manageOtp(2);"></input>';
-                        x += '&nbsp;<img src=images/link4.png height=10 width=10 title="' + "Copy valid codes to clipboard" + '" style=cursor:pointer onclick=copyTextToClip2("' + encodeURIComponent(clipb) + '")>';
+                        x += '&nbsp;<img src=images/link4.png height=10 width=10 title="' + "Copy valid codes to clipboard" + '" style=cursor:pointer onclick=copyTextToClip2("' + encodeURIComponentEx(clipb) + '")>';
                     }
                     x += '</div><br />';
                     setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
@@ -3197,7 +3197,7 @@
                             for (var j in node.tags) {
                                 var tag = node.tags[j];
                                 var collapsed = CollapsedGroups['tag:' + tag];
-                                var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponent(tag) + (collapsed?' style=display:none':''));
+                                var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
                                 if (view == 3) break;
                             }
@@ -3224,13 +3224,13 @@
                         var i = groupNames[j];
                         if (view == 2) {
                             r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px>';
-                            var collapsed = CollapsedGroups['tag:' + encodeURIComponent(i)];
-                            r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponent(i) + '",2)></img>'; // Collapse action
+                            var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
+                            r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '",2)></img>'; // Collapse action
                             r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + i + '</span></div>' + groups[i];
                         } else {
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span>';
-                            var collapsed = CollapsedGroups['tag:' + encodeURIComponent(i)];
-                            r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponent(i) + '")></img>'; // Collapse action
+                            var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
+                            r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '")></img>'; // Collapse action
                             r += '<span>' + i + '</span></div>';
                             r += '<div id=DevxCol' + tagDeviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                             r += groups[i];
@@ -4249,7 +4249,7 @@
                 p13fileNameCheck();
             } else if (action == 2) { // Edit the file
                 if (file.s <= 204800) {
-                    p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + file.n), encodeURIComponent(file.n), file.s, 'viewer');
+                    p13downloadfile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + file.n), encodeURIComponentEx(file.n), file.s, 'viewer');
                 } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
             } else if (action == 3) { // Delete the file
                 setDialogMode(2, "Delete", 3, p13deletefileCm, "Delete item?", file);
@@ -5093,8 +5093,8 @@
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
                 if ((meshrights & 76) != 0) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
-                x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
-                x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponent(node._id) + '") />';
+                x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
+                x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
@@ -5247,18 +5247,18 @@
                         if ((usergroups != null) && (usergroups[userid] != null)) { username = EscapeHtml(usergroups[userid].name); ugroup = true; }
                         if ((meshrights & 2) != 0) {
                             if (ugroup) {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,"' + encodeURIComponent(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             } else {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponent(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,"' + encodeURIComponent(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             }
                         }
                         if (users != null) {
                             if (ugroup) {
-                                username = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponent(userid) + '");haltEvent(event);\'>' + username + '</a>';
+                                username = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(userid) + '");haltEvent(event);\'>' + username + '</a>';
                             } else {
-                                username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(userid) + '");haltEvent(event);\'>' + username + '</a>';
+                                username = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(userid) + '");haltEvent(event);\'>' + username + '</a>';
                             }
                         }
 
@@ -5339,7 +5339,7 @@
             Q('d2devEvent').focus();
         }
 
-        function writeDeviceEventEx(buttons, tag) { meshserver.send({ action: 'setDeviceEvent', nodeid: decodeURIComponent(tag), msg: encodeURIComponent(Q('d2devEvent').value) }); }
+        function writeDeviceEventEx(buttons, tag) { meshserver.send({ action: 'setDeviceEvent', nodeid: decodeURIComponent(tag), msg: encodeURIComponentEx(Q('d2devEvent').value) }); }
 
         function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
@@ -5347,11 +5347,11 @@
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
-        function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponent(Q('d2devNotes').value) }); }
+        function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) }); }
 
         function deviceChat(e) {
             if (xxdialogMode) return;
-            var url = '/messenger?id=meshmessenger/' + encodeURIComponent(currentNode._id) + '/' + encodeURIComponent(userinfo._id) + '&title=' + currentNode.name;
+            var url = '/messenger?id=meshmessenger/' + encodeURIComponentEx(currentNode._id) + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + currentNode.name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
             if (e && (e.shiftKey == true)) {
                 window.open(url, 'meshmessenger:' + currentNode._id);
@@ -5692,7 +5692,7 @@
         // Open XTerm
         function p10openxterm(e, nodeid) {
             haltEvent(e);
-            var url = '/xterm?nodeid=' + encodeURIComponent(nodeid) + '&auto=1';
+            var url = '/xterm?nodeid=' + encodeURIComponentEx(nodeid) + '&auto=1';
             var node = getNodeFromId(nodeid);
             if (node == null) return;
             if ([1, 2, 3, 4, 21, 22].indexOf(node.agent.id) >= 0) { url += '&os=win'; } else { url += '&os=linux'; }
@@ -7156,10 +7156,10 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponent(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponent(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
-                    if (f.s > 0) { link = '<a hrf=# rel="noreferrer noopener" target="_blank" style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')">' + shortname + '</a>'; }
+                    if (f.s > 0) { link = '<a hrf=# rel="noreferrer noopener" target="_blank" style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')">' + shortname + '</a>'; }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
@@ -7255,7 +7255,7 @@
             for (var i = 0; i < checkboxes.length; i++) {
                 if (checkboxes[i].checked) {
                     if (p13filetree.dir[checkboxes[i].value].s <= 204800) {
-                        p13downloadfile(encodeURIComponent(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponent(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
+                        p13downloadfile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + p13filetree.dir[checkboxes[i].value].n), encodeURIComponentEx(p13filetree.dir[checkboxes[i].value].n), p13filetree.dir[checkboxes[i].value].s, 'viewer');
                     } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
                     break;
                 }
@@ -7622,7 +7622,7 @@
                     var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     if (event.username) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
                         } else {
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
@@ -8579,7 +8579,7 @@
             x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
 
             // Display group note support
-            if (meshrights & 1) { x += '<br><input type=button value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />'; }
+            if (meshrights & 1) { x += '<br><input type=button value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
 
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
@@ -8625,14 +8625,14 @@
                 var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 2;
                 if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) {
                     if ((meshrights == 0xFFFFFFFF) || (currentMesh.links[sortedusers[i].id].rights != 0xFFFFFFFF)) {
-                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                     }
-                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponent(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponent(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                 }
                 if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
-                if ((usergroups != null) && sortedusers[i].id.startsWith('ugrp/')) { username = '<a tabindex=0 href=# onclick=\'gotoUserGroup("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
-                if ((users != null) && sortedusers[i].id.startsWith('user/')) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                if ((usergroups != null) && sortedusers[i].id.startsWith('ugrp/')) { username = '<a tabindex=0 href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                if ((users != null) && sortedusers[i].id.startsWith('user/')) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
                 x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div title="' + "User" + '" class=m' + icon + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
@@ -8845,7 +8845,7 @@
                 var y = '';
                 if (selected == null) {
                     var omeshs = getOrderedList(meshes, 'name');
-                    for (var i in omeshs) { if ((currentUser.links == null) || (currentUser.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponent(omeshs[i]._id) + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
+                    for (var i in omeshs) { if ((currentUser.links == null) || (currentUser.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(meshes[decodeURIComponent(selected)].name) + '</option>';
                 }
@@ -8854,14 +8854,14 @@
                 if (usergroups == null) return;
                 var y = '';
                 var ousergroups = getOrderedList(usergroups, 'name');
-                for (var i in ousergroups) { if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponent(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; } }
+                for (var i in ousergroups) { if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; } }
                 x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if (userid == 6) {
                 if (usergroups == null) return;
                 var y = '';
                 if (selected == null) {
                     var ousergroups = getOrderedList(usergroups, 'name');
-                    for (var i in ousergroups) { if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponent(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; } }
+                    for (var i in ousergroups) { if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; } }
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(usergroups[decodeURIComponent(selected)].name) + '</option>';
                 }
@@ -8870,7 +8870,7 @@
                 var y = '';
                 if (selected) { selected = decodeURIComponent(selected); }
                 var omeshs = getOrderedList(meshes, 'name');
-                for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponent(omeshs[i]._id) + ((selected == omeshs[i]._id)?' selected':' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
+                for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selected == omeshs[i]._id)?' selected':' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if ((userid == 4) || (userid == 7)) {
                 var y = '', selectedMeshId = null, selectedNode = null;
@@ -8878,13 +8878,13 @@
                 var omeshs = getOrderedList(meshes, 'name');
                 for (var i in omeshs) {
                     if ((omeshs[i].links[userinfo._id] != null) && (omeshs[i].links[userinfo._id].rights & 7)) { // Only show device groups that we have user administrator for.
-                        if (selectedMeshId == null) { selectedMeshId = omeshs[i]._id; } y += '<option value=' + encodeURIComponent(omeshs[i]._id) + ((selectedMeshId == omeshs[i]._id)?' selected':' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>';
+                        if (selectedMeshId == null) { selectedMeshId = omeshs[i]._id; } y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selectedMeshId == omeshs[i]._id)?' selected':' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>';
                     }
                 }
                 x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(' + userid + ') id=dp2meshid style=width:100%>' + y + '</select></div>');
                 y = '';
                 var onodes = getOrderedList(nodes, 'name');
-                for (var i in onodes) { if (onodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponent(onodes[i]._id) + ((selectedNode == onodes[i])?' selected':' ') + '>' + EscapeHtml(onodes[i].name) + '</option>'; } }
+                for (var i in onodes) { if (onodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponentEx(onodes[i]._id) + ((selectedNode == onodes[i])?' selected':' ') + '>' + EscapeHtml(onodes[i].name) + '</option>'; } }
                 x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2nodeid style=width:100%>' + y + '</select></div>');
             } else {
                 userid = decodeURIComponent(userid);
@@ -9002,7 +9002,7 @@
 
         function p20changeMeshAddMeshUserDialog(userid) {
             var y = '', meshid = decodeURIComponent(Q('dp2meshid').value);
-            for (var i in nodes) { if (nodes[i].meshid == meshid) { y += '<option value=' + encodeURIComponent(nodes[i]._id) + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
+            for (var i in nodes) { if (nodes[i].meshid == meshid) { y += '<option value=' + encodeURIComponentEx(nodes[i]._id) + '>' + EscapeHtml(nodes[i].name) + '</option>'; } }
             QH('dp2nodeid', y);
             p20validateAddMeshUserDialog(userid);
         }
@@ -9069,7 +9069,7 @@
                         }
                         if ((exactMatch == false) && (matchingUsers.length > 0)) {
                             var x = '';
-                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p20setname("' + encodeURIComponent(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
+                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p20setname("' + encodeURIComponentEx(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
                             QH('dp20usersuggest', x);
                             showsuggestbox = true;
                         }
@@ -9501,11 +9501,11 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + name + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponent(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponent(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + name + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '';
-                    if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponent(f.nx)) + '?download=1' + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(publicPath + '/' + encodeURIComponent(f.nx) + '?download=1') + '") width=10 height=10>'; }
-                    if (f.s > 0) { link = publiclink + ' <a rel="noreferrer noopener" target="_blank" download href="downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '">' + shortname + '</a>'; }
+                    if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1') + '") width=10 height=10>'; }
+                    if (f.s > 0) { link = publiclink + ' <a rel="noreferrer noopener" target="_blank" download href="downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '">' + shortname + '</a>'; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
@@ -9555,7 +9555,7 @@
         }
 
         function p5showPublicLink(u) {
-            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponent(u) + '") width=10 height=10>');
+            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '") width=10 height=10>');
             return false;
         }
 
@@ -9605,7 +9605,7 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function(){ var x1=/^[^\\/:\*\?"<>\|]+$/, x2=/^\./, x3=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname){ return x1.test(fname)&&!x2.test(fname)&&!x3.test(fname)&&(fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponent(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function p5updateUploadDialogOk() {
             // Check if these are files we can upload, remove all folders.
@@ -9722,7 +9722,7 @@
                             Q('p5fileDragSize').value = sizes.join('*');
                             Q('p5fileDragType').value = types.join('*');
                             Q('p5fileDragData').value = datas.join('*'); // This will not work for large files, there is a limit on the data size in a field.
-                            Q('p5fileDragLink').value = encodeURIComponent(filetreelinkpath);
+                            Q('p5fileDragLink').value = encodeURIComponentEx(filetreelinkpath);
                             Q('p5fileDragAuthCookie').value = authCookie;
                             Q('p5loginSubmit2').click();
                         }
@@ -9759,7 +9759,7 @@
         /*
         function p5fileCatchAllInputChanged(e) {
             p5fileDragLeave(e);
-            Q('p5fileDragLink2').value = encodeURIComponent(filetreelinkpath);
+            Q('p5fileDragLink2').value = encodeURIComponentEx(filetreelinkpath);
             Q('p5fileCatchAllSubmit').click();
         }
         */
@@ -9803,7 +9803,7 @@
                     }
                     if (event.username) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
                         } else {
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
@@ -9926,12 +9926,12 @@
 
             // Re-check userid's
             elements = document.getElementsByClassName('UserCheckbox');
-            var eself = encodeURIComponent(userinfo._id);
+            var eself = encodeURIComponentEx(userinfo._id);
             for (var i=0;i<elements.length;i++) { elements[i].checked = ((checkedUserids.indexOf(elements[i].value) >= 0) && (elements[i].value != eself)); }
             p3updateInfo();
 
             // Update current user panel if needed
-            if ((currentUser != null) && (xxcurrentView == 30)) { gotoUser(encodeURIComponent(currentUser._id),true); }
+            if ((currentUser != null) && (xxcurrentView == 30)) { gotoUser(encodeURIComponentEx(currentUser._id),true); }
         }
 
         function addUserHtml(user, sessions) {
@@ -9939,14 +9939,14 @@
             if (sessions != null) {
                 gray = '';
                 if (self) {
-                    msg = '<span style=float:right;margin-top:1px;margin-right:4px title=' + "Chat" + '><a href=# onclick=userChat(event,"' + encodeURIComponent(user._id) + '","' + encodeURIComponent(user.name) + '")><img src=\'images/icon-chat.png\' height=16 width=16 style=padding-top:2px /></a></span>';
-                    msg += '<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a href=# onclick=\'return showUserAlertDialog(event,"' + encodeURIComponent(user._id) + '")\'><img src=\'images/icon-notify.png\' height=16 width=16 style=padding-top:2px /></a></span>';
+                    msg = '<span style=float:right;margin-top:1px;margin-right:4px title=' + "Chat" + '><a href=# onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '")><img src=\'images/icon-chat.png\' height=16 width=16 style=padding-top:2px /></a></span>';
+                    msg += '<span style=float:right;margin-top:1px;margin-left:4px;margin-right:4px title=Notify><a href=# onclick=\'return showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '")\'><img src=\'images/icon-notify.png\' height=16 width=16 style=padding-top:2px /></a></span>';
                 }
                 if (sessions == 1) { lastAccess += nobreak("1 session"); } else { lastAccess += nobreak(format("{0} sessions", sessions)); }
             } else {
                 if (user.login) { lastAccess += '<span title="' + format("Last login: {0}", printDateTime(new Date(user.login * 1000))) + '">' + printDate(new Date(user.login * 1000)) + '</span>'; }
             }
-            if (self) { permissions += '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,"' + encodeURIComponent(user._id) + '")\'>'; }
+            if (self) { permissions += '<a href=# style=cursor:pointer onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\'>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked" + ',&nbsp;'; }
             permissions += '<span title=\'' + "Server Permissions" + '\'>';
 
@@ -9985,9 +9985,9 @@
             if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
             if (user.phone != null) { username += ' <img src="images/phone12.png" height=12 width=7 title="' + "Verified phone number" + '" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
-            x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponent(user._id) + '\')"><td>';
+            x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponentEx(user._id) + '\')"><td>';
             x += '<div class=bar>';
-            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponent(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponent(user._id) + '",false,event)>';
+            x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponentEx(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponentEx(user._id) + '",false,event)>';
             x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             x += '<div class=g1></div><div class=g2></div><div>';
             x += '<div><span>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
@@ -10004,7 +10004,7 @@
 
         // Called to select all or unselect all users
         function p3usersSelectallButtonFunction() {
-            var eself = encodeURIComponent(userinfo._id);
+            var eself = encodeURIComponentEx(userinfo._id);
             var elements = document.getElementsByClassName('UserCheckbox'), checkcount = 0;
             for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
             for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0) && (elements[i].value != eself); }
@@ -10084,7 +10084,7 @@
 
         function userChat(e, userid, name) {
             haltEvent(e);
-            var url = '/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponent(userinfo._id) + '&title=' + name;
+            var url = '/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
             window.open(url, 'meshmessenger:' + userid);
             meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
@@ -10397,18 +10397,18 @@
             p50updateInfo();
 
             // Update current user panel if needed
-            if ((currentUserGroup != null) && (xxcurrentView == 51)) { gotoUserGroup(encodeURIComponent(currentUserGroup._id), true); }
+            if ((currentUserGroup != null) && (xxcurrentView == 51)) { gotoUserGroup(encodeURIComponentEx(currentUserGroup._id), true); }
         }
         
         function addUserGroupHtml(group) {
             var usercount = 0, meshcount = 0, devicecount = 0;
             if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } if (i.startsWith('node/')) { devicecount++; } } }
-            var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponent(group._id) + '\')"><td style=cursor:pointer>';
+            var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponentEx(group._id) + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
-            x += '<div class=baricon><input class=UserGroupCheckbox value=' + encodeURIComponent(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
-            x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")><div class=m4></div></div>';
-            x += '<div class=g1 onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")></div><div class=g2 onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")></div>';
-            x += '<div onclick=gotoUserGroup("' + encodeURIComponent(group._id) + '")><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
+            x += '<div class=baricon><input class=UserGroupCheckbox value=' + encodeURIComponentEx(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
+            x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><div class=m4></div></div>';
+            x += '<div class=g1 onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div><div class=g2 onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div>';
+            x += '<div onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
             return x;
         }
 
@@ -10421,7 +10421,7 @@
 
         // Called to select all or unselect all users
         function p50usersSelectallButtonFunction() {
-            var eself = encodeURIComponent(userinfo._id);
+            var eself = encodeURIComponentEx(userinfo._id);
             var elements = document.getElementsByClassName('UserGroupCheckbox'), checkcount = 0;
             for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
             for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0) && (elements[i].value != eself); }
@@ -10464,7 +10464,7 @@
             if (xxdialogMode) return;
             var x = '', y = '';
             if (mode == 2) {
-                if (usergroups) { for (var i in usergroups) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
+                if (usergroups) { for (var i in usergroups) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
                 x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100%>' + y + '</select></div>');
             }
             x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
@@ -10523,7 +10523,7 @@
             x += '</table></div><br />';
 
             if ((userinfo.siteadmin & 256) != 0) {
-                x += '<input type=button value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponent(group._id) + '") />';
+                x += '<input type=button value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
             }
 
             // Setup the panel
@@ -10548,9 +10548,9 @@
 
             // Display all users for this user group
             for (var i in sortedusers) {
-                var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponent(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
-                if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
+                if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
                 x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User" + '" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                 ++count;
             }
@@ -10575,8 +10575,8 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else {}
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponent(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponent(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
@@ -10597,8 +10597,8 @@
                     var nodename = '<i>' + "Unknown Device" + '</i>';
                     if (node) { nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '");haltEvent(event);\'>' + node.name + '</a>'; } else {}
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeDeviceFromUserGroup(event,"' + encodeURIComponent(node._id) + '")\' title="' + "Remove user group rights to this device" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(7,"' + encodeURIComponent(node._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p51removeDeviceFromUserGroup(event,"' + encodeURIComponentEx(node._id) + '")\' title="' + "Remove user group rights to this device" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(7,"' + encodeURIComponentEx(node._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
@@ -10740,7 +10740,7 @@
                         }
                         if ((exactMatch == false) && (matchingUsers.length > 0)) {
                             var x = '';
-                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p51setname("' + encodeURIComponent(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
+                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p51setname("' + encodeURIComponentEx(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
                             QH('dp51usersuggest', x);
                             showsuggestbox = true;
                         }
@@ -11016,8 +11016,8 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; }
                     if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { // 2 = MESHRIGHT_MANAGEUSERS
-                        trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponent(mesh._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,"' + encodeURIComponent(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 }
@@ -11044,9 +11044,9 @@
                         var groupname = '<i>' + "Unknown User Group" + '</i>';
                         if (group != null) {
                             groupname = EscapeHtml(group.name);
-                            if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponent(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
+                            if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponent(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User Group" + '" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
@@ -11068,8 +11068,8 @@
                     if ((userinfo.links) && (userinfo.links[i] != null) && (userinfo.links[i].rights != null)) { cr = userinfo.links[i].rights; }
                     var nodename = node?EscapeHtml(node.name):('<i>' + "Unknown Device" + '</i>');
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponent(node._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(4,"' + encodeURIComponent(node._id) + '")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                        trash = '<a href=# onclick=\'return p30removeNodeFromUser(event,"' + encodeURIComponentEx(node._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(4,"' + encodeURIComponentEx(node._id) + '")>' + makeUserDeviceRightsString(r) + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + nodename + '</a>';
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device" + '" class=si' + node.icon + '></div><div>&nbsp;' + nodename + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
@@ -11114,7 +11114,7 @@
         function p30showAddUserGroupDialog() {
             if (xxdialogMode || (usergroups == null)) return;
             var y = '';
-            for (var i in usergroups) { if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponent(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
+            for (var i in usergroups) { if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
             var x = addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp2groupid style=width:100%>' + y + '</select></div>');
             setDialogMode(2, "Add Membership", 3, p30showAddUserGroupDialogEx, x);
             Q('dp2groupid').focus();
@@ -11167,7 +11167,7 @@
                     }
                     if (event.username && (event.username != currentUser.name)) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
-                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponent(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
+                            msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
                         } else {
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
@@ -11246,10 +11246,10 @@
                 }
             }
             var actions = '', icon = 'm0';
-            if (rec.present == 1) { icon = 'm1'; actions = '<div style=cursor:pointer;float:right><a href=recordings.ashx?file=' + encodeURIComponent(rec.filename) + ' download><img src=images/link4.png height=10 width=10 title="Download Recording" download></a>&nbsp;</div>'; }
+            if (rec.present == 1) { icon = 'm1'; actions = '<div style=cursor:pointer;float:right><a href=recordings.ashx?file=' + encodeURIComponentEx(rec.filename) + ' download><img src=images/link4.png height=10 width=10 title="Download Recording" download></a>&nbsp;</div>'; }
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') showRecordingDialog(event,\'' + i + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
-            //x += '<div class=baricon><input class=RecordingCheckbox value="' + encodeURIComponent(rec.filename) + '" onclick=p52updateInfo() type=checkbox></div>';
+            //x += '<div class=baricon><input class=RecordingCheckbox value="' + encodeURIComponentEx(rec.filename) + '" onclick=p52updateInfo() type=checkbox></div>';
             x += '<div></div>';
             x += '<div class=baricon onclick=showRecordingDialog(event,"' + i + '")><div class=' + icon + '></div></div>';
             x += '<div class=g1 onclick=showRecordingDialog(event,"' + i + '")></div><div class=g2 onclick=showRecordingDialog("' + i + '")></div>';
@@ -11359,10 +11359,10 @@
                 var h = '';
                 if (f.t < 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponent(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponent(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
-                    //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponent(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
+                    //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
                     h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
@@ -11458,7 +11458,7 @@
                 else gotoDevice(n.nodeid, 10); // General
             } else {
                 if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
-                    window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponent(n.username), n.tag.split('/')[2]);
+                    window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
                     notificationDelete(id);
                 }
             }
@@ -12405,6 +12405,7 @@
         function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1); }
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
+        function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
 
     </script>
 </body>
