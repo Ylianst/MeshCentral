@@ -232,7 +232,7 @@
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
-                            <label><input type=checkbox id=OnlineCheckBox onclick=onDeviceSearchChanged(event) /><span title="Only show devices that are online">Online</span></label>
+                            <label><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
                             &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
@@ -1330,6 +1330,7 @@
             Q('KvmSearchInput').value = Q('SearchInput').value = getstore('_search', '');
             showRealNames = (getstore('showRealNames', 0) == 1);
             Q('RealNameCheckBox').checked = showRealNames;
+            Q('OnlineCheckBox').checked = (getstore('onlineOnly', 0) == 1);
             Q('viewselect').value = getstore('deviceView', 1);
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
             QV('accountChangeEmailAddressSpan', (features & 0x200000) == 0);
@@ -2642,7 +2643,7 @@
                                 node.lastconnect = Date.now();
 
                                 // Web page update
-                                masterUpdate(4 | 16);
+                                masterUpdate(1 | 4 | 16);
                                 refreshDevice(node._id);
                             }
                             break;
@@ -2870,7 +2871,11 @@
             showRealNames = Q('RealNameCheckBox').checked;
             putstore('showRealNames', showRealNames ? 1 : 0);
             masterUpdate(6);
-            return;
+        }
+
+        function onOnlineCheckBox(e) {
+            putstore('onlineOnly', Q('OnlineCheckBox').checked ? 1 : 0);
+            onDeviceSearchChanged(e);
         }
 
         function onDeviceViewChange(i) {
