@@ -26,6 +26,7 @@
     "_RedirAliasPort": 80,
     "_AgentPort": 1234,
     "_AgentAliasPort": 1234,
+    "_AgentAliasDNS": "agents.myserver.mydomain.com",
     "_ExactPorts": true,
     "_AllowLoginToken": true,
     "_AllowFraming": true,
