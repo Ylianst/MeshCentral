@@ -3454,11 +3454,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
                 if (argentInfo.rname.endsWith('.exe')) { meshfilename = argentInfo.rname.substring(0, argentInfo.rname.length - 4) + '-' + meshfilename + '.exe'; } else { meshfilename = argentInfo.rname + '-' + meshfilename; }
 
+                // Get the agent connection server name
+                var serverName = obj.getWebServerName(domain);
+                if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
+
                 // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
                 var xdomain = (domain.dns == null) ? domain.id : '';
                 if (xdomain != '') xdomain += '/';
                 var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
-                if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
+                if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
                 if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
                 if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
                 if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
@@ -3624,13 +3628,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
         var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
+        // Get the agent connection server name
+        var serverName = obj.getWebServerName(domain);
+        if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
+
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
         var xdomain = (domain.dns == null) ? domain.id : '';
         if (xdomain != '') xdomain += '/';
         var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
+        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
         if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
@@ -3712,13 +3720,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var meshidhex = Buffer.from(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
         var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
+        // Get the agent connection server name
+        var serverName = obj.getWebServerName(domain);
+        if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
+
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
         var xdomain = (domain.dns == null) ? domain.id : '';
         if (xdomain != '') xdomain += '/';
         var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
+        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
         if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0)) { meshsettings += 'InstallFlags=' + req.query.installflags + '\r\n'; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
