@@ -14191,6 +14191,7 @@
     },
     {
       "en": "Keys",
+      "nl": "Sleutels",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
@@ -22486,18 +22487,21 @@
     },
     {
       "en": "Screen",
+      "nl": "Scherm",
       "xloc": [
         "default-mobile.handlebars->9->241"
       ]
     },
     {
       "en": "Screen Selection",
+      "nl": "Scherm Selectie",
       "xloc": [
         "default-mobile.handlebars->9->242"
       ]
     },
     {
       "en": "Screens",
+      "nl": "Schermen",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
