@@ -47,6 +47,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.width = 960;
     obj.height = 960;
 
+    obj.displays = null;
+    obj.selectedDisplay = null;
+
     obj.onScreenSizeChange = null;
     obj.onMessage = null;
     obj.onConnectCountChanged = null;
@@ -266,6 +269,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                     }
                 }
                 //console.log('Get Displays', displays, selectedDisplay, rstr2hex(str));
+                obj.displays = displays; obj.selectedDisplay = selectedDisplay;
                 if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, displays, selectedDisplay); }
                 break;
             case 12: // SetDisplay
