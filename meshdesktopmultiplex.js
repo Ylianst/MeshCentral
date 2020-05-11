@@ -304,11 +304,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         }
     }
 
-    // Send the list of all users currently vieweing this session to all viewers
+    // Send the list of all users currently vieweing this session to all viewers and servers
     obj.sendSessionMetadata = function () {
         var allUsers = {};
         for (var i in obj.viewers) { var v = obj.viewers[i]; if ((v.user != null) && (v.user._id != null)) { if (allUsers[v.user._id] == null) { allUsers[v.user._id] = 1; } else { allUsers[v.user._id]++; } } }
         obj.sendToAllViewers(JSON.stringify({ type: 'metadata', 'ctrlChannel': '102938', users: allUsers, startTime: obj.startTime }));
+
+        // TODO: Update the servers
     }
 
     // Send this command to all viewers
@@ -401,6 +403,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         if (peer == obj.agent) {
             obj.recordingFileWriting = true;
             recordData(true, data, function () {
+                if (obj.viewers == null) return;
                 obj.recordingFileWriting = false;
                 if ((obj.viewersOverflowCount < obj.viewers.length) && obj.agent && (obj.agent.paused == true)) { obj.agent.paused = false; obj.agent.ws._socket.resume(); }
                 obj.processAgentData(data);

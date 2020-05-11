@@ -3151,11 +3151,21 @@
                     if (showRealNames == true && node.rname != null) name = EscapeHtml(node.rname);
                     if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
 
+                    // Setup device notification (TODO)
+                    var devNotify = '';
+                    if (node.sessions != null) {
+                        if (view == 2) {
+                            devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\') class=deviceNotifySmallDot src=images/icon-relay-notify10.png width=10 height=10>';
+                        } else {
+                            devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\') class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>';
+                        }
+                    }
+
                     // Node
                     var icon = node.icon;
                     if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
                     if (view == 1) {
-                        r += '<div id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div><div style=height:100%;cursor:pointer tabindex=0 onclick=gotoDevice(\'' + node._id + '\',null,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></div><div class=g2></div></div></div></div>';
+                        r += '<div id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;position:relative;width:' + deviceBoxWidth + 'px;height:50px;padding-top:1px;padding-bottom:1px><div style=width:22px;height:50%;float:left;padding-top:12px><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div><div style=height:100%;cursor:pointer tabindex=0 onclick=gotoDevice(\'' + node._id + '\',null,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px;float:left></div><div style=height:100%><div class=g1></div><div class=e2><div class=e1 style=width:' + (deviceBoxWidth - 100) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></div><div class=g2></div></div></div>' + devNotify + '</div>';
                     } else if (view == 2) {
                         var states = [];
                         if (node.conn) {
@@ -3170,11 +3180,11 @@
                         if (sort == 1) { collapseName = ('pwr:' + (node.pwr?node.pwr:0)); }
                         else if (sort == 3) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
                         var collapsed = (sort != 3) & CollapsedGroups[collapseName];
-                        r += '<tr name=DevxCol' + collapseName + (collapsed?' style=display:none':'') + '><td><div id=devs cmenu=devsContentMenu class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
+                        r += '<tr name=DevxCol' + collapseName + (collapsed?' style=display:none':'') + '><td style=position:relative><div id=devs cmenu=devsContentMenu class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
                         r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                         r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                        r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div></td>';
+                        r += '<div class=style10 style=cursor:pointer;font-size:14px title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)><span style=width:300px>' + name + '</span></div></div>' + devNotify + '</td>';
                         r += '<td style=text-align:center>' + getUserShortStr(node);
                         r += '<td style=text-align:center>' + (node.ip != null ? node.ip : '');
                         r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;');
@@ -3182,7 +3192,7 @@
                         r += '</tr>';
                     } else if ((view == 3) && (node.conn & 1) && (((meshrights & 8) || (meshrights & 256)) != 0) && ((node.agent.caps & 1) != 0)) { // Check if we have rights and agent is capable of KVM.
                         if ((multiDesktopFilter) && ((multiDesktopFilter.length == 0) || (multiDesktopFilter.indexOf('devid_' + node._id) >= 0))) {
-                            r += '<div id=devs cmenu=devsContentMenu style=display:inline-block;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">';
+                            r += '<div id=devs cmenu=devsContentMenu style=display:inline-block;position:relative;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">' + devNotify;
                             //r += '<input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox style=float:left>';
                             r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
                             r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' tabindex=0 style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:1000;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\') onkeypress="if (event.key==\'Enter\') toggleKvmDevice(\'' + node._id + '\')">' + "Disconnected" + '</div></div>';
@@ -3391,6 +3401,16 @@
                 }
             }
             oldviewmode = view;
+        }
+
+        // Show currently active sessions on this device
+        function showDeviceSessions(nodeid) {
+            if (xxdialogMode) return;
+            var node = getNodeFromId(nodeid), x = '';
+            if (node == null) return;
+            console.log(node.sessions);
+            x += addHtmlValue4("User", '1 session'); // TODO
+            setDialogMode(2, "Sessions - " + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + nodeid);
         }
 
         function toggleCollapseGroup(id, id2, type) {
