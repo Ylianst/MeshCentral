@@ -6042,7 +6042,7 @@
         function updateMetadata(conn, elementid) {
             var str = '', viewerCount = 0;
             if (conn && (conn.State == 3)) {
-                if (conn.metadata && conn.metadata.users) { for (var i in conn.metadata.users) { viewerCount++; } }
+                if (conn.metadata && conn.metadata.users) { for (var i in conn.metadata.users) { viewerCount += conn.metadata.users[i]; } }
                 if (viewerCount > 1) { str = '<span onclick=showSessionMetadata(1) style=cursor:pointer>' + format(", {0} watching", viewerCount) + '</span>'; }
             }
             QH('deskmetadata', str);
