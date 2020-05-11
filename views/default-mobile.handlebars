@@ -415,7 +415,6 @@
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:25px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
-                                    <select id=termdisplays style=display:none onchange=deskSetDisplay(event) onclick=deskGetDisplayNumbers(event)></select>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
@@ -423,8 +422,9 @@
                                     <input id="deskActionsBtn" type=button style="margin-left:3px" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                     <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
                                     <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
-                                    <input id="DeskSpecialKeys" type="button" value="Special Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
-                                    <input id="DeskSoftKeys" type="button" value="Keyboard" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
+                                    <input type="button" id="DeskSpecialKeys" value="Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
+                                    <input type="button" id="DeskSoftKeys" value="Keyboard" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
+                                    <input type="button" id="DeskScreens" value="Screens" onkeypress="return false" onkeydown="return false" onclick="deskSelectScreens()" style="display:none">
                                     <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
@@ -2482,7 +2482,7 @@
                     // Disconnect and clean up the remote desktop
                     desktop.Stop();
                     desktopNode = desktop = null;
-                    QV('termdisplays', false);
+                    QV('DeskScreens', false);
                     if (fullscreen == true) { deskToggleFull(); }
                     break;
                 case 2:
@@ -2711,7 +2711,6 @@
             if (Q('DeskTools').nodeid != message.nodeid) return;
             var p = [], processes = null;
             try { processes = JSON.parse(message.value); } catch (e) { }
-            console.log(processes);
             if (processes != null) {
                 for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
@@ -2726,22 +2725,26 @@
             setSessionActivity();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var d = new Date(), n = 'Desktop-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
-            Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.jpg'); });
+            Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.png'); });
+        }
+
+        function deskSelectScreens() {
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
+            var x = '', info = desktop.m.displays;
+            for (var i in info) { x += '<option value=' + i + ' ' + ((desktop.m.selectedDisplay == i) ? ' selected' : '') + '>' + info[i] + '</option>'; }
+            x = addHtmlValue4("Screen", '<select style=width:100% id=deskdisplays>' + x + '</select>');
+            setDialogMode(2, "Screen Selection", 3, deskSelectScreensEx, x);
+        }
+
+        function deskSelectScreensEx() {
+            if (desktop == null || desktop.State != 3) return;
+            desktop.m.SetDisplay(parseInt(Q('deskdisplays').value));
         }
 
         function deskDisplayInfo(sender, info, selDisplay, selItem) {
-            var txt = Q('termdisplays').value;
-            if (info.length > 0) { var options = ''; for (var x in info) { options += '<option' + ((txt == info[x]) ? ' selected' : '') + '>' + info[x] + '</option>'; } QH('termdisplays', options); }
-            QV('termdisplays', info.length > 0);
-        }
-
-        function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
-
-        function deskSetDisplay(e) {
-            setSessionActivity();
-            var display = 0, txt = Q('termdisplays').value;
-            if (txt == "All Displays") display = 65535; else display = parseInt(txt.substring(8));
-            desktop.m.SetDisplay(display);
+            var displayCount = 0;
+            for (var x in info) { displayCount++; }
+            QV('DeskScreens', displayCount > 1);
         }
 
         function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousedown(e) }
@@ -3652,6 +3655,7 @@
         function getNodeFromId(id) { for (var i in nodes) { if (nodes[i]._id == id) return nodes[i]; } return null; }
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
+        function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
         function addLink(x, f) { return '<a style=cursor:pointer;color:darkblue;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
