@@ -209,7 +209,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             }
 
             // If this is the last viewer, disconnect the agent
-            if ((obj.viewers.length == 0) && (obj.agent != null)) { obj.agent.close(); dispose(); return true; }
+            if ((obj.viewers != null) && (obj.viewers.length == 0) && (obj.agent != null)) { obj.agent.close(); dispose(); return true; }
 
             // Send an updated list of all peers to all viewers
             obj.sendSessionMetadata();

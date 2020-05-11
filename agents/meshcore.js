@@ -1400,8 +1400,10 @@ function createMeshCore(agent) {
 
                     // Send a metadata update to all desktop sessions
                     var users = {};
-                    for (var i in this.httprequest.desktop.kvm.tunnels) { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } }
-                    for (var i in this.httprequest.desktop.kvm.tunnels) { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); }
+                    if (this.httprequest.desktop.kvm.tunnels != null) {
+                        for (var i in this.httprequest.desktop.kvm.tunnels) { try { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } } catch (ex) { } }
+                        for (var i in this.httprequest.desktop.kvm.tunnels) { try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { } }
+                    }
 
                     this.end = function () {
                         --this.desktop.kvm.connectionCount;
@@ -1412,8 +1414,10 @@ function createMeshCore(agent) {
 
                         // Send a metadata update to all desktop sessions
                         var users = {};
-                        for (var i in this.httprequest.desktop.kvm.tunnels) { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } }
-                        for (var i in this.httprequest.desktop.kvm.tunnels) { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); }
+                        if (this.httprequest.desktop.kvm.tunnels != null) {
+                            for (var i in this.httprequest.desktop.kvm.tunnels) { try { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } } catch (ex) { } }
+                            for (var i in this.httprequest.desktop.kvm.tunnels) { try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { } }
+                        }
 
                         // Unpipe the web socket
                         try
