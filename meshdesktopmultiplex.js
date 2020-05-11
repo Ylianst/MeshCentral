@@ -93,6 +93,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Add an agent or viewer
     obj.addPeer = function (peer) {
+        if (obj.viewers == null) return;
         if (peer.req.query.browser) {
             //console.log('addPeer-viewer', obj.nodeid);
                         
@@ -166,6 +167,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     // Remove an agent or viewer
     // Return true if this multiplexor is no longer needed.
     obj.removePeer = function (peer) {
+        if (obj.viewers == null) return;
         if (peer == obj.agent) {
             //console.log('removePeer-agent', obj.nodeid);
             // Clean up the agent
@@ -263,7 +265,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Send data to the agent or queue it up for sending
     obj.sendToAgent = function (data) {
-        if (obj.agent == null) return;
+        if ((obj.viewers == null) || (obj.agent == null)) return;
         //console.log('SendToAgent', data.length);
         if (obj.agent.sending) {
             obj.agent.sendQueue.push(data);
@@ -283,7 +285,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Send more data to the agent
     function sendAgentNext() {
-        if (obj.agent == null) return;
+        if ((obj.viewers == null) || (obj.agent == null)) return;
         if (obj.agent.sendQueue.length > 0) {
             // Send from the pending send queue
             obj.agent.ws.send(obj.agent.sendQueue.shift(), sendAgentNext);
@@ -311,12 +313,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Send this command to all viewers
     obj.sendToAllViewers = function (data) {
+        if (obj.viewers == null) return;
         for (var i in obj.viewers) { obj.sendToViewer(obj.viewers[i], data); }
     }
 
     // Send data to the viewer or queue it up for sending
     obj.sendToViewer = function (viewer, data) {
-        if (viewer == null) return;
+        if ((viewer == null) || (obj.viewers == null)) return;
         //console.log('SendToViewer', data.length);
         if (viewer.sending) {
             viewer.sendQueue.push(data);
@@ -335,7 +338,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Check if a viewer is in overflow situation
     function checkViewerOverflow(viewer) {
-        if (viewer.overflow == true) return;
+        if ((viewer.overflow == true) || (obj.viewers == null)) return;
         if ((viewer.sendQueue.length > 5) || ((viewer.dataPtr != null) && (viewer.dataPtr != obj.lastData))) {
             viewer.overflow = true;
             obj.viewersOverflowCount++;
@@ -345,7 +348,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Check if a viewer is in underflow situation
     function checkViewerUnderflow(viewer) {
-        if (viewer.overflow == false) return;
+        if ((viewer.overflow == false) || (obj.viewers == null)) return;
         if ((viewer.sendQueue.length <= 5) && ((viewer.dataPtr == null) || (viewer.dataPtr == obj.lastData))) {
             viewer.overflow = false;
             obj.viewersOverflowCount--;
@@ -355,7 +358,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Send more data to the viewer
     function sendViewerNext(viewer) {
-        if (viewer.sendQueue == null) return;
+        if ((viewer.sendQueue == null) || (obj.viewers == null)) return;
         if (viewer.sendQueue.length > 0) {
             // Send from the pending send queue
             if (viewer.sending == false) { viewer.sending = true; }
@@ -394,6 +397,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Process data coming from the agent or any viewers
     obj.processData = function (peer, data) {
+        if (obj.viewers == null) return;
         if (peer == obj.agent) {
             obj.recordingFileWriting = true;
             recordData(true, data, function () {
