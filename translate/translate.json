@@ -21227,6 +21227,7 @@
     },
     {
       "en": "Remote Desktop",
+      "nl": "Extern bureaublad",
       "xloc": [
         "default-mobile.handlebars->9->110",
         "default-mobile.handlebars->9->113",
@@ -23538,13 +23539,11 @@
     },
     {
       "en": "Sessions",
+      "nl": "Sessies",
       "xloc": [
         "default-mobile.handlebars->9->122",
         "default.handlebars->25->221"
       ]
-    },
-    {
-      "en": "Sessions - "
     },
     {
       "cs": "Nastavení",
