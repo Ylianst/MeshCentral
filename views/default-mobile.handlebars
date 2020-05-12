@@ -204,6 +204,44 @@
             background-color: white;
             clear: both;
         }
+
+        .deviceNotifyDot {
+            text-align:center;
+            position:absolute;
+            right:10px;
+            top:0px;
+            width:16px;
+            height:16px;
+            color:#FFF;
+            background-color:#00F;
+            padding:2px;
+            border-radius:10px;
+            box-shadow: 2px 2px 10px black;
+            cursor:pointer;
+        }
+
+            .deviceNotifyDot:hover {
+                background-color:#44F;
+            }
+
+        .deviceNotifyLargeDot {
+            text-align:center;
+            position:absolute;
+            right:10px;
+            top:10px;
+            width:40px;
+            height:40px;
+            color:#FFF;
+            padding:2px;
+            background-color:#00F;
+            border-radius:20px;
+            box-shadow: 2px 2px 10px black;
+            cursor:pointer;
+        }
+
+            .deviceNotifyLargeDot:hover {
+                background-color:#44F;
+            }
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -378,6 +416,7 @@
                         </tr>
                     </table>
                     <div id=p10general style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                        <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDot src=images/icon-relay-notify-40.png width=40 height=40>
                         <div id=p10html style="margin-left:8px;margin-right:8px"></div>
                         <div id=p10html2></div>
                         <div id=p10html3></div>
@@ -1181,9 +1220,13 @@
                                 // Change the node connection state
                                 node.conn = message.event.conn;
                                 node.pwr = message.event.pwr;
+
+                                // Clear sesssion information if needed
+                                if ((node.conn & 1) == 0) { delete node.sessions; }
+
                                 updateDevices();
+                                refreshDevice(node._id);
                                 //updateMapMarkers();
-                                //refreshDevice(node._id);
                             }
                             break;
                         }
@@ -1196,6 +1239,27 @@
                             //var n = { text: message.event.value };
                             //if (message.event.tag != null) { n.tag = message.event.tag; }
                             //addNotification(n);
+                            break;
+                        }
+                        case 'devicesessions': {
+                            // List of sessions for a given device
+                            var node = getNodeFromId(message.event.nodeid);
+                            if (node == null) break; // Unknown node
+                            node.sessions = message.event.sessions;
+                            if (node.sessions != null) {
+                                for (var i in node.sessions) { if (Object.keys(node.sessions[i]).length == 0) { delete node.sessions[i]; } }
+                                if (Object.keys(node.sessions).length == 0) { delete node.sessions; }
+                            }
+
+                            updateDevices();
+                            refreshDevice(message.event.nodeid);
+
+                            //masterUpdate(4);
+                            //if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { gotoDevice(currentNode._id, xxcurrentView, true); }
+
+                            // If we are looking at the sessions dialog box for this device now, update it
+                            //if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
+
                             break;
                         }
                         case 'stopped': { // Server is stopping.
@@ -1847,10 +1911,14 @@
                 if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
                 if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
 
+                // Setup device notification
+                var devNotify = '';
+                if (nodes[i].sessions != null) { devNotify = '<img class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>'; }
+
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
                 if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
-                r += '<div style=cursor:pointer onclick=goForward(\'' + nodes[i]._id + '\')>';
+                r += '<div style=cursor:pointer;position:relative onclick=goForward(\'' + nodes[i]._id + '\')>' + devNotify;
                 r += '<div class="i' + icon + '" style="float:left;margin-left:4px"></div>';
                 r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;border-radius:8px 0px 0px 8px">';
                 r += '<div><div style=padding-left:12px;padding-top:2px><b>' + name + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + nodestate + '</div></div>';
@@ -1900,6 +1968,28 @@
             deviceHeaderSet();
             for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
+        }
+
+        // Show currently active sessions on this device
+        function showDeviceSessions() {
+            if (xxdialogMode || (currentNode == null)) return;
+            var node = currentNode, x = '';
+            for (var i in node.sessions) {
+                if ((i == 'kvm') && (node.sessions.multidesk == null)) {
+                    x += '<u>' + "Remote Desktop" + '</u>';
+                    for (var j in node.sessions.kvm) { x += addHtmlValue4(getUserName(j), (node.sessions.kvm[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.kvm[j]))); }
+                } else if (i == 'multidesk') {
+                    x += '<u>' + "Remote Desktop" + '</u>';
+                    for (var j in node.sessions.multidesk) { x += addHtmlValue4(getUserName(j), ((node.sessions.multidesk[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.multidesk[j])))); }
+                } else if (i == 'terminal') {
+                    x += '<u>' + "Terminal" + '</u>';
+                    for (var j in node.sessions.terminal) { x += addHtmlValue4(getUserName(j), ((node.sessions.terminal[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.terminal[j])))); }
+                } else if (i == 'files') {
+                    x += '<u>' + "Files" + '</u>';
+                    for (var j in node.sessions.files) { x += addHtmlValue4(getUserName(j), ((node.sessions.files[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.files[j])))); }
+                }
+            }
+            if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
         }
 
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
@@ -1982,6 +2072,9 @@
             var meshrights = GetNodeRights(node);
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
+
+                // Setup session notification
+                QV('p10deviceNotify', currentNode.sessions != null);
 
                 // Add node name
                 var nname = EscapeHtml(node.name);
@@ -3669,6 +3762,7 @@
         function printDateTime(d) { return d.toLocaleString(args.locale); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
+        function getUserName(userid) { if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
 
     </script>
 </body>
