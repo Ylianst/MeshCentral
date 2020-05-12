@@ -123,7 +123,7 @@ module.exports.pluginHandler = function (parent) {
             st.src = '/pluginHandler.js';
             document.body.appendChild(st);
         };
-        return obj; };`;
+        return obj; }`;
         return str;
     }
 
