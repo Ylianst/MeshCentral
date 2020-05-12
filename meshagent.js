@@ -1327,6 +1327,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     });
                     break;
                 }
+                case 'sessions': {
+                    // This is a list of sessions provided by the agent
+                    if (obj.sessions == null) { obj.sessions = {}; }
+                    if (command.type == 'kvm') { obj.sessions.kvm = command.value; }
+                    obj.updateSessions();
+                    break;
+                }
                 case 'plugin': {
                     if ((parent.parent.pluginHandler == null) || (typeof command.plugin != 'string')) break;
                     try {
@@ -1348,6 +1355,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 parent.parent.pluginHandler.callHook('hook_processAgentData', command, obj, parent);
             }
         }
+    }
+
+    // Notify update of sessions
+    obj.updateSessions = function () {
+        // Perform some clean up
+        for (var i in obj.sessions) { if (Object.keys(obj.sessions[i]).length == 0) { delete obj.sessions[i]; } }
+        if (Object.keys(obj.sessions).length == 0) { delete obj.sessions; }
+
+        // Event the new sessions, this will notify everyone that agent sessions have changed
+        var event = { etype: 'node', action: 'devicesessions', nodeid: obj.dbNodeKey, domain: domain.id, sessions: obj.sessions, nolog: 1 };
+        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
     }
 
     // Change the current core information string and event it

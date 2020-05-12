@@ -260,6 +260,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             obj.startTime = null;
         }
 
+        // Send an updated list of all peers to all viewers
+        obj.sendSessionMetadata();
+
         parent.parent.debug('relay', 'DesktopRelay: Disposing desktop multiplexor');
     }
 
@@ -307,10 +310,20 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     // Send the list of all users currently vieweing this session to all viewers and servers
     obj.sendSessionMetadata = function () {
         var allUsers = {};
-        for (var i in obj.viewers) { var v = obj.viewers[i]; if ((v.user != null) && (v.user._id != null)) { if (allUsers[v.user._id] == null) { allUsers[v.user._id] = 1; } else { allUsers[v.user._id]++; } } }
-        obj.sendToAllViewers(JSON.stringify({ type: 'metadata', 'ctrlChannel': '102938', users: allUsers, startTime: obj.startTime }));
+        if (obj.viewers != null) {
+            for (var i in obj.viewers) { var v = obj.viewers[i]; if ((v.user != null) && (v.user._id != null)) { if (allUsers[v.user._id] == null) { allUsers[v.user._id] = 1; } else { allUsers[v.user._id]++; } } }
+            obj.sendToAllViewers(JSON.stringify({ type: 'metadata', 'ctrlChannel': '102938', users: allUsers, startTime: obj.startTime }));
+        }
 
-        // TODO: Update the servers
+        // Update the sessions attached the to agent
+        if (obj.nodeid != null) {
+            const xagent = parent.wsagents[obj.nodeid];
+            if (xagent != null) {
+                if (xagent.sessions == null) { xagent.sessions = {}; }
+                xagent.sessions.multidesk = allUsers;
+                xagent.updateSessions();
+            }
+        }
     }
 
     // Send this command to all viewers

@@ -485,7 +485,8 @@
                                 <div id=p10html></div>
                             </td>
                             <td style=width:20px></td>
-                            <td style=width:200px;vertical-align:top valign=top>
+                            <td style=width:200px;vertical-align:top;position:relative valign=top>
+                                <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDot src=images/icon-relay-notify.png width=16 height=16>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
                                 <div id=MainComputerState></div>
                             </td>
@@ -2720,6 +2721,23 @@
                             }
                             break;
                         }
+                        case 'devicesessions': {
+                            // List of sessions for a given device
+                            var node = getNodeFromId(message.event.nodeid);
+                            if (node == null) break; // Unknown node
+                            node.sessions = message.event.sessions;
+                            if (node.sessions != null) {
+                                for (var i in node.sessions) { if (Object.keys(node.sessions[i]).length == 0) { delete node.sessions[i]; } }
+                                if (Object.keys(node.sessions).length == 0) { delete node.sessions; }
+                            }
+                            masterUpdate(4);
+                            if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { gotoDevice(currentNode._id, xxcurrentView, true); }
+
+                            // If we are looking at the sessions dialog box for this device now, update it
+                            if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
+
+                            break;
+                        }
                         case 'stopped': { // Server is stopping.
                             // Disconnect
                             //console.log(message.msg);
@@ -3404,13 +3422,21 @@
         }
 
         // Show currently active sessions on this device
-        function showDeviceSessions(nodeid) {
-            if (xxdialogMode) return;
-            var node = getNodeFromId(nodeid), x = '';
-            if (node == null) return;
-            console.log(node.sessions);
-            x += addHtmlValue4("User", '1 session'); // TODO
-            setDialogMode(2, "Sessions - " + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + nodeid);
+        function showDeviceSessions(nodeid, force) {
+            if (xxdialogMode && !force) return;
+            var node = null, x = '';
+            if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
+            if ((node == null) || (node.sessions == null)) { setDialogMode(0); return; }
+            for (var i in node.sessions) {
+                if ((i == 'kvm') && (node.sessions.multidesk == null)) {
+                    x += '<u>' + "Remote Desktop" + '</u>';
+                    for (var j in node.sessions.kvm) { x += addHtmlValue4(getUserName(j), (node.sessions.kvm[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.kvm[j]))); }
+                } else if (i == 'multidesk') {
+                    x += '<u>' + "Remote Desktop" + '</u>';
+                    for (var j in node.sessions.multidesk) { x += addHtmlValue4(getUserName(j), ((node.sessions.multidesk[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.multidesk[j])))); }
+                }
+            }
+            if (x != '') setDialogMode(2, "Sessions - " + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
         }
 
         function toggleCollapseGroup(id, id2, type) {
@@ -4949,6 +4975,9 @@
             var meshrights = GetNodeRights(node);
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
+
+                // Device Notification
+                QV('p10deviceNotify', currentNode.sessions != null);
 
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
@@ -12426,6 +12455,7 @@
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
+        function getUserName(userid) {  if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
 
     </script>
 </body>
