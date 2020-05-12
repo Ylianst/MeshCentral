@@ -1403,6 +1403,7 @@ function createMeshCore(agent) {
                     if (this.httprequest.desktop.kvm.tunnels != null) {
                         for (var i in this.httprequest.desktop.kvm.tunnels) { try { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } } catch (ex) { } }
                         for (var i in this.httprequest.desktop.kvm.tunnels) { try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { } }
+                        try { mesh.SendCommand({ action: 'sessions', type: 'kvm', value: users }); } catch (ex) { }
                     }
 
                     this.end = function () {
@@ -1417,6 +1418,7 @@ function createMeshCore(agent) {
                         if (this.httprequest.desktop.kvm.tunnels != null) {
                             for (var i in this.httprequest.desktop.kvm.tunnels) { try { var userid = this.httprequest.desktop.kvm.tunnels[i].httprequest.userid; if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; } } catch (ex) { } }
                             for (var i in this.httprequest.desktop.kvm.tunnels) { try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { } }
+                            try { mesh.SendCommand({ action: 'sessions', type: 'kvm', value: users }); } catch (ex) { }
                         }
 
                         // Unpipe the web socket

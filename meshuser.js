@@ -586,6 +586,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (docs[i].userloc != null) { delete docs[i].userloc; }
                             }
 
+                            // Add device sessions
+                            const xagent = parent.wsagents[docs[i]._id];
+                            if ((xagent != null) && (xagent.sessions != null)) { docs[i].sessions = xagent.sessions; }
+
                             r[meshid].push(docs[i]);
                         }
                         try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag })); } catch (ex) { }
