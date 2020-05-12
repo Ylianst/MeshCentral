@@ -2643,6 +2643,9 @@
                                 node.pwr = message.event.pwr;
                                 node.lastconnect = Date.now();
 
+                                // Clear sesssion information if needed
+                                if ((node.conn & 1) == 0) { delete node.sessions; }
+
                                 // Web page update
                                 masterUpdate(1 | 4 | 16);
                                 refreshDevice(node._id);
@@ -3434,9 +3437,15 @@
                 } else if (i == 'multidesk') {
                     x += '<u>' + "Remote Desktop" + '</u>';
                     for (var j in node.sessions.multidesk) { x += addHtmlValue4(getUserName(j), ((node.sessions.multidesk[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.multidesk[j])))); }
+                } else if (i == 'terminal') {
+                    x += '<u>' + "Terminal" + '</u>';
+                    for (var j in node.sessions.terminal) { x += addHtmlValue4(getUserName(j), ((node.sessions.terminal[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.terminal[j])))); }
+                } else if (i == 'files') {
+                    x += '<u>' + "Files" + '</u>';
+                    for (var j in node.sessions.files) { x += addHtmlValue4(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j])))); }
                 }
             }
-            if (x != '') setDialogMode(2, "Sessions - " + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
+            if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
         }
 
         function toggleCollapseGroup(id, id2, type) {

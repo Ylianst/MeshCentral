@@ -304,6 +304,7 @@ function createMeshCore(agent) {
     var nextTunnelIndex = 1;
     var amtPolicy = null;
     var apftunnel = null;
+    var tunnelUserCount = { terminal: {}, files: {} }; // List of userid->count sessions for terminal and files.
 
     // Add to the server event log
     function MeshServerLog(msg, state) {
@@ -1154,6 +1155,12 @@ function createMeshCore(agent) {
                     this.httprequest.tpromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
 
                     this.end = function () {
+                        // Remove the terminal session to the count to update the server
+                        if (this.httprequest.userid != null) {
+                            if (tunnelUserCount.terminal[this.httprequest.userid] != null) { tunnelUserCount.terminal[this.httprequest.userid]--; if (tunnelUserCount.terminal[this.httprequest.userid] <= 0) { delete tunnelUserCount.terminal[this.httprequest.userid]; } }
+                            try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
+                        }
+
                         if (process.platform == 'win32') {
                             // Unpipe the web socket
                             this.unpipe(this.httprequest._term);
@@ -1313,6 +1320,12 @@ function createMeshCore(agent) {
                         this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
                         this.prependListener('end', function () { this.httprequest.process.kill(); });
                         this.httprequest.tpromise._res();
+                    }
+
+                    // Add the terminal session to the count to update the server
+                    if (this.httprequest.userid != null) {
+                        if (tunnelUserCount.terminal[this.httprequest.userid] == null) { tunnelUserCount.terminal[this.httprequest.userid] = 1; } else { tunnelUserCount.terminal[this.httprequest.userid]++; }
+                        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
                     }
 
                     this.httprequest.tpromise.that = this;
@@ -1663,6 +1676,20 @@ function createMeshCore(agent) {
                 if ((cmd.ctrlChannel == '102938') || ((cmd.type == 'offer') && (cmd.sdp != null))) { onTunnelControlData(cmd, this); return; } // If this is control data, handle it now.
                 if (cmd.action == undefined) { return; }
                 //sendConsoleText('CMD: ' + JSON.stringify(cmd));
+
+                // Add the files session to the count to update the server
+                if (this.httprequest.userid != null) {
+                    if (tunnelUserCount.files[this.httprequest.userid] == null) { tunnelUserCount.files[this.httprequest.userid] = 1; } else { tunnelUserCount.files[this.httprequest.userid]++; }
+                    try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (ex) { }
+                }
+
+                this.end = function () {
+                    // Remove the files session from the count to update the server
+                    if (this.httprequest.userid != null) {
+                        if (tunnelUserCount.files[this.httprequest.userid] != null) { tunnelUserCount.files[this.httprequest.userid]--; if (tunnelUserCount.files[this.httprequest.userid] <= 0) { delete tunnelUserCount.files[this.httprequest.userid]; } }
+                        try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (ex) { }
+                    }
+                };
 
                 if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
                 //console.log(objToString(cmd, 0, ' '));
