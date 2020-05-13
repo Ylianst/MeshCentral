@@ -1658,7 +1658,7 @@
             if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
             // Update account actions
-            QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode, domain authentication to 2 factor auth not supported.
+            QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
             QV('manageEmail2FA', features & 0x00800000);
