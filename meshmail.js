@@ -300,14 +300,25 @@ module.exports.CreateMeshMail = function (parent) {
             parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
             obj.sendingMail = false;
             if (err == null) {
+                // Send the next mail
                 obj.pendingMails.shift();
                 obj.retry = 0;
-                sendNextMail(); // Send the next mail
+                sendNextMail();
             } else {
                 obj.retry++;
-                parent.debug('email', 'SMTP server failed: ' + JSON.stringify(err));
-                console.log('SMTP server failed: ' + JSON.stringify(err));
-                if (obj.retry < 6) { setTimeout(sendNextMail, 60000); } // Wait and try again
+                parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + JSON.stringify(err));
+                console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + JSON.stringify(err));
+                // Wait and try again
+                if (obj.retry < 3) {
+                    setTimeout(sendNextMail, 10000);
+                } else {
+                    // Failed, send the next mail
+                    parent.debug('email', 'SMTP server failed (Skipping): ' + JSON.stringify(err));
+                    console.log('SMTP server failed (Skipping): ' + JSON.stringify(err));
+                    obj.pendingMails.shift();
+                    obj.retry = 0;
+                    sendNextMail();
+                }
             }
         });
     }

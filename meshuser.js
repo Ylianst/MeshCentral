@@ -812,6 +812,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                             break;
                         }
+                        case 'email': {
+                            if (parent.parent.mailserver == null) {
+                                r = "No email service enabled.";
+                            } else {
+                                if (cmdargs['_'].length != 3) {
+                                    r = "Usage: email \"user@sample.com\" \"Subject\" \"Message\".";
+                                } else {
+                                    parent.parent.mailserver.sendMail(cmdargs['_'][0], cmdargs['_'][1], cmdargs['_'][2]);
+                                    r = "Done.";
+                                }
+                            }
+                            break;
+                        }
                         case 'le': {
                             if (parent.parent.letsencrypt == null) {
                                 r = "Let's Encrypt not in use.";
@@ -3869,6 +3882,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof msg == 'string') { displayNotificationMessage('SMS error: ' + msg); } else { displayNotificationMessage('SMS error'); }
                     }
                 });
+                break;
+            }
+            case 'emailuser': { // Send a email message to a user
+                var errMsg = null, emailuser = null;
+                if (parent.parent.mailserver == null) { errMsg = 'Email server not enabled'; }
+                else if ((user.siteadmin & 2) == 0) { errMsg = 'No user management rights'; }
+                else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = 'Invalid userid'; }
+                else if (common.validateString(command.subject, 1, 1000) == false) { errMsg = 'Invalid subject message'; }
+                else if (common.validateString(command.msg, 1, 10000) == false) { errMsg = 'Invalid message'; }
+                else {
+                    emailuser = parent.users[command.userid];
+                    if (emailuser == null) { errMsg = 'Invalid userid'; }
+                    else if (emailuser.email == null) { errMsg = 'No validated email address for this user'; }
+                    else if (emailuser.emailVerified !== true) { errMsg = 'No validated email address for this user'; }
+                }
+
+                if (errMsg != null) { displayNotificationMessage(errMsg); break; }
+                parent.parent.mailserver.sendMail(emailuser.email, command.subject, command.msg);
+                displayNotificationMessage("Email sent.");
                 break;
             }
             case 'getClip': {
