@@ -2332,6 +2332,10 @@ a {
     background-color: gray;
 }
 
+    .night #deskToolsAreaTop {
+        background-color: #222;
+    }
+
 #deskToolsArea {
     position: absolute;
     top: 26px;
@@ -2340,6 +2344,10 @@ a {
     bottom: 4px;
     background-color: lightgray;
     text-align: left;
+}
+
+.night #deskToolsArea {
+    background-color: #222;
 }
 
 #deskToolsHeader {
@@ -2388,6 +2396,14 @@ a {
 
     .deskToolsBar:hover {
         background-color: #EFE8B6;
+    }
+ 
+    .night .deskToolsBar {
+        color: #ddd;
+    }
+
+    .night .deskToolsBar:hover {
+        background-color: #444;
     }
 
 #deskarea4 {

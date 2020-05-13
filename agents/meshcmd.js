@@ -114,7 +114,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE'];
 
     // Load the action file
     var actionfile = null;
@@ -201,6 +201,7 @@ function run(argv) {
         console.log('  AmtNetwork        - Intel AMT network interface settings.');
         console.log('  AmtScan           - Search local network for Intel AMT devices.');
         console.log('  AmtWifi           - Intel AMT Wifi interface settings.');
+        console.log('  AmtWake           - Intel AMT Wake Alarms.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(1); return;
@@ -395,7 +396,7 @@ function run(argv) {
             console.log('\r\nOptional arguments:\r\n');
             console.log('  --user [username]         The Intel AMT login username, admin is default.');
             console.log('  --tls                     Specifies that TLS must be used.');
-            console.log('  --list                    List of stored Wifi profile');
+            console.log('  --list                    List Wifi profiles');
             console.log('  --add                     Add new Wifi profile');
             console.log('     --name                 New Wifi profile name');
             console.log('     --priority             Priority of this profile - default 0');
@@ -404,6 +405,22 @@ function run(argv) {
             console.log('     --enc                  Wifi Encryption type (3 - TKIP, 4 - CCMP) - default 3');
             console.log('     --psk                  Wifi password/pre-shared key');
             console.log('  --del [profile-name]      Delete new Wifi profile');            
+        } else if (action == 'amtwake') {
+            console.log('AmtWake is used to view/set/remote Intel AMT Wake Alarms. Example usage:\r\n\r\n  meshcmd amtwake --host 1.2.3.4 --user admin --pass mypassword --list');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]         The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]         The Intel AMT login password.');
+            console.log('  --[action]                Action options are list, add, del.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --user [username]         The Intel AMT login username, admin is default.');
+            console.log('  --tls                     Specifies that TLS must be used.');
+            console.log('  --list                    List wake alarms profile');
+            console.log('  --add [alarm-name]        Add new wake alarm');
+            console.log('     --date [yyyy-mm-dd]    Alarm date in year-month-day format');
+            console.log('     --time (hh:mm:ss)      Optional alarm time in hours:minutes:seconds format, default is 00:00:00.');
+            console.log('     --interval (dd-hh-mm)  Optional alarm interval in days-hours-minutes format, default is alarm once.');
+            console.log('     --deletewhendone       Indicates alarm is removed once triggered, default is to no remove.');
+            console.log('  --del [alarm-name]        Remove a wake alarm');
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -714,22 +731,24 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         if (args.add != null) {
-            if ((args.name == null) || (typeof args.name != 'string') || args.name == '') {
-                console.log("Wifi profile name is required."); exit(1); return;
-            }
-            if ((args.ssid == null) || (typeof args.ssid != 'string') || args.ssid == '') {                
-                console.log("Wifi SSID is required."); exit(1); return;
-            }
-            if ((args.psk == null) || (typeof args.psk != 'string') || args.psk == '') {
-                console.log("Wifi password is required."); exit(1); return;
-            }
+            if ((args.name == null) || (typeof args.name != 'string') || args.name == '') { console.log("Wifi profile name is required."); exit(1); return; }
+            if ((args.ssid == null) || (typeof args.ssid != 'string') || args.ssid == '') { console.log("Wifi SSID is required."); exit(1); return; }
+            if ((args.psk == null) || (typeof args.psk != 'string') || args.psk == '') { console.log("Wifi password is required."); exit(1); return; }
         }
         if (args.del !=null) {
-            if ((settings.name == null) || (typeof settings.name != 'string') || settings.name == '') {
-                console.log("Wifi profile name is required."); exit(1); return;
-            }
+            if ((settings.name == null) || (typeof settings.name != 'string') || settings.name == '') { console.log("Wifi profile name is required."); exit(1); return; }
         }
         performAmtWifiConfig(args);
+    } else if (settings.action == 'amtwake') { // Perform remote Intel AMT wake alarm operations
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        if ((args.del != null) && ((typeof args.del != 'string') || args.del == '')) { console.log("Alarm name is required (--del [name])."); exit(1); return; }
+        if (args.add != null) {
+            if (((typeof args.add != 'string') || args.add == '')) { console.log("Wake alarm name is required (--add [name])."); exit(1); return; }
+            if (((typeof args.date != 'string') || args.data == '')) { console.log("Wake alarm date is required (--date [yyyy-mm-dd])."); exit(1); return; }
+        }
+        performAmtWakeConfig(args);
     } else if (settings.action == 'amtfeatures') { // Perform remote Intel AMT feature configuration operation
         if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -2546,7 +2565,7 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
 
         if (args) {
             if (args.list) {
-                console.log('List of AMT Wifi profiles:');
+                console.log('List of Intel AMT Wifi profiles:');
                 if (wifiProfiles.length==0) {
                     console.log('No Wifi profiles is stored.');
                 }
@@ -2605,6 +2624,119 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
         } else {
             process.exit(0);
         }         
+    } else {
+        console.log("Error, status " + status + ".");
+        process.exit(1);
+    }
+}
+
+//
+// Intel AMT wake alarm configuration
+//
+
+function _fmtdatetime(str) {
+    return str.replace('T', ' ').replace('Z', '');
+}
+
+function _fmtinterval(str) {
+    var cl = str.replace('T', '').substring(str.indexOf('P') + 1);
+    cl = ' ' + cl.replace('D', " days ").replace('H', " hours ").replace('M', " minutes ");
+    cl = cl.replace(" 1 days ", " 1 day ").replace(" 1 hours ", " 1 hour ").replace(" 1 minutes ", " 1 minute ");
+    return cl.substring(0, cl.length - 1);
+}
+
+function _fmttimepad(str) {
+    str = '' + str;
+    while (str.length < 2) { str = '0' + str; }
+    return str;
+}
+
+function convertAmtDataStr(str) {
+    var timeArray = str.split('Z').join('').split('T').join('-').split(':').join('-').split('-');
+    return new Date(timeArray[0], timeArray[1] - 1, timeArray[2], timeArray[3], timeArray[4], timeArray[5]);
+}
+
+function prepareAlarmOccurenceTemplate(id, nm, start, interval, del) {
+    return '<d:AlarmTemplate xmlns:d=\"http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AlarmClockService\" xmlns:s=\"http://intel.com/wbem/wscim/1/ips-schema/1/IPS_AlarmClockOccurrence\"><s:InstanceID>' + id + '</s:InstanceID><s:StartTime><p:Datetime xmlns:p=\"http://schemas.dmtf.org/wbem/wscim/1/common\">' + start + '</p:Datetime></s:StartTime><s:Interval><p:Interval xmlns:p=\"http://schemas.dmtf.org/wbem/wscim/1/common\">' + interval + '</p:Interval></s:Interval><s:DeleteOnCompletion>' + del + '</s:DeleteOnCompletion></d:AlarmTemplate>';
+}
+
+function performAmtWakeConfig(args) {
+    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
+        settings.noconsole = true; startLms(performAmtWakeConfig0, false, args);
+    } else {
+        performAmtWakeConfig0(1, args);
+    }
+}
+
+function performAmtWakeConfig0(state, args) {
+    var transport = require('amt-wsman-duk');
+    var wsman = require('amt-wsman');
+    var amt = require('amt');
+    wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls);
+    amtstack = new amt(wsstack);
+    amtstack.BatchEnum(null, ['IPS_AlarmClockOccurrence'], performAmtWakeConfig1, args);
+}
+
+function performAmtWakeConfig1(stack, name, response, status, args) {
+    if (status == 200) {
+        var response = response['IPS_AlarmClockOccurrence'].responses;
+        if (!args) { process.exit(0); return; }
+        if (args.list) {
+            if (response.length == 0) {
+                console.log('No wake alarms.');
+            } else {
+                for (var i = 0; i < response.length; i++) {
+                    var waketime = convertAmtDataStr(response[i]['StartTime']['Datetime']);
+                    var t = waketime.toLocaleString(), tx = t.indexOf('.');
+                    if (tx >= 0) { t = t.substring(0, tx); }
+                    var details = response[i]['ElementName'] + ', wake on ' + t.replace(' ', ' at ');
+                    if (response[i]['Interval'] != null) { details += ' and each' + _fmtinterval(response[i]['Interval']['Interval']); }
+                    if (response[i]['DeleteOnCompletion'] == true) { details += ", delete when done"; }
+                    console.log(details);
+                }
+            }
+            process.exit(0);
+        } else if (args.del) {
+            // Remove a wake alarm, start by looking to see if it exists
+            var alarmFound = false;
+            for (var i = 0; i < response.length; i++) { if (response[i]['ElementName'] == args.del) { alarmFound = true; } }
+            if (alarmFound == false) { console.log("Wake alarm " + args.del + " could not be found."); process.exit(0); return; }
+            // Remote the alarm
+            stack.Delete('IPS_AlarmClockOccurrence', { InstanceID: args.del },
+                function (stck, nm, resp, sts) {
+                    if (sts == 200) { console.log("Done."); } else { console.log("Failed to delete wake alarm " + args.del + "."); }
+                    process.exit(0);
+                },
+            0, 1);
+        } else if (args.add) {
+            // Add a wake alarm
+            var alarmFound = false;
+            for (var i = 0; i < response.length; i++) { if (response[i]['ElementName'] == args.add) { alarmFound = true; } }
+            if (alarmFound) { console.log("Wake alarm " + args.add + " already exists."); process.exit(0); return; }
+            if (typeof args.time != 'string') { args.time = '00:00:00'; }
+            if (typeof args.interval != 'string') { args.interval = ''; }
+            var alarm_name = args.add;
+            var x1 = args.date.split('-');
+            var x2 = args.time.split(':');
+            var t = new Date(x1[0], x1[1] - 1, x1[2], x2[0], x2[1], 0, 0); // Not sure why, but month is 0 = JAN, 11 = DEC, seconds must be 00.
+            var alarm_starttime = _fmttimepad(t.getFullYear()) + '-' + _fmttimepad(t.getMonth() + 1) + '-' + _fmttimepad(t.getDate()) + 'T' + _fmttimepad(t.getHours()) + ':' + _fmttimepad(t.getMinutes()) + ':' + _fmttimepad(t.getSeconds()) + 'Z';
+            var x = args.interval.split('-');
+            if (x.length != 3) { x = [0, 0, 0]; }
+            var alarm_interval = 'P' + x[0] + 'DT' + x[1] + 'H' + x[2] + 'M';
+            var alarm_doc = (args.deletewhendone != null);
+            var tpl = prepareAlarmOccurenceTemplate(alarm_name, alarm_name, alarm_starttime, alarm_interval, alarm_doc);
+            stack.wsman.ExecMethodXml(amtstack.CompleteName('AMT_AlarmClockService'), 'AddAlarm', tpl,
+                function (ws, resuri, response, status) {
+                    if (status != 200) { console.log("Failed to add alarm. Status: " + status + ". Verify the alarm is for a future time."); }
+                    else if (response.Body['ReturnValue'] != 0) { console.log("Failed to add alarm " + response.Body['ReturnValueStr'] + ". Verify the alarm is for a future time."); }
+                    else { console.log("Done."); }
+                    process.exit(0);
+                }
+            );
+        } else {
+            console.log("Unknown action, specify --list, --del or --add.");
+            process.exit(0);
+        }
     } else {
         console.log("Error, status " + status + ".");
         process.exit(1);

@@ -4982,6 +4982,7 @@
             if (node == null) return;
             var mesh = meshes[node.meshid];
             var meshrights = GetNodeRights(node);
+            var deviceSwitch = ((currentNode == null) || (currentNode._id != nodeid));
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
@@ -5269,9 +5270,11 @@
                 }
 
                 // Clear user consent status if present
-                p11clearConsoleMsg();
-                p12clearConsoleMsg();
-                p13clearConsoleMsg();
+                if (deviceSwitch) {
+                    p11clearConsoleMsg();
+                    p12clearConsoleMsg();
+                    p13clearConsoleMsg();
+                }
 
                 // Device refresh plugin handler
                 if (pluginHandler != null) { 
@@ -10159,6 +10162,18 @@
         function showSendSMSValidate() { QE('idx_dlgOkButton', Q('d2smsText').value.length > 0); }
         function showSendSMSEx(b, tag) { if (Q('d2smsText').value.length > 0) { meshserver.send({ action: 'smsuser', userid: decodeURIComponent(tag), msg: Q('d2smsText').value }); } }
 
+        function showSendEmail(userid) {
+            if (xxdialogMode) return;
+            var x = '<input id=d2emailSubject style=background-color:#fcf3cf;width:100% placeholder="' + "Subject" + '"></input>';
+            x += '<textarea id=d2emailText maxlength=10000 style="background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:auto" onKeyUp=showSendEmailValidate()></textarea>';
+            setDialogMode(2, "Send Email", 3, showSendEmailEx, x, userid);
+            Q('d2emailSubject').focus();
+            showSendEmailValidate();
+        }
+
+        function showSendEmailValidate() { QE('idx_dlgOkButton', (Q('d2emailSubject').value.length > 0) && (Q('d2emailText').value.length > 0)); }
+        function showSendEmailEx(b, tag) { if (Q('d2emailText').value.length > 0) { meshserver.send({ action: 'emailuser', userid: decodeURIComponent(tag), subject: Q('d2emailSubject').value, msg: Q('d2emailText').value }); } }
+
         function showUserAlertDialog(e, userid) {
             if (xxdialogMode) return;
             haltEvent(e);
@@ -10916,6 +10931,7 @@
             // Add action buttons
             x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + userid + '") />';
             if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + userid + '") />'; }
+            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + userid + '") />'; }
             if (!self && (activeSessions > 0)) { x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
 
             // Setup the panel
