@@ -22879,6 +22879,7 @@
     },
     {
       "en": "Send Email",
+      "nl": "E-mail verzenden",
       "xloc": [
         "default.handlebars->25->1447"
       ]
@@ -22946,6 +22947,7 @@
     },
     {
       "en": "Send a email message to this user",
+      "nl": "Stuur een e-mailbericht naar deze gebruiker",
       "xloc": [
         "default.handlebars->25->1615"
       ]
@@ -24988,6 +24990,7 @@
     },
     {
       "en": "Subject",
+      "nl": "Onderwerp",
       "xloc": [
         "default.handlebars->25->1446"
       ]
