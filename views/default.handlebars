@@ -8536,6 +8536,8 @@
         function server_showVersionDlgUpdate() {
             var stableCheck = Q('d2updateCheck1').checked;
             var latestCheck = Q('d2updateCheck2').checked;
+            QE('d2updateCheck1', ((xxdialogTag.stable != "Unknown") && (xxdialogTag.current != xxdialogTag.stable) && (latestCheck == false)));
+            QE('d2updateCheck2', ((xxdialogTag.latest != "Unknown") && (xxdialogTag.current != xxdialogTag.latest) && (stableCheck == false)));
             QE('idx_dlgOkButton', ((stableCheck) && (!latestCheck)) || ((!stableCheck) && (latestCheck)));
         }
 
