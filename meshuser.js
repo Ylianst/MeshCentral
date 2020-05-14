@@ -1562,7 +1562,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     for (var i in command.users) {
                         if (domain.usernameisemail) { if (command.users[i].email) { command.users[i].user = command.users[i].email; } else { command.users[i].email = command.users[i].user; } } // If the email is the username, set this here.
                         if (common.validateUsername(command.users[i].user, 1, 256) == false) break; // Username is between 1 and 64 characters, no spaces
-                        if ((command.users[i].user == '~') || (command.users[i].user.indexOf('/') >= 0)) break; // This is a reserved user name
+                        if ((command.users[i].user[0] == '~') || (command.users[i].user.indexOf('/') >= 0)) break; // This is a reserved user name or invalid name
                         if (common.validateString(command.users[i].pass, 1, 256) == false) break; // Password is between 1 and 256 characters
                         if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
                         if ((command.users[i].email != null) && (common.validateEmail(command.users[i].email, 1, 1024) == false)) break; // Check if this is a valid email address
@@ -1635,15 +1635,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
                         else if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
                         else if (common.validateUsername(command.username, 1, 256) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
+                        else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = 'Invalid username'; } // Usernames cant' start with ~ and can't have '/'
                         else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
-                        else if (command.username.indexOf('/') >= 0) { err = 'Invalid username'; } // Usernames can't have '/'
                         else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = 'Invalid password'; } // Password does not meet requirements
                         else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
                         else {
                             newusername = command.username;
                             newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
-                            if (newusername == '~') { err = 'Invalid username'; } // This is a reserved user name
-                            else if (command.siteadmin != null) {
+                            if (command.siteadmin != null) {
                                 if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = 'Invalid site permissions'; } // Check permissions
                                 else if ((user.siteadmin != 0xFFFFFFFF) && ((command.siteadmin & (0xFFFFFFFF - 224)) != 0)) { err = 'Invalid site permissions'; }
                             }
