@@ -15497,6 +15497,7 @@
     },
     {
       "en": "Log in using an existing account",
+      "nl": "Log in met een bestaand account",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->3"
@@ -23909,6 +23910,7 @@
     },
     {
       "en": "Sign-in using GitHub",
+      "nl": "Log in met GitHub",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-github",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-github"
@@ -23916,6 +23918,7 @@
     },
     {
       "en": "Sign-in using Google",
+      "nl": "Log in met Google",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-google",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-google"
@@ -23923,12 +23926,14 @@
     },
     {
       "en": "Sign-in using Intel",
+      "nl": "Log in met Intel",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-intel"
       ]
     },
     {
       "en": "Sign-in using Reddit",
+      "nl": "Log in met Reddit",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-reddit",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-reddit"
@@ -23936,6 +23941,7 @@
     },
     {
       "en": "Sign-in using Twitter",
+      "nl": "Log in met Twitter",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-twitter",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-twitter"
