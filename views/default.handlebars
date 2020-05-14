@@ -59,30 +59,31 @@
         -->
     </div>
     <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Admin Shell</b></div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(6,event)">Admin PowerShell</div>
-        <div id="cxtermunorm" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
-        <div id="cxtermups" class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(1,event)"><b>Admin Shell</b></div>
+        <div class="cmtext" onclick="cmtermaction(6,event)">Admin PowerShell</div>
+        <div class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
+        <div class="cmtext" onclick="cmtermaction(9,event)">User PowerShell</div>
     </div>
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxtermnorm" class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
-        <div id="cxtermps" class="cmtext" onclick="cmtermaction(100,event)">Login Shell</div>
+        <div class="cmtext" onclick="cmtermaction(1,event)"><b>Root Shell</b></div>
+        <div class="cmtext" onclick="cmtermaction(8,event)">User Shell</div>
+        <div class="cmtext" onclick="cmtermaction(100,event)">Login Shell</div>
     </div>
     <div id="deskConnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxdeskuc" class="cmtext" onclick="cmdeskaction(1,event)"><b>Ask Consent + Bar</b></div>
-        <div id="cxdeskuc" class="cmtext" onclick="cmdeskaction(1,event)"><b>Ask Consent</b></div>
+        <div class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
+        <div class="cmtext" onclick="cmdeskaction(2,event)">Ask Consent</div>
+        <div class="cmtext" onclick="cmdeskaction(3,event)">Privacy Bar</div>
     </div>
     <div id="altPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxaltport" class="cmtext" onclick="cmaltportaction(1,event)"><b>Alternate Port</b></div>
+        <div class="cmtext" onclick="cmaltportaction(1,event)">Alternate Port</div>
     </div>
     <div id="filesContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxfilerename" class="cmtext" onclick="cmfilesaction(1,event)"><b>Rename</b></div>
-        <div id="cxfileedit" class="cmtext" onclick="cmfilesaction(2,event)"><b>Edit</b></div>
-        <div id="cxfiledelete" class="cmtext" onclick="cmfilesaction(3,event)"><b>Delete</b></div>
+        <div class="cmtext" onclick="cmfilesaction(1,event)">Rename</div>
+        <div class="cmtext" onclick="cmfilesaction(2,event)">Edit</div>
+        <div class="cmtext" onclick="cmfilesaction(3,event)">Delete</div>
     </div>
     <div id="deskPlayerContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div id="cxopenplayer" class="cmtext" onclick="cmdeskplayeraction(1,event)"><b>Open Player...</b></div>
+        <div class="cmtext" onclick="cmdeskplayeraction(1,event)">Open Player...</div>
     </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -4276,8 +4277,9 @@
         }
 
         function cmdeskaction(action) {
-            if (action == 1) { connectDesktop(null, 3, null, 0x0008 + 0x0040); } // Do remote desktop connection using Consent Prompt + Tool bar
-            if (action == 2) { connectDesktop(null, 3, null, 0x0008); } // Do remote desktop connection using Consent Prompt
+            if (action == 1) { connectDesktop(null, 3, null, 0x0008 + 0x0040); } // Consent Prompt + Privacy bar
+            if (action == 2) { connectDesktop(null, 3, null, 0x0008); } // Consent Prompt
+            if (action == 3) { connectDesktop(null, 3, null, 0x0040); } // Privacy bar
         }
 
         function cmaltportaction(action) {
