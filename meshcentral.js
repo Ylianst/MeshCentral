@@ -2555,6 +2555,7 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.apikey == 'string') && (typeof config.domains[i].authstrategies.twitter.apisecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
                 if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
+                if ((typeof config.domains[i].authstrategies.reddit == 'object') && (typeof config.domains[i].authstrategies.reddit.clientid == 'string') && (typeof config.domains[i].authstrategies.reddit.clientsecret == 'string') && (passport.indexOf('passport-reddit') == -1)) { passport.push('passport-reddit'); }
             }
             if ((config.domains[i].sessionrecording != null) && (config.domains[i].sessionrecording.index == true)) { recordingIndex = true; }
         }

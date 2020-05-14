@@ -295,12 +295,14 @@
                     <div id=p3info style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
+                                <div id="p2AccountSecurity" style="display:none">
                                 <p><strong>Account Security</strong></p>
-                                <div style="margin-left:9px;margin-bottom:8px">
-                                    <div id="managePhoneNumber1" style="margin-top:5px;display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a> <span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div>
-                                    <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a> <span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div>
-                                    <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
-                                    <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
+                                    <div style="margin-left:9px;margin-bottom:8px">
+                                        <div id="managePhoneNumber1" style="margin-top:5px;display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a> <span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div>
+                                        <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a> <span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div>
+                                        <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
+                                        <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
+                                    </div>
                                 </div>
                                 <p><strong>Account Actions</strong></p>
                                 <div style="margin-left:9px;margin-bottom:8px">
@@ -791,6 +793,7 @@
                     if (serverinfo.timeout) { setInterval(checkIdleSessionTimeout, 10000); checkIdleSessionTimeout(); }
                     QV('p3AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
                     QV('logoutMenuOption', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide logout if in single user mode or domain authentication
+                    QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
                     break;
                 }
                 case 'authcookie': {

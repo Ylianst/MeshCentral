@@ -72,6 +72,15 @@
                                         Don&#39;t have an account? <a onclick=xgo(2) style=cursor:pointer>Create one</a>.
                                     </div>
                                     <input id=loginformargs name="urlargs" type="hidden" value="" />
+                                    <div id="authStrategies" style="display:none">
+                                        <hr />
+                                        <div style="margin-bottom:8px">Log in using an existing account</div>
+                                        <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
+                                        <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
+                                        <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
+                                        <a id="auth-reddit" href="auth-reddit" style="display:none"><img src="images/login/reddit32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Reddit" /></a>
+                                        <a id="auth-intel" href="auth-intel" style="display:none"><img src="images/login/intel32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Intel" /></a>
+                                    </div>
                                 </form>
                             </div>
                             <div id=createpanel style="display:none">
@@ -303,6 +312,7 @@
         var otpemail = ('{{{otpemail}}}' === 'true');
         var otpsms = ('{{{otpsms}}}' === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
+        var authStrategies = '{{{authStrategies}}}'.split(',');
 
         // Display the right server message
         var messageid = parseInt('{{{messageid}}}');
@@ -353,6 +363,16 @@
 
             QV('createPanelHint', passRequirements.hint === true);
             QV('resetpasswordpanelHint', passRequirements.hint === true);
+
+            // Setup authentication strategies
+            if (authStrategies != '') {
+                QV('authStrategies', true);
+                if (authStrategies.indexOf('twitter') >= 0) { QV('auth-twitter', true); }
+                if (authStrategies.indexOf('google') >= 0) { QV('auth-google', true); }
+                if (authStrategies.indexOf('github') >= 0) { QV('auth-github', true); }
+                if (authStrategies.indexOf('reddit') >= 0) { QV('auth-reddit', true); }
+                if (authStrategies.indexOf('intel') >= 0) { QV('auth-intel', true); }
+            }
 
             window.onresize = center;
             center();
