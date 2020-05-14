@@ -1891,7 +1891,7 @@
       "ru": "Действия учетной записи",
       "zh-chs": "帳戶動作",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->0"
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->0"
       ]
     },
     {
@@ -1948,7 +1948,7 @@
         "default-mobile.handlebars->9->154",
         "default-mobile.handlebars->9->62",
         "default-mobile.handlebars->9->64",
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->1->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->1->0",
         "default.handlebars->25->1115",
         "default.handlebars->25->1117",
         "default.handlebars->25->461",
@@ -5066,7 +5066,7 @@
       "ru": "Смена email",
       "zh-chs": "更改電子郵件地址",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->5->changeEmailId->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->5->changeEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->accountChangeEmailAddressSpan->0"
       ]
     },
@@ -5084,7 +5084,7 @@
       "ru": "Смена пароля",
       "zh-chs": "更改密碼",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->7->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->7->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->3"
       ]
     },
@@ -7630,7 +7630,7 @@
       "ru": "Удалить учетную запись",
       "zh-chs": "刪除帳戶",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->9->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->9->0",
         "default.handlebars->25->1442",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->7"
       ]
@@ -15496,6 +15496,13 @@
       ]
     },
     {
+      "en": "Log in using an existing account",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->3",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->3"
+      ]
+    },
+    {
       "cs": "Log-X",
       "de": "Logarithmische Skala",
       "en": "Log-X",
@@ -16157,7 +16164,7 @@
       "ru": "Управление приложением для проверки подлинности",
       "zh-chs": "管理身份驗證器應用",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageAuthApp->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->manageAuthApp->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageAuthApp->1->0"
       ]
     },
@@ -16175,7 +16182,7 @@
       "ru": "Управление резервными кодами",
       "zh-chs": "管理備用碼",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageOtp->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->manageOtp->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageOtp->1->0"
       ]
     },
@@ -16193,7 +16200,7 @@
       "ru": "Управление аутентификацией электронной почты",
       "zh-chs": "管理電子郵件身份驗證",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageEmail2FA->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->manageEmail2FA->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageEmail2FA->1->0"
       ]
     },
@@ -16207,8 +16214,8 @@
       "nl": "Beheer telefoonnummer",
       "zh-chs": "管理电话号码",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->managePhoneNumber1->0",
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->1->managePhoneNumber2->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->1->managePhoneNumber2->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->managePhoneNumber1->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->managePhoneNumber2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->managePhoneNumber1->1->0"
       ]
@@ -23901,6 +23908,40 @@
       ]
     },
     {
+      "en": "Sign-in using GitHub",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-github",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-github"
+      ]
+    },
+    {
+      "en": "Sign-in using Google",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-google",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-google"
+      ]
+    },
+    {
+      "en": "Sign-in using Intel",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-intel"
+      ]
+    },
+    {
+      "en": "Sign-in using Reddit",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-reddit",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-reddit"
+      ]
+    },
+    {
+      "en": "Sign-in using Twitter",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-twitter",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-twitter"
+      ]
+    },
+    {
       "cs": "Jednoduchý režim řízený správcem (ACM)",
       "de": "Einfacher Admin Control Mode (ACM)",
       "en": "Simple Admin Control Mode (ACM)",
@@ -27958,7 +27999,7 @@
       "ru": "Подтвердить email",
       "zh-chs": "驗證郵件",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->7->3->verifyEmailId->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->3->verifyEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->verifyEmailId->0"
       ]
     },
@@ -30992,10 +31033,10 @@
       "ru": "✓",
       "ko": "✓",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageAuthApp->authAppSetupCheck->0",
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageEmail2FA->authEmailSetupCheck->0",
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->manageOtp->authCodesSetupCheck->0",
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->managePhoneNumber1->authPhoneNumberCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->manageAuthApp->authAppSetupCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->manageEmail2FA->authEmailSetupCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->manageOtp->authCodesSetupCheck->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->managePhoneNumber1->authPhoneNumberCheck->0",
         "default.handlebars->container->column_l->p13->p13filetable->p13bigok->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageAuthApp->0->authAppSetupCheck->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageEmail2FA->0->authEmailSetupCheck->0",

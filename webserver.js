@@ -1678,6 +1678,44 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
+    // Called when a strategy login occured
+    // This is called after a succesful Oauth to Twitter, Google, GitHub...
+    function handleStrategyLogin(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        parent.debug('web', 'handleStrategyLogin: ' + JSON.stringify(req.user));
+        if ((req.user != null) && (req.user.id != null) && (domain.id == req.user.id.split('/')[1])) {
+            const userid = req.user.id;
+            var user = obj.users[userid];
+            if (user == null) {
+                // Create the user
+                parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
+                user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, domain: domain.id };
+                if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
+                obj.users[userid] = user;
+                obj.db.SetUser(user);
+                // TODO: Event user creation
+                req.session.userid = req.user.id;
+                req.session.domainid = domain.id;
+            } else {
+                // Login success
+                var userChange = false;
+                if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChange = true; }
+                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChange = true; }
+                if (userChange) {
+                    obj.db.SetUser(user);
+                    // TODO: Event user change
+                }
+                parent.debug('web', 'handleStrategyLogin: succesful login: ' + userid);
+                req.session.userid = req.user.id;
+                req.session.domainid = domain.id;
+            }
+        }
+        //res.redirect(domain.url); // This does not handle cookie correctly.
+        res.set('Content-Type', 'text/html');
+        res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
+    }
+
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
@@ -1865,7 +1903,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.allowhighqualitydesktop !== false) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default true)
             if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x00000400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
-            if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true)) { features += 0x00001000; } // 2-step login supported
+            if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (user._id.split('/')[2][0] != '~')) { features += 0x00001000; } // 2FA login supported
             if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
             if ((parent.config.settings.no2factorauth !== true) && domain.yubikey && domain.yubikey.id && domain.yubikey.secret) { features += 0x00004000; } // Indicates Yubikey support
             if (domain.geolocation == true) { features += 0x00008000; } // Enable geo-location features
@@ -1997,6 +2035,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) { authStrategies.push('twitter'); }
             if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) { authStrategies.push('google'); }
             if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) { authStrategies.push('github'); }
+            if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) { authStrategies.push('reddit'); }
+            if ((typeof domain.authstrategies.intel == 'object') && (typeof domain.authstrategies.intel.clientid == 'string') && (typeof domain.authstrategies.intel.clientsecret == 'string')) { authStrategies.push('intel'); }
         }
 
         // Render the login page
@@ -3997,19 +4037,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
             }
 
-            // Setup passport if needed
+            // Setup auth strategies using passport if needed
             if (typeof domain.authstrategies == 'object') {
                 const passport = domain.passport = require('passport');
                 passport.serializeUser(function (user, done) { done(null, user.id); });
                 passport.deserializeUser(function (id, done) { done(null, { id: id }); });
                 obj.app.use(passport.initialize());
+
+                // Twitter
                 if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) {
                     const TwitterStrategy = require('passport-twitter');
-                    passport.use(new TwitterStrategy({
-                        consumerKey: domain.authstrategies.twitter.apikey,
-                        consumerSecret: domain.authstrategies.twitter.apisecret,
-                        callbackURL: url + 'auth-twitter-callback'
-                    },
+                    passport.use(new TwitterStrategy({ consumerKey: domain.authstrategies.twitter.apikey, consumerSecret: domain.authstrategies.twitter.apisecret, callbackURL: url + 'auth-twitter-callback' },
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~twitter:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
@@ -4017,21 +4055,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     ));
                     obj.app.get(url + 'auth-twitter', domain.passport.authenticate('twitter'));
-                    obj.app.get(url + 'auth-twitter-callback',
-                        domain.passport.authenticate('twitter', { failureRedirect: '/' }),
-                        function (req, res) {
-                            // Successful authentication, redirect home.
-                            console.log('Twitter', req.session, req.user);
-                            res.redirect('/');
-                        });
+                    obj.app.get(url + 'auth-twitter-callback', domain.passport.authenticate('twitter', { failureRedirect: '/' }), handleStrategyLogin);
                 }
+
+                // Google
                 if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
                     const GoogleStrategy = require('passport-google-oauth20');
-                    passport.use(new GoogleStrategy({
-                        clientID: domain.authstrategies.google.clientid,
-                        clientSecret: domain.authstrategies.google.clientsecret,
-                        callbackURL: url + 'auth-google-callback'
-                    },
+                    passport.use(new GoogleStrategy({ clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret, callbackURL: url + 'auth-google-callback' },
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~google:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
@@ -4039,21 +4069,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     ));
                     obj.app.get(url + 'auth-google', domain.passport.authenticate('google', { scope: ['profile', 'email'] }));
-                    obj.app.get(url + 'auth-google-callback',
-                        domain.passport.authenticate('google', { failureRedirect: '/' }),
-                        function (req, res) {
-                            // Successful authentication, redirect home.
-                            console.log('Google', req.session, req.user);
-                            res.redirect('/');
-                        });
+                    obj.app.get(url + 'auth-google-callback', domain.passport.authenticate('google', { failureRedirect: '/' }), handleStrategyLogin);
                 }
+
+                // Github
                 if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
                     const GitHubStrategy = require('passport-github2');
-                    passport.use(new GitHubStrategy({
-                        clientID: domain.authstrategies.github.clientid,
-                        clientSecret: domain.authstrategies.github.clientsecret,
-                        callbackURL: url + 'auth-github-callback'
-                    },
+                    passport.use(new GitHubStrategy({ clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret, callbackURL: url + 'auth-github-callback' },
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~github:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
@@ -4061,13 +4083,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     ));
                     obj.app.get(url + 'auth-github', domain.passport.authenticate('github', { scope: ['user:email'] }));
-                    obj.app.get(url + 'auth-github-callback',
-                        domain.passport.authenticate('github', { failureRedirect: '/' }),
-                        function (req, res) {
-                            // Successful authentication, redirect home.
-                            console.log('GitHub', req.session, req.user);
-                            res.redirect('/');
-                        });
+                    obj.app.get(url + 'auth-github-callback', domain.passport.authenticate('github', { failureRedirect: '/' }), handleStrategyLogin);
+                }
+
+                // Reddit
+                if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
+                    const RedditStrategy = require('passport-reddit');
+                    passport.use(new RedditStrategy.Strategy({ clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret, callbackURL: url + 'auth-reddit-callback' },
+                        function (token, tokenSecret, profile, cb) {
+                            var user = { id: 'user/' + domain.id + '/~reddit:' + profile.id, name: profile.name };
+                            if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                            return cb(null, user);
+                        }
+                    ));
+                    obj.app.get(url + 'auth-reddit', function(req, res, next) {
+                        domain.passport.authenticate('reddit', { state: 'rcookie', duration: 'permanent' })(req, res, next); // TODO: Replace 'rcookie' with a time-limited cookie
+                    });
+                    obj.app.get(url + 'auth-reddit-callback',
+                        function(req, res, next) {
+                            if (req.query.state == 'rcookie') {
+                                delete req.session.rstate;
+                                domain.passport.authenticate('reddit', { failureRedirect: '/' })(req, res, next);
+                            } else {
+                                delete req.session.rstate;
+                                next(new Error(403));
+                            }
+                        }, handleStrategyLogin);
                 }
             }
 

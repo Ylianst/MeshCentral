@@ -76,6 +76,7 @@
                                     <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
                                     <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
                                     <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
+                                    <a id="auth-reddit" href="auth-reddit" style="display:none"><img src="images/login/reddit32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Reddit" /></a>
                                 </div>
                             </form>
                         </div>
@@ -382,6 +383,7 @@
                 if (authStrategies.indexOf('twitter') >= 0) { QV('auth-twitter', true); }
                 if (authStrategies.indexOf('google') >= 0) { QV('auth-google', true); }
                 if (authStrategies.indexOf('github') >= 0) { QV('auth-github', true); }
+                if (authStrategies.indexOf('reddit') >= 0) { QV('auth-reddit', true); }
             }
 
             // Display the welcome text
