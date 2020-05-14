@@ -1982,8 +1982,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var twoFactorCookieDays = 30;
         if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
 
+        // See what authentication strategies we have
+        var authStrategies = [];
+        if (typeof domain.authstrategies == 'object') {
+            if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) { authStrategies.push('twitter'); }
+            if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) { authStrategies.push('google'); }
+            if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) { authStrategies.push('github'); }
+        }
+
         // Render the login page
-        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays }, req, domain));
+        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(',') }, req, domain));
     }
 
     // Handle a post request on the root
@@ -3917,7 +3925,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); }); }
         for (var i in parent.config.domains) {
             if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
-            var url = parent.config.domains[i].url;
+            var domain = parent.config.domains[i];
+            var url = domain.url;
             obj.app.get(url, handleRootRequest);
             obj.app.post(url, handleRootPostRequest);
             obj.app.get(url + 'backup.zip', handleBackupRequest);
@@ -3969,7 +3978,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 });
             });
-            if (parent.config.domains[i].agentinvitecodes == true) {
+            if (domain.agentinvitecodes == true) {
                 obj.app.get(url + 'invite', handleInviteRequest);
                 obj.app.post(url + 'invite', handleInviteRequest);
             }
@@ -3977,6 +3986,74 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.handlePluginAdminPostReq);
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
+            }
+
+            // Setup passport if needed
+            if (typeof domain.authstrategies == 'object') {
+                const passport = domain.passport = require('passport');
+                if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) {
+                    const TwitterStrategy = require('passport-twitter');
+                    passport.use(new TwitterStrategy({
+                        consumerKey: domain.authstrategies.twitter.apikey,
+                        consumerSecret: domain.authstrategies.twitter.apisecret,
+                        callbackURL: url + 'auth-twitter-callback'
+                    },
+                        function (token, tokenSecret, profile, cb) {
+                            console.log('Twitter1', token, tokenSecret, profile);
+                            //User.findOrCreate({ twitterId: profile.id }, function (err, user) { return cb(err, user); });
+                        }
+                    ));
+                    obj.app.get(url + 'auth-twitter', domain.passport.authenticate('twitter'));
+                    obj.app.get(url + 'https://alt.meshcentral.com',
+                        domain.passport.authenticate('twitter', { failureRedirect: '/' }),
+                        function (req, res) {
+                            // Successful authentication, redirect home.
+                            console.log('Twitter2');
+                            res.redirect('/');
+                        });
+                }
+                if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
+                    const GoogleStrategy = require('passport-google-oauth20');
+                    passport.use(new GoogleStrategy({
+                        clientID: domain.authstrategies.google.clientid,
+                        clientSecret: domain.authstrategies.google.clientsecret,
+                        callbackURL: url + 'auth-google-callback'
+                    },
+                        function (token, tokenSecret, profile, cb) {
+                            console.log('Google1', token, tokenSecret, profile);
+                            //User.findOrCreate({ googleId: profile.id }, function (err, user) { return cb(err, user); });
+                        }
+                    ));
+                    obj.app.get(url + 'auth-google', domain.passport.authenticate('google'));
+                    obj.app.get(url + 'auth-google-callback',
+                        domain.passport.authenticate('google', { failureRedirect: '/' }),
+                        function (req, res) {
+                            // Successful authentication, redirect home.
+                            console.log('Google2');
+                            res.redirect('/');
+                        });
+                }
+                if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
+                    const GitHubStrategy = require('passport-github2');
+                    passport.use(new GitHubStrategy({
+                        clientID: domain.authstrategies.github.clientid,
+                        clientSecret: domain.authstrategies.github.clientsecret,
+                        callbackURL: url + 'auth-github-callback'
+                    },
+                        function (token, tokenSecret, profile, cb) {
+                            console.log('GitHub1', token, tokenSecret, profile);
+                            //User.findOrCreate({ githubId: profile.id }, function (err, user) { return cb(err, user); });
+                        }
+                    ));
+                    obj.app.get(url + 'auth-github', domain.passport.authenticate('github', { scope: ['user:email'] }));
+                    obj.app.get(url + 'auth-github-callback',
+                        domain.passport.authenticate('google', { failureRedirect: '/' }),
+                        function (req, res) {
+                            // Successful authentication, redirect home.
+                            console.log('GitHub2');
+                            res.redirect('/');
+                        });
+                }
             }
 
             // Server redirects

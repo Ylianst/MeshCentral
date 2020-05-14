@@ -502,6 +502,7 @@
     <Folder Include="typings\globals\node-forge\" />
     <Folder Include="typings\globals\nodemailer\" />
     <Folder Include="typings\globals\node\" />
+    <Folder Include="typings\globals\passport\" />
     <Folder Include="views\" />
   </ItemGroup>
   <ItemGroup>
@@ -512,6 +513,7 @@
     <TypeScriptCompile Include="typings\globals\node-forge\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\nodemailer\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\passport\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
