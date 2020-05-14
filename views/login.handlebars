@@ -70,6 +70,13 @@
                                     Don&#39;t have an account? <a onclick="return xgo(2,event);" href="#" style=cursor:pointer>Create one</a>.
                                 </div>
                                 <input id=loginformargs name="urlargs" type="hidden" value="" />
+                                <div id="authStrategies" style="display:none">
+                                    <hr />
+                                    <div style="margin-bottom:8px">Log in using an existing account</div>
+                                    <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
+                                    <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
+                                    <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
+                                </div>
                             </form>
                         </div>
                         <div id=createpanel style="display:none;position:relative">
@@ -302,6 +309,7 @@
         var otpemail = (decodeURIComponent('{{{otpemail}}}') === 'true');
         var otpsms = (decodeURIComponent('{{{otpsms}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
+        var authStrategies = '{{{authStrategies}}}'.split(',');
 
         function startup() {
             // Display the right server message
@@ -367,6 +375,14 @@
 
             QV('createPanelHint', passRequirements.hint === true);
             QV('resetpasswordpanelHint', passRequirements.hint === true);
+
+            // Setup authentication strategies
+            if (authStrategies != '') {
+                QV('authStrategies', true);
+                if (authStrategies.indexOf('twitter') >= 0) { QV('auth-twitter', true); }
+                if (authStrategies.indexOf('google') >= 0) { QV('auth-google', true); }
+                if (authStrategies.indexOf('github') >= 0) { QV('auth-github', true); }
+            }
 
             // Display the welcome text
             if (welcomeText) {
