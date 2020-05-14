@@ -4043,6 +4043,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 passport.serializeUser(function (user, done) { done(null, user.id); });
                 passport.deserializeUser(function (id, done) { done(null, { id: id }); });
                 obj.app.use(passport.initialize());
+                //obj.app.use(passport.session());
 
                 // Twitter
                 if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) {
@@ -4055,7 +4056,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     ));
                     obj.app.get(url + 'auth-twitter', domain.passport.authenticate('twitter'));
-                    obj.app.get(url + 'auth-twitter-callback', domain.passport.authenticate('twitter', { failureRedirect: '/' }), handleStrategyLogin);
+                    obj.app.get(url + 'auth-twitter-callback', function (req, res, next) {
+                        if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
+                            // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
+                            var url = req.url;
+                            if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
+                            res.set('Content-Type', 'text/html');
+                            res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                        } else {
+                            domain.passport.authenticate('twitter', { failureRedirect: '/' })(req, res, next);
+                        }
+                    }, handleStrategyLogin);
                 }
 
                 // Google
@@ -4096,19 +4107,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             return cb(null, user);
                         }
                     ));
-                    obj.app.get(url + 'auth-reddit', function(req, res, next) {
-                        domain.passport.authenticate('reddit', { state: 'rcookie', duration: 'permanent' })(req, res, next); // TODO: Replace 'rcookie' with a time-limited cookie
+                    obj.app.get(url + 'auth-reddit', function (req, res, next) {
+                        req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
+                        domain.passport.authenticate('reddit', { state: req.session.rstate, duration: 'permanent' })(req, res, next); // TODO: Replace 'rcookie' with a time-limited cookie
                     });
-                    obj.app.get(url + 'auth-reddit-callback',
-                        function(req, res, next) {
-                            if (req.query.state == 'rcookie') {
+                    obj.app.get(url + 'auth-reddit-callback', function (req, res, next) {
+                        if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
+                            // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
+                            var url = req.url;
+                            if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
+                            res.set('Content-Type', 'text/html');
+                            res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                        } else {
+                            if (req.query.state == req.session.rstate) {
                                 delete req.session.rstate;
                                 domain.passport.authenticate('reddit', { failureRedirect: '/' })(req, res, next);
                             } else {
                                 delete req.session.rstate;
                                 next(new Error(403));
                             }
-                        }, handleStrategyLogin);
+                        }
+                    }, handleStrategyLogin);
                 }
             }
 

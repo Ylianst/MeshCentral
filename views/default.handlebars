@@ -885,7 +885,8 @@
                                 <div id=p30html></div>
                             </td>
                             <td style=width:20px></td>
-                            <td style=width:200px valign=top>
+                            <td style=width:200px;position:relative valign=top>
+                                <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class=userAuthStrategyLogo src=images/login/reddit64.png width=64 height=64>
                                 <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
                                     <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
                                     <img alt="" width=200 height=200 src=images/user-256.png />
@@ -9928,9 +9929,9 @@
             if ((users == null) || ((features & 4) != 0)) { QH('p3users', ''); return; }
 
             // Sort the list of user id's
-            var sortedUserIds = [], maxUsers = 100, hiddenUsers = 0;
-            for (var i in users) { sortedUserIds.push(i); }
-            sortedUserIds.sort();
+            var sortedUsers = [], maxUsers = 100, hiddenUsers = 0;
+            for (var i in users) { sortedUsers.push(users[i]); }
+            sortedUsers.sort(nameSort);
 
             // Get search
             var userSearch = Q('UserSearchInput').value.toLowerCase();
@@ -9949,8 +9950,8 @@
             for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedUserids.push(elements[i].value); } }
 
             // Online users
-            for (var i in sortedUserIds) {
-                var user = users[sortedUserIds[i]], sessions = null;
+            for (var i in sortedUsers) {
+                var user = sortedUsers[i], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
                 if ((sessions != null) &&
                     ((userSearch != null) && ((userSearch == '') || (user.name.toLowerCase().indexOf(userSearch) >= 0)) ||
@@ -9967,8 +9968,8 @@
             }
             addHeader = true;
             // Offline users
-            for (var i in sortedUserIds) {
-                var user = users[sortedUserIds[i]], sessions = null;
+            for (var i in sortedUsers) {
+                var user = sortedUsers[i], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
                 if ((sessions == null) &&
                     ((userSearch != null) && ((userSearch == '') || (user.name.toLowerCase().indexOf(userSearch) >= 0)) ||
@@ -10858,6 +10859,15 @@
             // Change user grayscale
             Q('MainUserImage').classList.remove('gray');
             if (activeSessions == 0) { Q('MainUserImage').classList.add('gray'); }
+
+            // Add user auth strategy
+            var shortuserid = user._id.split('/')[2];
+            if (shortuserid.startsWith('~twitter:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/twitter64.png';; }
+            else if (shortuserid.startsWith('~google:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/google64.png';; }
+            else if (shortuserid.startsWith('~github:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/github64.png';; }
+            else if (shortuserid.startsWith('~reddit:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/reddit64.png';; }
+            else if (shortuserid.startsWith('~intel:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/intel64.png';; }
+            else { QV('p30userAuthServiceLogo', false); }
 
             // Server permissions
             var msg = [], premsg = '';
@@ -11979,7 +11989,7 @@
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
-            if ((x == 4) && (users == null) || ((features & 4) != 0)) { x = 52; }
+            if (((x == 4) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
 
             // Edit this line when adding a new screen
             for (var i = 0; i < 53; i++) { QV('p' + i, i == x); }

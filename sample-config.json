@@ -157,6 +157,29 @@
         "_maxRecordingSizeMegabytes": 3,
         "__protocols__": "Is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection",
         "protocols": [ 1, 2, 101 ]
+      },
+      "_authStrategies": {
+        "__comment__" : "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
+        "twitter": {
+          "__callbackurl": "https://server/auth-twitter-callback",
+          "apikey": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "apisecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "google": {
+          "__callbackurl": "https://server/auth-google-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "github": {
+          "__callbackurl": "https://server/auth-github-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "reddit": {
+          "__callbackurl": "https://server/auth-reddit-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
       }
     },
     "_customer1": {
