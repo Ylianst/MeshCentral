@@ -686,7 +686,7 @@ function serverConnect() {
                 break;
             }
             case 'removeuserfromdevice': {
-                var op = { action: 'adddeviceuser', nodeid: args.id, usernames: [args.userid], rights: 0, responseid: 'meshctrl' };
+                var op = { action: 'adddeviceuser', nodeid: args.id, usernames: [args.userid], rights: 0, remove: true, responseid: 'meshctrl' };
                 ws.send(JSON.stringify(op));
                 break;
             }
