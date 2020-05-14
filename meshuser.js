@@ -1387,7 +1387,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Request a list of all web socket user session count
                     var wssessions = {};
-                    if ((user.siteadmin & 2) == 0) break;
+                    if ((user.siteadmin & 2) == 0) { try { ws.send(JSON.stringify({ action: 'wssessioncount', wssessions: {}, tag: command.tag })); } catch (ex) { } break; }
                     if (parent.parent.multiServer == null) {
                         // No peering, use simple session counting
                         for (i in parent.wssessions) {

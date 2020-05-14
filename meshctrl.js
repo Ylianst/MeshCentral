@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -19,6 +19,7 @@ if (args['_'].length == 0) {
     console.log("  ServerInfo                - Show server information.");
     console.log("  UserInfo                  - Show user information.");
     console.log("  ListUsers                 - List user accounts.");
+    console.log("  ListUsersSessions         - List online users.");
     console.log("  ListDevices               - List devices.");
     console.log("  ListDeviceGroups          - List device groups.");
     console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
@@ -58,6 +59,7 @@ if (args['_'].length == 0) {
         case 'serverinfo': { ok = true; break; }
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
+        case 'listusersessions': { ok = true; break; }
         case 'listdevicegroups': { ok = true; break; }
         case 'listdevices': { ok = true; break; }
         case 'listusersofdevicegroup': {
@@ -201,6 +203,12 @@ if (args['_'].length == 0) {
                         console.log("  --nameexists [name]    - Return id if name exists.");
                         console.log("  --filter [filter1,...] - Filter user names: 2FA, NO2FA.");
                         console.log("  --json                 - Show result as JSON.");
+                        break;
+                    }
+                    case 'listusersessions': {
+                        console.log("List active user sessions on the MeshCentral server, Example usages:\r\n");
+                        console.log("  MeshCtrl ListUserSessions");
+                        console.log("  MeshCtrl ListUserSessions --json");
                         break;
                     }
                     case 'listdevicegroups': {
@@ -582,17 +590,19 @@ function serverConnect() {
             case 'serverinfo': { break; }
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users' })); break; }
+            case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount' })); }
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'listdevices': {
                 if (args.group) {
-                    ws.send(JSON.stringify({ action: 'nodes', meshname: args.group, responseid: 'meshctrl' })); break;
+                    ws.send(JSON.stringify({ action: 'nodes', meshname: args.group, responseid: 'meshctrl' }));
                 } else if (args.id) {
-                    ws.send(JSON.stringify({ action: 'nodes', meshid: args.id, responseid: 'meshctrl' })); break;
+                    ws.send(JSON.stringify({ action: 'nodes', meshid: args.id, responseid: 'meshctrl' }));
                 } else {
                     ws.send(JSON.stringify({ action: 'meshes' }));
-                    ws.send(JSON.stringify({ action: 'nodes', responseid: 'meshctrl' })); break;
+                    ws.send(JSON.stringify({ action: 'nodes', responseid: 'meshctrl' }));
                 }
+                break;
             }
             case 'adduser': {
                 var siteadmin = 0;
@@ -813,6 +823,15 @@ function serverConnect() {
                     process.exit();
                 }
                 break;
+            case 'wssessioncount': { // LIST USER SESSIONS
+                if (args.json) {
+                    console.log(JSON.stringify(data.wssessions, ' ', 2));
+                } else {
+                    for (var i in data.wssessions) { console.log(i + ', ' + ((data.wssessions[i] > 1) ? (data.wssessions[i] + ' sessions.') : ("1 session."))); }
+                }
+                process.exit();
+                break;
+            }
             case 'users': { // LISTUSERS
                 if (args.filter) {
                     // Filter the list of users
