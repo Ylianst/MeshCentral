@@ -370,10 +370,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (shortname == null) { fn(new Error('no user identifier')); return; }
                     var userid = 'user/' + domain.id + '/' + shortname;
                     var user = obj.users[userid];
+                    var email = null;
+                    if (domain.ldapuseremail) {
+                        email = xxuser[domain.ldapuseremail];
+                    } else if (xxuser.mail) { // use default 
+                        email = xxuser.mail;
+                    }
+                    if ('[object Array]' == Object.prototype.toString.call(email)) {
+                        // mail may be multivalued in ldap in which case, answer is an array. Use the 1st value.
+                        email=email[0];
+                    }
+                    if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
 
                     if (user == null) {
                         // Create a new user
                         var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        if (email) {
+                            user['email'] = email;
+                            user['emailVerified'] = true;
+                        }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
@@ -394,6 +409,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
+                        // Check if user email has changed
+                        var emailreason = null;
+                        if (user.email && ! email) { // email unset in ldap => unset
+                            delete user.email;
+                            delete user.emailVerified;
+                            emailreason = 'Unset email (no more email in LDAP)'
+                        } else if (user.email != email) { // update email
+                            user['email'] = email;
+                            user['emailVerified'] = true;
+                            emailreason = 'Set account email to ' + email + '. Sync with LDAP.';
+                        }
+                        if (emailreason) {
+                            obj.db.SetUser(user);
+                            var event = { etype: 'user', userid: userid, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: emailreason, domain: domain.id };
+                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+                        }
                         // If user is locker out, block here.
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                         return fn(null, user._id);
@@ -407,6 +439,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
                     if (err) { fn(new Error('invalid password')); return; }
                     var shortname = null;
+                    var email = null;
+                    if (domain.ldapuseremail) {
+                        email = xxuser[domain.ldapuseremail];
+                    } else if (xxuser.mail) {
+                        email = xxuser.mail;
+                    }
+                    if ('[object Array]' == Object.prototype.toString.call(email)) {
+                        // mail may be multivalued in ldap in which case, answer would be an array. Use the 1st one.
+                        email=email[0];
+                    }
+                    if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
                     var username = xxuser['displayName'];
                     if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
                     if (domain.ldapuserbinarykey) {
@@ -430,6 +473,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (user == null) {
                         // This user does not exist, create a new account.
                         var user = { type: 'user', _id: userid, name: shortname, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
+                        if (email) {
+                            user['email'] = email;
+                            user['emailVerified'] = true;
+                        }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
@@ -447,6 +494,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             user.name = username;
                             obj.db.SetUser(user);
                             var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Changed account display name to ' + username, domain: domain.id };
+                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+                        }
+                        // Check if user email has changed
+                        var emailreason = null;
+                        if (user.email && ! email) { // email unset in ldap => unset
+                            delete user.email;
+                            delete user.emailVerified;
+                            emailreason = 'Unset email (no more email in LDAP)'
+                        } else if (user.email != email) { // update email
+                            user['email'] = email;
+                            user['emailVerified'] = true;
+                            emailreason = 'Set account email to ' + email + '. Sync with LDAP.';
+                        }
+                        if (emailreason) {
+                            obj.db.SetUser(user);
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: emailreason, domain: domain.id };
                             if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                         }
