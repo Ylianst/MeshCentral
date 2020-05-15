@@ -188,6 +188,36 @@
       "_Title2": "TestServer",
       "_NewAccounts": 1,
       "_Auth": "sspi",
+      "__Auth": "ldap",
+      "_LDAPUserName": "gecos",
+      "_LDAPUserKey": "uid",
+      "_LDAPUserEmail": "otherMail",
+      "_LDAPPptions": {
+        "URL": "test",
+        "anne": {
+          "gecos": "Anne O'Nyme",
+          "displayName": "O Nyme anne",
+          "uid": "anneonyme",
+          "mail": "anneonyme@example.com",
+          "email": "anneonyme@example.com",
+          "otherMail": [ "other.anneonyme@example.com", "anneonyme@example.com" ]
+        },
+        "so": {
+          "displayName": "Sticker Sophie",
+          "gecos": "Sophie Sticker",
+          "uid": "ssticker",
+          "mail": "ssticker@example.com",
+          "email": "ssticker@example.com",
+          "otherMail": [ "other.ssticker@example.com", "ssticker@example.com" ]
+        }
+      },
+      "__LDAPOptions": {
+        "URL": "ldap://1.2.3.4:389",
+        "BindDN": "CN=svc_meshcentral,CN=Users,DC=meshcentral,DC=local",
+        "BindCredentials": "Password.1",
+        "SearchBase": "DC=meshcentral,DC=local",
+        "SearchFilter": "(sAMAccountName={{username}})"
+      },
       "_Footer": "Test",
       "_CertUrl": "https://192.168.2.106:443/"
     },
