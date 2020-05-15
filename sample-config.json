@@ -162,8 +162,8 @@
         "__comment__" : "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
         "twitter": {
           "__callbackurl": "https://server/auth-twitter-callback",
-          "apikey": "xxxxxxxxxxxxxxxxxxxxxxx",
-          "apisecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "google": {
           "__callbackurl": "https://server/auth-google-callback",

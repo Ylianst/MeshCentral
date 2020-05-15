@@ -1688,15 +1688,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             const userid = req.user.id;
             var user = obj.users[userid];
             if (user == null) {
-                // Create the user
-                parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
-                user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, domain: domain.id };
-                if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
-                obj.users[userid] = user;
-                obj.db.SetUser(user);
-                // TODO: Event user creation
-                req.session.userid = req.user.id;
-                req.session.domainid = domain.id;
+                if (domain.newaccounts == true) {
+                    // Create the user
+                    parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
+                    user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), domain: domain.id };
+                    if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
+                    obj.users[userid] = user;
+                    obj.db.SetUser(user);
+
+                    // Event user creation
+                    var targets = ['*', 'server-users'];
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, username is ' + user.name, domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
+                    parent.DispatchEvent(targets, obj, event);
+
+                    req.session.userid = req.user.id;
+                    req.session.domainid = domain.id;
+                } else {
+                    // New users not allowed
+                    parent.debug('web', 'handleStrategyLogin: Can\'t create new accounts');
+                    req.session.loginmode = '1';
+                    req.session.messageid = 100; // Unable to create account.
+                    res.redirect(domain.url + getQueryPortion(req));
+                    return;
+                }
             } else {
                 // Login success
                 var userChange = false;
@@ -2032,7 +2047,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // See what authentication strategies we have
         var authStrategies = [];
         if (typeof domain.authstrategies == 'object') {
-            if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) { authStrategies.push('twitter'); }
+            if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) { authStrategies.push('twitter'); }
             if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) { authStrategies.push('google'); }
             if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) { authStrategies.push('github'); }
             if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) { authStrategies.push('reddit'); }
@@ -4046,9 +4061,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 //obj.app.use(passport.session());
 
                 // Twitter
-                if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.apikey == 'string') && (typeof domain.authstrategies.twitter.apisecret == 'string')) {
+                if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
                     const TwitterStrategy = require('passport-twitter');
-                    passport.use(new TwitterStrategy({ consumerKey: domain.authstrategies.twitter.apikey, consumerSecret: domain.authstrategies.twitter.apisecret, callbackURL: url + 'auth-twitter-callback' },
+                    passport.use(new TwitterStrategy({ consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret, callbackURL: url + 'auth-twitter-callback' },
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~twitter:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }

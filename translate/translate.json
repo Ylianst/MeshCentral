@@ -1891,7 +1891,7 @@
       "ru": "Действия учетной записи",
       "zh-chs": "帳戶動作",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->3->0"
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->1->0"
       ]
     },
     {
@@ -2800,7 +2800,7 @@
       "ru": "Admin PowerShell",
       "zh-chs": "管理員PowerShell",
       "xloc": [
-        "default.handlebars->termShellContextMenu->cxtermps",
+        "default.handlebars->termShellContextMenu->3",
         "xterm.handlebars->termShellContextMenu->cxtermps"
       ]
     },
@@ -2835,7 +2835,7 @@
       "ru": "Admin Shell",
       "zh-chs": "管理員外殼",
       "xloc": [
-        "default.handlebars->termShellContextMenu->cxtermnorm->0",
+        "default.handlebars->termShellContextMenu->1->0",
         "xterm.handlebars->termShellContextMenu->cxtermnorm->0"
       ]
     },
@@ -3346,7 +3346,7 @@
       "ru": "Поменять порт",
       "zh-chs": "備用端口",
       "xloc": [
-        "default.handlebars->altPortContextMenu->cxaltport->0"
+        "default.handlebars->altPortContextMenu->1"
       ]
     },
     {
@@ -4023,7 +4023,7 @@
       "nl": "Vraag toestemming",
       "zh-chs": "询问同意",
       "xloc": [
-        "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
+        "default.handlebars->deskConnectContextMenu->3"
       ]
     },
     {
@@ -4037,7 +4037,7 @@
       "nl": "Vraag toestemming + informatiebalk",
       "zh-chs": "询问同意+酒吧",
       "xloc": [
-        "default.handlebars->deskConnectContextMenu->cxdeskuc->0"
+        "default.handlebars->deskConnectContextMenu->1"
       ]
     },
     {
@@ -5066,7 +5066,7 @@
       "ru": "Смена email",
       "zh-chs": "更改電子郵件地址",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->5->changeEmailId->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->5->changeEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->accountChangeEmailAddressSpan->0"
       ]
     },
@@ -5084,7 +5084,7 @@
       "ru": "Смена пароля",
       "zh-chs": "更改密碼",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->7->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->7->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->3"
       ]
     },
@@ -7440,7 +7440,7 @@
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->dialog->idx_dlgButtonBar->5",
-        "default.handlebars->filesContextMenu->cxfiledelete->0",
+        "default.handlebars->filesContextMenu->5",
         "player.handlebars->p11->dialog->idx_dlgButtonBar->5",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar->5"
       ]
@@ -7630,7 +7630,7 @@
       "ru": "Удалить учетную запись",
       "zh-chs": "刪除帳戶",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->9->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->9->0",
         "default.handlebars->25->1442",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->p2AccountPassActions->7"
       ]
@@ -9502,7 +9502,7 @@
       "zh-chs": "編輯",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
-        "default.handlebars->filesContextMenu->cxfileedit->0"
+        "default.handlebars->filesContextMenu->3"
       ]
     },
     {
@@ -15554,7 +15554,7 @@
       "ru": "Вход в оболочку",
       "zh-chs": "登錄外殼",
       "xloc": [
-        "default.handlebars->termShellContextMenuLinux->cxtermps",
+        "default.handlebars->termShellContextMenuLinux->5",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
       ]
     },
@@ -16215,7 +16215,7 @@
       "nl": "Beheer telefoonnummer",
       "zh-chs": "管理电话号码",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->1->managePhoneNumber2->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->1->managePhoneNumber2->0",
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->3->managePhoneNumber1->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->managePhoneNumber2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->managePhoneNumber1->1->0"
@@ -19159,7 +19159,7 @@
       "zh-chs": "打开播放器...",
       "xloc": [
         "default.handlebars->container->column_l->p52->3->1->0->3->1",
-        "default.handlebars->deskPlayerContextMenu->cxopenplayer->0"
+        "default.handlebars->deskPlayerContextMenu->1"
       ]
     },
     {
@@ -20475,6 +20475,12 @@
       ]
     },
     {
+      "en": "Privacy Bar",
+      "xloc": [
+        "default.handlebars->deskConnectContextMenu->5"
+      ]
+    },
+    {
       "cs": "Správa procesů",
       "de": "Prozesskontrolle",
       "en": "Process Control",
@@ -21723,7 +21729,7 @@
         "default.handlebars->25->756",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
-        "default.handlebars->filesContextMenu->cxfilerename->0"
+        "default.handlebars->filesContextMenu->1"
       ]
     },
     {
@@ -22125,7 +22131,7 @@
       "ru": "Root Shell",
       "zh-chs": "根殼",
       "xloc": [
-        "default.handlebars->termShellContextMenuLinux->cxtermnorm->0",
+        "default.handlebars->termShellContextMenuLinux->1->0",
         "xterm.handlebars->termShellContextMenuLinux->cxtermnorm->0"
       ]
     },
@@ -27628,7 +27634,7 @@
       "ru": "User PowerShell",
       "zh-chs": "用戶PowerShell",
       "xloc": [
-        "default.handlebars->termShellContextMenu->cxtermups",
+        "default.handlebars->termShellContextMenu->7",
         "xterm.handlebars->termShellContextMenu->cxtermups"
       ]
     },
@@ -27663,8 +27669,8 @@
       "ru": "User Shell",
       "zh-chs": "用戶外殼",
       "xloc": [
-        "default.handlebars->termShellContextMenu->cxtermunorm",
-        "default.handlebars->termShellContextMenuLinux->cxtermps",
+        "default.handlebars->termShellContextMenu->5",
+        "default.handlebars->termShellContextMenuLinux->3",
         "xterm.handlebars->termShellContextMenu->cxtermunorm",
         "xterm.handlebars->termShellContextMenuLinux->cxtermps"
       ]
@@ -28005,7 +28011,7 @@
       "ru": "Подтвердить email",
       "zh-chs": "驗證郵件",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->5->3->verifyEmailId->0",
+        "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountActions->3->3->verifyEmailId->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->verifyEmailId->0"
       ]
     },
