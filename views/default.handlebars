@@ -3356,7 +3356,7 @@
                 p1updateInfo();
 
                 // Take care of KVM surfaces in desktop view mode
-                if (view == 3) {
+                if ((view == 3) && (xxcurrentView == 1)) {
                     // Figure out and adjust the size to fill the width of the div
                     var vsize = [{ x: 180, y: 101 }, { x: 302, y: 169 }, { x: 454, y: 255 }][Q('sizeselect').selectedIndex];
                     //var realw = vsize.x + 2, tw = Q('xdevices').clientWidth - 30, xw = Math.floor(tw / realw);
