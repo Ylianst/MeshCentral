@@ -1664,7 +1664,7 @@
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
             QV('manageEmail2FA', features & 0x00800000);
-            QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false)); // Hide Account Actions if in single user mode or domain authentication
+            QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('p2ServerActions', siteRights & 21);
             QV('LeftMenuMyServer', siteRights & 21); // 16 + 4 + 1
@@ -1678,8 +1678,7 @@
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
             // Update user management state
-            if ((userinfo.siteadmin & 2) != 0)
-            {
+            if ((userinfo.siteadmin & 2) != 0) {
                 // We are user administrator
                 if (users == null) { meshserver.send({ action: 'users' }); }
                 if (wssessions == null) { meshserver.send({ action: 'wssessioncount' }); }
@@ -2368,7 +2367,7 @@
                         case 'accountremove': {
                             // An account was removed
                             if (users == null) break;
-                            delete users['user/' + domain + '/' + message.event.username.toLowerCase()];
+                            delete users[message.event.userid];
                             masterUpdate(16384);
                             break;
                         }
@@ -2657,10 +2656,10 @@
                         case 'wssessioncount': {
                             // Update the active web socket session count for a user
                             if (wssessions != null) {
-                                if (message.event.count == 0 && wssessions['user/' + domain + '/' + message.event.username.toLowerCase()]) {
-                                    delete wssessions['user/' + domain + '/' + message.event.username.toLowerCase()];
+                                if (message.event.count == 0 && wssessions[message.event.userid]) {
+                                    delete wssessions[message.event.userid];
                                 } else {
-                                    wssessions['user/' + domain + '/' + message.event.username.toLowerCase()] = message.event.count;
+                                    wssessions[message.event.userid] = message.event.count;
                                 }
                                 masterUpdate(16384);
                             }
@@ -2668,8 +2667,8 @@
                         }
                         case 'login': {
                             // Update the last login time
-                            if (users != null && users['user/' + domain + '/' + message.event.username.toLowerCase()]) {
-                                users['user/' + domain + '/' + message.event.username.toLowerCase()].login = Math.floor(new Date(message.event.time).getTime() / 1000);
+                            if (users != null && users[message.event.userid]) {
+                                users[message.event.userid].login = Math.floor(new Date(message.event.time).getTime() / 1000);
                             }
                             break;
                         }
