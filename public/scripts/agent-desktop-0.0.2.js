@@ -58,7 +58,11 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.onDisplayinfo = null;
     obj.accumulator = null;
 
+    var xMouseCursorActive = true;
+    var xMouseCursorCurrent = 'default';
+    obj.mouseCursorActive = function (x) { if (xMouseCursorActive == x) return; xMouseCursorActive = x; obj.CanvasId.style.cursor = ((x == true) ? xMouseCursorCurrent : 'default'); }
     var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none', 'not-allowed', 'col-resize', 'row-resize', 'copy', 'zoom-in', 'zoom-out'];
+
     obj.Start = function () {
         obj.State = 0;
         obj.accumulator = null;
@@ -305,7 +309,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (cmdsize != 5) break;
                 var cursorNum = str.charCodeAt(4);
                 if (cursorNum > mouseCursors.length) { cursorNum = 0; }
-                obj.CanvasId.style.cursor = mouseCursors[cursorNum];
+                xMouseCursorCurrent = mouseCursors[cursorNum];
+                if (xMouseCursorActive) { obj.CanvasId.style.cursor = xMouseCursorCurrent; }
                 break;
         }
         return cmdsize + jumboAdd;

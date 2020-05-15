@@ -3560,6 +3560,7 @@
                 } else if (contype == 1) {
                     // Setup the Mesh Agent remote desktop
                     desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                    desk.m.mouseCursorActive(xxcurrentView == 11);
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
                     desk.onStateChanged = onMultiDesktopStateChange;
@@ -5877,6 +5878,7 @@
                     if (desktop.m.SendCompressionLevel) { desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
+                    if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
                     desktopNode = currentNode;
                     onDesktopStateChange(desktop, desktop.State);
                     delete multiDesktop[currentNode._id];
@@ -6063,6 +6065,7 @@
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                    desktop.m.mouseCursorActive(xxcurrentView == 11);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -10960,7 +10963,8 @@
             x = '<div style=float:right;font-size:x-small>';
             if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
             x += '</div><div style=font-size:x-small>';
-            if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
+            // If user admin rights and not SSPI/LDAP and UserID does not start with ~, show change password
+            if (userAdminRights && ((features & 0x00080000) == 0) && (userid.split('/')[2][0] != '~')) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
             x += '</div><br>'
             QH('p30html3', x);
 
