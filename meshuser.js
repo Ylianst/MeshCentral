@@ -328,9 +328,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var os = require('os');
                 var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
                 if (parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); }
+
+                // Count the number of device groups that are not deleted
+                var activeDeviceGroups = 0;
+                for (var i in parent.meshes) { if (parent.meshes[i].deleted == null) { activeDeviceGroups++; } } // This is not ideal for performance, we want to dome something better.
                 var serverStats = {
                     UserAccounts: Object.keys(parent.users).length,
-                    DeviceGroups: Object.keys(parent.meshes).length,
+                    DeviceGroups: activeDeviceGroups,
                     AgentSessions: Object.keys(parent.wsagents).length,
                     ConnectedUsers: Object.keys(parent.wssessions).length,
                     UsersSessions: Object.keys(parent.wssessions2).length,
