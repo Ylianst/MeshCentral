@@ -1612,6 +1612,20 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    // Add the files session to the count to update the server
+                    if (this.httprequest.userid != null) {
+                        if (tunnelUserCount.files[this.httprequest.userid] == null) { tunnelUserCount.files[this.httprequest.userid] = 1; } else { tunnelUserCount.files[this.httprequest.userid]++; }
+                        try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (ex) { }
+                    }
+
+                    this.end = function () {
+                        // Remove the files session from the count to update the server
+                        if (this.httprequest.userid != null) {
+                            if (tunnelUserCount.files[this.httprequest.userid] != null) { tunnelUserCount.files[this.httprequest.userid]--; if (tunnelUserCount.files[this.httprequest.userid] <= 0) { delete tunnelUserCount.files[this.httprequest.userid]; } }
+                            try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (ex) { }
+                        }
+                    };
+
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
                     if (this.httprequest.consent && (this.httprequest.consent & 32)) {
                         // User Consent Prompt is required
@@ -1676,20 +1690,6 @@ function createMeshCore(agent) {
                 if ((cmd.ctrlChannel == '102938') || ((cmd.type == 'offer') && (cmd.sdp != null))) { onTunnelControlData(cmd, this); return; } // If this is control data, handle it now.
                 if (cmd.action == undefined) { return; }
                 //sendConsoleText('CMD: ' + JSON.stringify(cmd));
-
-                // Add the files session to the count to update the server
-                if (this.httprequest.userid != null) {
-                    if (tunnelUserCount.files[this.httprequest.userid] == null) { tunnelUserCount.files[this.httprequest.userid] = 1; } else { tunnelUserCount.files[this.httprequest.userid]++; }
-                    try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (ex) { }
-                }
-
-                this.end = function () {
-                    // Remove the files session from the count to update the server
-                    if (this.httprequest.userid != null) {
-                        if (tunnelUserCount.files[this.httprequest.userid] != null) { tunnelUserCount.files[this.httprequest.userid]--; if (tunnelUserCount.files[this.httprequest.userid] <= 0) { delete tunnelUserCount.files[this.httprequest.userid]; } }
-                        try { mesh.SendCommand({ action: 'sessions', type: 'files', value: tunnelUserCount.files }); } catch (ex) { }
-                    }
-                };
 
                 if ((cmd.path != null) && (process.platform != 'win32') && (cmd.path[0] != '/')) { cmd.path = '/' + cmd.path; } // Add '/' to paths on non-windows
                 //console.log(objToString(cmd, 0, ' '));
