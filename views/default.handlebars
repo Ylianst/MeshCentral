@@ -3063,7 +3063,7 @@
         var deviceHeaders = {};
         var oldviewmode = 0;
         function updateDevices() {
-            if (nodes == null) { return; }
+            if ((nodes == null) || (xxcurrentView != 1)) { return; }
             var r = '', c = 0, current = null, count = 0, scount = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
             QV('xdevices', view < 4);
             QV('xdevicesmap', view == 4);
