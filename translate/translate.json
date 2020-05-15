@@ -29132,20 +29132,8 @@
       ]
     },
     {
-      "cs": "Byli jste vyzváni k instalaci softwaru, který vzdálenému operátorovi umožní vzdálený přístup k vašemu počítači na dálku, včetně plochy a souborů. Postupujte podle níže uvedených pokynů, pokud byla tato pozvánka očekávána a víte, kdo bude mít přístup k vašemu počítači. Výběr operačního systému a postupujte podle pokynů níže.",
-      "de": "Sie wurden aufgefordert, eine Software zu installieren, mit der ein Fernbediener remote auf Ihren Computer zugreifen kann, einschließlich Desktop und Dateien. Befolgen Sie die nachstehenden Anweisungen nur, wenn diese Einladung erwartet wurde und Sie wissen, wer auf Ihren Computer zugreifen wird. Wählen Sie Ihr Betriebssystem aus und befolgen Sie die nachstehenden Anweisungen.",
-      "en": "You have been invited to install a software that will allow a remote operator to fully access your computer remotely including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Selecting your operation system and follow the instructions below.",
-      "es": "Se le invitó a instalar un software que permitirá que un operador remoto acceda completamente a su computadora de forma remota, incluido el escritorio y los archivos. Solo siga las instrucciones a continuación si estaba esperando esta invitación y sabe quién accederá a su computadora. Seleccione su sistema operativo y siga las instrucciones a continuación.",
-      "fr": "Vous avez été invité à installer un logiciel qui permettra à un opérateur distant d'accéder pleinement à votre ordinateur à distance, y compris le bureau et les fichiers. Suivez les instructions ci-dessous uniquement si cette invitation était attendue et que vous savez qui aura accès à votre ordinateur. Sélectionnez votre système d'exploitation et suivez les instructions ci-dessous.",
-      "hi": "आपको एक सॉफ़्टवेयर स्थापित करने के लिए आमंत्रित किया गया है जो दूरस्थ ऑपरेटर को आपके कंप्यूटर को डेस्कटॉप और फ़ाइलों सहित दूरस्थ रूप से पूरी तरह से एक्सेस करने की अनुमति देगा। केवल नीचे दिए गए निर्देशों का पालन करें यदि यह आमंत्रण अपेक्षित था और आप जानते हैं कि आपके कंप्यूटर तक कौन पहुंचेगा। अपने ऑपरेशन सिस्टम का चयन करें और नीचे दिए गए निर्देशों का पालन करें।",
-      "ja": "リモートオペレーターがデスクトップやファイルを含め、リモートでコンピューターに完全にアクセスできるようにするソフトウェアをインストールするよう招待されました。この招待が予期されていて、誰がコンピュータにアクセスするかがわかっている場合にのみ、以下の手順に従ってください。オペレーティングシステムを選択し、以下の手順に従います。",
-      "ko": "당신은 원격 운영자가 데스크탑 및 파일을 포함하여 원격으로 컴퓨터에 완전히 액세스 할 수 있도록 하는 소프트웨어를 설치하도록 초대되었습니다. 이 초대가 예상된 것이고, 누가 컴퓨터에 액세스 할 것인지 아는 경우에만 운영 체제를 선택하고 아래 지침을 따르십시오.",
-      "nl": "U bent uitgenodigd om software te installeren waarmee een externe operator op afstand volledige toegang heeft tot uw computer, inclusief het bureaublad en de bestanden. Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie er toegang krijgt tot uw computer. Selecteer uw besturingssysteem en volg de onderstaande instructies.",
-      "ru": "Вам было предложено установить программное обеспечение, которое позволит удаленному оператору получить полный доступ к вашему компьютеру, включая рабочий стол и файлы. Следуйте приведенным ниже инструкциям только в том случае, если это приглашение ожидалось и вы знаете, кто будет обращаться к вашему компьютеру. Выбор вашей операционной системы и следуйте инструкциям ниже.",
-      "zh-chs": "已邀请您安装软件，该软件将允许远程操作员远程完全访问您的计算机，包括桌面和文件。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择操作系统，然后按照以下说明进行操作。"
-    },
-    {
       "en": "You have been invited to install an application that will allow a remote operator to securely access your computer including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Select your operating system and follow the instructions below for installation.",
+      "nl": "U bent uitgenodigd om een applicatie te installeren waarmee een externe beheerder veilig toegang heeft tot uw computer, inclusief het bureaublad en de bestanden. Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie er toegang krijgt tot uw computer.Selecteer uw besturingssysteem en volg de onderstaande instructies voor installatie.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
       ]
