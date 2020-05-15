@@ -29141,7 +29141,10 @@
       "ko": "당신은 원격 운영자가 데스크탑 및 파일을 포함하여 원격으로 컴퓨터에 완전히 액세스 할 수 있도록 하는 소프트웨어를 설치하도록 초대되었습니다. 이 초대가 예상된 것이고, 누가 컴퓨터에 액세스 할 것인지 아는 경우에만 운영 체제를 선택하고 아래 지침을 따르십시오.",
       "nl": "U bent uitgenodigd om software te installeren waarmee een externe operator op afstand volledige toegang heeft tot uw computer, inclusief het bureaublad en de bestanden. Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie er toegang krijgt tot uw computer. Selecteer uw besturingssysteem en volg de onderstaande instructies.",
       "ru": "Вам было предложено установить программное обеспечение, которое позволит удаленному оператору получить полный доступ к вашему компьютеру, включая рабочий стол и файлы. Следуйте приведенным ниже инструкциям только в том случае, если это приглашение ожидалось и вы знаете, кто будет обращаться к вашему компьютеру. Выбор вашей операционной системы и следуйте инструкциям ниже.",
-      "zh-chs": "已邀请您安装软件，该软件将允许远程操作员远程完全访问您的计算机，包括桌面和文件。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择操作系统，然后按照以下说明进行操作。",
+      "zh-chs": "已邀请您安装软件，该软件将允许远程操作员远程完全访问您的计算机，包括桌面和文件。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择操作系统，然后按照以下说明进行操作。"
+    },
+    {
+      "en": "You have been invited to install an application that will allow a remote operator to securely access your computer including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Select your operating system and follow the instructions below for installation.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
       ]
