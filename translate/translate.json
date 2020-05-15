@@ -20476,6 +20476,7 @@
     },
     {
       "en": "Privacy Bar",
+      "nl": "Privacy balk",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->5"
       ]
