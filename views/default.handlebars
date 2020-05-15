@@ -487,7 +487,7 @@
                             </td>
                             <td style=width:20px></td>
                             <td style=width:200px;vertical-align:top;position:relative valign=top>
-                                <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDot src=images/icon-relay-notify-40.png width=40 height=40>
+                                <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyLargeDot src=images/icon-relay-notify-40.png width=40 height=40>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
                                 <div id=MainComputerState></div>
                             </td>
@@ -3177,9 +3177,9 @@
                     var devNotify = '';
                     if (node.sessions != null) {
                         if (view == 2) {
-                            devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\') class=deviceNotifySmallDot src=images/icon-relay-notify10.png width=10 height=10>';
+                            devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifySmallDot src=images/icon-relay-notify10.png width=10 height=10>';
                         } else {
-                            devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\') class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>';
+                            devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>';
                         }
                     }
 
@@ -3426,11 +3426,12 @@
         }
 
         // Show currently active sessions on this device
-        function showDeviceSessions(nodeid, force) {
-            if (xxdialogMode && !force) return;
+        function showDeviceSessions(nodeid, force, e) {
+            if (e) haltEvent(e);
+            if (xxdialogMode && !force) return false;
             var node = null, x = '';
             if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
-            if ((node == null) || (node.sessions == null)) { setDialogMode(0); return; }
+            if ((node == null) || (node.sessions == null)) { setDialogMode(0); return false; }
             for (var i in node.sessions) {
                 if ((i == 'kvm') && (node.sessions.multidesk == null)) {
                     x += '<u>' + "Remote Desktop" + '</u>';
@@ -3447,6 +3448,7 @@
                 }
             }
             if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
+            return false;
         }
 
         function toggleCollapseGroup(id, id2, type) {
@@ -10964,7 +10966,7 @@
             if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
             x += '</div><div style=font-size:x-small>';
             // If user admin rights and not SSPI/LDAP and UserID does not start with ~, show change password
-            if (userAdminRights && ((features & 0x00080000) == 0) && (userid.split('/')[2][0] != '~')) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
+            if (userAdminRights && ((features & 0x00080000) == 0) && (user._id.split('/')[2][0] != '~')) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
             x += '</div><br>'
             QH('p30html3', x);
 
