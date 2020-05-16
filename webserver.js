@@ -4357,7 +4357,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Authenticates a session and forwards
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
         // Check if this is a banned ip address
-        if (obj.checkAllowLogin(req) == false) { try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
+        if (obj.checkAllowLogin(req) == false) { parent.debug('web', 'WSERROR: Banned connection.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
         try {
             // Hold this websocket until we are ready.
             ws._socket.pause();
@@ -4366,11 +4366,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var domain = null;
             if (noAuthOk == true) {
                 domain = getDomain(req);
-                if (domain == null) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-1' })); ws.close(); return; } catch (e) { } return; }
+                if (domain == null) { parent.debug('web', 'WSERROR: Got no domain, no auth ok.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-1' })); ws.close(); return; } catch (e) { } return; }
             } else {
                 // If authentication is required, enforce IP address filtering.
                 domain = checkUserIpAddress(ws, req);
-                if (domain == null) { return; }
+                if (domain == null) { parent.debug('web', 'WSERROR: Got no domain, user auth required.'); return; }
             }
 
             var emailcheck = ((obj.parent.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
@@ -4405,17 +4405,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true })); ws.close(); } catch (e) { }
                                 } else {
                                     // Ask for a login token
+                                    parent.debug('web', 'Asking for login token'); 
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                                 }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
                                     if (result == false) {
                                         // Failed, ask for a login token again
+                                        parent.debug('web', 'Invalid login token, asking again'); 
                                         try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         // Check email verification
                                         if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                            parent.debug('web', 'Invalid login, asking for email validation'); 
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                         } else {
                                             func(ws, req, domain, user);
@@ -4426,6 +4429,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // Check email verification
                             if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
+                                parent.debug('web', 'Invalid login, asking for email validation'); 
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                             } else {
                                 // We are authenticated

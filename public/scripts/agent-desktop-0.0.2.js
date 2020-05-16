@@ -103,13 +103,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     // KVM Control.
     // Routines for processing incoming packets from the AJAX server, and handling individual messages.
-    obj.ProcessPictureMsg = function (str, X, Y) {
+    obj.ProcessPictureMsg = function (data, X, Y) {
         //if (obj.targetnode != null) obj.Debug("ProcessPictureMsg " + X + "," + Y + " - " + obj.targetnode.substring(0, 8));
         var tile = new Image();
         tile.xcount = obj.tilesReceived++;
         //console.log('Tile #' + tile.xcount);
         var r = obj.tilesReceived;
-        tile.src = "data:image/jpeg;base64," + btoa(str.substring(4, str.length));
+        tile.src = "data:image/jpeg;base64," + btoa(String.fromCharCode.apply(null, data.slice(4)));
         tile.onload = function () {
             //console.log('DecodeTile #' + this.xcount);
             if (obj.Canvas != null && obj.KillDraw < r && obj.State != 0) {
@@ -185,72 +185,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
     }
 
-    obj.ProcessData = function (str) {
-        var ptr = 0;
-        while (ptr < str.length) {
-            var r = obj.ProcessDataEx(str.substring(ptr));
-            if ((r == null) || (r == 0)) break;
-            ptr += r;
-        }
-    }
+    obj.ProcessBinaryCommand = function (cmd, cmdsize, view) {
+        var X, Y;
+        if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
+        //console.log('CMD', cmd, cmdsize, X, Y);
 
-    obj.ProcessDataEx = function (str) {
-        if (obj.accumulator != null) {
-            str = obj.accumulator + str;
-            //console.log('KVM using accumulated data, total size is now ' + str.length + ' bytes.');
-            obj.accumulator = null;
-        }
-        if (obj.debugmode > 1) { console.log("KRecv(" + str.length + "): " + rstr2hex(str.substring(0, Math.min(str.length, 40)))); }
-        if (str.length < 4) return;
-        var cmdmsg = null, X = 0, Y = 0, command = ReadShort(str, 0), cmdsize = ReadShort(str, 2), jumboAdd = 0;
-        if (obj.recordedData != null) { obj.recordedData.push(recordingEntry(2, 1, str.length)); obj.recordedData.push(str); }
-        if ((command == 27) && (cmdsize == 8)) {
-            // Jumbo packet
-            if (str.length < 12) return;
-            command = ReadShort(str, 8)
-            cmdsize = ReadInt(str, 4);
-            //console.log('JUMBO cmd=' + command + ', cmdsize=' + cmdsize + ', data received=' + str.length);
-            if ((cmdsize + 8) > str.length) {
-                //console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
-                obj.accumulator = str;
-                return;
-            }
-            str = str.substring(8);
-            jumboAdd = 8;
-        }
-        if ((cmdsize != str.length) && (obj.debugmode > 0)) { console.log(cmdsize, str.length, cmdsize == str.length); }
-        if ((command >= 18) && (command != 65) && (command != 88)) {
-            console.error("Invalid KVM command " + command + " of size " + cmdsize);
-            console.log("Invalid KVM data", str.length, rstr2hex(str.substring(0, 40)) + '...');
-            if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage("Received invalid network data", 5); }
-            return;
-        }
-        if (cmdsize > str.length) {
-            //console.log('KVM accumulator set to ' + str.length + ' bytes, need ' + cmdsize + ' bytes.');
-            obj.accumulator = str;
-            return;
-        }
-        //console.log("KVM Command: " + command + " Len:" + cmdsize);
-
-        if (command == 3 || command == 4 || command == 7) {
-            cmdmsg = str.substring(4, cmdsize);
-            X = ((cmdmsg.charCodeAt(0) & 0xFF) << 8) + (cmdmsg.charCodeAt(1) & 0xFF);
-            Y = ((cmdmsg.charCodeAt(2) & 0xFF) << 8) + (cmdmsg.charCodeAt(3) & 0xFF);
-            if (obj.debugmode > 0) { console.log("CMD" + command + " at X=" + X + " Y=" + Y); }
-        }
-
-        switch (command) {
+        switch (cmd) {
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
-                obj.ProcessPictureMsg(cmdmsg, X, Y);
-                break;
-            case 4: // Tile Copy
-                if (obj.FirstDraw) obj.onResize();
-                if (obj.TilesDrawn == obj.tilesReceived) {
-                    obj.ProcessCopyRectMsg(cmdmsg);
-                } else {
-                    obj.PendingOperations.push([ ++tilesReceived, 1, cmdmsg ]);
-                }
+                //console.log('TILE', X, Y);
+                obj.ProcessPictureMsg(view.slice(4), X, Y);
                 break;
             case 7: // Screen size
                 obj.ProcessScreenMsg(X, Y);
@@ -262,13 +206,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.SendKeyMsgKC(obj.KeyAction.UP, 16); // Shift
                 obj.send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
                 break;
-            case 11: // GetDisplays
-                var selectedDisplay = 0, displays = { }, dcount = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
+            case 11: // GetDisplays (TODO)
+                var selectedDisplay = 0, displays = {}, dcount = (view[4] << 8) + view[5];
                 if (dcount > 0) {
                     // Many displays present
-                    selectedDisplay = ((str.charCodeAt(6 + (dcount * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (dcount * 2)) & 0xFF);
+                    selectedDisplay = (view[6 + (dcount * 2)] << 8) + view[7 + (dcount * 2)];
                     for (var i = 0; i < dcount; i++) {
-                        var disp = ((str.charCodeAt(6 + (i * 2)) & 0xFF) << 8) + (str.charCodeAt(7 + (i * 2)) & 0xFF);
+                        var disp = (view[6 + (i * 2)] << 8) + view[7 + (i * 2)];
                         if (disp == 65535) { displays[disp] = 'All Displays'; } else { displays[disp] = 'Display ' + disp; }
                     }
                 }
@@ -287,17 +231,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 15: // KVM_TOUCH
                 obj.TouchArray = {};
                 break;
-            case 16: // MNG_KVM_CONNECTCOUNT
-                obj.connectioncount = ReadInt(str, 4);
-                //obj.Debug("Got KVM Connect Count: " + obj.connectioncount);
-                if (obj.onConnectCountChanged != null) obj.onConnectCountChanged(obj.connectioncount, obj);
-                break;
             case 17: // MNG_KVM_MESSAGE
-                //obj.Debug("Got KVM Message: " + str.substring(4, cmdsize));
-                if (obj.onMessage != null) obj.onMessage(str.substring(4, cmdsize), obj);
+                var str = String.fromCharCode.apply(null, data.slice(4));
+                obj.Debug("Got KVM Message: " + str);
+                if (obj.onMessage != null) obj.onMessage(str, obj);
                 break;
             case 65: // Alert
-                str = str.substring(4);
+                var str = String.fromCharCode.apply(null, data.slice(4));
                 if (str[0] != '.') {
                     console.log(str); //alert('KVM: ' + str);
                     if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage(str); }
@@ -307,15 +247,18 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 break;
             case 88: // MNG_KVM_MOUSE_CURSOR
                 if (cmdsize != 5) break;
-                var cursorNum = str.charCodeAt(4);
+                var cursorNum = view[4];
                 if (cursorNum > mouseCursors.length) { cursorNum = 0; }
                 xMouseCursorCurrent = mouseCursors[cursorNum];
                 if (xMouseCursorActive) { obj.CanvasId.style.cursor = xMouseCursorCurrent; }
                 break;
+            default:
+                console.log('Unknown command', cmd, cmdsize);
+                break;
         }
-        return cmdsize + jumboAdd;
-    }
 
+    }
+    
     // Keyboard and Mouse I/O.
     obj.MouseButton = { "NONE": 0x00, "LEFT": 0x02, "RIGHT": 0x08, "MIDDLE": 0x20 };
     obj.KeyAction = { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 };

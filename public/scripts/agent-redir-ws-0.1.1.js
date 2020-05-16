@@ -50,6 +50,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         obj.nodeid = nodeid;
         obj.connectstate = 0;
         obj.socket = new WebSocket(url);
+        obj.socket.binaryType = 'arraybuffer';
         obj.socket.onopen = obj.xxOnSocketConnected;
         obj.socket.onmessage = obj.xxOnMessage;
         //obj.socket.onmessage = function (e) { console.log('Websocket data', e.data); obj.xxOnMessage(e); }
@@ -136,6 +137,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                     else if (typeof webkitRTCPeerConnection !== 'undefined') { obj.webrtc = new webkitRTCPeerConnection(configuration); }
                     if ((obj.webrtc != null) && (obj.webrtc.createDataChannel)) {
                         obj.webchannel = obj.webrtc.createDataChannel('DataChannel', {}); // { ordered: false, maxRetransmits: 2 }
+                        obj.webchannel.binaryType = 'arraybuffer';
                         obj.webchannel.onmessage = obj.xxOnMessage;
                         //obj.webchannel.onmessage = function (e) { console.log('WebRTC data', e.data); obj.xxOnMessage(e); }
                         obj.webchannel.onopen = function () { obj.webRtcActive = true; performWebRtcSwitch(); };
@@ -165,65 +167,25 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             }
         }
 
+        // Control messages, most likely WebRTC setup 
         if (typeof e.data == 'string') {
-            // Control messages, most likely WebRTC setup 
             obj.xxOnControlCommand(e.data);
-            return;
-        }
-
-        if (typeof e.data == 'object') {
-            if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
-            if (fileReader.readAsBinaryString && (obj.m.ProcessBinaryData == null)) {
-                // Chrome & Firefox (Draft)
-                fileReaderInuse = true;
-                fileReader.readAsBinaryString(new Blob([e.data]));
-            } else if (fileReader.readAsArrayBuffer) {
-                // Chrome & Firefox (Spec)
-                fileReaderInuse = true;
-                fileReader.readAsArrayBuffer(e.data);
-            } else {
-                // IE10, readAsBinaryString does not exist, use an alternative.
-                var binary = '', bytes = new Uint8Array(e.data), length = bytes.byteLength;
-                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
-                obj.xxOnSocketData(binary);
-            }
         } else {
-            // If we get a string object, it maybe the WebRTC confirm. Ignore it.
-            obj.xxOnSocketData(e.data);
-        }
-
-        // Request RTT mesure, don't use this if WebRTC is active
-        if (obj.webRtcActive != true) {
-            var ticks = new Date().getTime();
-            if ((obj.latency.lastSend == null) || ((ticks - obj.latency.lastSend) > 5000)) { obj.latency.lastSend = ticks; obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"rtt","time":' + ticks + '}'); }
+            // Send the data to the module
+            if (obj.m.ProcessBinaryCommand) {
+                // Send as Binary Command
+                var view = new Uint8Array(e.data), cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
+                if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
+                if (cmdsize != view.byteLength) { console.log('REDIR-ERROR', cmd, cmdsize, view.byteLength); } else { obj.m.ProcessBinaryCommand(cmd, cmdsize, view); }
+            } else if (obj.m.ProcessBinaryData) {
+                // Send as Binary
+                obj.m.ProcessBinaryData(new Uint8Array(e.data));
+            } else {
+                // Send as Text
+                obj.m.ProcessData(String.fromCharCode.apply(null, new Uint8Array(e.data)));
+            }
         }
     };
-
-    // Setup the file reader
-    var fileReader = new FileReader();
-    var fileReaderInuse = false, fileReaderAcc = [];
-    if (fileReader.readAsBinaryString && (obj.m.ProcessBinaryData == null)) {
-        // Chrome & Firefox (Draft)
-        fileReader.onload = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
-    } else if (fileReader.readAsArrayBuffer) {
-        // Chrome & Firefox (Spec)
-        fileReader.onloadend = function (e) { obj.xxOnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsArrayBuffer(fileReaderAcc.shift()); } }
-    }
-
-    obj.xxOnSocketData = function (data) {
-        if (!data || obj.connectstate == -1) return;
-        if (typeof data === 'object') {
-            if (obj.m.ProcessBinaryData) { return obj.m.ProcessBinaryData(data); }
-            // This is an ArrayBuffer, convert it to a string array (used in IE)
-            var binary = '', bytes = new Uint8Array(data), length = bytes.byteLength;
-            for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
-            data = binary;
-        }
-        else if (typeof data !== 'string') return;
-        //console.log('xxOnSocketData', rstr2hex(data));
-        if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', typeof data, data.length, (data[0] == '{')?data:rstr2hex(data).substring(0, 64)); }
-        return obj.m.ProcessData(data);
-    }
 
     obj.sendText = function (x) {
         if (typeof x != 'string') { x = JSON.stringify(x); } // Turn into a string if needed
