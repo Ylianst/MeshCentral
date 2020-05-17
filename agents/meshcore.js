@@ -1537,7 +1537,7 @@ function createMeshCore(agent) {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting KVM Access. Grant access?", 30);
+                        var pr = require('message-box').create('MeshCentral', this.httprequest.username + " requesting KVM Access. Grant access?", 30, null, tsid);
                         pr.ws = this;
                         this.pause();
                         this._consentpromise = pr;
