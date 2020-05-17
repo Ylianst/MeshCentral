@@ -1134,14 +1134,21 @@ function createMeshCore(agent) {
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
             if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
-        } else {
+        }
+        else
+        {
             // Handle tunnel data
             if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user)
                 // Take a look at the protocol
                 if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9)) {
+                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
+                {
+                    //
+                    // Remote Terminal
+                    //
+
                     // Check user access rights for terminal
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOTERMINAL) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -1151,23 +1158,40 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    if (process.platform == 'win32')
+                    {
+                        if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9))
+                        {
+                            this.httprequest.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'PowerShell is not supported on this version of windows', msgid: 1 }));
+                            this.httprequest.s.end();
+                            return;
+                        }
+                    }
+
                     var prom = require('promise');
                     this.httprequest.tpromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
+                    this.httprequest.tpromise.that = this;
+                    this.httprequest.tpromise.httprequest = this.httprequest;
 
-                    this.end = function () {
+                    this.end = function ()
+                    {
+                        if (this.httprequest.tpromise._consent) { this.httprequest.tpromise._consent.close(); }
                         // Remove the terminal session to the count to update the server
-                        if (this.httprequest.userid != null) {
+                        if (this.httprequest.userid != null)
+                        {
                             if (tunnelUserCount.terminal[this.httprequest.userid] != null) { tunnelUserCount.terminal[this.httprequest.userid]--; if (tunnelUserCount.terminal[this.httprequest.userid] <= 0) { delete tunnelUserCount.terminal[this.httprequest.userid]; } }
                             try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
                         }
 
-                        if (process.platform == 'win32') {
+                        if (process.platform == 'win32')
+                        {
                             // Unpipe the web socket
                             this.unpipe(this.httprequest._term);
                             if (this.httprequest._term) { this.httprequest._term.unpipe(this); }
 
                             // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                            if (this.rtcchannel) {
+                            if (this.rtcchannel)
+                            {
                                 this.rtcchannel.unpipe(this.httprequest._term);
                                 if (this.httprequest._term) { this.httprequest._term.unpipe(this.rtcchannel); }
                             }
@@ -1175,219 +1199,223 @@ function createMeshCore(agent) {
                             // Clean up
                             if (this.httprequest._term) { this.httprequest._term.end(); }
                             this.httprequest._term = null;
-                        } else {
-                            // TODO!!
                         }
                     };
 
-                    // Remote terminal using native pipes
-                    if (process.platform == 'win32')
+                    // Perform User-Consent if needed. 
+                    if (this.httprequest.consent && (this.httprequest.consent & 16))
                     {
-                        try
+                        this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
+                        this.httprequest.tpromise._consent = require('message-box').create('MeshCentral', this.httprequest.username + " requesting Terminal Access. Grant access?", 30);
+                        this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
+                        this.httprequest.tpromise._consent.then(
+                            function ()
+                            {
+                                // Success
+                                MeshServerLog("Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+                                this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
+                                this.retPromise._consent = null;
+                                this.retPromise._res();
+                            },
+                            function (e)
+                            {
+                                // Denied
+                                MeshServerLog("Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+                                this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+                                this.retPromise._rej(e.toString());
+                            });
+                    }
+                    else
+                    {
+                        // User-Consent is not required, so just resolve this promise
+                        this.httprequest.tpromise._res();
+                    }
+
+
+                    this.httprequest.tpromise.then(
+                        function ()
                         {
-                            var cols = 80, rows = 25;
-                            if (this.httprequest.xoptions)
-                            {
-                                if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
-                                if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
-                            }
+                            this.httprequest.connectionPromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
+                            this.httprequest.connectionPromise.ws = this.that;
 
-                            if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9)) { throw ('PowerShell is not supported on this version of windows'); }
-                            if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6))
+                            // Start Terminal
+                            if(process.platform == 'win32')
                             {
-                                // Admin Terminal
-                                if (require('win-virtual-terminal').supported)
+                                try
                                 {
-                                    // ConPTY PseudoTerminal
-                                    // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+                                    var cols = 80, rows = 25;
+                                    if (this.httprequest.xoptions)
+                                    {
+                                        if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
+                                        if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
+                                    }
 
-                                    // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
-                                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
-                                    this.httprequest._dispatcher.ws = this;
-                                    this.httprequest._dispatcher.on('connection', function (c)
+                                    if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6))
                                     {
-                                        this.ws._term = c;
-                                        c.pipe(this.ws, { dataTypeSkip: 1 });
-                                        this.ws.pipe(c, { dataTypeSkip: 1 });
-                                        this.ws.httprequest.tpromise._res();
-                                    });
-                                }
-                                else
-                                {
-                                    // Legacy Terminal
-                                    this.httprequest._term = require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows);
-                                    this.httprequest.tpromise._res(this.httprequest._term);
-                                }
-                            }
-                            else
-                            {
-                                // Logged in user
-                                var userPromise = require('user-sessions').enumerateUsers();
-                                userPromise.that = this;
-                                userPromise.then(function (u)
-                                {
-                                    var that = this.that;
-                                    if (u.Active.length > 0)
-                                    {
-                                        var username = u.Active[0].Username;
+                                        // Admin Terminal
                                         if (require('win-virtual-terminal').supported)
                                         {
                                             // ConPTY PseudoTerminal
-                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                            // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+
+                                            // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
+                                            this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                            this.httprequest._dispatcher.httprequest = this.httprequest;
+                                            this.httprequest._dispatcher.on('connection', function (c)
+                                            {
+                                                this.httprequest.connectionPromise._res(c);
+                                            });
                                         }
                                         else
                                         {
                                             // Legacy Terminal
-                                            that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                            this.httprequest.connectionPromise._res(require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows));
                                         }
-                                        that.httprequest._dispatcher.ws = that;
-                                        that.httprequest._dispatcher.on('connection', function (c)
+                                    }
+                                    else
+                                    {
+                                        // Logged in user
+                                        var userPromise = require('user-sessions').enumerateUsers();
+                                        userPromise.that = this;
+                                        userPromise.then(function (u)
                                         {
-                                            this.ws._term = c;
-                                            c.pipe(this.ws, { dataTypeSkip: 1 });
-                                            this.ws.pipe(c, { dataTypeSkip: 1 });
-                                            this.ws.httprequest.tpromise._res();
+                                            var that = this.that;
+                                            if (u.Active.length > 0)
+                                            {
+                                                var username = u.Active[0].Username;
+                                                if (require('win-virtual-terminal').supported)
+                                                {
+                                                    // ConPTY PseudoTerminal
+                                                    that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                                }
+                                                else
+                                                {
+                                                    // Legacy Terminal
+                                                    that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                                                }
+                                                that.httprequest._dispatcher.ws = that;
+                                                that.httprequest._dispatcher.on('connection', function (c)
+                                                {
+                                                    this.ws.httprequest.connectionPromise._res(c);
+                                                });
+                                            }
                                         });
                                     }
-                                });                       
-                            }
-                        } catch (e)
-                        {
-                            MeshServerLog('Failed to start remote terminal session, ' + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
-                            this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2, msgargs: [e.toString(), this.httprequest.remoteaddr] }));
-                            this.end();
-                            return;
-                        }
-                        if (!this.httprequest._dispatcher)
-                        {
-                            this.httprequest._term.pipe(this, { dataTypeSkip: 1 });
-                            this.pipe(this.httprequest._term, { dataTypeSkip: 1, end: false });
-                            this.prependListener('end', function () { this.httprequest._term.end(function () { console.log("Terminal was closed"); }); });
-                            this.httprequest.tpromise._res();
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
-                            var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
-                            var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
-
-                            var env = { HISTCONTROL: 'ignoreboth' };
-                            if (this.httprequest.xoptions)
-                            {
-                                if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
-                                if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
-                            }
-                            var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
-                            if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
-                            {
-                                if (!require('fs').existsSync(login)) { throw ('Unable to spawn login process'); }
-                                this.httprequest.process = childProcess.execFile(login, ['login'], options); // Start login shell
-                            }
-                            else if (bash)
-                            {
-                                this.httprequest.process = childProcess.execFile(bash, ['bash'], options); // Start bash
-                                // Spaces at the beginning of lines are needed to hide commands from the command history
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
-                            }
-                            else if (sh)
-                            {
-                                this.httprequest.process = childProcess.execFile(sh, ['sh'], options); // Start sh
-                                // Spaces at the beginning of lines are needed to hide commands from the command history
-                                if (process.platform == 'linux') { this.httprequest.process.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                                }
+                                catch (e)
+                                {
+                                    this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + e.toString());
+                                }
                             }
                             else
                             {
-                                MeshServerLog("Failed to start remote terminal session, no shell found");
-                                this.httprequest.tpromise._rej()
-                                return;
-                            }
-                        } catch (e)
-                        {
-                            MeshServerLog("Failed to start remote terminal session, " + e.toString() + ' (' + this.httprequest.remoteaddr + ')', this.httprequest);
-                            this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString() }));
-                            this.end();
-                            this.httprequest.tpromise._rej();
-                            return;
-                        }
-
-                        this.httprequest.process.tunnel = this;
-                        this.httprequest.process.on('exit', function (ecode, sig) { this.tunnel.end(); });
-                        this.httprequest.process.stderr.on('data', function (chunk) { this.parent.tunnel.write(chunk); });
-                        this.httprequest.process.stdout.pipe(this, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
-                        this.pipe(this.httprequest.process.stdin, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text.
-                        this.prependListener('end', function () { this.httprequest.process.kill(); });
-                        this.httprequest.tpromise._res();
-                    }
-
-                    // Add the terminal session to the count to update the server
-                    if (this.httprequest.userid != null) {
-                        if (tunnelUserCount.terminal[this.httprequest.userid] == null) { tunnelUserCount.terminal[this.httprequest.userid] = 1; } else { tunnelUserCount.terminal[this.httprequest.userid]++; }
-                        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
-                    }
-
-                    this.httprequest.tpromise.that = this;
-                    this.httprequest.tpromise.then(function ()
-                    {
-                        var that = this.that;
-
-                        // Perform notification if needed. Toast messages may not be supported on all platforms.
-                        if (that.httprequest.consent && (that.httprequest.consent & 16))
-                        {
-                            // User Consent Prompt is required
-                            // Send a console message back using the console channel, "\n" is supported.
-                            that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                            var pr = require('message-box').create('MeshCentral', that.httprequest.username + " requesting Terminal Access. Grant access?", 30);
-                            pr.ws = that;
-                            that.pause();
-                            that._consentpromise = pr;
-                            that.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
-
-                            pr.then(
-                                function ()
+                                try
                                 {
-                                    // Success
-                                    this.ws._consentpromise = null;
-                                    MeshServerLog("Starting remote terminal after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                                    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
+                                    var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
+                                    var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
+                                    var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
+
+                                    var env = { HISTCONTROL: 'ignoreboth' };
+                                    if (this.httprequest.xoptions)
+                                    {
+                                        if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
+                                        if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
+                                    }
+                                    var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
+                                    if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
+                                    {
+                                        if (!require('fs').existsSync(login)) { throw ('Unable to spawn login process'); }
+                                        this.httprequest.connectionPromise._res(childProcess.execFile(login, ['login'], options)); // Start login shell
+                                    }
+                                    else if (bash)
+                                    {
+                                        var p = childProcess.execFile(bash, ['bash'], options); // Start bash
+                                        // Spaces at the beginning of lines are needed to hide commands from the command history
+                                        if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                                        this.httprequest.connectionPromise._res(p);
+                                    }
+                                    else if (sh)
+                                    {
+                                        var p = childProcess.execFile(sh, ['sh'], options); // Start sh
+                                        // Spaces at the beginning of lines are needed to hide commands from the command history
+                                        if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                                        this.httprequest.connectionPromise._res(p);
+                                    }
+                                    else
+                                    {
+                                        this.httprequest.connectionPromise._rej('Failed to start remote terminal session, no shell found');
+                                    }
+                                }
+                                catch (e)
+                                {
+                                    this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + e.toString());
+                                }
+                            }
+
+                            this.httprequest.connectionPromise.then(
+                                function (term)
+                                {
+                                    // SUCCESS
+                                    var stdoutstream;
+                                    var stdinstream;
+                                    if (process.platform == 'win32')
+                                    {
+                                        this.ws.httprequest._term = term;
+                                        this.ws.httprequest._term.tunnel = this.ws;
+                                        stdoutstream = stdinstream = term;
+                                    }
+                                    else
+                                    {
+                                        this.ws.httprequest.process = term;
+                                        this.ws.httprequest.process.tunnel = this.ws;
+                                        term.stderr.stdout = term.stdout;
+                                        term.stderr.on('data', function (c) { this.stdout.write(c); });
+                                        stdoutstream = term.stdout;
+                                        stdinstream = term.stdin;
+                                        this.ws.prependListener('end', function () { this.httprequest.process.kill(); });
+                                        term.prependListener('exit', function () { this.tunnel.end(); });
+                                    }
+
+                                    this.ws.removeAllListeners('data');
+                                    this.ws.on('data', onTunnelControlData);
+
+                                    stdoutstream.pipe(this.ws, { dataTypeSkip: 1 });            // 0 = Binary, 1 = Text.
+                                    this.ws.pipe(stdinstream, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. 
+
+                                    // Add the terminal session to the count to update the server
+                                    if (this.ws.httprequest.userid != null)
+                                    {
+                                        if (tunnelUserCount.terminal[this.ws.httprequest.userid] == null) { tunnelUserCount.terminal[this.ws.httprequest.userid] = 1; } else { tunnelUserCount.terminal[this.ws.httprequest.userid]++; }
+                                        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
+                                    }
+
+                                    // Toast Notification, if required
                                     if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
                                     {
                                         // User Notifications is required
                                         try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote terminal session."); } catch (ex) { }
                                     }
-                                    this.ws.resume();
                                 },
                                 function (e)
                                 {
-                                    // User Consent Denied/Failed
-                                    this.ws._consentpromise = null;
-                                    MeshServerLog("Failed to start remote terminal after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                    // FAILED to connect terminal
                                     this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                                     this.ws.end();
                                 });
-                        }
-                        else
+                        },
+                        function (e)
                         {
-                            // User Consent Prompt is not required
-                            if (that.httprequest.consent && (that.httprequest.consent & 2))
-                            {
-                                // User Notifications is required
-                                MeshServerLog('Started remote terminal with toast notification (' + that.httprequest.remoteaddr + ')', that.httprequest);
-                                try { require('toaster').Toast('MeshCentral', that.httprequest.username + ' started a remote terminal session.'); } catch (ex) { }
-                            } else
-                            {
-                                MeshServerLog('Started remote terminal without notification (' + that.httprequest.remoteaddr + ')', that.httprequest);
-                            }
-                            that.resume();
-                        }
-                    }, function () { });             
+                            // DO NOT start terminal
+                            this.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+                            this.that.end();
+                        });          
+                }
+                else if (this.httprequest.protocol == 2)
+                {
+                    //
+                    // Remote KVM
+                    //
 
-                    this.removeAllListeners('data');
-                    this.on('data', onTunnelControlData);
-                    //this.write('MeshCore Terminal Hello');
-                } else if (this.httprequest.protocol == 2) {
                     // Check user access rights for desktop
                     if ((((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NODESKTOP) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
