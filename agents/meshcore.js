@@ -1551,7 +1551,7 @@ function createMeshCore(agent) {
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
                                     // User Notifications is required
-                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote desktop session."); } catch (ex) { }
+                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote desktop session.", tsid); } catch (ex) { }
                                 }
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x40)) {
                                     // Connection Bar is required
@@ -1595,7 +1595,7 @@ function createMeshCore(agent) {
                         if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                             // User Notifications is required
                             MeshServerLog("Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + " started a remote desktop session."); } catch (ex) { }
+                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + " started a remote desktop session.", tsid); } catch (ex) { }
                         } else {
                             MeshServerLog("Started remote desktop without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
