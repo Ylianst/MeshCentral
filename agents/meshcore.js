@@ -2117,7 +2117,7 @@ function createMeshCore(agent) {
             switch (cmd) {
                 case 'help': { // Displays available commands
                     var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
-                    if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration'; }
+                    if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
 
@@ -2130,6 +2130,52 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'uac':
+                    if (process.platform != 'win32')
+                    {
+                        response = 'Unknown command "uac", type "help" for list of avaialble commands.';
+                        break;
+                    }
+                    if (args['_'].length != 1)
+                    {
+                        response = 'Proper usage: uac [get|interactive|secure]';
+                    }
+                    else
+                    {
+                        switch(args['_'][0].toUpperCase())
+                        {
+                            case 'GET':
+                                var secd = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', 'PromptOnSecureDesktop');
+                                response = "UAC mode: " + (secd == 0 ? "Interactive Desktop" : "Secure Desktop");
+                                break;
+                            case 'INTERACTIVE':
+                                try
+                                {
+                                    require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', 'PromptOnSecureDesktop', 0);
+                                    response = 'UAC mode changed to: Interactive Desktop';
+                                }
+                                catch (e)
+                                {
+                                    response = "Unable to change UAC Mode";
+                                }
+                                break;
+                            case 'SECURE':
+                                try
+                                {
+                                    require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', 'PromptOnSecureDesktop', 1);
+                                    response = 'UAC mode changed to: Secure Desktop';
+                                }
+                                catch(e)
+                                {
+                                    response = "Unable to change UAC Mode";
+                                }
+                                break;
+                            default:
+                                response = 'Proper usage: uac [get|interactive|secure]';
+                                break;
+                        }
+                    }
+                    break;
 		        case 'vm':
 			        response = 'Virtual Machine = ' + require('identifiers').isVM();
 			        break;
