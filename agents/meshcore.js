@@ -2037,6 +2037,7 @@ function createMeshCore(agent) {
                 ws.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
                 ws.webrtc.on('dataChannel', function (rtcchannel) {
                     //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+                    rtcchannel.maxFragmentSize = 32768;
                     rtcchannel.xrtc = this;
                     rtcchannel.websocket = this.websocket;
                     this.rtcchannel = rtcchannel;
