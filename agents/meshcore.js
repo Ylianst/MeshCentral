@@ -1185,6 +1185,8 @@ function createMeshCore(agent) {
                     this.end = function ()
                     {
                         if (this.httprequest.tpromise._consent) { this.httprequest.tpromise._consent.close(); }
+                        if (this.httprequest.connectionPromise) { this.httprequest.connectionPromise._rej('Closed'); }
+
                         // Remove the terminal session to the count to update the server
                         if (this.httprequest.userid != null)
                         {
@@ -1272,7 +1274,14 @@ function createMeshCore(agent) {
                                             this.httprequest._dispatcher.httprequest = this.httprequest;
                                             this.httprequest._dispatcher.on('connection', function (c)
                                             {
-                                                this.httprequest.connectionPromise._res(c);
+                                                if (this.httprequest.connectionPromise.completed)
+                                                {
+                                                    c.end();
+                                                }
+                                                else
+                                                {
+                                                    this.httprequest.connectionPromise._res(c);
+                                                }
                                             });
                                         }
                                         else
@@ -1305,7 +1314,14 @@ function createMeshCore(agent) {
                                                 that.httprequest._dispatcher.ws = that;
                                                 that.httprequest._dispatcher.on('connection', function (c)
                                                 {
-                                                    this.ws.httprequest.connectionPromise._res(c);
+                                                    if (this.ws.httprequest.connectionPromise.completed)
+                                                    {
+                                                        c.end();
+                                                    }
+                                                    else
+                                                    {
+                                                        this.ws.httprequest.connectionPromise._res(c);
+                                                    }
                                                 });
                                             }
                                         });
