@@ -74,7 +74,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.xxOnControlCommand = function (msg) {
         var controlMsg;
         try { controlMsg = JSON.parse(msg); } catch (e) { return; }
-        if (controlMsg.ctrlChannel != '102938') { obj.xxOnSocketData(msg); return; }
+        if (controlMsg.ctrlChannel != '102938') { obj.m.ProcessData(msg); return; }
         //console.log(controlMsg);
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
@@ -168,15 +168,38 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         }
 
         // Control messages, most likely WebRTC setup 
+        //console.log('New data', e.data.byteLength);
         if (typeof e.data == 'string') {
             obj.xxOnControlCommand(e.data);
         } else {
             // Send the data to the module
             if (obj.m.ProcessBinaryCommand) {
                 // Send as Binary Command
-                var view = new Uint8Array(e.data), cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
-                if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
-                if (cmdsize != view.byteLength) { console.log('REDIR-ERROR', cmd, cmdsize, view.byteLength); } else { obj.m.ProcessBinaryCommand(cmd, cmdsize, view); }
+                if (cmdAccLen != 0) {
+                    // Accumulator is active
+                    var view = new Uint8Array(e.data);
+                    cmdAcc.push(view);
+                    cmdAccLen += view.byteLength;
+                    //console.log('Accumulating', cmdAccLen);
+                    if (cmdAccCmdSize <= cmdAccLen) {
+                        var tmp = new Uint8Array(cmdAccLen), tmpPtr = 0;
+                        for (var i in cmdAcc) { tmp.set(cmdAcc[i], tmpPtr); tmpPtr += cmdAcc[i].byteLength; }
+                        //console.log('AccumulatorCompleted');
+                        obj.m.ProcessBinaryCommand(cmdAccCmd, cmdAccCmdSize, tmp);
+                        cmdAccCmd = 0, cmdAccCmdSize = 0, cmdAccLen = 0, cmdAcc = [];
+                    }
+                } else {
+                    // Accumulator is not active
+                    var view = new Uint8Array(e.data), cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
+                    if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
+                    //console.log(cmdsize, view.byteLength);
+                    if (cmdsize != view.byteLength) {
+                        //console.log('AccumulatorRequired', cmd, cmdsize, view.byteLength);
+                        cmdAccCmd = cmd; cmdAccCmdSize = cmdsize; cmdAccLen = view.byteLength, cmdAcc = [view];
+                    } else {
+                        obj.m.ProcessBinaryCommand(cmd, cmdsize, view);
+                    }
+                }
             } else if (obj.m.ProcessBinaryData) {
                 // Send as Binary
                 obj.m.ProcessBinaryData(new Uint8Array(e.data));
@@ -186,6 +209,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             }
         }
     };
+
+    // Command accumulator, this is used for WebRTC fragmentation
+    var cmdAccCmd = 0, cmdAccCmdSize = 0, cmdAccLen = 0, cmdAcc = [];
 
     obj.sendText = function (x) {
         if (typeof x != 'string') { x = JSON.stringify(x); } // Turn into a string if needed

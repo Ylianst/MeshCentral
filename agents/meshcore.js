@@ -683,6 +683,15 @@ function createMeshCore(agent) {
                             }
                             break;
                         }
+                        case 'messagebox': {
+                            // Display a message box
+                            if (data.title && data.msg) {
+                                MeshServerLog("Displaying message box, title=" + data.title + ", message=" + data.msg, data);
+                                data.msg = data.msg.split('\r').join('\\r').split('\n').join('\\n');
+                                try { require('message-box').create(data.title, data.msg, 120); } catch (ex) { }
+                            }
+                            break;
+                        }
                         case 'ps': {
                             // Return the list of running processes
                             if (data.sessionid) {
