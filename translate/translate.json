@@ -8197,6 +8197,7 @@
     },
     {
       "en": "Device Message",
+      "nl": "Apparaatbericht",
       "xloc": [
         "default.handlebars->25->620"
       ]
@@ -8690,6 +8691,7 @@
     },
     {
       "en": "Display a message box on the remote device.",
+      "nl": "Geef een berichtvenster weer op het externe apparaat.",
       "xloc": [
         "default.handlebars->25->621"
       ]
@@ -8713,6 +8715,7 @@
     },
     {
       "en": "Display a text message on the remote device",
+      "nl": "Geef een tekstbericht weer op het externe apparaat",
       "xloc": [
         "default.handlebars->25->542"
       ]
