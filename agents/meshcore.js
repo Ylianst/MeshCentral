@@ -2142,7 +2142,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2156,6 +2156,19 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'fdsnapshot':
+                    require('ChainViewer').getSnapshot().then(function (c) { sendConsoleText(c, this.sessionid); }).parentPromise.sessionid = sessionid;
+                    break;
+                case 'fdcount':
+                    require('DescriptorEvents').getDescriptorCount().then(
+                        function (c)
+                        {
+                            sendConsoleText('Descriptor Count: ' + c, this.sessionid);
+                        }, function (e)
+                        {
+                            sendConsoleText('Error fetching descriptor count: ' + e, this.sessionid);
+                        }).parentPromise.sessionid = sessionid;
+                    break;
                 case 'uac':
                     if (process.platform != 'win32')
                     {
