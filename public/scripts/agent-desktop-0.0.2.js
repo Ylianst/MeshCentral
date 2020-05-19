@@ -107,14 +107,18 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         //if (obj.targetnode != null) obj.Debug("ProcessPictureMsg " + X + "," + Y + " - " + obj.targetnode.substring(0, 8));
         var tile = new Image();
         tile.xcount = obj.tilesReceived++;
-        //console.log('Tile #' + tile.xcount);
-        var r = obj.tilesReceived;
-        tile.src = "data:image/jpeg;base64," + btoa(String.fromCharCode.apply(null, data.slice(4)));
+        var r = obj.tilesReceived, tdata = data.slice(4), ptr = 0, strs = [];
+        // String.fromCharCode.apply() can't handle very large argument count, so we have to split like this.
+        while ((tdata.byteLength - ptr) > 50000) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr, ptr + 50000))); ptr += 50000; }
+        if (ptr > 0) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr))); } else { strs.push(String.fromCharCode.apply(null, tdata)); }
+        tile.src = "data:image/jpeg;base64," + btoa(strs.join(''));
         tile.onload = function () {
             //console.log('DecodeTile #' + this.xcount);
-            if (obj.Canvas != null && obj.KillDraw < r && obj.State != 0) {
+            if ((obj.Canvas != null) && (obj.KillDraw < r) && (obj.State != 0)) {
                 obj.PendingOperations.push([r, 2, tile, X, Y]);
                 while (obj.DoPendingOperations()) { }
+            } else {
+                obj.PendingOperations.push([r, 0]);
             }
         }
         tile.error = function () { console.log('DecodeTileError'); }
@@ -130,7 +134,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.PendingOperations.splice(i, 1);
                 delete Msg;
                 obj.TilesDrawn++;
-                if (obj.TilesDrawn == obj.tilesReceived && obj.KillDraw < obj.TilesDrawn) { obj.KillDraw = obj.TilesDrawn = obj.tilesReceived = 0; }
+                if ((obj.TilesDrawn == obj.tilesReceived) && (obj.KillDraw < obj.TilesDrawn)) { obj.KillDraw = obj.TilesDrawn = obj.tilesReceived = 0; }
                 return true;
             }
         }
@@ -164,6 +168,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (level) { obj.CompressionLevel = level; }
         if (scaling) { obj.ScalingLevel = scaling; }
         if (frametimer) { obj.FrameRateTimer = frametimer; }
+        //console.log('SendCompressionLevel', obj.CompressionLevel, obj.ScalingLevel, obj.FrameRateTimer);
         obj.send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
     }
 

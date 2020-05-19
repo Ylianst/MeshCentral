@@ -449,6 +449,7 @@
     <Content Include="public\translate.bat" />
     <Content Include="public\translator.htm" />
     <Content Include="readme.md" />
+    <Content Include="sample-config-advanced.json" />
     <Content Include="sample-config.json" />
     <Content Include="SourceFileList.txt" />
     <Content Include="translate\readme.txt" />

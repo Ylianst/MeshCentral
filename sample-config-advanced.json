@@ -1,0 +1,264 @@
+{
+  "__comment__" : "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
+  "settings": {
+    "_Cert": "myserver.mydomain.com",
+    "_MongoDb": "mongodb://127.0.0.1:27017",
+    "_MongoDbName": "meshcentral",
+    "_MongoDbChangeStream": true,
+    "_MongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
+    "_WANonly": true,
+    "_LANonly": true,
+    "_SessionTime": 30,
+    "_SessionKey": "MyReallySecretPassword1",
+    "_SessionSameSite": "strict",
+    "_DbEncryptKey": "MyReallySecretPassword2",
+    "_DbRecordsEncryptKey": "MyReallySecretPassword",
+    "_DbRecordsDecryptKey": "MyReallySecretPassword",
+    "__DbExpire": "Amount of time to keep various events in the database, in seconds. Below are the default values.",
+    "_DbExpire": {
+      "events": 1728000,
+      "powerevents": 864000,
+      "statsevents": 2592000
+    },
+    "_Port": 443,
+    "_AliasPort": 444,
+    "_RedirPort": 80,
+    "_RedirAliasPort": 80,
+    "_AgentPort": 1234,
+    "_AgentAliasPort": 1234,
+    "_AgentAliasDNS": "agents.myserver.mydomain.com",
+    "_ExactPorts": true,
+    "_AllowLoginToken": true,
+    "_AllowFraming": true,
+    "_CookieIpCheck": false,
+    "_CookieEncoding": "hex",
+    "_WebRTC": false,
+    "_Nice404": false,
+    "_ClickOnce": false,
+    "_SelfUpdate": true,
+    "_BrowserPing": 60,
+    "_BrowserPong": 60,
+    "_AgentPing": 60,
+    "_AgentPong": 60,
+    "_AgentIdleTimeout": 150,
+    "_MeshErrorLogPath": "c:\\tmp",
+    "_NpmPath": "c:\\npm.exe",
+    "_NpmProxy": "http://1.2.3.4:80",
+    "_AllowHighQualityDesktop": true,
+    "_DesktopMultiplex": true,
+    "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
+    "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
+    "_AgentAllowedIP": "192.168.0.100/24",
+    "_AgentBlockedIP": "127.0.0.1,::1",
+    "_AuthLog": "c:\\temp\\auth.log",
+    "_LocalDiscovery": {
+      "name": "Local server name",
+      "info": "Information about this server"
+    },
+    "_TlsOffload": "127.0.0.1,::1",
+    "_TrustedProxy": "127.0.0.1,::1",
+    "_MpsPort": 44330,
+    "_MpsAliasPort": 4433,
+    "_MpsAliasHost": "mps.mydomain.com",
+    "_MpsTlsOffload": true,
+    "_No2FactorAuth": true,
+    "_Log": "main,web,webrequest,cert",
+    "_syslog": "meshcentral",
+    "_syslogauth": "meshcentral-auth",
+    "_syslogjson": "meshcentral-json",
+    "_WebRtConfig": {
+      "iceServers": [
+        { "urls": "stun:stun.services.mozilla.com" },
+        { "urls": "stun:stun.l.google.com:19302" }
+      ]
+    },
+    "_AutoBackup": {
+      "backupIntervalHours": 24,
+      "keepLastDaysBackup": 10,
+      "zipPassword": "MyReallySecretPassword3",
+      "_backupPath": "C:\\backups"
+    },
+    "_Redirects": {
+      "meshcommander": "https://www.meshcommander.com/"
+    },
+    "__MaxInvalidLogin": "Time in minutes, max amount of bad logins from a source IP in the time before logins are rejected.",
+    "_MaxInvalidLogin": { "time": 10, "count": 10, "coolofftime": 10 },
+    "_Plugins": { "enabled": true }
+  },
+  "_domaindefaults": {
+    "__comment__": "Any settings in this section is used as default setting for all domains",
+    "Title": "MyDefaultTitle",
+    "Footer": "Default page footer",
+    "NewAccounts": false
+  },
+  "_domains": {
+    "": {
+      "Title": "MyServer",
+      "Title2": "Servername",
+      "_TitlePicture": "title-sample.png",
+      "_UserQuota": 1048576,
+      "_MeshQuota": 248576,
+      "Minify": true,
+      "_NewAccounts": true,
+      "_UserNameIsEmail": true,
+      "_NewAccountEmailDomains": [ "sample.com" ],
+      "_NewAccountsRights": [ "nonewgroups", "notools" ],
+      "_ManageAllDeviceGroups": [ "admin" ],
+      "_WelcomeText": "Sample Text on Login Page.",
+      "_WelcomePicture": "mainwelcome.jpg",
+      "___Hide__": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar",
+      "_Hide": 4,
+      "_Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
+      "_CertUrl": "https://192.168.2.106:443/",
+      "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1, "reset": 90, "force2factor": true, "skip2factor": "127.0.0.1,192.168.2.0/24" },
+      "_AgentInviteCodes": true,
+      "_AgentNoProxy": true,
+      "_GeoLocation": true,
+      "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
+      "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
+      "_AgentAllowedIP": "192.168.0.100/24",
+      "_AgentBlockedIP": "127.0.0.1,::1",
+      "___UserSessionIdleTimeout__" : "Number of user idle minutes before auto-disconnect",
+      "_UserSessionIdleTimeout" : 30,
+      "__UserConsentFlags__" : "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
+      "_UserConsentFlags" : 7,
+      "_UrlSwitching": false,
+      "_DesktopPrivacyBarText": "Your privacy bar message",
+      "_Limits": {
+        "_MaxDevices": 100,
+        "_MaxUserAccounts": 100,
+        "_MaxUserSessions": 100,
+        "_MaxAgentSessions": 100,
+        "MaxSingleUserSessions": 10
+      },
+      "_AmtAcmActivation": {
+        "log": "amtactivation.log",
+        "certs": {
+          "mycertname": {
+            "certfiles": [ "amtacm-leafcert.crt", "amtacm-intermediate1.crt", "amtacm-intermediate2.crt", "amtacm-rootcert.crt" ],
+            "keyfile": "amtacm-leafcert.key"
+          }
+        }
+      },
+      "_Redirects": {
+        "meshcommander": "https://www.meshcommander.com/"
+      },
+      "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" },
+      "_httpheaders": {
+        "Strict-Transport-Security": "max-age=360000",
+        "x-frame-options": "SAMEORIGIN",
+        "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
+      },
+      "_agentConfig": [ "webSocketMaskOverride=1" ],
+      "_SessionRecording": {
+        "_filepath": "C:\\temp",
+        "_index": true,
+        "_maxRecordings": 10,
+        "_maxRecordingSizeMegabytes": 3,
+        "__protocols__": "Is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection",
+        "protocols": [ 1, 2, 101 ]
+      },
+      "_authStrategies": {
+        "__comment__" : "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
+        "twitter": {
+          "__callbackurl": "https://server/auth-twitter-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "google": {
+          "__callbackurl": "https://server/auth-google-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "github": {
+          "__callbackurl": "https://server/auth-github-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "reddit": {
+          "__callbackurl": "https://server/auth-reddit-callback",
+          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      }
+    },
+    "_customer1": {
+      "_DNS": "customer1.myserver.com",
+      "_Title": "Customer1",
+      "_Title2": "TestServer",
+      "_NewAccounts": 1,
+      "_Auth": "sspi",
+      "__Auth": "ldap",
+      "_LDAPUserName": "gecos",
+      "_LDAPUserKey": "uid",
+      "_LDAPUserEmail": "otherMail",
+      "_LDAPPptions": {
+        "URL": "test",
+        "anne": {
+          "gecos": "Anne O'Nyme",
+          "displayName": "O Nyme anne",
+          "uid": "anneonyme",
+          "mail": "anneonyme@example.com",
+          "email": "anneonyme@example.com",
+          "otherMail": [ "other.anneonyme@example.com", "anneonyme@example.com" ]
+        },
+        "so": {
+          "displayName": "Sticker Sophie",
+          "gecos": "Sophie Sticker",
+          "uid": "ssticker",
+          "mail": "ssticker@example.com",
+          "email": "ssticker@example.com",
+          "otherMail": [ "other.ssticker@example.com", "ssticker@example.com" ]
+        }
+      },
+      "__LDAPOptions": {
+        "URL": "ldap://1.2.3.4:389",
+        "BindDN": "CN=svc_meshcentral,CN=Users,DC=meshcentral,DC=local",
+        "BindCredentials": "Password.1",
+        "SearchBase": "DC=meshcentral,DC=local",
+        "SearchFilter": "(sAMAccountName={{username}})"
+      },
+      "_Footer": "Test",
+      "_CertUrl": "https://192.168.2.106:443/"
+    },
+    "_info": {
+      "_share": "C:\\ExtraWebSite"
+    }
+  },
+  "_letsencrypt": {
+    "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before trying Let's Encrypt.",
+    "email": "myemail@myserver.com",
+    "names": "myserver.com,customer1.myserver.com",
+    "production": false
+  },
+  "_peers": {
+    "serverId": "server1",
+    "servers": {
+      "server1": { "url": "wss://192.168.2.133:443/" },
+      "server2": { "url": "wss://192.168.1.106:443/" }
+    }
+  },
+  "_smtp": {
+    "host": "smtp.myserver.com",
+    "port": 25,
+    "from": "myemail@myserver.com",
+    "__tls__": "When 'tls' is set to true, TLS is used immidiatly when connecting. For SMTP servers that use TLSSTART, set this to 'false' and TLS will still be used.",
+    "tls": false,
+    "___tlscertcheck__": "When set to false, the TLS certificate of the SMTP server is not checked.",
+    "_tlscertcheck": false,
+    "__tlsstrict__": "When set to true, TLS cypher setup is more limited, SSLv2 and SSLv3 are not allowed.",
+    "_tlsstrict": true
+  },
+  "_sms": {
+    "provider": "twilio",
+    "sid": "ACxxxxxxxxx",
+    "auth": "xxxxxxx",
+    "from": "+1-555-555-5555"
+  },
+  "__sms": {
+      "provider": "plivo",
+      "id": "xxxxxxx",
+      "token": "xxxxxxx",
+      "from": "1-555-555-5555"
+  }
+}

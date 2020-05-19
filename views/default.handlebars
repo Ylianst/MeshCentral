@@ -1279,7 +1279,10 @@
             args = parseUriArgs();
             if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
             debugmode = args.debug;
+
+            attemptWebRTC = 0; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
+
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
@@ -5159,6 +5162,7 @@
                 if ((meshrights & 76) != 0) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
+                if ((connectivity & 1) && (meshrights & 8)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
 
@@ -5442,6 +5446,16 @@
             meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: Q('d2devurl').value });
         }
 
+        function deviceMessageFunction() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Device Message", 3, deviceMessageFunctionEx, '<div style=margin-bottom:4px>' + "Display a message box on the remote device." + '</div><textarea id=d2devMessage style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
+            Q('d2devMessage').focus();
+        }
+
+        function deviceMessageFunctionEx() {
+            meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: '{{{title}}}', msg: Q('d2devMessage').value });
+        }
+
         function deviceToastFunction() {
             if (xxdialogMode) return;
             setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
@@ -5449,7 +5463,7 @@
         }
 
         function deviceToastFunctionEx() {
-            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: 'MeshCentral', msg: Q('d2devToast').value });
+            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: '{{{title}}}', msg: Q('d2devToast').value });
         }
 
         function deviceActionFunction() {
@@ -7140,7 +7154,7 @@
                     if (files.consoleMessage) {
                         Q('p13FilesConsoleMsg').innerHTML += formatAgentConsoleMessage(files.consoleMessage, files.consoleMessageId, files.consoleMessageArgs);
                         QV('p13FilesConsoleMsg', true);
-                        if (p13DeskConsoleMsgTimer != null) { clearTimeout(p13DeskConsoleMsgTimer); }
+                        if (p13FilesConsoleMsgTimer != null) { clearTimeout(p13FilesConsoleMsgTimer); }
                         if (files.consoleMessageTimeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, files.consoleMessageTimeout * 1000); }
                     } else {
                         p13clearConsoleMsg();
