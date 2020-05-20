@@ -1185,6 +1185,8 @@ function createMeshCore(agent) {
                     this.end = function ()
                     {
                         if (this.httprequest.tpromise._consent) { this.httprequest.tpromise._consent.close(); }
+                        if (this.httprequest.connectionPromise) { this.httprequest.connectionPromise._rej('Closed'); }
+
                         // Remove the terminal session to the count to update the server
                         if (this.httprequest.userid != null)
                         {
@@ -1272,7 +1274,14 @@ function createMeshCore(agent) {
                                             this.httprequest._dispatcher.httprequest = this.httprequest;
                                             this.httprequest._dispatcher.on('connection', function (c)
                                             {
-                                                this.httprequest.connectionPromise._res(c);
+                                                if (this.httprequest.connectionPromise.completed)
+                                                {
+                                                    c.end();
+                                                }
+                                                else
+                                                {
+                                                    this.httprequest.connectionPromise._res(c);
+                                                }
                                             });
                                         }
                                         else
@@ -1305,7 +1314,14 @@ function createMeshCore(agent) {
                                                 that.httprequest._dispatcher.ws = that;
                                                 that.httprequest._dispatcher.on('connection', function (c)
                                                 {
-                                                    this.ws.httprequest.connectionPromise._res(c);
+                                                    if (this.ws.httprequest.connectionPromise.completed)
+                                                    {
+                                                        c.end();
+                                                    }
+                                                    else
+                                                    {
+                                                        this.ws.httprequest.connectionPromise._res(c);
+                                                    }
                                                 });
                                             }
                                         });
@@ -2126,7 +2142,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2140,6 +2156,19 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'fdsnapshot':
+                    require('ChainViewer').getSnapshot().then(function (c) { sendConsoleText(c, this.sessionid); }).parentPromise.sessionid = sessionid;
+                    break;
+                case 'fdcount':
+                    require('DescriptorEvents').getDescriptorCount().then(
+                        function (c)
+                        {
+                            sendConsoleText('Descriptor Count: ' + c, this.sessionid);
+                        }, function (e)
+                        {
+                            sendConsoleText('Error fetching descriptor count: ' + e, this.sessionid);
+                        }).parentPromise.sessionid = sessionid;
+                    break;
                 case 'uac':
                     if (process.platform != 'win32')
                     {
