@@ -1783,7 +1783,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChange = true; }
                 if (userChange) {
                     obj.db.SetUser(user);
-                    // TODO: Event user change
+
+                    // Event user creation
+                    var targets = ['*', 'server-users'];
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed', domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
+                    parent.DispatchEvent(targets, obj, event);
                 }
                 parent.debug('web', 'handleStrategyLogin: succesful login: ' + userid);
                 req.session.userid = req.user.id;
@@ -2111,12 +2116,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // See what authentication strategies we have
         var authStrategies = [];
         if (typeof domain.authstrategies == 'object') {
-            if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) { authStrategies.push('twitter'); }
-            if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) { authStrategies.push('google'); }
-            if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) { authStrategies.push('github'); }
-            if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) { authStrategies.push('reddit'); }
-            if ((typeof domain.authstrategies.jumpcloud == 'object')) { authStrategies.push('jumpcloud'); }
-            if ((typeof domain.authstrategies.intel == 'object') && (typeof domain.authstrategies.intel.clientid == 'string') && (typeof domain.authstrategies.intel.clientsecret == 'string')) { authStrategies.push('intel'); }
+            if (typeof domain.authstrategies.twitter == 'object') { authStrategies.push('twitter'); }
+            if (typeof domain.authstrategies.google == 'object') { authStrategies.push('google'); }
+            if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
+            if (typeof domain.authstrategies.reddit == 'object') { authStrategies.push('reddit'); }
+            if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
+            if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
+            if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
         }
 
         // Render the login page
@@ -4210,40 +4216,70 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }, handleStrategyLogin);
                 }
 
+                // Generic SAML
+                if (typeof domain.authstrategies.saml == 'object') {
+                    if ((typeof domain.authstrategies.saml.cert != 'string') || (typeof domain.authstrategies.saml.idpurl != 'string')) {
+                        console.log('ERROR: Missing SAML configuration.');
+                    } else {
+                        var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.saml.cert));
+                        if (cert == null) {
+                            console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
+                        } else {
+                            var options = { path: url + 'auth-saml-callback', entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
+                            if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
+                            options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
+                            const SamlStrategy = require('passport-saml').Strategy;
+                            passport.use(new SamlStrategy(options,
+                                function (profile, done) {
+                                    if (typeof profile.nameID != 'string') { return done(); }
+                                    var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
+                                    if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                                    if (typeof profile.email == 'string') { user.email = profile.email; }
+                                    return done(null, user);
+                                }
+                            ));
+                            obj.app.get(url + 'auth-saml', function (req, res, next) {
+                                domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            });
+                            obj.app.post(url + 'auth-saml-callback', function (req, res, next) {
+                                domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            }, handleStrategyLogin);
+                        }
+                    }
+                }
+
                 // JumpCloud
                 if (typeof domain.authstrategies.jumpcloud == 'object') {
-                    const SamlStrategy = require('passport-saml').Strategy;
-
-                    var options = {
-                        path: url + 'auth-jumpcloud-callback',
-                        entryPoint: domain.authstrategies.jumpcloud.idpurl,
-                        issuer: 'passport-saml'
-                    };
-
-                    if (domain.authstrategies.jumpcloud.cert) {
+                    if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
+                        console.log('ERROR: Missing JumpCloud configuration.');
+                    } else {
                         var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
-                        if (cert != null) { options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join(''); }
-                        //console.log(options);
-                    }
-
-                    passport.use(new SamlStrategy(options,
-                        function (profile, done) {
-                            //var user = { id: 'user/' + domain.id + '/~reddit:' + profile.id, name: profile.name };
-                            //if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            console.log('JumpCloud Profile', profile);
-                            var user = { id: 'user/' + domain.id + '/~jumpcloud:' + profile.id, name: profile.name };
-                            return done(null, user);
+                        if (cert == null) {
+                            console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
+                        } else {
+                            var options =  { path: url + 'auth-jumpcloud-callback', entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
+                            if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
+                            options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
+                            const SamlStrategy = require('passport-saml').Strategy;
+                            passport.use(new SamlStrategy(options,
+                                function (profile, done) {
+                                    if (typeof profile.nameID != 'string') { return done(); }
+                                    var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
+                                    if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                                    if (typeof profile.email == 'string') { user.email = profile.email; }
+                                    return done(null, user);
+                                }
+                            ));
+                            obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
+                                domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            });
+                            obj.app.post(url + 'auth-jumpcloud-callback', function (req, res, next) {
+                                domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            }, handleStrategyLogin);
                         }
-                    ));
-                    obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
-                        console.log('auth-jumpcloud');
-                        domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
-                    });
-                    obj.app.get(url + 'auth-jumpcloud-callback', function (req, res, next) {
-                        console.log('auth-jumpcloud-callback');
-                        domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
-                    });
+                    }
                 }
+
             }
 
             // Server redirects

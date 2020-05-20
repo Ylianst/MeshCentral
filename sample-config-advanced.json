@@ -179,6 +179,18 @@
           "__callbackurl": "https://server/auth-reddit-callback",
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "jumpcloud": {
+          "__callbackurl": "https://server/auth-jumpcloud-callback",
+          "entityid": "meshcentral",
+          "idpurl": "https://sso.jumpcloud.com/saml2/saml2",
+          "cert": "jumpcloud-saml.pem"
+        },
+        "saml": {
+          "__callbackurl": "https://server/auth-saml-callback",
+          "entityid": "meshcentral",
+          "idpurl": "https://server/saml2",
+          "cert": "saml.pem"
         }
       }
     },

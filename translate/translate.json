@@ -23958,6 +23958,13 @@
       ]
     },
     {
+      "en": "Sign-in using JumpCloud",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-jumpcloud",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-jumpcloud"
+      ]
+    },
+    {
       "en": "Sign-in using Reddit",
       "nl": "Log in met Reddit",
       "xloc": [
@@ -24042,6 +24049,13 @@
       "zh-chs": "僧伽羅語",
       "xloc": [
         "default.handlebars->25->1035"
+      ]
+    },
+    {
+      "en": "Single Sign-in",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-saml",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-saml"
       ]
     },
     {
