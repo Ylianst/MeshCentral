@@ -886,7 +886,7 @@
                             </td>
                             <td style=width:20px></td>
                             <td style=width:200px;position:relative valign=top>
-                                <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class=userAuthStrategyLogo src=images/login/reddit64.png width=64 height=64>
+                                <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class=userAuthStrategyLogo width=64 height=64>
                                 <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
                                     <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
                                     <img alt="" width=200 height=200 src=images/user-256.png />
@@ -10884,6 +10884,7 @@
             else if (shortuserid.startsWith('~google:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/google64.png';; }
             else if (shortuserid.startsWith('~github:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/github64.png';; }
             else if (shortuserid.startsWith('~reddit:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/reddit64.png';; }
+            else if (shortuserid.startsWith('~jumpcloud:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/jumpcloud64.png';; }
             else if (shortuserid.startsWith('~intel:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/intel64.png';; }
             else { QV('p30userAuthServiceLogo', false); }
 
