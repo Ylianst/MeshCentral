@@ -78,6 +78,7 @@
                                     <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
                                     <a id="auth-reddit" href="auth-reddit" style="display:none"><img src="images/login/reddit32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Reddit" /></a>
                                     <a id="auth-jumpcloud" href="auth-jumpcloud" style="display:none"><img src="images/login/jumpcloud32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using JumpCloud" /></a>
+                                    <a id="auth-saml" href="auth-saml" style="display:none"><img src="images/login/generic32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Single Sign-in" /></a>
                                 </div>
                             </form>
                         </div>
@@ -386,6 +387,8 @@
                 if (authStrategies.indexOf('github') >= 0) { QV('auth-github', true); }
                 if (authStrategies.indexOf('reddit') >= 0) { QV('auth-reddit', true); }
                 if (authStrategies.indexOf('jumpcloud') >= 0) { QV('auth-jumpcloud', true); }
+                if (authStrategies.indexOf('intel') >= 0) { QV('auth-intel', true); }
+                if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
             }
 
             // Display the welcome text
