@@ -385,10 +385,10 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         else if (obj.req.query.p == 2) { msg = 'Ended desktop session'; }
                         else if (obj.req.query.p == 5) { msg = 'Ended file management session'; }
                         if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.req.ip) + ' to ' + cleanRemoteAddr(obj.req.ip) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.req.ip) + ' to ' + cleanRemoteAddr(obj.peer.req.ip) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             parent.parent.DispatchEvent(['*', user._id], obj, event);
                         } else if (peer.user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.peer.req.ip) + ' to ' + cleanRemoteAddr(obj.req.ip) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msg: msg + ' \"' + obj.id + '\" from ' + cleanRemoteAddr(obj.req.ip) + ' to ' + cleanRemoteAddr(obj.peer.req.ip) + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             parent.parent.DispatchEvent(['*', peer.user._id], obj, event);
                         }
                     }
