@@ -23962,6 +23962,7 @@
     },
     {
       "en": "Sign-in using JumpCloud",
+      "nl": "Log in met JumpCloud",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-jumpcloud",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-jumpcloud"
@@ -24056,6 +24057,7 @@
     },
     {
       "en": "Single Sign-in",
+      "nl": "Eenmalige aanmelding",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-saml",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-saml"
