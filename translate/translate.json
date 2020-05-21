@@ -23957,7 +23957,8 @@
       "en": "Sign-in using Intel",
       "nl": "Log in met Intel",
       "xloc": [
-        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-intel"
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-intel",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-intel"
       ]
     },
     {
