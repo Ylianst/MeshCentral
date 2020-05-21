@@ -2389,7 +2389,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
-        if (req.query.type == 1) {
+        if ((req.query.type == 1) && (req.query.meshid != null)) {
             obj.getCiraConfigurationScript(req.query.meshid, function (script) {
                 if (script == null) { res.sendStatus(404); } else {
                     try {
@@ -2408,6 +2408,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     res.send(script);
                 }
             });
+        } else {
+            res.sendStatus(404);
         }
     }
 
@@ -4248,10 +4250,42 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 }
 
-                // JumpCloud
+                // Intel SAML
+                if (typeof domain.authstrategies.intel == 'object') {
+                    if ((typeof domain.authstrategies.intel.cert != 'string') || (typeof domain.authstrategies.intel.idpurl != 'string')) {
+                        console.log('ERROR: Missing Intel SAML configuration.');
+                    } else {
+                        var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.intel.cert));
+                        if (cert == null) {
+                            console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
+                        } else {
+                            var options = { path: url + 'auth-intel-callback', entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
+                            if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
+                            options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
+                            const SamlStrategy = require('passport-saml').Strategy;
+                            passport.use(new SamlStrategy(options,
+                                function (profile, done) {
+                                    if (typeof profile.nameID != 'string') { return done(); }
+                                    var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
+                                    if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                                    if (typeof profile.email == 'string') { user.email = profile.email; }
+                                    return done(null, user);
+                                }
+                            ));
+                            obj.app.get(url + 'auth-intel', function (req, res, next) {
+                                domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            });
+                            obj.app.post(url + 'auth-intel-callback', function (req, res, next) {
+                                domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            }, handleStrategyLogin);
+                        }
+                    }
+                }
+
+                // JumpCloud SAML
                 if (typeof domain.authstrategies.jumpcloud == 'object') {
                     if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
-                        console.log('ERROR: Missing JumpCloud configuration.');
+                        console.log('ERROR: Missing JumpCloud SAML configuration.');
                     } else {
                         var cert = obj.fs.readFileSync(obj.path.join(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
                         if (cert == null) {
