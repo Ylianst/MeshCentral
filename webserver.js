@@ -4266,9 +4266,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             passport.use(new SamlStrategy(options,
                                 function (profile, done) {
                                     if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
+                                    var user = { id: 'user/' + domain.id + '/~intel:' + profile.nameID, name: profile.nameID };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                                    else if ((typeof profile.FirstName == 'string') && (typeof profile.LastName == 'string')) { user.name = profile.FirstName + ' ' + profile.LastName; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
+                                    else if (typeof profile.EmailAddress == 'string') { user.email = profile.EmailAddress; }
+                                    console.log(user);
                                     return done(null, user);
                                 }
                             ));
@@ -4276,6 +4279,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-intel-callback', function (req, res, next) {
+                                console.log('auth-intel-callback');
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
                         }
@@ -4298,7 +4302,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             passport.use(new SamlStrategy(options,
                                 function (profile, done) {
                                     if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
+                                    var user = { id: 'user/' + domain.id + '/~jumpcloud:' + profile.nameID, name: profile.nameID };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
                                     return done(null, user);
