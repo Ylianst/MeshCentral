@@ -1018,6 +1018,7 @@ function createMeshCore(agent) {
         s.httprequest = this;
         s.end = onTunnelClosed;
         s.tunnel = this;
+        s.descriptorMetadata = "MeshAgent_relayTunnel";
 
         if (require('MeshAgent').idleTimeout != null)
         {
@@ -1166,6 +1167,8 @@ function createMeshCore(agent) {
                         sendConsoleText("Error: No Terminal Control Rights.");
                         return;
                     }
+
+                    this.descriptorMetadata = "Remote Terminal";
 
                     if (process.platform == 'win32')
                     {
@@ -1450,6 +1453,8 @@ function createMeshCore(agent) {
                         return;
                     }
 
+                    this.descriptorMetadata = "Remote KVM";
+
                     // Look for a TSID
                     var tsid = null;
                     if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
@@ -1655,7 +1660,12 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
 
-                } else if (this.httprequest.protocol == 5) {
+                } else if (this.httprequest.protocol == 5)
+                {
+                    //
+                    // Remote Files
+                    //
+
                     // Check user access rights for files
                     if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOFILES) != 0))) {
                         // Disengage this tunnel, user does not have the rights to do this!!
@@ -1664,6 +1674,8 @@ function createMeshCore(agent) {
                         sendConsoleText("Error: No files control rights.");
                         return;
                     }
+
+                    this.descriptorMetadata = "Remote Files";
 
                     // Add the files session to the count to update the server
                     if (this.httprequest.userid != null) {
