@@ -4030,7 +4030,7 @@
 
         // Get the list of checked devices, removes any duplicates.
         function getCheckedDevices() {
-            var nodeids = [], elements = document.getElementsByClassName("DeviceCheckbox"), checkcount = 0;
+            var nodeids = [], elements = document.getElementsByClassName('DeviceCheckbox'), checkcount = 0;
             for (var i=0;i<elements.length;i++) { if (elements[i].checked) { if (elements[i].value) { var nid = elements[i].value.substring(6); if (nodeids.indexOf(nid) == -1) { nodeids.push(nid); } } } }
             return nodeids;
         }
