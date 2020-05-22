@@ -27,6 +27,7 @@
     "_AgentPort": 1234,
     "_AgentAliasPort": 1234,
     "_AgentAliasDNS": "agents.myserver.mydomain.com",
+    "_AgentPortTls": true,
     "_ExactPorts": true,
     "_AllowLoginToken": true,
     "_AllowFraming": true,

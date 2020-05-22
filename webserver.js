@@ -116,10 +116,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Perform hash on web certificate and agent certificate
-    obj.webCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
+    obj.webCertificateHash = obj.defaultWebCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
     obj.webCertificateHashs = { '': obj.webCertificateHash };
     obj.webCertificateHashBase64 = Buffer.from(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-    obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
+    obj.webCertificateFullHash = obj.defaultWebCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
     obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
     obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
     obj.agentCertificateHashBase64 = Buffer.from(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -3974,13 +3974,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Start a second agent-only server if needed
         if (obj.args.agentport) {
-            if (obj.args.notls || obj.args.tlsoffload) {
+            var agentPortTls = true;
+            if ((obj.args.notls == 1) || (obj.args.notls == true)) { agentPortTls = false; }
+            if (obj.args.tlsoffload != null) { agentPortTls = false; }
+            if (typeof obj.args.agentporttls == 'boolean') { agentPortTls = obj.args.agentporttls; }
+            if (obj.certificates.webdefault == null) { agentPortTls = false; }
+
+            if (agentPortTls == false) {
                 // Setup the HTTP server without TLS
                 obj.expressWsAlt = require('express-ws')(obj.agentapp);
             } else {
                 // Setup the agent HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
-                const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
-                if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
+                // If TLS is used on the agent port, we always use the default TLS certificate.
+                const tlsOptions = { cert: obj.certificates.webdefault.cert, key: obj.certificates.webdefault.key, ca: obj.certificates.webdefault.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
                 obj.tlsAltServer = require('https').createServer(tlsOptions, obj.agentapp);
                 obj.tlsAltServer.on('secureConnection', function () { /*console.log('tlsAltServer secureConnection');*/ });
                 obj.tlsAltServer.on('error', function (err) { console.log('tlsAltServer error', err); });
@@ -4073,6 +4079,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 return next();
             }
         });
+
+        if (obj.agentapp) {
+            // Add HTTP security headers to all responses
+            obj.agentapp.use(function (req, res, next) {
+                // Set the real IP address of the request
+                // If a trusted reverse-proxy is sending us the remote IP address, use it.
+                const ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip;
+                if (
+                    (obj.args.trustedproxy === true) ||
+                    ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
+                    ((typeof obj.args.tlsoffload == 'object') && (obj.args.tlsoffload.indexOf(ipex) >= 0))
+                ) {
+                    if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
+                        req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
+                    } else if (res.headers['x-forwarded-for']) {
+                        req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
+                    } else if (res.headers['x-real-ip']) {
+                        req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
+                    } else {
+                        req.clientIp = ipex;
+                    }
+                } else {
+                    req.clientIp = ipex;
+                }
+
+                // Get the domain for this request
+                const domain = req.xdomain = getDomain(req);
+                parent.debug('webrequest', '(' + req.clientIp + ') AgentPort: ' + req.url);
+                res.removeHeader('X-Powered-By');
+                return next();
+            });
+        }
 
         // Setup all HTTP handlers
         if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); }); }
@@ -4392,7 +4430,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // Setup the alternative agent-only port
-            if (obj.args.agentport) {
+            if (obj.agentapp) {
                 // Receive mesh agent connections on alternate port
                 obj.agentapp.ws(url + 'agent.ashx', function (ws, req) {
                     var domain = checkAgentIpAddress(ws, req);
@@ -4737,10 +4775,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Start the ExpressJS web server on agent-only alternative port
     function StartAltWebServer(port) {
         if ((port < 1) || (port > 65535)) return;
+        var agentAliasPort = null;
+        if (args.agentaliasport != null) { agentAliasPort = args.agentaliasport; }
         if (obj.tlsAltServer != null) {
-            var agentAliasPort = null;
-            if (args.aliasport != null) { agentAliasPort = args.aliasport; }
-            if (args.agentaliasport != null) { agentAliasPort = args.agentaliasport; }
             if (obj.args.lanonly == true) {
                 obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             } else {
