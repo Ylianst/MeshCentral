@@ -1394,6 +1394,7 @@ function createMeshCore(agent) {
                                     }
                                     else
                                     {
+                                        term.descriptorMetadata = 'Remote Terminal';
                                         this.ws.httprequest.process = term;
                                         this.ws.httprequest.process.tunnel = this.ws;
                                         term.stderr.stdout = term.stdout;
