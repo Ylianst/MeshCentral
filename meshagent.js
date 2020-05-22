@@ -19,14 +19,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const forge = parent.parent.certificateOperations.forge;
     const common = parent.parent.common;
     parent.agentStats.createMeshAgentCount++;
-    parent.parent.debug('agent', 'New agent at ' + req.ip + ':' + ws._socket.remotePort);
+    parent.parent.debug('agent', 'New agent at ' + req.clientIp + ':' + ws._socket.remotePort);
 
     var obj = {};
     obj.domain = domain;
     obj.authenticated = 0;
     obj.receivedCommands = 0;
     obj.agentCoreCheck = 0;
-    obj.remoteaddr = (req.ip.startsWith('::ffff:')) ? (req.ip.substring(7)) : req.ip;
+    obj.remoteaddr = req.clientIp;
     obj.remoteaddrport = obj.remoteaddr + ':' + ws._socket.remotePort;
     obj.nonce = parent.crypto.randomBytes(48).toString('binary');
     //ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes

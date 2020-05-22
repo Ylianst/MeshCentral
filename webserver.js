@@ -572,22 +572,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Check if the source IP address is in the IP list, return false if not.
     function checkIpAddressEx(req, res, ipList, closeIfThis) {
         try {
-            var ip;
-            if (req.connection) { // HTTP(S) request
-                ip = req.ip;
-
-                if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { res.sendStatus(401); } return true; } } }
+            if (req.connection) {
+                // HTTP(S) request
+                if (req.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(req.clientIp, ipList[i])) { if (closeIfThis === true) { res.sendStatus(401); } return true; } } }
                 if (closeIfThis === false) { res.sendStatus(401); }
-            } else if (req._socket) { // WebSocket request
-                ip = req._socket.remoteAddress;
-                var ipex = (ip.startsWith('::ffff:')) ? ip.substring(7) : ip;
-
-                // If a trusted reverse-proxy is sending us the remote IP address, use it.
-                // This is not done automatically for web socket like it's done for HTTP requests.
-                if ((obj.args.trustedproxy) && (res.headers['x-forwarded-for']) && ((obj.args.trustedproxy === true) || (obj.args.trustedproxy.indexOf(ipex) >= 0))) { ip = res.headers['x-forwarded-for']; }
-                else if ((obj.args.tlsoffload) && (res.headers['x-forwarded-for']) && ((obj.args.tlsoffload === true) || (obj.args.tlsoffload.indexOf(ipex) >= 0))) { ip = res.headers['x-forwarded-for']; }
-
-                if (ip) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(ip, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
+            } else {
+                // WebSocket request
+                if (res.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(res.clientIp, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
                 if (closeIfThis === false) { try { req.close(); } catch (e) { } }
             }
         } catch (e) { console.log(e); } // Should never happen
@@ -649,8 +640,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Return true if this user has 2-step auth active
     function checkUserOneTimePasswordRequired(domain, user, req) {
         // Check if we can skip 2nd factor auth because of the source IP address
-        if ((req != null) && (req.ip != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
-            for (var i in domain.passwordrequirements.skip2factor) { if (require('ipcheck').match(req.ip, domain.passwordrequirements.skip2factor[i]) === true) return false; }
+        if ((req != null) && (req.clientIp != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
+            for (var i in domain.passwordrequirements.skip2factor) { if (require('ipcheck').match(req.clientIp, domain.passwordrequirements.skip2factor[i]) === true) return false; }
         }
 
         // Check if a 2nd factor cookie is present
@@ -659,7 +650,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
                     var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
-                    if ((twoFactorCookie != null) && ((obj.args.cookieipcheck === false) || (twoFactorCookie.ip == null) || (twoFactorCookie.ip === cleanRemoteAddr(req.ip))) && (twoFactorCookie.userid == user._id)) { return false; }
+                    if ((twoFactorCookie != null) && ((obj.args.cookieipcheck === false) || (twoFactorCookie.ip == null) || (twoFactorCookie.ip === req.clientIp)) && (twoFactorCookie.userid == user._id)) { return false; }
                 }
             }
         }
@@ -896,9 +887,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
                                 req.session.messageid = 108; // Invalid token, try again.
-                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.port); }
+                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.clientIp) + ' port ' + req.port); }
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
-                                obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
+                                obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp });
                                 obj.setbadLogin(req);
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
@@ -919,7 +910,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 var maxCookieAge = domain.twofactorcookiedurationdays;
                                 if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
                                 console.log('maxCookieAge', maxCookieAge);
-                                const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: cleanRemoteAddr(req.ip)*/ }, obj.parent.loginCookieEncryptionKey);
+                                const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
                                 res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
                             }
 
@@ -936,7 +927,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             }
 
                             // Login successful
-                            if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+                            if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                             parent.debug('web', 'handleLoginRequest: successful 2FA login');
                             completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
                         }
@@ -957,12 +948,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
 
                 // Login successful
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleLoginRequest: successful login');
                 completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct);
             } else {
                 // Login failed, log the error
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
 
                 // Wait a random delay
                 setTimeout(function () {
@@ -972,12 +963,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (err == 'locked') {
                             parent.debug('web', 'handleLoginRequest: login failed, locked account');
                             req.session.messageid = 110; // Account locked.
-                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + cleanRemoteAddr(req.ip) });
+                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + req.clientIp });
                             obj.setbadLogin(req);
                         } else {
                             parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
                             req.session.messageid = 112; // Login failed, check username and password.
-                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
+                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp });
                             obj.setbadLogin(req);
                         }
                     }
@@ -1033,7 +1024,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         req.session.userid = userid;
         req.session.domainid = domain.id;
         req.session.currentNode = '';
-        req.session.ip = req.ip;
+        req.session.ip = req.clientIp;
         if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
         if (req.body.host) {
             // TODO: This is a terrible search!!! FIX THIS.
@@ -1156,7 +1147,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
-                                req.session.ip = req.ip; // Bind this session to the IP address of the request
+                                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                                 // Create a user, generate a salt and hash the password
                                 require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
                                     if (err) throw err;
@@ -1244,7 +1235,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             parent.debug('web', 'handleResetPasswordRequest: success');
                             req.session.userid = userid;
                             req.session.domainid = domain.id;
-                            req.session.ip = req.ip; // Bind this session to the IP address of the request
+                            req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                             completeLoginRequest(req, res, domain, obj.users[userid], userid, req.session.tokenusername, req.session.tokenpassword, direct);
                         }, 0);
                     }
@@ -1309,7 +1300,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         parent.debug('web', 'handleResetAccountRequest: Invalid 2FA token, try again');
                                         if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                             req.session.messageid = 108; // Invalid token, try again.
-                                            obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + cleanRemoteAddr(req.ip) });
+                                            obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp });
                                             obj.setbadLogin(req);
                                         }
                                         req.session.loginmode = '5';
@@ -1811,11 +1802,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Login using SSPI
             domain.sspi.authenticate(req, res, function (err) {
                 if ((err != null) || (req.connection.user == null)) {
-                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                     parent.debug('web', 'handleRootRequest: SSPI auth required.');
                     res.end('Authentication Required...');
                 } else {
-                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted SSPI-auth for ' + req.connection.user + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                     parent.debug('web', 'handleRootRequest: SSPI auth ok.');
                     handleRootRequestEx(req, res, domain, direct);
                 }
@@ -1823,12 +1814,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + req.connection.user + ' from ' + cleanRemoteAddr(req.ip) + ' port ' + req.connection.remotePort); }
+                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                 req.session.userid = userid;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                req.session.ip = req.ip; // Bind this session to the IP address of the request
+                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                 handleRootRequestEx(req, res, domain, direct);
             });
         } else {
@@ -1854,7 +1845,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/~';
             req.session.domainid = domain.id;
             req.session.currentNode = '';
-            req.session.ip = req.ip; // Bind this session to the IP address of the request
+            req.session.ip = req.clientIp; // Bind this session to the IP address of the request
             if (obj.users[req.session.userid] == null) {
                 // Create the dummy user ~ with impossible password
                 parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
@@ -1868,10 +1859,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
             req.session.domainid = domain.id;
             req.session.currentNode = '';
-            req.session.ip = req.ip; // Bind this session to the IP address of the request
+            req.session.ip = req.clientIp; // Bind this session to the IP address of the request
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-            //if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
+            //if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
             if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
                 // If a login cookie was provided, setup the session here.
                 parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
@@ -1879,7 +1870,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.userid = loginCookie.u;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                req.session.ip = req.ip; // Bind this session to the IP address of the request
+                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
             } else {
                 parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
@@ -1896,7 +1887,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 req.session.usersGroups = req.connection.userGroups;
                 req.session.domainid = domain.id;
                 req.session.currentNode = '';
-                req.session.ip = req.ip; // Bind this session to the IP address of the request
+                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
 
                 // Check if this user exists, create it if not.
                 user = obj.users[req.session.userid];
@@ -1996,9 +1987,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((obj.args.nousers != true) && (domain.passwordrequirements != null) && (domain.passwordrequirements.force2factor === true)) {
                 // Check if we can skip 2nd factor auth because of the source IP address
                 var skip2factor = false;
-                if ((req != null) && (req.ip != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
+                if ((req != null) && (req.clientIp != null) && (domain.passwordrequirements != null) && (domain.passwordrequirements.skip2factor != null)) {
                     for (var i in domain.passwordrequirements.skip2factor) {
-                        if (require('ipcheck').match(req.ip, domain.passwordrequirements.skip2factor[i]) === true) { skip2factor = true; }
+                        if (require('ipcheck').match(req.clientIp, domain.passwordrequirements.skip2factor[i]) === true) { skip2factor = true; }
                     }
                 }
                 if (skip2factor == false) { features += 0x00040000; } // Force 2-factor auth
@@ -2015,7 +2006,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
 
             // Create a authentication cookie
-            const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
+            const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
             const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
 
             // Send the master web application
@@ -2196,7 +2187,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
 
                 // Create a authentication cookie
-                const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: cleanRemoteAddr(req.ip) }, obj.parent.loginCookieEncryptionKey);
+                const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
                 const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                 render(req, res, getRenderPage('xterm', req, domain), getRenderArgs({ serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), name: EscapeHtml(node.name) }, req, domain));
@@ -2701,7 +2692,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -2737,7 +2728,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -2895,7 +2886,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var fd = obj.fs.openSync(recFullFilename, 'w');
                 if (fd != null) {
                     // Write the recording file header
-                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: cleanRemoteAddr(req.ip), nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
+                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: req.clientIp, nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
                     recordingEntry(fd, 1, 0, firstBlock, function () { });
                     ws.logfile = { fd: fd, lock: false };
                     if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
@@ -2990,7 +2981,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // If error, close the associated TCP connection.
                 ws.on('error', function (err) {
-                    console.log('CIRA server websocket error from ' + cleanRemoteAddr(req.ip) + ', ' + err.toString().split('\r')[0] + '.');
+                    console.log('CIRA server websocket error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Websocket relay closed on error.');
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
 
@@ -3083,8 +3074,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // If error, close the associated TCP connection.
                 ws.on('error', function (err) {
-                    console.log('Error with relay web socket connection from ' + cleanRemoteAddr(req.ip) + ', ' + err.toString().split('\r')[0] + '.');
-                    parent.debug('webrelay', 'Error with relay web socket connection from ' + cleanRemoteAddr(req.ip) + '.');
+                    console.log('Error with relay web socket connection from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
+                    parent.debug('webrelay', 'Error with relay web socket connection from ' + req.clientIp + '.');
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     // Close the recording file
@@ -3197,7 +3188,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (mesh.mtype != 1) { ws.send(JSON.stringify({ errorText: 'Invalid device group type:' + ws.meshid })); delete ws.meshid; ws.close(); return; }
 
         // Fetch the remote IP:Port for logging
-        ws.remoteaddr = cleanRemoteAddr(req.ip);
+        ws.remoteaddr = req.clientIp;
         ws.remoteaddrport = ws.remoteaddr + ':' + ws._socket.remotePort;
 
         // When data is received from the web socket, echo it back
@@ -3389,7 +3380,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
 
         // If error, do nothing.
-        ws.on('error', function (err) { console.log('Echo server error from ' + cleanRemoteAddr(req.ip) + ', ' + err.toString().split('\r')[0] + '.'); });
+        ws.on('error', function (err) { console.log('Echo server error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.'); });
 
         // If closed, do nothing
         ws.on('close', function (req) { });
@@ -3452,7 +3443,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             if (auth.response === obj.common.ComputeDigesthash(auth.username, amtpass, auth.realm, 'POST', auth.uri, auth.qop, auth.nonce, auth.nc, auth.cnonce)) {
 
                                                 // This is an authenticated Intel AMT event, update the host address
-                                                var amthost = req.ip;
+                                                var amthost = req.clientIp;
                                                 if (amthost.substring(0, 7) === '::ffff:') { amthost = amthost.substring(7); }
                                                 if (node.host != amthost) {
                                                     // Get the mesh for this device
@@ -3549,7 +3540,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != cleanRemoteAddr(req.ip))) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -4015,9 +4006,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
-            parent.debug('webrequest', '(' + cleanRemoteAddr(req.ip) + ') ' + req.url);
+            // Set the real IP address of the request
+            // If a trusted reverse-proxy is sending us the remote IP address, use it.
+            const ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip;
+            if (
+                (obj.args.trustedproxy === true) ||
+                ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
+                ((typeof obj.args.tlsoffload == 'object') && (obj.args.tlsoffload.indexOf(ipex) >= 0))
+            ) {
+                if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
+                    req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
+                } else if (res.headers['x-forwarded-for']) {
+                    req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
+                } else if (res.headers['x-real-ip']) {
+                    req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
+                } else {
+                    req.clientIp = ipex;
+                }
+            } else {
+                req.clientIp = ipex;
+            }
+
+            // Get the domain for this request
+            const domain = req.xdomain = getDomain(req);
+            parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
             res.removeHeader('X-Powered-By');
-            var domain = req.xdomain = getDomain(req);
 
             // If this domain has configured headers, use them.
             // Example headers: { 'Strict-Transport-Security': 'max-age=360000;includeSubDomains' };
@@ -4039,7 +4052,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // Check the session if bound to the external IP address
-            if ((req.session.ip != null) && (req.ip != null) && (req.session.ip != req.ip)) { req.session = {}; }
+            if ((req.session.ip != null) && (req.clientIp != null) && (req.session.ip != req.clientIp)) { req.session = {}; }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {
@@ -4354,8 +4367,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Receive mesh agent connections
             obj.app.ws(url + 'agent.ashx', function (ws, req) {
                 var domain = checkAgentIpAddress(ws, req);
-                if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
-                //console.log('Agent connect: ' + cleanRemoteAddr(req.ip));
+                if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
+                //console.log('Agent connect: ' + req.clientIp);
                 try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
             });
 
@@ -4363,11 +4376,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.parent.mqttbroker != null) {
                 obj.app.ws(url + 'mqtt.ashx', function (ws, req) {
                     var domain = checkAgentIpAddress(ws, req);
-                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
+                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
                     var serialtunnel = SerialTunnel();
                     serialtunnel.xtransport = 'ws';
                     serialtunnel.xdomain = domain;
-                    serialtunnel.xip = req.ip;
+                    serialtunnel.xip = req.clientIp;
                     ws.on('message', function (b) { serialtunnel.updateBuffer(Buffer.from(b, 'binary')) });
                     serialtunnel.forwardwrite = function (b) { ws.send(b, 'binary') }
                     ws.on('close', function () { serialtunnel.emit('end'); });
@@ -4380,8 +4393,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Receive mesh agent connections on alternate port
                 obj.agentapp.ws(url + 'agent.ashx', function (ws, req) {
                     var domain = checkAgentIpAddress(ws, req);
-                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + cleanRemoteAddr(req.ip) + ', holding.'); return; }
-                    //console.log('Agent connect: ' + cleanRemoteAddr(req.ip));
+                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
+                    //console.log('Agent connect: ' + req.clientIp);
                     try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
                 });
 
@@ -4554,7 +4567,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
-                            //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + cleanRemoteAddr(req.ip) });
+                            //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp });
                             //obj.setbadLogin(req);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2' })); ws.close(); } catch (e) { }
                         }
@@ -4565,8 +4578,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
                 if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 240); } // Try the server key
-                if ((obj.args.cookieipcheck !== false) && (cookie != null) && (cookie.ip != null) && (cookie.ip != cleanRemoteAddr(req.ip) && (cookie.ip != req.ip))) { // If the cookie if binded to an IP address, check here.
-                    parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.ip) + '\".');
+                if ((obj.args.cookieipcheck !== false) && (cookie != null) && (cookie.ip != null) && (cookie.ip != req.clientIp && (cookie.ip != req.clientIp))) { // If the cookie if binded to an IP address, check here.
+                    parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.clientIp) + '\".');
                     cookie = null;
                 }
                 if ((cookie != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id)) {
@@ -5549,7 +5562,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
     obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
         if (parent.config.settings.maxinvalidlogin === false) return;
-        if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
+        if (typeof ip == 'object') { ip = ip.clientIp; }
         var splitip = ip.split('.');
         if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
         if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
@@ -5561,7 +5574,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
     obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
         if (parent.config.settings.maxinvalidlogin === false) return true;
-        if (typeof ip == 'object') { ip = cleanRemoteAddr(ip.ip); }
+        if (typeof ip == 'object') { ip = ip.clientIp; }
         var splitip = ip.split('.');
         if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
