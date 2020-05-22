@@ -126,6 +126,7 @@ function run(argv) {
 
     // Set the arguments
     if ((typeof args.action) == 'string') { settings.action = args.action; }
+    if ((typeof args.authcookie) == 'string') { settings.authcookie = args.authcookie; }
     if ((typeof args.localport) == 'string') { settings.localport = parseInt(args.localport); }
     if ((typeof args.remotenodeid) == 'string') { settings.remotenodeid = args.remotenodeid; }
     if ((typeof args.name) == 'string') { settings.name = args.name; }
@@ -140,6 +141,7 @@ function run(argv) {
     if ((typeof args.hostname) == 'string') { settings.hostname = args.hostname; }
     if ((typeof args.serverid) == 'string') { settings.serverid = args.serverid; }
     if ((typeof args.serverhttpshash) == 'string') { settings.serverhttpshash = args.serverhttpshash; }
+    if ((typeof args.serverurl) == 'string') { settings.serverurl = args.serverurl; }
     if ((typeof args.remoteport) == 'string') { settings.remoteport = parseInt(args.remoteport); }
     if ((typeof args.remotetarget) == 'string') { settings.remotetarget = args.remotetarget; }
     if ((typeof args.out) == 'string') { settings.output = args.out; }
@@ -460,8 +462,8 @@ function run(argv) {
         // MeshCentral Router, port map local TCP port to a remote computer
         if ((settings.localport == null) || (typeof settings.localport != 'number') || (settings.localport < 0) || (settings.localport > 65535)) { console.log('No or invalid \"localPort\" specified, use --localport [localport].'); exit(1); return; }
         if ((settings.remotenodeid == null) || (typeof settings.remotenodeid != 'string')) { console.log('No or invalid \"remoteNodeId\" specified.'); exit(1); return; }
-        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { console.log('No or invalid \"username\" specified, use --username [username].'); exit(1); return; }
-        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if (((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) && (settings.authcookie == null || typeof settings.authcookie != 'string' || settings.authcookie == '')) { console.log('No or invalid \"username\" specified, use --username [username].'); exit(1); return; }
+        if (((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) && (settings.authcookie == null || typeof settings.authcookie != 'string' || settings.authcookie == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.serverid == null) || (typeof settings.serverid != 'string') || (settings.serverid.length != 96)) { console.log('No or invalid \"serverId\" specified.'); exit(1); return; }
         if ((settings.serverhttpshash == null) || (typeof settings.serverhttpshash != 'string') || (settings.serverhttpshash.length != 96)) { console.log('No or invalid \"serverHttpsHash\" specified.'); exit(1); return; }
         if ((settings.remoteport == null) || (typeof settings.remoteport != 'number') || (settings.remoteport < 0) || (settings.remoteport > 65535)) { console.log('No or invalid \"remotePort\" specified, use --remoteport [remoteport].'); exit(1); return; }
@@ -2112,7 +2114,12 @@ function startRouter() {
     // Start by requesting a login token, this is needed because of 2FA and check that we have correct credentials from the start
     var options;
     try {
-        var url = settings.serverurl.split('meshrelay.ashx').join('control.ashx') + '?user=' + settings.username + '&pass=' + settings.password;
+        var url = settings.serverurl.split('meshrelay.ashx').join('control.ashx');
+        if (settings.authcookie != null) {
+            url += '?auth=' + settings.authcookie;
+        } else if (settings.username != null && settings.password != null) {
+            url += '?user=' + settings.username + '&pass=' + settings.password;
+        }
         if (settings.emailtoken) { url += '&token=**email**'; } else if (settings.token != null) { url += '&token=' + settings.token; }
         options = http.parseUri(url);
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
