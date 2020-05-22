@@ -436,6 +436,11 @@ module.exports.CertificateOperations = function (parent) {
             }
         }
 
+        // If web certificate exist, load it as default. This is useful for agent-only port. Load both certificate and private key
+        if (obj.fileExists('webserver-cert-public.crt') && obj.fileExists('webserver-cert-private.key')) {
+            r.webdefault = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
+        }
+
         if (args.tlsoffload) {
             // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
             if (obj.fileExists('webserver-cert-public.crt')) {
@@ -674,7 +679,7 @@ module.exports.CertificateOperations = function (parent) {
             mpsPrivateKey = r.mps.key;
         }
 
-        r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
+        r = { root: { cert: rootCertificate, key: rootPrivateKey }, web: { cert: webCertificate, key: webPrivateKey, ca: [] }, webdefault: { cert: webCertificate, key: webPrivateKey, ca: [] }, mps: { cert: mpsCertificate, key: mpsPrivateKey }, agent: { cert: agentCertificate, key: agentPrivateKey }, ca: calist, CommonName: commonName, RootName: rootName, AmtMpsName: mpsCommonName, dns: {}, WebIssuer: webIssuer };
 
         // Fetch the certificates names for the main certificate
         var webCertificate = obj.pki.certificateFromPem(r.web.cert);

@@ -389,10 +389,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 if (args.ignoreagenthashcheck === true) {
                     // Send the agent web hash back to the agent
+                    // Send 384 bits SHA384 hash of TLS cert + 384 bits nonce
                     obj.sendBinary(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
-                    if ((getWebCertHash(domain) != msg.substring(2, 50)) && (getWebCertFullHash(domain) != msg.substring(2, 50))) {
+                    const agentSeenCerthash = msg.substring(2, 50);
+                    if ((getWebCertHash(domain) != agentSeenCerthash) && (getWebCertFullHash(domain) != agentSeenCerthash) && (parent.defaultWebCertificateHash != agentSeenCerthash) && (parent.defaultWebCertificateFullHash != agentSeenCerthash)) {
                         if (parent.parent.supportsProxyCertificatesRequest !== false) {
                             obj.badWebCert = Buffer.from(parent.crypto.randomBytes(16), 'binary').toString('base64');
                             parent.wsagentsWithBadWebCerts[obj.badWebCert] = obj; // Add this agent to the list of of agents with bad web certificates.
@@ -404,6 +406,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         console.log('Agent bad web cert hash (Agent:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex').substring(0, 10)) + ' != Server:' + (Buffer.from(getWebCertHash(domain), 'binary').toString('hex').substring(0, 10)) + ' or ' + (Buffer.from(getWebCertFullHash(domain), 'binary').toString('hex').substring(0, 10)) + '), holding connection (' + obj.remoteaddrport + ').');
                         console.log('Agent reported web cert hash:' + (Buffer.from(msg.substring(2, 50), 'binary').toString('hex')) + '.');
                         return;
+                    } else {
+                        // The hash matched one of the acceptable values, send the agent web hash back to the agent
+                        // Send 384 bits SHA384 hash of TLS cert + 384 bits nonce
+                        // Command 1, hash + nonce. Use the web hash given by the agent.
+                        obj.sendBinary(common.ShortToStr(1) + agentSeenCerthash + obj.nonce);
                     }
                 }
 
@@ -518,12 +525,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
         obj.close(0);
     });
-
-    // Start authenticate the mesh agent by sending a auth nonce & server TLS cert hash.
-    // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
-    if (args.ignoreagenthashcheck !== true) {
-        obj.sendBinary(common.ShortToStr(1) + getWebCertHash(domain) + obj.nonce); // Command 1, hash + nonce
-    }
 
     // Return the mesh for this device, in some cases, we may auto-create the mesh.
     function getMeshAutoCreate() {
@@ -1045,22 +1046,36 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 try { msgDer = forge.asn1.fromDer(forge.util.createBuffer(msg, 'binary')); } catch (ex) { }
                 if (msgDer != null) {
                     try {
-                        var p7 = forge.pkcs7.messageFromAsn1(msgDer);
-                        var sig = p7.rawCapture.signature;
+                        const p7 = forge.pkcs7.messageFromAsn1(msgDer);
+                        const sig = p7.rawCapture.signature;
 
                         // Verify with key hash
                         var buf = Buffer.from(getWebCertHash(domain) + obj.nonce + obj.agentnonce, 'binary');
                         var verifier = parent.crypto.createVerify('RSA-SHA384');
                         verifier.update(buf);
                         verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
-                        if (verified == false) {
+                        if (verified !== true) {
                             // Verify with full hash
                             buf = Buffer.from(getWebCertFullHash(domain) + obj.nonce + obj.agentnonce, 'binary');
                             verifier = parent.crypto.createVerify('RSA-SHA384');
                             verifier.update(buf);
                             verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
                         }
-                        if (verified == false) {
+                        if (verified !== true) {
+                            // Verify with default key hash
+                            buf = Buffer.from(parent.defaultWebCertificateHash + obj.nonce + obj.agentnonce, 'binary');
+                            verifier = parent.crypto.createVerify('RSA-SHA384');
+                            verifier.update(buf);
+                            verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
+                        }
+                        if (verified !== true) {
+                            // Verify with default full hash
+                            buf = Buffer.from(parent.defaultWebCertificateFullHash + obj.nonce + obj.agentnonce, 'binary');
+                            verifier = parent.crypto.createVerify('RSA-SHA384');
+                            verifier.update(buf);
+                            verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
+                        }
+                        if (verified !== true) {
                             // Not a valid signature
                             parent.agentStats.invalidPkcsSignatureCount++;
                             return false;
