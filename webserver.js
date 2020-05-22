@@ -3583,6 +3583,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                 var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
+                if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
                 if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
 
                 // Prepare a mesh agent file name using the device group name.
@@ -3773,6 +3774,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (xdomain != '') xdomain += '/';
         var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
         if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
         if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
@@ -3865,6 +3867,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (xdomain != '') xdomain += '/';
         var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
         if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else { meshsettings += 'MeshServer=local\r\n'; }
         if (req.query.tag != null) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
