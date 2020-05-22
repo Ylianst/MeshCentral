@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - 초대
 ~<area-name>
-안녕 [[[NAME]]],
+안녕하세요, [[[NAME]]]님.
 ~</area-name>
 [[[SERVERNAME]]] ([[[SERVERURL]]]/) 서버의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해서는 소프트웨어 설치가 요구됩니다.
 ~<area-msg>
