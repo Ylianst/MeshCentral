@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Email 인증
-안녕 [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]])은 이메일 검증을 위해 실행됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :
+안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]])은 이메일 검증을 위해 실행됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
