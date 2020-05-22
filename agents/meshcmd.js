@@ -140,6 +140,7 @@ function run(argv) {
     if ((typeof args.hostname) == 'string') { settings.hostname = args.hostname; }
     if ((typeof args.serverid) == 'string') { settings.serverid = args.serverid; }
     if ((typeof args.serverhttpshash) == 'string') { settings.serverhttpshash = args.serverhttpshash; }
+    if ((typeof args.serverurl) == 'string') { settings.serverurl = args.serverurl; }
     if ((typeof args.remoteport) == 'string') { settings.remoteport = parseInt(args.remoteport); }
     if ((typeof args.remotetarget) == 'string') { settings.remotetarget = args.remotetarget; }
     if ((typeof args.out) == 'string') { settings.output = args.out; }
