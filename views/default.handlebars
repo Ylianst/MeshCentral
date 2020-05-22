@@ -1319,7 +1319,7 @@
             window.onresize = function () {
                 hideContextMenu();
                 masterUpdate(512);
-                if (xtermfit != null) { xtermfit.fit(); }
+                if ((xtermfit != null) && (xxcurrentView == 12)) { xtermfit.fit(); }
             }
             setTimeout(function() { masterUpdate(512); }, 200);
 
@@ -6355,7 +6355,7 @@
             adjustPanels();
             //setTimeout(adjustPanels, 10);
             //setTimeout(function() { xtermfit.fit(); }, 10);
-            if (xterm != null) { xtermfit.fit(); if (xxcurrentView == 12) { xterm.focus(); } }
+            if (xterm != null) { if (xxcurrentView == 12) { xtermfit.fit(); xterm.focus(); } }
         }
 
         function deskToggleFocus() {
@@ -12128,6 +12128,9 @@
 
             // Update Recordings
             if (x == 52) { if (p52recordings == null) { refreshRecodings(); } updateRecordings(); }
+
+            // Update terminal size
+            if ((x == 12) && (xtermfit != null)) { xtermfit.fit(); xterm.focus(); }
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
