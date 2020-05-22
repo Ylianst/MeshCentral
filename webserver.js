@@ -4749,7 +4749,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
             obj.parent.updateServerState('https-agent-port', port);
         } else {
-            obj.tcpAltServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
+            obj.tcpAltServer = obj.agentapp.listen(port, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             obj.parent.updateServerState('http-agent-port', port);
         }
     }
