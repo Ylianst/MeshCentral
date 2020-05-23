@@ -270,8 +270,16 @@
                         <div id=p1message style=text-align:center;width:100%></div>
                     </div>
                 </div>
-                <div id=p2 style=display:none>
-                    <div id=xdevices></div>
+                <div id=p2 style="display:none;position:absolute;top:0;left:0;right:0;bottom:0">
+                    <div id=xdevices style="position:absolute;overflow-y:auto;top:0;left:0;right:0;bottom:30px"></div>
+                    <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:30px;left:0;right:0;bottom:0px;background-color:#aaa">
+                        <div style="margin:4px">
+                            <span style="width:20px;display:inline-block;text-align:center;cursor:pointer" onclick=clearSearchInput()><b>X</b></span>
+                            <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off />&nbsp;
+                            <label class=noselect><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() />OS Name</label>
+                            <label class=noselect><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) />Online</label>
+                        </div>
+                    </div>
                 </div>
                 <div id=p3 style=display:none;position:absolute;bottom:0;top:0;width:100%>
                     <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
@@ -1787,6 +1795,83 @@
         // MY DEVICES
         //
 
+        function onRealNameCheckBox() {
+            showRealNames = Q('RealNameCheckBox').checked;
+            putstore('showRealNames', showRealNames ? 1 : 0);
+            updateDevices();
+        }
+
+        function onOnlineCheckBox(e) {
+            putstore('onlineOnly', Q('OnlineCheckBox').checked ? 1 : 0);
+            onSearchInputChanged();
+        }
+
+        function onDeviceSearchChanged(e) {
+            onSearchInputChanged();
+        }
+
+        function clearSearchInput() {
+            Q('SearchInput').value = '';
+            onSearchInputChanged();
+        }
+
+        function onSearchInputChanged() {
+            var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
+            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null;
+            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
+            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
+            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
+            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
+            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
+            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("tag:".length); }
+            else if (x.startsWith("t:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("t:".length); }
+
+            if (x == '') {
+                // No search
+                for (var d in nodes) { nodes[d].v = true; }
+            } else if (ipSearch != null) {
+                // IP address search
+                for (var d in nodes) { nodes[d].v = ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)); }
+            } else if (groupSearch != null) {
+                // Group filter
+                for (var d in nodes) { nodes[d].v = (meshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0); }
+            } else if (tagSearch != null) {
+                // Tag filter
+                for (var d in nodes) {
+                    nodes[d].v = ((nodes[d].tags == null) && (tagSearch == '')) || ((nodes[d].tags != null) && (nodes[d].tags.indexOf(tagSearch) >= 0));
+                }
+            } else if (userSearch != null) {
+                // User search
+                for (var d in nodes) {
+                    nodes[d].v = false;
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { nodes[d].v = true; } } }
+                }
+            } else {
+                // Device name search
+                try {
+                    var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+                    for (var d in nodes) {
+                        nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase()));
+                        if ((nodes[d].v == false) && nodes[d].tags) {
+                            for (var s in nodes[d].tags) {
+                                if (rx.test(nodes[d].tags[s].toLowerCase())) {
+                                    nodes[d].v = true;
+                                    break;
+                                } else {
+                                    nodes[d].v = false;
+                                }
+                            }
+                        }
+                    }
+                } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
+            }
+
+            // Check power state
+            var onlineOnly = Q('OnlineCheckBox').checked;
+            if (onlineOnly) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } }
+            updateDevices();
+        }
+
         function ondeskkeypress(e) {
             toggleSoftKeys(0);
             Q('DeskSoftInput').value = '';
@@ -1948,8 +2033,15 @@
                 if (typeof deviceHeaderCount[nodes[i].state] == 'undefined') { deviceHeaderCount[nodes[i].state] = 1; } else { deviceHeaderCount[nodes[i].state]++; }
             }
 
+            // If there is nothing to display, explain the problem
+            var viewNothing = false;
+            if ((r == '') && (nodes.length > 0) && (Q('SearchInput').value != '')) {
+                viewNothing = true;
+                r = '<div style="margin:30px">' + "No devices matching this search." + '</div>';
+            }
+
             // Display all empty device groups, we need to do this because users can add devices to these at any time.
-            if (sort == 0) {
+            if ((sort == 0) && (Q('SearchInput').value == '')) {
                 for (var i in meshes) {
                     var mesh = meshes[i];
                     if ((displayedMeshes[mesh._id] == null) && (IsMeshViewable(mesh))) {
@@ -2395,7 +2487,7 @@
 
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, format("Delete {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm", nodeid);
+            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, format("Delete {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><label><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>', nodeid);
             p10validateDeleteNodeDialog();
         }
 
