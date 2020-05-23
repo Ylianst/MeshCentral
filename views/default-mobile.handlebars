@@ -242,6 +242,11 @@
             .deviceNotifyLargeDot:hover {
                 background-color:#44F;
             }
+
+        .style10 {
+            background-color: #C9C9C9;
+            color: #000;
+        }
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -544,6 +549,9 @@
                             <tr><td style="text-align:left;padding:3px;text-align:center;background-color:#D3D9D6">&nbsp;<span id="p13bottomstatus"></span></td></tr>
                         </table>
                     </div>
+                    <div id=p10details style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                        <div id=p10detailshtml style="margin-left:-3px"></div>
+                    </div>
                 </div>
                 <div id=p20 style=display:none;position:absolute;bottom:0;top:0;width:100%>
                     <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
@@ -696,6 +704,7 @@
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
         var files;
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -896,6 +905,20 @@
                     powerTimeline = message.timeline;
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
                     if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
+                    break;
+                }
+                case 'getsysinfo': {
+                    if (message.nodeid != powerTimelineReq) break;
+                    if (message.noinfo === true) {
+                        updateDeviceDetails(getNodeFromId(message.nodeid));
+                    } else {
+                        updateDeviceDetails(getNodeFromId(message.nodeid), message.hardware);
+                    }
+                    break;
+                }
+                case 'getnetworkinfo': {
+                    if (currentNode._id != message.nodeid) return;
+                    updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     break;
                 }
                 case 'otpauth-request': {
@@ -1253,6 +1276,13 @@
                             //var n = { text: message.event.value };
                             //if (message.event.tag != null) { n.tag = message.event.tag; }
                             //addNotification(n);
+                            break;
+                        }
+                        case 'sysinfohash': {
+                            // If the sysinfo document has changed and we are looking at it, request an update.
+                            if ((currentNode != null) && (message.event.nodeid == powerTimelineReq)) {
+                                meshserver.send({ action: 'getsysinfo', nodeid: message.event.nodeid });
+                            }
                             break;
                         }
                         case 'devicesessions': {
@@ -2211,7 +2241,6 @@
                 }
 
                 // Attribute: Mesh Agent
-                var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
                 if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
@@ -2289,7 +2318,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<input type=button value=Actions onclick=deviceActionFunction() />'; }
+                if ((meshrights & 76) != 0) { x += '<input type=button value=\"' + "Actions" + '\" onclick=deviceActionFunction() />'; }
                 //x += '<input type=button value=Notes onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponent(node._id) + '") />';
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast onclick=deviceToastFunction() />';  }
                 QH('p10html', x);
@@ -2321,7 +2350,14 @@
                 QH('MainComputerImage', '<div class="i' + node.icon + '"></div>');
 
                 // Request the power timeline
-                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) { QH('p10html2', ''); powerTimelineReq = currentNode._id; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
+                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) {
+                    QH('p10html2', '');
+                    powerTimelineReq = currentNode._id;
+                    meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
+                    meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
+                    meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
+                    QH('p10detailshtml', '');
+                }
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;
@@ -2347,16 +2383,18 @@
             QV('p10general', currentDevicePanel == 0);
             QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
             QV('p10files', currentDevicePanel == 2);
+            QV('p10details', currentDevicePanel == 3);
             var menus = [];
-            if (currentDevicePanel != 0) { menus.push({ n: 'General', f: 'setupDeviceMenu(0)' }); }
+            if (currentDevicePanel != 0) { menus.push({ n: "General", f: 'setupDeviceMenu(0)' }); }
 
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
                 ((meshrights & 8) || (meshrights & 256)) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 65536) == 0)) &&
                 (((currentNode.agent == null) && ((typeof currentNode.intelamt.sku !== 'number') || ((currentNode.intelamt.sku & 8) != 0))) || (currentNode.agent && (currentNode.agent.caps & 1)))
-            ) { menus.push({ n: 'Desktop', f: 'setupDeviceMenu(1)' }); }
+            ) { menus.push({ n: "Desktop", f: 'setupDeviceMenu(1)' }); }
 
-            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: 'Files', f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype == 2) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 3) && (currentNode != null)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             updateFooterMenu(menus);
         }
 
@@ -2432,7 +2470,7 @@
                 ++count;
                 date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
             }
-            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>Day</th><th scope=col style=text-align:center>Power State</th></tr>' + x + '</tbody></table>');
+            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -3426,6 +3464,197 @@
                 Q('d2progressBar').value = end;
             }
         }
+        //
+        // DEVICE DETAILS
+        //
+
+        var DeviceDetailsHardware = null;
+        var DeviceDetailsNetwork = null;
+        var DeviceDetailsNodeId = null;
+        function updateDeviceDetails(node, hardware, network) {
+            if (currentNode == null) return;
+            if (node == null) { node = currentNode; }
+            if (currentNode._id != node._id) return;
+            if (DeviceDetailsNodeId != node._id) { DeviceDetailsHardware = null; DeviceDetailsNetwork = null; DeviceDetailsNodeId = node._id; }
+            if (hardware != null) { DeviceDetailsHardware = hardware; }
+            if (network != null) { DeviceDetailsNetwork = network; }
+            hardware = DeviceDetailsHardware;
+            network = DeviceDetailsNetwork;
+            if (hardware == null) { hardware = {}; }
+            if (network == null) { network = {}; }
+            var sections = [], s = {};
+
+            // Operating System
+            if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
+                var x = '';
+                if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+                if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
+                if (hardware.windows && hardware.windows.osinfo) {
+                    var m = hardware.windows.osinfo;
+                    if (m.OSArchitecture) { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
+                }
+                if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software32.png' }); }
+            }
+
+            // MeshAgent
+            if (node.agent) {
+                var x = '';
+                if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
+                    var str = '';
+                    if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
+                    if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    x += addDetailItem("Mesh Agent", str);
+                }
+                if ((node.conn & 1) != 0) {
+                    x += addDetailItem("Last agent connection", "Connected now");
+                } else {
+                    if (node.lastconnect) { x += addDetailItem("Last agent connection", printDateTime(new Date(node.lastconnect))); }
+                }
+                if (node.lastaddr) {
+                    var splitip = node.lastaddr.split(':');
+                    if (splitip.length > 2) {
+                        // IPv6
+                        x += addDetailItem("Last agent address", node.lastaddr);
+                    } else {
+                        // IPv4
+                        if (isPrivateIP(node.lastaddr)) {
+                            x += addDetailItem("Last agent address", splitip[0]);
+                        } else {
+                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a>');
+                        }
+                    }
+                }
+                if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent32.png' }); }
+            }
+
+            // Networking
+            if (network.netif != null) {
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in network.netif) {
+                    var m = network.netif[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.name + (m.dnssuffix ? (', ' + m.dnssuffix) : '')) + '</b></div>';
+                    if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
+                    //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
+                    if (m.mac) {
+                        if (m.gatewaymac) {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m.mac), EscapeHtml(m.gatewaymac)));
+                        } else {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}", m.mac));
+                        }
+                    }
+                    if (m.v4addr && (m.v4addr != '0.0.0.0')) {
+                        if (m.v4gateway && m.v4mask) {
+                            x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(m.v4addr), EscapeHtml(m.v4mask), EscapeHtml(m.v4gateway)));
+                        } else {
+                            x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(m.v4addr)));
+                        }
+                    }
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking32.png' }); }
+            }
+
+            // Attribute: Intel AMT
+            if (node.intelamt != null) {
+                var x = '';
+                x += addDetailItem("Version", (node.intelamt.ver) ? ('v' + node.intelamt.ver) : ('<i>' + "Unknown" + '</i>'), s);
+                var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
+                var provisioningMode = '';
+                if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
+                x += addDetailItem("Provisioning State", ((node.intelamt.state) ? (provisioningStates[node.intelamt.state]) : ('<i>' + "Unknown" + '</i>')) + provisioningMode, s);
+                x += addDetailItem("Security", (node.intelamt.tls == 1) ? "Secured using TLS" : "TLS is not setup", s);
+                x += addDetailItem("Admin Credentials", (node.intelamt.user == null || node.intelamt.user == '') ? "Not Known" : "Known", s);
+                if (x != '') { sections.push({ name: "Intel&reg; Active Management Technology (Intel&reg; AMT)", html: x, img: 'amt32.png' }); }
+            }
+
+            if (hardware.identifiers) {
+                var x = '', ident = hardware.identifiers;
+                // BIOS
+                if (ident.bios_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.bios_vendor), s); }
+                if (ident.bios_version) { x += addDetailItem("Version", EscapeHtml(ident.bios_version), s); }
+                if (x != '') { sections.push({ name: "BIOS", html: x, img: 'chip32.png' }); }
+
+                // Motherboard
+                x = '';
+                if (ident.board_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.board_vendor), s); }
+                if (ident.board_name) { x += addDetailItem("Name", EscapeHtml(ident.board_name), s); }
+                if (ident.board_serial && (ident.board_serial != '')) { x += addDetailItem("Serial", EscapeHtml(ident.board_serial), s); }
+                if (ident.board_version) { x += addDetailItem("Version", EscapeHtml(ident.board_version), s); }
+                if (ident.product_uuid) { x += addDetailItem("Identifier", EscapeHtml(ident.product_uuid), s); }
+                if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
+                if (ident.gpu_name) { for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
+                if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard32.png' }); }
+            }
+
+            if (hardware.windows) {
+                if (hardware.windows.memory) {
+                    var x = '';
+                    // Sort Memory
+                    hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
+
+                    x += '<table style=width:100%>';
+                    for (var i in hardware.windows.memory) {
+                        var m = hardware.windows.memory[i];
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.BankLabel) + '</b></div>';
+                        if (m.Capacity) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
+                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + EscapeHtml(m.PartNumber), s); }
+                        x += '</div>';
+                    }
+                    x += '</table>';
+
+                    if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram32.png' }); }
+                }
+            }
+
+            // Storage
+            if (hardware.identifiers && ident.storage_devices) {
+                var x = '';
+                // Sort Storage
+                ident.storage_devices.sort(function (a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
+
+                x += '<table style=width:100%>';
+                for (var i in ident.storage_devices) {
+                    var m = ident.storage_devices[i];
+                    if (m.Size) {
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.Caption) + '</b></div>';
+                        if (m.Model && (m.Model != m.Caption)) { x += addDetailItem("Model", EscapeHtml(m.Model), s); }
+                        if (m.Size) {
+                            if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
+                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
+                            if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
+                        }
+                        x += '</div>';
+                    }
+                }
+                x += '</table>';
+
+                if (x != '') { sections.push({ name: "Storage", html: x, img: 'storage32.png' }); }
+            }
+
+            // Render the sections
+            var x = '';
+            for (var i in sections) {
+                if (sections[i].img == null) {
+                    x += '<div class=DevSt style=margin-bottom:3px;margin-left:4px><b>' + sections[i].name + '</b></div><div style=margin-bottom:10px;margin-left:4px>' + sections[i].html + '</div>';
+                } else {
+                    x += '<table style=width:100%><tr>';
+                    x += '<td style=width:32px;vertical-align:top><img src=images/details/' + sections[i].img + ' border=0 width=32 /></td>'; // height=12 
+                    x += '<td><div class=DevSt style=margin-bottom:3px;margin-left:4px><b>' + sections[i].name + '</b></div><div style=margin-bottom:10px;margin-left:4px>' + sections[i].html + '</div></td>';
+                    x += '</tr></table>';
+                }
+            }
+
+            if (x == '') {
+                QH('p10detailshtml', "No information for this device.");
+            } else {
+                QH('p10detailshtml', x);
+            }
+        }
 
         //
         // MY MESHS
@@ -3861,6 +4090,7 @@
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
         function getUserName(userid) { if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
+        function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
 
     </script>
 </body>

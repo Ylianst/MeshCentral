@@ -1937,7 +1937,6 @@
                 }
                 case 'getsysinfo': {
                     if (message.nodeid != powerTimelineReq) break;
-                    //console.log('getsysinfo', message); // ***********************
                     if (message.noinfo === true) {
                         updateDeviceDetails(getNodeFromId(message.nodeid));
                     } else {
