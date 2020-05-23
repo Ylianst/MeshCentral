@@ -4093,9 +4093,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ) {
                     if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
                         req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
-                    } else if (res.headers['x-forwarded-for']) {
+                    } else if (req.headers['x-forwarded-for']) {
                         req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
-                    } else if (res.headers['x-real-ip']) {
+                    } else if (req.headers['x-real-ip']) {
                         req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
                     } else {
                         req.clientIp = ipex;
