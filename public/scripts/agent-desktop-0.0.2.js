@@ -4,6 +4,9 @@
 * @version v0.0.2g
 */
 
+// Polyfill Uint8Array.slice() for IE
+if (!Uint8Array.prototype.slice) { Object.defineProperty(Uint8Array.prototype, 'slice', { value: function (begin, end) { return new Uint8Array(Array.prototype.slice.call(this, begin, end)); } }); }
+
 // Construct a MeshServer object
 var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     var obj = {}
