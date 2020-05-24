@@ -1743,7 +1743,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             const userid = req.user.id;
             var user = obj.users[userid];
             if (user == null) {
-                if (domain.newaccounts == true) {
+                if ((domain.newaccounts === true) || (req.user.newaccounts === true)) {
                     // Create the user
                     parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), domain: domain.id };
@@ -2111,6 +2111,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (typeof domain.authstrategies.google == 'object') { authStrategies.push('google'); }
             if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
             if (typeof domain.authstrategies.reddit == 'object') { authStrategies.push('reddit'); }
+            if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
             if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
             if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
             if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
@@ -4194,11 +4195,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~twitter:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                            if (domain.authstrategies.twitter.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
                     obj.app.get(url + 'auth-twitter', domain.passport.authenticate('twitter'));
                     obj.app.get(url + 'auth-twitter-callback', function (req, res, next) {
+                        if (domain.passport == null) { next(); return; }
                         if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
                             // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
                             var url = req.url;
@@ -4218,6 +4221,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~google:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
+                            if (domain.authstrategies.google.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
@@ -4232,6 +4236,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~github:' + profile.id, name: profile.displayName };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                            if (domain.authstrategies.github.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
@@ -4246,14 +4251,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         function (token, tokenSecret, profile, cb) {
                             var user = { id: 'user/' + domain.id + '/~reddit:' + profile.id, name: profile.name };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                            if (domain.authstrategies.reddit.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
                     obj.app.get(url + 'auth-reddit', function (req, res, next) {
+                        if (domain.passport == null) { next(); return; }
                         req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
                         domain.passport.authenticate('reddit', { state: req.session.rstate, duration: 'permanent' })(req, res, next);
                     });
                     obj.app.get(url + 'auth-reddit-callback', function (req, res, next) {
+                        if (domain.passport == null) { next(); return; }
                         if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
                             // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
                             var url = req.url;
@@ -4264,6 +4272,52 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (req.query.state == req.session.rstate) {
                                 delete req.session.rstate;
                                 domain.passport.authenticate('reddit', { failureRedirect: '/' })(req, res, next);
+                            } else {
+                                delete req.session.rstate;
+                                next(new Error(403));
+                            }
+                        }
+                    }, handleStrategyLogin);
+                }
+
+                // Azure
+                if ((typeof domain.authstrategies.azure == 'object') && (typeof domain.authstrategies.azure.clientid == 'string') && (typeof domain.authstrategies.azure.clientsecret == 'string')) {
+                    const AzureOAuth2Strategy = require('passport-azure-oauth2');
+                    passport.use('azure', new AzureOAuth2Strategy({
+                        clientID: domain.authstrategies.azure.clientid,
+                        clientSecret: domain.authstrategies.azure.clientsecret,
+                        tenant: domain.authstrategies.azure.tenantid,
+                        callbackURL: url + 'auth-azure-callback'
+                    },
+                        function (accessToken, refreshtoken, params, profile, done) {
+                            var userex = null;
+                            try { userex = require('jwt-simple').decode(params.id_token, "", true); } catch (ex) { }
+                            var user = null;
+                            if (userex != null) {
+                                var user = { id: 'user/' + domain.id + '/~azure:' + userex.unique_name, name: userex.name };
+                                if (typeof userex.email == 'string') { user.email = userex.email; }
+                                if (domain.authstrategies.azure.newaccounts == true) { user.newaccounts = true; }
+                            }
+                            return done(null, user);
+                        }
+                    ));
+                    obj.app.get(url + 'auth-azure', function (req, res, next) {
+                        if (domain.passport == null) { next(); return; }
+                        req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
+                        domain.passport.authenticate('azure', { state: req.session.rstate })(req, res, next);
+                    });
+                    obj.app.get(url + 'auth-azure-callback', function (req, res, next) {
+                        if (domain.passport == null) { next(); return; }
+                        if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
+                            // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
+                            var url = req.url;
+                            if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
+                            res.set('Content-Type', 'text/html');
+                            res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                        } else {
+                            if (req.query.state == req.session.rstate) {
+                                delete req.session.rstate;
+                                domain.passport.authenticate('azure', { failureRedirect: '/' })(req, res, next);
                             } else {
                                 delete req.session.rstate;
                                 next(new Error(403));
@@ -4291,13 +4345,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
+                                    if (domain.authstrategies.saml.newaccounts == true) { user.newaccounts = true; }
                                     return done(null, user);
                                 }
                             ));
                             obj.app.get(url + 'auth-saml', function (req, res, next) {
+                                if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-saml-callback', function (req, res, next) {
+                                if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
                         }
@@ -4330,10 +4387,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 }
                             ));
                             obj.app.get(url + 'auth-intel', function (req, res, next) {
+                                if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-intel-callback', function (req, res, next) {
-                                console.log('auth-intel-callback');
+                                if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
                         }
@@ -4363,9 +4421,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 }
                             ));
                             obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
+                                if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-jumpcloud-callback', function (req, res, next) {
+                                if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
                         }

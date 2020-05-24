@@ -163,32 +163,45 @@
         "__comment__" : "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
         "twitter": {
           "__callbackurl": "https://server/auth-twitter-callback",
+          "newAccounts": true,
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "google": {
           "__callbackurl": "https://server/auth-google-callback",
+          "newAccounts": true,
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxx"
         },
         "github": {
           "__callbackurl": "https://server/auth-github-callback",
+          "newAccounts": true,
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "reddit": {
           "__callbackurl": "https://server/auth-reddit-callback",
+          "newAccounts": true,
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
+        "azure": {
+          "__callbackurl": "https://server/auth-azure-callback",
+          "newAccounts": true,
+          "clientid": "00000000-0000-0000-0000-000000000000",
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "tenantid": "00000000-0000-0000-0000-000000000000"
+        },
         "jumpcloud": {
           "__callbackurl": "https://server/auth-jumpcloud-callback",
+          "newAccounts": true,
           "entityid": "meshcentral",
           "idpurl": "https://sso.jumpcloud.com/saml2/saml2",
           "cert": "jumpcloud-saml.pem"
         },
         "saml": {
           "__callbackurl": "https://server/auth-saml-callback",
+          "newAccounts": true,
           "entityid": "meshcentral",
           "idpurl": "https://server/saml2",
           "cert": "saml.pem"

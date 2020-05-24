@@ -26,7 +26,8 @@
     "translate",
     "readme.txt",
     "license.txt",
-    "sample-config.json"
+    "sample-config.json",
+    "sample-config-advanced.json"
   ],
   "dependencies": {
     "archiver": "^3.0.0",

@@ -24002,6 +24002,13 @@
       ]
     },
     {
+      "en": "Sign-in using Azure",
+      "xloc": [
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-azure",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-azure"
+      ]
+    },
+    {
       "en": "Sign-in using GitHub",
       "nl": "Log in met GitHub",
       "xloc": [
