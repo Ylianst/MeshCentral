@@ -4199,8 +4199,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             return cb(null, user);
                         }
                     ));
-                    obj.app.get(url + 'auth-twitter', domain.passport.authenticate('twitter'));
+                    obj.app.get(url + 'auth-twitter', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('twitter')(req, res, next);
+                    });
                     obj.app.get(url + 'auth-twitter-callback', function (req, res, next) {
+                        var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
                         if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
                             // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
@@ -4225,8 +4230,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             return cb(null, user);
                         }
                     ));
-                    obj.app.get(url + 'auth-google', domain.passport.authenticate('google', { scope: ['profile', 'email'] }));
-                    obj.app.get(url + 'auth-google-callback', domain.passport.authenticate('google', { failureRedirect: '/' }), handleStrategyLogin);
+                    obj.app.get(url + 'auth-google', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+                    });
+                    obj.app.get(url + 'auth-google-callback', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('google', { failureRedirect: '/' })(req, res, next);
+                    }, handleStrategyLogin);
                 }
 
                 // Github
@@ -4240,8 +4253,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             return cb(null, user);
                         }
                     ));
-                    obj.app.get(url + 'auth-github', domain.passport.authenticate('github', { scope: ['user:email'] }));
-                    obj.app.get(url + 'auth-github-callback', domain.passport.authenticate('github', { failureRedirect: '/' }), handleStrategyLogin);
+                    obj.app.get(url + 'auth-github', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('github', { scope: ['user:email'] })(req, res, next);
+                    });
+                    obj.app.get(url + 'auth-github-callback', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('github', { failureRedirect: '/' })(req, res, next);
+                    }, handleStrategyLogin);
                 }
 
                 // Reddit
@@ -4256,11 +4277,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     ));
                     obj.app.get(url + 'auth-reddit', function (req, res, next) {
+                        var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
                         req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
                         domain.passport.authenticate('reddit', { state: req.session.rstate, duration: 'permanent' })(req, res, next);
                     });
                     obj.app.get(url + 'auth-reddit-callback', function (req, res, next) {
+                        var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
                         if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
                             // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
@@ -4302,11 +4325,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     ));
                     obj.app.get(url + 'auth-azure', function (req, res, next) {
+                        var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
                         req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
                         domain.passport.authenticate('azure', { state: req.session.rstate })(req, res, next);
                     });
                     obj.app.get(url + 'auth-azure-callback', function (req, res, next) {
+                        var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
                         if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
                             // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
@@ -4350,10 +4375,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 }
                             ));
                             obj.app.get(url + 'auth-saml', function (req, res, next) {
+                                var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-saml-callback', function (req, res, next) {
+                                var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
@@ -4382,15 +4409,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     else if ((typeof profile.FirstName == 'string') && (typeof profile.LastName == 'string')) { user.name = profile.FirstName + ' ' + profile.LastName; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
                                     else if (typeof profile.EmailAddress == 'string') { user.email = profile.EmailAddress; }
-                                    console.log(user);
                                     return done(null, user);
                                 }
                             ));
                             obj.app.get(url + 'auth-intel', function (req, res, next) {
+                                var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-intel-callback', function (req, res, next) {
+                                var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
@@ -4421,10 +4449,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 }
                             ));
                             obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
+                                var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             });
                             obj.app.post(url + 'auth-jumpcloud-callback', function (req, res, next) {
+                                var domain = getDomain(req);
                                 if (domain.passport == null) { next(); return; }
                                 domain.passport.authenticate('saml', { failureRedirect: '/', failureFlash: true })(req, res, next);
                             }, handleStrategyLogin);
