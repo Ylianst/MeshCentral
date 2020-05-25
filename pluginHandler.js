@@ -130,7 +130,7 @@ module.exports.pluginHandler = function (parent) {
     obj.refreshJS = function (req, res) {
         // to minimize server reboots when installing new plugins, we call the new data and overwrite the old pluginHandler on the front end
         res.set('Content-Type', 'text/javascript');
-        res.send('pluginHandlerBuilder = ' + obj.prepExports() + ' pluginHandler = new pluginHandlerBuilder(); pluginHandler.callHook("onWebUIStartupEnd");');
+        res.send('pluginHandlerBuilder = ' + obj.prepExports() + "\r\n" + ' pluginHandler = new pluginHandlerBuilder(); pluginHandler.callHook("onWebUIStartupEnd");');
     }
 
     obj.callHook = function (hookName, ...args) {
