@@ -390,6 +390,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             user['emailVerified'] = true;
                         }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
+                        if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
@@ -478,6 +479,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             user['emailVerified'] = true;
                         }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
+                        if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
@@ -1142,6 +1144,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             } else {
                                 var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
+                                if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
                                 if (domainUserCount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
                                 obj.users[user._id] = user;
@@ -1744,14 +1747,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var user = obj.users[userid];
             if (user == null) {
                 var newAccountAllowed = false;
+                var newAccountRealms = null;
+
                 if (domain.newaccounts === true) { newAccountAllowed = true; }
-                if ((domain.authstrategies != null) && (domain.authstrategies[req.user.strategy] != null) && (domain.authstrategies[req.user.strategy].newaccounts === true)) { newAccountAllowed = true; }
+                if (obj.common.validateStrArray(domain.newaccountrealms)) { newAccountRealms = domain.newaccountrealms; }
+
+                if ((domain.authstrategies != null) && (domain.authstrategies[req.user.strategy] != null)) {
+                    if (domain.authstrategies[req.user.strategy].newaccounts === true) { newAccountAllowed = true; }
+                    if (obj.common.validateStrArray(domain.authstrategies[req.user.strategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[req.user.strategy].newaccountrealms; }
+                }
 
                 if (newAccountAllowed === true) {
                     // Create the user
                     parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
+                    if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
+                    if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
                     obj.users[userid] = user;
                     obj.db.SetUser(user);
 
@@ -1899,6 +1911,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Create the domain user
                     var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000) };
                     if (domain.newaccountsrights) { user2.siteadmin = domain.newaccountsrights; }
+                    if (obj.common.validateStrArray(domain.newaccountrealms)) { user2.groups = domain.newaccountrealms; }
                     for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                     if (usercount == 0) { user2.siteadmin = 4294967295; } // If this is the first user, give the account site admin.
                     obj.users[req.session.userid] = user2;
