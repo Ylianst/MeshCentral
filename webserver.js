@@ -1739,11 +1739,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         parent.debug('web', 'handleStrategyLogin: ' + JSON.stringify(req.user));
-        if ((req.user != null) && (req.user.id != null) && (domain.id == req.user.id.split('/')[1])) {
-            const userid = req.user.id;
+        if ((req.user != null) && (req.user.sid != null)) {
+            const userid = 'user/' + domain.id + '/' + req.user.sid;
             var user = obj.users[userid];
             if (user == null) {
-                if ((domain.newaccounts === true) || (req.user.newaccounts === true)) {
+                var newAccountAllowed = false;
+                if (domain.newaccounts === true) { newAccountAllowed = true; }
+                if ((domain.authstrategies != null) && (domain.authstrategies[req.user.strategy] != null) && (domain.authstrategies[req.user.strategy].newaccounts === true)) { newAccountAllowed = true; }
+
+                if (newAccountAllowed === true) {
                     // Create the user
                     parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), domain: domain.id };
@@ -1757,7 +1761,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                     parent.DispatchEvent(targets, obj, event);
 
-                    req.session.userid = req.user.id;
+                    req.session.userid = userid;
                     req.session.domainid = domain.id;
                 } else {
                     // New users not allowed
@@ -1782,7 +1786,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     parent.DispatchEvent(targets, obj, event);
                 }
                 parent.debug('web', 'handleStrategyLogin: succesful login: ' + userid);
-                req.session.userid = req.user.id;
+                req.session.userid = userid;
                 req.session.domainid = domain.id;
             }
         }
@@ -4183,8 +4187,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Setup auth strategies using passport if needed
             if (typeof domain.authstrategies == 'object') {
                 const passport = domain.passport = require('passport');
-                passport.serializeUser(function (user, done) { done(null, user.id); });
-                passport.deserializeUser(function (id, done) { done(null, { id: id }); });
+                passport.serializeUser(function (user, done) { done(null, user.sid); });
+                passport.deserializeUser(function (sid, done) { done(null, { sid: sid }); });
                 obj.app.use(passport.initialize());
                 //obj.app.use(passport.session());
 
@@ -4193,9 +4197,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     const TwitterStrategy = require('passport-twitter');
                     passport.use(new TwitterStrategy({ consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret, callbackURL: url + 'auth-twitter-callback' },
                         function (token, tokenSecret, profile, cb) {
-                            var user = { id: 'user/' + domain.id + '/~twitter:' + profile.id, name: profile.displayName };
+                            parent.debug('web', 'Twitter profile: ' + JSON.stringify(profile));
+                            var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            if (domain.authstrategies.twitter.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
@@ -4224,9 +4228,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     const GoogleStrategy = require('passport-google-oauth20');
                     passport.use(new GoogleStrategy({ clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret, callbackURL: url + 'auth-google-callback' },
                         function (token, tokenSecret, profile, cb) {
-                            var user = { id: 'user/' + domain.id + '/~google:' + profile.id, name: profile.displayName };
+                            parent.debug('web', 'Google profile: ' + JSON.stringify(profile));
+                            var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
-                            if (domain.authstrategies.google.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
@@ -4247,9 +4251,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     const GitHubStrategy = require('passport-github2');
                     passport.use(new GitHubStrategy({ clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret, callbackURL: url + 'auth-github-callback' },
                         function (token, tokenSecret, profile, cb) {
-                            var user = { id: 'user/' + domain.id + '/~github:' + profile.id, name: profile.displayName };
+                            parent.debug('web', 'Github profile: ' + JSON.stringify(profile));
+                            var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            if (domain.authstrategies.github.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
@@ -4270,9 +4274,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     const RedditStrategy = require('passport-reddit');
                     passport.use(new RedditStrategy.Strategy({ clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret, callbackURL: url + 'auth-reddit-callback' },
                         function (token, tokenSecret, profile, cb) {
-                            var user = { id: 'user/' + domain.id + '/~reddit:' + profile.id, name: profile.name };
+                            parent.debug('web', 'Reddit profile: ' + JSON.stringify(profile));
+                            var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
                             if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            if (domain.authstrategies.reddit.newaccounts == true) { user.newaccounts = true; }
                             return cb(null, user);
                         }
                     ));
@@ -4315,11 +4319,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         function (accessToken, refreshtoken, params, profile, done) {
                             var userex = null;
                             try { userex = require('jwt-simple').decode(params.id_token, "", true); } catch (ex) { }
+                            parent.debug('web', 'Azure profile: ' + JSON.stringify(userex));
                             var user = null;
                             if (userex != null) {
-                                var user = { id: 'user/' + domain.id + '/~azure:' + userex.unique_name, name: userex.name };
+                                var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
                                 if (typeof userex.email == 'string') { user.email = userex.email; }
-                                if (domain.authstrategies.azure.newaccounts == true) { user.newaccounts = true; }
                             }
                             return done(null, user);
                         }
@@ -4366,11 +4370,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             const SamlStrategy = require('passport-saml').Strategy;
                             passport.use(new SamlStrategy(options,
                                 function (profile, done) {
+                                    parent.debug('web', 'SAML profile: ' + JSON.stringify(profile));
                                     if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { id: 'user/' + domain.id + '/~' + profile.issuer + ':' + profile.nameID, name: profile.nameID };
+                                    var user = { sid: '~' + profile.issuer + ':' + profile.nameID, name: profile.nameID, strategy: 'saml' };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
-                                    if (domain.authstrategies.saml.newaccounts == true) { user.newaccounts = true; }
                                     return done(null, user);
                                 }
                             ));
@@ -4403,8 +4407,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             const SamlStrategy = require('passport-saml').Strategy;
                             passport.use(new SamlStrategy(options,
                                 function (profile, done) {
+                                    parent.debug('web', 'Intel profile: ' + JSON.stringify(profile));
                                     if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { id: 'user/' + domain.id + '/~intel:' + profile.nameID, name: profile.nameID };
+                                    var user = { sid: '~intel:' + profile.nameID, name: profile.nameID, strategy: 'intel' };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
                                     else if ((typeof profile.FirstName == 'string') && (typeof profile.LastName == 'string')) { user.name = profile.FirstName + ' ' + profile.LastName; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
@@ -4441,8 +4446,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             const SamlStrategy = require('passport-saml').Strategy;
                             passport.use(new SamlStrategy(options,
                                 function (profile, done) {
+                                    parent.debug('web', 'JumpCloud profile: ' + JSON.stringify(profile));
                                     if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { id: 'user/' + domain.id + '/~jumpcloud:' + profile.nameID, name: profile.nameID };
+                                    var user = { sid: '~jumpcloud:' + profile.nameID, name: profile.nameID, strategy: 'jumpcloud' };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
                                     return done(null, user);
