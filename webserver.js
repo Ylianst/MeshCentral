@@ -4372,7 +4372,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 function (profile, done) {
                                     parent.debug('web', 'SAML profile: ' + JSON.stringify(profile));
                                     if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { sid: '~' + profile.issuer + ':' + profile.nameID, name: profile.nameID, strategy: 'saml' };
+                                    var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml' };
                                     if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
                                     if (typeof profile.email == 'string') { user.email = profile.email; }
                                     return done(null, user);
