@@ -20415,6 +20415,7 @@
     },
     {
       "en": "Power State",
+      "nl": "Stroomstatus",
       "xloc": [
         "default-mobile.handlebars->9->256"
       ]
@@ -24003,6 +24004,7 @@
     },
     {
       "en": "Sign-in using Azure",
+      "nl": "Log in met Azure",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-azure",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-azure"
