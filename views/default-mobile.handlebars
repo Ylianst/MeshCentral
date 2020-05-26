@@ -1,12 +1,18 @@
 ﻿<!DOCTYPE html>
 <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="shortcut icon" type="image/x-icon" href="{{{domainurl}}}favicon.ico" />
+    <link rel="manifest" href="{{{domainurl}}}manifest.json">
+    <link rel="shortcut icon" href="{{{domainurl}}}favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="{{{domainurl}}}favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{{domainurl}}}favicon-32x32.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="{{{title}}}">
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1{{{min}}}.js"></script>
@@ -19,6 +25,8 @@
     <script type="text/javascript" src="scripts/zlib-adler32{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    <meta name="msapplication-TileColor" content="#00aba9">
+    <meta name="theme-color" content="#ffffff">
     <title>{{{title}}}</title>
     <style>
         a {
@@ -263,7 +271,7 @@
             </div>
             <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;bottom:50px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
-        <div id=page_content style="overflow-y:scroll;position:absolute;bottom:32px;top:50px;width:100%">
+        <div id=page_content style="position:absolute;bottom:32px;top:50px;width:100%">
             <div id=column_l style="width:100%;padding:0;position:absolute;bottom:0px;top:0px">
                 <div id=p0 style=display:none;width:100%;height:100%>
                     <div style="display:flex;align-items:center;width:100%;height:100%">
@@ -305,7 +313,7 @@
                             </td>
                         </tr>
                     </table>
-                    <div id=p3info style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                    <div id=p3info style="overflow-y:auto;position:absolute;top:55px;bottom:0px;width:100%">
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
                                 <div id="p2AccountSecurity" style="display:none">
@@ -357,7 +365,7 @@
                             </td>
                         </tr>
                     </table>
-                    <div id=p5myfiles style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
+                    <div id=p5myfiles style="position:absolute;top:55px;bottom:0px;width:100%">
                         <table id="p5toolbar" style="width:100%;height:78px" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td style="width:100%;background-color:#d3d9d6;text-align:left;padding:4px" valign=bottom>
@@ -397,7 +405,7 @@
                                 </td>
                             </tr>
                         </table>
-                        <div id="p5filetable" style="width:100%;height:calc(100% - 133px);overflow:auto;-webkit-user-select:none">
+                        <div id="p5filetable" style="width:100%;height:calc(100% - 102px);overflow:auto;-webkit-user-select:none">
                             <!--
                             <div id="p5bigok" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&checkmark;</b></div>
                             <div id="p5bigfail" style="width:256px;overflow:hidden;position:absolute;left:337px;top:200px;text-align:center;font-size:1600%;color:#AAAAAA;display:none"><b>&#10007;</b></div>
@@ -486,7 +494,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id=p10files style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                    <div id=p10files style="position:absolute;top:55px;bottom:0px;width:100%;display:none">
                         <table id="p13toolbar" style="width:100%;height:111px" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td style="background-color:#C0C0C0;border-bottom:2px solid black;padding:2px">
@@ -553,8 +561,8 @@
                         <div id=p10detailshtml style="margin-left:-3px"></div>
                     </div>
                 </div>
-                <div id=p20 style=display:none;position:absolute;bottom:0;top:0;width:100%>
-                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;">
+                <div id=p20 style="display:none;position:absolute;bottom:0;top:0;width:100%">
+                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
@@ -572,7 +580,9 @@
                             </td>
                         </tr>
                     </table>
-                    <div id=p20info style="margin-left:8px;margin-right:8px"></div>
+                    <div style="overflow-y:auto;position:absolute;top:55px;bottom:0px;left:0px;right:0px">
+                        <div id=p20info style="margin-left:8px;margin-right:8px"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -741,6 +751,9 @@
             QV('manageEmail2FA', features & 0x00800000);
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
+
+            attemptWebRTC = 0; // For now, default WebRTC off unless we set it in the URL.
+            if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
         }
 
         function onStateChanged(server, state, prevState, errorCode) {
@@ -3779,7 +3792,7 @@
 
         function p20showAddMeshUserDialog() {
             if (xxdialogMode) return;
-            var x = addHtmlValue('User', '<input id=dp20username style=width:170px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
+            var x = addHtmlValue('User ID', '<input id=dp20username style=width:170px maxlength=256 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() />');
             x += '<div style="border:2px groove gray;background-color:white;max-height:120px;overflow-y:scroll">';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
@@ -3874,7 +3887,10 @@
                 if ((meshrights & 32768) != 0) r.push("Uninstall");
             }
             if (r.length == 0) { r.push("No Rights"); }
-            var buttons = 1, x = addHtmlValue("User", EscapeHtml(decodeURIComponent(userid.split('/')[2])));
+            var buttons = 1, uname = userid.split('/')[2];
+            if (currentMesh.links[userid].name) { uname = currentMesh.links[userid].name; }
+            var x = addHtmlValue("User Name", EscapeHtml(uname));
+            if (uname != userid.split('/')[2]) { x += addHtmlValue("User ID", EscapeHtml(userid.split('/')[2])); }
             x += addHtmlValue("Permissions", r.join(", "));
             if (((userinfo._id) != userid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
             setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, userid);
