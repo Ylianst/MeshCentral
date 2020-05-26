@@ -410,7 +410,7 @@
       "ru": ", ",
       "zh-chs": "，",
       "xloc": [
-        "default-mobile.handlebars->9->430",
+        "default-mobile.handlebars->9->431",
         "default.handlebars->25->1324"
       ]
     },
@@ -687,7 +687,7 @@
       "zh-chs": "1個字節",
       "xloc": [
         "default-mobile.handlebars->9->118",
-        "default-mobile.handlebars->9->434",
+        "default-mobile.handlebars->9->435",
         "default.handlebars->25->1384"
       ]
     },
@@ -6285,7 +6285,7 @@
       "ru": "Подтвердить удаление пользователя {0}?",
       "zh-chs": "確認刪除用戶{0}？",
       "xloc": [
-        "default-mobile.handlebars->9->433"
+        "default-mobile.handlebars->9->434"
       ]
     },
     {
@@ -8154,7 +8154,7 @@
       "ru": "Пользователь группы устройств",
       "zh-chs": "設備組用戶",
       "xloc": [
-        "default-mobile.handlebars->9->431",
+        "default-mobile.handlebars->9->432",
         "default.handlebars->25->1325"
       ]
     },
@@ -19999,7 +19999,7 @@
       "ru": "Права",
       "zh-chs": "權限",
       "xloc": [
-        "default-mobile.handlebars->9->429",
+        "default-mobile.handlebars->9->430",
         "default.handlebars->25->1323",
         "default.handlebars->25->1416"
       ]
@@ -21388,7 +21388,7 @@
       "ru": "Удаленный пользователь Mesh",
       "zh-chs": "遠程網狀用戶",
       "xloc": [
-        "default-mobile.handlebars->9->432"
+        "default-mobile.handlebars->9->433"
       ]
     },
     {
@@ -27497,7 +27497,6 @@
       "ru": "Пользователь",
       "zh-chs": "用戶",
       "xloc": [
-        "default-mobile.handlebars->9->428",
         "default.handlebars->25->1205",
         "default.handlebars->25->1428",
         "default.handlebars->25->1536",
@@ -27655,6 +27654,12 @@
       ]
     },
     {
+      "en": "User ID",
+      "xloc": [
+        "default-mobile.handlebars->9->429"
+      ]
+    },
+    {
       "cs": "Identifikátor uživatele",
       "de": "Benutzeridentifikation",
       "en": "User Identifier",
@@ -27670,6 +27675,13 @@
       "xloc": [
         "default.handlebars->25->1322",
         "default.handlebars->25->1578"
+      ]
+    },
+    {
+      "en": "User Identifiers",
+      "xloc": [
+        "default.handlebars->25->1259",
+        "default.handlebars->25->1565"
       ]
     },
     {
@@ -27703,6 +27715,7 @@
       "ru": "Имя пользователя",
       "zh-chs": "用戶名",
       "xloc": [
+        "default-mobile.handlebars->9->428",
         "default.handlebars->25->1321"
       ]
     },
@@ -27718,11 +27731,7 @@
       "nl": "Gebruikersnamen",
       "pt": "Nomes de usuário",
       "ru": "Имена пользователей",
-      "zh-chs": "用戶名",
-      "xloc": [
-        "default.handlebars->25->1259",
-        "default.handlebars->25->1565"
-      ]
+      "zh-chs": "用戶名"
     },
     {
       "cs": "Uživatelská oprávnění",

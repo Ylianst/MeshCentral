@@ -4208,7 +4208,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Twitter
                 if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
                     const TwitterStrategy = require('passport-twitter');
-                    passport.use(new TwitterStrategy({ consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret, callbackURL: url + 'auth-twitter-callback' },
+                    var options = {
+                        consumerKey: domain.authstrategies.twitter.clientid,
+                        consumerSecret: domain.authstrategies.twitter.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.twitter.callbackurl == 'string') ? domain.authstrategies.twitter.callbackurl : (url + 'auth-twitter-callback')
+                    };
+                    parent.debug('web', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
+                    passport.use(new TwitterStrategy(options,
                         function (token, tokenSecret, profile, cb) {
                             parent.debug('web', 'Twitter profile: ' + JSON.stringify(profile));
                             var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
@@ -4239,7 +4245,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Google
                 if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
                     const GoogleStrategy = require('passport-google-oauth20');
-                    passport.use(new GoogleStrategy({ clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret, callbackURL: url + 'auth-google-callback' },
+                    var options = {
+                        clientID: domain.authstrategies.google.clientid,
+                        clientSecret: domain.authstrategies.google.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.google.callbackurl == 'string') ? domain.authstrategies.google.callbackurl : (url + 'auth-google-callback')
+                    };
+                    parent.debug('web', 'Adding Google SSO with options: ' + JSON.stringify(options));
+                    passport.use(new GoogleStrategy(options,
                         function (token, tokenSecret, profile, cb) {
                             parent.debug('web', 'Google profile: ' + JSON.stringify(profile));
                             var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
@@ -4262,7 +4274,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Github
                 if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
                     const GitHubStrategy = require('passport-github2');
-                    passport.use(new GitHubStrategy({ clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret, callbackURL: url + 'auth-github-callback' },
+                    var options = {
+                        clientID: domain.authstrategies.github.clientid,
+                        clientSecret: domain.authstrategies.github.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.github.callbackurl == 'string') ? domain.authstrategies.github.callbackurl : (url + 'auth-github-callback')
+                    };
+                    parent.debug('web', 'Adding Github SSO with options: ' + JSON.stringify(options));
+                    passport.use(new GitHubStrategy(options,
                         function (token, tokenSecret, profile, cb) {
                             parent.debug('web', 'Github profile: ' + JSON.stringify(profile));
                             var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
@@ -4285,7 +4303,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Reddit
                 if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
                     const RedditStrategy = require('passport-reddit');
-                    passport.use(new RedditStrategy.Strategy({ clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret, callbackURL: url + 'auth-reddit-callback' },
+                    var options = {
+                        clientID: domain.authstrategies.reddit.clientid,
+                        clientSecret: domain.authstrategies.reddit.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.reddit.callbackurl == 'string') ? domain.authstrategies.reddit.callbackurl : (url + 'auth-reddit-callback')
+                    };
+                    parent.debug('web', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
+                    passport.use(new RedditStrategy.Strategy(options,
                         function (token, tokenSecret, profile, cb) {
                             parent.debug('web', 'Reddit profile: ' + JSON.stringify(profile));
                             var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
@@ -4323,12 +4347,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Azure
                 if ((typeof domain.authstrategies.azure == 'object') && (typeof domain.authstrategies.azure.clientid == 'string') && (typeof domain.authstrategies.azure.clientsecret == 'string')) {
                     const AzureOAuth2Strategy = require('passport-azure-oauth2');
-                    passport.use('azure', new AzureOAuth2Strategy({
+                    var options = {
                         clientID: domain.authstrategies.azure.clientid,
                         clientSecret: domain.authstrategies.azure.clientsecret,
                         tenant: domain.authstrategies.azure.tenantid,
-                        callbackURL: url + 'auth-azure-callback'
-                    },
+                        callbackURL: (typeof domain.authstrategies.azure.callbackurl == 'string') ? domain.authstrategies.azure.callbackurl : (url + 'auth-azure-callback')
+                    };
+                    parent.debug('web', 'Adding Azure SSO with options: ' + JSON.stringify(options));
+                    passport.use('azure', new AzureOAuth2Strategy(options,
                         function (accessToken, refreshtoken, params, profile, done) {
                             var userex = null;
                             try { userex = require('jwt-simple').decode(params.id_token, "", true); } catch (ex) { }
@@ -4377,7 +4403,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (cert == null) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                         } else {
-                            var options = { path: url + 'auth-saml-callback', entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
+                            var options = {
+                                path: (typeof domain.authstrategies.saml.callbackurl == 'string') ? domain.authstrategies.saml.callbackurl : (url + 'auth-saml-callback'),
+                                entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral'
+                            };
+                            parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                             const SamlStrategy = require('passport-saml').Strategy;
@@ -4414,7 +4444,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (cert == null) {
                             console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
                         } else {
-                            var options = { path: url + 'auth-intel-callback', entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
+                            var options = {
+                                path: (typeof domain.authstrategies.intel.callbackurl == 'string') ? domain.authstrategies.intel.callbackurl : (url + 'auth-intel-callback'),
+                                entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral'
+                            };
+                            parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                             const SamlStrategy = require('passport-saml').Strategy;
@@ -4453,7 +4487,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (cert == null) {
                             console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
                         } else {
-                            var options =  { path: url + 'auth-jumpcloud-callback', entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
+                            var options = {
+                                path: (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') ? domain.authstrategies.jumpcloud.callbackurl : (url + 'auth-jumpcloud-callback'),
+                                entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral'
+                            };
+                            parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                             const SamlStrategy = require('passport-saml').Strategy;
@@ -5368,6 +5406,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Return the correct render page given mobile, minify and override path.
     function getRenderPage(pagename, req, domain) {
         var mobile = isMobileBrowser(req), minify = (domain.minify == true), p;
+        if (req.query.mobile == '1') { mobile = true; } else if (req.query.mobile == '0') { mobile = false; }
         if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
         if (mobile) {
             if ((domain != null) && (domain.webviewspath != null)) { // If the domain has a web views path, use that first

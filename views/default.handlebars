@@ -8921,7 +8921,7 @@
                     x += '<br /><br />';
                 }
                 x += '<div style=\'position:relative\'>';
-                x += addHtmlValue("User Names", '<input id=dp20username style=width:230px maxlength=32 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
+                x += addHtmlValue("User Identifiers", '<input id=dp20username style=width:230px maxlength=256 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
                 x += '<div id=dp20usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
                 x += '</div><br>';
             } else if (userid == 1) {
@@ -9148,11 +9148,18 @@
                     if (lastuser.length > 0) {
                         for (var i in users) {
                             if (users[i].name === lastuser) { exactMatch = true; break; }
-                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push(users[i].name); if (matchingUsers.length >= 8) break; }
+                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push([users[i]._id, users[i].name]); if (matchingUsers.length >= 8) break; }
                         }
                         if ((exactMatch == false) && (matchingUsers.length > 0)) {
                             var x = '';
-                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p20setname("' + encodeURIComponentEx(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
+                            for (var i in matchingUsers) {
+                                var sid = matchingUsers[i][0], sname = matchingUsers[i][1];
+                                if (sid.split('/')[2] == sname.toLowerCase()) {
+                                    x += '<div class=suggestionBoxItem onclick=\'p20setname("' + encodeURIComponentEx(sid.split('/')[2]) + '")\'>' + EscapeHtml(sname) + '</div>';
+                                } else {
+                                    x += '<div class=suggestionBoxItem onclick=\'p20setname("' + encodeURIComponentEx(sid.split('/')[2]) + '")\'><div>' + EscapeHtml(sname) + '</div><div class=suggestionBoxSubItem>' + EscapeHtml(sid.split('/')[2]) + '</div></div>';
+                                }
+                            }
                             QH('dp20usersuggest', x);
                             showsuggestbox = true;
                         }
@@ -10795,7 +10802,7 @@
             var x = "Allow users to manage this device group and devices in this group.";
             if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
             x += '<br /><br /><div style=\'position:relative\'>';
-            x += addHtmlValue("User Names", '<input id=dp51username style=width:230px maxlength=32 onchange=p51validateAddUserDialog() onkeyup=p51validateAddUserDialog() placeholder="user1, user2, user3" />');
+            x += addHtmlValue("User Identifiers", '<input id=dp51username style=width:230px maxlength=32 onchange=p51validateAddUserDialog() onkeyup=p51validateAddUserDialog() placeholder="user1, user2, user3" />');
             x += '<div id=dp51usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
             x += '</div><br>';
             setDialogMode(2, "Add Users to User Group", 3, p51showAddUserDialogEx, x);
@@ -10817,6 +10824,7 @@
         function p51validateAddUserDialog() {
             var meshrights = GetMeshRights(currentMesh);
             var ok = true;
+
             if (Q('dp51username')) {
                 var xusers = Q('dp51username').value.split(',');
                 for (var i in xusers) {
@@ -10831,11 +10839,18 @@
                     if (lastuser.length > 0) {
                         for (var i in users) {
                             if (users[i].name === lastuser) { exactMatch = true; break; }
-                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push(users[i].name); if (matchingUsers.length >= 8) break; }
+                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push([users[i]._id, users[i].name]); if (matchingUsers.length >= 8) break; }
                         }
                         if ((exactMatch == false) && (matchingUsers.length > 0)) {
                             var x = '';
-                            for (var i in matchingUsers) { x += '<a href=# onclick=\'p51setname("' + encodeURIComponentEx(matchingUsers[i]) + '")\'>' + matchingUsers[i] + '</a><br />'; }
+                            for (var i in matchingUsers) {
+                                var sid = matchingUsers[i][0], sname = matchingUsers[i][1];
+                                if (sid.split('/')[2] == sname.toLowerCase()) {
+                                    x += '<div class=suggestionBoxItem onclick=\'p51setname("' + encodeURIComponentEx(sid.split('/')[2]) + '")\'>' + EscapeHtml(sname) + '</div>';
+                                } else {
+                                    x += '<div class=suggestionBoxItem onclick=\'p51setname("' + encodeURIComponentEx(sid.split('/')[2]) + '")\'><div>' + EscapeHtml(sname) + '</div><div class=suggestionBoxSubItem>' + EscapeHtml(sid.split('/')[2]) + '</div></div>';
+                                }
+                            }
                             QH('dp51usersuggest', x);
                             showsuggestbox = true;
                         }
@@ -10843,6 +10858,7 @@
                 }
                 QV('dp51usersuggest', showsuggestbox);
             }
+
             QE('idx_dlgOkButton', ok);
         }
 
