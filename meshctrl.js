@@ -569,7 +569,7 @@ function serverConnect() {
             var keydata = fs.readFileSync(args.loginkeyfile, 'utf8').split(' ').join('').split('\r').join('').split('\n').join('');
             ckey = Buffer.from(keydata, 'hex');
             if (ckey.length != 80) { console.log("Invalid login key file."); process.exit(); return; }
-        } catch (ex) { console.log(ex); process.exit(); return; }
+        } catch (ex) { console.log(ex.message); process.exit(); return; }
     }
 
     if (ckey != null) {
@@ -961,7 +961,11 @@ function serverConnect() {
                     if (data.msg == 'tokenrequired') {
                         console.log('Authentication token required, use --token [number].');
                     } else {
-                        console.log('Invalid login.');
+                        if ((args.loginkeyfile != null) || (args.loginkey != null)) {
+                            console.log('Invalid login, check the login key and that this computer has the correct time.');
+                        } else {
+                            console.log('Invalid login.');
+                        }
                     }
                 }
                 process.exit();
