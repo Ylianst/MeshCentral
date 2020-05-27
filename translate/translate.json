@@ -27655,6 +27655,7 @@
     },
     {
       "en": "User ID",
+      "nl": "Gebruikers ID",
       "xloc": [
         "default-mobile.handlebars->9->429"
       ]
@@ -27679,6 +27680,7 @@
     },
     {
       "en": "User Identifiers",
+      "nl": "Gebruikers-ID's",
       "xloc": [
         "default.handlebars->25->1259",
         "default.handlebars->25->1565"
