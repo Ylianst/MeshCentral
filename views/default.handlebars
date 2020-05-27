@@ -2866,8 +2866,10 @@
                 go(xviewmode);
                 goBackStack.push(2);
             } else if (args.gotouser != null) {
-                if ((users == null) || (users['user/' + domain + '/' + args.gotouser] == null)) return; // This user is not loaded yet
-                gotoUser('user/' + domain + '/' + args.gotouser);
+                var xuserid = args.gotouser;
+                if (args.gotouser.indexOf('/') < 0) { xuserid = 'user/' + domain + '/' + args.gotouser; }
+                if ((users == null) || (users[xuserid] == null)) return; // This user is not loaded yet
+                gotoUser(xuserid);
                 go(xviewmode);
                 goBackStack.push(4);
             } else if (args.gotougrp != null) {
@@ -10025,7 +10027,7 @@
         }
 
         function addUserHtml(user, sessions) {
-            var x = '', gray = ' gray', icon = 'm2', msg = '', self = (user.name != userinfo.name), lastAccess = '', permissions = '';
+            var x = '', gray = ' gray', icon = 'm2', msg = '', self = (user._id != userinfo._id), lastAccess = '', permissions = '';
             if (sessions != null) {
                 gray = '';
                 if (self) {
@@ -10070,6 +10072,12 @@
                     // Username & email are the same
                     username += ' <a href="mailto:' + user.email + '" \'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
                 }
+            }
+
+            // If we are a cross-domain administrator, add the domain.
+            if ((userinfo.crossDomain != null)) {
+                var userdomain = user._id.split('/')[1];
+                if (userdomain != '') { username += ', <span style=color:#26F>' + userdomain + '</span>'; }
             }
 
             if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
@@ -10288,6 +10296,14 @@
         function showCreateNewAccountDialog() {
             if (xxdialogMode) return;
             var x = '';
+
+            if (userinfo.crossDomain) {
+                var y = '<select style=width:240px id=p4domain>';
+                for (var i in userinfo.crossDomain) { y += '<option value=' + i + '>' + ((userinfo.crossDomain[i] == '')?"Default":EscapeHtml(userinfo.crossDomain[i])) + '</option>'; }
+                y += '</select>';
+                x += addHtmlValue("Domain", y);
+            }
+
             if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
             x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
@@ -10345,6 +10361,7 @@
                 x.emailVerified = Q('p4verifiedEmail').checked;
                 x.emailInvitation = Q('p4invitationEmail').checked;
             }
+            if (userinfo.crossDomain) { x.domain = userinfo.crossDomain[parseInt(Q('p4domain').value)]; }
             meshserver.send(x);
         }
 
@@ -10916,7 +10933,13 @@
             if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", user.name); } // If title bar is hidden, display the user name here
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
-            if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", user._id.split('/')[2]); }
+
+            if (userinfo.crossDomain) {
+                x += addDeviceAttribute("User Identifier", EscapeHtml(user._id));
+            } else {
+                if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", EscapeHtml(user._id.split('/')[2])); }
+            }
+
             if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
                 x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
             } else {
@@ -11016,7 +11039,7 @@
             // Change the URL
             var urlviewmode = '';
             if (((features & 0x10000000) == 0) && (xxcurrentView >= 30) && (xxcurrentView <= 39) && (currentUser != null)) {
-                urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2];
+                urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + ((userinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]);
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
@@ -12004,7 +12027,7 @@
                 } else if ((x >= 20) && (x <= 29)) {
                     if (currentMesh) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
                 } else if ((x >= 30) && (x <= 39)) {
-                    if (currentUser) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + currentUser._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
+                    if (currentUser) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((userinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
                 } else if ((x >= 50) && (x <= 59)) {
                     if (currentUserGroup) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + currentUserGroup._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
                 } else { // if (x < 10))
@@ -12043,7 +12066,7 @@
                 } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
                     if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 30) && (xxcurrentView <= 39)) { // User Link
-                    if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + currentUser._id.split('/')[2]; }
+                    if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + ((userinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]); }
                 } else if ((xxcurrentView >= 51) && (xxcurrentView <= 51)) { // User Group Link
                     if ((currentUserGroup != null) && (currentUserGroup._id != null)) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
                 } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
