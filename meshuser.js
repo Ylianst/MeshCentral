@@ -64,6 +64,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.domain = domain;
     obj.ws = ws;
 
+    // Check if we are a cross-domain administrator
+    if (parent.parent.config.settings.managecrossdomain && (parent.parent.config.settings.managecrossdomain.indexOf(user._id) >= 0)) { obj.crossDomain = true; }
+
     // Server side Intel AMT stack
     const WsmanComm = require('./amt/amt-wsman-comm.js');
     const Wsman = require('./amt/amt-wsman.js');
@@ -281,7 +284,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Handle events
             ws.HandleEvent = function (source, event, ids, id) {
-                if ((event.domain == null) || (event.domain == domain.id)) {
+                if ((event.domain == null) || (event.domain == domain.id) || (obj.crossDomain === true)) {
                     try {
                         if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
                         else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
@@ -400,7 +403,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Send user information to web socket, this is the first thing we send
             try {
                 var xuserinfo = parent.CloneSafeUser(parent.users[user._id]);
-                if ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) { xuserinfo.manageAllDeviceGroups = true; }
+                if (user.siteadmin == 0xFFFFFFFF) {
+                    if (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) { xuserinfo.manageAllDeviceGroups = true; }
+                    if (obj.crossDomain === true) { xuserinfo.crossDomain = []; for (var i in parent.parent.config.domains) { xuserinfo.crossDomain.push(i); } }
+                }
                 ws.send(JSON.stringify({ action: 'userinfo', userinfo: xuserinfo }));
             } catch (ex) { }
 
@@ -1291,9 +1297,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & 2) == 0) break;
                     var docs = [];
                     for (i in parent.users) {
-                        if ((parent.users[i].domain == domain.id) && (parent.users[i].name != '~')) {
+                        if (((obj.crossDomain === true) || (parent.users[i].domain == domain.id)) && (parent.users[i].name != '~')) {
                             // If we are part of a user group, we can only see other members of our own group
-                            if ((user.groups == null) || (user.groups.length == 0) || ((parent.users[i].groups != null) && (findOne(parent.users[i].groups, user.groups)))) {
+                            if ((obj.crossDomain === true) || (user.groups == null) || (user.groups.length == 0) || ((parent.users[i].groups != null) && (findOne(parent.users[i].groups, user.groups)))) {
                                 docs.push(parent.CloneSafeUser(parent.users[i]));
                             }
                         }
@@ -1430,8 +1436,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'deleteuser':
                 {
+                    console.log(command);
+
                     // Delete a user account
-                    var err = null, delusersplit, deluserid, deluser;
+                    var err = null, delusersplit, deluserid, deluser, deluserdomain;
                     try {
                         if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
                         else if (common.validateString(command.userid, 1, 2048) == false) { err = 'Invalid userid'; }
@@ -1440,11 +1448,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             deluserid = command.userid;
                             deluser = parent.users[deluserid];
                             if (deluser == null) { err = 'User does not exists'; }
-                            else if ((delusersplit.length != 3) || (delusersplit[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                            else if ((obj.crossDomain !== true) && ((delusersplit.length != 3) || (delusersplit[1] != domain.id))) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
                             else if ((deluser.siteadmin == 0xFFFFFFFF) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Permission denied'; } // Need full admin to remote another administrator
-                            else if ((user.groups != null) && (user.groups.length > 0) && ((deluser.groups == null) || (findOne(deluser.groups, user.groups) == false))) { err = 'Invalid user group'; } // Can only perform this operation on other users of our group.
+                            else if ((obj.crossDomain !== true) && (user.groups != null) && (user.groups.length > 0) && ((deluser.groups == null) || (findOne(deluser.groups, user.groups) == false))) { err = 'Invalid user group'; } // Can only perform this operation on other users of our group.
                         }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Get domain
+                    deluserdomain = domain;
+                    if (obj.crossDomain === true) { deluserdomain = parent.parent.config.domains[delusersplit[1]]; }
+                    if (deluserdomain == null) { err = 'Invalid domain'; }
 
                     // Handle any errors
                     if (err != null) {
@@ -1464,13 +1477,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                     // Notify mesh change
                                     change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
-                                    var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
+                                    var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: deluserdomain.id, invite: mesh.invite };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [deluser._id, user._id]), obj, event);
                                 }
                             } else if (i.startsWith('node/')) {
                                 // Get the node and the rights for this node
-                                parent.GetNodeWithRights(domain, deluser, i, function (node, rights, visible) {
+                                parent.GetNodeWithRights(deluserdomain, deluser, i, function (node, rights, visible) {
                                     if ((node == null) || (node.links == null) || (node.links[deluser._id] == null)) return;
 
                                     // Remove the link and save the node to the database
@@ -1479,7 +1492,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     db.Set(parent.cleanDevice(node));
 
                                     // Event the node change
-                                    var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
+                                    var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: deluserdomain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
                                 });
@@ -1503,7 +1516,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     var targets = ['*', 'server-users'];
                     if (deluser.groups) { for (var i in deluser.groups) { targets.push('server-users:' + i); } }
-                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
+                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: deluserdomain.id });
                     parent.parent.DispatchEvent([deluserid], obj, 'close');
 
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deleteuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -1634,23 +1647,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.randomPassword === true) { command.pass = getRandomPassword(); }
 
                     // Add a new user account
-                    var err = null, newusername, newuserid;
+                    var err = null, newusername, newuserid, newuserdomain;
                     try {
                         if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
-                        else if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
                         else if (common.validateUsername(command.username, 1, 256) == false) { err = 'Invalid username'; } // Username is between 1 and 64 characters, no spaces
                         else if ((command.username[0] == '~') || (command.username.indexOf('/') >= 0)) { err = 'Invalid username'; } // Usernames cant' start with ~ and can't have '/'
                         else if (common.validateString(command.pass, 1, 256) == false) { err = 'Invalid password'; } // Password is between 1 and 256 characters
                         else if ((command.randomPassword !== true) && (common.checkPasswordRequirements(command.pass, domain.passwordrequirements) == false)) { err = 'Invalid password'; } // Password does not meet requirements
                         else if ((command.email != null) && (common.validateEmail(command.email, 1, 1024) == false)) { err = 'Invalid email'; } // Check if this is a valid email address
+                        else if ((obj.crossDomain === true) && (command.domain != null) && ((typeof command.domain != 'string') || (parent.parent.config.domains[command.domain] == null))) { err = 'Invalid domain'; } // Check if this is a valid domain
                         else {
+                            newuserdomain = domain;
+                            if ((obj.crossDomain === true) && (command.domain != null)) { newuserdomain = parent.parent.config.domains[command.domain]; }
                             newusername = command.username;
-                            newuserid = 'user/' + domain.id + '/' + command.username.toLowerCase();
+                            newuserid = 'user/' + newuserdomain.id + '/' + command.username.toLowerCase();
                             if (command.siteadmin != null) {
                                 if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = 'Invalid site permissions'; } // Check permissions
                                 else if ((user.siteadmin != 0xFFFFFFFF) && ((command.siteadmin & (0xFFFFFFFF - 224)) != 0)) { err = 'Invalid site permissions'; }
                             }
                             if (parent.users[newuserid]) { err = 'User already exists'; } // Account already exists
+                            else if ((newuserdomain.auth == 'sspi') || (newuserdomain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
                         }
                     } catch (ex) { err = 'Validation exception'; }
 
@@ -1666,7 +1682,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Check if we exceed the maximum number of user accounts
-                    db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
+                    db.isMaxType(newuserdomain.limits.maxuseraccounts, 'user', newuserdomain.id, function (maxExceed) {
                         if (maxExceed) {
                             // Account count exceed, do notification
                             if (command.responseid != null) {
@@ -1674,21 +1690,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'maxUsersExceed' })); } catch (ex) { }
                             } else {
                                 // Create the notification message
-                                var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: domain.id };
+                                var notification = { action: 'msg', type: 'notify', id: Math.random(), value: "Account limit reached.", title: "Server Limit", userid: user._id, username: user.name, domain: newuserdomain.id };
 
                                 // Get the list of sessions for this user
                                 var sessions = parent.wssessions[user._id];
-                                if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == domain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
+                                if (sessions != null) { for (i in sessions) { try { if (sessions[i].domainid == newuserdomain.id) { sessions[i].send(JSON.stringify(notification)); } } catch (ex) { } } }
                                 // TODO: Notify all sessions on other peers.
                             }
                         } else {
                             // Remove any events for this userid
-                            if (command.removeEvents === true) { db.RemoveAllUserEvents(domain.id, newuserid); }
+                            if (command.removeEvents === true) { db.RemoveAllUserEvents(newuserdomain.id, newuserid); }
 
                             // Create a new user
-                            var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: domain.id };
+                            var newuser = { type: 'user', _id: newuserid, name: newusername, creation: Math.floor(Date.now() / 1000), domain: newuserdomain.id };
                             if (command.siteadmin != null) { newuser.siteadmin = command.siteadmin; }
-                            else if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
+                            else if (newuserdomain.newaccountsrights) { newuser.siteadmin = newuserdomain.newaccountsrights; }
                             if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
@@ -1705,16 +1721,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     var event, targets = ['*', 'server-users'];
                                     if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
                                     if (command.email == null) {
-                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: domain.id };
+                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: newuserdomain.id };
                                     } else {
-                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email.toLowerCase(), domain: domain.id };
+                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email.toLowerCase(), domain: newuserdomain.id };
                                     }
                                     if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                     parent.parent.DispatchEvent(targets, obj, event);
 
                                     // Perform email invitation
                                     if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && parent.parent.mailserver) {
-                                        parent.parent.mailserver.sendAccountInviteMail(domain, user.name, newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
+                                        parent.parent.mailserver.sendAccountInviteMail(newuserdomain, user.name, newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
                                     }
 
                                     // Log in the auth log
@@ -1732,77 +1748,84 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'edituser':
                 {
+                    // Must be user administrator or edit self.
+                    if (((user.siteadmin & 2) == 0) && (user._id != command.id)) break;
+
                     // Edit a user account, may involve changing email or administrator permissions
-                    if (((user.siteadmin & 2) != 0) || (user._id == command.id)) {
-                        var chguser = parent.users[command.id];
-                        change = 0;
-                        if (chguser) {
-                            // If the target user is admin and we are not admin, no changes can be made.
-                            if ((chguser.siteadmin == 0xFFFFFFFF) && (user.siteadmin != 0xFFFFFFFF)) return;
+                    var chguser = parent.users[command.id];
+                    change = 0;
+                    if (chguser) {
+                        // If the target user is admin and we are not admin, no changes can be made.
+                        if ((chguser.siteadmin == 0xFFFFFFFF) && (user.siteadmin != 0xFFFFFFFF)) return;
 
-                            // Can only perform this operation on other users of our group.
-                            if (user.siteadmin != 0xFFFFFFFF) {
-                                if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) return;
-                            }
+                        // Can only perform this operation on other users of our group.
+                        if (user.siteadmin != 0xFFFFFFFF) {
+                            if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) return;
+                        }
 
-                            // Validate and change email
-                            if (domain.usernameisemail !== true) {
-                                if (common.validateString(command.email, 1, 1024) && (chguser.email != command.email)) { chguser.email = command.email.toLowerCase(); change = 1; }
-                            }
+                        // Fetch and validate the user domain
+                        var edituserdomainid = command.id.split('/')[1];
+                        if ((obj.crossDomain !== true) && (edituserdomainid != domain.id)) break;
+                        var edituserdomain = parent.parent.config.domains[edituserdomainid];
+                        if (edituserdomain == null) break;
 
-                            // Make changes
-                            if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
-                            if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
-                            if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
-                            if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
+                        // Validate and change email
+                        if (edituserdomain.usernameisemail !== true) {
+                            if (common.validateString(command.email, 1, 1024) && (chguser.email != command.email)) { chguser.email = command.email.toLowerCase(); change = 1; }
+                        }
 
-                            // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
-                            if (chguser._id !== user._id) { // We can't change our own siteadmin permissions.
-                                var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
-                                if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
-                            }
+                        // Make changes
+                        if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
+                        if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
+                        if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
+                        if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
 
-                            // When sending a notification about a group change, we need to send to all the previous and new groups.
-                            var allTargetGroups = chguser.groups;
-                            if ((Array.isArray(command.groups)) && ((user._id != command.id) || (user.siteadmin == 0xFFFFFFFF))) {
-                                if (command.groups.length == 0) {
-                                    // Remove the user groups
-                                    if (chguser.groups != null) { delete chguser.groups; change = 1; }
-                                } else {
-                                    // Arrange the user groups
-                                    var groups2 = [];
-                                    for (var i in command.groups) {
-                                        if (typeof command.groups[i] == 'string') {
-                                            var gname = command.groups[i].trim().toLowerCase();
-                                            if ((gname.length > 0) && (gname.length <= 64) && (groups2.indexOf(gname) == -1)) { groups2.push(gname); }
-                                        }
+                        // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
+                        if (chguser._id !== user._id) { // We can't change our own siteadmin permissions.
+                            var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
+                            if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+                        }
+
+                        // When sending a notification about a group change, we need to send to all the previous and new groups.
+                        var allTargetGroups = chguser.groups;
+                        if ((Array.isArray(command.groups)) && ((user._id != command.id) || (user.siteadmin == 0xFFFFFFFF))) {
+                            if (command.groups.length == 0) {
+                                // Remove the user groups
+                                if (chguser.groups != null) { delete chguser.groups; change = 1; }
+                            } else {
+                                // Arrange the user groups
+                                var groups2 = [];
+                                for (var i in command.groups) {
+                                    if (typeof command.groups[i] == 'string') {
+                                        var gname = command.groups[i].trim().toLowerCase();
+                                        if ((gname.length > 0) && (gname.length <= 64) && (groups2.indexOf(gname) == -1)) { groups2.push(gname); }
                                     }
-                                    groups2.sort();
-
-                                    // Set the user groups (Realms)
-                                    if (chguser.groups != groups2) { chguser.groups = groups2; change = 1; }
-
-                                    // Add any missing groups in the target list
-                                    if (allTargetGroups == null) { allTargetGroups = []; }
-                                    for (var i in groups2) { if (allTargetGroups.indexOf(i) == -1) { allTargetGroups.push(i); } }
                                 }
-                            }
+                                groups2.sort();
 
-                            if (change == 1) {
-                                // Update the user
-                                db.SetUser(chguser);
-                                parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+                                // Set the user groups (Realms)
+                                if (chguser.groups != groups2) { chguser.groups = groups2; change = 1; }
 
-                                var targets = ['*', 'server-users', user._id, chguser._id];
-                                if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + chguser.name, domain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                parent.parent.DispatchEvent(targets, obj, event);
+                                // Add any missing groups in the target list
+                                if (allTargetGroups == null) { allTargetGroups = []; }
+                                for (var i in groups2) { if (allTargetGroups.indexOf(i) == -1) { allTargetGroups.push(i); } }
                             }
-                            if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
-                                // If the user is locked out of this account, disconnect now
-                                parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
-                            }
+                        }
+
+                        if (change == 1) {
+                            // Update the user
+                            db.SetUser(chguser);
+                            parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
+
+                            var targets = ['*', 'server-users', user._id, chguser._id];
+                            if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + chguser.name, domain: edituserdomain.id };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
+                        }
+                        if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
+                            // If the user is locked out of this account, disconnect now
+                            parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
                         }
                     }
                     break;
