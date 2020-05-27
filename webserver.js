@@ -251,7 +251,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             else if (j.startsWith('user/') && (obj.users[j] == null)) { delete mesh.links[j]; } // Device group has a link to a user that does not exist
                         }
                     }
-                } 
+                }
 
                 // Perform user link cleanup
                 for (var i in obj.users) {
@@ -378,7 +378,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                     if ('[object Array]' == Object.prototype.toString.call(email)) {
                         // mail may be multivalued in ldap in which case, answer is an array. Use the 1st value.
-                        email=email[0];
+                        email = email[0];
                     }
                     if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
 
@@ -412,7 +412,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                         // Check if user email has changed
                         var emailreason = null;
-                        if (user.email && ! email) { // email unset in ldap => unset
+                        if (user.email && !email) { // email unset in ldap => unset
                             delete user.email;
                             delete user.emailVerified;
                             emailreason = 'Unset email (no more email in LDAP)'
@@ -448,7 +448,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                     if ('[object Array]' == Object.prototype.toString.call(email)) {
                         // mail may be multivalued in ldap in which case, answer would be an array. Use the 1st one.
-                        email=email[0];
+                        email = email[0];
                     }
                     if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
                     var username = xxuser['displayName'];
@@ -501,7 +501,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                         // Check if user email has changed
                         var emailreason = null;
-                        if (user.email && ! email) { // email unset in ldap => unset
+                        if (user.email && !email) { // email unset in ldap => unset
                             delete user.email;
                             delete user.emailVerified;
                             emailreason = 'Unset email (no more email in LDAP)'
@@ -2010,7 +2010,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
                 }
                 if (skip2factor == false) { features += 0x00040000; } // Force 2-factor auth
-            } 
+            }
             if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { features += 0x00080000; } // LDAP or SSPI in use, warn that users must login first before adding a user to a group.
             if (domain.amtacmactivation) { features += 0x00100000; } // Intel AMT ACM activation/upgrade is possible
             if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
@@ -4208,8 +4208,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Twitter
                 if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
                     const TwitterStrategy = require('passport-twitter');
-                    var options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
-                    if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.path = url + 'auth-twitter-callback'; }
+                    var options = {
+                        consumerKey: domain.authstrategies.twitter.clientid,
+                        consumerSecret: domain.authstrategies.twitter.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.twitter.callbackurl == 'string') ? domain.authstrategies.twitter.callbackurl : (url + 'auth-twitter-callback')
+                    };
                     parent.debug('web', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
                     passport.use(new TwitterStrategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4242,8 +4245,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Google
                 if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
                     const GoogleStrategy = require('passport-google-oauth20');
-                    var options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
-                    if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.path = url + 'auth-google-callback'; }
+                    var options = {
+                        clientID: domain.authstrategies.google.clientid,
+                        clientSecret: domain.authstrategies.google.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.google.callbackurl == 'string') ? domain.authstrategies.google.callbackurl : (url + 'auth-google-callback')
+                    };
                     parent.debug('web', 'Adding Google SSO with options: ' + JSON.stringify(options));
                     passport.use(new GoogleStrategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4268,8 +4274,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Github
                 if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
                     const GitHubStrategy = require('passport-github2');
-                    var options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
-                    if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.path = url + 'auth-github-callback'; }
+                    var options = {
+                        clientID: domain.authstrategies.github.clientid,
+                        clientSecret: domain.authstrategies.github.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.github.callbackurl == 'string') ? domain.authstrategies.github.callbackurl : (url + 'auth-github-callback')
+                    };
                     parent.debug('web', 'Adding Github SSO with options: ' + JSON.stringify(options));
                     passport.use(new GitHubStrategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4296,9 +4305,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     const RedditStrategy = require('passport-reddit');
                     var options = {
                         clientID: domain.authstrategies.reddit.clientid,
-                        clientSecret: domain.authstrategies.reddit.clientsecret
+                        clientSecret: domain.authstrategies.reddit.clientsecret,
+                        callbackURL: (typeof domain.authstrategies.reddit.callbackurl == 'string') ? domain.authstrategies.reddit.callbackurl : (url + 'auth-reddit-callback')
                     };
-                    if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.path = url + 'auth-reddit-callback'; }
                     parent.debug('web', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
                     passport.use(new RedditStrategy.Strategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4341,10 +4350,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var options = {
                         clientID: domain.authstrategies.azure.clientid,
                         clientSecret: domain.authstrategies.azure.clientsecret,
-                        tenant: domain.authstrategies.azure.tenantid
+                        tenant: domain.authstrategies.azure.tenantid,
+                        callbackURL: (typeof domain.authstrategies.azure.callbackurl == 'string') ? domain.authstrategies.azure.callbackurl : (url + 'auth-azure-callback')
                     };
-                    if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.path = url + 'auth-azure-callback'; }
-                    if (typeof domain.authstrategies.azure.forceauthn != 'undefined') { options.forceAuthn = domain.authstrategies.azure.forceauthn; }
                     parent.debug('web', 'Adding Azure SSO with options: ' + JSON.stringify(options));
                     passport.use('azure', new AzureOAuth2Strategy(options,
                         function (accessToken, refreshtoken, params, profile, done) {
@@ -4395,9 +4403,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (cert == null) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                         } else {
-                            var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackURL = domain.authstrategies.saml.callbackurl; } else { options.path = url + 'auth-saml-callback'; }
-                            if (typeof domain.authstrategies.saml.forceauthn != 'undefined') { options.forceAuthn = domain.authstrategies.saml.forceauthn; }
+                            var options = {
+                                path: (typeof domain.authstrategies.saml.callbackurl == 'string') ? domain.authstrategies.saml.callbackurl : (url + 'auth-saml-callback'),
+                                entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral'
+                            };
                             parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
@@ -4435,9 +4444,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (cert == null) {
                             console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
                         } else {
-                            var options = { entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackURL = domain.authstrategies.intel.callbackurl; } else { options.path = url + 'auth-intel-callback'; }
-                            if (typeof domain.authstrategies.intel.forceauthn != 'undefined') { options.forceAuthn = domain.authstrategies.intel.forceauthn; }
+                            var options = {
+                                path: (typeof domain.authstrategies.intel.callbackurl == 'string') ? domain.authstrategies.intel.callbackurl : (url + 'auth-intel-callback'),
+                                entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral'
+                            };
                             parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
@@ -4477,8 +4487,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (cert == null) {
                             console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
                         } else {
-                            var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackURL = domain.authstrategies.jumpcloud.callbackurl; } else { options.path = url + 'auth-jumpcloud-callback'; }
+                            var options = {
+                                path: (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') ? domain.authstrategies.jumpcloud.callbackurl : (url + 'auth-jumpcloud-callback'),
+                                entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral'
+                            };
                             parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
@@ -4704,20 +4716,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true })); ws.close(); } catch (e) { }
                                 } else {
                                     // Ask for a login token
-                                    parent.debug('web', 'Asking for login token'); 
+                                    parent.debug('web', 'Asking for login token');
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                                 }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
                                     if (result == false) {
                                         // Failed, ask for a login token again
-                                        parent.debug('web', 'Invalid login token, asking again'); 
+                                        parent.debug('web', 'Invalid login token, asking again');
                                         try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         // Check email verification
                                         if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
-                                            parent.debug('web', 'Invalid login, asking for email validation'); 
+                                            parent.debug('web', 'Invalid login, asking for email validation');
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                         } else {
                                             func(ws, req, domain, user);
@@ -4728,7 +4740,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // Check email verification
                             if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
-                                parent.debug('web', 'Invalid login, asking for email validation'); 
+                                parent.debug('web', 'Invalid login, asking for email validation');
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                             } else {
                                 // We are authenticated
@@ -4824,7 +4836,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
                             } else {
                                 func(ws, req, domain, user);
-                            }                        }
+                            }
+                        }
                     } else {
                         // Failed to authenticate, see if a default user is active
                         if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
@@ -5543,7 +5556,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Returns a list of acceptable languages in order
-    obj.getLanguageCodes = function(req) {
+    obj.getLanguageCodes = function (req) {
         // If a user set a localization, use that
         if ((req.query.lang == null) && (req.session != null) && (req.session.userid)) {
             var user = obj.users[req.session.userid];
