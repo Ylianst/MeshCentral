@@ -151,12 +151,14 @@ function CreateMeshCentralServer(config, args) {
             console.log('   --exactports                      Server must run with correct ports or exit.');
             console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
             console.log('   --listuserids                     Show a list of a user identifiers in the database.');
+            console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
+            console.log('                                     country and organization can optionaly be set.');
+            console.log('');
+            console.log('Server recovery commands, use only when MeshCentral is offline.');
             console.log('   --createaccount [userid]          Create a new user account.');
             console.log('   --resetaccount [userid]           Unlock an account, disable 2FA and set a new account password.');
             console.log('   --adminaccount [userid]           Promote account to site administrator.');
             console.log('   --removeaccount [userid]          Remove a user account.');
-            console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
-            console.log('                                     country and organization can optionaly be set.');
             return;
         }
 
@@ -673,13 +675,15 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.recordencryptionrecode) { obj.db.performRecordEncryptionRecode(function (count) { console.log('Re-encoded ' + count + ' record(s).'); process.exit(); }); return; }
                     if (obj.args.dbstats) { obj.db.getDbStats(function (stats) { console.log(stats); process.exit(); }); return; }
                     if (obj.args.createaccount) { // Create a new user account
-                        if ((typeof obj.args.createaccount != 'string') || (obj.args.pass == null) || (obj.args.pass == '') || (obj.args.createaccount.indexOf(' ') >= 0) || (obj.args.createaccount.indexOf('/') >= 0)) { console.log("Usage: --createaccount [userid] --pass [password] --domain (domain) --email (email) --name (name)."); process.exit(); return; }
+                        if ((typeof obj.args.createaccount != 'string') || (obj.args.pass == null) || (obj.args.pass == '') || (obj.args.createaccount.indexOf(' ') >= 0)) { console.log("Usage: --createaccount [userid] --pass [password] --domain (domain) --email (email) --name (name)."); process.exit(); return; }
                         var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.createaccount.toLowerCase(), domainid = obj.args.domain ? obj.args.domain : '';
+                        if (obj.args.createaccount.startsWith('user/')) { userid = obj.args.createaccount; domainid = obj.args.createaccount.split('/')[1]; }
+                        if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
                         obj.db.Get(userid, function (err, docs) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return;  }
                             if ((docs != null) && (docs.length != 0)) { console.log('User already exists.'); process.exit(); return; }
                             if ((domainid != '') &&  ((config.domains == null) || (config.domains[domainid] == null))) { console.log("Invalid domain."); process.exit(); return; }
-                            var user = { _id: userid, type: 'user', name: (typeof obj.args.name == 'string')?obj.args.name:obj.args.createaccount, domain: domainid, creation: Math.floor(Date.now() / 1000), links: {} };
+                            var user = { _id: userid, type: 'user', name: (typeof obj.args.name == 'string') ? obj.args.name : (userid.split('/')[2]), domain: domainid, creation: Math.floor(Date.now() / 1000), links: {} };
                             if (typeof obj.args.email == 'string') { user.email = obj.args.email; user.emailVerified = true; }
                             require('./pass').hash(obj.args.pass, function (err, salt, hash, tag) { if (err) { console.log("Unable create account password: " + err); process.exit(); return; } user.salt = salt; user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
                         });
@@ -687,7 +691,9 @@ function CreateMeshCentralServer(config, args) {
                     }
                     if (obj.args.resetaccount) { // Unlock a user account, set a new password and remove 2FA
                         if ((typeof obj.args.resetaccount != 'string') || (obj.args.pass == null) || (obj.args.pass == '') || (obj.args.resetaccount.indexOf(' ') >= 0)) { console.log("Usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
-                        var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.resetaccount.toLowerCase(), domainid = obj.args.domain ? obj.args.domain : '';
+                        var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.resetaccount.toLowerCase();
+                        if (obj.args.resetaccount.startsWith('user/')) { userid = obj.args.resetaccount; }
+                        if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
                         obj.db.Get(userid, function (err, docs) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
@@ -699,7 +705,9 @@ function CreateMeshCentralServer(config, args) {
                     }
                     if (obj.args.adminaccount) { // Set a user account to server administrator
                         if ((typeof obj.args.adminaccount != 'string') || (obj.args.adminaccount.indexOf(' ') >= 0)) { console.log("Invalid userid, usage: --adminaccount [username] --domain (domain)."); process.exit(); return; }
-                        var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.adminaccount.toLowerCase(), domainid = obj.args.domain ? obj.args.domain : '';
+                        var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.adminaccount.toLowerCase();
+                        if (obj.args.adminaccount.startsWith('user/')) { userid = obj.args.adminaccount; }
+                        if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
                         obj.db.Get(userid, function (err, docs) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --adminaccount [userid] --domain (domain)."); process.exit(); return; }
@@ -710,7 +718,9 @@ function CreateMeshCentralServer(config, args) {
                     }
                     if (obj.args.removeaccount) { // Remove a user account
                         if ((typeof obj.args.removeaccount != 'string') || (obj.args.removeaccount.indexOf(' ') >= 0)) { console.log("Invalid userid, usage: --removeaccount [username] --domain (domain)."); process.exit(); return; }
-                        var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.removeaccount.toLowerCase(), domainid = obj.args.domain ? obj.args.domain : '';
+                        var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.removeaccount.toLowerCase();
+                        if (obj.args.removeaccount.startsWith('user/')) { userid = obj.args.removeaccount; }
+                        if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
                         obj.db.Get(userid, function (err, docs) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --removeaccount [userid] --domain (domain)."); process.exit(); return; }
