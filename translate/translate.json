@@ -7435,6 +7435,7 @@
     },
     {
       "en": "Default",
+      "nl": "Standaard",
       "xloc": [
         "default.handlebars->25->1474"
       ]
@@ -8812,6 +8813,7 @@
     },
     {
       "en": "Domain",
+      "nl": "Domein",
       "xloc": [
         "default.handlebars->25->1475"
       ]
