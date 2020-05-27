@@ -2407,7 +2407,7 @@
                         }
                         case 'createmesh': {
                             // A new mesh was created
-                            if ((meshes[message.event.meshid] == null) && ((userinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
+                            if ((meshes[message.event.meshid] == null) && ((serverinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
                                 meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
                                 masterUpdate(4 + 128 + 8192 + 16384);
                                 meshserver.send({ action: 'files' });
@@ -2873,8 +2873,10 @@
                 go(xviewmode);
                 goBackStack.push(4);
             } else if (args.gotougrp != null) {
-                if ((usergroups == null) || usergroups['ugrp/' + domain + '/' + args.gotougrp] == null) return; // This user group is not loaded yet
-                gotoUserGroup('ugrp/' + domain + '/' + args.gotougrp);
+                var xusergrpid = args.gotougrp;
+                if (args.gotougrp.indexOf('/') < 0) { xusergrpid = 'ugrp/' + domain + '/' + args.gotougrp; }
+                if ((usergroups == null) || usergroups[xusergrpid] == null) return; // This user group is not loaded yet
+                gotoUserGroup(xusergrpid);
                 go(xviewmode);
                 goBackStack.push(50);
             } else if (!isNaN(xviewmode)) {
@@ -5300,7 +5302,10 @@
                     x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a>';
                     if (usergroups != null) {
                         var userGroupCount = 0, newUserGroup = false;
-                        for (var i in usergroups) { userGroupCount++; if ((currentNode.links == null) || (currentNode.links[i] == null)) { newUserGroup = true; } }
+                        for (var i in usergroups) {
+                            if (usergroups[i]._id.split('/')[1] != nodeid.split('/')[1]) continue;
+                            userGroupCount++; if ((currentNode.links == null) || (currentNode.links[i] == null)) { newUserGroup = true; }
+                        }
                         if ((userGroupCount > 0) && (newUserGroup)) {  x += '<a href=# onclick="return p20showAddMeshUserDialog(6)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
                     }
                 }
@@ -8671,7 +8676,11 @@
                 x += '<a href=# onclick="return p20showAddMeshUserDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Users" + '</a>';
                 if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
-                    for (var i in usergroups) { userGroupCount++; if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; } }
+                    for (var i in usergroups) {
+                        if (usergroups[i]._id.split('/')[1] != currentMesh._id.split('/')[1]) continue;
+                        userGroupCount++;
+                        if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; }
+                    }
                     if ((userGroupCount > 0) && (newUserGroup)) {  x += '<a href=# onclick="return p20showAddMeshUserDialog(2)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
                 }
             }
@@ -8914,6 +8923,7 @@
         }
 
         function p20showAddMeshUserDialog(userid, selected) {
+            console.log('p20showAddMeshUserDialog', userid, selected);
             if (xxdialogMode) return false;
             var x = '';
             if ((userid == null) || (userid == 5)) {
@@ -8939,14 +8949,20 @@
                 if (usergroups == null) return;
                 var y = '';
                 var ousergroups = getOrderedList(usergroups, 'name');
-                for (var i in ousergroups) { if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; } }
+                for (var i in ousergroups) {
+                    if (currentMesh._id.split('/')[1] != ousergroups[i]._id.split('/')[1]) continue;
+                    if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; }
+                }
                 x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if (userid == 6) {
                 if (usergroups == null) return;
                 var y = '';
                 if (selected == null) {
                     var ousergroups = getOrderedList(usergroups, 'name');
-                    for (var i in ousergroups) { if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; } }
+                    for (var i in ousergroups) {
+                        if (currentNode._id.split('/')[1] != ousergroups[i]._id.split('/')[1]) continue;
+                        if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; }
+                    }
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(usergroups[decodeURIComponent(selected)].name) + '</option>';
                 }
@@ -9149,7 +9165,10 @@
                     var lastuser = xusers[xusers.length - 1].trim(), lastuserl = lastuser.toLowerCase(), matchingUsers = [];
                     if (lastuser.length > 0) {
                         for (var i in users) {
-                            if (users[i].name === lastuser) { exactMatch = true; break; }
+                            var userSplit = users[i]._id.split('/');
+                            if ((currentMesh != null) && (currentMesh.domain != userSplit[1])) continue;
+                            if ((currentNode != null) && (currentNode.domain != userSplit[1])) continue;
+                            if (userSplit[2] === lastuserl) { exactMatch = true; break; }
                             if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push([users[i]._id, users[i].name]); if (matchingUsers.length >= 8) break; }
                         }
                         if ((exactMatch == false) && (matchingUsers.length > 0)) {
@@ -10075,7 +10094,7 @@
             }
 
             // If we are a cross-domain administrator, add the domain.
-            if ((userinfo.crossDomain != null)) {
+            if ((serverinfo.crossDomain != null)) {
                 var userdomain = user._id.split('/')[1];
                 if (userdomain != '') { username += ', <span style=color:#26F>' + userdomain + '</span>'; }
             }
@@ -10297,9 +10316,9 @@
             if (xxdialogMode) return;
             var x = '';
 
-            if (userinfo.crossDomain) {
+            if (serverinfo.crossDomain) {
                 var y = '<select style=width:240px id=p4domain>';
-                for (var i in userinfo.crossDomain) { y += '<option value=' + i + '>' + ((userinfo.crossDomain[i] == '')?"Default":EscapeHtml(userinfo.crossDomain[i])) + '</option>'; }
+                for (var i in serverinfo.crossDomain) { y += '<option value=' + i + '>' + ((serverinfo.crossDomain[i] == '')?"Default":EscapeHtml(serverinfo.crossDomain[i])) + '</option>'; }
                 y += '</select>';
                 x += addHtmlValue("Domain", y);
             }
@@ -10361,7 +10380,7 @@
                 x.emailVerified = Q('p4verifiedEmail').checked;
                 x.emailInvitation = Q('p4invitationEmail').checked;
             }
-            if (userinfo.crossDomain) { x.domain = userinfo.crossDomain[parseInt(Q('p4domain').value)]; }
+            if (serverinfo.crossDomain) { x.domain = serverinfo.crossDomain[parseInt(Q('p4domain').value)]; }
             meshserver.send(x);
         }
 
@@ -10522,12 +10541,20 @@
         function addUserGroupHtml(group) {
             var usercount = 0, meshcount = 0, devicecount = 0;
             if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } if (i.startsWith('node/')) { devicecount++; } } }
+            
+            // Group name, if we are a cross-domain administrator, add the domain.
+            var name = EscapeHtml(group.name);
+            if ((serverinfo.crossDomain != null)) {
+                var grpdomain = group._id.split('/')[1];
+                if (grpdomain != '') { name += ', <span style=color:#26F>' + EscapeHtml(grpdomain) + '</span>'; }
+            }
+
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponentEx(group._id) + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
             x += '<div class=baricon><input class=UserGroupCheckbox value=' + encodeURIComponentEx(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
             x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><div class=m4></div></div>';
             x += '<div class=g1 onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div><div class=g2 onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div>';
-            x += '<div onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><span style=font-size:16px>' + group.name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
+            x += '<div onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><span style=font-size:16px>' + name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
             return x;
         }
 
@@ -10586,6 +10613,12 @@
                 if (usergroups) { for (var i in usergroups) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
                 x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100%>' + y + '</select></div>');
             }
+            if ((mode == 1) && (serverinfo.crossDomain)) {
+                var y = '<select style=width:240px id=p4domain>';
+                for (var i in serverinfo.crossDomain) { y += '<option value=' + i + '>' + ((serverinfo.crossDomain[i] == '')?"Default":EscapeHtml(serverinfo.crossDomain[i])) + '</option>'; }
+                y += '</select>';
+                x += addHtmlValue("Domain", y);
+            }
             x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
             x += addHtmlValue("Description", '<textarea id=p4desc value="" style=width:230px;height:60px;resize:none maxlength=1024 /></textarea>');
             setDialogMode(2, (mode == 1)?"Create User Group":"Duplicate User Group", 3, showCreateUserGroupDialogEx, x, mode);
@@ -10598,6 +10631,7 @@
         function showCreateUserGroupDialogEx(b, mode) {
             var x = { action: 'createusergroup', name: Q('p4name').value, desc: Q('p4desc').value };
             if (mode == 2) { x.clone = decodeURIComponent(Q('dp4groupid').value); }
+            if ((mode == 1) && (serverinfo.crossDomain)) { x.domain = serverinfo.crossDomain[parseInt(Q('p4domain').value)]; }
             meshserver.send(x);
         }
 
@@ -10635,6 +10669,8 @@
             } else {
                 x += addDeviceAttribute("Description", desc);
             }
+
+            if (serverinfo.crossDomain != null) { x += addDeviceAttribute("Group Identifier", group._id); }
             x += addDeviceAttribute("Users", usercount);
             x += addDeviceAttribute("Device Groups", meshcount);
             x += addDeviceAttribute("Devices", devicecount);
@@ -10681,7 +10717,7 @@
             // Display all device groups for this user group
             count = 1;
             var deviceGroupCount = 0, newDeviceGroup = false;
-            for (var i in meshes) { deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
+            for (var i in meshes) { if (currentUserGroup._id.split('/')[1] != meshes[i]._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
             if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device Group" + '</a>'; }
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Device Groups" + '</th><th scope=col style=text-align:left></th></tr>';
             if (currentUserGroup.links) {
@@ -10705,7 +10741,8 @@
 
             // Display all devices for this user group
             count = 1;
-            x += '<br /><a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+            x += '<br />';
+            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>'; }
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
             if (currentUserGroup.links) {
                 var onodes = [];
@@ -10735,7 +10772,7 @@
             // Change the URL
             var urlviewmode = '';
             if (((features & 0x10000000) == 0) && (xxcurrentView >= 51) && (xxcurrentView <= 59) && (currentUserGroup != null)) {
-                urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2];
+                urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]);
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
@@ -10839,9 +10876,7 @@
         }
 
         function p51validateAddUserDialog() {
-            var meshrights = GetMeshRights(currentMesh);
             var ok = true;
-
             if (Q('dp51username')) {
                 var xusers = Q('dp51username').value.split(',');
                 for (var i in xusers) {
@@ -10855,8 +10890,9 @@
                     var lastuser = xusers[xusers.length - 1].trim(), lastuserl = lastuser.toLowerCase(), matchingUsers = [];
                     if (lastuser.length > 0) {
                         for (var i in users) {
-                            if (users[i].name === lastuser) { exactMatch = true; break; }
-                            if (users[i].name.toLowerCase().indexOf(lastuserl) >= 0) { matchingUsers.push([users[i]._id, users[i].name]); if (matchingUsers.length >= 8) break; }
+                            var userSplit = users[i]._id.split('/');
+                            if ((currentUserGroup.domain == userSplit[1]) && (userSplit[2] === lastuserl)) { exactMatch = true; break; }
+                            if ((users[i].name.toLowerCase().indexOf(lastuserl) >= 0) && (currentUserGroup.domain == userSplit[1])) { matchingUsers.push([users[i]._id, users[i].name]); if (matchingUsers.length >= 8) break; }
                         }
                         if ((exactMatch == false) && (matchingUsers.length > 0)) {
                             var x = '';
@@ -10934,7 +10970,7 @@
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
 
-            if (userinfo.crossDomain) {
+            if (serverinfo.crossDomain) {
                 x += addDeviceAttribute("User Identifier", EscapeHtml(user._id));
             } else {
                 if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", EscapeHtml(user._id.split('/')[2])); }
@@ -11039,7 +11075,7 @@
             // Change the URL
             var urlviewmode = '';
             if (((features & 0x10000000) == 0) && (xxcurrentView >= 30) && (xxcurrentView <= 39) && (currentUser != null)) {
-                urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + ((userinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]);
+                urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]);
                 for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
@@ -11150,7 +11186,7 @@
 
             // Display common device groups
             var deviceGroupCount = 0, newDeviceGroup = false;
-            for (var i in meshes) { deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
+            for (var i in meshes) { if (meshes[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
             if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device Group" + '</a>'; }
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Device Groups" + '</th><th scope=col style=text-align:left></th></tr>';
             if (currentUser.links) {
@@ -11179,7 +11215,11 @@
                 x += '<br />';
                 if ((userinfo.siteadmin & 256) != 0) {
                     var userGroupCount = 0, newUserGroup = false;
-                    for (var i in usergroups) { userGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; } }
+                    for (var i in usergroups) {
+                        if (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue;
+                        userGroupCount++;
+                        if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; }
+                    }
                     if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p30showAddUserGroupDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
                 }
                 x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Group Memberships" + '</th><th scope=col style=text-align:left></th></tr>';
@@ -11204,7 +11244,8 @@
 
             // Display common devices
             count = 1;
-            x += '<br /><a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+            x += '<br />';
+            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>'; }
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
             if (currentUser.links) {
                 // Sort the list of devices to display
@@ -11262,7 +11303,10 @@
         function p30showAddUserGroupDialog() {
             if (xxdialogMode || (usergroups == null)) return;
             var y = '';
-            for (var i in usergroups) { if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
+            for (var i in usergroups) {
+                if (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue;
+                if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; }
+            }
             var x = addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp2groupid style=width:100%>' + y + '</select></div>');
             setDialogMode(2, "Add Membership", 3, p30showAddUserGroupDialogEx, x);
             Q('dp2groupid').focus();
@@ -12027,9 +12071,9 @@
                 } else if ((x >= 20) && (x <= 29)) {
                     if (currentMesh) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
                 } else if ((x >= 30) && (x <= 39)) {
-                    if (currentUser) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((userinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
+                    if (currentUser) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
                 } else if ((x >= 50) && (x <= 59)) {
-                    if (currentUserGroup) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + currentUserGroup._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
+                    if (currentUserGroup) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
                 } else { // if (x < 10))
                     window.open(window.location.origin + '{{{domainurl}}}' + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
                 }
@@ -12066,9 +12110,9 @@
                 } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
                     if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 30) && (xxcurrentView <= 39)) { // User Link
-                    if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + ((userinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]); }
+                    if (currentUser != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]); }
                 } else if ((xxcurrentView >= 51) && (xxcurrentView <= 51)) { // User Group Link
-                    if ((currentUserGroup != null) && (currentUserGroup._id != null)) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + currentUserGroup._id.split('/')[2]; }
+                    if ((currentUserGroup != null) && (currentUserGroup._id != null)) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]); }
                 } else if (xxcurrentView > 1) { urlviewmode = '?viewmode=' + xxcurrentView; }
                 for (var i in urlargs) { urlviewmode += (((urlviewmode == '')?'?':'&') + i + '=' + urlargs[i]); }
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -12344,7 +12388,7 @@
             if ((mesh == null) || (mesh.links == null)) { return 0; }
 
             // Check if super user
-            if (userinfo.manageAllDeviceGroups) return 0xFFFFFFFF;
+            if (serverinfo.manageAllDeviceGroups) return 0xFFFFFFFF;
 
             // Check device group link permission
             var rights = 0, r = mesh.links[userid];
@@ -12380,7 +12424,7 @@
             if (mesh.links[userid] != null) { return true; } // User has visilibity thru a direct link
 
             // Check if user user
-            if (userinfo.manageAllDeviceGroups) return true;
+            if (serverinfo.manageAllDeviceGroups) return true;
 
             // Check permissions thru user groups
             var user = null;
