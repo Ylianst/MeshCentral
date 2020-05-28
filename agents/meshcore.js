@@ -173,6 +173,12 @@ function createMeshCore(agent) {
                             case 'connection':
                                 data.result = require('MeshAgent').ConnectedServer;
                                 this._send(data);
+                            case 'descriptors':
+                                require('ChainViewer').getSnapshot().then(function (f)
+                                {
+                                    this.tag.payload.result = f;
+                                    this.tag.ipc._send(this.tag.payload);
+                                }).parentPromise.tag = { ipc: this, payload: data };
                                 break;
                         }
                         break;
