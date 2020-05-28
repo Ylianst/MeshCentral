@@ -1433,8 +1433,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'deleteuser':
                 {
-                    console.log(command);
-
                     // Delete a user account
                     var err = null, delusersplit, deluserid, deluser, deluserdomain;
                     try {
@@ -1494,11 +1492,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
                                 });
+                            } else if (i.startsWith('ugrp/')) {
+                                // Get the device group
+                                var ugroup = parent.userGroups[i];
+                                if (ugroup) {
+                                    // Remove user from the user group
+                                    if (ugroup.links[deluser._id] != null) { delete ugroup.links[deluser._id]; parent.db.Set(ugroup); }
+
+                                    // Notify user group change
+                                    change = 'Removed user ' + deluser.name + ' from user group ' + ugroup.name;
+                                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Removed user ' + deluser.name + ' from user group ' + ugroup.name, addUserDomain: deluserdomain.id };
+                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                    parent.parent.DispatchEvent(['*', ugroup._id, user._id, deluser._id], obj, event);
+                                }
                             }
                         }
                     }
-
-                    // TODO (UserGroups): Remove user groups??
 
                     db.Remove('ws' + deluser._id); // Remove user web state
                     db.Remove('nt' + deluser._id); // Remove notes for this user
@@ -1706,6 +1715,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
+
+                            // Auto-join any user groups
+                            if (typeof newuserdomain.newaccountsusergroups == 'object') {
+                                for (var i in newuserdomain.newaccountsusergroups) {
+                                    var ugrpid = newuserdomain.newaccountsusergroups[i];
+                                    if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + newuserdomain.id + '/' + ugrpid; }
+                                    var ugroup = parent.userGroups[ugrpid];
+                                    if (ugroup != null) {
+                                        // Add group to the user
+                                        if (newuser.links == null) { newuser.links = {}; }
+                                        newuser.links[ugroup._id] = { rights: 1 };
+
+                                        // Add user to the group
+                                        ugroup.links[newuser._id] = { userid: newuser._id, name: newuser.name, rights: 1 };
+                                        db.Set(ugroup);
+
+                                        // Notify user group change
+                                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + newuser.name + ' to user group ' + ugroup.name, addUserDomain: newuserdomain.id };
+                                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                        parent.parent.DispatchEvent(['*', ugroup._id, user._id, newuser._id], obj, event);
+                                    }
+                                }
+                            }
 
                             parent.users[newuserid] = newuser;
 
