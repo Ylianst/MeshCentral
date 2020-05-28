@@ -103,6 +103,7 @@
       "_MeshQuota": 248576,
       "Minify": true,
       "_NewAccounts": true,
+      "_NewAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_UserNameIsEmail": true,
       "_NewAccountEmailDomains": [ "sample.com" ],
       "_NewAccountsRights": [ "nonewgroups", "notools" ],
@@ -165,30 +166,35 @@
         "twitter": {
           "_callbackurl": "https://server/auth-twitter-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "google": {
           "_callbackurl": "https://server/auth-google-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxx"
         },
         "github": {
           "_callbackurl": "https://server/auth-github-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "reddit": {
           "_callbackurl": "https://server/auth-reddit-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
         "azure": {
           "_callbackurl": "https://server/auth-azure-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "clientid": "00000000-0000-0000-0000-000000000000",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
           "tenantid": "00000000-0000-0000-0000-000000000000"
@@ -196,6 +202,7 @@
         "jumpcloud": {
           "_callbackurl": "https://server/auth-jumpcloud-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "entityid": "meshcentral",
           "idpurl": "https://sso.jumpcloud.com/saml2/saml2",
           "cert": "jumpcloud-saml.pem"
@@ -203,6 +210,7 @@
         "saml": {
           "_callbackurl": "https://server/auth-saml-callback",
           "newAccounts": true,
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "entityid": "meshcentral",
           "idpurl": "https://server/saml2",
           "cert": "saml.pem"
