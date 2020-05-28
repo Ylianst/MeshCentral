@@ -27,6 +27,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     // Private method
     //obj.Debug = function (msg) { console.log(msg); }
 
+    function arrToStr(arr) { return String.fromCharCode.apply(null, arr); }
+
     // Private method
     //   pri = priority, if set to 1, the call is high priority and put on top of the stack.
     obj.PerformAjax = function (postdata, callback, tag, pri, url, action) {
@@ -114,9 +116,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
         obj.socketHeader = null;
         obj.socketData = '';
         obj.socketState = 1;
-
-        console.log(obj.tlsv1only);
         obj.socket = new WebSocket(window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/webrelay.ashx?p=1&host=' + obj.host + '&port=' + obj.port + '&tls=' + obj.tls + '&tlsv1only=' + obj.tlsv1only + ((user == '*') ? '&serverauth=1' : '') + ((typeof pass === 'undefined') ? ('&serverauth=1&user=' + user) : '')); // The "p=1" indicates to the relay that this is a WSMAN session
+        obj.socket.binaryType = 'arraybuffer';
         obj.socket.onopen = _OnSocketConnected;
         obj.socket.onmessage = _OnMessage;
         obj.socket.onclose = _OnSocketClosed;
@@ -129,60 +130,17 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
         for (i in obj.pendingAjaxCall) { obj.sendRequest(obj.pendingAjaxCall[i][0], obj.pendingAjaxCall[i][3], obj.pendingAjaxCall[i][4]); }
     }
 
-    // Setup the file reader
-    var fileReader = new FileReader();
-    var fileReaderInuse = false, fileReaderAcc = [];
-    if (fileReader.readAsBinaryString) {
-        // Chrome & Firefox (Draft)
-        fileReader.onload = function (e) { _OnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsBinaryString(new Blob([fileReaderAcc.shift()])); } }
-    } else if (fileReader.readAsArrayBuffer) {
-        // Chrome & Firefox (Spec)
-        fileReader.onloadend = function (e) { _OnSocketData(e.target.result); if (fileReaderAcc.length == 0) { fileReaderInuse = false; } else { fileReader.readAsArrayBuffer(fileReaderAcc.shift()); } }
-    }
-
-    function _OnMessage(e) {
-        if (typeof e.data == 'object') {
-            if (fileReaderInuse == true) { fileReaderAcc.push(e.data); return; }
-            if (fileReader.readAsBinaryString) {
-                // Chrome & Firefox (Draft)
-                fileReaderInuse = true;
-                fileReader.readAsBinaryString(new Blob([e.data]));
-            } else if (fileReader.readAsArrayBuffer) {
-                // Chrome & Firefox (Spec)
-                fileReaderInuse = true;
-                fileReader.readAsArrayBuffer(e.data);
-            } else {
-                // IE10, readAsBinaryString does not exist, use an alternative.
-                var binary = '', bytes = new Uint8Array(e.data), length = bytes.byteLength;
-                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
-                _OnSocketData(binary);
-            }
-        } else {
-            _OnSocketData(e.data);
-        }
-    };
-
     // Websocket relay specific private method
-    function _OnSocketData(data) {
-        //obj.Debug("_OnSocketData (" + data.length + "): " + data);
-
-        if (typeof data === 'object') {
-            // This is an ArrayBuffer, convert it to a string array (used in IE)
-            var binary = '', bytes = new Uint8Array(data), length = bytes.byteLength;
-            for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
-            data = binary;
-        }
-        else if (typeof data !== 'string') return;
-
-        //console.log("RECV: " + data); // DEBUG
-
-        obj.socketAccumulator += data;
+    function _OnMessage(e) {
+        //obj.Debug("_OnSocketData (" + data.byteLength + "): " + data);
+        obj.socketAccumulator += arrToStr(new Uint8Array(e.data));
         while (true) {
             if (obj.socketParseState == 0) {
                 var headersize = obj.socketAccumulator.indexOf('\r\n\r\n');
                 if (headersize < 0) return;
                 //obj.Debug(obj.socketAccumulator.substring(0, headersize)); // Display received HTTP header
                 obj.socketHeader = obj.socketAccumulator.substring(0, headersize).split('\r\n');
+                if (obj.amtVersion == null) { for (var i in obj.socketHeader) { if (obj.socketHeader[i].indexOf('Server: Intel(R) Active Management Technology ') == 0) { obj.amtVersion = obj.socketHeader[i].substring(46); } } }
                 obj.socketAccumulator = obj.socketAccumulator.substring(headersize + 4);
                 obj.socketParseState = 1;
                 obj.socketData = '';
