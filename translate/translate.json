@@ -12025,6 +12025,7 @@
     },
     {
       "en": "Group Identifier",
+      "nl": "Groepsidentificatie",
       "xloc": [
         "default.handlebars->25->1532"
       ]
