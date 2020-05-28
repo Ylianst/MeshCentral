@@ -100,7 +100,7 @@ var CreateAmtRedirect = function (module, authCookie) {
                     if (accArray.byteLength < 9 + authDataLen) return;
                     var status = accArray[1], authType = accArray[4], authData = [];
                     for (i = 0; i < authDataLen; i++) { authData.push(accArray[9 + i]); }
-                    var authDataBuf = accArray.slice(9, 9 + authDataLen);
+                    var authDataBuf = new Uint8Array(obj.acc.slice(9, 9 + authDataLen));
                     cmdsize = 9 + authDataLen;
                     if (authType == 0) {
                         // Query
@@ -122,12 +122,12 @@ var CreateAmtRedirect = function (module, authCookie) {
 
                         // Realm
                         var realmlen = authDataBuf[curptr];
-                        var realm = arrToStr(authDataBuf.slice(curptr + 1, curptr + 1 + realmlen));
+                        var realm = arrToStr(new Uint8Array(authDataBuf.buffer.slice(curptr + 1, curptr + 1 + realmlen)));
                         curptr += (realmlen + 1);
 
                         // Nonce
                         var noncelen = authDataBuf[curptr];
-                        var nonce = arrToStr(authDataBuf.slice(curptr + 1, curptr + 1 + noncelen));
+                        var nonce = arrToStr(new Uint8Array(authDataBuf.buffer.slice(curptr + 1, curptr + 1 + noncelen)));
                         curptr += (noncelen + 1);
 
                         // QOP
@@ -138,7 +138,7 @@ var CreateAmtRedirect = function (module, authCookie) {
                         var extra = '';
                         if (authType == 4) {
                             qoplen = authDataBuf[curptr];
-                            qop = arrToStr(authDataBuf.slice(curptr + 1, curptr + 1 + qoplen));
+                            qop = arrToStr(new Uint8Array(authDataBuf.buffer.slice(curptr + 1, curptr + 1 + qoplen)));
                             curptr += (qoplen + 1);
                             extra = snc + ':' + cnonce + ':' + qop + ':';
                         }
@@ -192,7 +192,7 @@ var CreateAmtRedirect = function (module, authCookie) {
                     if (accArray.byteLength < 10) break;
                     var cs = (10 + (accArray[9] << 8) + accArray[8]);
                     if (accArray.byteLength < cs) break;
-                    if (obj.m.ProcessBinaryData) { obj.m.ProcessBinaryData(accArray.slice(10, cs)); } else { obj.m.ProcessData(arrToStr(accArray.slice(10, cs))); }
+                    if (obj.m.ProcessBinaryData) { obj.m.ProcessBinaryData(new Uint8Array(accArray.buffer.slice(10, cs))); } else { obj.m.ProcessData(arrToStr(new Uint8Array(accArray.buffer.slice(10, cs)))); }
                     cmdsize = cs;
                     break;
                 case 0x2B: // Keep alive message (43)
@@ -204,7 +204,9 @@ var CreateAmtRedirect = function (module, authCookie) {
                     obj.connectstate = 1;
                     obj.m.Start();
                     // KVM traffic, forward rest of accumulator directly.
-                    if (accArray.byteLength > 8) { obj.m.ProcessData(accArray.slice(8)); }
+                    if (accArray.byteLength > 8) {
+                        if (obj.m.ProcessBinaryData) { obj.m.ProcessBinaryData(new Uint8Array(accArray.buffer.slice(8))); } else { obj.m.ProcessData(arrToStr(new Uint8Array(accArray.buffer.slice(8)))); }
+                    }
                     cmdsize = accArray.byteLength;
                     break;
                 case 0xF0:
@@ -232,7 +234,7 @@ var CreateAmtRedirect = function (module, authCookie) {
         }
     }
 
-    obj.send = function (x) {
+    obj.Send = obj.send = function (x) {
         if (obj.socket == null || obj.connectstate != 1) return;
         if (obj.protocol == 1) { obj.xxSend(String.fromCharCode(0x28, 0x00, 0x00, 0x00) + IntToStrX(obj.amtsequence++) + ShortToStrX(x.length) + x); } else { obj.xxSend(x); }
     }

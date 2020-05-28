@@ -67,7 +67,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
             obj.canvas.canvas.height = obj.rheight = obj.height = 400;
             QS(obj.canvasid).cursor = 'default';
         } else {
-            QS(obj.canvasid).cursor = obj.showmouse ?'default':'none';
+            QS(obj.canvasid).cursor = obj.showmouse ? 'default' : 'none';
         }
     }
 
@@ -255,7 +255,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                     // ###BEGIN###{Inflate}
                     else {
                         // This is compressed ZLib data, decompress and process it. (TODO: This need to be optimized, remove str/arr conversions)
-                        var str = obj.inflate.inflate(arrToStr(obj.acc.slice(ptr, ptr + datalen - dx)));
+                        var str = obj.inflate.inflate(arrToStr(new Uint8Array(obj.acc.buffer.slice(ptr, ptr + datalen - dx))));
                         if (str.length > 0) { _decodeLRE(strToArr(str), 0, x, y, width, height, s, str.length); } else { console.log("Invalid deflate data"); }
                     }
                     // ###END###{Inflate}
@@ -274,7 +274,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
             //console.log('cmdsize', cmdsize);
             if (cmdsize == 0) return;
-            if (cmdsize != obj.acc.byteLength) { obj.acc = obj.acc.slice(cmdsize); } else { obj.acc = null; }
+            if (cmdsize != obj.acc.byteLength) { obj.acc = new Uint8Array(obj.acc.buffer.slice(cmdsize)); } else { obj.acc = null; }
         }
     }
 
@@ -312,7 +312,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
             } else {
                 for (i = 0; i < subencoding; i++) { palette[i] = data[ptr++]; }
                 if (subencoding == 2) { br = 1; bm = 1; } else if (subencoding <= 4) { br = 2; bm = 3; } // Compute bits to read & bit mark
-                while (rlecount < s && ptr < data.byteLength) { v = data[ptr++]; for (i = (8 - br) ; i >= 0; i -= br) { _setPixel8(palette[(v >> i) & bm], rlecount++); } } // Display all the bits
+                while (rlecount < s && ptr < data.byteLength) { v = data[ptr++]; for (i = (8 - br); i >= 0; i -= br) { _setPixel8(palette[(v >> i) & bm], rlecount++); } } // Display all the bits
             }
             _putImage(obj.spare, x, y);
         }
@@ -353,9 +353,9 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         else if (subencoding > 129) { // Palette RLE encoded tile
             // Read the palette
             if (obj.bpp == 2) {
-                for (i = 0; i < (subencoding - 128) ; i++) { palette[i] = data[ptr++] + (data[ptr++] << 8); }
+                for (i = 0; i < (subencoding - 128); i++) { palette[i] = data[ptr++] + (data[ptr++] << 8); }
             } else {
-                for (i = 0; i < (subencoding - 128) ; i++) { palette[i] = data[ptr++]; }
+                for (i = 0; i < (subencoding - 128); i++) { palette[i] = data[ptr++]; }
             }
 
             // Decode RLE  on palette
@@ -568,10 +568,10 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
             obj.ox = obj.mx;
             obj.oy = obj.my;
         } else {
-        // ###END###{DesktopFocus}
+            // ###END###{DesktopFocus}
             // Request the entire screen
             obj.send(String.fromCharCode(3, 1, 0, 0, 0, 0) + ShortToStr(obj.rwidth) + ShortToStr(obj.rheight)); // FramebufferUpdateRequest
-        // ###BEGIN###{DesktopFocus}
+            // ###BEGIN###{DesktopFocus}
         }
         // ###END###{DesktopFocus}
     }
