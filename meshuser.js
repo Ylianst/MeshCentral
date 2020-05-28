@@ -1398,7 +1398,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (parent.parent.multiServer == null) {
                         // No peering, use simple session counting
                         for (i in parent.wssessions) {
-                            if (parent.wssessions[i][0].domainid == domain.id) {
+                            if ((obj.crossDomain === true) || (parent.wssessions[i][0].domainid == domain.id)) {
                                 if ((user.groups == null) || (user.groups.length == 0)) {
                                     // No user groups, count everything
                                     wssessions[i] = parent.wssessions[i].length;
@@ -1414,7 +1414,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else {
                         // We have peer servers, use more complex session counting
                         for (i in parent.sessionsCount) {
-                            if (i.split('/')[1] == domain.id) {
+                            if ((obj.crossDomain === true) || (i.split('/')[1] == domain.id)) {
                                 if ((user.groups == null) || (user.groups.length == 0)) {
                                     // No user groups, count everything
                                     wssessions[i] = parent.sessionsCount[i];
@@ -1441,6 +1441,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
                         else if (common.validateString(command.userid, 1, 2048) == false) { err = 'Invalid userid'; }
                         else {
+                            if (command.userid.indexOf('/') < 0) { command.userid = 'user/' + domain.id + '/' + command.userid; }
                             delusersplit = command.userid.split('/');
                             deluserid = command.userid;
                             deluser = parent.users[deluserid];
@@ -1950,19 +1951,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'deleteusergroup':
                 {
-                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { return; }
+                    var err = null;
+
+                    if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = "Permission denied"; }
 
                     // Change the name or description of a user group
-                    if (common.validateString(command.ugrpid, 1, 1024) == false) break; // Check the user group id
-                    var ugroupidsplit = command.ugrpid.split('/');
-                    if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || ((obj.crossDomain !== true) && (ugroupidsplit[1] != domain.id))) break;
+                    else if (common.validateString(command.ugrpid, 1, 1024) == false) { err = "Invalid group id"; } // Check the user group id
+                    else {
+                        var ugroupidsplit = command.ugrpid.split('/');
+                        if ((ugroupidsplit.length != 3) || (ugroupidsplit[0] != 'ugrp') || ((obj.crossDomain !== true) && (ugroupidsplit[1] != domain.id))) { err = "Invalid domain id"; }
+                    }
 
                     // Get the domain
                     var delGroupDomain = parent.parent.config.domains[ugroupidsplit[1]];
-                    if (delGroupDomain == null) break;
+                    if (delGroupDomain == null) { err = "Invalid domain id"; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deleteusergroup', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     db.Get(command.ugrpid, function (err, groups) {
-                        if ((err != null) || (groups.length != 1)) return;
+                        if ((err != null) || (groups.length != 1)) {
+                            try { ws.send(JSON.stringify({ action: 'deleteusergroup', responseid: command.responseid, result: 'Unknown device group' })); } catch (ex) { }
+                            return;
+                        }
                         var group = groups[0];
 
                         // Unlink any user and meshes that have a link to this group
@@ -2007,6 +2021,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Log in the auth log
                         if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' deleted user group ' + group.name); }
+
+                        try { ws.send(JSON.stringify({ action: 'deleteusergroup', responseid: command.responseid, result: 'ok', ugrpid: group._id })); } catch (ex) { }
                     });
                     break;
                 }
