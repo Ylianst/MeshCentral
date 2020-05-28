@@ -10663,7 +10663,7 @@
 
             var x = '<div style=min-height:80px><table style=width:100%>';
             if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", gname); } // If title bar is hidden, display the user group name here
-            if (serverinfo.crossDomain != null) {
+            if ((serverinfo.crossDomain != null) || (debugmode != 0)) {
                 var d = group._id.split('/')[1];
                 x += addDeviceAttribute("Domain", (d != '')?EscapeHtml(d):('<i>' + "Default" + '</i>'));
                 x += addDeviceAttribute("Group Identifier", EscapeHtml(group._id));
@@ -10972,7 +10972,7 @@
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
 
-            if (serverinfo.crossDomain) {
+            if ((serverinfo.crossDomain) || (debugmode != 0)) {
                 var d = user._id.split('/')[1];
                 x += addDeviceAttribute("Domain", ((d != '')?EscapeHtml(d):('<i>' + "Default" + '</i>')));
                 x += addDeviceAttribute("User Identifier", EscapeHtml(user._id));

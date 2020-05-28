@@ -385,15 +385,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (user == null) {
                         // Create a new user
                         var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), domain: domain.id };
-                        if (email) {
-                            user['email'] = email;
-                            user['emailVerified'] = true;
-                        }
+                        if (email) { user['email'] = email; user['emailVerified'] = true; }
                         if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                         if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
+
+                        // Auto-join any user groups
+                        if (typeof domain.newaccountsusergroups == 'object') {
+                            for (var i in domain.newaccountsusergroups) {
+                                var ugrpid = domain.newaccountsusergroups[i];
+                                if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                                var ugroup = obj.userGroups[ugrpid];
+                                if (ugroup != null) {
+                                    // Add group to the user
+                                    if (user.links == null) { user.links = {}; }
+                                    user.links[ugroup._id] = { rights: 1 };
+
+                                    // Add user to the group
+                                    ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                                    db.Set(ugroup);
+
+                                    // Notify user group change
+                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                    parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
+                                }
+                            }
+                        }
+
                         obj.users[user._id] = user;
                         obj.db.SetUser(user);
                         var event = { etype: 'user', userid: userid, username: username, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id };
@@ -483,6 +504,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         var usercount = 0;
                         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                         if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
+
+                        // Auto-join any user groups
+                        if (typeof domain.newaccountsusergroups == 'object') {
+                            for (var i in domain.newaccountsusergroups) {
+                                var ugrpid = domain.newaccountsusergroups[i];
+                                if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                                var ugroup = obj.userGroups[ugrpid];
+                                if (ugroup != null) {
+                                    // Add group to the user
+                                    if (user.links == null) { user.links = {}; }
+                                    user.links[ugroup._id] = { rights: 1 };
+
+                                    // Add user to the group
+                                    ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                                    db.Set(ugroup);
+
+                                    // Notify user group change
+                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                    parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
+                                }
+                            }
+                        }
+
                         obj.users[user._id] = user;
                         obj.db.SetUser(user);
                         var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, name is ' + name, domain: domain.id };
@@ -1147,6 +1192,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
                                 if (domainUserCount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
+
+                                // Auto-join any user groups
+                                if (typeof domain.newaccountsusergroups == 'object') {
+                                    for (var i in domain.newaccountsusergroups) {
+                                        var ugrpid = domain.newaccountsusergroups[i];
+                                        if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                                        var ugroup = obj.userGroups[ugrpid];
+                                        if (ugroup != null) {
+                                            // Add group to the user
+                                            if (user.links == null) { user.links = {}; }
+                                            user.links[ugroup._id] = { rights: 1 };
+
+                                            // Add user to the group
+                                            ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                                            db.Set(ugroup);
+
+                                            // Notify user group change
+                                            var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                            parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
+                                        }
+                                    }
+                                }
+
                                 obj.users[user._id] = user;
                                 req.session.userid = user._id;
                                 req.session.domainid = domain.id;
@@ -1619,20 +1688,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     for (var i in deluser.links) {
                         if (i.startsWith('mesh/')) {
                             // Get the device group
-                            mesh = parent.meshes[i];
+                            var mesh = obj.meshes[i];
                             if (mesh) {
                                 // Remove user from the mesh
                                 if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
 
                                 // Notify mesh change
-                                change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
+                                var change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
                                 var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                parent.parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, event);
+                                parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, event);
                             }
                         } else if (i.startsWith('node/')) {
                             // Get the node and the rights for this node
-                            parent.GetNodeWithRights(domain, deluser, i, function (node, rights, visible) {
+                            obj.GetNodeWithRights(domain, deluser, i, function (node, rights, visible) {
                                 if ((node == null) || (node.links == null) || (node.links[deluser._id] == null)) return;
 
                                 // Remove the link and save the node to the database
@@ -1641,10 +1710,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 db.Set(obj.cleanDevice(node));
 
                                 // Event the node change
-                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
+                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: ('Removed user device rights for ' + node.name), node: obj.CloneSafeNode(node) }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                parent.parent.DispatchEvent(['*', node.meshid, node._id], obj, event);
+                                parent.DispatchEvent(['*', node.meshid, node._id], obj, event);
                             });
+                        } else if (i.startsWith('ugrp/')) {
+                            // Get the device group
+                            var ugroup = obj.userGroups[i];
+                            if (ugroup) {
+                                // Remove user from the user group
+                                if (ugroup.links[deluser._id] != null) { delete ugroup.links[deluser._id]; parent.db.Set(ugroup); }
+
+                                // Notify user group change
+                                var change = 'Removed user ' + deluser.name + ' from user group ' + ugroup.name;
+                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Removed user ' + deluser.name + ' from user group ' + ugroup.name, addUserDomain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                parent.DispatchEvent(['*', ugroup._id, user._id, deluser._id], obj, event);
+                            }
                         }
                     }
                 }
@@ -1765,6 +1847,34 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
                     if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
                     obj.users[userid] = user;
+
+                    // Auto-join any user groups
+                    var newaccountsusergroups = null;
+                    if (typeof domain.newaccountsusergroups == 'object') { newaccountsusergroups = domain.newaccountsusergroups; }
+                    if (typeof domain.authstrategies[req.user.strategy].newaccountsusergroups == 'object') { newaccountsusergroups = domain.authstrategies[req.user.strategy].newaccountsusergroups; }
+                    if (newaccountsusergroups) {
+                        for (var i in newaccountsusergroups) {
+                            var ugrpid = newaccountsusergroups[i];
+                            if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                            var ugroup = obj.userGroups[ugrpid];
+                            if (ugroup != null) {
+                                // Add group to the user
+                                if (user.links == null) { user.links = {}; }
+                                user.links[ugroup._id] = { rights: 1 };
+
+                                // Add user to the group
+                                ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                                db.Set(ugroup);
+
+                                // Notify user group change
+                                var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
+                            }
+                        }
+                    }
+
+                    // Save the user
                     obj.db.SetUser(user);
 
                     // Event user creation
@@ -1914,6 +2024,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (obj.common.validateStrArray(domain.newaccountrealms)) { user2.groups = domain.newaccountrealms; }
                     for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
                     if (usercount == 0) { user2.siteadmin = 4294967295; } // If this is the first user, give the account site admin.
+
+                    // Auto-join any user groups
+                    if (typeof domain.newaccountsusergroups == 'object') {
+                        for (var i in domain.newaccountsusergroups) {
+                            var ugrpid = domain.newaccountsusergroups[i];
+                            if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                            var ugroup = obj.userGroups[ugrpid];
+                            if (ugroup != null) {
+                                // Add group to the user
+                                if (user2.links == null) { user2.links = {}; }
+                                user2.links[ugroup._id] = { rights: 1 };
+
+                                // Add user to the group
+                                ugroup.links[user2._id] = { userid: user2._id, name: user2.name, rights: 1 };
+                                db.Set(ugroup);
+
+                                // Notify user group change
+                                var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user2.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                parent.DispatchEvent(['*', ugroup._id, user2._id], obj, event);
+                            }
+                        }
+                    }
+
                     obj.users[req.session.userid] = user2;
                     obj.db.SetUser(user2);
                     var event = { etype: 'user', userid: req.session.userid, username: req.connection.user, account: obj.CloneSafeUser(user2), action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id };
