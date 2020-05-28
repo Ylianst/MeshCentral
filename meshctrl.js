@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -20,6 +20,7 @@ if (args['_'].length == 0) {
     console.log("  UserInfo                  - Show user information.");
     console.log("  ListUsers                 - List user accounts.");
     console.log("  ListUsersSessions         - List online users.");
+    console.log("  ListUserGroups            - List user groups.");
     console.log("  ListDevices               - List devices.");
     console.log("  ListDeviceGroups          - List device groups.");
     console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
@@ -27,6 +28,8 @@ if (args['_'].length == 0) {
     console.log("  Config                    - Perform operation on config.json file.");
     console.log("  AddUser                   - Create a new user account.");
     console.log("  RemoveUser                - Delete a user account.");
+    console.log("  AddUserGroup              - Create a new user group.");
+    console.log("  RemoveUserGroup           - Delete a user group.");
     console.log("  AddDeviceGroup            - Create a new device group.");
     console.log("  RemoveDeviceGroup         - Delete a device group.");
     console.log("  MoveToDeviceGroup         - Move a device to a different device group.");
@@ -45,7 +48,7 @@ if (args['_'].length == 0) {
     console.log("  --token [number]          - 2nd factor authentication token.");
     console.log("  --loginkey [hex]          - Server login key in hex.");
     console.log("  --loginkeyfile [file]     - File containing server login key in hex.");
-    console.log("  --domain [domainid]       - Domain id, default is empty, only used with loginkey.");
+    console.log("  --logindomain [domainid]  - Domain id, default is empty, only used with loginkey.");
     console.log("  --proxy [http://proxy:1]  - Specify an HTTP proxy.");
     return;
 } else {
@@ -60,6 +63,7 @@ if (args['_'].length == 0) {
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
         case 'listusersessions': { ok = true; break; }
+        case 'listusergroups': { ok = true; break; }
         case 'listdevicegroups': { ok = true; break; }
         case 'listdevices': { ok = true; break; }
         case 'listusersofdevicegroup': {
@@ -129,6 +133,16 @@ if (args['_'].length == 0) {
         }
         case 'removeuser': {
             if (args.userid == null) { console.log("Remove account userid missing, use --userid [id]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'addusergroup': {
+            if (args.name == null) { console.log("New user group name missing, use --name [name]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'removeusergroup': {
+            if (args.groupid == null) { console.log("Remove user group id missing, use --groupid [id]"); }
             else { ok = true; }
             break;
         }
@@ -211,6 +225,12 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl ListUserSessions --json");
                         break;
                     }
+                    case 'listusergroups': {
+                        console.log("List user groups on the MeshCentral server, Example usages:\r\n");
+                        console.log("  MeshCtrl ListUserGroups");
+                        console.log("  MeshCtrl ListUserGroups --json");
+                        break;
+                    }
                     case 'listdevicegroups': {
                         console.log("List the device groups for this account, Example usages:\r\n");
                         console.log("  MeshCtrl ListDeviceGroups ");
@@ -260,6 +280,7 @@ if (args['_'].length == 0) {
                         console.log("  --locked               - This account will be locked.");
                         console.log("  --nonewgroups          - Account will not be allowed to create device groups.");
                         console.log("  --notools              - Account not see MeshCMD download links.");
+                        console.log("  --domain [domain]      - Account domain, only for cross-domain admins.");
                         break;
                     }
                     case 'removeuser': {
@@ -574,11 +595,11 @@ function serverConnect() {
 
     if (ckey != null) {
         var domainid = '', username = 'admin';
-        if (args.domain != null) { domainid = args.domain; }
+        if (args.logindomain != null) { domainid = args.logindomain; }
         if (args.loginuser != null) { username = args.loginuser; }
         url += '?auth=' + encodeCookie({ userid: 'user/' + domainid + '/' + username, domainid: domainid }, ckey);
     } else {
-        if (args.domain != null) { console.log("--domain can only be used along with --loginkey."); process.exit(); return; }
+        if (args.logindomain != null) { console.log("--logindomain can only be used along with --loginkey."); process.exit(); return; }
     }
 
     const ws = new WebSocket(url, options);
@@ -591,6 +612,7 @@ function serverConnect() {
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users' })); break; }
             case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount' })); }
+            case 'listusergroups': { ws.send(JSON.stringify({ action: 'usergroups' })); }
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
             case 'listdevices': {
@@ -618,12 +640,26 @@ function serverConnect() {
                 if (args.email) { op.email = args.email; if (args.emailverified) { op.emailVerified = true; } }
                 if (args.resetpass) { op.resetNextLogin = true; }
                 if (siteadmin != 0) { op.siteadmin = siteadmin; }
+                if (args.domain) { op.domain = args.domain; }
                 ws.send(JSON.stringify(op));
                 break;
             }
             case 'removeuser': {
-                var op = { action: 'deleteuser', userid: args.userid, responseid: 'meshctrl' };
+                var userid = args.userid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { userid = 'user/' + args.domain + '/' + userid; }
+                ws.send(JSON.stringify({ action: 'deleteuser', userid: userid, responseid: 'meshctrl' }));
+                break;
+            }
+            case 'addusergroup': {
+                var op = { action: 'createusergroup', name: args.name, desc: args.desc, responseid: 'meshctrl' };
+                if (args.domain) { op.domain = args.domain; }
                 ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'removeusergroup': {
+                var ugrpid = args.groupid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { ugrpid = 'ugrp/' + args.domain + '/' + ugrpid; }
+                ws.send(JSON.stringify({ action: 'deleteusergroup', ugrpid: ugrpid, responseid: 'meshctrl' }));
                 break;
             }
             case 'adddevicegroup': {
@@ -807,6 +843,8 @@ function serverConnect() {
             case 'removemeshuser': //
             case 'inviteAgent': //
             case 'adddeviceuser': //
+            case 'createusergroup': //
+            case 'deleteusergroup': //
             case 'userbroadcast': { // BROADCAST
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
@@ -828,6 +866,19 @@ function serverConnect() {
                     console.log(JSON.stringify(data.wssessions, ' ', 2));
                 } else {
                     for (var i in data.wssessions) { console.log(i + ', ' + ((data.wssessions[i] > 1) ? (data.wssessions[i] + ' sessions.') : ("1 session."))); }
+                }
+                process.exit();
+                break;
+            }
+            case 'usergroups': { // LIST USER GROUPS
+                if (args.json) {
+                    console.log(JSON.stringify(data.ugroups, ' ', 2));
+                } else {
+                    for (var i in data.ugroups) {
+                        var x = i + ', ' + data.ugroups[i].name;
+                        if (data.ugroups[i].desc && (data.ugroups[i].desc != '')) { x += ', ' + data.ugroups[i].desc; }
+                        console.log(x);
+                    }
                 }
                 process.exit();
                 break;

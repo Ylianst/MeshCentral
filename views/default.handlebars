@@ -2330,7 +2330,7 @@
                         case 'accountcreate':
                         case 'accountchange': {
                             // An account was created or changed
-                            if (userinfo.name == message.event.account.name) {
+                            if (userinfo._id == message.event.account._id) {
                                 var newsiteadmin = message.event.account.siteadmin?message.event.account.siteadmin:0;
                                 var oldsiteadmin = userinfo.siteadmin?userinfo.siteadmin:0;
                                 if ((message.event.account.quota != userinfo.quota) || (((userinfo.siteadmin & 8) == 0) && ((message.event.account.siteadmin & 8) != 0))) { meshserver.send({ action: 'files' }); }
@@ -8923,7 +8923,6 @@
         }
 
         function p20showAddMeshUserDialog(userid, selected) {
-            console.log('p20showAddMeshUserDialog', userid, selected);
             if (xxdialogMode) return false;
             var x = '';
             if ((userid == null) || (userid == 5)) {
@@ -10664,13 +10663,16 @@
 
             var x = '<div style=min-height:80px><table style=width:100%>';
             if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", gname); } // If title bar is hidden, display the user group name here
+            if (serverinfo.crossDomain != null) {
+                var d = group._id.split('/')[1];
+                x += addDeviceAttribute("Domain", (d != '')?EscapeHtml(d):('<i>' + "Default" + '</i>'));
+                x += addDeviceAttribute("Group Identifier", EscapeHtml(group._id));
+            }
             if ((userinfo.siteadmin & 256) != 0) {
                 x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2) style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
             } else {
                 x += addDeviceAttribute("Description", desc);
             }
-
-            if (serverinfo.crossDomain != null) { x += addDeviceAttribute("Group Identifier", group._id); }
             x += addDeviceAttribute("Users", usercount);
             x += addDeviceAttribute("Device Groups", meshcount);
             x += addDeviceAttribute("Devices", devicecount);
@@ -10939,7 +10941,7 @@
             if (user == null) { setDialogMode(0); go(4); return; }
             QH('p30userName', user.name);
             QH('p31userName', user.name);
-            var self = (user.name == userinfo.name), activeSessions = 0;
+            var self = (user._id == userinfo._id), activeSessions = 0;
             if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
 
             // Change user grayscale
@@ -10971,6 +10973,8 @@
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
 
             if (serverinfo.crossDomain) {
+                var d = user._id.split('/')[1];
+                x += addDeviceAttribute("Domain", ((d != '')?EscapeHtml(d):('<i>' + "Default" + '</i>')));
                 x += addDeviceAttribute("User Identifier", EscapeHtml(user._id));
             } else {
                 if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", EscapeHtml(user._id.split('/')[2])); }
