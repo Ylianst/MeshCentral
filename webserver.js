@@ -1845,6 +1845,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
+                    if (domain.authstrategies[req.user.strategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
                     if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
                     obj.users[userid] = user;
 
@@ -4583,7 +4584,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 path: (typeof domain.authstrategies.intel.callbackurl == 'string') ? domain.authstrategies.intel.callbackurl : (url + 'auth-intel-callback'),
                                 entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral'
                             };
-                            if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
+                            if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
                             parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');

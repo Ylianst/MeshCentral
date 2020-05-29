@@ -270,3 +270,25 @@ module.exports.copyFile = function(source, target, cb) {
     rd.pipe(wr);
     function done(err) { if (!cbCalled) { cb(err); cbCalled = true; } }
 }
+
+module.exports.meshServerRightsArrayToNumber = function (val) {
+    if (val == null) return null;
+    if (typeof val == 'number') return val;
+    if (Array.isArray(val)) {
+        var newAccRights = 0;
+        for (var j in val) {
+            var r = val[j].toLowerCase();
+            if (r == 'fulladmin') { newAccRights = 4294967295; } // 0xFFFFFFFF
+            if (r == 'serverbackup') { newAccRights |= 1; }
+            if (r == 'manageusers') { newAccRights |= 2; }
+            if (r == 'serverrestore') { newAccRights |= 4; }
+            if (r == 'fileaccess') { newAccRights |= 8; }
+            if (r == 'serverupdate') { newAccRights |= 16; }
+            if (r == 'locked') { newAccRights |= 32; }
+            if (r == 'nonewgroups') { newAccRights |= 64; }
+            if (r == 'notools') { newAccRights |= 128; }
+        }
+        return newAccRights;
+    }
+    return null;
+}
