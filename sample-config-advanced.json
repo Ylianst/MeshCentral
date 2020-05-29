@@ -212,6 +212,7 @@
           "_disableRequestedAuthnContext": true,
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
           "entityid": "meshcentral",
           "idpurl": "https://server/saml2",
           "cert": "saml.pem"
