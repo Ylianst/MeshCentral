@@ -2034,7 +2034,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         db.Set(xmesh);
 
                                         // Notify mesh change
-                                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: delGroupDomain.id, invite: mesh.invite };
+                                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: delGroupDomain.id };
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event);
                                     }
