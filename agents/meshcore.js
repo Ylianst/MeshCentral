@@ -173,6 +173,7 @@ function createMeshCore(agent) {
                             case 'connection':
                                 data.result = require('MeshAgent').ConnectedServer;
                                 this._send(data);
+                                break;
                             case 'descriptors':
                                 require('ChainViewer').getSnapshot().then(function (f)
                                 {
