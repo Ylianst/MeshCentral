@@ -4038,11 +4038,17 @@
             return nodeids;
         }
 
+        function uncheckAllDevices() {
+            var elements = document.getElementsByClassName('DeviceCheckbox');
+            for (var i=0;i<elements.length;i++) { elements[i].checked = false; }
+        }
+
         function groupActionFunctionEx() {
             var op = Q('d2groupop').value;
             if (op == 100) {
                 // Group wake
                 meshserver.send({ action: 'wakedevices', nodeids: getCheckedDevices() });
+                uncheckAllDevices();
             } else if (op == 101) {
                 // Group delete, ask for confirmation
                 var x = "Confirm delete selected devices(s)?" + '<br /><br />';
@@ -4064,6 +4070,7 @@
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
+                uncheckAllDevices();
             }
         }
 
@@ -4082,6 +4089,7 @@
                 csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"\r\n';
             }
             saveAs(new Blob([csv], { type: 'application/octet-stream' }), "devicelist.csv");
+            uncheckAllDevices();
             return false;
         }
 
@@ -4089,11 +4097,12 @@
             var chkNodeIds = getCheckedDevices(), r = [];
             for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
             saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+            uncheckAllDevices();
             return false;
         }
 
         function d2groupActionFunctionDelCheck() { QE('idx_dlgOkButton', Q('d2check').checked); }
-        function d2groupActionFunctionDelExec() { meshserver.send({ action: 'removedevices', nodeids: getCheckedDevices() }); }
+        function d2groupActionFunctionDelExec() { meshserver.send({ action: 'removedevices', nodeids: getCheckedDevices() }); uncheckAllDevices(); }
 
         function onSortSelectChange(skipsave) {
             sort = document.getElementById('sortselect').selectedIndex;
@@ -5642,6 +5651,7 @@
 
         function p10showSendMqttMsgDialogEx(b, nodeids) {
             meshserver.send({ action: 'sendmqttmsg', nodeids: nodeids, topic: Q('dp2topic').value, msg: Q('dp2msg').value });
+            uncheckAllDevices();
         }
 
         function p10showSendUninstallAgentDialog(nodeids) {
@@ -5657,7 +5667,7 @@
         }
 
         function p10validateSendUninstallAgentDialog() { QE('idx_dlgOkButton', Q('p10check').checked); }
-        function p10showSendUninstallAgentDialogEx(b, nodeids) { meshserver.send({ action: 'uninstallagent', nodeids: nodeids }); }
+        function p10showSendUninstallAgentDialogEx(b, nodeids) { meshserver.send({ action: 'uninstallagent', nodeids: nodeids }); uncheckAllDevices(); }
 
         function p10showChangeGroupDialog(nodeids) {
             if (xxdialogMode) return false;
@@ -5684,6 +5694,7 @@
 
         function p10showChangeGroupDialogEx(b, nodeids) {
             meshserver.send({ action: 'changeDeviceMesh', nodeids: nodeids, meshid: Q('p10newGroup').value });
+            uncheckAllDevices();
         }
 
         function p10showDeleteNodeDialog(nodeid) {
