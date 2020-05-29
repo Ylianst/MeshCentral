@@ -1434,7 +1434,8 @@ function CreateMeshCentralServer(config, args) {
                 else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
 
                 // Setup users that can see all device groups
-                obj.config.settings.managealldevicegroups = [];
+                if (typeof obj.config.settings.managealldevicegroups == 'string') { obj.config.settings.managealldevicegroups = obj.config.settings.managealldevicegroups.split(','); }
+                else if (Array.isArray(obj.config.settings.managealldevicegroups) == false) { obj.config.settings.managealldevicegroups = []; }
                 for (i in obj.config.domains) {
                     if (Array.isArray(obj.config.domains[i].managealldevicegroups)) {
                         for (var j in obj.config.domains[i].managealldevicegroups) {
