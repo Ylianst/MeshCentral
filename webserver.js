@@ -4541,6 +4541,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 path: (typeof domain.authstrategies.saml.callbackurl == 'string') ? domain.authstrategies.saml.callbackurl : (url + 'auth-saml-callback'),
                                 entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral'
                             };
+                            if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                             parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
@@ -4582,6 +4583,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 path: (typeof domain.authstrategies.intel.callbackurl == 'string') ? domain.authstrategies.intel.callbackurl : (url + 'auth-intel-callback'),
                                 entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral'
                             };
+                            if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                             parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');

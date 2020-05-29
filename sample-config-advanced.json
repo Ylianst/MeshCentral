@@ -209,6 +209,7 @@
         },
         "saml": {
           "_callbackurl": "https://server/auth-saml-callback",
+          "_disableRequestedAuthnContext": true,
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "entityid": "meshcentral",
