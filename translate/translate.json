@@ -508,6 +508,7 @@
     },
     {
       "en": ", for this link to work you must download MeshCentral Router run it and click the install button.",
+      "nl": ", om deze link te laten werken, moet u MeshCentral Router downloaden, het uitvoeren en op de installatieknop klikken.",
       "xloc": [
         "default.handlebars->25->664"
       ]
@@ -24994,6 +24995,7 @@
     },
     {
       "en": "Start MeshCentral Router",
+      "nl": "Start MeshCentral Router",
       "xloc": [
         "default.handlebars->25->663"
       ]
