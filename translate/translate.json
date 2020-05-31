@@ -8349,6 +8349,7 @@
     },
     {
       "en": "Device is battery powered, {0}%",
+      "nl": "Apparaat werkt op batterijen, {0}%",
       "xloc": [
         "default.handlebars->25->465"
       ]
@@ -8547,6 +8548,7 @@
     },
     {
       "en": "Device is plugged-in",
+      "nl": "Apparaat is aangesloten",
       "xloc": [
         "default.handlebars->25->464"
       ]
