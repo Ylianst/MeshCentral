@@ -2176,6 +2176,16 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'setbattery':
+                    // require('MeshAgent').SendCommand({ action: 'battery', state: 'dc', level: 55 });
+                    if ((args['_'].length > 0) && ((args['_'][0] == 'ac') || (args['_'][0] == 'dc'))) {
+                        var b = { action: 'battery', state: args['_'][0] };
+                        if (args['_'].length == 2) { b.level = parseInt(args['_'][1]); }
+                        require('MeshAgent').SendCommand(b);
+                    } else {
+                        require('MeshAgent').SendCommand({ action: 'battery' });
+                    }
+                    break;
                 case 'fdsnapshot':
                     require('ChainViewer').getSnapshot().then(function (c) { sendConsoleText(c, this.sessionid); }).parentPromise.sessionid = sessionid;
                     break;

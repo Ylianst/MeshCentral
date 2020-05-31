@@ -488,6 +488,7 @@
                             <td style=width:20px></td>
                             <td style=width:200px;vertical-align:top;position:relative valign=top>
                                 <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyLargeDot src=images/icon-relay-notify-40.png width=40 height=40>
+                                <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
                                 <div id=MainComputerState></div>
                             </td>
@@ -2646,8 +2647,8 @@
                                 node.pwr = message.event.pwr;
                                 node.lastconnect = Date.now();
 
-                                // Clear sesssion information if needed
-                                if ((node.conn & 1) == 0) { delete node.sessions; }
+                                // Clear sesssion and battery information if needed
+                                if ((node.conn & 1) == 0) { delete node.sessions; delete node.battery; }
 
                                 // Web page update
                                 masterUpdate(1 | 4 | 16);
@@ -5007,7 +5008,31 @@
                 currentNode = node;
 
                 // Device Notification
-                QV('p10deviceNotify', currentNode.sessions != null);
+                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null)));
+
+                // Device Battery
+                QV('p10deviceBattery', false);
+                if ((currentNode.sessions != null) && (currentNode.sessions.battery != null)) {
+                    var bat = currentNode.sessions.battery;
+                    if (bat.state == 'ac') {
+                        QV('p10deviceBattery', true);
+                        Q('p10deviceBattery').className = 'deviceBatteryLarge deviceBatteryLarge6';
+                        Q('p10deviceBattery').title = "Device is plugged-in";
+                    } else {
+                        Q('p10deviceBattery').title = format("Device is battery powered, {0}%", bat.level);
+                        if ((typeof bat.level == 'number') && (bat.level >= 0) && (bat.level <= 100)) {
+                            QV('p10deviceBattery', true);
+                            var lvl = (Math.floor((bat.level + 10) / 25) + 1);
+                            if (lvl > 5) { lvl = 5; }
+                            Q('p10deviceBattery').className = 'deviceBatteryLarge deviceBatteryLarge' + lvl;
+                        } else {
+                            QV('p10deviceBattery', true);
+                            Q('p10deviceBattery').className = 'deviceBatteryLarge deviceBatteryLarge5';
+                        }
+                    }
+                } else {
+                    QV('p10deviceBattery', false);
+                }
 
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
