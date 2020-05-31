@@ -800,6 +800,33 @@ NoMeshesPanel img {
 .deviceBatteryLarge4 { background: url(../images/batteries48.png) -84px 0px; }
 .deviceBatteryLarge5 { background: url(../images/batteries48.png) -112px 0px; }
 .deviceBatteryLarge6 { background: url(../images/batteries48.png) -140px 0px; }
+.deviceBatteryLarge7 { background: url(../images/batteries48.png) -168px 0px; }
+.deviceBatteryLarge8 { background: url(../images/batteries48.png) -196px 0px; }
+.deviceBatteryLarge9 { background: url(../images/batteries48.png) -224px 0px; }
+.deviceBatteryLarge10 { background: url(../images/batteries48.png) -252px 0px; }
+.deviceBatteryLarge11 { background: url(../images/batteries48.png) -280px 0px; }
+
+.deviceBatterySmall {
+    position:absolute;
+    left:20px;
+    top:28px;
+    width:14px;
+    height:24px;
+    border:none;
+    box-shadow:none;
+}
+
+.deviceBatterySmall1 { background: url(../images/batteries24.png) 0px 0px; }
+.deviceBatterySmall2 { background: url(../images/batteries24.png) -14px 0px; }
+.deviceBatterySmall3 { background: url(../images/batteries24.png) -28px 0px; }
+.deviceBatterySmall4 { background: url(../images/batteries24.png) -42px 0px; }
+.deviceBatterySmall5 { background: url(../images/batteries24.png) -56px 0px; }
+.deviceBatterySmall6 { background: url(../images/batteries24.png) -70px 0px; }
+.deviceBatterySmall7 { background: url(../images/batteries24.png) -84px 0px; }
+.deviceBatterySmall8 { background: url(../images/batteries24.png) -98px 0px; }
+.deviceBatterySmall9 { background: url(../images/batteries24.png) -112px 0px; }
+.deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; }
+.deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; }
 
 .deviceNotifyLargeDot {
     text-align:center;
