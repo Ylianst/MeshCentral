@@ -508,6 +508,7 @@
     },
     {
       "en": ", for this link to work you must download MeshCentral Router run it and click the install button.",
+      "nl": ", om deze link te laten werken, moet u MeshCentral Router downloaden, het uitvoeren en op de installatieknop klikken.",
       "xloc": [
         "default.handlebars->25->668"
       ]
@@ -8348,13 +8349,11 @@
     },
     {
       "en": "Device is battery powered",
+      "nl": "Apparaat werkt op batterijen",
       "xloc": [
         "default.handlebars->25->177",
         "default.handlebars->25->467"
       ]
-    },
-    {
-      "en": "Device is battery powered, {0}%"
     },
     {
       "cs": "Zařízení je zjištěno, ale nelze zjistit stav jeho napájení.",
@@ -8550,6 +8549,7 @@
     },
     {
       "en": "Device is plugged-in",
+      "nl": "Apparaat is aangesloten",
       "xloc": [
         "default.handlebars->25->176",
         "default.handlebars->25->466"
@@ -25011,6 +25011,7 @@
     },
     {
       "en": "Start MeshCentral Router",
+      "nl": "Start MeshCentral Router",
       "xloc": [
         "default.handlebars->25->667"
       ]
