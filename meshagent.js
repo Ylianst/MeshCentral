@@ -1351,6 +1351,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     obj.updateSessions();
                     break;
                 }
+                case 'battery': {
+                    // Device battery and power state
+                    if (obj.sessions == null) { obj.sessions = {}; }
+                    if (obj.sessions.battery == null) { obj.sessions.battery = {}; }
+                    if ((command.state == 'ac') || (command.state == 'dc')) { obj.sessions.battery.state = command.state; } else { delete obj.sessions.battery.state; }
+                    if ((typeof command.level == 'number') && (command.level >= 0) && (command.level <= 100)) { obj.sessions.battery.level = command.level; } else { delete obj.sessions.battery.level; }
+                    obj.updateSessions();
+                    break;
+                }
                 case 'plugin': {
                     if ((parent.parent.pluginHandler == null) || (typeof command.plugin != 'string')) break;
                     try {
