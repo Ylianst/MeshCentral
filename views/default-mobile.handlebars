@@ -255,6 +255,50 @@
             background-color: #C9C9C9;
             color: #000;
         }
+
+        .deviceBatteryLarge {
+            position:absolute;
+            right:10px;
+            top:0px;
+            width:28px;
+            height:48px;
+            border:none;
+            box-shadow:none;
+        }
+
+        .deviceBatteryLarge1 { background: url(../images/batteries48.png) 0px 0px; }
+        .deviceBatteryLarge2 { background: url(../images/batteries48.png) -28px 0px; }
+        .deviceBatteryLarge3 { background: url(../images/batteries48.png) -56px 0px; }
+        .deviceBatteryLarge4 { background: url(../images/batteries48.png) -84px 0px; }
+        .deviceBatteryLarge5 { background: url(../images/batteries48.png) -112px 0px; }
+        .deviceBatteryLarge6 { background: url(../images/batteries48.png) -140px 0px; }
+        .deviceBatteryLarge7 { background: url(../images/batteries48.png) -168px 0px; }
+        .deviceBatteryLarge8 { background: url(../images/batteries48.png) -196px 0px; }
+        .deviceBatteryLarge9 { background: url(../images/batteries48.png) -224px 0px; }
+        .deviceBatteryLarge10 { background: url(../images/batteries48.png) -252px 0px; }
+        .deviceBatteryLarge11 { background: url(../images/batteries48.png) -280px 0px; }
+
+        .deviceBatterySmall {
+            position:absolute;
+            left:6px;
+            top:22px;
+            width:14px;
+            height:24px;
+            border:none;
+            box-shadow:none;
+        }
+
+        .deviceBatterySmall1 { background: url(../images/batteries24.png) 0px 0px; }
+        .deviceBatterySmall2 { background: url(../images/batteries24.png) -14px 0px; }
+        .deviceBatterySmall3 { background: url(../images/batteries24.png) -28px 0px; }
+        .deviceBatterySmall4 { background: url(../images/batteries24.png) -42px 0px; }
+        .deviceBatterySmall5 { background: url(../images/batteries24.png) -56px 0px; }
+        .deviceBatterySmall6 { background: url(../images/batteries24.png) -70px 0px; }
+        .deviceBatterySmall7 { background: url(../images/batteries24.png) -84px 0px; }
+        .deviceBatterySmall8 { background: url(../images/batteries24.png) -98px 0px; }
+        .deviceBatterySmall9 { background: url(../images/batteries24.png) -112px 0px; }
+        .deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; }
+        .deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; }
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -442,6 +486,7 @@
                     </table>
                     <div id=p10general style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDot src=images/icon-relay-notify-40.png width=40 height=40>
+                        <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                         <div id=p10html style="margin-left:8px;margin-right:8px"></div>
                         <div id=p10html2></div>
                         <div id=p10html3></div>
@@ -2047,7 +2092,31 @@
 
                 // Setup device notification
                 var devNotify = '';
-                if (nodes[i].sessions != null) { devNotify = '<img class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>'; }
+                if (nodes[i].sessions != null) {
+                    if ((nodes[i].sessions.kvm != null) || (nodes[i].sessions.terminal != null) || (nodes[i].sessions.files != null)) {
+                        devNotify = '<img class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>';
+                    }
+
+                    // Battery state
+                    if (nodes[i].sessions.battery != null) {
+                        var bat = nodes[i].sessions.battery;
+                        var statestr = '';
+                        if (bat.state == 'ac') { statestr = "Device is plugged-in"; }
+                        if (bat.state == 'dc') { statestr = "Device is battery powered"; }
+
+                        var levelstr = '', levelnum = -1;
+                        if ((typeof bat.level == 'number') && (bat.level >= 0) && (bat.level <= 100)) {
+                            levelstr = bat.level + '%';
+                            levelnum = (Math.floor((bat.level + 10) / 25) + 1);
+                            if (levelnum > 5) { lvl = 5; }
+                            if (bat.state == 'ac') { if (bat.level == 100) { levelnum = 11; } else { levelnum += 5; } }
+                        }
+
+                        if (levelnum > 0) {
+                            devNotify += '<div class="deviceBatterySmall deviceBatterySmall' + levelnum + '" title="' + ((statestr != null) ? (statestr + ', ' + levelstr) : levelstr) + '"></div>';
+                        }
+                    }
+                }
 
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
@@ -2215,7 +2284,33 @@
                 currentNode = node;
 
                 // Setup session notification
-                QV('p10deviceNotify', currentNode.sessions != null);
+                QV('p10deviceNotify', (currentNode.sessions != null) && ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null)));
+
+                // Device Battery
+                QV('p10deviceBattery', false);
+                if ((currentNode.sessions != null) && (currentNode.sessions.battery != null)) {
+                    var bat = currentNode.sessions.battery;
+
+                    var statestr = '';
+                    if (bat.state == 'ac') { statestr = "Device is plugged-in"; }
+                    if (bat.state == 'dc') { statestr = "Device is battery powered"; }
+
+                    var levelstr = '', levelnum = -1;
+                    if ((typeof bat.level == 'number') && (bat.level >= 0) && (bat.level <= 100)) {
+                        levelstr = bat.level + '%';
+                        levelnum = (Math.floor((bat.level + 10) / 25) + 1);
+                        if (levelnum > 5) { lvl = 5; }
+                        if (bat.state == 'ac') { if (bat.level == 100) { levelnum = 11; } else { levelnum += 5; } }
+                    }
+
+                    if (levelnum > 0) {
+                        Q('p10deviceBattery').title = (statestr != null) ? (statestr + ', ' + levelstr) : levelstr;
+                        QV('p10deviceBattery', true);
+                        Q('p10deviceBattery').className = 'deviceBatteryLarge deviceBatteryLarge' + levelnum;
+                    }
+                } else {
+                    QV('p10deviceBattery', false);
+                }
 
                 // Add node name
                 var nname = EscapeHtml(node.name);
