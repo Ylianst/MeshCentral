@@ -2180,7 +2180,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     for (var i in domain.forceduserwebstate) { webstate2[i] = domain.forceduserwebstate[i]; }
                     webstate = JSON.stringify(webstate2);
                 }
-                render(req, res, getRenderPage('default', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() }, req, domain));
+
+                // Custom user interface
+                var customui = '';
+                if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
+
+                render(req, res, getRenderPage('default', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, customui: customui, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() }, req, domain));
             });
         } else {
             // Send back the login application
@@ -2269,8 +2274,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
         }
 
+        // Custom user interface
+        var customui = '';
+        if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
+
         // Render the login page
-        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(',') }, req, domain));
+        render(req, res, getRenderPage('login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, customui: customui, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(',') }, req, domain));
     }
 
     // Handle a post request on the root
