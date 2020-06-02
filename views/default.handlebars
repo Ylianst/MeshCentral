@@ -234,6 +234,7 @@
                             <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                             <label><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                            <span id="devCustomUIBar"></span>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
                             &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
@@ -1230,6 +1231,8 @@
         var attemptWebRTC = ((features & 128) != 0);
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
+        var customui = '{{{customui}}}';
+        if (customui != '') { customui = JSON.parse(decodeURIComponent(customui)); } else { customui = null; }
         var deskAspectRatio = 0;
         try { deskAspectRatio = parseInt(getstore('deskAspectRatio', '0')); } catch (ex) { }
         var uiMode = parseInt(getstore('uiMode', 1));
@@ -1401,6 +1404,68 @@
             if ((['en','ko','ja','zh-chs'].indexOf('{{{lang}}}') == -1) && ('{{{lang}}}'.toLowerCase() != '')) { QC('body').add('nonenglish'); }
             var elements = document.getElementsByClassName('topbar_td');
             for (var i in elements) { if (elements[i].innerHTML) { elements[i].innerHTML = elements[i].innerHTML.split(' ').join('&nbsp;'); } }
+
+            // Custom UI
+            if (customui != null) {
+                if (customui.devicesbarbuttons) {
+                    var x = '';
+                    for (var i in customui.devicesbarbuttons) {
+                        var disabled = ((customui.devicesbarbuttons[i].selection == 'one') || (customui.devicesbarbuttons[i].selection == 'many'))?'disabled':'';
+                        x += '<input id="cui:' + i + '" type="button" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />';
+                    }
+                    QH('devCustomUIBar', x);
+                }
+            }
+        }
+
+        // Generic handling of custom actions
+        function customUIAction(e, section) {
+            var id = e.srcElement.id;
+            if (id.startsWith('cui:') == false) return;
+            var info = customui[section][id.substring(4)];
+            if (info == null) return;
+            if (section == 'devicesbarbuttons') {
+                var elements = document.getElementsByClassName('DeviceCheckbox'), selectedDevices = [];
+                for (var i = 0; i < elements.length; i++) { if (elements[i].checked === true) { selectedDevices.push(elements[i].defaultValue.substring(6)); } }
+                if (typeof info.action == 'string') {
+                    if (info.action == 'event') { meshserver.send({ action: 'uicustomevent', section: section, element: id.substring(4), selectedDevices: selectedDevices }); }
+                    if (info.action.startsWith('dialog:')) { showCustomUiDialog(info.action.substring(7), { section: section, element: id.substring(4), selectedDevices: selectedDevices }); }
+                }
+            }
+        }
+
+        // Display a generic custom UI dialog
+        function showCustomUiDialog(name, tag) {
+            if ((customui == null) || (customui.dialogs == null) || (typeof customui.dialogs[name] != 'object')) return;
+            var x = '', dialog = customui.dialogs[name], buttons = 3;
+            if (typeof dialog.text == 'string') { x += '<div style=margin-bottom:8px>' + dialog.text + '</div>'; }
+            if (typeof dialog.buttons == 'number') { buttons = dialog.buttons; }
+            if (typeof dialog.elements == 'object') { 
+                for (var i in dialog.elements) {
+                    var elem = dialog.elements[i];
+                    if (elem.type == 'text') { x += addHtmlValue(elem.name, '<input id=cui:' + i + ' style=width:230px autocomplete=off />'); }
+                    if (elem.type == 'droplist') {
+                        var y = '';
+                        for (var j in elem.options) { y += '<option value="' + j + '">' + EscapeHtml(elem.options[j]) + '</option>'; }
+                        x += addHtmlValue(elem.name, '<select id="cui:' + i + '" style=width:230px autocomplete=off />' + y + '</select>');
+                    }
+                }
+            }
+            setDialogMode(2, dialog.title, buttons, showCustomUiDialogEx, x, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {} });
+        }
+
+        // Handle a generic custom UI dialog event
+        function showCustomUiDialogEx(b, t) {
+            if (b != 1) return;
+            var dialog = customui.dialogs[t.element];
+            if (typeof dialog.elements == 'object') { 
+                for (var i in dialog.elements) {
+                    var elem = dialog.elements[i];
+                    if (elem.type == 'text') { t.values[i] = Q('cui:' + i).value; }
+                    if (elem.type == 'droplist') { t.values[i] = Q('cui:' + i).value; }
+                }
+            }
+            meshserver.send(t);
         }
 
         function adjustPanels() {
@@ -4032,6 +4097,16 @@
                 Q('SelectAllButton').value = "Select All";
                 QV('cxmgroupsplit', false);
                 QV('cxmdesktop', false);
+            }
+
+            // Custom UI
+            if (customui != null) {
+                if (customui.devicesbarbuttons) {
+                    for (var i in customui.devicesbarbuttons) {
+                        if (customui.devicesbarbuttons[i].selection == 'one') { QE('cui:' + i, checkcount == 1); }
+                        if (customui.devicesbarbuttons[i].selection == 'many') { QE('cui:' + i, checkcount >= 1); }
+                    }
+                }
             }
         }
 
@@ -7316,7 +7391,7 @@
                     h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
-                    if (f.s > 0) { link = '<a href=# rel="noreferrer noopener" target="_blank" style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')">' + shortname + '</a>'; }
+                    if (f.s > 0) { link = '<a href=# rel="noreferrer noopener" target="_blank" download style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')">' + shortname + '</a>'; }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 

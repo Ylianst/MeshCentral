@@ -61,9 +61,7 @@
     <Compile Include="agents\modules_meshcore\amt-xml.js" />
     <Compile Include="agents\modules_meshcore\amt.js" />
     <Compile Include="agents\modules_meshcore\apfclient.js" />
-    <Compile Include="agents\modules_meshcore\identifiers.js" />
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
-    <Compile Include="agents\modules_meshcore\power-monitor.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
     <Compile Include="agents\modules_meshcore\sysinfo.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />

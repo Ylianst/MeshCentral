@@ -4323,6 +4323,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'uicustomevent': {
+                // Event the change
+                var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, nolog: 1, uisection: command.section, element: command.element  };
+                if (command.selectedDevices != null) { message.selectedDevices = command.selectedDevices; }
+                if (command.src != null) { message.src = command.src; }
+                if (command.values != null) { message.values = command.values; }
+                parent.parent.DispatchEvent(['*', user._id], obj, message);
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
