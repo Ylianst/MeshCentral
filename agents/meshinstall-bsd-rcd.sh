@@ -8,9 +8,9 @@ name="meshagent"
 desc="MeshCentral Agent"
 rcvar=${name}_enable
 pidfile="/var/run/meshagent.pid"
+meshagent_chdir="/usr/local/mesh"
 command="/usr/sbin/daemon"
 command_args="-P ${pidfile} -r -f /usr/local/mesh/meshagent "
-command_chdir="/usr/local/mesh"
 
 load_rc_config $name
 : ${meshagent_enable="YES"}
