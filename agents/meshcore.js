@@ -255,13 +255,14 @@ function createMeshCore(agent) {
     {
         require('MeshAgent')._battLevelChanged = function _battLevelChanged(val)
         {
+            _battLevelChanged.self._currentBatteryLevel = val;
             _battLevelChanged.self.SendCommand({ action: 'battery', state: _battLevelChanged.self._currentPowerState, level: val });
         };
         require('MeshAgent')._battLevelChanged.self = require('MeshAgent');
         require('MeshAgent')._powerChanged = function _powerChanged(val)
         {
             _powerChanged.self._currentPowerState = (val == 'AC' ? 'ac' : 'dc');
-            _powerChanged.self.SendCommand({ action: 'battery', state: (val == 'AC' ? 'ac' : 'dc') });
+            _powerChanged.self.SendCommand({ action: 'battery', state: (val == 'AC' ? 'ac' : 'dc'), level: _powerChanged.self._currentBatteryLevel });
         };
         require('MeshAgent')._powerChanged.self = require('MeshAgent');
         require('MeshAgent').on('Connected', function (status)
