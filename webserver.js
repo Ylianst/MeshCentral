@@ -4548,7 +4548,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                         } else {
                             var options = {
-                                path: (typeof domain.authstrategies.saml.callbackurl == 'string') ? domain.authstrategies.saml.callbackurl : (url + 'auth-saml-callback'),
+                                callbackUrl: (typeof domain.authstrategies.saml.callbackurl == 'string') ? domain.authstrategies.saml.callbackurl : (url + 'auth-saml-callback'),
                                 entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral'
                             };
                             if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
@@ -4590,7 +4590,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
                         } else {
                             var options = {
-                                path: (typeof domain.authstrategies.intel.callbackurl == 'string') ? domain.authstrategies.intel.callbackurl : (url + 'auth-intel-callback'),
+                                callbackUrl: (typeof domain.authstrategies.intel.callbackurl == 'string') ? domain.authstrategies.intel.callbackurl : (url + 'auth-intel-callback'),
                                 entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral'
                             };
                             if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
@@ -4634,7 +4634,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
                         } else {
                             var options = {
-                                path: (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') ? domain.authstrategies.jumpcloud.callbackurl : (url + 'auth-jumpcloud-callback'),
+                                callbackUrl: (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') ? domain.authstrategies.jumpcloud.callbackurl : (url + 'auth-jumpcloud-callback'),
                                 entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral'
                             };
                             parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
