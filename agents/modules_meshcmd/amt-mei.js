@@ -27,6 +27,7 @@ function amt_heci() {
     this._setupPTHI = function _setupPTHI()
     {
         this._amt = heci.create();
+        this._amt.descriptorMetadata = "amt-pthi";
         this._amt.BiosVersionLen = 65;
         this._amt.UnicodeStringLen = 20;
 
@@ -397,20 +398,25 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.getProtocolVersion = function getProtocolVersion(callback) {
+    this.getProtocolVersion = function getProtocolVersion(callback)
+    {
         var optional = [];
         for (var i = 1; i < arguments.length; ++i) { opt.push(arguments[i]); }
 
-        heci.doIoctl(heci.IOCTL.HECI_VERSION, Buffer.alloc(5), Buffer.alloc(5), function (status, buffer, self, fn, opt) {
+        if (!this._tmpSession) { this._tmpSession = heci.create(); this._tmpSession.parent = this;}
+        this._tmpSession.doIoctl(heci.IOCTL.HECI_VERSION, Buffer.alloc(5), Buffer.alloc(5), function (status, buffer, self, fn, opt)
+        {
             if (status == 0) {
                 var result = buffer.readUInt8(0).toString() + '.' + buffer.readUInt8(1).toString() + '.' + buffer.readUInt8(2).toString() + '.' + buffer.readUInt16BE(3).toString();
                 opt.unshift(result);
                 fn.apply(self, opt);
             }
-            else {
+            else
+            {
                 opt.unshift(null);
                 fn.apply(self, opt);
             }
+
         }, this, callback, optional);
     }
 }

@@ -122,21 +122,21 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     }
 
     // Find a free port starting with the specified one and going up.
-    function CheckListenPort(port, func) {
+    function CheckListenPort(port, addr, func) {
         var s = obj.net.createServer(function (socket) { });
-        obj.tcpServer = s.listen(port, function () { s.close(function () { if (func) { func(port); } }); }).on("error", function (err) {
+        obj.tcpServer = s.listen(port, function () { s.close(function () { if (func) { func(port, addr); } }); }).on("error", function (err) {
             if (args.exactports) { console.error("ERROR: MeshCentral HTTP server port " + port + " not available."); process.exit(); }
-            else { if (port < 65535) { CheckListenPort(port + 1, func); } else { if (func) { func(0); } } }
+            else { if (port < 65535) { CheckListenPort(port + 1, addr, func); } else { if (func) { func(0); } } }
         });
     }
 
     // Start the ExpressJS web server, if the port is busy try the next one.
-    function StartRedirServer(port) {
+    function StartRedirServer(port, addr) {
         if (port == 0 || port == 65535) { return; }
-        obj.tcpServer = obj.app.listen(port, function () {
+        obj.tcpServer = obj.app.listen(port, addr, function () {
             obj.port = port;
             console.log("MeshCentral HTTP redirection server running on port " + port + ".");
-            obj.parent.authLog('http', 'Server listening on 0.0.0.0 port ' + port + '.');
+            obj.parent.authLog('http', 'Server listening on ' + ((addr != null)?addr:'0.0.0.0') + ' port ' + port + '.');
             obj.parent.updateServerState('redirect-port', port);
             func(obj.port);
         }).on('error', function (err) {
@@ -155,7 +155,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         return (servernameRe.test(servername) && -1 === servername.indexOf('..') && servername) || '';
     };
 
-    CheckListenPort(args.redirport, StartRedirServer);
+    CheckListenPort(args.redirport, args.redirportbind, StartRedirServer);
 
     return obj;
 };

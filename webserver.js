@@ -4805,10 +4805,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Start server on a free port.
-        CheckListenPort(obj.args.port, StartWebServer);
+        CheckListenPort(obj.args.port, obj.args.portbind, StartWebServer);
 
         // Start on a second agent-only alternative port if needed.
-        if (obj.args.agentport) { CheckListenPort(obj.args.agentport, StartAltWebServer); }
+        if (obj.args.agentport) { CheckListenPort(obj.args.agentport, obj.args.agentportbind, StartAltWebServer); }
     }
 
     // Authenticates a session and forwards
@@ -5024,30 +5024,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Find a free port starting with the specified one and going up.
-    function CheckListenPort(port, func) {
+    function CheckListenPort(port, addr, func) {
         var s = obj.net.createServer(function (socket) { });
-        obj.tcpServer = s.listen(port, function () { s.close(function () { if (func) { func(port); } }); }).on('error', function (err) {
+        obj.tcpServer = s.listen(port, addr, function () { s.close(function () { if (func) { func(port, addr); } }); }).on('error', function (err) {
             if (args.exactports) { console.error('ERROR: MeshCentral HTTPS server port ' + port + ' not available.'); process.exit(); }
-            else { if (port < 65535) { CheckListenPort(port + 1, func); } else { if (func) { func(0); } } }
+            else { if (port < 65535) { CheckListenPort(port + 1, addr, func); } else { if (func) { func(0); } } }
         });
     }
 
     // Start the ExpressJS web server
-    function StartWebServer(port) {
+    function StartWebServer(port, addr) {
         if ((port < 1) || (port > 65535)) return;
         obj.args.port = port;
         if (obj.tlsServer != null) {
             if (obj.args.lanonly == true) {
-                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             } else {
-                obj.tcpServer = obj.tlsServer.listen(port, function () { console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+                obj.tcpServer = obj.tlsServer.listen(port, addr, function () { console.log('MeshCentral HTTPS server running on ' + certificates.CommonName + ':' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
-            if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
+            if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on ' + ((addr != null) ? addr : '0.0.0.0') + ' port ' + port + '.'); }
             obj.parent.updateServerState('https-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('https-aliasport', args.aliasport); }
         } else {
-            obj.tcpServer = obj.app.listen(port, function () { console.log('MeshCentral HTTP server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
+            obj.tcpServer = obj.app.listen(port, addr, function () { console.log('MeshCentral HTTP server running on port ' + port + ((args.aliasport != null) ? (', alias port ' + args.aliasport) : '') + '.'); });
             obj.parent.updateServerState('http-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('http-aliasport', args.aliasport); }
         }
@@ -5067,20 +5067,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Start the ExpressJS web server on agent-only alternative port
-    function StartAltWebServer(port) {
+    function StartAltWebServer(port, addr) {
         if ((port < 1) || (port > 65535)) return;
         var agentAliasPort = null;
         if (args.agentaliasport != null) { agentAliasPort = args.agentaliasport; }
         if (obj.tlsAltServer != null) {
             if (obj.args.lanonly == true) {
-                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             } else {
-                obj.tcpAltServer = obj.tlsAltServer.listen(port, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             }
             if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
             obj.parent.updateServerState('https-agent-port', port);
         } else {
-            obj.tcpAltServer = obj.agentapp.listen(port, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
+            obj.tcpAltServer = obj.agentapp.listen(port, addr, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             obj.parent.updateServerState('http-agent-port', port);
         }
     }
