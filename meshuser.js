@@ -3431,6 +3431,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 node.rdpport = command.rdpport; change = 1; changes.push('rdpport'); // Set the RDP port
                             }
                         }
+
+                        if ((typeof command.rfbport == 'number') && (command.rfbport > 0) && (command.rfbport < 65536)) {
+                            if ((command.rfbport == 5900) && (node.rfbport != null)) {
+                                delete node.rfbport; change = 1; changes.push('rfbport'); // Delete the RFB port
+                            } else {
+                                node.rfbport = command.rfbport; change = 1; changes.push('rfbport'); // Set the RFB port
+                            }
+                        }
+
                         if (domain.geolocation && command.userloc && ((node.userloc == null) || (command.userloc[0] != node.userloc[0]) || (command.userloc[1] != node.userloc[1]))) {
                             change = 1;
                             if ((command.userloc.length == 0) && (node.userloc)) {
@@ -3463,6 +3472,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
                             event.node = parent.CloneSafeNode(node);
                             if (command.rdpport == 3389) { event.node.rdpport = 3389; }
+                            if (command.rfbport == 5900) { event.node.rfbport = 5900; }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         }
