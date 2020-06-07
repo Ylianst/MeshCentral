@@ -14921,6 +14921,7 @@
     },
     {
       "en": "Launch noVNC session to this device",
+      "nl": "Start een noVNC-sessie op dit apparaat",
       "xloc": [
         "default.handlebars->27->566"
       ]
@@ -30274,18 +30275,21 @@
     },
     {
       "en": "noVNC",
+      "nl": "noVNC",
       "xloc": [
         "default.handlebars->27->567"
       ]
     },
     {
       "en": "noVNC Connection",
+      "nl": "noVNC verbinding",
       "xloc": [
         "default.handlebars->27->438"
       ]
     },
     {
       "en": "noVNC remote connection port:",
+      "nl": "noVNC externe verbindingspoort:",
       "xloc": [
         "default.handlebars->27->437"
       ]
