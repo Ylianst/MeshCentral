@@ -2197,7 +2197,7 @@
                         }
                     }
                     if (message.tag == 'novnc') {
-                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth%3D' + message.cookie;
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1';
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
                         var newWindow = window.open(vncurl, 'mcnovnc/' + message.nodeid);
