@@ -8236,6 +8236,7 @@
     {
       "en": "Device Message",
       "nl": "Apparaatbericht",
+      "fr": "Message de Service\r\n",
       "xloc": [
         "default.handlebars->27->627"
       ]
@@ -8747,6 +8748,7 @@
     {
       "en": "Display a message box on the remote device.",
       "nl": "Geef een berichtvenster weer op het externe apparaat.",
+      "fr": "Afficher un message sur le poste distant",
       "xloc": [
         "default.handlebars->27->628"
       ]
@@ -8771,6 +8773,7 @@
     {
       "en": "Display a text message on the remote device",
       "nl": "Geef een tekstbericht weer op het externe apparaat",
+      "fr": "Afficher un message sur le poste distant",
       "xloc": [
         "default.handlebars->27->547"
       ]
@@ -23114,6 +23117,7 @@
     {
       "en": "Send a email message to this user",
       "nl": "Stuur een e-mailbericht naar deze gebruiker",
+      "fr": "Envoyer un Mail à cet utilisateur",
       "xloc": [
         "default.handlebars->27->1640"
       ]
@@ -23658,7 +23662,7 @@
       "de": "Dienste",
       "en": "Services",
       "es": "Servicios",
-      "fr": "Prestations de service",
+      "fr": "Services",
       "hi": "सेवाएं",
       "ja": "サービス",
       "ko": "서비스",
