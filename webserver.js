@@ -4187,9 +4187,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             ) {
                 if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
                     req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
-                } else if (res.headers['x-forwarded-for']) {
+                } else if (req.headers['x-forwarded-for']) {
                     req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
-                } else if (res.headers['x-real-ip']) {
+                } else if (req.headers['x-real-ip']) {
                     req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
                 } else {
                     req.clientIp = ipex;
@@ -4229,7 +4229,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((domain != null) && (domain.share != null)) {
                 var rpath;
                 if (domain.dns == null) { rpath = req.url.split('/'); rpath.splice(1, 1); rpath = rpath.join('/'); } else { rpath = req.url; }
-                if ((res.headers != null) && (res.headers.upgrade)) {
+                if ((req.headers != null) && (req.headers.upgrade)) {
                     // If this is a websocket, stop here.
                     res.sendStatus(404);
                 } else {
