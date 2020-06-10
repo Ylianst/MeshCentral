@@ -121,8 +121,7 @@
     <Compile Include="mqttbroker.js" />
     <Compile Include="mstsc.js" />
     <Compile Include="pluginHandler.js" />
-    <Compile Include="public\mstsc\js\canvas.js" />
-    <Compile Include="public\mstsc\js\client.js" />
+    <Compile Include="public\mstsc\client.js" />
     <Compile Include="public\mstsc\js\keyboard.js" />
     <Compile Include="public\mstsc\js\mstsc.js" />
     <Compile Include="public\mstsc\js\rle.js" />
@@ -462,7 +461,6 @@
     <Content Include="public\images\mapmarker.png" />
     <Content Include="public\images\meshicon50.png" />
     <Content Include="public\images\trash.png" />
-    <Content Include="public\mstsc\css\bootstrap.min.css" />
     <Content Include="public\mstsc\css\signin.css" />
     <Content Include="public\mstsc\index.html" />
     <Content Include="public\mstsc\keymap.html" />

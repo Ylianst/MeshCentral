@@ -47,36 +47,34 @@
 	
 	Client.prototype = {
 		install : function () {
-			var self = this;
+            var self = this;
 
             // Bind mouse move event
 			this.canvas.addEventListener('mousemove', function (e) {
                 if (!self.socket || !self.activeSession) return;
-				var offset = Mstsc.elementOffset(self.canvas);
-                self.socket.send(JSON.stringify(['mouse', e.clientX - offset.left, e.clientY - offset.top, 0, false]));
+                var rect = e.target.getBoundingClientRect();
+                self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, 0, false]));
                 e.preventDefault();
 				return false;
 			});
 			this.canvas.addEventListener('mousedown', function (e) {
                 if (!self.socket || !self.activeSession) return;
-				
-				var offset = Mstsc.elementOffset(self.canvas);
-                self.socket.send(JSON.stringify(['mouse', e.clientX - offset.left, e.clientY - offset.top, mouseButtonMap(e.button), true]));
+                var rect = e.target.getBoundingClientRect();
+                self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, mouseButtonMap(e.button), true]));
 				e.preventDefault();
 				return false;
 			});
 			this.canvas.addEventListener('mouseup', function (e) {
 				if (!self.socket || !self.activeSession) return;
-				
-				var offset = Mstsc.elementOffset(self.canvas);
-                self.socket.send(JSON.stringify(['mouse', e.clientX - offset.left, e.clientY - offset.top, mouseButtonMap(e.button), false]));
+                var rect = e.target.getBoundingClientRect();
+                self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, mouseButtonMap(e.button), false]));
 				e.preventDefault();
 				return false;
 			});
 			this.canvas.addEventListener('contextmenu', function (e) {
 				if (!self.socket || !self.activeSession) return;
-				var offset = Mstsc.elementOffset(self.canvas);
-                self.socket.send(JSON.stringify(['mouse', e.clientX - offset.left, e.clientY - offset.top, mouseButtonMap(e.button), false]));
+                var rect = e.target.getBoundingClientRect();
+                self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, mouseButtonMap(e.button), false]));
 				e.preventDefault();
 				return false;
 			});
@@ -85,8 +83,8 @@
 				var isHorizontal = false;
 				var delta = e.detail;
 				var step = Math.round(Math.abs(delta) * 15 / 8);
-				var offset = Mstsc.elementOffset(self.canvas);
-                self.socket.send(JSON.stringify(['wheel', e.clientX - offset.left, e.clientY - offset.top, step, delta > 0, isHorizontal]));
+                var rect = e.target.getBoundingClientRect();
+                self.socket.send(JSON.stringify(['wheel', e.clientX - rect.left, e.clientY - rect.top, step, delta > 0, isHorizontal]));
 				e.preventDefault();
 				return false;
 			});
@@ -95,8 +93,8 @@
 				var isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
 				var delta = isHorizontal?e.deltaX:e.deltaY;
 				var step = Math.round(Math.abs(delta) * 15 / 8);
-				var offset = Mstsc.elementOffset(self.canvas);
-                self.socket.send(JSON.stringify(['wheel', e.clientX - offset.left, e.clientY - offset.top, step, delta > 0, isHorizontal]));
+                var rect = e.target.getBoundingClientRect();
+                self.socket.send(JSON.stringify(['wheel', e.clientX - rect.left, e.clientY - rect.top, step, delta > 0, isHorizontal]));
 				e.preventDefault();
 				return false;
 			});
@@ -126,12 +124,12 @@
 		 * @param next {function} asynchrone end callback
 		 */
 		connect : function (ip, domain, username, password, next) {
-			// start connection
+			// Start connection
             var self = this;
             this.socket = new WebSocket("wss://" + window.location.host + "/mstsc/relay.ashx");
             this.socket.binaryType = 'arraybuffer';
             this.socket.onopen = function () {
-                console.log("WS-OPEN");
+                //console.log("WS-OPEN");
                 self.socket.send(JSON.stringify(['infos', {
                     ip: ip,
                     port: 3389,
@@ -184,12 +182,12 @@
                 }
             };
             this.socket.onclose = function () {
-                console.log("WS-CLOSE");
+                //console.log("WS-CLOSE");
                 self.activeSession = false;
                 next(null);
             };
 		}
 	}
 	
-	Mstsc.client = { create : function (canvas) { return new Client(canvas); } }
+	MstscClient = { create : function (canvas) { return new Client(canvas); } }
 })();
