@@ -129,6 +129,7 @@
 			// start connection
             var self = this;
             this.socket = new WebSocket("wss://" + window.location.host + "/mstsc/relay.ashx");
+            this.socket.binaryType = 'arraybuffer';
             this.socket.onopen = function () {
                 console.log("WS-OPEN");
                 self.socket.send(JSON.stringify(['infos', {
@@ -145,33 +146,41 @@
                 }]));
             };
             this.socket.onmessage = function (evt) {
-                var msg = JSON.parse(evt.data);
-                switch (msg[0]) {
-                    case 'rdp-connect': {
-                        //console.log('[mstsc.js] connected');
-                        self.activeSession = true;
-                        break;
+                if (typeof evt.data == 'string') {
+                    // This is a JSON text string, parse it.
+                    var msg = JSON.parse(evt.data);
+                    switch (msg[0]) {
+                        case 'rdp-connect': {
+                            //console.log('[mstsc.js] connected');
+                            self.activeSession = true;
+                            break;
+                        }
+                        case 'rdp-bitmap': {
+                            if (self.bitmapData == null) break;
+                            var bitmap = msg[1];
+                            bitmap.data = self.bitmapData; // Use the binary data that was sent earlier.
+                            delete self.bitmapData;
+                            //console.log('[mstsc.js] bitmap update bpp : ' + bitmap.bitsPerPixel);
+                            self.render.update(bitmap);
+                            break;
+                        }
+                        case 'rdp-close': {
+                            //console.log('[mstsc.js] close');
+                            self.activeSession = false;
+                            next(null);
+                            break;
+                        }
+                        case 'rdp-error': {
+                            var err = msg[1];
+                            console.log('[mstsc.js] error : ' + err.code + '(' + err.message + ')');
+                            self.activeSession = false;
+                            next(err);
+                            break;
+                        }
                     }
-                    case 'rdp-bitmap': {
-                        var bitmap = msg[1];
-                        bitmap.data = new Uint8Array(bitmap.data.data).buffer;
-                        //console.log('[mstsc.js] bitmap update bpp : ' + bitmap.bitsPerPixel);
-                        self.render.update(bitmap);
-                        break;
-                    }
-                    case 'rdp-close': {
-                        //console.log('[mstsc.js] close');
-                        self.activeSession = false;
-                        next(null);
-                        break;
-                    }
-                    case 'rdp-error': {
-                        var err = msg[1];
-                        console.log('[mstsc.js] error : ' + err.code + '(' + err.message + ')');
-                        self.activeSession = false;
-                        next(err);
-                        break;
-                    }
+                } else {
+                    // This is binary bitmap data, store it.
+                    self.bitmapData = evt.data;
                 }
             };
             this.socket.onclose = function () {
