@@ -2157,6 +2157,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.sessionrecording != null) { features += 0x08000000; } // Server recordings enabled
             if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
             if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
+            if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -4340,6 +4341,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                 obj.app.post(url + 'pluginadmin.ashx', obj.handlePluginAdminPostReq);
                 obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
+            }
+
+            // Setup MSTSC.js if needed
+            if (domain.mstsc === true) {
+                obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
+                    PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user) {
+                        require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws1, req1, obj.args, domain, user);
+                    });
+                });
             }
 
             // Setup auth strategies using passport if needed

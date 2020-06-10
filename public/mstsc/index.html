@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+    <title>RDP</title>
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="./css/signin.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/mstsc.js"></script>
+    <script type="text/javascript" src="./js/mstsc.js"></script>
+    <script type="text/javascript" src="./js/keyboard.js"></script>
+    <script type="text/javascript" src="./js/rle.js"></script>
+    <script type="text/javascript" src="./js/client.js"></script>
+    <script type="text/javascript" src="./js/canvas.js"></script>
+    <script language="javascript">
+        var client = null;
+        var urlargs = parseUriArgs();
+        if (urlargs.name) { document.title = urlargs.name + ' - ' + document.title; }
+        console.log(urlargs.ws);
+
+        function load(canvas) {
+            client = Mstsc.client.create(Mstsc.$(canvas));
+        }
+
+        function connect(domain, username, password) {
+            Mstsc.$("main").style.display = 'none';
+            var canvas = Mstsc.$("myCanvas");
+            canvas.style.display = 'inline';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            client.connect(urlargs.ws, domain, username, password, function (err) {
+                Mstsc.$("myCanvas").style.display = 'none';
+                Mstsc.$("main").style.display = 'inline';
+            });
+        }
+
+        function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
+    </script>
+</head>
+<body onload='load("myCanvas")'>
+    <div id="main" class="container">
+        <form class="form-signin" onSubmit="connect(this.elements['inputDomain'].value, this.elements['inputUsername'].value, this.elements['inputPassword'].value);return false;">
+            <!--<img class='logo' src="./img/mstsc.js.svg"></img>-->
+            <!--<label for="inputIpAddress" class="sr-only">IP Address</label>-->
+            <!--<input type="text" id="inputIpAddress" class="form-control" placeholder="IP Address" required autofocus>-->
+            <label for="inputDomain" class="sr-only">Domain</label>
+            <input type="text" id="inputDomain" class="form-control" placeholder="Domain">
+            <label for="inputUsername" class="sr-only">Username</label>
+            <input type="text" id="inputUsername" class="form-control" placeholder="Username">
+            <label for="inputPassword" class="sr-only">Password</label>
+            <input type="password" id="inputPassword" class="form-control" placeholder="Password">
+
+            <button class="btn btn-lg btn-primary btn-block" type="submit" style="background-color: #34A6FF; border-color: #34A6FF">Connect</button>
+        </form>
+    </div> <!-- /container -->
+    <canvas id="myCanvas" style="display:none">
+</body>
+</html>
