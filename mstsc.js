@@ -84,7 +84,9 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
         }).on('connect', function () {
             send(['rdp-connect']);
         }).on('bitmap', function (bitmap) {
-            send(['rdp-bitmap', bitmap]);
+            try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
+            delete bitmap.data;
+            send(['rdp-bitmap', bitmap]); // Send the bitmap metadata seperately, without bitmap data.
         }).on('close', function () {
             send(['rdp-close']);
         }).on('error', function (err) {
