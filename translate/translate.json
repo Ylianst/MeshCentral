@@ -14924,6 +14924,7 @@
     },
     {
       "en": "Launch RDP session to this device",
+      "nl": "Start RDP sessie op dit apparaat",
       "xloc": [
         "default.handlebars->27->568"
       ]
@@ -16011,6 +16012,7 @@
     },
     {
       "en": "MSTSC",
+      "nl": "MSTSC",
       "xloc": [
         "default.handlebars->27->569"
       ]
