@@ -2551,6 +2551,7 @@ function mainStart() {
         var passport = null;
         var allsspi = true;
         var yubikey = false;
+        var mstsc = false;
         var recordingIndex = false;
         var domainCount = 0;
         if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
@@ -2558,6 +2559,7 @@ function mainStart() {
         for (var i in config.domains) {
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
+            if (config.domains[i].mstsc === true) { mstsc = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
                 if (passport == null) { passport = ['passport']; }
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.apikey == 'string') && (typeof config.domains[i].authstrategies.twitter.apisecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
@@ -2577,6 +2579,7 @@ function mainStart() {
         var modules = ['ws', 'cbor', 'nedb', 'https', 'yauzl', 'xmldom', 'ipcheck', 'express', 'archiver', 'multiparty', 'node-forge', 'express-ws', 'compression', 'body-parser', 'connect-redis', 'cookie-session', 'express-handlebars'];
         if (require('os').platform() == 'win32') { modules.push('node-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
+        if (mstsc == true) { modules.push('node-rdpjs-2'); }
         if (passport != null) { modules.push(...passport); }
         if (recordingIndex == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { if (nodeVersion < 8) { addServerWarning("Let's Encrypt support requires Node v8.x or higher.", !args.launch); } else { modules.push('acme-client'); } } // Add acme-client module
