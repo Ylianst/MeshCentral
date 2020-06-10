@@ -14923,16 +14923,19 @@
       ]
     },
     {
-      "en": "Launch RDP session to this device",
-      "xloc": [
-        "default.handlebars->27->568"
-      ]
+      "en": "Launch RDP session to this device"
     },
     {
       "en": "Launch noVNC session to this device",
       "nl": "Start een noVNC-sessie op dit apparaat",
       "xloc": [
         "default.handlebars->27->566"
+      ]
+    },
+    {
+      "en": "Launch web-based RDP session to this device",
+      "xloc": [
+        "default.handlebars->27->568"
       ]
     },
     {
@@ -16010,10 +16013,7 @@
       ]
     },
     {
-      "en": "MSTSC",
-      "xloc": [
-        "default.handlebars->27->569"
-      ]
+      "en": "MSTSC"
     },
     {
       "cs": "macOS",
@@ -28632,6 +28632,12 @@
       "zh-chs": "Web套接字中繼",
       "xloc": [
         "default.handlebars->27->1795"
+      ]
+    },
+    {
+      "en": "Web-RDP",
+      "xloc": [
+        "default.handlebars->27->569"
       ]
     },
     {

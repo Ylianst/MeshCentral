@@ -58,8 +58,14 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
                 obj.relaySocket.on('end', function () { obj.close(0); });
                 obj.relaySocket.on('error', function (err) { obj.close(0); });
 
-                // TODO: Use correct URL with domain and use TLS only if needed.
-                obj.wsClient = new WebSocket('wss://127.0.0.1/meshrelay.ashx?auth=' + obj.infos.ip, { rejectUnauthorized: false });
+                // Setup the correct URL with domain and use TLS only if needed.
+                var options = { rejectUnauthorized: false };
+                if (domain.dns != null) { options.servername = domain.dns; }
+                var protocol = 'wss';
+                if (args.notls || args.tlsoffload) { protocol = 'ws'; }
+                var domainadd = '';
+                if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
+                obj.wsClient = new WebSocket(protocol + '://127.0.0.1/' + domainadd + 'meshrelay.ashx?auth=' + obj.infos.ip, options);
 
                 obj.wsClient.on('open', function () { });
                 obj.wsClient.on('message', function (data) { if ((obj.relayActive == false) && (data == 'c')) { obj.relayActive = true; obj.relaySocket.resume(); } else { obj.relaySocket.write(data); } });
@@ -72,6 +78,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
 
     // Start the RDP client
     function startRdp(port) {
+        try {
         rdpClient = require('node-rdpjs-2').createClient({
             logLevel: 'ERROR',
             domain: obj.infos.domain,
@@ -92,19 +99,28 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
         }).on('error', function (err) {
             send(['rdp-error', err]);
         }).connect('127.0.0.1', obj.tcpServerPort);
+        } catch (ex) {
+            console.log('startRdpException', ex);
+            obj.close(0);
+        }
     }
 
     // When data is received from the web socket
     // RDP default port is 3389
     ws.on('message', function (msg) {
-        msg = JSON.parse(msg);
-        switch (msg[0]) {
-            case 'infos': { obj.infos = msg[1]; startTcpServer(); break; }
-            case 'mouse': { if (rdpClient) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
-            case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
-            case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
-            case 'unicode': { if (rdpClient) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
-            case 'disconnect': { obj.close(0); break; }
+        try {
+            msg = JSON.parse(msg);
+            switch (msg[0]) {
+                case 'infos': { obj.infos = msg[1]; startTcpServer(); break; }
+                case 'mouse': { if (rdpClient) { rdpClient.sendPointerEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
+                case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
+                case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
+                case 'unicode': { if (rdpClient) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
+                case 'disconnect': { obj.close(0); break; }
+            }
+        } catch (ex) {
+            console.log('RdpMessageException', msg, ex);
+            obj.close(0);
         }
     });
 

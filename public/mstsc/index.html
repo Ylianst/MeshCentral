@@ -4,62 +4,131 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
     <link rel="icon" href="/favicon.ico">
     <title>RDP</title>
-    <!-- Bootstrap core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom styles for this template -->
-    <link href="./css/signin.css" rel="stylesheet">
-    <script type="text/javascript" src="./js/mstsc.js"></script>
-    <script type="text/javascript" src="./js/mstsc.js"></script>
-    <script type="text/javascript" src="./js/keyboard.js"></script>
-    <script type="text/javascript" src="./js/rle.js"></script>
-    <script type="text/javascript" src="./js/client.js"></script>
-    <script type="text/javascript" src="./js/canvas.js"></script>
+    <script type="text/javascript" src="mstsc.js"></script>
+    <script type="text/javascript" src="keyboard.js"></script>
+    <script type="text/javascript" src="rle.js"></script>
+    <script type="text/javascript" src="client.js"></script>
+    <script type="text/javascript" src="canvas.js"></script>
+    <style>
+        body {
+            font-family:sans-serif;
+            margin: 0;
+            xoverflow: hidden;
+            background-color: black;
+        }
+
+        .container {
+            background-color:cadetblue;
+            background: linear-gradient(to bottom right, #003366, #0055AA);
+        }
+
+        .middleContainer {
+            color: lightgray;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        .signinform {
+            width: 330px;
+            margin: 0 auto;
+        }
+
+        .formLabel { }
+
+        .formControl {
+            width: 210px;
+            font-size: 17px;
+            border-radius: 5px;
+        }
+
+        .connectButton {
+            margin-top: 6px;
+            width: 100%;
+            padding: 6px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor:pointer;
+        }
+
+        .mainCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+    </style>
     <script language="javascript">
         var client = null;
+        var canvas = null;
         var urlargs = parseUriArgs();
         if (urlargs.name) { document.title = urlargs.name + ' - ' + document.title; }
-        console.log(urlargs.ws);
 
-        function load(canvas) {
-            client = Mstsc.client.create(Mstsc.$(canvas));
+        function load() {
+            if (urlargs.name) { QH('computerName', urlargs.name); }
+            client = MstscClient.create(Q('myCanvas'));
+            Q('inputDomain').focus();
+            canvas = Q('myCanvas');
         }
 
         function connect(domain, username, password) {
-            Mstsc.$("main").style.display = 'none';
-            var canvas = Mstsc.$("myCanvas");
-            canvas.style.display = 'inline';
+            var domain = Q('inputDomain').value;
+            var username = Q('inputUsername').value;
+            var password = Q('inputPassword').value;
+            QV('myCanvas', true);
+            QV('main', false);
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            client.connect(urlargs.ws, domain, username, password, function (err) {
-                Mstsc.$("myCanvas").style.display = 'none';
-                Mstsc.$("main").style.display = 'inline';
-            });
+            console.log('CanvasSize', canvas.width, canvas.height);
+            client.connect(urlargs.ws, domain, username, password, function (err) { QV('myCanvas', false); QV('main', true); });
+            return false;
         }
 
+        function Q(x) { return document.getElementById(x); }                            // "Q"
+        function QS(x) { try { return Q(x).style; } catch (x) { } }                     // "Q" style
+        function QE(x, y) { try { Q(x).disabled = !y; } catch (x) { } }                 // "Q" enable
+        function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  // "Q" visible
+        function QA(x, y) { Q(x).innerHTML += y; }                                      // "Q" append
+        function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
+        function QC(x) { try { return Q(x).classList; } catch (x) { } }                 // "Q" class
         function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
+        function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
+        function EscapeHtmlBreaks(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
     </script>
 </head>
-<body onload='load("myCanvas")'>
-    <div id="main" class="container">
-        <form class="form-signin" onSubmit="connect(this.elements['inputDomain'].value, this.elements['inputUsername'].value, this.elements['inputPassword'].value);return false;">
-            <!--<img class='logo' src="./img/mstsc.js.svg"></img>-->
-            <!--<label for="inputIpAddress" class="sr-only">IP Address</label>-->
-            <!--<input type="text" id="inputIpAddress" class="form-control" placeholder="IP Address" required autofocus>-->
-            <label for="inputDomain" class="sr-only">Domain</label>
-            <input type="text" id="inputDomain" class="form-control" placeholder="Domain">
-            <label for="inputUsername" class="sr-only">Username</label>
-            <input type="text" id="inputUsername" class="form-control" placeholder="Username">
-            <label for="inputPassword" class="sr-only">Password</label>
-            <input type="password" id="inputPassword" class="form-control" placeholder="Password">
-
-            <button class="btn btn-lg btn-primary btn-block" type="submit" style="background-color: #34A6FF; border-color: #34A6FF">Connect</button>
-        </form>
-    </div> <!-- /container -->
-    <canvas id="myCanvas" style="display:none">
+<body onload='load()' style="position:absolute;top:0px;right:0;left:0;bottom:0px">
+    <div id="main" class="container" style="position:absolute;top:0px;right:0;left:0;bottom:0px">
+        <div class="middleContainer">
+            <div id="computerName" style="width:100%;text-align:center;font-size:24px"></div>
+            <table class="signinform">
+                <tr>
+                    <td colspan="2"><hr style="color:gray;border:1px solid;" /></td>
+                </tr>
+                <tr>
+                    <td><label for="inputDomain" class="formLabel">Domain</label></td>
+                    <td style="text-align:right"><input type="text" id="inputDomain" class="formControl" placeholder="Domain"></td>
+                </tr>
+                <tr>
+                    <td><label for="inputUsername" class="formLabel">Username</label></td>
+                    <td style="text-align:right"><input type="text" id="inputUsername" class="formControl" placeholder="Username"></td>
+                </tr>
+                <tr>
+                    <td><label for="inputPassword" class="formLabel">Password</label></td>
+                    <td style="text-align:right"><input type="password" id="inputPassword" class="formControl" placeholder="Password"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button class="connectButton" onclick="return connect()">Connect</button></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <canvas id="myCanvas" class="mainCanvas" style="display:none" />
 </body>
 </html>
