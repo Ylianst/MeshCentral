@@ -86,7 +86,6 @@
             QV('main', false);
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            console.log('CanvasSize', canvas.width, canvas.height);
             client.connect(urlargs.ws, domain, username, password, function (err) { QV('myCanvas', false); QV('main', true); });
             return false;
         }
