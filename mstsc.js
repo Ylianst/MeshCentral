@@ -54,7 +54,9 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
             } else {
                 obj.relaySocket = socket;
                 obj.relaySocket.pause();
-                obj.relaySocket.on('data', function (chunk) { if (obj.relayActive == true) { obj.wsClient.send(chunk); } });
+                obj.relaySocket.on('data', function (chunk) { // Make sure to handle flow control.
+                    if (obj.relayActive == true) { obj.relaySocket.pause(); obj.wsClient.send(chunk, function () { obj.relaySocket.resume(); }); }
+                });
                 obj.relaySocket.on('end', function () { obj.close(0); });
                 obj.relaySocket.on('error', function (err) { obj.close(0); });
 
@@ -66,9 +68,15 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
                 obj.wsClient = new WebSocket(protocol + '://127.0.0.1/' + domainadd + 'meshrelay.ashx?auth=' + obj.infos.ip, options);
-
                 obj.wsClient.on('open', function () { });
-                obj.wsClient.on('message', function (data) { if ((obj.relayActive == false) && (data == 'c')) { obj.relayActive = true; obj.relaySocket.resume(); } else { obj.relaySocket.write(data); } });
+                obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
+                    if ((obj.relayActive == false) && (data == 'c')) {
+                        obj.relayActive = true; obj.relaySocket.resume();
+                    } else {
+                        obj.wsClient._socket.pause();
+                        obj.relaySocket.write(data, function () { obj.wsClient._socket.resume(); });
+                    }
+                });
                 obj.wsClient.on('close', function () { obj.close(0); });
                 obj.tcpServer.close();
                 obj.tcpServer = null;
@@ -130,8 +138,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
     // If the web socket is closed
     ws.on('close', function (req) { obj.close(0); });
 
-    // Send an object
-    function send(obj) { try { ws.send(JSON.stringify(obj)); } catch (ex) { } }
+    // Send an object with flow control
+    function send(obj) { ws._socket.pause(); try { ws.send(JSON.stringify(obj), function () { ws._socket.resume(); }); } catch (ex) { } }
 
     // We are all set, start receiving data
     ws._socket.resume();
