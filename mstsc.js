@@ -139,7 +139,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
     ws.on('close', function (req) { obj.close(0); });
 
     // Send an object with flow control
-    function send(obj) { ws._socket.pause(); try { ws.send(JSON.stringify(obj), function () { ws._socket.resume(); }); } catch (ex) { } }
+    function send(obj) {
+        try { rdpClient.bufferLayer.socket.pause(); } catch (ex) { }
+        try { ws.send(JSON.stringify(obj), function () { try { rdpClient.bufferLayer.socket.resume(); } catch (ex) { } }); } catch (ex) { }
+    }
 
     // We are all set, start receiving data
     ws._socket.resume();
