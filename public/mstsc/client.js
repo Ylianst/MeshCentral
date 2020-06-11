@@ -100,7 +100,10 @@
                 if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
 				var isHorizontal = false;
 				var delta = e.detail;
-				var step = Math.round(Math.abs(delta) * 15 / 8);
+                //var step = Math.round(Math.abs(delta) * 15 / 8);
+                //var step = Math.abs(e.detail);
+                var step = 128;
+                //console.log('DOMMouseScroll', delta, step, e.detail);
                 var rect = e.target.getBoundingClientRect();
                 self.socket.send(JSON.stringify(['wheel', e.clientX - rect.left, e.clientY - rect.top, step, delta > 0, isHorizontal]));
 				e.preventDefault();
@@ -111,7 +114,9 @@
                 if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
 				var isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
 				var delta = isHorizontal?e.deltaX:e.deltaY;
-				var step = Math.round(Math.abs(delta) * 15 / 8);
+				//var step = Math.round(Math.abs(delta) * 15 / 8);
+                var step = 128;
+                //console.log('mousewheel', delta, step, e);
                 var rect = e.target.getBoundingClientRect();
                 self.socket.send(JSON.stringify(['wheel', e.clientX - rect.left, e.clientY - rect.top, step, delta > 0, isHorizontal]));
 				e.preventDefault();
