@@ -14923,10 +14923,6 @@
       ]
     },
     {
-      "en": "Launch RDP session to this device"
-      "nl": "Start RDP sessie op dit apparaat"
-    },
-    {
       "en": "Launch noVNC session to this device",
       "nl": "Start een noVNC-sessie op dit apparaat",
       "xloc": [
