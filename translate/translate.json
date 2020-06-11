@@ -8236,7 +8236,7 @@
     {
       "en": "Device Message",
       "nl": "Apparaatbericht",
-      "fr": "Message de Service\r\n",
+      "fr": "Message de Service",
       "xloc": [
         "default.handlebars->27->629"
       ]

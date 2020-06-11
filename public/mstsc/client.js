@@ -41,10 +41,19 @@
 		// create renderer
 		this.render = new Mstsc.Canvas.create(this.canvas); 
 		this.socket = null;
-		this.activeSession = false;
+        this.activeSession = false;
+        this.mouseNagleTimer = null;
+        this.mouseNagleData = null;
 		this.install();
 	}
-	
+
+    /*
+    obj.mNagleTimer = setTimeout(function () {
+        obj.send(String.fromCharCode(5, obj.buttonmask) + ShortToStr(obj.mx) + ShortToStr(obj.my));
+        obj.mNagleTimer = null;
+    }, 50);
+    */
+
 	Client.prototype = {
 		install : function () {
             var self = this;
@@ -53,12 +62,18 @@
 			this.canvas.addEventListener('mousemove', function (e) {
                 if (!self.socket || !self.activeSession) return;
                 var rect = e.target.getBoundingClientRect();
-                self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, 0, false]));
+                self.mouseNagleData = ['mouse', e.clientX - rect.left, e.clientY - rect.top, 0, false];
+                if (self.mouseNagleTimer == null) {
+                    //console.log('sending', self.mouseNagleData);
+                    self.mouseNagleTimer = setTimeout(function () { self.socket.send(JSON.stringify(self.mouseNagleData)); self.mouseNagleTimer = null; }, 50);
+                }
+                //self.socket.send(JSON.stringify(this.mouseNagleData));
                 e.preventDefault();
 				return false;
 			});
 			this.canvas.addEventListener('mousedown', function (e) {
                 if (!self.socket || !self.activeSession) return;
+                if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
                 var rect = e.target.getBoundingClientRect();
                 self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, mouseButtonMap(e.button), true]));
 				e.preventDefault();
@@ -66,6 +81,7 @@
 			});
 			this.canvas.addEventListener('mouseup', function (e) {
 				if (!self.socket || !self.activeSession) return;
+                if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
                 var rect = e.target.getBoundingClientRect();
                 self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, mouseButtonMap(e.button), false]));
 				e.preventDefault();
@@ -73,6 +89,7 @@
 			});
 			this.canvas.addEventListener('contextmenu', function (e) {
 				if (!self.socket || !self.activeSession) return;
+                if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
                 var rect = e.target.getBoundingClientRect();
                 self.socket.send(JSON.stringify(['mouse', e.clientX - rect.left, e.clientY - rect.top, mouseButtonMap(e.button), false]));
 				e.preventDefault();
@@ -80,6 +97,7 @@
 			});
 			this.canvas.addEventListener('DOMMouseScroll', function (e) {
 				if (!self.socket || !self.activeSession) return;
+                if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
 				var isHorizontal = false;
 				var delta = e.detail;
 				var step = Math.round(Math.abs(delta) * 15 / 8);
@@ -90,6 +108,7 @@
 			});
 			this.canvas.addEventListener('mousewheel', function (e) {
 				if (!self.socket || !self.activeSession) return;
+                if (self.mouseNagleTimer != null) { clearTimeout(self.mouseNagleTimer); self.mouseNagleTimer = null; }
 				var isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
 				var delta = isHorizontal?e.deltaX:e.deltaY;
 				var step = Math.round(Math.abs(delta) * 15 / 8);
