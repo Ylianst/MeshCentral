@@ -32,6 +32,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
     obj.infos = null;
     var rdpClient = null;
 
+    parent.parent.debug('relay', 'RDP: Request for RDP relay (' + req.clientIp + ')');
+
     // Disconnect this user
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
@@ -57,8 +59,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
                 obj.relaySocket.on('data', function (chunk) { // Make sure to handle flow control.
                     if (obj.relayActive == true) { obj.relaySocket.pause(); obj.wsClient.send(chunk, function () { obj.relaySocket.resume(); }); }
                 });
-                obj.relaySocket.on('end', function () { obj.close(0); });
-                obj.relaySocket.on('error', function (err) { obj.close(0); });
+                obj.relaySocket.on('end', function () { obj.close(); });
+                obj.relaySocket.on('error', function (err) { obj.close(); });
 
                 // Setup the correct URL with domain and use TLS only if needed.
                 var options = { rejectUnauthorized: false };
@@ -67,8 +69,10 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
                 if (args.notls || args.tlsoffload) { protocol = 'ws'; }
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
-                obj.wsClient = new WebSocket(protocol + '://127.0.0.1/' + domainadd + 'meshrelay.ashx?auth=' + obj.infos.ip, options);
-                obj.wsClient.on('open', function () { });
+                var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + 'meshrelay.ashx?auth=' + obj.infos.ip;
+                parent.parent.debug('relay', 'RDP: Connection websocket to ' + url);
+                obj.wsClient = new WebSocket(url, options);
+                obj.wsClient.on('open', function () { parent.parent.debug('relay', 'RDP: Relay websocket open'); });
                 obj.wsClient.on('message', function (data) { // Make sure to handle flow control.
                     if ((obj.relayActive == false) && (data == 'c')) {
                         obj.relayActive = true; obj.relaySocket.resume();
@@ -77,7 +81,8 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
                         obj.relaySocket.write(data, function () { obj.wsClient._socket.resume(); });
                     }
                 });
-                obj.wsClient.on('close', function () { obj.close(0); });
+                obj.wsClient.on('close', function () { parent.parent.debug('relay', 'RDP: Relay websocket closed'); obj.close(); });
+                obj.wsClient.on('error', function (err) { parent.parent.debug('relay', 'RDP: Relay websocket error: ' + err); obj.close(); });
                 obj.tcpServer.close();
                 obj.tcpServer = null;
             }
@@ -86,6 +91,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
 
     // Start the RDP client
     function startRdp(port) {
+        parent.parent.debug('relay', 'RDP: Starting RDP client on loopback port ' + port);
         try {
         rdpClient = require('node-rdpjs-2').createClient({
             logLevel: 'ERROR',
@@ -109,7 +115,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
         }).connect('127.0.0.1', obj.tcpServerPort);
         } catch (ex) {
             console.log('startRdpException', ex);
-            obj.close(0);
+            obj.close();
         }
     }
 
@@ -124,19 +130,19 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
                 case 'wheel': { if (rdpClient) { rdpClient.sendWheelEvent(msg[1], msg[2], msg[3], msg[4]); } break; }
                 case 'scancode': { if (rdpClient) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break; }
                 case 'unicode': { if (rdpClient) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
-                case 'disconnect': { obj.close(0); break; }
+                case 'disconnect': { obj.close(); break; }
             }
         } catch (ex) {
             console.log('RdpMessageException', msg, ex);
-            obj.close(0);
+            obj.close();
         }
     });
 
     // If error, do nothing
-    ws.on('error', function (err) { console.log(err); obj.close(0); });
+    ws.on('error', function (err) { parent.parent.debug('relay', 'RDP: Browser websocket error: ' + err); obj.close(); });
 
     // If the web socket is closed
-    ws.on('close', function (req) { obj.close(0); });
+    ws.on('close', function (req) { parent.parent.debug('relay', 'RDP: Browser websocket closed'); obj.close(); });
 
     // Send an object with flow control
     function send(obj) {
