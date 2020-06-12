@@ -508,10 +508,7 @@
     },
     {
       "en": ", for this link to work you must download MeshCentral Router run it and click the install button.",
-      "nl": ", om deze link te laten werken, moet u MeshCentral Router downloaden, het uitvoeren en op de installatieknop klikken.",
-      "xloc": [
-        "default.handlebars->27->674"
-      ]
+      "nl": ", om deze link te laten werken, moet u MeshCentral Router downloaden, het uitvoeren en op de installatieknop klikken."
     },
     {
       "cs": ", klikněte na něj pravým tlačítkem nebo stiskněte klávesu Ctrl a klikněte na něj levým tlačítkem. Pak vyberte „Otevřít“ a postupujte podle pokynů.",
@@ -14926,6 +14923,12 @@
       ]
     },
     {
+      "en": "Launch MeshCentral Router",
+      "xloc": [
+        "default.handlebars->27->674"
+      ]
+    },
+    {
       "en": "Launch noVNC session to this device",
       "nl": "Start een noVNC-sessie op dit apparaat",
       "xloc": [
@@ -22349,6 +22352,12 @@
       ]
     },
     {
+      "en": "Run MeshCentral Router and click \\\"install\\\" to make it launchable from the browser.",
+      "xloc": [
+        "default.handlebars->27->673"
+      ]
+    },
+    {
       "cs": "ruština",
       "de": "Russisch",
       "en": "Russian",
@@ -25039,10 +25048,7 @@
     },
     {
       "en": "Start MeshCentral Router",
-      "nl": "Start MeshCentral Router",
-      "xloc": [
-        "default.handlebars->27->673"
-      ]
+      "nl": "Start MeshCentral Router"
     },
     {
       "en": "Start Time",

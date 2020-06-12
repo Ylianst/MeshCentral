@@ -5974,7 +5974,9 @@
             var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
             var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash;
             //x += addHtmlValue("Launch", '<a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">Start MeshCentral Router</a>');
-            x += '<br /><div style=width:100%><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">' + "Start MeshCentral Router" + '</a>' + ", for this link to work you must download MeshCentral Router run it and click the install button." + '</div>';
+            //x += '<br /><div style=width:100%><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">' + "Start MeshCentral Router" + '</a>' + ", for this link to work you must download MeshCentral Router run it and click the install button." + '</div>';
+            x += '<br /><div>' + "Run MeshCentral Router and click \"install\" to make it launchable from the browser." + '</div>';
+            x += '<br /><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '"><input type=button style=width:100%;cursor:pointer value="' + "Launch MeshCentral Router" + '" /></a>';
             x += '<iframe style=display:none name="mcrouterframe"></iframe>';
             setDialogMode(2, "MeshCentral Router", 1, null, x, 'fileDownload');
         }
