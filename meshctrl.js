@@ -611,11 +611,11 @@ function serverConnect() {
         switch (settings.cmd) {
             case 'serverinfo': { break; }
             case 'userinfo': { break; }
-            case 'listusers': { ws.send(JSON.stringify({ action: 'users' })); break; }
-            case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount' })); }
-            case 'listusergroups': { ws.send(JSON.stringify({ action: 'usergroups' })); }
-            case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
-            case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes' })); break; }
+            case 'listusers': { ws.send(JSON.stringify({ action: 'users', responseid: 'meshctrl' })); break; }
+            case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount', responseid: 'meshctrl' })); }
+            case 'listusergroups': { ws.send(JSON.stringify({ action: 'usergroups', responseid: 'meshctrl' })); }
+            case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
+            case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
             case 'listdevices': {
                 if (args.group) {
                     ws.send(JSON.stringify({ action: 'nodes', meshname: args.group, responseid: 'meshctrl' }));
@@ -885,6 +885,7 @@ function serverConnect() {
                 break;
             }
             case 'users': { // LISTUSERS
+                if (data.result) { console.log(data.result); process.exit(); return; }
                 if (args.filter) {
                     // Filter the list of users
                     var filters = args.filter.toLowerCase().split(',');
