@@ -739,6 +739,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
+        var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
@@ -799,6 +800,17 @@
 
             attemptWebRTC = 0; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
+
+            // Session Refresh Timer
+            sessionRefreshTimer = setInterval(function () {
+                var xdr = null;
+                try { xdr = new XDomainRequest(); } catch (e) { }
+                if (!xdr) xdr = new XMLHttpRequest();
+                xdr.open('GET', window.location.origin + domainUrl + 'refresh.ashx');
+                xdr.timeout = 15000;
+                xdr.onload = xdr.onerror = xdr.ontimeout = function () { };
+                xdr.send();
+            }, Math.round((sessionTime * 60000) * 0.8))
         }
 
         function onStateChanged(server, state, prevState, errorCode) {
