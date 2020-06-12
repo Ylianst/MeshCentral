@@ -2187,6 +2187,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var customui = '';
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+                // Refresh the session
                 render(req, res, getRenderPage('default', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, customui: customui, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate), pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() }, req, domain));
             });
         } else {
@@ -4227,6 +4228,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Check the session if bound to the external IP address
             if ((req.session.ip != null) && (req.clientIp != null) && (req.session.ip != req.clientIp)) { req.session = {}; }
 
+            // Extend the session time by forcing a change to the session every minute.
+            req.session.nowInMinutes = Math.floor(Date.now() / 60e3);
+
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {
                 var rpath;
@@ -4284,6 +4288,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var url = domain.url;
             obj.app.get(url, handleRootRequest);
             obj.app.post(url, handleRootPostRequest);
+            obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
             obj.app.get(url + 'backup.zip', handleBackupRequest);
             obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest);
             obj.app.get(url + 'terms', handleTermsRequest);

@@ -1219,6 +1219,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
+        var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
@@ -1419,6 +1420,17 @@
                     QH('devCustomUIBar', x);
                 }
             }
+
+            // Session Refresh Timer
+            sessionRefreshTimer = setInterval(function () {
+                var xdr = null;
+                try { xdr = new XDomainRequest(); } catch (e) { }
+                if (!xdr) xdr = new XMLHttpRequest();
+                xdr.open('GET', window.location.origin + domainUrl + 'refresh.ashx');
+                xdr.timeout = 15000;
+                xdr.onload = xdr.onerror = xdr.ontimeout = function () { };
+                xdr.send();
+            }, Math.round((sessionTime * 60000) * 0.8))
         }
 
         // Generic handling of custom actions
@@ -5025,7 +5037,7 @@
             //for(var i = meshOptions.options.length - 1 ; i > 0 ; i--) { meshOptions.remove(i); }
         }
 
-        // Make a http get call- Replace this with AJAX get if jquery  is used
+        // Make a http get call
         function getSearchLocation() {
             try {
                 var searchdata = Q('mapSearchLocation').value.trim();
