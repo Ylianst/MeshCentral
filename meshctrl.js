@@ -445,9 +445,10 @@ function performConfigOperations(args) {
     var configChange = false;
     var fs = require('fs');
     var path = require('path');
-    var configFile = path.join(__dirname, 'config.json');
+    var configFile = 'config.json';
     var didSomething = 0;
     if (fs.existsSync(configFile) == false) { configFile = path.join('meshcentral-data', 'config.json'); }
+    if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, '..', 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { console.log("Unable to find config.json."); return; }
