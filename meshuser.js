@@ -1291,7 +1291,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'users':
                 {
                     // Request a list of all users
-                    if ((user.siteadmin & 2) == 0) break;
+                    if ((user.siteadmin & 2) == 0) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'users', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } } break; }
                     var docs = [];
                     for (i in parent.users) {
                         if (((obj.crossDomain === true) || (parent.users[i].domain == domain.id)) && (parent.users[i].name != '~')) {
