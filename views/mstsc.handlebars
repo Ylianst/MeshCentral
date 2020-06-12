@@ -6,16 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/favicon.ico">
     <title>RDP</title>
-    <script type="text/javascript" src="mstsc.js"></script>
-    <script type="text/javascript" src="keyboard.js"></script>
-    <script type="text/javascript" src="rle.js"></script>
-    <script type="text/javascript" src="client.js"></script>
-    <script type="text/javascript" src="canvas.js"></script>
+    <script type="text/javascript" src="mstsc/mstsc.js"></script>
+    <script type="text/javascript" src="mstsc/keyboard.js"></script>
+    <script type="text/javascript" src="mstsc/rle.js"></script>
+    <script type="text/javascript" src="mstsc/client.js"></script>
+    <script type="text/javascript" src="mstsc/canvas.js"></script>
     <style>
         body {
             font-family:sans-serif;
             margin: 0;
-            xoverflow: hidden;
             background-color: black;
         }
 
@@ -35,14 +34,14 @@
         }
 
         .signinform {
-            width: 330px;
+            width: 380px;
             margin: 0 auto;
         }
 
         .formLabel { }
 
         .formControl {
-            width: 210px;
+            width:calc(100% - 16px);
             font-size: 17px;
             border-radius: 5px;
         }
