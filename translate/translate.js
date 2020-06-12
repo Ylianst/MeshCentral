@@ -730,6 +730,9 @@ function translateFromHtml(lang, file, createSubDir) {
     translateStrings(path.basename(file), dom.window.document.querySelector('body'));
     var out = dom.serialize();
 
+    // Change the <html lang="en"> tag.
+    out = out.split('<html lang="en"').join('<html lang="' + lang + '"');
+
     var outname = file;
     var outnamemin = null;
     if (createSubDir != null) {
