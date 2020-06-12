@@ -1627,6 +1627,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, req, domain)); // Bad invitation code
     }
 
+    // Called to render the MSTSC (RDP) web page
+    function handleMSTSCRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleMSTSCRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+        render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({}, req, domain));
+    }
+
     // Called to process an agent invite request
     function handleAgentInviteRequest(req, res) {
         const domain = getDomain(req);
@@ -4350,6 +4358,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Setup MSTSC.js if needed
             if (domain.mstsc === true) {
+            obj.app.get(url + 'mstsc.html', handleMSTSCRequest);
                 obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
                     PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user) {
                         require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws1, req1, obj.args, domain, user);

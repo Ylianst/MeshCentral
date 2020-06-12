@@ -2208,13 +2208,13 @@
                             newWindow.opener = null;
                         }
                     } else if (message.tag == 'novnc') {
-                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + '%2Fmeshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1';
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + '%2Fmeshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
                         var newWindow = window.open(vncurl, 'mcnovnc/' + message.nodeid);
                         newWindow.opener = null;
                     } else if (message.tag == 'mstsc') {
-                        var rdpurl = window.location.origin + domainUrl + 'mstsc/index.html?ws=' + message.cookie;
+                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
                         var newWindow = window.open(rdpurl, 'mcmstsc/' + message.nodeid);

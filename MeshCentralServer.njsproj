@@ -572,6 +572,7 @@
     <Content Include="views\login.handlebars" />
     <Content Include="views\message.handlebars" />
     <Content Include="views\messenger.handlebars" />
+    <Content Include="views\mstsc.handlebars" />
     <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
     <Content Include="views\xterm.handlebars" />
