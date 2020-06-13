@@ -93,26 +93,26 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
     function startRdp(port) {
         parent.parent.debug('relay', 'RDP: Starting RDP client on loopback port ' + port);
         try {
-        rdpClient = require('node-rdpjs-2').createClient({
-            logLevel: 'ERROR',
-            domain: obj.infos.domain,
-            userName: obj.infos.username,
-            password: obj.infos.password,
-            enablePerf: true,
-            autoLogin: true,
-            screen: obj.infos.screen,
-            locale: obj.infos.locale
-        }).on('connect', function () {
-            send(['rdp-connect']);
-        }).on('bitmap', function (bitmap) {
-            try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
-            delete bitmap.data;
-            send(['rdp-bitmap', bitmap]); // Send the bitmap metadata seperately, without bitmap data.
-        }).on('close', function () {
-            send(['rdp-close']);
-        }).on('error', function (err) {
-            send(['rdp-error', err]);
-        }).connect('127.0.0.1', obj.tcpServerPort);
+            rdpClient = require('node-rdpjs-2').createClient({
+                logLevel: 'ERROR',
+                domain: obj.infos.domain,
+                userName: obj.infos.username,
+                password: obj.infos.password,
+                enablePerf: true,
+                autoLogin: true,
+                screen: obj.infos.screen,
+                locale: obj.infos.locale
+            }).on('connect', function () {
+                send(['rdp-connect']);
+            }).on('bitmap', function (bitmap) {
+                try { ws.send(bitmap.data); } catch (ex) { } // Send the bitmap data as binary
+                delete bitmap.data;
+                send(['rdp-bitmap', bitmap]); // Send the bitmap metadata seperately, without bitmap data.
+            }).on('close', function () {
+                send(['rdp-close']);
+            }).on('error', function (err) {
+                send(['rdp-error', err]);
+            }).connect('127.0.0.1', obj.tcpServerPort);
         } catch (ex) {
             console.log('startRdpException', ex);
             obj.close();
