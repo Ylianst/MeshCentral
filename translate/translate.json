@@ -14924,6 +14924,7 @@
     },
     {
       "en": "Launch MeshCentral Router",
+      "nl": "Start MeshCentral Router",
       "xloc": [
         "default.handlebars->27->674"
       ]
@@ -22353,6 +22354,7 @@
     },
     {
       "en": "Run MeshCentral Router and click \\\"install\\\" to make it launchable from the browser.",
+      "nl": "Start MeshCentral Router en klik \\\"install\\\" om het startbaar te maken vanuit de browser.",
       "xloc": [
         "default.handlebars->27->673"
       ]
