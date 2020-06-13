@@ -124,9 +124,16 @@
       "_novnc": false,
       "_mstsc": true,
       "_consentMessages": {
+        "Title": "MeshCentral",
         "Desktop": "{0} requesting remote desktop access. Grant access?",
         "Terminal": "{0} requesting remote terminal access. Grant access?",
         "Files": "{0} requesting remote files access. Grant access?"
+      },
+      "_notificationMessages": {
+        "Title": "MeshCentral",
+        "Desktop": "{0} started a remote desktop session.",
+        "Terminal": "{0} started a remote terminal session.",
+        "Files": "{0} started a remote files session."
       },
       "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
       "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
