@@ -4350,10 +4350,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'uicustomevent': {
                 // Event the change
-                var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, nolog: 1, uisection: command.section, element: command.element  };
+                var message = { etype: 'user', userid: user._id, username: user.name, action: 'uicustomevent', domain: domain.id, uisection: command.section, element: command.element  };
                 if (command.selectedDevices != null) { message.selectedDevices = command.selectedDevices; }
                 if (command.src != null) { message.src = command.src; }
                 if (command.values != null) { message.values = command.values; }
+                if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
                 parent.parent.DispatchEvent(['*', user._id], obj, message);
                 break;
             }

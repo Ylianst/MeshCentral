@@ -237,7 +237,7 @@
                             <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                             <label><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
-                            <span id="devCustomUIBar"></span>
+                            <span id="devsCustomUIBar"></span>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
                             &nbsp;&nbsp;<input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
@@ -531,6 +531,7 @@
                             <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
                             <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                             <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
+                            <div id="desktopCustomUiButtons" style="float:left"></div>
                         </div>
                         <div>
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
@@ -633,6 +634,7 @@
                                 <div class="toright2">
                                     <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <div id="terminalCustomUiButtons" style="float:left"></div>
                                 </div>
                                 <div>
                                     <div id="idx_termFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
@@ -697,6 +699,7 @@
                             <div class="toright2">
                                 <input id="filesActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                                <div id="filesCustomUiButtons" style="float:left"></div>
                             </div>
                             <div>
                                 <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) type="button" style="display:none" />
@@ -1417,7 +1420,22 @@
                         var disabled = ((customui.devicesbarbuttons[i].selection == 'one') || (customui.devicesbarbuttons[i].selection == 'many'))?'disabled':'';
                         x += '<input id="cui:' + i + '" type="button" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />';
                     }
-                    QH('devCustomUIBar', x);
+                    QH('devsCustomUIBar', x);
+                }
+                if (customui.desktopbuttons) {
+                    var x = '';
+                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />'; }
+                    QH('desktopCustomUiButtons', x);
+                }
+                if (customui.terminalbuttons) {
+                    var x = '';
+                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />'; }
+                    QH('terminalCustomUiButtons', x);
+                }
+                if (customui.filesbuttons) {
+                    var x = '';
+                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />'; }
+                    QH('filesCustomUiButtons', x);
                 }
             }
 
@@ -1446,7 +1464,14 @@
                 var elements = document.getElementsByClassName('DeviceCheckbox'), selectedDevices = [];
                 for (var i = 0; i < elements.length; i++) { if (elements[i].checked === true) { selectedDevices.push(elements[i].defaultValue.substring(6)); } }
                 if (typeof info.action == 'string') {
-                    if (info.action == 'event') { meshserver.send({ action: 'uicustomevent', section: section, element: id.substring(4), selectedDevices: selectedDevices }); }
+                    if (info.action == 'event') { meshserver.send({ action: 'uicustomevent', section: section, element: id.substring(4), selectedDevices: selectedDevices, logmsg: info.logmsg }); }
+                    if (info.action.startsWith('dialog:')) { showCustomUiDialog(info.action.substring(7), { section: section, element: id.substring(4), selectedDevices: selectedDevices }); }
+                }
+            }
+            if ((section == 'devicebuttons') || (section == 'desktopbuttons') || (section == 'terminalbuttons') || (section == 'filesbuttons')) {
+                var selectedDevices = [ currentNode._id ];
+                if (typeof info.action == 'string') {
+                    if (info.action == 'event') { meshserver.send({ action: 'uicustomevent', section: section, element: id.substring(4), selectedDevices: selectedDevices, logmsg: info.logmsg }); }
                     if (info.action.startsWith('dialog:')) { showCustomUiDialog(info.action.substring(7), { section: section, element: id.substring(4), selectedDevices: selectedDevices }); }
                 }
             }
@@ -1462,6 +1487,13 @@
                 for (var i in dialog.elements) {
                     var elem = dialog.elements[i];
                     if (elem.type == 'text') { x += addHtmlValue(elem.name, '<input id=cui:' + i + ' style=width:230px autocomplete=off />'); }
+                    if (elem.type == 'textarea') {
+                        if (elem.name == null) {
+                            x += '<textarea id=cui:' + i + ' style=width:356px;resize:none;height:100px autocomplete=off></textarea>';
+                        } else {
+                            x += addHtmlValue(elem.name, '<textarea id=cui:' + i + ' style=width:230px;resize:none;height:100px autocomplete=off></textarea>');
+                        }
+                    }
                     if (elem.type == 'droplist') {
                         var y = '';
                         for (var j in elem.options) { y += '<option value="' + j + '">' + EscapeHtml(elem.options[j]) + '</option>'; }
@@ -1469,7 +1501,7 @@
                     }
                 }
             }
-            setDialogMode(2, dialog.title, buttons, showCustomUiDialogEx, x, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {} });
+            setDialogMode(2, dialog.title, buttons, showCustomUiDialogEx, x, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg });
         }
 
         // Handle a generic custom UI dialog event
@@ -5347,6 +5379,14 @@
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((connectivity & 1) && (meshrights & 8)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
+
+                // Custom UI
+                if ((customui != null) && (customui.devicebuttons != null)) {
+                    for (var i in customui.devicebuttons) {
+                        x += '<input id="cui:' + i + '" type="button" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />';
+                    }
+                }
+
                 QH('p10html', x);
 
                 // Show node last 7 days timeline
@@ -7941,13 +7981,14 @@
         }
 
         function showEventDetails(h, mode) {
+            if (xxdialogMode) return false;
             var eventList, xevent;
             if (mode == 1) { eventList = currentDeviceEvents; }
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { if (eventList[i].h == h) { xevent = eventList[i]; break; } }
             if (xevent) {
-                if (xxdialogMode) return false;
+                console.log(xevent);
                 var x = '<div style=overflow-y:auto>';
                 for (var i in xevent) {
                     if ((i == 'h') || (i == '_id') || (i == 'ids') || (i == 'domain') || (xevent[i] == null) || (typeof xevent[i] == 'object')) continue;
