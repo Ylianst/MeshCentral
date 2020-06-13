@@ -802,15 +802,18 @@
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
 
             // Session Refresh Timer
-            sessionRefreshTimer = setInterval(function () {
-                var xdr = null;
-                try { xdr = new XDomainRequest(); } catch (e) { }
-                if (!xdr) xdr = new XMLHttpRequest();
-                xdr.open('GET', window.location.origin + domainUrl + 'refresh.ashx');
-                xdr.timeout = 15000;
-                xdr.onload = xdr.onerror = xdr.ontimeout = function () { };
-                xdr.send();
-            }, Math.round((sessionTime * 60000) * 0.8))
+            if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
+        }
+
+        function refreshCookieSession() {
+            var xdr = null;
+            try { xdr = new XDomainRequest(); } catch (e) { }
+            if (!xdr) xdr = new XMLHttpRequest();
+            xdr.open('GET', window.location.origin + domainUrl + 'refresh.ashx');
+            xdr.timeout = 15000;
+            xdr.onload = function () { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); };
+            xdr.onerror = xdr.ontimeout = function () { sessionRefreshTimer = null; };
+            xdr.send();
         }
 
         function onStateChanged(server, state, prevState, errorCode) {

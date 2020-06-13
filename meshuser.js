@@ -1179,6 +1179,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         try { url = require('url').parse(command.value, true); } catch (ex) { }
                         if (url == null) break; // Bad URL
                         if (url.query && url.query.nodeid && (url.query.nodeid != command.nodeid)) break; // Bad NodeID in URL query string
+
+                        // Add user consent messages
+                        command.soptions = {};
+                        if (typeof domain.consentmessages == 'object') {
+                            if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
+                            if (typeof domain.consentmessages.terminal == 'string') { command.soptions.consentMsgTerminal = domain.consentmessages.terminal; }
+                            if (typeof domain.consentmessages.files == 'string') { command.soptions.consentMsgFiles = domain.consentmessages.files; }
+                        }
                     }
 
                     // Route this command to a target node
