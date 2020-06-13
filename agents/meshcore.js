@@ -1258,9 +1258,12 @@ function createMeshCore(agent) {
                     if (this.httprequest.consent && (this.httprequest.consent & 16))
                     {
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                        var consentMessage = this.httprequest.username + " requesting remote terminal access. Grant access?";
-                        if ((this.httprequest.soptions != null) && (this.httprequest.soptions.consentMsgTerminal != null)) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.username); }
-                        this.httprequest.tpromise._consent = require('message-box').create('MeshCentral', consentMessage, 30);
+                        var consentMessage = this.httprequest.username + " requesting remote terminal access. Grant access?", consentTitle = 'MeshCentral';
+                        if (this.httprequest.soptions != null) {
+                            if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
+                            if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.username); }
+                        }
+                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
                         this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
                         this.httprequest.tpromise._consent.then(
                             function ()
@@ -1462,7 +1465,12 @@ function createMeshCore(agent) {
                                     if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
                                     {
                                         // User Notifications is required
-                                        try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote terminal session."); } catch (ex) { }
+                                        var notifyMessage = this.ws.httprequest.username + " started a remote terminal session.", notifyTitle = "MeshCentral";
+                                        if (this.ws.httprequest.soptions != null) {
+                                            if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+                                            if (this.ws.httprequest.soptions.notifyMsgTerminal != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgTerminal.replace('{0}', this.ws.httprequest.username); }
+                                        }
+                                        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                                     }
                                 },
                                 function (e)
@@ -1608,10 +1616,12 @@ function createMeshCore(agent) {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                        var consentMessage = this.httprequest.username + " requesting remote desktop access. Grant access?";
-                        if ((this.httprequest.soptions != null) && (this.httprequest.soptions.consentMsgDesktop != null)) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.username); }
-                        sendConsoleText('ConsentMSG: ' + consentMessage);
-                        var pr = require('message-box').create('MeshCentral', consentMessage, 30, null, tsid);
+                        var consentMessage = this.httprequest.username + " requesting remote desktop access. Grant access?", consentTitle = 'MeshCentral';
+                        if (this.httprequest.soptions != null) {
+                            if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
+                            if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.username); }
+                        }
+                        var pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
                         pr.ws = this;
                         this.pause();
                         this._consentpromise = pr;
@@ -1625,7 +1635,12 @@ function createMeshCore(agent) {
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
                                     // User Notifications is required
-                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote desktop session.", tsid); } catch (ex) { }
+                                    var notifyMessage = this.ws.httprequest.username + " started a remote desktop session.", notifyTitle = "MeshCentral";
+                                    if (this.ws.httprequest.soptions != null) {
+                                        if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+                                        if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.username); }
+                                    }
+                                    try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                                 }
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x40)) {
                                     // Connection Bar is required
@@ -1669,7 +1684,12 @@ function createMeshCore(agent) {
                         if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                             // User Notifications is required
                             MeshServerLog("Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + " started a remote desktop session.", tsid); } catch (ex) { }
+                            var notifyMessage = this.httprequest.username + " started a remote desktop session.", notifyTitle = "MeshCentral";
+                            if (this.httprequest.soptions != null) {
+                                if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
+                                if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.username); }
+                            }
+                            try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                         } else {
                             MeshServerLog("Started remote desktop without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
@@ -1740,9 +1760,12 @@ function createMeshCore(agent) {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                        var consentMessage = this.httprequest.username + " requesting remote file Access. Grant access?";
-                        if ((this.httprequest.soptions != null) && (this.httprequest.soptions.consentMsgFiles != null)) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.username); }
-                        var pr = require('message-box').create('MeshCentral', consentMessage, 30);
+                        var consentMessage = this.httprequest.username + " requesting remote file Access. Grant access?", consentTitle = 'MeshCentral';
+                        if (this.httprequest.soptions != null) {
+                            if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
+                            if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.username); }
+                        }
+                        var pr = require('message-box').create(consentTitle, consentMessage, 30);
                         pr.ws = this;
                         this.pause();
                         this._consentpromise = pr;
@@ -1756,7 +1779,12 @@ function createMeshCore(agent) {
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
                                     // User Notifications is required
-                                    try { require('toaster').Toast('MeshCentral', this.ws.httprequest.username + " started a remote file session."); } catch (ex) { }
+                                    var notifyMessage = this.ws.httprequest.username + " started a remote file session.", notifyTitle = "MeshCentral";
+                                    if (this.ws.httprequest.soptions != null) {
+                                        if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+                                        if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.username); }
+                                    }
+                                    try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                                 }
                                 this.ws.resume();
                             },
@@ -1772,7 +1800,12 @@ function createMeshCore(agent) {
                         if (this.httprequest.consent && (this.httprequest.consent & 4)) {
                             // User Notifications is required
                             MeshServerLog("Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                            try { require('toaster').Toast('MeshCentral', this.httprequest.username + " started a remote file session."); } catch (ex) { }
+                            var notifyMessage = this.httprequest.username + " started a remote file session.", notifyTitle = "MeshCentral";
+                            if (this.httprequest.soptions != null) {
+                                if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
+                                if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.username); }
+                            }
+                            try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                         } else {
                             MeshServerLog("Started remote files without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
