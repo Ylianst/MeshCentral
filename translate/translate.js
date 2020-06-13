@@ -387,7 +387,11 @@ function startEx(argv) {
         // Minify the file
         if (minifyLib = 2) {
             var inFile = fs.readFileSync(outname).toString()
+
+            // Perform minification pre-processing
             if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+            if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
+
             var minifiedOut = minify(inFile, {
                 collapseBooleanAttributes: true,
                 collapseInlineTagWhitespace: false, // This is not good.
@@ -404,6 +408,9 @@ function startEx(argv) {
                 preserveLineBreaks: false,
                 useShortDoctype: true
             });
+
+            // Perform minification post-processing
+            if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
             if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
             fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
         }
