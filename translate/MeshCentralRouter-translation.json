@@ -1,0 +1,2039 @@
+{
+  "strings": [
+    {
+      "cs": "MeshCentral Router",
+      "de": "MeshCentral Router",
+      "en": " MeshCentral Router",
+      "es": "Enrutador central de malla",
+      "fr": "Routeur MeshCentral",
+      "hi": "मेश्चरल राउटर",
+      "it": "Router MeshCentral",
+      "ja": "MeshCentralルーター",
+      "ko": "MeshCentral 라우터",
+      "nl": "MeshCentral Router",
+      "pt": "Roteador MeshCentral",
+      "ru": "MeshCentral Router",
+      "zh-chs": "MeshCentral路由器",
+      "xloc": [
+        "MainForm.resx%$this.Text"
+      ]
+    },
+    {
+      "cs": "& Informace ...",
+      "de": "&Die Info...",
+      "en": "&Info...",
+      "es": "& Info ...",
+      "fr": "&Info...",
+      "hi": "और जानकारी ...",
+      "it": "&Informazioni...",
+      "ja": "情報...",
+      "ko": "정보 ...",
+      "nl": "& Info ...",
+      "pt": "& Informações ...",
+      "ru": "&Информация...",
+      "zh-chs": "＆信息...",
+      "xloc": [
+        "ServerUserControl.resx%infoToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "&Otevřeno...",
+      "de": "&Öffnen...",
+      "en": "&Open...",
+      "es": "&Abierto...",
+      "fr": "&Ouvert...",
+      "hi": "&खुला हुआ...",
+      "it": "&Aperto...",
+      "ja": "＆開いた...",
+      "ko": "&열다...",
+      "nl": "&Open...",
+      "pt": "&Aberto...",
+      "ru": "&Открыто...",
+      "zh-chs": "＆打开...",
+      "xloc": [
+        "MainForm.resx%openToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": ", 1 připojení.",
+      "de": ", 1 Verbindung.",
+      "en": ", 1 connection.",
+      "es": ", 1 conexión.",
+      "fr": ", 1 connexion.",
+      "hi": ", 1 कनेक्शन।",
+      "it": ", 1 connessione.",
+      "ja": "、1接続。",
+      "ko": ", 1 개의 연결.",
+      "nl": ", 1 verbinding.",
+      "pt": "1 conexão.",
+      "ru": ", 1 соединение.",
+      "zh-chs": "，1个连接。",
+      "xloc": [
+        "Properties%Resources.resx%OneConnection"
+      ]
+    },
+    {
+      "cs": ", {0} spojení.",
+      "de": ", {0} Verbindungen.",
+      "en": ", {0} connections.",
+      "es": ", {0} conexiones.",
+      "fr": ", {0} connexions.",
+      "hi": ", {0} कनेक्शन।",
+      "it": ", {0} connessioni.",
+      "ja": "、{0}接続。",
+      "ko": ", {0} 연결.",
+      "nl": ", {0} verbindingen.",
+      "pt": ", {0} conexões.",
+      "ru": "{0} соединений.",
+      "zh-chs": "，{0}个连接。",
+      "xloc": [
+        "Properties%Resources.resx%ManyConnections"
+      ]
+    },
+    {
+      "cs": "127,0,0,1",
+      "de": "127.0.0.1",
+      "en": "127.0.0.1",
+      "es": "127.0.0.1",
+      "fr": "127.0.0.1",
+      "hi": "127.0.0.1",
+      "it": "127.0.0.1",
+      "ja": "127.0.0.1",
+      "ko": "127.0.0.1",
+      "nl": "127.0.0.1",
+      "pt": "127.0.0.1",
+      "ru": "127.0.0.1",
+      "zh-chs": "127.0.0.1",
+      "xloc": [
+        "AddRelayMapForm.resx%remoteIpTextBox.Text"
+      ]
+    },
+    {
+      "cs": "AMT",
+      "de": "AMT",
+      "en": "AMT",
+      "es": "AMT",
+      "fr": "AMT",
+      "hi": "एएमटी",
+      "it": "AMT",
+      "ja": "AMT",
+      "ko": "AMT",
+      "nl": "AMT",
+      "pt": "AMT",
+      "ru": "AMT",
+      "zh-chs": "AMT",
+      "xloc": [
+        "Properties%Resources.resx%AMT"
+      ]
+    },
+    {
+      "cs": "Přidat mapu ...",
+      "de": "Karte hinzufügen ...",
+      "en": "Add Map...",
+      "es": "Agregar mapa ...",
+      "fr": "Ajouter une carte ...",
+      "hi": "मानचित्र जोड़ें ...",
+      "it": "Aggiungi mappa ...",
+      "ja": "地図を追加...",
+      "ko": "지도 추가 ...",
+      "nl": "Kaart toevoegen ...",
+      "pt": "Adicionar mapa ...",
+      "ru": "Добавить карту ...",
+      "zh-chs": "添加地图...",
+      "xloc": [
+        "MainForm.resx%addButton.Text"
+      ]
+    },
+    {
+      "cs": "Přidat mapu relací ...",
+      "de": "Relay Map hinzufügen ...",
+      "en": "Add Relay Map...",
+      "es": "Añadir mapa de retransmisión ...",
+      "fr": "Ajouter une carte de relais ...",
+      "hi": "रिले मानचित्र जोड़ें ...",
+      "it": "Aggiungi mappa relè ...",
+      "ja": "リレーマップを追加...",
+      "ko": "릴레이 맵 추가 ...",
+      "nl": "Relay-kaart toevoegen ...",
+      "pt": "Adicionar mapa de retransmissão ...",
+      "ru": "Добавить карту реле ...",
+      "zh-chs": "添加中继映射...",
+      "xloc": [
+        "MainForm.resx%addRelayButton.Text"
+      ]
+    },
+    {
+      "cs": "Činidlo",
+      "de": "Agent",
+      "en": "Agent",
+      "es": "Agente",
+      "fr": "Agent",
+      "hi": "एजेंट",
+      "it": "Agente",
+      "ja": "エージェント",
+      "ko": "에이전트",
+      "nl": "Middel",
+      "pt": "Agente",
+      "ru": "агент",
+      "zh-chs": "代理商",
+      "xloc": [
+        "Properties%Resources.resx%Agent"
+      ]
+    },
+    {
+      "cs": "Alternativní přístav",
+      "de": "Alternativer Hafen",
+      "en": "Alternative Port",
+      "es": "Puerto alternativo",
+      "fr": "Port alternatif",
+      "hi": "वैकल्पिक पोर्ट",
+      "it": "Porto alternativo",
+      "ja": "代替ポート",
+      "ko": "대체 포트",
+      "nl": "Alternatieve poort",
+      "pt": "Porta alternativa",
+      "ru": "Альтернативный порт",
+      "zh-chs": "备用端口",
+      "xloc": [
+        "altPortForm.resx%$this.Text",
+        "altPortForm.resx%label2.Text"
+      ]
+    },
+    {
+      "cs": "aplikace",
+      "de": "Anwendung",
+      "en": "Application",
+      "es": "Solicitud",
+      "fr": "Application",
+      "hi": "आवेदन",
+      "it": "Applicazione",
+      "ja": "応用",
+      "ko": "신청",
+      "nl": "Toepassing",
+      "pt": "Inscrição",
+      "ru": "заявка",
+      "zh-chs": "应用",
+      "xloc": [
+        "AddPortMapForm.resx%label4.Text",
+        "AddRelayMapForm.resx%label4.Text"
+      ]
+    },
+    {
+      "cs": "Spuštění aplikace",
+      "de": "Anwendungsstart",
+      "en": "Application Launch",
+      "es": "Lanzamiento de aplicaciones",
+      "fr": "Lancement de l'application",
+      "hi": "एप्लिकेशन लॉन्च",
+      "it": "Avvio dell'applicazione",
+      "ja": "アプリケーションの起動",
+      "ko": "응용 프로그램 시작",
+      "nl": "Applicatie starten",
+      "pt": "Lançamento do aplicativo",
+      "ru": "Запуск приложения",
+      "zh-chs": "应用启动",
+      "xloc": [
+        "AppLaunchForm.resx%groupBox1.Text"
+      ]
+    },
+    {
+      "cs": "Odkaz na aplikaci",
+      "de": "Anwendungslink",
+      "en": "Application Link",
+      "es": "Enlace de aplicación",
+      "fr": "Lien d'application",
+      "hi": "आवेदन लिंक",
+      "it": "Link dell'applicazione",
+      "ja": "アプリケーションリンク",
+      "ko": "응용 프로그램 링크",
+      "nl": "Applicatielink",
+      "pt": "Link do aplicativo",
+      "ru": "Ссылка на приложение",
+      "zh-chs": "申请链接",
+      "xloc": [
+        "AppLaunchForm.resx%appLinkLabel.Text"
+      ]
+    },
+    {
+      "cs": "název aplikace",
+      "de": "Anwendungsname",
+      "en": "Application Name",
+      "es": "Nombre de la aplicación",
+      "fr": "Nom de l'application",
+      "hi": "आवेदन का नाम",
+      "it": "Nome dell'applicazione",
+      "ja": "アプリケーション名",
+      "ko": "응용 프로그램 이름",
+      "nl": "Naam van de toepassing",
+      "pt": "Nome da Aplicação",
+      "ru": "Имя приложения",
+      "zh-chs": "应用名称",
+      "xloc": [
+        "AppLaunchForm.resx%appNameLabel.Text"
+      ]
+    },
+    {
+      "cs": "Zadní",
+      "de": "Zurück",
+      "en": "Back",
+      "es": "atrás",
+      "fr": "Retour",
+      "hi": "वापस",
+      "it": "Indietro",
+      "ja": "バック",
+      "ko": "뒤",
+      "nl": "Terug",
+      "pt": "De volta",
+      "ru": "назад",
+      "zh-chs": "背部",
+      "xloc": [
+        "MainForm.resx%backButton2.Text",
+        "MainForm.resx%backButton3.Text"
+      ]
+    },
+    {
+      "cs": "Navázat místní port na všechna síťová rozhraní",
+      "de": "Binden Sie den lokalen Port an alle Netzwerkschnittstellen",
+      "en": "Bind local port to all network interfaces",
+      "es": "Enlace de puerto local a todas las interfaces de red",
+      "fr": "Lier le port local à toutes les interfaces réseau",
+      "hi": "सभी नेटवर्क इंटरफेस के लिए स्थानीय पोर्ट को बांधें",
+      "it": "Associa la porta locale a tutte le interfacce di rete",
+      "ja": "ローカルポートをすべてのネットワークインターフェイスにバインドする",
+      "ko": "모든 네트워크 인터페이스에 로컬 포트 바인딩",
+      "nl": "Bind de lokale poort aan alle netwerkinterfaces",
+      "pt": "Vincular porta local a todas as interfaces de rede",
+      "ru": "Привязать локальный порт ко всем сетевым интерфейсам",
+      "zh-chs": "将本地端口绑定到所有网络接口",
+      "xloc": [
+        "SettingsForm.resx%allInterfacesCheckBox.Text"
+      ]
+    },
+    {
+      "cs": "CIRA",
+      "de": "CIRA",
+      "en": "CIRA",
+      "es": "CIRA",
+      "fr": "CIRA",
+      "hi": "सीआईआरए",
+      "it": "CIRA",
+      "ja": "チラ",
+      "ko": "시라",
+      "nl": "CIRA",
+      "pt": "CIRA",
+      "ru": "CIRA",
+      "zh-chs": "CIRA",
+      "xloc": [
+        "Properties%Resources.resx%CIRA"
+      ]
+    },
+    {
+      "cs": "zrušení",
+      "de": "Stornieren",
+      "en": "Cancel",
+      "es": "Cancelar",
+      "fr": "Annuler",
+      "hi": "रद्द करना",
+      "it": "Annulla",
+      "ja": "キャンセル",
+      "ko": "취소",
+      "nl": "annuleren",
+      "pt": "Cancelar",
+      "ru": "Отмена",
+      "zh-chs": "取消",
+      "xloc": [
+        "AddPortMapForm.resx%cancelButton.Text",
+        "AddRelayMapForm.resx%cancelButton.Text",
+        "AppLaunchForm.resx%cancelButton.Text",
+        "InstallForm.resx%cancelButton.Text",
+        "SettingsForm.resx%cancelButton.Text",
+        "altPortForm.resx%cancelButton.Text",
+        "rdpPortForm.resx%cancelButton.Text"
+      ]
+    },
+    {
+      "cs": "Osvědčení",
+      "de": "Zertifikat",
+      "en": "Certificate",
+      "es": "Certificado",
+      "fr": "Certificat",
+      "hi": "प्रमाणपत्र",
+      "it": "Certificato",
+      "ja": "証書",
+      "ko": "증명서",
+      "nl": "Certificaat",
+      "pt": "Certificado",
+      "ru": "сертификат",
+      "zh-chs": "证书",
+      "xloc": [
+        "MainForm.resx%tabPage3.Text"
+      ]
+    },
+    {
+      "cs": "Změnou jazyka tento nástroj zavřete. Jsi si jistá?",
+      "de": "Durch Ändern der Sprache wird dieses Tool geschlossen. Bist du sicher?",
+      "en": "Changing language will close this tool. Are you sure?",
+      "es": "Cambiar el idioma cerrará esta herramienta. ¿Estás seguro?",
+      "fr": "Changer de langue fermera cet outil. Êtes-vous sûr?",
+      "hi": "भाषा बदलने से यह टूल बंद हो जाएगा। क्या आपको यकीन है?",
+      "it": "Il cambio di lingua chiuderà questo strumento. Sei sicuro?",
+      "ja": "言語を変更すると、このツールが終了します。本気ですか？",
+      "ko": "언어를 변경하면이 도구가 닫힙니다. 확실해?",
+      "nl": "Als u de taal wijzigt, wordt deze tool gesloten. Weet je het zeker?",
+      "pt": "Alterar o idioma fechará esta ferramenta. Você tem certeza?",
+      "ru": "Изменение языка закроет этот инструмент. Ты уверен?",
+      "zh-chs": "更改语言将关闭此工具。 你确定吗？",
+      "xloc": [
+        "Properties%Resources.resx%LanguagesChanging"
+      ]
+    },
+    {
+      "cs": "Klepnutím na tlačítko OK zaregistrujte MeshCentral Router ve vašem systému jako popisovač protokolu „mcrouter: //“. To umožní webovému serveru MeshCentral tuto aplikaci v případě potřeby spustit.",
+      "de": "Klicken Sie auf OK, um MeshCentral Router auf Ihrem System als Handler für das Protokoll \"mcrouter: //\" zu registrieren. Auf diese Weise kann die MeshCentral-Website diese Anwendung bei Bedarf starten.",
+      "en": "Click ok to register MeshCentral Router on your system as the handler for the \"mcrouter://\" protocol. This will allow the MeshCentral web site to launch this application when needed.",
+      "es": "Haga clic en Aceptar para registrar MeshCentral Router en su sistema como controlador del protocolo \"mcrouter: //\". Esto permitirá que el sitio web MeshCentral inicie esta aplicación cuando sea necesario.",
+      "fr": "Cliquez sur ok pour enregistrer le routeur MeshCentral sur votre système en tant que gestionnaire du protocole \"mcrouter: //\". Cela permettra au site Web MeshCentral de lancer cette application en cas de besoin.",
+      "hi": "\"Mcrouter: //\" प्रोटोकॉल के लिए हैंडलर के रूप में अपने सिस्टम पर मेषकंट्रल राउटर को पंजीकृत करने के लिए ठीक क्लिक करें। यह मेशपॉइंट्रल वेब साइट को जरूरत पड़ने पर इस एप्लिकेशन को लॉन्च करने की अनुमति देगा।",
+      "it": "Fare clic su OK per registrare MeshCentral Router sul proprio sistema come gestore del protocollo \"mcrouter: //\". Ciò consentirà al sito Web MeshCentral di avviare questa applicazione quando necessario.",
+      "ja": "[OK]をクリックして、システムのMeshCentral Routerを「mcrouter：//」プロトコルのハンドラーとして登録します。これにより、MeshCentral Webサイトは必要に応じてこのアプリケーションを起動できます。",
+      "ko": "확인을 클릭하여 시스템의 MeshCentral 라우터를 \"mcrouter : //\"프로토콜의 핸들러로 등록하십시오. 그러면 MeshCentral 웹 사이트가 필요할 때이 응용 프로그램을 시작할 수 있습니다.",
+      "nl": "Klik op ok om MeshCentral Router op uw systeem te registreren als de handler voor het \"mcrouter: //\" - protocol. Hierdoor kan de MeshCentral-website deze applicatie indien nodig starten.",
+      "pt": "Clique em ok para registrar o MeshCentral Router no seu sistema como manipulador do protocolo \"mcrouter: //\". Isso permitirá que o site do MeshCentral inicie esse aplicativo quando necessário.",
+      "ru": "Нажмите кнопку ОК, чтобы зарегистрировать MeshCentral Router в вашей системе в качестве обработчика протокола «mcrouter: //». Это позволит веб-сайту MeshCentral запускать это приложение при необходимости.",
+      "zh-chs": "单击“确定”，将您的系统上的MeshCentral Router注册为“ mcrouter：//”协议的处理程序。这将允许MeshCentral网站在需要时启动此应用程序。",
+      "xloc": [
+        "InstallForm.resx%label1.Text"
+      ]
+    },
+    {
+      "cs": "Zavřít",
+      "de": "Schließen",
+      "en": "Close",
+      "es": "Cerca",
+      "fr": "proche",
+      "hi": "बंद करे",
+      "it": "Vicino",
+      "ja": "閉じる",
+      "ko": "닫기",
+      "nl": "Dichtbij",
+      "pt": "Fechar",
+      "ru": "близко",
+      "zh-chs": "关",
+      "xloc": [
+        "MainForm.resx%nextButton5.Text"
+      ]
+    },
+    {
+      "cs": "Název_počítače",
+      "de": "Computername",
+      "en": "ComputerName",
+      "es": "Nombre de la computadora",
+      "fr": "Nom de l'ordinateur",
+      "hi": "कंप्यूटर का नाम",
+      "it": "Nome del computer",
+      "ja": "コンピュータネーム",
+      "ko": "컴퓨터 이름",
+      "nl": "Computer naam",
+      "pt": "Nome do computador",
+      "ru": "Имя компьютера",
+      "zh-chs": "电脑名称",
+      "xloc": [
+        "DeviceUserControl.resx%deviceNameLabel.Text",
+        "MapUserControl.resx%deviceNameLabel.Text"
+      ]
+    },
+    {
+      "cs": "Spojení",
+      "de": "Verbindung",
+      "en": "Connection",
+      "es": "Conexión",
+      "fr": "Connexion",
+      "hi": "संबंध",
+      "it": "Connessione",
+      "ja": "接続",
+      "ko": "연결",
+      "nl": "Verbinding",
+      "pt": "Conexão",
+      "ru": "соединение",
+      "zh-chs": "连接",
+      "xloc": [
+        "altPortForm.resx%groupBox1.Text"
+      ]
+    },
+    {
+      "cs": "Skupina zařízení",
+      "de": "Gerätegruppe",
+      "en": "Device Group",
+      "es": "Grupo de dispositivos",
+      "fr": "Groupe d'appareils",
+      "hi": "डिवाइस समूह",
+      "it": "Gruppo di dispositivi",
+      "ja": "デバイスグループ",
+      "ko": "장치 그룹",
+      "nl": "Apparaatgroep",
+      "pt": "Grupo de dispositivos",
+      "ru": "Группа устройств",
+      "zh-chs": "设备组",
+      "xloc": [
+        "AddPortMapForm.resx%label5.Text",
+        "AddRelayMapForm.resx%label6.Text"
+      ]
+    },
+    {
+      "cs": "Stav zařízení",
+      "de": "Gerätestatus",
+      "en": "Device Status",
+      "es": "Estado del dispositivo",
+      "fr": "Statut du périphérique",
+      "hi": "उपकरण की स्थिति",
+      "it": "Stato del dispositivo",
+      "ja": "デバイスのステータス",
+      "ko": "장치 상태",
+      "nl": "Apparaatstatus",
+      "pt": "Status do dispositivo",
+      "ru": "Состояние устройства",
+      "zh-chs": "设备状态",
+      "xloc": [
+        "DeviceUserControl.resx%deviceStatusLabel.Text"
+      ]
+    },
+    {
+      "cs": "Zařízení",
+      "de": "Geräte",
+      "en": "Devices",
+      "es": "Dispositivos",
+      "fr": "Dispositifs",
+      "hi": "उपकरण",
+      "it": "dispositivi",
+      "ja": "デバイス",
+      "ko": "장치",
+      "nl": "Apparaten",
+      "pt": "Aparelhos",
+      "ru": "приборы",
+      "zh-chs": "设备",
+      "xloc": [
+        "MainForm.resx%devicesTabPage.Text"
+      ]
+    },
+    {
+      "cs": "Výstup",
+      "de": "Ausgang",
+      "en": "E&xit",
+      "es": "Salida",
+      "fr": "Sortie",
+      "hi": "बाहर जाएं",
+      "it": "Uscita",
+      "ja": "出口",
+      "ko": "출구",
+      "nl": "Uitgang",
+      "pt": "Saída",
+      "ru": "Выход",
+      "zh-chs": "出口",
+      "xloc": [
+        "MainForm.resx%exitToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "E-mailem",
+      "de": "Email",
+      "en": "Email",
+      "es": "Correo electrónico",
+      "fr": "Email",
+      "hi": "ईमेल",
+      "it": "E-mail",
+      "ja": "Eメール",
+      "ko": "이메일",
+      "nl": "E-mail",
+      "pt": "O email",
+      "ru": "Электронное письмо",
+      "zh-chs": "电子邮件",
+      "xloc": [
+        "MainForm.resx%emailTokenButton.Text"
+      ]
+    },
+    {
+      "cs": "Email odeslán",
+      "de": "E-Mail gesendet",
+      "en": "Email sent",
+      "es": "Email enviado",
+      "fr": "Email envoyé",
+      "hi": "ईमेल भेजा",
+      "it": "Email inviata",
+      "ja": "メールを送信しました",
+      "ko": "이메일 전송",
+      "nl": "Email verzonden",
+      "pt": "Email enviado",
+      "ru": "Письмо отправлено",
+      "zh-chs": "邮件已发送",
+      "xloc": [
+        "MainForm.resx%tokenEmailSentLabel.Text",
+        "Properties%Resources.resx%EmailSent"
+      ]
+    },
+    {
+      "cs": "Je vyžadováno ověření e-mailem",
+      "de": "E-Mail-Bestätigung erforderlich",
+      "en": "Email verification required",
+      "es": "Se requiere verificación de correo electrónico",
+      "fr": "Vérification par e-mail requise",
+      "hi": "ईमेल सत्यापन आवश्यक है",
+      "it": "Verifica email richiesta",
+      "ja": "メールの確認が必要です",
+      "ko": "이메일 확인 필요",
+      "nl": "E-mailverificatie vereist",
+      "pt": "É necessária a verificação de e-mail",
+      "ru": "Требуется подтверждение по электронной почте",
+      "zh-chs": "需要电子邮件验证",
+      "xloc": [
+        "Properties%Resources.resx%EmailVerificationRequired"
+      ]
+    },
+    {
+      "cs": "Zadejte port RDP vzdáleného počítače, výchozí port RDP je 3389.",
+      "de": "Geben Sie den RDP-Port des Remotecomputers ein. Der Standard-RDP-Port ist 3389.",
+      "en": "Enter the RDP port of the remote computer, the default RDP port is 3389.",
+      "es": "Ingrese el puerto RDP de la computadora remota, el puerto RDP predeterminado es 3389.",
+      "fr": "Entrez le port RDP de l'ordinateur distant, le port RDP par défaut est 3389.",
+      "hi": "दूरस्थ कंप्यूटर का RDP पोर्ट दर्ज करें, डिफ़ॉल्ट RDP पोर्ट 3389 है।",
+      "it": "Immettere la porta RDP del computer remoto, la porta RDP predefinita è 3389.",
+      "ja": "リモートコンピュータのRDPポートを入力します。デフォルトのRDPポートは3389です。",
+      "ko": "원격 컴퓨터의 RDP 포트를 입력하십시오. 기본 RDP 포트는 3389입니다.",
+      "nl": "Voer de RDP-poort van de externe computer in, de standaard RDP-poort is 3389.",
+      "pt": "Digite a porta RDP do computador remoto, a porta RDP padrão é 3389.",
+      "ru": "Введите порт RDP удаленного компьютера, порт RDP по умолчанию - 3389.",
+      "zh-chs": "输入远程计算机的RDP端口，默认RDP端口为3389。",
+      "xloc": [
+        "rdpPortForm.resx%label1.Text"
+      ]
+    },
+    {
+      "cs": "Zadejte druhý token ověření faktoru.",
+      "de": "Geben Sie das zweite Faktorauthentifizierungstoken ein.",
+      "en": "Enter the second factor authentication token.",
+      "es": "Ingrese el token de autenticación del segundo factor.",
+      "fr": "Entrez le jeton d'authentification du deuxième facteur.",
+      "hi": "दूसरा कारक प्रमाणीकरण टोकन दर्ज करें।",
+      "it": "Immettere il token di autenticazione del secondo fattore.",
+      "ja": "二要素認証トークンを入力します。",
+      "ko": "두 번째 요소 인증 토큰을 입력하십시오.",
+      "nl": "Voer het tweede factor-authenticatietoken in.",
+      "pt": "Digite o segundo token de autenticação de fator.",
+      "ru": "Введите маркер аутентификации второго фактора.",
+      "zh-chs": "输入第二个因素身份验证令牌。",
+      "xloc": [
+        "MainForm.resx%label2.Text"
+      ]
+    },
+    {
+      "cs": "Chybové hlášení",
+      "de": "Fehlermeldung",
+      "en": "Error Message",
+      "es": "Mensaje de error",
+      "fr": "Message d'erreur",
+      "hi": "त्रुटि संदेश",
+      "it": "Messaggio di errore",
+      "ja": "エラーメッセージ",
+      "ko": "에러 메시지",
+      "nl": "Foutmelding",
+      "pt": "Mensagem de erro",
+      "ru": "Сообщение об ошибке",
+      "zh-chs": "错误信息",
+      "xloc": [
+        "MainForm.resx%stateLabel.Text"
+      ]
+    },
+    {
+      "cs": "HTTP",
+      "de": "HTTP",
+      "en": "HTTP",
+      "es": "HTTP",
+      "fr": "HTTP",
+      "hi": "एचटीटीपी",
+      "it": "HTTP",
+      "ja": "HTTP",
+      "ko": "HTTP",
+      "nl": "HTTP",
+      "pt": "HTTP",
+      "ru": "HTTP",
+      "zh-chs": "HTTP",
+      "xloc": [
+        "DeviceUserControl.resx%httpButton.Text"
+      ]
+    },
+    {
+      "cs": "HTTPS",
+      "de": "HTTPS",
+      "en": "HTTPS",
+      "es": "HTTPS",
+      "fr": "HTTPS",
+      "hi": "HTTPS",
+      "it": "HTTPS",
+      "ja": "HTTPS",
+      "ko": "HTTPS",
+      "nl": "HTTPS",
+      "pt": "HTTPS",
+      "ru": "HTTPS",
+      "zh-chs": "HTTPS",
+      "xloc": [
+        "DeviceUserControl.resx%httpsButton.Text"
+      ]
+    },
+    {
+      "cs": "Ignorovat",
+      "de": "Ignorieren",
+      "en": "Ignore",
+      "es": "Ignorar",
+      "fr": "Ignorer",
+      "hi": "नज़रअंदाज़ करना",
+      "it": "Ignorare",
+      "ja": "無視する",
+      "ko": "무시",
+      "nl": "Negeren",
+      "pt": "Ignorar",
+      "ru": "игнорировать",
+      "zh-chs": "忽视",
+      "xloc": [
+        "MainForm.resx%nextButton3.Text"
+      ]
+    },
+    {
+      "cs": "Nainstalujte...",
+      "de": "Installieren...",
+      "en": "Install...",
+      "es": "Instalar en pc...",
+      "fr": "Installer...",
+      "hi": "इंस्टॉल...",
+      "it": "Installare...",
+      "ja": "インストール...",
+      "ko": "설치...",
+      "nl": "Installeren...",
+      "pt": "Instalar...",
+      "ru": "Установка ...",
+      "zh-chs": "安装...",
+      "xloc": [
+        "MainForm.resx%installButton.Text"
+      ]
+    },
+    {
+      "cs": "Instalace",
+      "de": "Installation",
+      "en": "Installation",
+      "es": "Instalación",
+      "fr": "Installation",
+      "hi": "स्थापना",
+      "it": "Installazione",
+      "ja": "取り付け",
+      "ko": "설치",
+      "nl": "Installatie",
+      "pt": "Instalação",
+      "ru": "Установка",
+      "zh-chs": "安装",
+      "xloc": [
+        "InstallForm.resx%$this.Text"
+      ]
+    },
+    {
+      "cs": "Neplatné uživatelské jméno či heslo",
+      "de": "ungültiger Benutzername oder Passwort",
+      "en": "Invalid username or password",
+      "es": "usuario o contraseña invalido",
+      "fr": "Nom d'utilisateur ou mot de passe invalide",
+      "hi": "अमान्य उपयोगकर्ता नाम या पासवर्ड",
+      "it": "Nome utente o password errati",
+      "ja": "ユーザー名かパスワードが無効",
+      "ko": "잘못된 사용자 이름 또는 비밀번호",
+      "nl": "ongeldige gebruikersnaam of wachtwoord",
+      "pt": "nome de usuário ou senha inválidos",
+      "ru": "неправильное имя пользователя или пароль",
+      "zh-chs": "用户名或密码无效",
+      "xloc": [
+        "Properties%Resources.resx%InvalidUsernameOrPassword"
+      ]
+    },
+    {
+      "cs": "Jazyky",
+      "de": "Sprachen",
+      "en": "Languages",
+      "es": "Idiomas",
+      "fr": "Les langues",
+      "hi": "बोली",
+      "it": "Le lingue",
+      "ja": "言語",
+      "ko": "언어",
+      "nl": "Talen",
+      "pt": "línguas",
+      "ru": "Языки",
+      "zh-chs": "语言能力",
+      "xloc": [
+        "Properties%Resources.resx%LanguagesTitle"
+      ]
+    },
+    {
+      "cs": "Místní přístav",
+      "de": "Lokaler Hafen",
+      "en": "Local Port",
+      "es": "Puerto local",
+      "fr": "Port local",
+      "hi": "लोकल पोर्ट",
+      "it": "Porto locale",
+      "ja": "ローカルポート",
+      "ko": "로컬 포트",
+      "nl": "Lokale haven",
+      "pt": "Porta local",
+      "ru": "Локальный порт",
+      "zh-chs": "本地港口",
+      "xloc": [
+        "AddPortMapForm.resx%label1.Text",
+        "AddRelayMapForm.resx%label1.Text"
+      ]
+    },
+    {
+      "cs": "Odhlásit se",
+      "de": "Ausloggen",
+      "en": "Log out",
+      "es": "Cerrar sesión",
+      "fr": "Se déconnecter",
+      "hi": "लॉग आउट",
+      "it": "Disconnettersi",
+      "ja": "ログアウト",
+      "ko": "로그 아웃",
+      "nl": "Uitloggen",
+      "pt": "Sair",
+      "ru": "Выйти",
+      "zh-chs": "登出",
+      "xloc": [
+        "MainForm.resx%backButton5.Text"
+      ]
+    },
+    {
+      "cs": "Přihlásit se",
+      "de": "Anmeldung",
+      "en": "Login",
+      "es": "Iniciar sesión",
+      "fr": "S'identifier",
+      "hi": "लॉग इन करें",
+      "it": "Accesso",
+      "ja": "ログインする",
+      "ko": "로그인",
+      "nl": "Log in",
+      "pt": "Conecte-se",
+      "ru": "Авторизоваться",
+      "zh-chs": "登录",
+      "xloc": [
+        "MainForm.resx%nextButton1.Text",
+        "MainForm.resx%tabPage1.Text"
+      ]
+    },
+    {
+      "cs": "MQTT",
+      "de": "MQTT",
+      "en": "MQTT",
+      "es": "MQTT",
+      "fr": "MQTT",
+      "hi": "MQTT",
+      "it": "MQTT",
+      "ja": "MQTT",
+      "ko": "MQTT",
+      "nl": "MQTT",
+      "pt": "MQTT",
+      "ru": "MQTT",
+      "zh-chs": "MQTT",
+      "xloc": [
+        "Properties%Resources.resx%MQTT"
+      ]
+    },
+    {
+      "cs": "Mapování",
+      "de": "Zuordnungen",
+      "en": "Mappings",
+      "es": "Mapeos",
+      "fr": "Mappages",
+      "hi": "मैपिंग",
+      "it": "Mapping",
+      "ja": "マッピング",
+      "ko": "매핑",
+      "nl": "Toewijzingen",
+      "pt": "Mapeamentos",
+      "ru": "Отображения",
+      "zh-chs": "对应",
+      "xloc": [
+        "MainForm.resx%portMapTabPage.Text",
+        "MainForm.resx%tabPage5.Text"
+      ]
+    },
+    {
+      "cs": "MeshCentral",
+      "de": "MeshCentral",
+      "en": "MeshCentral",
+      "es": "MeshCentral",
+      "fr": "MeshCentral",
+      "hi": "MeshCentral",
+      "it": "MeshCentral",
+      "ja": "MeshCentral",
+      "ko": "MeshCentral",
+      "nl": "MeshCentral",
+      "pt": "MeshCentral",
+      "ru": "MeshCentral",
+      "zh-chs": "网格中心",
+      "xloc": [
+        "Properties%Resources.resx%MeshCentralTitle"
+      ]
+    },
+    {
+      "cs": "MeshCentral Router",
+      "de": "MeshCentral Router",
+      "en": "MeshCentral Router",
+      "es": "Enrutador central de malla",
+      "fr": "Routeur MeshCentral",
+      "hi": "मेश्चरल राउटर",
+      "it": "Router MeshCentral",
+      "ja": "MeshCentralルーター",
+      "ko": "MeshCentral 라우터",
+      "nl": "MeshCentral Router",
+      "pt": "Roteador MeshCentral",
+      "ru": "MeshCentral Router",
+      "zh-chs": "MeshCentral路由器",
+      "xloc": [
+        "AppLaunchForm.resx%$this.Text",
+        "MainForm.resx%notifyIcon.Text",
+        "Properties%Resources.resx%MeshCentralRouter"
+      ]
+    },
+    {
+      "cs": "Instalace routeru MeshCentral",
+      "de": "Installation des MeshCentral-Routers",
+      "en": "MeshCentral Router Installation",
+      "es": "Instalación del enrutador MeshCentral",
+      "fr": "Installation du routeur MeshCentral",
+      "hi": "मेश्चरल राउटर इंस्टालेशन",
+      "it": "Installazione del router MeshCentral",
+      "ja": "MeshCentralルーターのインストール",
+      "ko": "MeshCentral 라우터 설치",
+      "nl": "MeshCentral Router installatie",
+      "pt": "Instalação do roteador MeshCentral",
+      "ru": "Установка MeshCentral Router",
+      "zh-chs": "MeshCentral路由器安装",
+      "xloc": [
+        "InstallForm.resx%groupBox1.Text"
+      ]
+    },
+    {
+      "cs": "MeshCentral Router umožňuje mapování portů TCP a UDP v tomto počítači na libovolný počítač v účtu serveru MeshCentral. Začněte přihlášením do svého účtu.",
+      "de": "MeshCentral Router ermöglicht die Zuordnung von TCP- und UDP-Ports auf diesem Computer zu jedem Computer in Ihrem MeshCentral-Serverkonto. Beginnen Sie, indem Sie sich in Ihrem Konto anmelden.",
+      "en": "MeshCentral Router allows mapping of TCP and UDP ports on this computer to any computer in your MeshCentral server account. Start by logging into your account.",
+      "es": "El enrutador MeshCentral permite la asignación de puertos TCP y UDP en esta computadora a cualquier computadora en su cuenta del servidor MeshCentral. Comience iniciando sesión en su cuenta.",
+      "fr": "Le routeur MeshCentral permet de mapper les ports TCP et UDP de cet ordinateur sur n'importe quel ordinateur de votre compte de serveur MeshCentral. Commencez par vous connecter à votre compte.",
+      "hi": "मेशोथ्रिअल राउटर इस कंप्यूटर पर टीसीपी और यूडीपी पोर्टों की मैपिंग आपके मेश् टर के लिए किसी भी कंप्यूटर पर करने की अनुमति देता है। अपने खाते में प्रवेश करके प्रारंभ करें।",
+      "it": "MeshCentral Router consente il mapping delle porte TCP e UDP su questo computer su qualsiasi computer nell'account del server MeshCentral. Inizia accedendo al tuo account.",
+      "ja": "MeshCentralルーターを使用すると、このコンピューターのTCPポートとUDPポートをMeshCentralサーバーアカウントの任意のコンピューターにマッピングできます。まず、アカウントにログインします。",
+      "ko": "MeshCentral Router를 사용하면이 컴퓨터의 TCP 및 UDP 포트를 MeshCentral 서버 계정의 모든 컴퓨터에 매핑 할 수 있습니다. 계정에 로그인하여 시작하십시오.",
+      "nl": "Met MeshCentral Router kunnen de TCP- en UDP-poorten op deze computer worden toegewezen aan elke computer in uw MeshCentral-serveraccount. Begin met inloggen op uw account.",
+      "pt": "O MeshCentral Router permite o mapeamento de portas TCP e UDP neste computador para qualquer computador na sua conta de servidor MeshCentral. Comece fazendo login na sua conta.",
+      "ru": "MeshCentral Router позволяет отображать порты TCP и UDP на этом компьютере на любой компьютер в вашей учетной записи сервера MeshCentral. Начните с входа в свой аккаунт.",
+      "zh-chs": "MeshCentral Router允许将此计算机上的TCP和UDP端口映射到MeshCentral服务器帐户中的任何计算机。首先登录您的帐户。",
+      "xloc": [
+        "MainForm.resx%label1.Text"
+      ]
+    },
+    {
+      "cs": "název",
+      "de": "Name",
+      "en": "Name",
+      "es": "Nombre",
+      "fr": "Nom",
+      "hi": "नाम",
+      "it": "Nome",
+      "ja": "名前",
+      "ko": "이름",
+      "nl": "Naam",
+      "pt": "Nome",
+      "ru": "имя",
+      "zh-chs": "名称",
+      "xloc": [
+        "AppLaunchForm.resx%label1.Text"
+      ]
+    },
+    {
+      "cs": "další",
+      "de": "Nächster",
+      "en": "Next",
+      "es": "próximo",
+      "fr": "Prochain",
+      "hi": "आगे",
+      "it": "Il prossimo",
+      "ja": "次",
+      "ko": "다음",
+      "nl": "De volgende",
+      "pt": "Próximo",
+      "ru": "следующий",
+      "zh-chs": "下一个",
+      "xloc": [
+        "MainForm.resx%nextButton2.Text"
+      ]
+    },
+    {
+      "cs": "Žádná zařízení",
+      "de": "Keine Geräte",
+      "en": "No Devices",
+      "es": "Sin dispositivos",
+      "fr": "Aucun appareil",
+      "hi": "कोई उपकरण नहीं",
+      "it": "Nessun dispositivo",
+      "ja": "デバイスなし",
+      "ko": "장치 없음",
+      "nl": "Geen apparaten",
+      "pt": "Sem dispositivos",
+      "ru": "Нет устройств",
+      "zh-chs": "没有装置",
+      "xloc": [
+        "MainForm.resx%noDevicesLabel.Text"
+      ]
+    },
+    {
+      "cs": "Žádné mapování portů\r\n\r\nZačněte kliknutím na tlačítko Přidat.",
+      "de": "Keine Portzuordnungen\r\n\r\nKlicken Sie auf \"Hinzufügen\", um zu beginnen.",
+      "en": "No Port Mappings\r\n\r\nClick \"Add\" to get started.",
+      "es": "Sin asignaciones de puertos\r\n\r\nHaga clic en \"Agregar\" para comenzar.",
+      "fr": "Aucun mappage de port\r\n\r\nCliquez sur \"Ajouter\" pour commencer.",
+      "hi": "कोई पोर्ट मैपिंग नहीं\r\n\r\nआरंभ करने के लिए \"जोड़ें\" पर क्लिक करें।",
+      "it": "Nessuna mappatura delle porte\r\n\r\nFai clic su \"Aggiungi\" per iniziare.",
+      "ja": "ポートマッピングなし\r\n\r\n[追加]をクリックして開始します。",
+      "ko": "포트 매핑이 없습니다\r\n\r\n시작하려면 \"추가\"를 클릭하십시오.",
+      "nl": "Geen poorttoewijzingen\r\n\r\nKlik op \"Toevoegen\" om te beginnen.",
+      "pt": "Nenhum mapeamento de porta\r\n\r\nClique em \"Adicionar\" para começar.",
+      "ru": "Нет сопоставлений портов\r\n\r\nНажмите «Добавить», чтобы начать.",
+      "zh-chs": "没有端口映射\r\n\r\n点击“添加”开始。",
+      "xloc": [
+        "MainForm.resx%noMapLabel.Text"
+      ]
+    },
+    {
+      "cs": "Žádné výsledky vyhledávání",
+      "de": "keine Suchergebnisse",
+      "en": "No Search Results",
+      "es": "Sin resultados de búsqueda",
+      "fr": "aucun résultat trouvé",
+      "hi": "खोजने पर कोई परिणाम नहीं मिला",
+      "it": "nessun risultato trovato",
+      "ja": "検索結果なし",
+      "ko": "검색 결과가 없습니다",
+      "nl": "geen resultaten gevonden",
+      "pt": "Nenhum resultado de pesquisa",
+      "ru": "Нет Результатов Поиска",
+      "zh-chs": "没有搜寻结果",
+      "xloc": [
+        "MainForm.resx%noSearchResultsLabel.Text"
+      ]
+    },
+    {
+      "cs": "OK",
+      "de": "OK",
+      "en": "OK",
+      "es": "Okay",
+      "fr": "D'accord",
+      "hi": "ठीक",
+      "it": "ok",
+      "ja": "OK",
+      "ko": "확인",
+      "nl": "OK",
+      "pt": "Está bem",
+      "ru": "Хорошо",
+      "zh-chs": "好",
+      "xloc": [
+        "AddPortMapForm.resx%okButton.Text",
+        "AddRelayMapForm.resx%okButton.Text",
+        "AppLaunchForm.resx%okButton.Text",
+        "InstallForm.resx%okButton.Text",
+        "SettingsForm.resx%okButton.Text",
+        "altPortForm.resx%okButton.Text",
+        "rdpPortForm.resx%okButton.Text"
+      ]
+    },
+    {
+      "cs": "Offline",
+      "de": "Offline",
+      "en": "Offline",
+      "es": "Desconectado",
+      "fr": "Hors ligne",
+      "hi": "ऑफलाइन",
+      "it": "disconnesso",
+      "ja": "オフライン",
+      "ko": "오프라인",
+      "nl": "Offline",
+      "pt": "desligada",
+      "ru": "Не в сети",
+      "zh-chs": "离线",
+      "xloc": [
+        "Properties%Resources.resx%Offline"
+      ]
+    },
+    {
+      "cs": "Open Source, licence Apache 2.0",
+      "de": "Open Source, Apache 2.0 Lizenz",
+      "en": "Open Source, Apache 2.0 License",
+      "es": "Código abierto, licencia Apache 2.0",
+      "fr": "Open Source, licence Apache 2.0",
+      "hi": "ओपन सोर्स, अपाचे 2.0 लाइसेंस",
+      "it": "Open Source, Licenza Apache 2.0",
+      "ja": "オープンソース、Apache 2.0ライセンス",
+      "ko": "오픈 소스, Apache 2.0 라이센스",
+      "nl": "Open Source, Apache 2.0-licentie",
+      "pt": "Código aberto, licença Apache 2.0",
+      "ru": "Open Source, лицензия Apache 2.0",
+      "zh-chs": "开源，Apache 2.0许可证",
+      "xloc": [
+        "MainForm.resx%licenseLinkLabel.Text"
+      ]
+    },
+    {
+      "cs": "Otevřete web",
+      "de": "Öffnen Sie die Website",
+      "en": "Open Web Site",
+      "es": "Abrir sitio web",
+      "fr": "Ouvrir le site Web",
+      "hi": "वेब साइट खोलें",
+      "it": "Apri il sito Web",
+      "ja": "Webサイトを開く",
+      "ko": "열린 웹 사이트",
+      "nl": "Open website",
+      "pt": "Abrir site",
+      "ru": "Открыть веб-сайт",
+      "zh-chs": "公开网站",
+      "xloc": [
+        "MainForm.resx%openWebSiteButton.Text"
+      ]
+    },
+    {
+      "cs": "Otevřeno...",
+      "de": "Öffnen...",
+      "en": "Open...",
+      "es": "Abierto...",
+      "fr": "Ouvert...",
+      "hi": "खुला हुआ...",
+      "it": "Aperto...",
+      "ja": "開いた...",
+      "ko": "열다...",
+      "nl": "Open...",
+      "pt": "Aberto...",
+      "ru": "Открыто...",
+      "zh-chs": "打开...",
+      "xloc": [
+        "MapUserControl.resx%appButton.Text"
+      ]
+    },
+    {
+      "cs": "Heslo",
+      "de": "Passwort",
+      "en": "Password",
+      "es": "Contraseña",
+      "fr": "Mot de passe",
+      "hi": "कुंजिका",
+      "it": "Parola d'ordine",
+      "ja": "パスワード",
+      "ko": "암호",
+      "nl": "Wachtwoord",
+      "pt": "Senha",
+      "ru": "пароль",
+      "zh-chs": "密码",
+      "xloc": [
+        "MainForm.resx%label28.Text"
+      ]
+    },
+    {
+      "cs": "Cesta",
+      "de": "Pfad",
+      "en": "Path",
+      "es": "Camino",
+      "fr": "Chemin",
+      "hi": "पथ",
+      "it": "Sentiero",
+      "ja": "道",
+      "ko": "통로",
+      "nl": "Pad",
+      "pt": "Caminho",
+      "ru": "Дорожка",
+      "zh-chs": "路径",
+      "xloc": [
+        "AppLaunchForm.resx%label3.Text"
+      ]
+    },
+    {
+      "cs": "Mapování portů",
+      "de": "Port-Mapping",
+      "en": "Port Mapping",
+      "es": "La asignación de puertos",
+      "fr": "Cartographie des ports",
+      "hi": "पोर्ट मानचित्रण",
+      "it": "Mappatura delle porte",
+      "ja": "ポートマッピング",
+      "ko": "포트 매핑",
+      "nl": "Port Mapping",
+      "pt": "Mapeamento de portas",
+      "ru": "Port Mapping",
+      "zh-chs": "端口映射",
+      "xloc": [
+        "AddPortMapForm.resx%$this.Text"
+      ]
+    },
+    {
+      "cs": "Nápověda k mapování portů",
+      "de": "Hilfe zur Portzuordnung",
+      "en": "Port Mapping Help",
+      "es": "Ayuda de mapeo de puertos",
+      "fr": "Aide de mappage de port",
+      "hi": "पोर्ट मैपिंग सहायता",
+      "it": "Guida per il mapping delle porte",
+      "ja": "ポートマッピングヘルプ",
+      "ko": "포트 매핑 도움말",
+      "nl": "Port Mapping Help",
+      "pt": "Ajuda do mapeamento de portas",
+      "ru": "Справка по отображению портов",
+      "zh-chs": "端口映射帮助",
+      "xloc": [
+        "MappingHelpForm.resx%$this.Text"
+      ]
+    },
+    {
+      "cs": "Protokol",
+      "de": "Protokoll",
+      "en": "Protocol",
+      "es": "Protocolo",
+      "fr": "Protocole",
+      "hi": "मसविदा बनाना",
+      "it": "Protocollo",
+      "ja": "プロトコル",
+      "ko": "실험 계획안",
+      "nl": "Protocol",
+      "pt": "Protocolo",
+      "ru": "протокол",
+      "zh-chs": "协议",
+      "xloc": [
+        "AddPortMapForm.resx%label6.Text",
+        "AddRelayMapForm.resx%label7.Text"
+      ]
+    },
+    {
+      "cs": "PuTTY SSH klient",
+      "de": "PuTTY SSH-Client",
+      "en": "PuTTY SSH client",
+      "es": "Cliente PuTTY SSH",
+      "fr": "Client PuTTY SSH",
+      "hi": "PuTTY एसएसएच ग्राहक",
+      "it": "Client SSH PuTTY",
+      "ja": "PuTTY SSHクライアント",
+      "ko": "PuTTY SSH 클라이언트",
+      "nl": "PuTTY SSH-client",
+      "pt": "Cliente SSH PuTTY",
+      "ru": "PuTTY SSH клиент",
+      "zh-chs": "PuTTY SSH客户端",
+      "xloc": [
+        "Properties%Resources.resx%PuttyAppName"
+      ]
+    },
+    {
+      "cs": "RDP",
+      "de": "RDP",
+      "en": "RDP",
+      "es": "RDP",
+      "fr": "RDP",
+      "hi": "आरडीपी",
+      "it": "RDP",
+      "ja": "RDP",
+      "ko": "RDP",
+      "nl": "RDP",
+      "pt": "RDP",
+      "ru": "RDP",
+      "zh-chs": "RDP",
+      "xloc": [
+        "DeviceUserControl.resx%rdpButton.Text"
+      ]
+    },
+    {
+      "cs": "Port RDP",
+      "de": "RDP-Port",
+      "en": "RDP Port",
+      "es": "Puerto RDP",
+      "fr": "Port RDP",
+      "hi": "RDP पोर्ट",
+      "it": "Porta RDP",
+      "ja": "RDPポート",
+      "ko": "RDP 포트",
+      "nl": "RDP-poort",
+      "pt": "Porta RDP",
+      "ru": "Порт RDP",
+      "zh-chs": "RDP端口",
+      "xloc": [
+        "rdpPortForm.resx%$this.Text",
+        "rdpPortForm.resx%label2.Text"
+      ]
+    },
+    {
+      "cs": "Relé",
+      "de": "Relais",
+      "en": "Relay",
+      "es": "Relé",
+      "fr": "Relais",
+      "hi": "रिले",
+      "it": "staffetta",
+      "ja": "リレー",
+      "ko": "계전기",
+      "nl": "Relais",
+      "pt": "Retransmissão",
+      "ru": "Реле",
+      "zh-chs": "中继",
+      "xloc": [
+        "Properties%Resources.resx%Relay"
+      ]
+    },
+    {
+      "cs": "Reléové zařízení",
+      "de": "Relaisgerät",
+      "en": "Relay Device",
+      "es": "Dispositivo de relé",
+      "fr": "Dispositif relais",
+      "hi": "रिले उपकरण",
+      "it": "Dispositivo relè",
+      "ja": "リレーデバイス",
+      "ko": "릴레이 장치",
+      "nl": "Relaisapparaat",
+      "pt": "Dispositivo de retransmissão",
+      "ru": "Устройство реле",
+      "zh-chs": "中继装置",
+      "xloc": [
+        "AddRelayMapForm.resx%label2.Text"
+      ]
+    },
+    {
+      "cs": "Reléové mapování",
+      "de": "Relaiszuordnung",
+      "en": "Relay Mapping",
+      "es": "Mapeo de relé",
+      "fr": "Cartographie des relais",
+      "hi": "रिले मैपिंग",
+      "it": "Mappatura dei relè",
+      "ja": "リレーマッピング",
+      "ko": "릴레이 매핑",
+      "nl": "Relay mapping",
+      "pt": "Mapeamento de retransmissão",
+      "ru": "Отображение реле",
+      "zh-chs": "中继映射",
+      "xloc": [
+        "AddRelayMapForm.resx%$this.Text"
+      ]
+    },
+    {
+      "cs": "Vzdálené zařízení",
+      "de": "Remote-Gerät",
+      "en": "Remote Device",
+      "es": "Dispositivo remoto",
+      "fr": "Appareil distant",
+      "hi": "रिमोट डिवाइस",
+      "it": "Dispositivo remoto",
+      "ja": "リモートデバイス",
+      "ko": "원격 장치",
+      "nl": "Extern apparaat",
+      "pt": "Dispositivo remoto",
+      "ru": "Удаленное устройство",
+      "zh-chs": "远端装置",
+      "xloc": [
+        "AddPortMapForm.resx%label2.Text"
+      ]
+    },
+    {
+      "cs": "Vzdálená IP",
+      "de": "Remote-IP",
+      "en": "Remote IP",
+      "es": "IP remota",
+      "fr": "IP distante",
+      "hi": "दूरदराज़ के आई. पी",
+      "it": "IP remoto",
+      "ja": "リモートIP",
+      "ko": "원격 IP",
+      "nl": "Extern IP",
+      "pt": "IP remoto",
+      "ru": "Удаленный IP",
+      "zh-chs": "远程IP",
+      "xloc": [
+        "AddRelayMapForm.resx%label5.Text"
+      ]
+    },
+    {
+      "cs": "Vzdálený port",
+      "de": "Remote-Port",
+      "en": "Remote Port",
+      "es": "Puerto remoto",
+      "fr": "Port distant",
+      "hi": "रिमोट पोर्ट",
+      "it": "Porta remota",
+      "ja": "リモートポート",
+      "ko": "원격 포트",
+      "nl": "Externe poort",
+      "pt": "Porta remota",
+      "ru": "Удаленный порт",
+      "zh-chs": "远端埠",
+      "xloc": [
+        "AddPortMapForm.resx%label3.Text",
+        "AddRelayMapForm.resx%label3.Text"
+      ]
+    },
+    {
+      "cs": "Odstranit",
+      "de": "Entfernen",
+      "en": "Remove",
+      "es": "Eliminar",
+      "fr": "Retirer",
+      "hi": "हटाना",
+      "it": "Rimuovere",
+      "ja": "削除する",
+      "ko": "없애다",
+      "nl": "Verwijderen",
+      "pt": "Retirar",
+      "ru": "Удалить",
+      "zh-chs": "去掉",
+      "xloc": [
+        "MapUserControl.resx%closeButton.Text"
+      ]
+    },
+    {
+      "cs": "Stav směrování",
+      "de": "Routing-Status",
+      "en": "Routing Status",
+      "es": "Estado de enrutamiento",
+      "fr": "Statut de routage",
+      "hi": "रूटिंग स्टेटस",
+      "it": "Stato del routing",
+      "ja": "ルーティングステータス",
+      "ko": "라우팅 상태",
+      "nl": "Routeringsstatus",
+      "pt": "Status de roteamento",
+      "ru": "Состояние маршрутизации",
+      "zh-chs": "路由状态",
+      "xloc": [
+        "MapUserControl.resx%routingStatusLabel.Text"
+      ]
+    },
+    {
+      "cs": "SCP",
+      "de": "SCP",
+      "en": "SCP",
+      "es": "SCP",
+      "fr": "SCP",
+      "hi": "SCP",
+      "it": "SCP",
+      "ja": "SCP",
+      "ko": "SCP",
+      "nl": "SCP",
+      "pt": "SCP",
+      "ru": "SCP",
+      "zh-chs": "SCP",
+      "xloc": [
+        "DeviceUserControl.resx%scpButton.Text"
+      ]
+    },
+    {
+      "cs": "SMS",
+      "de": "SMS",
+      "en": "SMS",
+      "es": "SMS",
+      "fr": "SMS",
+      "hi": "एसएमएस",
+      "it": "sms",
+      "ja": "SMS",
+      "ko": "SMS",
+      "nl": "sms",
+      "pt": "SMS",
+      "ru": "смс",
+      "zh-chs": "短信",
+      "xloc": [
+        "MainForm.resx%smsTokenButton.Text"
+      ]
+    },
+    {
+      "cs": "SMS byla odeslána",
+      "de": "SMS gesendet",
+      "en": "SMS sent",
+      "es": "SMS enviado",
+      "fr": "SMS envoyé",
+      "hi": "एसएमएस भेजा गया",
+      "it": "SMS inviato",
+      "ja": "SMSを送信しました",
+      "ko": "SMS 보냄",
+      "nl": "SMS verzonden",
+      "pt": "SMS enviado",
+      "ru": "Смс отправлено",
+      "zh-chs": "短信发送",
+      "xloc": [
+        "Properties%Resources.resx%SmsSent"
+      ]
+    },
+    {
+      "cs": "SSH",
+      "de": "SSH",
+      "en": "SSH",
+      "es": "SSH",
+      "fr": "SSH",
+      "hi": "SSH",
+      "it": "SSH",
+      "ja": "SSH",
+      "ko": "SSH",
+      "nl": "SSH",
+      "pt": "SSH",
+      "ru": "SSH",
+      "zh-chs": "SSH协议",
+      "xloc": [
+        "DeviceUserControl.resx%sshButton.Text"
+      ]
+    },
+    {
+      "cs": "Vyhledávání",
+      "de": "Suche",
+      "en": "Search",
+      "es": "Buscar",
+      "fr": "Chercher",
+      "hi": "खोज",
+      "it": "Ricerca",
+      "ja": "探す",
+      "ko": "검색",
+      "nl": "Zoeken",
+      "pt": "Procurar",
+      "ru": "Поиск",
+      "zh-chs": "搜索",
+      "xloc": [
+        "Properties%Resources.resx%SearchPlaceHolder"
+      ]
+    },
+    {
+      "cs": "Odeslat token na zaregistrovanou e-mailovou adresu?",
+      "de": "Token an registrierte E-Mail-Adresse senden?",
+      "en": "Send token to registered email address?",
+      "es": "¿Enviar token a una dirección de correo electrónico registrada?",
+      "fr": "Envoyer un jeton à une adresse e-mail enregistrée?",
+      "hi": "पंजीकृत ईमेल पते पर टोकन भेजें?",
+      "it": "Invia token all'indirizzo e-mail registrato?",
+      "ja": "登録済みのメールアドレスにトークンを送信しますか？",
+      "ko": "등록 된 이메일 주소로 토큰을 보내시겠습니까?",
+      "nl": "Token naar geregistreerd e-mailadres verzenden?",
+      "pt": "Enviar token para o endereço de e-mail registrado?",
+      "ru": "Отправить токен на зарегистрированный адрес электронной почты?",
+      "zh-chs": "将令牌发送到注册的电子邮件地址？",
+      "xloc": [
+        "Properties%Resources.resx%SendTokenEmail"
+      ]
+    },
+    {
+      "cs": "Odeslat token na registrované telefonní číslo?",
+      "de": "Token an registrierte Telefonnummer senden?",
+      "en": "Send token to registered phone number?",
+      "es": "¿Enviar token al número de teléfono registrado?",
+      "fr": "Envoyer un jeton au numéro de téléphone enregistré?",
+      "hi": "पंजीकृत फोन नंबर पर टोकन भेजें?",
+      "it": "Invia token al numero di telefono registrato?",
+      "ja": "登録した電話番号にトークンを送信しますか？",
+      "ko": "등록 된 전화 번호로 토큰을 보내시겠습니까?",
+      "nl": "Token naar geregistreerd telefoonnummer verzenden?",
+      "pt": "Enviar token para o número de telefone registrado?",
+      "ru": "Отправить токен на зарегистрированный номер телефона?",
+      "zh-chs": "将令牌发送到注册的电话号码？",
+      "xloc": [
+        "Properties%Resources.resx%SendTokenSMS"
+      ]
+    },
+    {
+      "cs": "Server",
+      "de": "Server",
+      "en": "Server",
+      "es": "Servidor",
+      "fr": "Serveur",
+      "hi": "सर्वर",
+      "it": "server",
+      "ja": "サーバ",
+      "ko": "섬기는 사람",
+      "nl": "Server",
+      "pt": "Servidor",
+      "ru": "сервер",
+      "zh-chs": "服务器",
+      "xloc": [
+        "MainForm.resx%label26.Text"
+      ]
+    },
+    {
+      "cs": "Informace o serveru",
+      "de": "Serverinformation",
+      "en": "Server information",
+      "es": "Información del servidor",
+      "fr": "Informations sur le serveur",
+      "hi": "सर्वर जानकारी",
+      "it": "Informazioni sul server",
+      "ja": "サーバー情報",
+      "ko": "서버 정보",
+      "nl": "Server informatie",
+      "pt": "Informação do servidor",
+      "ru": "Информация о сервере",
+      "zh-chs": "服务器信息",
+      "xloc": [
+        "ServerUserControl.resx%serverInfoLabel.Text"
+      ]
+    },
+    {
+      "cs": "Název_serveru",
+      "de": "Servername",
+      "en": "ServerName",
+      "es": "Nombre del servidor",
+      "fr": "Nom du serveur",
+      "hi": "सर्वर का नाम",
+      "it": "Nome del server",
+      "ja": "サーバーの名前",
+      "ko": "서버 이름",
+      "nl": "Server naam",
+      "pt": "Nome do servidor",
+      "ru": "Название сервера",
+      "zh-chs": "服务器名称",
+      "xloc": [
+        "ServerUserControl.resx%serverNameLabel.Text"
+      ]
+    },
+    {
+      "cs": "Nastavit port RDP ...",
+      "de": "RDP-Port einstellen ...",
+      "en": "Set RDP port...",
+      "es": "Establecer puerto RDP ...",
+      "fr": "Définir le port RDP ...",
+      "hi": "RDP पोर्ट सेट करें ...",
+      "it": "Imposta porta RDP ...",
+      "ja": "RDPポートを設定...",
+      "ko": "RDP 포트 설정 ...",
+      "nl": "RDP-poort instellen ...",
+      "pt": "Definir porta RDP ...",
+      "ru": "Установить порт RDP ...",
+      "zh-chs": "设置RDP端口...",
+      "xloc": [
+        "DeviceUserControl.resx%setRDPPortToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "Nastavení",
+      "de": "die Einstellungen",
+      "en": "Settings",
+      "es": "Configuraciones",
+      "fr": "Réglages",
+      "hi": "समायोजन",
+      "it": "impostazioni",
+      "ja": "設定",
+      "ko": "설정",
+      "nl": "Instellingen",
+      "pt": "Definições",
+      "ru": "настройки",
+      "zh-chs": "设定值",
+      "xloc": [
+        "SettingsForm.resx%$this.Text",
+        "SettingsForm.resx%groupBox1.Text",
+        "rdpPortForm.resx%groupBox1.Text"
+      ]
+    },
+    {
+      "cs": "Zobrazit a seskupit jména",
+      "de": "Show & Gruppennamen",
+      "en": "Show &Group Names",
+      "es": "Mostrar y agrupar nombres",
+      "fr": "Afficher les noms des groupes",
+      "hi": "शो और समूह के नाम",
+      "it": "Mostra e raggruppa nomi",
+      "ja": "グループ名を表示",
+      "ko": "그룹 이름 표시",
+      "nl": "Show & Group Names",
+      "pt": "Mostrar & Nomes de Grupos",
+      "ru": "Показать & имена групп",
+      "zh-chs": "显示和组名",
+      "xloc": [
+        "MainForm.resx%showGroupNamesToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "Zobrazit a offline zařízení",
+      "de": "Geräte anzeigen und offline schalten",
+      "en": "Show &Offline Devices",
+      "es": "Mostrar y dispositivos sin conexión",
+      "fr": "Afficher et déconnecter les appareils",
+      "hi": "शो और ऑफ़लाइन उपकरण",
+      "it": "Mostra e dispositivi offline",
+      "ja": "オフラインデバイスを表示",
+      "ko": "오프라인 장치 표시 및",
+      "nl": "Show & offline apparaten",
+      "pt": "Mostrar e dispositivos off-line",
+      "ru": "Показать и автономные устройства",
+      "zh-chs": "显示和离线设备",
+      "xloc": [
+        "MainForm.resx%showOfflineDevicesToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "Zobrazit na hlavním panelu",
+      "de": "In der Taskleiste anzeigen",
+      "en": "Show on system tray",
+      "es": "Mostrar en la bandeja del sistema",
+      "fr": "Afficher sur la barre d'état système",
+      "hi": "सिस्टम ट्रे पर दिखाएं",
+      "it": "Mostra sulla barra delle applicazioni",
+      "ja": "システムトレイに表示",
+      "ko": "시스템 트레이에 표시",
+      "nl": "Weergeven in systeemvak",
+      "pt": "Mostrar na bandeja do sistema",
+      "ru": "Показать в системном трее",
+      "zh-chs": "显示在系统托盘上",
+      "xloc": [
+        "SettingsForm.resx%systemTrayCheckBox.Text"
+      ]
+    },
+    {
+      "cs": "Web",
+      "de": "Seite? ˅",
+      "en": "Site",
+      "es": "Sitio",
+      "fr": "Site",
+      "hi": "साइट",
+      "it": "Luogo",
+      "ja": "地点",
+      "ko": "대지",
+      "nl": "Site",
+      "pt": "Local",
+      "ru": "сайт",
+      "zh-chs": "现场",
+      "xloc": [
+        "AppLaunchForm.resx%label2.Text"
+      ]
+    },
+    {
+      "cs": "Seřaď dle jména",
+      "de": "Nach Name sortieren",
+      "en": "Sort by &Name",
+      "es": "Ordenar por nombre",
+      "fr": "Trier par nom",
+      "hi": "नाम द्वारा क्रमबद्ध करें",
+      "it": "Ordina per nome",
+      "ja": "名前順",
+      "ko": "이름으로 분류하다",
+      "nl": "Sorteren op naam",
+      "pt": "Classificar por & Nome",
+      "ru": "Сортировать по имени",
+      "zh-chs": "按名称分类",
+      "xloc": [
+        "MainForm.resx%sortByNameToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "Seřadit podle G & roup",
+      "de": "Sortieren nach G & roup",
+      "en": "Sort by G&roup",
+      "es": "Ordenar por G y roup",
+      "fr": "Trier par G & roup",
+      "hi": "G & roup द्वारा सॉर्ट करें",
+      "it": "Ordina per G & roup",
+      "ja": "グループで並べ替え",
+      "ko": "G & roup로 정렬",
+      "nl": "Sorteren op G & groep",
+      "pt": "Classificar por G & roup",
+      "ru": "Сортировать по G & roup",
+      "zh-chs": "按G＆roup排序",
+      "xloc": [
+        "MainForm.resx%sortByGroupToolStripMenuItem.Text"
+      ]
+    },
+    {
+      "cs": "Začínající...",
+      "de": "Beginnend...",
+      "en": "Starting...",
+      "es": "Comenzando...",
+      "fr": "Départ...",
+      "hi": "शुरुआत...",
+      "it": "Di partenza...",
+      "ja": "起動...",
+      "ko": "시작하는 중 ...",
+      "nl": "Beginnend...",
+      "pt": "Iniciando...",
+      "ru": "Начиная с ...",
+      "zh-chs": "开始...",
+      "xloc": [
+        "Properties%Resources.resx%Starting"
+      ]
+    },
+    {
+      "cs": "Zastavil",
+      "de": "Gestoppt",
+      "en": "Stopped",
+      "es": "Detenido",
+      "fr": "Arrêté",
+      "hi": "रोका हुआ",
+      "it": "Fermato",
+      "ja": "停止",
+      "ko": "중지",
+      "nl": "Gestopt",
+      "pt": "Parado",
+      "ru": "Остановился",
+      "zh-chs": "已停止",
+      "xloc": [
+        "Properties%Resources.resx%Stopped2"
+      ]
+    },
+    {
+      "cs": "Zastavil.",
+      "de": "Gestoppt.",
+      "en": "Stopped.",
+      "es": "Detenido.",
+      "fr": "Arrêté.",
+      "hi": "रोका हुआ।",
+      "it": "Fermato.",
+      "ja": "停止。",
+      "ko": "중지되었습니다.",
+      "nl": "Gestopt.",
+      "pt": "Parado.",
+      "ru": "Остановился.",
+      "zh-chs": "停了",
+      "xloc": [
+        "Properties%Resources.resx%Stopped"
+      ]
+    },
+    {
+      "cs": "TCP",
+      "de": "TCP",
+      "en": "TCP",
+      "es": "TCP",
+      "fr": "TCP",
+      "hi": "टीसीपी",
+      "it": "TCP",
+      "ja": "TCP",
+      "ko": "TCP",
+      "nl": "TCP",
+      "pt": "TCP",
+      "ru": "TCP",
+      "zh-chs": "TCP协议",
+      "xloc": [
+        "AddPortMapForm.resx%tcpRadioButton.Text",
+        "AddRelayMapForm.resx%tcpRadioButton.Text"
+      ]
+    },
+    {
+      "cs": "Tento server předložil nedůvěryhodný certifikát. To může znamenat, že to není správný server nebo že server nemá platný certifikát. Není doporučeno, ale můžete stisknutím tlačítka ignorovat pokračovat v připojení k tomuto serveru.",
+      "de": "Dieser Server hat ein nicht vertrauenswürdiges Zertifikat vorgelegt. Dies kann darauf hinweisen, dass dies nicht der richtige Server ist oder dass der Server kein gültiges Zertifikat hat. Es wird nicht empfohlen, aber Sie können die Ignoriertaste drücken, um die Verbindung zu diesem Server fortzusetzen.",
+      "en": "This server presented a un-trusted certificate.  This may indicate that this is not the correct server or that the server does not have a valid certificate. It is not recommanded, but you can press the ignore button to continue connection to this server.",
+      "es": "Este servidor presentó un certificado no confiable. Esto puede indicar que este no es el servidor correcto o que el servidor no tiene un certificado válido. No se recomienda, pero puede presionar el botón ignorar para continuar la conexión a este servidor.",
+      "fr": "Ce serveur a présenté un certificat non approuvé. Cela peut indiquer que ce n'est pas le bon serveur ou que le serveur n'a pas de certificat valide. Ce n'est pas recommandé, mais vous pouvez appuyer sur le bouton Ignorer pour continuer la connexion à ce serveur.",
+      "hi": "इस सर्वर ने एक गैर-विश्वसनीय प्रमाण पत्र प्रस्तुत किया। यह इंगित कर सकता है कि यह सही सर्वर नहीं है या सर्वर के पास वैध प्रमाणपत्र नहीं है। यह अनुशंसित नहीं है, लेकिन आप इस सर्वर से कनेक्शन जारी रखने के लिए अनदेखा बटन दबा सकते हैं।",
+      "it": "Questo server ha presentato un certificato non attendibile. Ciò può indicare che questo non è il server corretto o che il server non ha un certificato valido. Non è raccomandato, ma è possibile premere il pulsante Ignora per continuare la connessione a questo server.",
+      "ja": "このサーバーは、信頼されていない証明書を提示しました。これは、これが正しいサーバーではないか、サーバーに有効な証明書がないことを示している可能性があります。推奨されていませんが、無視ボタンを押してこのサーバーへの接続を続行できます。",
+      "ko": "이 서버는 신뢰할 수없는 인증서를 제시했습니다. 이는 올바른 서버가 아니거나 서버에 유효한 인증서가 없음을 나타냅니다. 다시 명령을받지는 않지만 무시 버튼을 눌러이 서버에 계속 연결할 수 있습니다.",
+      "nl": "Deze server heeft een niet-vertrouwd certificaat gepresenteerd. Dit kan erop duiden dat dit niet de juiste server is of dat de server geen geldig certificaat heeft. Het wordt niet aanbevolen, maar u kunt op de negeerknop drukken om de verbinding met deze server voort te zetten.",
+      "pt": "Este servidor apresentou um certificado não confiável. Isso pode indicar que este não é o servidor correto ou que o servidor não possui um certificado válido. Não é recomendado, mas você pode pressionar o botão ignorar para continuar a conexão com este servidor.",
+      "ru": "Этот сервер представил недоверенный сертификат. Это может указывать на то, что это неправильный сервер или что у сервера нет действительного сертификата. Это не рекомендуется, но вы можете нажать кнопку игнорирования, чтобы продолжить подключение к этому серверу.",
+      "zh-chs": "该服务器出示了不受信任的证书。这可能表明这不是正确的服务器，或者该服务器没有有效的证书。不建议这样做，但是您可以按“忽略”按钮继续连接到该服务器。",
+      "xloc": [
+        "MainForm.resx%label5.Text"
+      ]
+    },
+    {
+      "cs": "Žeton",
+      "de": "Zeichen",
+      "en": "Token",
+      "es": "Simbólico",
+      "fr": "Jeton",
+      "hi": "टोकन",
+      "it": "Gettone",
+      "ja": "トークン",
+      "ko": "토큰",
+      "nl": "Token",
+      "pt": "Símbolo",
+      "ru": "знак",
+      "zh-chs": "代币",
+      "xloc": [
+        "MainForm.resx%label3.Text",
+        "MainForm.resx%tabPage2.Text"
+      ]
+    },
+    {
+      "cs": "Dvoufaktorové ověření",
+      "de": "Zwei-Faktor-Authentifizierung",
+      "en": "Two-factor Authentication",
+      "es": "Autenticación de dos factores",
+      "fr": "Authentification à deux facteurs",
+      "hi": "दो तरीकों से प्रमाणीकरण",
+      "it": "Autenticazione a due fattori",
+      "ja": "二要素認証",
+      "ko": "이중 인증",
+      "nl": "Twee-factor-authenticatie",
+      "pt": "Autenticação de dois fatores",
+      "ru": "Двухфакторная аутентификация",
+      "zh-chs": "两因素验证",
+      "xloc": [
+        "Properties%Resources.resx%TwoFactorAuthentication"
+      ]
+    },
+    {
+      "cs": "UDP",
+      "de": "UDP",
+      "en": "UDP",
+      "es": "UDP",
+      "fr": "UDP",
+      "hi": "यूडीपी",
+      "it": "UDP",
+      "ja": "UDP",
+      "ko": "UDP",
+      "nl": "UDP",
+      "pt": "UDP",
+      "ru": "UDP",
+      "zh-chs": "UDP协议",
+      "xloc": [
+        "AddPortMapForm.resx%udpRadioButton.Text",
+        "AddRelayMapForm.resx%udpRadioButton.Text"
+      ]
+    },
+    {
+      "cs": "Nelze navázat na místní port",
+      "de": "Bindung an lokalen Port nicht möglich",
+      "en": "Unable to bind to local port",
+      "es": "No se puede vincular al puerto local",
+      "fr": "Impossible de se lier au port local",
+      "hi": "स्थानीय पोर्ट से बांधने में असमर्थ",
+      "it": "Impossibile associare alla porta locale",
+      "ja": "ローカルポートにバインドできません",
+      "ko": "로컬 포트에 바인딩 할 수 없습니다",
+      "nl": "Kan niet binden aan lokale poort",
+      "pt": "Não foi possível ligar à porta local",
+      "ru": "Невозможно привязать к локальному порту",
+      "zh-chs": "无法绑定到本地端口",
+      "xloc": [
+        "Properties%Resources.resx%UnableToBindToLocalPort"
+      ]
+    },
+    {
+      "cs": "Nelze se připojit",
+      "de": "Verbindung konnte nicht hergestellt werden",
+      "en": "Unable to connect",
+      "es": "No puede conectarse",
+      "fr": "Impossible de se connecter",
+      "hi": "कनेक्ट करने में असमर्थ",
+      "it": "Impossibile connetersi",
+      "ja": "接続できません",
+      "ko": "연결할 수 없습니다",
+      "nl": "Niet in staat te verbinden",
+      "pt": "Incapaz de conectar",
+      "ru": "Невозможно подключиться",
+      "zh-chs": "无法连接",
+      "xloc": [
+        "Properties%Resources.resx%UnableToConnect"
+      ]
+    },
+    {
+      "cs": "Použít alternativní port ...",
+      "de": "Verwenden Sie den alternativen Port ...",
+      "en": "Use Alternate Port...",
+      "es": "Usar puerto alternativo ...",
+      "fr": "Utiliser un autre port ...",
+      "hi": "वैकल्पिक पोर्ट का उपयोग करें ...",
+      "it": "Usa porta alternativa ...",
+      "ja": "代替ポートを使用...",
+      "ko": "대체 포트 사용 ...",
+      "nl": "Alternatieve poort gebruiken ...",
+      "pt": "Usar porta alternativa ...",
+      "ru": "Использовать альтернативный порт ...",
+      "zh-chs": "使用备用端口...",
+      "xloc": [
+        "DeviceUserControl.resx%toolStripMenuItem1.Text"
+      ]
+    },
+    {
+      "cs": "Uživatelské jméno",
+      "de": "Nutzername",
+      "en": "Username",
+      "es": "Nombre de usuario",
+      "fr": "Nom d'utilisateur",
+      "hi": "उपयोगकर्ता नाम",
+      "it": "Nome utente",
+      "ja": "ユーザー名",
+      "ko": "사용자 이름",
+      "nl": "Gebruikersnaam",
+      "pt": "Nome do usuário",
+      "ru": "имя пользователя",
+      "zh-chs": "用户名",
+      "xloc": [
+        "MainForm.resx%label27.Text"
+      ]
+    },
+    {
+      "cs": "Zobrazit podrobnosti certifikátu ...",
+      "de": "Zertifikatdetails anzeigen ...",
+      "en": "View Certificate Details...",
+      "es": "Ver detalles del certificado ...",
+      "fr": "Afficher les détails du certificat ...",
+      "hi": "प्रमाणपत्र विवरण देखें ...",
+      "it": "Visualizza i dettagli del certificato ...",
+      "ja": "証明書の詳細を表示...",
+      "ko": "인증서 세부 사항보기 ...",
+      "nl": "Certificaatdetails bekijken ...",
+      "pt": "Exibir detalhes do certificado ...",
+      "ru": "Подробнее о сертификате ...",
+      "zh-chs": "查看证书详细信息...",
+      "xloc": [
+        "MainForm.resx%certDetailsButton.Text"
+      ]
+    },
+    {
+      "cs": "VAROVÁNÍ - Neplatný certifikát serveru",
+      "de": "WARNUNG - Ungültiges Serverzertifikat",
+      "en": "WARNING - Invalid Server Certificate",
+      "es": "ADVERTENCIA: Certificado de servidor no válido",
+      "fr": "AVERTISSEMENT - Certificat du serveur n'est pas valide",
+      "hi": "चेतावनी - अमान्य सर्वर प्रमाणपत्र",
+      "it": "ATTENZIONE - Certificato server non valido",
+      "ja": "警告-無効なサーバー証明書",
+      "ko": "경고-유효하지 않은 서버 인증서",
+      "nl": "WAARSCHUWING - Ongeldig servercertificaat",
+      "pt": "AVISO - Certificado de servidor inválido",
+      "ru": "ВНИМАНИЕ - Неверный сертификат сервера",
+      "zh-chs": "警告-无效的服务器证书",
+      "xloc": [
+        "MainForm.resx%label4.Text"
+      ]
+    },
+    {
+      "cs": "Klient WinSCP",
+      "de": "WinSCP-Client",
+      "en": "WinSCP client",
+      "es": "Cliente WinSCP",
+      "fr": "Client WinSCP",
+      "hi": "WinSCP क्लाइंट",
+      "it": "Client WinSCP",
+      "ja": "WinSCPクライアント",
+      "ko": "WinSCP 클라이언트",
+      "nl": "WinSCP-client",
+      "pt": "Cliente WinSCP",
+      "ru": "WinSCP клиент",
+      "zh-chs": "WinSCP客户端",
+      "xloc": [
+        "Properties%Resources.resx%WinscpAppName"
+      ]
+    },
+    {
+      "cs": "v0.8.0",
+      "de": "v0.8.0",
+      "en": "v0.8.0",
+      "es": "v0.8.0",
+      "fr": "v0.8.0",
+      "hi": "v0.8.0",
+      "it": "v0.8.0",
+      "ja": "v0.8.0",
+      "ko": "v0.8.0",
+      "nl": "v0.8.0",
+      "pt": "v0.8.0",
+      "ru": "v0.8.0",
+      "zh-chs": "v0.8.0",
+      "xloc": [
+        "MainForm.resx%versionLabel.Text"
+      ]
+    },
+    {
+      "en": "≡",
+      "xloc": [
+        "MainForm.resx%menuLabel.Text"
+      ]
+    }
+  ]
+}
