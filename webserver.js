@@ -1632,7 +1632,63 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMSTSCRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({}, req, domain));
+
+        if (req.query.ws != null) {
+            // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
+            var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
+            if ((rcookie != null) && (rcookie.domainid == domain.id) && (rcookie.nodeid != null) && (rcookie.tcpport != null)) { render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name) }, req, domain)); return; }
+        }
+
+        // Get the logged in user if present
+        var user = null;
+
+        // If there is a login token, use that
+        if (req.query.login != null) {
+            var ucookie = parent.decodeCookie(req.query.login, parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
+            if ((ucookie != null) && (ucookie.a === 3) && (typeof ucookie.u == 'string')) { user = obj.users[ucookie.u]; }
+        }
+
+        // If no token, see if we have an active session
+        if ((user == null) && (req.session.userid != null)) { user = obj.users[req.session.userid]; }
+
+        // If still no user, see if we have a default user
+        if ((user == null) && (obj.args.user)) { user = obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]; }
+
+        // No user login, exit now
+        if (user == null) { res.sendStatus(401); return; } 
+
+        // Check the nodeid
+        if (req.query.node != null) {
+            var nodeidsplit = req.query.node.split('/');
+            if (nodeidsplit.length == 1) {
+                req.query.node = 'node/' + domain.id + '/' + nodeidsplit[0]; // Format the nodeid correctly
+            } else if (nodeidsplit.length == 3) {
+                if ((nodeidsplit[0] != 'node') || (nodeidsplit[1] != domain.id)) { req.query.node = null; } // Check the nodeid format
+            } else {
+                req.query.node = null; // Bad nodeid
+            }
+        }
+
+        // If there is no nodeid, exit now
+        if (req.query.node == null) { render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: '', name: '' }, req, domain)); return; }
+
+        // Fetch the node from the database
+        obj.db.Get(req.query.node, function (err, nodes) {
+            if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
+            const node = nodes[0];
+
+            // Check access rights, must have remote control rights
+            if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { res.sendStatus(401); return; }
+
+            // Figure out the target port
+            var port = 3389;
+            if (typeof node.rdpport == 'number') { port = node.rdpport; }
+            if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
+
+            // Generate a cookie and respond
+            var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
+            render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name) }, req, domain));
+        });
     }
 
     // Called to process an agent invite request
@@ -4360,9 +4416,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.mstsc === true) {
             obj.app.get(url + 'mstsc.html', handleMSTSCRequest);
                 obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
-                    PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user) {
-                        require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws1, req1, obj.args, domain, user);
-                    });
+                    const domain = getDomain(req);
+                    if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
+                    require('./mstsc.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain);
                 });
             }
 
