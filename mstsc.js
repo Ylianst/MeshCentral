@@ -16,12 +16,11 @@
 // Construct a MSTSC Relay object, called upon connection
 // This is a bit of a hack as we are going to run the RDP connection thru a loopback connection.
 // If the "node-rdpjs-2" module supported passing a socket, we would do something different.
-module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, user) {
+module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
     const Net = require('net');
     const WebSocket = require('ws');
 
     var obj = {};
-    obj.user = user;
     obj.domain = domain;
     obj.ws = ws;
     obj.wsClient = null;
@@ -34,14 +33,13 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain, u
 
     parent.parent.debug('relay', 'RDP: Request for RDP relay (' + req.clientIp + ')');
 
-    // Disconnect this user
+    // Disconnect
     obj.close = function (arg) {
         if ((arg == 1) || (arg == null)) { try { ws.close(); } catch (e) { console.log(e); } } // Soft close, close the websocket
         if (arg == 2) { try { ws._socket._parent.end(); } catch (e) { console.log(e); } } // Hard close, close the TCP socket
         if (obj.wsClient) { obj.wsClient.close(); obj.wsClient = null; }
         if (obj.tcpServer) { obj.tcpServer.close(); obj.tcpServer = null; }
         if (rdpClient) { rdpClient.close(); rdpClient = null; }
-        delete obj.user;
         delete obj.domain;
         delete obj.ws;
     };

@@ -68,16 +68,25 @@
         var client = null;
         var canvas = null;
         var urlargs = parseUriArgs();
-        if (urlargs.name) { document.title = urlargs.name + ' - ' + document.title; }
+        var cookie = '{{{cookie}}}';
+        var name = decodeURIComponent('{{{name}}}');
+        if (name != '') { document.title = name + ' - ' + document.title; }
 
         function load() {
-            if (urlargs.name) { QH('computerName', urlargs.name); }
+            if (name != '') { QH('computerName', name); }
             client = MstscClient.create(Q('myCanvas'));
             Q('inputDomain').focus();
             canvas = Q('myCanvas');
+            if (cookie == '') {
+                QE('inputDomain', false);
+                QE('inputUsername', false);
+                QE('inputPassword', false);
+                QE('connectButton', false);
+            }
         }
 
         function connect(domain, username, password) {
+            if (cookie == '') return;
             var domain = Q('inputDomain').value;
             var username = Q('inputUsername').value;
             var password = Q('inputPassword').value;
@@ -85,7 +94,7 @@
             QV('main', false);
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            client.connect(urlargs.ws, domain, username, password, function (err) { QV('myCanvas', false); QV('main', true); });
+            client.connect(cookie, domain, username, password, function (err) { QV('myCanvas', false); QV('main', true); });
             return false;
         }
 
