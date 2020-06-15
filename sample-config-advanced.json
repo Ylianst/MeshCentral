@@ -1,5 +1,6 @@
 {
-  "__comment__" : "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
+  "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
+  "__comment__": "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "settings": {
     "_Cert": "myserver.mydomain.com",
     "_MongoDb": "mongodb://127.0.0.1:27017",
@@ -89,7 +90,11 @@
       "meshcommander": "https://www.meshcommander.com/"
     },
     "__MaxInvalidLogin": "Time in minutes, max amount of bad logins from a source IP in the time before logins are rejected.",
-    "_MaxInvalidLogin": { "time": 10, "count": 10, "coolofftime": 10 },
+    "_MaxInvalidLogin": {
+      "time": 10,
+      "count": 10,
+      "coolofftime": 10
+    },
     "_Plugins": { "enabled": true }
   },
   "_domaindefaults": {
@@ -117,7 +122,17 @@
       "_Hide": 4,
       "_Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_CertUrl": "https://192.168.2.106:443/",
-      "_PasswordRequirements": { "min": 8, "max": 128, "upper": 1, "lower": 1, "numeric": 1, "nonalpha": 1, "reset": 90, "force2factor": true, "skip2factor": "127.0.0.1,192.168.2.0/24" },
+      "_PasswordRequirements": {
+        "min": 8,
+        "max": 128,
+        "upper": 1,
+        "lower": 1,
+        "numeric": 1,
+        "nonalpha": 1,
+        "reset": 90,
+        "force2factor": true,
+        "skip2factor": "127.0.0.1,192.168.2.0/24"
+      },
       "_AgentInviteCodes": true,
       "_AgentNoProxy": true,
       "_GeoLocation": true,
@@ -139,10 +154,10 @@
       "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
       "_AgentAllowedIP": "192.168.0.100/24",
       "_AgentBlockedIP": "127.0.0.1,::1",
-      "___UserSessionIdleTimeout__" : "Number of user idle minutes before auto-disconnect",
-      "_UserSessionIdleTimeout" : 30,
-      "__UserConsentFlags__" : "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
-      "_UserConsentFlags" : 7,
+      "___UserSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
+      "_UserSessionIdleTimeout": 30,
+      "__UserConsentFlags__": "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
+      "_UserConsentFlags": 7,
       "_UrlSwitching": false,
       "_DesktopPrivacyBarText": "Your privacy bar message",
       "_Limits": {
@@ -164,7 +179,11 @@
       "_Redirects": {
         "meshcommander": "https://www.meshcommander.com/"
       },
-      "_yubikey": { "id": "0000", "secret": "xxxxxxxxxxxxxxxxxxxxx", "_proxy": "http://myproxy.domain.com:80" },
+      "_yubikey": {
+        "id": "0000",
+        "secret": "xxxxxxxxxxxxxxxxxxxxx",
+        "_proxy": "http://myproxy.domain.com:80"
+      },
       "_httpheaders": {
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN",
@@ -180,7 +199,7 @@
         "protocols": [ 1, 2, 101 ]
       },
       "_authStrategies": {
-        "__comment__" : "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
+        "__comment__": "This section is used to allow users to login using other accounts. You will need to get an API key from the services and register callback URL's",
         "twitter": {
           "_callbackurl": "https://server/auth-twitter-callback",
           "newAccounts": true,
@@ -311,9 +330,9 @@
     "from": "+1-555-555-5555"
   },
   "__sms": {
-      "provider": "plivo",
-      "id": "xxxxxxx",
-      "token": "xxxxxxx",
-      "from": "1-555-555-5555"
+    "provider": "plivo",
+    "id": "xxxxxxx",
+    "token": "xxxxxxx",
+    "from": "1-555-555-5555"
   }
 }
