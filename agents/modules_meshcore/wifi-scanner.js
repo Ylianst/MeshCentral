@@ -50,12 +50,12 @@ function WiFiScanner()
     {
         if (process.platform == 'win32')
         {
-            this.master = require('ScriptContainer').Create(15, ContainerPermissions.DEFAULT);
-            this.master.parent = this;
-            this.master.on('data', function (j) { this.parent.emit('accessPoint', new AccessPoint(j.ssid, j.bssid, j.lq)); });
+            this.main = require('ScriptContainer').Create(15, ContainerPermissions.DEFAULT);
+            this.main.parent = this;
+            this.main.on('data', function (j) { this.parent.emit('accessPoint', new AccessPoint(j.ssid, j.bssid, j.lq)); });
 
-            this.master.addModule('wifi-scanner-windows', getJSModule('wifi-scanner-windows'));
-            this.master.ExecuteString(WindowsChildScript);
+            this.main.addModule('wifi-scanner-windows', getJSModule('wifi-scanner-windows'));
+            this.main.ExecuteString(WindowsChildScript);
         }
         else if (process.platform == 'linux')
         {

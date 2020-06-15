@@ -933,7 +933,7 @@
                         for (var i in message.ugroups) { groupCount++; }
                         if (groupCount == 0) { usergroups = null; }
                     }
-                    //masterUpdate(8192);
+                    //mainUpdate(8192);
                     break;
                 }
                 case 'files': {
@@ -1104,7 +1104,7 @@
                                 ugroup.desc = message.event.desc;
                                 ugroup.links = message.event.links;
                             }
-                            //masterUpdate(8192 + 16384);
+                            //mainUpdate(8192 + 16384);
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
@@ -1118,7 +1118,7 @@
                                 var c = 0;
                                 for (var i in usergroups) { c++; }
                                 if (c == 0) { usergroups = null; } // If user groups is empty, set it to null.
-                                //masterUpdate(8192 + 16384);
+                                //mainUpdate(8192 + 16384);
                             }
                             break;
                         }
@@ -1315,7 +1315,7 @@
                                 nodes.push(node);
 
                                 // Web page update
-                                //masterUpdate(1 | 2 | 4 | 16);
+                                //mainUpdate(1 | 2 | 4 | 16);
                                 updateDevices();
                             }
                             break;
@@ -1371,7 +1371,7 @@
                             updateDevices();
                             refreshDevice(message.event.nodeid);
 
-                            //masterUpdate(4);
+                            //mainUpdate(4);
                             //if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
                             // If we are looking at the sessions dialog box for this device now, update it

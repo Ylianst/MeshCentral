@@ -613,7 +613,7 @@ function AmtStackCreateService(wsmanStack) {
         1611: 'TLS Trusted Root Certificate Removed',
         1612: 'TLS Preshared Key Set',
         1613: 'Kerberos Settings Modified',
-        1614: 'Kerberos Master Key Modified',
+        1614: 'Kerberos Main Key Modified',
         1615: 'Flash Wear out Counters Reset',
         1616: 'Power Package Modified',
         1617: 'Set Realm Authentication Mode',

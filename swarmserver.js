@@ -76,7 +76,7 @@ module.exports.CreateSwarmServer = function (parent, db, args, certificates) {
         APPREQACK: 46,             // Used to request an ack message.
         APPACK: 47,                // Used to ack a received message.
         SERVERECHO: 48,            // Server will echo this message, used for testing.
-        KVMINFO: 49,               // Used to send local KVM slave process information to mesh agent.
+        KVMINFO: 49,               // Used to send local KVM secondary process information to mesh agent.
         REMOTEWAKE: 50,            // Used to send remote wake information to server.
         NEWCONNECTTOKEN: 51,       // Used to send a new connection token to the Swarm Server.
         WIFISCAN: 52,              // Used to send visible WIFI AP's to the server.
