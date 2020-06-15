@@ -2,127 +2,127 @@
   "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
   "__comment__": "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "settings": {
-    "_Cert": "myserver.mydomain.com",
-    "_MongoDb": "mongodb://127.0.0.1:27017",
-    "_MongoDbName": "meshcentral",
-    "_MongoDbChangeStream": true,
-    "_MongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
+    "_cert": "myserver.mydomain.com",
+    "_mongoDb": "mongodb://127.0.0.1:27017",
+    "_mongoDbName": "meshcentral",
+    "_mongoDbChangeStream": true,
+    "_mongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
     "_WANonly": true,
     "_LANonly": true,
-    "_SessionTime": 30,
-    "_SessionKey": "MyReallySecretPassword1",
-    "_SessionSameSite": "strict",
-    "_DbEncryptKey": "MyReallySecretPassword2",
-    "_DbRecordsEncryptKey": "MyReallySecretPassword",
-    "_DbRecordsDecryptKey": "MyReallySecretPassword",
-    "__DbExpire": "Amount of time to keep various events in the database, in seconds. Below are the default values.",
-    "_DbExpire": {
+    "_sessionTime": 30,
+    "_sessionKey": "MyReallySecretPassword1",
+    "_sessionSameSite": "strict",
+    "_dbEncryptKey": "MyReallySecretPassword2",
+    "_dbRecordsEncryptKey": "MyReallySecretPassword",
+    "_dbRecordsDecryptKey": "MyReallySecretPassword",
+    "__dbExpire": "Amount of time to keep various events in the database, in seconds. Below are the default values.",
+    "_dbExpire": {
       "events": 1728000,
       "powerevents": 864000,
       "statsevents": 2592000
     },
-    "_Port": 443,
-    "_PortBind": "127.0.0.1",
-    "_AliasPort": 444,
-    "_RedirPort": 80,
-    "_RedirPortBind": "127.0.0.1",
-    "_RedirAliasPort": 80,
-    "_AgentPort": 1234,
-    "_AgentPortBind": "127.0.0.1",
-    "_AgentAliasPort": 1234,
-    "_AgentAliasDNS": "agents.myserver.mydomain.com",
-    "_AgentPortTls": true,
-    "_ExactPorts": true,
-    "_AllowLoginToken": true,
-    "_AllowFraming": true,
-    "_CookieIpCheck": false,
-    "_CookieEncoding": "hex",
-    "_WebRTC": false,
-    "_Nice404": false,
-    "_ClickOnce": false,
-    "_SelfUpdate": true,
-    "_BrowserPing": 60,
-    "_BrowserPong": 60,
-    "_AgentPing": 60,
-    "_AgentPong": 60,
-    "_AgentIdleTimeout": 150,
-    "_MeshErrorLogPath": "c:\\tmp",
-    "_NpmPath": "c:\\npm.exe",
-    "_NpmProxy": "http://1.2.3.4:80",
-    "_AllowHighQualityDesktop": true,
-    "_DesktopMultiplex": true,
-    "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
-    "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
-    "_AgentAllowedIP": "192.168.0.100/24",
-    "_AgentBlockedIP": "127.0.0.1,::1",
-    "_AuthLog": "c:\\temp\\auth.log",
-    "_ManageAllDeviceGroups": [ "user//admin" ],
-    "_ManageCrossDomain": [ "user//admin" ],
-    "_LocalDiscovery": {
+    "port": 443,
+    "_portBind": "127.0.0.1",
+    "aliasPort": 444,
+    "_redirPort": 80,
+    "_redirPortBind": "127.0.0.1",
+    "_redirAliasPort": 80,
+    "_agentPort": 1234,
+    "_agentPortBind": "127.0.0.1",
+    "_agentAliasPort": 1234,
+    "_agentAliasDNS": "agents.myserver.mydomain.com",
+    "_agentPortTls": true,
+    "_exactPorts": true,
+    "_allowLoginToken": true,
+    "_allowFraming": true,
+    "_cookieIpCheck": false,
+    "_cookieEncoding": "hex",
+    "_webRTC": false,
+    "_nice404": false,
+    "_clickOnce": false,
+    "_selfUpdate": true,
+    "_browserPing": 60,
+    "_browserPong": 60,
+    "_agentPing": 60,
+    "_agentPong": 60,
+    "_agentIdleTimeout": 150,
+    "_meshErrorLogPath": "c:\\tmp",
+    "_npmPath": "c:\\npm.exe",
+    "_npmProxy": "http://1.2.3.4:80",
+    "_allowHighQualityDesktop": true,
+    "_desktopMultiplex": true,
+    "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
+    "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
+    "_agentAllowedIP": "192.168.0.100/24",
+    "_agentBlockedIP": "127.0.0.1,::1",
+    "_authLog": "c:\\temp\\auth.log",
+    "_manageAllDeviceGroups": [ "user//admin" ],
+    "_manageCrossDomain": [ "user//admin" ],
+    "_localDiscovery": {
       "name": "Local server name",
       "info": "Information about this server"
     },
-    "_TlsOffload": "127.0.0.1,::1",
-    "_TrustedProxy": "127.0.0.1,::1",
-    "_MpsPort": 44330,
-    "_MpsPortBind": "127.0.0.1",
-    "_MpsAliasPort": 4433,
-    "_MpsAliasHost": "mps.mydomain.com",
-    "_MpsTlsOffload": true,
-    "_No2FactorAuth": true,
-    "_Log": "main,web,webrequest,cert",
+    "_rlsOffload": "127.0.0.1,::1",
+    "_rrustedProxy": "127.0.0.1,::1",
+    "_mpsPort": 44330,
+    "_mpsPortBind": "127.0.0.1",
+    "_mpsAliasPort": 4433,
+    "_mpsAliasHost": "mps.mydomain.com",
+    "_mpsTlsOffload": true,
+    "_no2FactorAuth": true,
+    "_log": "main,web,webrequest,cert",
     "_syslog": "meshcentral",
     "_syslogauth": "meshcentral-auth",
     "_syslogjson": "meshcentral-json",
-    "_WebRtConfig": {
+    "_webrtcConfig": {
       "iceServers": [
         { "urls": "stun:stun.services.mozilla.com" },
         { "urls": "stun:stun.l.google.com:19302" }
       ]
     },
-    "_AutoBackup": {
+    "_autoBackup": {
       "backupIntervalHours": 24,
       "keepLastDaysBackup": 10,
       "zipPassword": "MyReallySecretPassword3",
       "_backupPath": "C:\\backups"
     },
-    "_Redirects": {
+    "_redirects": {
       "meshcommander": "https://www.meshcommander.com/"
     },
-    "__MaxInvalidLogin": "Time in minutes, max amount of bad logins from a source IP in the time before logins are rejected.",
-    "_MaxInvalidLogin": {
+    "__maxInvalidLogin": "Time in minutes, max amount of bad logins from a source IP in the time before logins are rejected.",
+    "_maxInvalidLogin": {
       "time": 10,
       "count": 10,
       "coolofftime": 10
     },
-    "_Plugins": { "enabled": true }
+    "_plugins": { "enabled": true }
   },
   "_domaindefaults": {
     "__comment__": "Any settings in this section is used as default setting for all domains",
-    "Title": "MyDefaultTitle",
-    "Footer": "Default page footer",
-    "NewAccounts": false
+    "title": "MyDefaultTitle",
+    "footer": "Default page footer",
+    "newAccounts": false
   },
   "_domains": {
     "": {
-      "Title": "MyServer",
-      "Title2": "Servername",
-      "_TitlePicture": "title-sample.png",
-      "_UserQuota": 1048576,
-      "_MeshQuota": 248576,
-      "Minify": true,
-      "_NewAccounts": true,
-      "_NewAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
-      "_UserNameIsEmail": true,
-      "_NewAccountEmailDomains": [ "sample.com" ],
-      "_NewAccountsRights": [ "nonewgroups", "notools" ],
-      "_WelcomeText": "Sample Text on Login Page.",
-      "_WelcomePicture": "mainwelcome.jpg",
-      "___Hide__": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar",
-      "_Hide": 4,
-      "_Footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
-      "_CertUrl": "https://192.168.2.106:443/",
-      "_PasswordRequirements": {
+      "title": "MyServer",
+      "title2": "Servername",
+      "_titlePicture": "title-sample.png",
+      "_userQuota": 1048576,
+      "_meshQuota": 248576,
+      "minify": true,
+      "_newAccounts": true,
+      "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+      "_userNameIsEmail": true,
+      "_newAccountEmailDomains": [ "sample.com" ],
+      "_newAccountsRights": [ "nonewgroups", "notools" ],
+      "_welcomeText": "Sample Text on Login Page.",
+      "_welcomePicture": "mainwelcome.jpg",
+      "___hide__": "Sum of: 1 = Hide header, 2 = Hide tab, 4 = Hide footer, 8 = Hide title, 16 = Hide left bar",
+      "_hide": 4,
+      "_footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
+      "_certUrl": "https://192.168.2.106:443/",
+      "_passwordRequirements": {
         "min": 8,
         "max": 128,
         "upper": 1,
@@ -133,41 +133,41 @@
         "force2factor": true,
         "skip2factor": "127.0.0.1,192.168.2.0/24"
       },
-      "_AgentInviteCodes": true,
-      "_AgentNoProxy": true,
-      "_GeoLocation": true,
+      "_agentInviteCodes": true,
+      "_agentNoProxy": true,
+      "_geoLocation": true,
       "_novnc": false,
       "_mstsc": true,
       "_consentMessages": {
-        "Title": "MeshCentral",
-        "Desktop": "{0} requesting remote desktop access. Grant access?",
-        "Terminal": "{0} requesting remote terminal access. Grant access?",
-        "Files": "{0} requesting remote files access. Grant access?"
+        "title": "MeshCentral",
+        "desktop": "{0} requesting remote desktop access. Grant access?",
+        "terminal": "{0} requesting remote terminal access. Grant access?",
+        "files": "{0} requesting remote files access. Grant access?"
       },
       "_notificationMessages": {
-        "Title": "MeshCentral",
-        "Desktop": "{0} started a remote desktop session.",
-        "Terminal": "{0} started a remote terminal session.",
-        "Files": "{0} started a remote files session."
+        "title": "MeshCentral",
+        "desktop": "{0} started a remote desktop session.",
+        "terminal": "{0} started a remote terminal session.",
+        "files": "{0} started a remote files session."
       },
-      "_UserAllowedIP": "127.0.0.1,192.168.1.0/24",
-      "_UserBlockedIP": "127.0.0.1,::1,192.168.0.100",
-      "_AgentAllowedIP": "192.168.0.100/24",
-      "_AgentBlockedIP": "127.0.0.1,::1",
-      "___UserSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
-      "_UserSessionIdleTimeout": 30,
-      "__UserConsentFlags__": "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
-      "_UserConsentFlags": 7,
-      "_UrlSwitching": false,
-      "_DesktopPrivacyBarText": "Your privacy bar message",
-      "_Limits": {
-        "_MaxDevices": 100,
-        "_MaxUserAccounts": 100,
-        "_MaxUserSessions": 100,
-        "_MaxAgentSessions": 100,
-        "MaxSingleUserSessions": 10
+      "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
+      "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
+      "_agentAllowedIP": "192.168.0.100/24",
+      "_agentBlockedIP": "127.0.0.1,::1",
+      "___userSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
+      "_userSessionIdleTimeout": 30,
+      "__userConsentFlags__": "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
+      "_userConsentFlags": 7,
+      "_urlSwitching": false,
+      "_desktopPrivacyBarText": "Your privacy bar message",
+      "_limits": {
+        "_maxDevices": 100,
+        "_maxUserAccounts": 100,
+        "_maxUserSessions": 100,
+        "_maxAgentSessions": 100,
+        "maxSingleUserSessions": 10
       },
-      "_AmtAcmActivation": {
+      "_amtAcmActivation": {
         "log": "amtactivation.log",
         "certs": {
           "mycertname": {
@@ -176,7 +176,7 @@
           }
         }
       },
-      "_Redirects": {
+      "_redirects": {
         "meshcommander": "https://www.meshcommander.com/"
       },
       "_yubikey": {
@@ -184,13 +184,13 @@
         "secret": "xxxxxxxxxxxxxxxxxxxxx",
         "_proxy": "http://myproxy.domain.com:80"
       },
-      "_httpheaders": {
+      "_httpHeaders": {
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN",
         "Content-Security-Policy": "default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src 'self'; media-src 'self'"
       },
       "_agentConfig": [ "webSocketMaskOverride=1" ],
-      "_SessionRecording": {
+      "_sessionRecording": {
         "_filepath": "C:\\temp",
         "_index": true,
         "_maxRecordings": 10,
@@ -257,17 +257,17 @@
       }
     },
     "_customer1": {
-      "_DNS": "customer1.myserver.com",
-      "_Title": "Customer1",
-      "_Title2": "TestServer",
-      "_NewAccounts": 1,
-      "_Auth": "sspi",
-      "__Auth": "ldap",
+      "_dns": "customer1.myserver.com",
+      "_title": "Customer1",
+      "_title2": "TestServer",
+      "_newAccounts": 1,
+      "_auth": "sspi",
+      "__auth": "ldap",
       "_LDAPUserName": "gecos",
       "_LDAPUserKey": "uid",
       "_LDAPUserEmail": "otherMail",
       "_LDAPPptions": {
-        "URL": "test",
+        "url": "test",
         "anne": {
           "gecos": "Anne O'Nyme",
           "displayName": "O Nyme anne",
@@ -292,8 +292,8 @@
         "SearchBase": "DC=meshcentral,DC=local",
         "SearchFilter": "(sAMAccountName={{username}})"
       },
-      "_Footer": "Test",
-      "_CertUrl": "https://192.168.2.106:443/"
+      "_footer": "Test",
+      "_certUrl": "https://192.168.2.106:443/"
     },
     "_info": {
       "_share": "C:\\ExtraWebSite"
