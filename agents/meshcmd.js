@@ -769,11 +769,11 @@ function run(argv) {
         7 = Hibernate
         8 = Power Off - Soft
         9 = Power Cycle (Off Hard)
-        10 = Master Bus Reset
+        10 = Main Bus Reset
         11 = Diagnostic Interrupt (NMI)
         12 = Power Off - Soft Graceful
         13 = Power Off - Hard Graceful
-        14 = Master Bus Reset Graceful
+        14 = Main Bus Reset Graceful
         15 = Power Cycle (Off - Soft Graceful)
         16 = Power Cycle (Off - Hard Graceful)
         */
@@ -2869,7 +2869,7 @@ function performAmtPowerActionEx(stack, name, response, status) {
     }
 }
 
-var DMTFPowerStates = ['', '', "Power on", "Light sleep", "Deep sleep", "Power cycle (Soft off)", "Off - Hard", "Hibernate (Off soft)", "Soft off", "Power cycle (Off-hard)", "Master bus reset", "Diagnostic interrupt (NMI)", "Not applicable", "Off - Soft graceful", "Off - Hard graceful", "Master bus reset graceful", "Power cycle (Off - Soft graceful)", "Power cycle (Off - Hard graceful)", "Diagnostic interrupt (INIT)"];
+var DMTFPowerStates = ['', '', "Power on", "Light sleep", "Deep sleep", "Power cycle (Soft off)", "Off - Hard", "Hibernate (Off soft)", "Soft off", "Power cycle (Off-hard)", "Main bus reset", "Diagnostic interrupt (NMI)", "Not applicable", "Off - Soft graceful", "Off - Hard graceful", "Main bus reset graceful", "Power cycle (Off - Soft graceful)", "Power cycle (Off - Hard graceful)", "Diagnostic interrupt (INIT)"];
 function performAmtPowerActionEx2(stack, name, response, status) {
     if (status == 200) {
         var powerNumber = parseInt(response.Body.PowerState);
