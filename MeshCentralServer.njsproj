@@ -227,6 +227,7 @@
     <Content Include="agents\MeshService64.pdb" />
     <Content Include="CreateSourcePackage.bat" />
     <Content Include="LICENSE" />
+    <Content Include="meshcentral-config-schema.json" />
     <Content Include="package.json" />
     <Content Include="plugin_development.md" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.application" />
