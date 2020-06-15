@@ -1655,7 +1655,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user == null) && (obj.args.user)) { user = obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]; }
 
         // No user login, exit now
-        if (user == null) { res.sendStatus(401); return; } 
+        if (user == null) { res.sendStatus(401); return; }
 
         // Check the nodeid
         if (req.query.node != null) {
@@ -4414,7 +4414,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Setup MSTSC.js if needed
             if (domain.mstsc === true) {
-            obj.app.get(url + 'mstsc.html', handleMSTSCRequest);
+                obj.app.get(url + 'mstsc.html', handleMSTSCRequest);
                 obj.app.ws(url + 'mstsc/relay.ashx', function (ws, req) {
                     const domain = getDomain(req);
                     if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
@@ -4434,7 +4434,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
                     const TwitterStrategy = require('passport-twitter');
                     var options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
-                    if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.path = url + 'auth-twitter-callback'; }
+                    if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
                     parent.debug('web', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
                     passport.use(new TwitterStrategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4447,7 +4447,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.app.get(url + 'auth-twitter', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
-                        domain.passport.authenticate('twitter')(req, res, next);
+                        domain.passport.authenticate('twitter')(req, res, function (err) { console.log('c1', err, req.session); next(); });
                     });
                     obj.app.get(url + 'auth-twitter-callback', function (req, res, next) {
                         var domain = getDomain(req);
@@ -4459,7 +4459,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             res.set('Content-Type', 'text/html');
                             res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
                         } else {
-                            domain.passport.authenticate('twitter', { failureRedirect: '/' })(req, res, next);
+                            domain.passport.authenticate('twitter', { failureRedirect: '/' })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                         }
                     }, handleStrategyLogin);
                 }
@@ -4468,7 +4468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
                     const GoogleStrategy = require('passport-google-oauth20');
                     var options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
-                    if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.path = url + 'auth-google-callback'; }
+                    if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
                     parent.debug('web', 'Adding Google SSO with options: ' + JSON.stringify(options));
                     passport.use(new GoogleStrategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4486,7 +4486,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.app.get(url + 'auth-google-callback', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
-                        domain.passport.authenticate('google', { failureRedirect: '/' })(req, res, next);
+                        domain.passport.authenticate('google', { failureRedirect: '/' })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                     }, handleStrategyLogin);
                 }
 
@@ -4494,7 +4494,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
                     const GitHubStrategy = require('passport-github2');
                     var options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
-                    if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.path = url + 'auth-github-callback'; }
+                    if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
                     parent.debug('web', 'Adding Github SSO with options: ' + JSON.stringify(options));
                     passport.use(new GitHubStrategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4520,7 +4520,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
                     const RedditStrategy = require('passport-reddit');
                     var options = { clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret };
-                    if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.path = url + 'auth-reddit-callback'; }
+                    if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.callbackURL = url + 'auth-reddit-callback'; }
                     parent.debug('web', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
                     passport.use(new RedditStrategy.Strategy(options,
                         function (token, tokenSecret, profile, cb) {
@@ -4533,8 +4533,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.app.get(url + 'auth-reddit', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
-                        req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
-                        domain.passport.authenticate('reddit', { state: req.session.rstate, duration: 'permanent' })(req, res, next);
+                        domain.passport.authenticate('reddit', { state: obj.parent.encodeCookie({ 'p': 'reddit' }, obj.parent.loginCookieEncryptionKey), duration: 'permanent' })(req, res, next);
                     });
                     obj.app.get(url + 'auth-reddit-callback', function (req, res, next) {
                         var domain = getDomain(req);
@@ -4546,13 +4545,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             res.set('Content-Type', 'text/html');
                             res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
                         } else {
-                            if (req.query.state == req.session.rstate) {
-                                delete req.session.rstate;
-                                domain.passport.authenticate('reddit', { failureRedirect: '/' })(req, res, next);
-                            } else {
-                                delete req.session.rstate;
-                                next(new Error(403));
+                            if (req.query.state != null) {
+                                var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
+                                if ((c != null) && (c.p == 'reddit')) { domain.passport.authenticate('reddit', { failureRedirect: '/' })(req, res, next); return; }
                             }
+                            next();
                         }
                     }, handleStrategyLogin);
                 }
@@ -4561,7 +4558,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((typeof domain.authstrategies.azure == 'object') && (typeof domain.authstrategies.azure.clientid == 'string') && (typeof domain.authstrategies.azure.clientsecret == 'string')) {
                     const AzureOAuth2Strategy = require('passport-azure-oauth2');
                     var options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
-                    if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.path = url + 'auth-azure-callback'; }
+                    if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
                     parent.debug('web', 'Adding Azure SSO with options: ' + JSON.stringify(options));
                     passport.use('azure', new AzureOAuth2Strategy(options,
                         function (accessToken, refreshtoken, params, profile, done) {
@@ -4579,8 +4576,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     obj.app.get(url + 'auth-azure', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
-                        req.session.rstate = obj.crypto.randomBytes(32).toString('hex');
-                        domain.passport.authenticate('azure', { state: req.session.rstate })(req, res, next);
+                        domain.passport.authenticate('azure', { state: obj.parent.encodeCookie({ 'p': 'azure' }, obj.parent.loginCookieEncryptionKey) })(req, res, next);
                     });
                     obj.app.get(url + 'auth-azure-callback', function (req, res, next) {
                         var domain = getDomain(req);
@@ -4592,13 +4588,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             res.set('Content-Type', 'text/html');
                             res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
                         } else {
-                            if (req.query.state == req.session.rstate) {
-                                delete req.session.rstate;
-                                domain.passport.authenticate('azure', { failureRedirect: '/' })(req, res, next);
-                            } else {
-                                delete req.session.rstate;
-                                next(new Error(403));
+                            if (req.query.state != null) {
+                                var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
+                                if ((c != null) && (c.p == 'azure')) { domain.passport.authenticate('azure', { failureRedirect: '/' })(req, res, next); return; }
                             }
+                            next();
                         }
                     }, handleStrategyLogin);
                 }
@@ -4613,7 +4607,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                         } else {
                             var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.path = url + 'auth-saml-callback'; }
+                            if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackURL = url + 'auth-saml-callback'; }
                             if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                             parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
@@ -4653,7 +4647,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
                         } else {
                             var options = { entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.path = url + 'auth-intel-callback'; }
+                            if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.callbackUrl = url + 'auth-intel-callback'; }
                             if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
                             parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
@@ -4695,7 +4689,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
                         } else {
                             var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.path = url + 'auth-jumpcloud-callback'; }
+                            if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.callbackUrl = url + 'auth-jumpcloud-callback'; }
                             parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
                             if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
                             options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
