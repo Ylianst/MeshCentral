@@ -688,6 +688,7 @@ function createMeshCore(agent) {
                                 // Create a new tunnel object
                                 var xurl = getServerTargetUrlEx(data.value);
                                 if (xurl != null) {
+                                    xurl = xurl.split('$').join('%24').split('@').join('%40'); // Escape the $ and @ characters
                                     var woptions = http.parseUri(xurl);
                                     woptions.rejectUnauthorized = 0;
                                     //sendConsoleText(JSON.stringify(woptions));
@@ -2892,7 +2893,7 @@ function createMeshCore(agent) {
                     } else {
                         var httprequest = null;
                         try {
-                            var options = http.parseUri(args['_'][0]);
+                            var options = http.parseUri(args['_'][0].split('$').join('%24').split('@').join('%40')); // Escape the $ and @ characters in the URL
                             options.rejectUnauthorized = 0;
                             httprequest = http.request(options);
                         } catch (e) { response = 'Invalid HTTP websocket request'; }
