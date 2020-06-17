@@ -93,7 +93,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Add an agent or viewer
     obj.addPeer = function (peer) {
-        if (obj.viewers == null) return;
+        if (obj.viewers == null) { parent.parent.debug('relay', 'DesktopRelay: Error, addingPeer on disposed session'); return; }
         if (peer.req.query.browser) {
             //console.log('addPeer-viewer', obj.nodeid);
                         
@@ -138,7 +138,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
             obj.sendSessionMetadata();
         } else {
             //console.log('addPeer-agent', obj.nodeid);
-            if (obj.agent != null) return false;
+            if (obj.agent != null) { parent.parent.debug('relay', 'DesktopRelay: Error, duplicate agent connection'); return false; }
             
             // Setup the agent
             obj.agent = peer;

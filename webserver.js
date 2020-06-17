@@ -4270,6 +4270,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
             res.removeHeader('X-Powered-By');
 
+            // Skip the rest is this is an agent connection
+            if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0)) { next(); return; }
+
             // If this domain has configured headers, use them.
             // Example headers: { 'Strict-Transport-Security': 'max-age=360000;includeSubDomains' };
             //                  { 'Referrer-Policy': 'no-referrer', 'x-frame-options': 'SAMEORIGIN', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src http: ws: data: 'self';script-src http: 'unsafe-inline';style-src http: 'unsafe-inline'" };
@@ -4293,7 +4296,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((req.session.ip != null) && (req.clientIp != null) && (req.session.ip != req.clientIp)) { req.session = {}; }
 
             // Extend the session time by forcing a change to the session every minute.
-            req.session.nowInMinutes = Math.floor(Date.now() / 60e3);
+            if (req.session.userid != null) { req.session.nowInMinutes = Math.floor(Date.now() / 60e3); } else { delete req.session.nowInMinutes; }
 
             // Detect if this is a file sharing domain, if so, just share files.
             if ((domain != null) && (domain.share != null)) {
