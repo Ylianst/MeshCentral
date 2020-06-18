@@ -1706,7 +1706,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var installflags = cookie.f;
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
+            var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
             var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
@@ -1715,7 +1716,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: mesh._id.split('/')[2], serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
+            var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
         }
     }
 
@@ -3799,6 +3801,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
                 if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.end(argentInfo.data); }
             } else {
+                // Check if the meshid is a time limited, encrypted cookie
+                var meshcookie = obj.parent.decodeCookie(req.query.meshid, obj.parent.invitationLinkEncryptionKey);
+                if ((meshcookie != null) && (meshcookie.m != null)) { req.query.meshid = meshcookie.m; }
+
                 // We are going to embed the .msh file into the Windows executable (signed or not).
                 // First, fetch the mesh object to build the .msh file
                 var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.meshid];
@@ -3981,6 +3987,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
         if ((argentInfo == null) || (req.query.meshid == null)) { res.sendStatus(404); return; }
 
+        // Check if the meshid is a time limited, encrypted cookie
+        var meshcookie = obj.parent.decodeCookie(req.query.meshid, obj.parent.invitationLinkEncryptionKey);
+        if ((meshcookie != null) && (meshcookie.m != null)) { req.query.meshid = meshcookie.m; }
+
         // We are going to embed the .msh file into the Windows executable (signed or not).
         // First, fetch the mesh object to build the .msh file
         var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.meshid];
@@ -4074,6 +4084,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
+
+        // Check if the meshid is a time limited, encrypted cookie
+        var meshcookie = obj.parent.decodeCookie(req.query.id, obj.parent.invitationLinkEncryptionKey);
+        if ((meshcookie != null) && (meshcookie.m != null)) { req.query.id = meshcookie.m; }
 
         // Fetch the mesh object
         var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.id];
