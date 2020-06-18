@@ -198,6 +198,15 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
         //console.log('CMD', cmd, cmdsize, X, Y);
 
+        // Record the command if needed
+        if (obj.recordedData != null) {
+            if (cmdsize > 65000) {
+                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + String.fromCharCode.apply(null, view)));
+            } else {
+                obj.recordedData.push(recordingEntry(2, 1, String.fromCharCode.apply(null, view)));
+            }
+        }
+
         switch (cmd) {
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
@@ -756,7 +765,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.recordedData.push(recordingEntry(1, 0, JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, time: new Date().toLocaleString(), protocol: 2 }))); // Metadata (nodeid: obj.nodeid)
                 obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(7) + obj.shortToStr(8) + obj.shortToStr(obj.ScreenWidth) + obj.shortToStr(obj.ScreenHeight))); // Screen width and height
                 // Save a screenshot
-                var cmdlen = (4 + binary.length);
+                var cmdlen = (8 + binary.length);
                 if (cmdlen > 65000) {
                     // Jumbo Packet
                     obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdlen) + obj.shortToStr(3) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + binary));
