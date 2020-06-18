@@ -310,7 +310,17 @@
                     agentTerminal.ProcessData(data);
                 } else if (recFileProtocol == 2) {
                     // MeshCentral Remote Desktop
-                    agentDesktop.ProcessData(data);
+                    var view = new Uint8Array(data.length);
+                    for (var i = 0; i < data.length; i++) { view[i] = data.charCodeAt(i); }
+
+                    // Accumulator is not active
+                    var cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
+                    if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
+                    if (cmdsize != view.byteLength) {
+                        console.log('Bad command size', cmd, cmdsize, view.byteLength);
+                    } else {
+                        agentDesktop.ProcessBinaryCommand(cmd, cmdsize, view.slice(0, cmdsize));
+                    }
                 } else if (recFileProtocol == 101) {
                     // Intel AMT KVM
                     if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) {
