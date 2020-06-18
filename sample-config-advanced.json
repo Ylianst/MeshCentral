@@ -62,8 +62,8 @@
       "name": "Local server name",
       "info": "Information about this server"
     },
-    "_rlsOffload": "127.0.0.1,::1",
-    "_rrustedProxy": "127.0.0.1,::1",
+    "_tlsOffload": "127.0.0.1,::1",
+    "_trustedProxy": "127.0.0.1,::1",
     "_mpsPort": 44330,
     "_mpsPortBind": "127.0.0.1",
     "_mpsAliasPort": 4433,
