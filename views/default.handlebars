@@ -3828,17 +3828,27 @@
         function addAmtScanToMesh(meshid) {
             if (xxdialogMode) return false;
             var x = "Enter a range of IP addresses to scan for Intel AMT devices." + '<br /><br />';
-            x += addHtmlValue("IP Range", '<input id=dp1range style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
+            var amtscanoptions = decodeURIComponent('{{{amtscanoptions}}}').split(',');
+            if (amtscanoptions != '') {
+                x += '<datalist id=iprangelist>';
+                for (var i in amtscanoptions) { x += '<option>' + amtscanoptions[i] + '</option>'; }
+                x += '</datalist>';
+                x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px placeholder="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
+            } else {
+                x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
+            }
             x += '<div id=dp1results style="width:100%;height:200px;background-color:white;border:1px gray solid;overflow-y:scroll"></div>';
             setDialogMode(2, "Scan for Intel&reg; AMT devices", 3, addAmtScanToMeshEx, x, meshid);
             QE('idx_dlgOkButton', false);
             QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>Sample IP range values<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>');
             focusTextBox('dp1range');
+            addAmtScanToMeshKeyUp();
             return false;
         }
 
         function addAmtScanToMeshKeyUp(e) {
-            if (e.keyCode == 13) { haltEvent(e); addAmtScanToMeshButton(); }
+            QE('dp1rangebutton', (Q('dp1range').value.split('.').length > 3));
+            if (e && (e.keyCode == 13)) { haltEvent(e); addAmtScanToMeshButton(); }
         }
 
         // Called when OK is pressed on the Intel AMT scanning box
