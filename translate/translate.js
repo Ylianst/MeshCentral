@@ -6,8 +6,9 @@
 * @version v0.0.1
 */
 
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
+//const zlib = require('zlib');
 var performCheck = false;
 var translationTable = null;
 var sourceStrings = null;
@@ -366,6 +367,21 @@ function startEx(argv) {
                 if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
 
                 fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
+
+                /*
+                if (outname.endsWith('.js')) {
+                    var compressHandler = function compressHandlerFunc(err, buffer, outnamemin2) {
+                        if (err == null) {
+                            console.log('GZIP', compressHandlerFunc.outname);
+                            fs.writeFileSync(compressHandlerFunc.outname, buffer, { flag: 'w+' });
+                        }
+                    };
+                    compressHandler.outname = outnamemin;
+                    zlib.gzip(Buffer.from(minifiedOut), compressHandler);
+                } else {
+                    fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
+                }
+                */
             }
         }
     }
