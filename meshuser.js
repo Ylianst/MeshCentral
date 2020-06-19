@@ -1826,9 +1826,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
 
                         // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
-                        if (chguser._id !== user._id) { // We can't change our own siteadmin permissions.
+                        if (common.validateInt(command.siteadmin) && (chguser._id !== user._id) && (chguser.siteadmin != command.siteadmin)) { // We can't change our own siteadmin permissions.
                             var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
-                            if (((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) && (((chgusersiteadmin ^ command.siteadmin) & 0xFFFFFF1F) == 0))) && common.validateInt(command.siteadmin) && (chguser.siteadmin != command.siteadmin)) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            if (user.siteadmin == 0xFFFFFFFF) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            else if (user.siteadmin & 2) {
+                                var mask = 0xFFFFFF1D; // Mask: 2 (User Mangement) + 32 (Account locked) + 64 (No New Groups) + 128 (No Tools)
+                                if ((user.siteadmin & 256) != 0) { mask -= 256; } // Mask: Manage User Groups
+                                if ((user.siteadmin & 512) != 0) { mask -= 512; } // Mask: Manage Recordings
+                                if (((chgusersiteadmin ^ command.siteadmin) & mask) == 0) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            }
                         }
 
                         // When sending a notification about a group change, we need to send to all the previous and new groups.

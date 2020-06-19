@@ -10671,16 +10671,18 @@
             var user = users[userid.toLowerCase()];
             if (user == null) return;
             var uself = (userinfo._id == user._id);
-            var x = '<div><div id=d2AdminPermissions>';
+            var x = '';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>' + "Server Files" + '</label>, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>' + "k max, blank for default" + '<br><hr/>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>' + "Full Administrator" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverbackup>' + "Server Backup" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>' + "Server Restore" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>' + "Server Updates" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>' + "Manage Users" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusergroups>' + "Manage User Groups" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_managerecordings>' + "Manage Recordings" + '</label><br>';
-            x += '<hr/></div><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>' + "Server Updates" + '</label><br></div>';
+            x += '<div id=d2MngUsr><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>' + "Manage Users" + '</label><br></div>';
+            x += '<div id=d2MngGrp><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusergroups>' + "Manage User Groups" + '</label><br></div>';
+            x += '<div id=d2MngRec><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_managerecordings>' + "Manage Recordings" + '</label><br></div>';
+            if (x != '') { x += '<hr/>'; }
+            x = '<div><div id=d2AdminPermissions>' + x;
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
             x += '</div>';
@@ -10688,26 +10690,38 @@
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
                 Q('ua_serverbackup').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1) != 0));       // Server Backup
-                Q('ua_manageusers').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2) != 0));        // Manage Users
                 Q('ua_serverrestore').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 4) != 0));      // Server Restore
                 Q('ua_fileaccess').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 8) != 0));         // Server Files
                 Q('ua_serverupdate').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 16) != 0));      // Server Update
                 Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));     // Account locked
                 Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));       // No New Groups
                 Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));        // No Tools (MeshCMD / Router)
-                Q('ua_manageusergroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 256) != 0)); // Manage User Groups
-                Q('ua_managerecordings').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 512) != 0)); // Manage Recordings
             }
+            if ((userinfo.siteadmin & 2) != 0) {
+                Q('ua_manageusers').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2) != 0));        // Manage Users
+                QE('ua_manageusers', !uself && (userinfo.siteadmin & 2));
+            }
+            if ((userinfo.siteadmin & 256) != 0) {
+                Q('ua_manageusergroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 256) != 0)); // Manage User Groups
+                QE('ua_manageusergroups', !uself && (userinfo.siteadmin & 256));
+            }
+            if ((userinfo.siteadmin & 512) != 0) {
+                Q('ua_managerecordings').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 512) != 0)); // Manage Recordings
+                QE('ua_managerecordings', !uself && (userinfo.siteadmin & 512));
+            }
+
             QE('ua_fulladmin', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_serverbackup', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
-            QE('ua_manageusers', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
-            QE('ua_manageusergroups', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
-            QE('ua_managerecordings', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_serverrestore', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_fileaccess', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_fileaccessquota', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QE('ua_serverupdate', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
             QV('d2AdminPermissions', userinfo.siteadmin == 0xFFFFFFFF)
+
+            QV('d2MngUsr', (userinfo.siteadmin & 2) != 0);
+            QV('d2MngGrp', (userinfo.siteadmin & 256) != 0);
+            QV('d2MngRec', (userinfo.siteadmin & 512) != 0);
+
             QE('ua_lockedaccount', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_nonewgroups', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_nomeshcmd', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
@@ -10726,7 +10740,7 @@
                 QE('ua_lockedaccount', !Q('ua_fulladmin').checked);
                 QE('ua_nonewgroups', !Q('ua_fulladmin').checked);
                 QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
-                QE('ua_manageusergroups', !Q('ua_fulladmin').checked && Q('ua_manageusers').checked);
+                QE('ua_manageusergroups', !Q('ua_fulladmin').checked);
                 QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
                 QE('ua_managerecordings', !Q('ua_fulladmin').checked);
             }
