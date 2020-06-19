@@ -167,6 +167,10 @@
         "_maxAgentSessions": 100,
         "maxSingleUserSessions": 10
       },
+      "_amtScanOptions": [
+        "192.168.15.0/23",
+        "192.168.8.0/24"
+      ],
       "_amtAcmActivation": {
         "log": "amtactivation.log",
         "certs": {
