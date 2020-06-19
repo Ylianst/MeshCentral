@@ -6,8 +6,7 @@
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
-    <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    <link type="text/css" href="/styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <title>{{{title}}}</title>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="display:none;overflow:hidden">
@@ -127,7 +126,11 @@
 
         function putstore(name, val) { try { if (typeof (localStorage) === 'undefined') return; localStorage.setItem(name, val); } catch (e) { } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-
+        function Q(x) { return document.getElementById(x); }                            // "Q"
+        function QS(x) { try { return Q(x).style; } catch (x) { } }                     // "Q" style
+        function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  // "Q" visible
+        function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
+        function QC(x) { try { return Q(x).classList; } catch (x) { } }                 // "Q" class
     </script>
 </body>
 </html>

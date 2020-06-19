@@ -37,6 +37,7 @@
     "_allowFraming": true,
     "_cookieIpCheck": false,
     "_cookieEncoding": "hex",
+    "_compression": false,
     "_webRTC": false,
     "_nice404": false,
     "_clickOnce": false,

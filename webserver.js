@@ -73,7 +73,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.db = db;
     obj.app = obj.express();
     if (obj.args.agentport) { obj.agentapp = obj.express(); }
-    obj.app.use(require('compression')());
+    if (args.compression !== false) { obj.app.use(require('compression')()); }
+    obj.app.disable('x-powered-by');
     obj.tlsServer = null;
     obj.tcpServer = null;
     obj.certificates = certificates;
@@ -4287,7 +4288,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Get the domain for this request
             const domain = req.xdomain = getDomain(req);
             parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
-            res.removeHeader('X-Powered-By');
 
             // Skip the rest is this is an agent connection
             if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0)) { next(); return; }
