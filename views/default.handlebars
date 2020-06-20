@@ -3833,7 +3833,7 @@
                 x += '<datalist id=iprangelist>';
                 for (var i in amtscanoptions) { x += '<option>' + amtscanoptions[i] + '</option>'; }
                 x += '</datalist>';
-                x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px placeholder="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
+                x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px placeholder="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) onselect=addAmtScanToMeshKeyUp() onclick=addAmtScanToMeshKeyUp() /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
             } else {
                 x += addHtmlValue("IP Range", '<input id=dp1range list=iprangelist style=width:184px value="192.168.1.0/24" onkeyup=addAmtScanToMeshKeyUp(event) /><input id=dp1rangebutton type=button value="' + "Scan" + '" onclick=addAmtScanToMeshButton()></input>');
             }
