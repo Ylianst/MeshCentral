@@ -2805,7 +2805,7 @@
                         }
                         case 'scanamtdevice': {
                             // Populate the Intel AMT scan dialog box with the result of the RMCP scan
-                            if ((xxdialogMode == null) || (!Q('dp1range')) || (Q('dp1range').value != message.event.range)) return;
+                            if ((xxdialogMode == null) || (!Q('dp1range')) || (xxdialogTag != ('AMTSCAN:' + message.event.range))) return;
                             var x = '';
                             if (message.event.results == null) {
                                 // The scan could not occur because of an error. Likely the user range was invalid.
@@ -3867,10 +3867,16 @@
 
         // If the user presses the "Scan" button on the Intel AMT scanning dialog box, start a scan.
         function addAmtScanToMeshButton() {
+            var range = Q('dp1range').value.trim();
+            var rangeSplit = range.split(' ');
+            if (rangeSplit.length > 1) { range = rangeSplit[rangeSplit.length - 1]; }
+            range = range.trim();
+            if (range == '') return;
             QE('dp1range', false);
             QE('dp1rangebutton', false);
-            QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px>' + "Scanning..." + '</div>');
-            meshserver.send({ action: 'scanamtdevice', range: Q('dp1range').value });
+            QH('dp1results', '<div style=width:100%;text-align:center;margin-top:20px>' + "Scanning..." + '</div><div style=width:100%;text-align:center;margin-top:6px;color:#666>' + range + '</div>');
+            xxdialogTag = 'AMTSCAN:' + range;
+            meshserver.send({ action: 'scanamtdevice', range: range });
         }
 
         // Called when a scanned computer is checked or unchecked.
