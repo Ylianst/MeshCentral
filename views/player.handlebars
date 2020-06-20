@@ -217,8 +217,11 @@
                 else if (p == 2) { p = "MeshCentral Desktop"; }
                 else if (p == 100) { p = "Intel&reg; AMT WSMAN"; }
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
+                else if (p == 200) { p = "Intel&reg; AMT KVM"; }
                 x += addInfoNoEsc("Protocol", p);
             }
+            if (recFileMetadata.bpp == 1) { x += addInfoNoEsc("Color Quality", "256 colors"); }
+            if (recFileMetadata.bpp == 2) { x += addInfoNoEsc("Color Quality", "65536 colors"); }
             if (recFileMetadata.indexInterval) {
                 recFileIndexBasePtr = recFilePtr;
                 x += addInfoNoEsc("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
@@ -264,8 +267,25 @@
                 recFileStartTime = recFileLastTime = time;
                 amtDesktop = CreateAmtRemoteDesktop('Desk');
                 amtDesktop.onScreenSizeChange = deskAdjust;
+                if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
                 amtDesktop.State = 3;
                 amtDesktop.Start();
+                deskAdjust();
+            }
+            else if (recFileMetadata.protocol == 200) {
+                // Intel AMT Midstream KVM
+                recFileProtocol = 200;
+                x += '<br /><br /><span style=color:gray>Press [space] to play/pause.</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+                amtDesktop = CreateAmtRemoteDesktop('Desk');
+                amtDesktop.onScreenSizeChange = deskAdjust;
+                amtDesktop.State = 3;
+                amtDesktop.Start();
+                if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
+                amtDesktop.state = 3;
                 deskAdjust();
             }
             QV('metadatadiv', true);
@@ -323,13 +343,21 @@
                     }
                 } else if (recFileProtocol == 101) {
                     // Intel AMT KVM
+                    var view = new Uint8Array(data.length);
+                    for (var i = 0; i < data.length; i++) { view[i] = data.charCodeAt(i); }
+
                     if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) {
                         // We are not authenticated, KVM data starts here.
                         readState = 1;
-                        if (data.length > 8) { amtDesktop.ProcessData(data.substring(8)); }
+                        if (data.length > 8) { amtDesktop.ProcessBinaryData(view.slice(8).buffer); }
                     } else if (readState == 1) {
-                        amtDesktop.ProcessData(data);
+                        amtDesktop.ProcessBinaryData(view.buffer);
                     }
+                } else if (recFileProtocol == 200) {
+                    // Intel AMT midstream KVM
+                    var view = new Uint8Array(data.length);
+                    for (var i = 0; i < data.length; i++) { view[i] = data.charCodeAt(i); }
+                    amtDesktop.ProcessBinaryData(view.buffer);
                 }
             } else if ((type == 2) && flagBinary && flagUser) {
                 // User --> Device data
@@ -516,6 +544,7 @@
                 amtDesktop.onScreenSizeChange = deskAdjust;
                 amtDesktop.State = 3;
                 amtDesktop.Start();
+                if (recFileMetadata.protocol == 200) { if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; } amtDesktop.state = 3; }
             } else if (agentTerminal) {
                 agentTerminal = null;
             }
