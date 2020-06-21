@@ -1273,8 +1273,10 @@
                 if (top != self && (loc == null || top.active == false)) { top.location = self.location; return; }
             }
 
-            // Fetch URL arguments
+            // Fetch URL arguments & do sanitation
             urlargs = parseUriArgs();
+            if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
+            if (urlargs.locale && (isAlphaNumeric(urlargs.locale) == false)) { delete urlargs.locale; }
             delete urlargs.viewmode;
             delete urlargs.gotonode;
             delete urlargs.gotomesh;
@@ -1282,12 +1284,13 @@
             delete urlargs.gotougrp;
 
             // Fix links if a loginKey is used
-            if (urlargs.key) {
-                Q('termsLinkFooter').href += '?key=' + urlargs.key;
-            }
+            if (urlargs.key) { Q('termsLinkFooter').href += '?key=' + urlargs.key; }
 
             // Check if we are in debug mode
             args = parseUriArgs();
+            if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
+            if (args.locale && (isAlphaNumeric(args.locale) == false)) { delete args.locale; }
+
             if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
             debugmode = args.debug;
 
