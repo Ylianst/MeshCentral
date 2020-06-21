@@ -1747,9 +1747,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!user) { parent.debug('web', 'handleDeleteAccountRequest: user not found.'); res.sendStatus(404); return; }
 
         // Check if the password is correct
-        obj.authenticate(user.name, req.body.apassword1, domain, function (err, userid) {
+        obj.authenticate(user._id.split('/')[2], req.body.apassword1, domain, function (err, userid) {
             var deluser = obj.users[userid];
-            if ((deluser != null) || (userid == null)) {
+            if ((userid != null) && (deluser != null)) {
                 // Remove all links to this user
                 if (deluser.links != null) {
                     for (var i in deluser.links) {
@@ -2813,10 +2813,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Download a desktop recording
     function handleGetRecordings(req, res) {
         const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
+        if (domain == null) return;
 
         // Check the query
-        if (req.query.file == null) { res.sendStatus(401); return; }
+        if ((req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true)) { res.sendStatus(401); return; }
 
         // Get the recording path
         var recordingsPath = null;
@@ -5608,6 +5608,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling']
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
+        if ((state == null) || (typeof state != 'object')) { return null; }
         var out = {};
         for (var i in acceptableUserWebStateStrings) {
             var n = acceptableUserWebStateStrings[i];

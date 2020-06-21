@@ -4074,6 +4074,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'userWebState': {
                 if (common.validateString(command.state, 1, 10000) == false) break; // Check state size, no more than 10k
                 command.state = parent.filterUserWebState(command.state); // Filter the state to remove anything bad
+                if ((command.state == null) || (typeof command.state !== 'object')) break; // If state did not validate correctly, quit here.
                 db.Set({ _id: 'ws' + user._id, state: command.state });
                 parent.parent.DispatchEvent([user._id], obj, { action: 'userWebState', nolog: 1, domain: domain.id, state: command.state });
                 break;
