@@ -68,6 +68,7 @@
         var client = null;
         var canvas = null;
         var urlargs = parseUriArgs();
+        if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
         var cookie = '{{{cookie}}}';
         var name = decodeURIComponent('{{{name}}}');
         if (name != '') { document.title = name + ' - ' + document.title; }
@@ -105,9 +106,31 @@
         function QA(x, y) { Q(x).innerHTML += y; }                                      // "Q" append
         function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
         function QC(x) { try { return Q(x).classList; } catch (x) { } }                 // "Q" class
-        function parseUriArgs() { var href = window.document.location.href; if (href.endsWith('#')) { href = href.substring(0, href.length - 1); } var name, r = {}, parsedUri = href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
         function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
         function EscapeHtmlBreaks(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
+
+        // String validation
+        function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
+        function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1) && (str.indexOf(':') == -1) && (str.indexOf('-') == -1)) };
+
+        // Parse URL arguments, only keep safe values
+        function parseUriArgs() {
+            var href = window.document.location.href;
+            if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
+            var name, r = {}, parsedUri = href.split(/[\?&|\=]/);
+            parsedUri.splice(0, 1);
+            for (x in parsedUri) {
+                switch (x % 2) {
+                    case 0: { name = decodeURIComponent(parsedUri[x]); break; }
+                    case 1: {
+                        r[name] = decodeURIComponent(parsedUri[x]);
+                        if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+                        break;
+                    } default: { break; }
+                }
+            }
+            return r;
+        }
     </script>
 </head>
 <body onload='load()' style="position:absolute;top:0px;right:0;left:0;bottom:0px">

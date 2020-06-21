@@ -1121,6 +1121,12 @@
       ]
     },
     {
+      "en": "256 colors",
+      "xloc": [
+        "player.handlebars->3->18"
+      ]
+    },
+    {
       "cs": "2-faktorové ověřování zapnuto",
       "de": "Zweifaktorauthentifizierung eingeschaltet",
       "en": "2nd factor authentication enabled",
@@ -1470,6 +1476,12 @@
       "xloc": [
         "default.handlebars->27->343",
         "default.handlebars->27->359"
+      ]
+    },
+    {
+      "en": "65536 colors",
+      "xloc": [
+        "player.handlebars->3->20"
       ]
     },
     {
@@ -5829,6 +5841,13 @@
       ]
     },
     {
+      "en": "Color Quality",
+      "xloc": [
+        "player.handlebars->3->17",
+        "player.handlebars->3->19"
+      ]
+    },
+    {
       "cs": "Sloupce",
       "de": "Spalten",
       "en": "Columns",
@@ -9286,7 +9305,7 @@
       "ru": "Перетащите .mcrec файл или нажмите \\\"Открыть файл ... \\\"",
       "zh-chs": "拖放.mcrec文件或單擊 “打開文件...”",
       "xloc": [
-        "player.handlebars->3->20"
+        "player.handlebars->3->25"
       ]
     },
     {
@@ -12831,7 +12850,7 @@
       "ru": "Индексируется каждые {0} секунд",
       "zh-chs": "每{0}秒索引一次",
       "xloc": [
-        "player.handlebars->3->17"
+        "player.handlebars->3->22"
       ]
     },
     {
@@ -13305,6 +13324,12 @@
         "default-mobile.handlebars->9->5",
         "default.handlebars->27->12",
         "xterm.handlebars->9->5"
+      ]
+    },
+    {
+      "en": "Intel&reg; AMT KVM",
+      "xloc": [
+        "player.handlebars->3->15"
       ]
     },
     {
@@ -19281,7 +19306,7 @@
       "ru": "Открыть файл...",
       "zh-chs": "打開文件...",
       "xloc": [
-        "player.handlebars->3->21",
+        "player.handlebars->3->26",
         "player.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -20618,8 +20643,8 @@
       "ru": "Нажмите [пробел] для проигрывания/паузы.",
       "zh-chs": "按[空格]播放/暫停。",
       "xloc": [
-        "player.handlebars->3->18",
-        "player.handlebars->3->19"
+        "player.handlebars->3->23",
+        "player.handlebars->3->24"
       ]
     },
     {
@@ -20716,7 +20741,7 @@
       "zh-chs": "協議",
       "xloc": [
         "default.handlebars->27->1718",
-        "player.handlebars->3->15"
+        "player.handlebars->3->16"
       ]
     },
     {
@@ -22862,7 +22887,7 @@
       "ru": "Ищу",
       "zh-chs": "尋求",
       "xloc": [
-        "player.handlebars->3->16"
+        "player.handlebars->3->21"
       ]
     },
     {
