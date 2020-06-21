@@ -735,7 +735,10 @@
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
         if (!webState.loctag) { delete localStorage.removeItem('loctag'); }
 
-        var args = parseUriArgs(), urlargs = args;
+        var urlargs = parseUriArgs();
+        if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
+        if (urlargs.locale && (isAlphaNumeric(urlargs.locale) == false)) { delete urlargs.locale; }
+        var args = urlargs;
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');

@@ -108,3 +108,6 @@ function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, 
 
 // Pad a number with zeros on the left
 function zeroPad(num, c) { if (c == null) { c = 2; } var s = "00000000" + num; return s.substr(s.length - c); }
+
+// String validation
+function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };

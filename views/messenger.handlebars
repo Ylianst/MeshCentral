@@ -42,9 +42,11 @@
         <input id="uploadFileInput" type="file" multiple style="display:none">
         <script type="text/javascript" onunload="onUnLoad()">
             var userInputFocus = 0;
-            var args = parseUriArgs();
             var socket = null;                  // Websocket object
             var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
+            var args = parseUriArgs();
+            if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
+            if (args.locale && (isAlphaNumeric(args.locale) == false)) { delete args.locale; }
 
             // WebRTC sessions and data, audio and video channels
             var random = Math.random();         // Selected random, larger value initiates WebRTC.
