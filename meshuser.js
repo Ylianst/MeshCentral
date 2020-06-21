@@ -734,19 +734,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 } catch (ex) { }
                             }
                         }
-                        else if ((command.fileop == 'rename') && (common.IsFilenameValid(command.oldname) == true) && (common.IsFilenameValid(command.newname) == true)) {
+                        else if ((command.fileop == 'rename') && (common.IsFilenameValid(command.oldname) === true) && (common.IsFilenameValid(command.newname) === true)) {
                             // Rename
                             try { fs.renameSync(path + '/' + command.oldname, path + '/' + command.newname); } catch (e) { }
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
+                            // Copy or move of one or many files
                             if (common.validateArray(command.names, 1) == false) return;
                             var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
                             if (scpath == null) break;
                             // TODO: Check quota if this is a copy!!!!!!!!!!!!!!!!
                             for (i in command.names) {
-                                var s = parent.path.join(scpath, command.names[i]), d = parent.path.join(path, command.names[i]);
-                                sendUpdate = false;
-                                copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
+                                if (common.IsFilenameValid(command.names[i]) === true) {
+                                    var s = parent.path.join(scpath, command.names[i]), d = parent.path.join(path, command.names[i]);
+                                    sendUpdate = false;
+                                    copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
+                                }
                             }
                         }
 
