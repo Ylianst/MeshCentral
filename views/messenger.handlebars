@@ -68,7 +68,7 @@
             var currentFileDownload = null;
 
             // Set the title
-            if (args.title) { QH('xtitle', args.title.split(' ').join('&nbsp')); document.title = document.title + ' - ' + args.title; }
+            if (args.title) { QH('xtitle', EscapeHtml(args.title).split(' ').join('&nbsp')); document.title = document.title + ' - ' + args.title; }
             
             // Setup web notifications
             if (Notification) { QV('notifyButton', Notification.permission != 'granted'); }
@@ -149,7 +149,7 @@
 
             // Display a control message
             function displayControl(msg) {
-                QA('xmsg', '<div style="clear:both"><div style="color:gray;float:left;margin-bottom:2px">' + msg + '</div><div></div></div>');
+                QA('xmsg', '<div style="clear:both"><div style="color:gray;float:left;margin-bottom:2px">' + EscapeHtml(msg) + '</div><div></div></div>');
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
             }
 
@@ -163,7 +163,7 @@
 
             // Display a message from the remote user
             function displayRemote(msg) {
-                QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + msg + '</div><div></div></div>');
+                QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + EscapeHtml(msg) + '</div><div></div></div>');
                 Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
 
                 // If web notifications are granted, use it.
@@ -185,14 +185,13 @@
                 var outtext = Q('xouttext').value;
                 if (outtext.length > 0) {
                     Q('xouttext').value = '';
-                    QA('xmsg', '<div style="clear:both"><div class="localBubble">' + outtext + '</div><div></div></div>');
+                    QA('xmsg', '<div style="clear:both"><div class="localBubble">' + EscapeHtml(outtext) + '</div><div></div></div>');
                     Q('xmsg').scrollTop = Q('xmsg').scrollHeight;
                     send({ action: 'chat', msg: outtext });
                 }
             }
 
             function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
-            function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
 
             // Update user controls
             function updateControls() {

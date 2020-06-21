@@ -92,6 +92,7 @@
         function start() {
             // Parse any URL arguments
             args = parseUriArgs();
+            if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
@@ -303,7 +304,27 @@
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
-        function parseUriArgs() { var name, r = {}, parsedUri = window.document.location.href.split(/[\?&|\=]/); parsedUri.splice(0, 1); for (x in parsedUri) { switch (x % 2) { case 0: { name = decodeURIComponent(parsedUri[x]); break; } case 1: { r[name] = decodeURIComponent(parsedUri[x]); var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } break; } default: { break; } } } return r; }
+        function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
+        function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1) && (str.indexOf(':') == -1) && (str.indexOf('-') == -1)) };
+
+        // Parse URL arguments, only keep safe values
+        function parseUriArgs() {
+            var href = window.document.location.href;
+            if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
+            var name, r = {}, parsedUri = href.split(/[\?&|\=]/);
+            parsedUri.splice(0, 1);
+            for (x in parsedUri) {
+                switch (x % 2) {
+                    case 0: { name = decodeURIComponent(parsedUri[x]); break; }
+                    case 1: {
+                        r[name] = decodeURIComponent(parsedUri[x]);
+                        if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+                        break;
+                    } default: { break; }
+                }
+            }
+            return r;
+        }
 
         start();
     </script>
