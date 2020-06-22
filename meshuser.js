@@ -1596,21 +1596,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'adduserbatch':
                 {
+                    var err = null;
+                    
                     // Add many new user accounts
-                    if ((user.siteadmin & 2) == 0) break;
-                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) break;
-                    if (!Array.isArray(command.users)) break;
-                    var userCount = 0;
-                    for (var i in command.users) {
-                        if (domain.usernameisemail) { if (command.users[i].email) { command.users[i].user = command.users[i].email; } else { command.users[i].email = command.users[i].user; } } // If the email is the username, set this here.
-                        if (common.validateUsername(command.users[i].user, 1, 256) == false) break; // Username is between 1 and 64 characters, no spaces
-                        if ((command.users[i].user[0] == '~') || (command.users[i].user.indexOf('/') >= 0)) break; // This is a reserved user name or invalid name
-                        if (common.validateString(command.users[i].pass, 1, 256) == false) break; // Password is between 1 and 256 characters
-                        if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) break; // Password does not meet requirements
-                        if ((command.users[i].email != null) && (common.validateEmail(command.users[i].email, 1, 1024) == false)) break; // Check if this is a valid email address
-                        userCount++;
+                    if ((user.siteadmin & 2) == 0) { err = 'Access denied'; }
+                    else if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { err = 'Unable to create users when in SSPI or LDAP mode'; }
+                    else if (!Array.isArray(command.users)) { err = 'Invalid users'; }
+                    else {
+                        var userCount = 0;
+                        for (var i in command.users) {
+                            if (domain.usernameisemail) { if (command.users[i].email) { command.users[i].user = command.users[i].email; } else { command.users[i].email = command.users[i].user; } } // If the email is the username, set this here.
+                            if (common.validateUsername(command.users[i].user, 1, 256) == false) { err = 'Invalid username'; break; } // Username is between 1 and 64 characters, no spaces
+                            if ((command.users[i].user[0] == '~') || (command.users[i].user.indexOf('/') >= 0)) { err = 'Invalid username'; break; } // This is a reserved user name or invalid name
+                            if (common.validateString(command.users[i].pass, 1, 256) == false) { err = 'Invalid password'; break; } // Password is between 1 and 256 characters
+                            if (common.checkPasswordRequirements(command.users[i].pass, domain.passwordrequirements) == false) { err = 'Invalid password'; break; } // Password does not meet requirements
+                            if ((command.users[i].email != null) && (common.validateEmail(command.users[i].email, 1, 1024) == false)) { err = 'Invalid email'; break; } // Check if this is a valid email address
+                            userCount++;
+                        }
                     }
-
+                    
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduserbatch', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
+                    
                     // Check if we exceed the maximum number of user accounts
                     db.isMaxType(domain.limits.maxuseraccounts + userCount, 'user', domain.id, function (maxExceed) {
                         if (maxExceed) {

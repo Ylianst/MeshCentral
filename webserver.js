@@ -2615,9 +2615,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMeScriptRequest: no domain'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
+
+        // Get the user and check user rights
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
+        if (authUserid == null) { res.sendStatus(401); return; }
+        const user = obj.users[authUserid];
+        if (user == null) { res.sendStatus(401); return; }
+
         if ((req.query.type == 1) && (req.query.meshid != null)) {
+            // Get the CIRA install script
+            if (obj.IsMeshViewable(user, req.query.meshid) == false) { res.sendStatus(404); return; }
             obj.getCiraConfigurationScript(req.query.meshid, function (script) {
                 if (script == null) { res.sendStatus(404); } else {
                     try {
@@ -2630,6 +2639,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
             });
         } else if (req.query.type == 2) {
+            // Get the CIRA cleanup script
             obj.getCiraCleanupScript(function (script) {
                 if (script == null) { res.sendStatus(404); } else {
                     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_cleanup.mescript"' });
