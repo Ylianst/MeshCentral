@@ -1122,6 +1122,7 @@
     },
     {
       "en": "256 colors",
+      "nl": "256 kleuren",
       "xloc": [
         "player.handlebars->3->18"
       ]
@@ -1480,6 +1481,7 @@
     },
     {
       "en": "65536 colors",
+      "nl": "65536 kleuren",
       "xloc": [
         "player.handlebars->3->20"
       ]
@@ -5842,6 +5844,7 @@
     },
     {
       "en": "Color Quality",
+      "nl": "Kleurkwaliteit",
       "xloc": [
         "player.handlebars->3->17",
         "player.handlebars->3->19"
@@ -13328,6 +13331,14 @@
     },
     {
       "en": "Intel&reg; AMT KVM",
+      "nl": "Intel&reg; AMT KVM",
+      "en": "Intel&reg; AMT KVM",
+      "es": "Intel&reg; AMT KVM",
+      "de": "Intel&reg; AMT KVM",
+      "cs": "Intel&reg; AMT KVM",
+      "pt": "Intel&reg; AMT KVM",
+      "fr": "Intel&reg; AMT KVM",
+      "ru": "Intel&reg; AMT KVM",
       "xloc": [
         "player.handlebars->3->15"
       ]
