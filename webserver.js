@@ -5146,7 +5146,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 console.log('WARNING: MeshCentral is running without permissions to use ports below 1025.');
                 console.log('         Use setcap to grant access to lower ports, or read installation guide.');
                 console.log('');
-                console.log('   sudo setcap \'cap_net_bind_service= +ep\' `which node` \r\n');
+                console.log('   sudo setcap \'cap_net_bind_service=+ep\' `which node` \r\n');
                 obj.parent.addServerWarning('Server running without permissions to use ports below 1025.', false);
             }
         }
