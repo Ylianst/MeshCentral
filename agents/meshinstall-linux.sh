@@ -55,7 +55,7 @@ CheckInstallAgent() {
     url=$1
     meshid=$2
     meshidlen=${#meshid}
-    if [ $meshidlen -eq 64 ]
+    if [ $meshidlen -gt 63 ]
     then
       machineid=0
       machinetype=$( uname -m )
@@ -118,7 +118,7 @@ CheckInstallAgent() {
       fi
 
     else
-      echo "MeshID is not correct, must be 64 characters long."
+      echo "MeshID is not correct, must be at least 64 characters long."
     fi
   else
     echo "URI and/or MeshID have not been specified, must be passed in as arguments."
