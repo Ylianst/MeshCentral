@@ -451,10 +451,11 @@ function performConfigOperations(args) {
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, '..', 'meshcentral-data', 'config.json'); }
+    if (fs.existsSync(configFile) == false) { configFile = path.join(__dirname, '..', '..', 'meshcentral-data', 'config.json'); }
     if (fs.existsSync(configFile) == false) { console.log("Unable to find config.json."); return; }
     var config = null;
-    try { config = fs.readFileSync(configFile); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
-    try { config = JSON.parse(config); } catch (ex) { console.log("Error: Unable to parse config.json"); return; }
+    try { config = fs.readFileSync(configFile).toString('utf8'); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
+    try { config = require(configFile); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
     if (args.adddomain != null) {
         didSomething++;
         if (config.domains == null) { config.domains = {}; }
