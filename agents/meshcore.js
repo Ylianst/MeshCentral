@@ -2238,6 +2238,7 @@ function createMeshCore(agent) {
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
+                    try { require('zip-reader'); availcommands += ',zip,unzip'; } catch (xx) { }
 
                     availcommands = availcommands.split(',').sort();
                     while (availcommands.length > 0) {
@@ -2248,6 +2249,48 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'zip':
+                    if (args['_'].length == 0)
+                    {
+                        response = "Proper usage: zip (output file name), input1 [, input n]"; // Display usage
+                    }
+                    else
+                    {
+                        var p = args['_'].join(' ').split(',');
+                        var ofile = p.shift();
+                        sendConsoleText('Writing ' + ofile + '...');
+                        var out = require('fs').createWriteStream(ofile, { flags: 'wb' });
+                        out.fname = ofile;
+                        out.sessionid = sessionid;
+                        out.on('close', function () { sendConsoleText('DONE writing ' + this.fname, this.sessionid); });
+                        var zip = require('zip-writer').write({ files: p });
+                        zip.pipe(out);
+                    }
+                    break;
+                case 'unzip':
+                    if (args['_'].length == 0)
+                    {
+                        response = "Proper usage: unzip input, destination"; // Display usage
+                    }
+                    else
+                    {
+                        var p = args['_'].join(' ').split(',');
+                        if (p.length != 2)
+                        {
+                            response = "Proper usage: unzip input, destination"; // Display usage
+                            break;
+                        }
+                        var prom = require('zip-reader').read(p[0]);
+                        prom._dest = p[1];
+                        prom.self = this;
+                        prom.sessionid = sessionid;
+                        prom.then(function (zipped)
+                        {
+                            sendConsoleText('Extracting to ' + this._dest + '...', this.sessionid);
+                            zipped.extractAll(this._dest).then(function () { sendConsoleText('finished unzipping', this.sessionid); }, function (e) { sendConsoleText('Error unzipping: ' + e, this.sessionid); }).parentPromise.sessionid = this.sessionid;
+                        }, function (e) { sendConsoleText('Error unzipping: ' + e, this.sessionid); });
+                    }
+                    break;
                 case 'setbattery':
                     // require('MeshAgent').SendCommand({ action: 'battery', state: 'dc', level: 55 });
                     if ((args['_'].length > 0) && ((args['_'][0] == 'ac') || (args['_'][0] == 'dc'))) {
