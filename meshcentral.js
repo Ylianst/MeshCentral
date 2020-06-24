@@ -1977,7 +1977,7 @@ function CreateMeshCentralServer(config, args) {
         else if (obj.fs.existsSync(obj.path.join(obj.datapath, 'meshcmd.js'))) { meshcmdPath = obj.path.join(obj.datapath, 'meshcmd.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
         else if ((obj.args.minifycore !== false) && (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.min.js')))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.min.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
         else if (obj.fs.existsSync(obj.path.join(__dirname, 'agents', 'meshcmd.js'))) { meshcmdPath = obj.path.join(__dirname, 'agents', 'meshcmd.js'); meshCmd = obj.fs.readFileSync(meshcmdPath).toString(); }
-        else { obj.defaultMeshCmd = null; if (func != null) { func(false); } } // meshcmd.js not found
+        else { obj.defaultMeshCmd = null; if (func != null) { func(false); } return; } // meshcmd.js not found
         meshCmd = meshCmd.replace("'***Mesh*Cmd*Version***'", '\'' + getCurrentVerion() + '\'');
 
         // Figure out where the modules_meshcmd folder is.
