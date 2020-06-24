@@ -9308,7 +9308,7 @@
       "ru": "Перетащите .mcrec файл или нажмите \\\"Открыть файл ... \\\"",
       "zh-chs": "拖放.mcrec文件或單擊 “打開文件...”",
       "xloc": [
-        "player.handlebars->3->25"
+        "player.handlebars->3->28"
       ]
     },
     {
@@ -13332,7 +13332,6 @@
     {
       "en": "Intel&reg; AMT KVM",
       "nl": "Intel&reg; AMT KVM",
-      "en": "Intel&reg; AMT KVM",
       "es": "Intel&reg; AMT KVM",
       "de": "Intel&reg; AMT KVM",
       "cs": "Intel&reg; AMT KVM",
@@ -19317,7 +19316,7 @@
       "ru": "Открыть файл...",
       "zh-chs": "打開文件...",
       "xloc": [
-        "player.handlebars->3->26",
+        "player.handlebars->3->29",
         "player.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -20655,7 +20654,9 @@
       "zh-chs": "按[空格]播放/暫停。",
       "xloc": [
         "player.handlebars->3->23",
-        "player.handlebars->3->24"
+        "player.handlebars->3->24",
+        "player.handlebars->3->25",
+        "player.handlebars->3->26"
       ]
     },
     {
@@ -29900,6 +29901,12 @@
       "xloc": [
         "default-mobile.handlebars->9->130",
         "default.handlebars->27->1411"
+      ]
+    },
+    {
+      "en": "data:image/png;base64,",
+      "xloc": [
+        "player.handlebars->3->27"
       ]
     },
     {
