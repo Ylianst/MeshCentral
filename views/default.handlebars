@@ -4303,7 +4303,7 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null;
+            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null;
             if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
             else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
             else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
@@ -4311,6 +4311,8 @@
             else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
             else if (x.startsWith("tag:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("tag:".length); }
             else if (x.startsWith("t:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("t:".length); }
+            else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("atag:".length).toLowerCase(); }
+            else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("a:".length).toLowerCase(); }
 
             if (x == '') {
                 // No search
@@ -4325,6 +4327,11 @@
                 // Tag filter
                 for (var d in nodes) {
                     nodes[d].v = ((nodes[d].tags == null) && (tagSearch == '')) || ((nodes[d].tags != null) && (nodes[d].tags.indexOf(tagSearch) >= 0));
+                }
+            } else if (agentTagSearch != null) {
+                // Agent Tag filter
+                for (var d in nodes) {
+                    nodes[d].v = (((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0));
                 }
             }  else if (userSearch != null) {
                 // User search
