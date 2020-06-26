@@ -2135,28 +2135,26 @@
                     if (currentNode._id != message.nodeid) return;
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid))  {
-                        if (message.netif == null) {
-                            QH('d2netinfo', "No network interface information available for this device.");
-                        } else {
-                            var x = '<div class=dialogText>';
-
-                            if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
-                            if (currentNode.lastaddr) {
-                                var splitip = currentNode.lastaddr.split(':');
-                                if (splitip.length > 2) {
-                                    // IPv6
-                                    x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '") width=10 height=10>');
+                        var x = '<div class=dialogText>';
+                        if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
+                        if (currentNode.lastaddr) {
+                            var splitip = currentNode.lastaddr.split(':');
+                            if (splitip.length > 2) {
+                                // IPv6
+                                x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '") width=10 height=10>');
+                            } else {
+                                // IPv4
+                                if (isPrivateIP(currentNode.lastaddr)) {
+                                    x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
                                 } else {
-                                    // IPv4
-                                    if (isPrivateIP(currentNode.lastaddr)) {
-                                        x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
-                                    } else {
-                                        x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
-                                    }
+                                    x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
                                 }
                             }
-
-                            x += addHtmlValue2("Last interfaces update", printDateTime(new Date(message.updateTime)));
+                        }
+                        x += addHtmlValue2("Last interfaces update", printDateTime(new Date(message.updateTime)));
+                        
+                        if (message.netif != null) {
+                            // Old style
                             for (var i in message.netif) {
                                 var net = message.netif[i];
                                 x += '<hr />'
@@ -2169,9 +2167,34 @@
                                 if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4gateway) + '") width=10 height=10>'); }
                                 if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.gatewaymac.toLowerCase()) + '") width=10 height=10>'); }
                             }
-                            x += '</div>';
-                            QH('d2netinfo', x);
+                        } else if (message.netif2 != null) {
+                            // New style
+                            for (var i in message.netif2) {
+                                var net = message.netif2[i];
+                                if ((net.length < 1) || (net[0].mac.startsWith('00:00:00:00'))) continue;
+                                x += '<hr />'
+                                x += addHtmlValue2("Name", '<b>' + EscapeHtml(i) + '</b>');
+                                if (net[0].mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (net[0].fqdn) { x += addHtmlValue2("FQDN", net[0].fqdn); }
+                                for (var j = 0; j < net.length; j++) {
+                                    var netif = net[j];
+                                    if (netif.family == 'IPv6') {
+                                        if (netif.address) { x += addHtmlValue2("IPv6 address", EscapeHtml(netif.address) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.address) + '") width=10 height=10>'); }
+                                        if (netif.netmask) { x += addHtmlValue2("IPv6 mask", EscapeHtml(netif.netmask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.netmask) + '") width=10 height=10>'); }
+                                        if (netif.gateway) { x += addHtmlValue2("IPv6 gateway", EscapeHtml(netif.gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.gateway) + '") width=10 height=10>'); }
+                                    } else if (netif.family == 'IPv4') {
+                                        if (netif.address) { x += addHtmlValue2("IPv4 address", EscapeHtml(netif.address) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.address) + '") width=10 height=10>'); }
+                                        if (netif.netmask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(netif.netmask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.netmask) + '") width=10 height=10>'); }
+                                        if (netif.gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(netif.gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.gateway) + '") width=10 height=10>'); }
+                                    }
+                                }
+                            }
+                        } else {
+                            x += '<hr />'
+                            x += "No network interface information available for this device.";
                         }
+                        x += '</div>';
+                        QH('d2netinfo', x);
                     }
                     break;
                 }
@@ -8089,7 +8112,7 @@
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png'}); }
             }
 
-            // Networking
+            // Networking (old style)
             if (network.netif != null) {
                 // Compact interfaces that have the same MAC addresses
                 var macInterfaces = {}
@@ -8126,6 +8149,48 @@
                             x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(ipv4layer.v4addr), EscapeHtml(ipv4layer.v4mask), EscapeHtml(ipv4layer.v4gateway)));
                         } else {
                             x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(ipv4layer.v4addr)));
+                        }
+                    }
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking64.png'}); }
+            }
+
+            // Networking
+            if (network.netif2 != null) {
+                // Display one network interface for each MAC address
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in network.netif2) {
+                    var m = network.netif2[i];
+                    if ((m.length < 1) || (m[0].mac.startsWith('00:00:00:00'))) continue;
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i + (m[0].fqdn?(', ' + m[0].fqdn):'')) + '</b></div>';
+                    if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
+                    //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
+                    if (m[0].mac) {
+                        if (m[0].gatewaymac) {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m[0].mac), EscapeHtml(m[0].gatewaymac)));
+                        } else {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}", m[0].mac));
+                        }
+                    }
+                    for (var j = 0; j < m.length; j++) {
+                        var iplayer = m[j];
+                        if (iplayer.family == 'IPv4') {
+                            if (iplayer.gateway && iplayer.netmask) {
+                                x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
+                            } else {
+                                x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                            }
+                        }
+                        if (iplayer.family == 'IPv6') {
+                            if (iplayer.gateway && iplayer.netmask) {
+                                x += addDetailItem("IPv6 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
+                            } else {
+                                x += addDetailItem("IPv6 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                            }
                         }
                     }
                     x += '</div>';

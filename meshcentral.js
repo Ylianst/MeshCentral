@@ -2219,7 +2219,7 @@ function CreateMeshCentralServer(config, args) {
     obj.decodeCookie = function (cookie, key, timeout) {
         var r = obj.decodeCookieAESGCM(cookie, key, timeout);
         if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
-        if ((r == null) && (obj.args.cookieencoding == null) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
+        if ((r == null) && (obj.args.cookieencoding == null) && (cookie.length != 64) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
             obj.debug('cookie', 'Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
             console.log('Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
         }

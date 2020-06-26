@@ -3421,9 +3421,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Get network information about this node
                         db.Get('if' + node._id, function (err, netinfos) {
-                            if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null })); } catch (ex) { } return; }
+                            if ((netinfos == null) || (netinfos.length != 1)) { try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, netif: null, netif2: null })); } catch (ex) { } return; }
                             var netinfo = netinfos[0];
-                            try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif })); } catch (ex) { }
+                            try { ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: node._id, updateTime: netinfo.updateTime, netif: netinfo.netif, netif2: netinfo.netif2 })); } catch (ex) { }
                         });
                     });
                     break;
