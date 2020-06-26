@@ -8091,10 +8091,24 @@
 
             // Networking
             if (network.netif != null) {
-                var x = '';
-                x += '<table style=width:100%>';
+                // Compact interfaces that have the same MAC addresses
+                var macInterfaces = {}
                 for (var i in network.netif) {
                     var m = network.netif[i];
+                    if (typeof m.mac != 'string') continue;
+                    if (macInterfaces[m.mac] == null) {
+                        macInterfaces[m.mac] = m;
+                        macInterfaces[m.mac].ipv4layer = [ { v4addr: m.v4addr, v4mask: m.v4mask, v4gateway: m.v4gateway }];
+                    } else {
+                        macInterfaces[m.mac].ipv4layer.push({ v4addr: m.v4addr, v4mask: m.v4mask, v4gateway: m.v4gateway });
+                    }
+                }
+
+                // Display one network interface for each MAC address
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in macInterfaces) {
+                    var m = macInterfaces[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.name + (m.dnssuffix?(', ' + m.dnssuffix):'')) + '</b></div>';
                     if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
@@ -8106,11 +8120,12 @@
                             x += addDetailItem("MAC Layer", format("MAC: {0}", m.mac));
                         }
                     }
-                    if (m.v4addr && (m.v4addr != '0.0.0.0')) {
-                        if (m.v4gateway && m.v4mask) {
-                            x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(m.v4addr), EscapeHtml(m.v4mask), EscapeHtml(m.v4gateway)));
+                    for (var j in m.ipv4layer) {
+                        var ipv4layer = m.ipv4layer[j];
+                        if (ipv4layer.v4gateway && ipv4layer.v4mask) {
+                            x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(ipv4layer.v4addr), EscapeHtml(ipv4layer.v4mask), EscapeHtml(ipv4layer.v4gateway)));
                         } else {
-                            x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(m.v4addr)));
+                            x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(ipv4layer.v4addr)));
                         }
                     }
                     x += '</div>';
