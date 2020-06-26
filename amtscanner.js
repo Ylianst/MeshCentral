@@ -71,11 +71,9 @@ module.exports.CreateAmtScanner = function (parent) {
         rangeinfo.server = obj.dgram.createSocket("udp4");
         rangeinfo.server.bind(0);
         rangeinfo.server.on('error', (err) => { console.log(err); });
-        rangeinfo.server.on('message', (data, rinfo) => { obj.parseRmcpPacket(data, rinfo, 0, obj.reportMachineState, rangeinfo); });
-        rangeinfo.server.on('listening', () => {
-            for (var i = rangeinfo.min; i <= rangeinfo.max; i++) { rangeinfo.server.send(obj.rpacket, 623, obj.IPv4NumToStr(i)); }
-        });
-        rangeinfo.timer = setTimeout(function () { // ************************* USER OF OUTER VARS!!!!!!!!!!!!!!!
+        rangeinfo.server.on('message', function (data, rinfo) { obj.parseRmcpPacket(data, rinfo, 0, obj.reportMachineState, rangeinfo); });
+        rangeinfo.server.on('listening', function() { for (var i = rangeinfo.min; i <= rangeinfo.max; i++) { rangeinfo.server.send(obj.rpacket, 623, obj.IPv4NumToStr(i)); } });
+        rangeinfo.timer = setTimeout(function () { // ************************* USE OF OUTER VARS!!!!!!!!!!!!!!!
             obj.parent.DispatchEvent(['*', userid], obj, { action: 'scanamtdevice', range: rangeinfo.range, results: rangeinfo.results, nolog: 1 });
             rangeinfo.server.close();
             delete rangeinfo.server;
