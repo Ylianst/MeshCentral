@@ -111,7 +111,7 @@ function zeroPad(num, c) { if (c == null) { c = 2; } var s = "00000000" + num; r
 
 // String validation
 function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
-function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1) && (str.indexOf(':') == -1) && (str.indexOf('-') == -1)) };
+function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1) && (str.indexOf(':') == -1)) };
 
 // Parse URL arguments, only keep safe values
 function parseUriArgs() {
