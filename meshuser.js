@@ -19,6 +19,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const path = require('path');
     const common = parent.common;
 
+    // Cross domain messages, for cross-domain administrators only.
+    const allowedCrossDomainMessages = ['accountcreate', 'accountremove', 'accountchange', 'createusergroup', 'deleteusergroup', 'usergroupchange'];
+
     // User Consent Flags
     const USERCONSENT_DesktopNotifyUser = 1;
     const USERCONSENT_TerminalNotifyUser = 2;
@@ -284,7 +287,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Handle events
             ws.HandleEvent = function (source, event, ids, id) {
-                if ((event.domain == null) || (event.domain == domain.id) || (obj.crossDomain === true)) {
+                // Normally, only allow this user to receive messages from it's own domain.
+                // If the user is a cross domain administrator, allow some select messages from different domains.
+                if ((event.domain == null) || (event.domain == domain.id) || ((obj.crossDomain === true) && (allowedCrossDomainMessages.indexOf(event.action) >= 0))) {
                     try {
                         if (event == 'close') { try { delete req.session; } catch (ex) { } obj.close(); }
                         else if (event == 'resubscribe') { user.subscriptions = parent.subscribe(user._id, ws); }
