@@ -1157,6 +1157,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'netinfo':
                     {
+                        // Check if network information is present
+                        if ((command.netif2 == null) && (command.netif == null)) return;
+
                         // Sent by the agent to update agent network interface information
                         delete command.action;
                         command.updateTime = Date.now();
@@ -1372,8 +1375,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
-                    parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
-                    console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command.action + '.');
+                    parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + command + '.');
+                    console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command + '.');
                     break;
                 }
             }

@@ -23,7 +23,7 @@
     },
     "port": 443,
     "_portBind": "127.0.0.1",
-    "aliasPort": 444,
+    "_aliasPort": 444,
     "_redirPort": 80,
     "_redirPortBind": "127.0.0.1",
     "_redirAliasPort": 80,

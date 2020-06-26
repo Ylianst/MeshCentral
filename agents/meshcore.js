@@ -3045,13 +3045,8 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'netinfo': { // Show network interface information
-                    //response = objToString(mesh.NetInfo, 0, ' ');
                     var interfaces = require('os').networkInterfaces();
                     response = objToString(interfaces, 0, ' ', true);
-                    break;
-                }
-                case 'netinfo2': { // Show network interface information
-                    response = objToString(mesh.NetInfo, 0, ' ', true);
                     break;
                 }
                 case 'wakeonlan': { // Send wake-on-lan
@@ -3280,8 +3275,8 @@ function createMeshCore(agent) {
         sendNetworkUpdateNagleTimer = null;
 
         // Update the network interfaces information data
-        var netInfo = mesh.NetInfo;
-        if (netInfo) {
+        var netInfo = { netif2: require('os').networkInterfaces() };
+        if (netInfo.netif2) {
             netInfo.action = 'netinfo';
             var netInfoStr = JSON.stringify(netInfo);
             if ((force == true) || (clearGatewayMac(netInfoStr) != clearGatewayMac(lastNetworkInfo))) { mesh.SendCommand(netInfo); lastNetworkInfo = netInfoStr; }
