@@ -650,16 +650,27 @@ function createMeshCore(agent) {
             for (var x = 1; x <= 16; ++x) { magic += hexMac; }
             var magicbin = Buffer.from(magic, 'hex');
 
-            for (var adapter in interfaces) {
-                if (interfaces.hasOwnProperty(adapter)) {
-                    for (var i = 0; i < interfaces[adapter].length; ++i) {
+            for (var adapter in interfaces)
+            {
+                if (interfaces.hasOwnProperty(adapter))
+                {
+                    for (var i = 0; i < interfaces[adapter].length; ++i)
+                    {
                         var addr = interfaces[adapter][i];
-                        if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00')) {
-                            var socket = require('dgram').createSocket({ type: 'udp4' });
-                            socket.bind({ address: addr.address });
-                            socket.setBroadcast(true);
-                            socket.send(magicbin, 7, '255.255.255.255');
-                            count++;
+                        if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00'))
+                        {
+                            try
+                            {
+                                var socket = require('dgram').createSocket({ type: 'udp4' });
+                                socket.bind({ address: addr.address });
+                                socket.setBroadcast(true);
+                                socket.send(magicbin, 7, '255.255.255.255');
+                                socket.descriptorMetadata = 'WoL (' + addr.address + ' => ' + hexMac + ')';
+                                count++;
+                            }
+                            catch(ee)
+                            {
+                            }
                         }
                     }
                 }
