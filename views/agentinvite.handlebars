@@ -144,7 +144,7 @@
         var installFlags = '{{{installflags}}}';
         var groupName = decodeURIComponent('{{{meshname}}}');
         if (groupName != '') {
-            QH('groupname', format("Remote Agent Installation for {0}", groupName));
+            QH('groupname', format("Remote Agent Installation for {0}", escapeHtml(groupName)));
             document.title = format("{0} - Agent Installation", groupName);
         } else {
             document.title = "Agent Installation";
@@ -295,7 +295,8 @@
         function copyToClipLinuxUnInstall() { copyTextToClip(linuxUnInstall); }
         function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
-
+        function escapeHtml(string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' }[s]; }); };
+        function escapeHtmlBreaks(string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); };
     </script>
 </body>
 </html>

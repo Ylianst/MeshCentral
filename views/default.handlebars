@@ -5352,12 +5352,12 @@
                 if ((node.agent != null) && (node.agent.tag != null)) {
                     // Attribute: Mesh Agent Tag
                     var tag = EscapeHtml(node.agent.tag);
-                    if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
+                    if (tag.startsWith('mailto:')) { tag = '<a href="' + EscapeHtml(tag) + '">' + EscapeHtml(tag.substring(7)) + '</a>'; }
                     x += addDeviceAttribute("Agent Tag", tag);
                 } else if ((node.intelamt != null) && (node.intelamt.tag != null)) {
                     // Attribute: Intel AMT Tag
                     var tag = EscapeHtml(node.intelamt.tag);
-                    if (tag.startsWith('mailto:')) { tag = '<a href="' + tag + '">' + tag.substring(7) + '</a>'; }
+                    if (tag.startsWith('mailto:')) { tag = '<a href="' + EscapeHtml(tag) + '">' + EscapeHtml(tag.substring(7)) + '</a>'; }
                     x += addDeviceAttribute("Intel&reg; AMT Tag", tag);
                 }
 
@@ -5416,7 +5416,7 @@
 
                 // Node grouping tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class="tagSpan">' + node.tags[i] + '</span>'; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class="tagSpan">' + EscapeHtml(node.tags[i]) + '</span>'; } }
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" /></span>');
                 } else {
@@ -7522,7 +7522,7 @@
             var x = p13filetree.path.split('\\');
             p13filetreelocation = [];
             for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
-            for (var i in p13filetreelocation) { displayPath += ' / <a href=# style=cursor:pointer onclick="return p13folderup(' + (parseInt(i) + 1) + ')">' + p13filetreelocation[i] + '</a>' } // Setup the path we display
+            for (var i in p13filetreelocation) { displayPath += ' / <a href=# style=cursor:pointer onclick="return p13folderup(' + (parseInt(i) + 1) + ')">' + EscapeHtml(p13filetreelocation[i]) + '</a>' } // Setup the path we display
             var newlinkpath = p13filetreelocation.join('/');
 
             // Sort the files
@@ -9941,7 +9941,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a href=# style=cursor:pointer onclick="return p5folderup(' + folderdepth + ')">' + (filetreex.n != null?filetreex.n:filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a href=# style=cursor:pointer onclick="return p5folderup(' + folderdepth + ')">' + EscapeHtml(filetreex.n != null?filetreex.n:filetreelocation[i]) + '</a>';
                     folderdepth++;
                 } else {
                     break;
@@ -10446,10 +10446,10 @@
             if (user.email != null) {
                 if (((features & 0x200000) == 0) || (user.email.toLowerCase() != user.name.toLowerCase())) {
                     // Username & email are different
-                    username += ', <a href="mailto:' + user.email + '" \'>' + user.email + '</a>' + emailVerified;
+                    username += ', <a href="mailto:' + EscapeHtml(user.email) + '" \'>' + EscapeHtml(user.email) + '</a>' + emailVerified;
                 } else {
                     // Username & email are the same
-                    username += ' <a href="mailto:' + user.email + '" \'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
+                    username += ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
                 }
             }
 
@@ -11314,8 +11314,8 @@
             if ((event != null) && (event.originalTarget != null) && (event.originalTarget.href != null)) return;
             var user = currentUser = users[decodeURIComponent(userid)];
             if (user == null) { setDialogMode(0); go(4); return; }
-            QH('p30userName', user.name);
-            QH('p31userName', user.name);
+            QH('p30userName', EscapeHtml(user.name));
+            QH('p31userName', EscapeHtml(user.name));
             var self = (user._id == userinfo._id), activeSessions = 0;
             if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
 
@@ -11356,9 +11356,9 @@
             }
 
             if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
-                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
+                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
             } else {
-                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + user.email + '" \'><img class=hoverButton src="images/link1.png" /></a>');
+                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>');
             }
 
             if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
@@ -11383,7 +11383,7 @@
             // Administrative Realms
             if ((userinfo.siteadmin == 0xFFFFFFFF) || (userinfo.siteadmin & 2)) {
                 var xuserGroups = '<i>' + "None" + '</i>';
-                if (user.groups) { xuserGroups = ''; for (var i in user.groups) { xuserGroups += '<span class="tagSpan">' + user.groups[i] + '</span>'; } }
+                if (user.groups) { xuserGroups = ''; for (var i in user.groups) { xuserGroups += '<span class="tagSpan">' + EscapeHtml(user.groups[i]) + '</span>'; } }
                 x += addDeviceAttribute("Admin Realms", addLinkConditional(xuserGroups, 'showUserGroupDialog(event,"' + userid + '")', (userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.groups == null) && (userinfo._id != user._id) && (user.siteadmin != 0xFFFFFFFF))));
             }
 

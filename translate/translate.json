@@ -298,6 +298,13 @@
       ]
     },
     {
+      "en": "'",
+      "xloc": [
+        "agentinvite.handlebars->3->4",
+        "agentinvite.handlebars->3->5"
+      ]
+    },
+    {
       "cs": "(",
       "de": "(",
       "en": "(",

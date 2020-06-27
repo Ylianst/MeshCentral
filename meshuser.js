@@ -4279,7 +4279,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'distributeCore': {
                 // This is only available when plugins are enabled since it could cause stress on the server
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 for (var i in command.nodes) {
                     parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
                 }
@@ -4287,14 +4287,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'plugins': {
                 // Since plugin actions generally require a server restart, use the Full admin permission
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.db.getPlugins(function(err, docs) {
                     try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
                 });
                 break;
             }
             case 'pluginLatestCheck': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin with plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.getPluginLatest()
                 .then(function(latest) {
                     try { ws.send(JSON.stringify({ action: 'pluginVersionsAvailable', list: latest })); } catch (ex) { } 
@@ -4302,7 +4302,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'addplugin': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 try {
                     parent.parent.pluginHandler.getPluginConfig(command.url)
                     .then(parent.parent.pluginHandler.addPlugin)
@@ -4319,7 +4319,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'installplugin': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.installPlugin(command.id, command.version_only, null, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
@@ -4330,7 +4330,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'disableplugin': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.disablePlugin(command.id, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
@@ -4341,7 +4341,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'removeplugin': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.removePlugin(command.id, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
@@ -4350,7 +4350,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'getpluginversions': {
-                if ((user.siteadmin & 0xFFFFFFFF) == 0 || parent.parent.pluginHandler == null) break; // must be full admin, plugins enabled
+                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.getPluginVersions(command.id)
                 .then(function (versionInfo) {
                     try { ws.send(JSON.stringify({ action: 'downgradePluginVersions', info: versionInfo, error: null })); } catch (ex) { } 
