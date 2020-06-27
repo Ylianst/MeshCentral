@@ -10851,6 +10851,7 @@
     },
     {
       "en": "FQDN",
+      "nl": "FQDN",
       "xloc": [
         "default.handlebars->27->93"
       ]
@@ -12766,6 +12767,7 @@
     },
     {
       "en": "IPv6 Layer",
+      "nl": "IPv6 Layer",
       "xloc": [
         "default.handlebars->27->855",
         "default.handlebars->27->857"
@@ -12773,18 +12775,21 @@
     },
     {
       "en": "IPv6 address",
+      "nl": "IPv6 adres",
       "xloc": [
         "default.handlebars->27->94"
       ]
     },
     {
       "en": "IPv6 gateway",
+      "nl": "IPv6 gateway",
       "xloc": [
         "default.handlebars->27->98"
       ]
     },
     {
       "en": "IPv6 mask",
+      "nl": "IPv6 mask",
       "xloc": [
         "default.handlebars->27->96"
       ]
@@ -29812,6 +29817,12 @@
     },
     {
       "en": "a:",
+      "nl": "a:",
+      "es": "a:",
+      "cs": "a:",
+      "pt": "a:",
+      "fr": "a:",
+      "de": "a:",
       "xloc": [
         "default.handlebars->27->455",
         "default.handlebars->27->456"
@@ -29888,6 +29899,7 @@
     },
     {
       "en": "atag:",
+      "nl": "atag:",
       "xloc": [
         "default.handlebars->27->453",
         "default.handlebars->27->454"
@@ -29981,6 +29993,7 @@
     },
     {
       "en": "data:image/png;base64,",
+      "nl": "data:image/png;base64,",
       "xloc": [
         "player.handlebars->3->27"
       ]
