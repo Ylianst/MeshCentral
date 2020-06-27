@@ -733,7 +733,7 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         for (var i in webState) { localStorage.setItem(i, webState[i]); }
-        if (!webState.loctag) { delete localStorage.removeItem('loctag'); }
+        if (webState && !webState.loctag) { delete localStorage.removeItem('loctag'); }
 
         var urlargs = parseUriArgs();
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
@@ -1714,7 +1714,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + (filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a style=cursor:pointer onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
                     folderdepth++;
                 } else {
                     break;
@@ -2435,7 +2435,7 @@
 
                 // Node tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + node.tags[i] + '</span>'; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;margin-right:4px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span>'; } }
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + '</span>');
                 } else {
@@ -3224,7 +3224,7 @@
             var x = p13filetree.path.split('\\');
             p13filetreelocation = [];
             for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
-            for (var i in p13filetreelocation) { displayPath += ' / <a style=cursor:pointer onclick=p13folderup(' + (parseInt(i) + 1) + ')>' + p13filetreelocation[i] + '</a>' } // Setup the path we display
+            for (var i in p13filetreelocation) { displayPath += ' / <a style=cursor:pointer onclick=p13folderup(' + (parseInt(i) + 1) + ')>' + EscapeHtml(p13filetreelocation[i]) + '</a>' } // Setup the path we display
             var newlinkpath = p13filetreelocation.join('/');
 
             // Sort the files
