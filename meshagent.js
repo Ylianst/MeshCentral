@@ -387,7 +387,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((msg.length != 98) || ((obj.receivedCommands & 1) != 0)) return;
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
-                if (args.ignoreagenthashcheck === true) {
+                if ((args.ignoreagenthashcheck === true) || (domain.ignoreagenthashcheck === true)) {
                     // Send the agent web hash back to the agent
                     // Send 384 bits SHA384 hash of TLS cert + 384 bits nonce
                     obj.sendBinary(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
@@ -1037,7 +1037,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Verify the agent signature
     function processAgentSignature(msg) {
-        if (args.ignoreagenthashcheck !== true) {
+        if ((args.ignoreagenthashcheck !== true) && (domain.ignoreagenthashcheck !== true)) {
             var verified = false;
 
             if (msg.length != 384) {
