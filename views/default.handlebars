@@ -2171,10 +2171,10 @@
                             // New style
                             for (var i in message.netif2) {
                                 var net = message.netif2[i];
-                                if ((net.length < 1) || (net[0].mac.startsWith('00:00:00:00'))) continue;
+                                if ((Array.isArray(net) == false) || (net.length < 1) || (net[0] == null) || ((typeof net[0].mac == 'string') && (net[0].mac.startsWith('00:00:00:00')))) continue;
                                 x += '<hr />'
                                 x += addHtmlValue2("Name", '<b>' + EscapeHtml(i) + '</b>');
-                                if (net[0].mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (typeof net[0].mac == 'string') { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '") width=10 height=10>'); }
                                 if (net[0].fqdn) { x += addHtmlValue2("FQDN", net[0].fqdn); }
                                 for (var j = 0; j < net.length; j++) {
                                     var netif = net[j];
@@ -8165,12 +8165,12 @@
                 x += '<table style=width:100%>';
                 for (var i in network.netif2) {
                     var m = network.netif2[i];
-                    if ((m.length < 1) || (m[0].mac.startsWith('00:00:00:00'))) continue;
+                    if ((Array.isArray(m) == false) || (m.length < 1) || (m[0] == null) || ((typeof m[0].mac == 'string') && (m[0].mac.startsWith('00:00:00:00')))) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i + (m[0].fqdn?(', ' + m[0].fqdn):'')) + '</b></div>';
                     if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
                     //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
-                    if (m[0].mac) {
+                    if (typeof m[0].mac == 'string') {
                         if (m[0].gatewaymac) {
                             x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m[0].mac), EscapeHtml(m[0].gatewaymac)));
                         } else {

@@ -3654,33 +3654,45 @@
             }
 
             // Networking
-            if (network.netif != null) {
+            if (network.netif2 != null) {
+                // Display one network interface for each MAC address
                 var x = '';
                 x += '<table style=width:100%>';
-                for (var i in network.netif) {
-                    var m = network.netif[i];
+                for (var i in network.netif2) {
+                    var m = network.netif2[i];
+                    if ((Array.isArray(m) == false) || (m.length < 1) || (m[0] == null) || ((typeof m[0].mac == 'string') && (m[0].mac.startsWith('00:00:00:00')))) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.name + (m.dnssuffix ? (', ' + m.dnssuffix) : '')) + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i + (m[0].fqdn ? (', ' + m[0].fqdn) : '')) + '</b></div>';
                     if (m.desc) { x += addDetailItem("Description", EscapeHtml(m.desc).split('(R)').join('&reg;')); }
                     //if (m.dnssuffix) { x += addDetailItem("DNS Suffix", m.dnssuffix); }
-                    if (m.mac) {
-                        if (m.gatewaymac) {
-                            x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m.mac), EscapeHtml(m.gatewaymac)));
+                    if (typeof m[0].mac == 'string') {
+                        if (m[0].gatewaymac) {
+                            x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m[0].mac), EscapeHtml(m[0].gatewaymac)));
                         } else {
-                            x += addDetailItem("MAC Layer", format("MAC: {0}", m.mac));
+                            x += addDetailItem("MAC Layer", format("MAC: {0}", m[0].mac));
                         }
                     }
-                    if (m.v4addr && (m.v4addr != '0.0.0.0')) {
-                        if (m.v4gateway && m.v4mask) {
-                            x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(m.v4addr), EscapeHtml(m.v4mask), EscapeHtml(m.v4gateway)));
-                        } else {
-                            x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(m.v4addr)));
+                    for (var j = 0; j < m.length; j++) {
+                        var iplayer = m[j];
+                        if (iplayer.family == 'IPv4') {
+                            if (iplayer.gateway && iplayer.netmask) {
+                                x += addDetailItem("IPv4 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
+                            } else {
+                                x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                            }
+                        }
+                        if (iplayer.family == 'IPv6') {
+                            if (iplayer.gateway && iplayer.netmask) {
+                                x += addDetailItem("IPv6 Layer", format("IP: {0}, Mask: {1}, Gateway: {2}", EscapeHtml(iplayer.address), EscapeHtml(iplayer.netmask), EscapeHtml(iplayer.gateway)));
+                            } else {
+                                x += addDetailItem("IPv6 Layer", format("IP: {0}", EscapeHtml(iplayer.address)));
+                            }
                         }
                     }
                     x += '</div>';
                 }
                 x += '</table>';
-                if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking32.png' }); }
+                if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking64.png' }); }
             }
 
             // Attribute: Intel AMT
