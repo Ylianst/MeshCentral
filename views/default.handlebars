@@ -5633,6 +5633,10 @@
                     for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                     try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
                 }
+
+                // Clear the desktop session selector
+                QV('p11DeskSessionSelector', false);
+                QH('p11DeskSessionSelector', '');
             }
             setupDesktop(); // Always refresh the desktop, even if we are on the same device, we need to do some canvas switching.
             if (!panel) panel = 10;

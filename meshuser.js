@@ -775,12 +775,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
                             if (f != '') { fin += f; }
                             r = 'Available commands: \r\n' + fin + '.';
+                            break;
+                        }
+                        case 'certhashes': {
+                            r += 'AgentCertHash: ' + parent.agentCertificateHashHex;
+                            for (var i in parent.webCertificateHashs) { r += '\r\nwebCertificateHash (' + i + '): ' + common.rstr2hex(parent.webCertificateHashs[i]); }
+                            for (var i in parent.webCertificateFullHashs) { r += '\r\nwebCertificateFullHash (' + i + '): ' + common.rstr2hex(parent.webCertificateFullHashs[i]); }
                             break;
                         }
                         case 'amtacm': {
