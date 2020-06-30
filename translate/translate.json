@@ -5270,6 +5270,12 @@
       ]
     },
     {
+      "en": "ChatSession",
+      "xloc": [
+        "messenger.handlebars->13->14"
+      ]
+    },
+    {
       "cs": "čečenština",
       "de": "Tschetschenisch",
       "en": "Chechen",
@@ -6504,7 +6510,7 @@
       "ru": "Подключено.",
       "zh-chs": "連接的。",
       "xloc": [
-        "messenger.handlebars->13->7"
+        "messenger.handlebars->13->12"
       ]
     },
     {
@@ -6580,7 +6586,7 @@
       "ru": "Подключение прервано.",
       "zh-chs": "連接已關閉。",
       "xloc": [
-        "messenger.handlebars->13->3"
+        "messenger.handlebars->13->6"
       ]
     },
     {
@@ -6673,7 +6679,8 @@
       "zh-chs": "控制",
       "xloc": [
         "default.handlebars->27->618",
-        "default.handlebars->27->637"
+        "default.handlebars->27->637",
+        "messenger.handlebars->13->1"
       ]
     },
     {
@@ -8979,7 +8986,8 @@
       "ru": "Скачать",
       "zh-chs": "下載",
       "xloc": [
-        "download.handlebars->container->page_content->column_l->1"
+        "download.handlebars->container->page_content->column_l->1",
+        "messenger.handlebars->13->10"
       ]
     },
     {
@@ -10655,7 +10663,7 @@
       "ru": "Ошибка: Не указан ключ подключения.",
       "zh-chs": "錯誤：未指定連接密鑰。",
       "xloc": [
-        "messenger.handlebars->13->8"
+        "messenger.handlebars->13->13"
       ]
     },
     {
@@ -15126,8 +15134,8 @@
       "ru": "Ограничение загрузки 10 файлов одновременно.",
       "zh-chs": "一次最多可上傳10個文件。",
       "xloc": [
-        "messenger.handlebars->13->4",
-        "messenger.handlebars->13->5"
+        "messenger.handlebars->13->7",
+        "messenger.handlebars->13->8"
       ]
     },
     {
@@ -15534,6 +15542,7 @@
       "ru": "Локальный",
       "zh-chs": "本地",
       "xloc": [
+        "messenger.handlebars->13->5",
         "messenger.handlebars->localVideo->1"
       ]
     },
@@ -17170,8 +17179,8 @@
       "ru": "MeshMessenger",
       "zh-chs": "網格信使",
       "xloc": [
-        "messenger.handlebars->13->1",
-        "messenger.handlebars->13->2",
+        "messenger.handlebars->13->3",
+        "messenger.handlebars->13->4",
         "messenger.handlebars->xtop->3->0->xtitle"
       ]
     },
@@ -21444,6 +21453,7 @@
       "ru": "Удаленно",
       "zh-chs": "遠程",
       "xloc": [
+        "messenger.handlebars->13->2",
         "messenger.handlebars->remoteVideo->1"
       ]
     },
@@ -22673,6 +22683,12 @@
       "zh-chs": "保存遠程桌面的屏幕截圖",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
+      "en": "Save conversation",
+      "xloc": [
+        "messenger.handlebars->xtop->1"
       ]
     },
     {
@@ -27453,7 +27469,8 @@
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->p5myfiles->p5toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
-        "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3"
+        "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
+        "messenger.handlebars->13->9"
       ]
     },
     {
@@ -28560,7 +28577,7 @@
       "ru": "В ожидании другой стороны...",
       "zh-chs": "正在等待其他用戶...",
       "xloc": [
-        "messenger.handlebars->13->6"
+        "messenger.handlebars->13->11"
       ]
     },
     {
