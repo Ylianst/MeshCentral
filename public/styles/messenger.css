@@ -119,6 +119,11 @@
     background-color: gray;
 }
 
+.icon15 {
+    background: url(../images/messenger32.png) -448px 0px;
+    background-color: gray;
+}
+
 .fileicon {
     background: url(../images/messenger32.png) -96px 0px;
     height: 32px;
