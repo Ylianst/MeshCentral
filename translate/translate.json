@@ -299,6 +299,17 @@
     },
     {
       "en": "'",
+      "nl": "'",
+      "de": "'",
+      "es": "'",
+      "cs": "'",
+      "pt": "'",
+      "ru": "'",
+      "fr": "'",
+      "ja": "'",
+      "hi": "'",
+      "ko": "'",
+      "zh-chs": "'",
       "xloc": [
         "agentinvite.handlebars->3->4",
         "agentinvite.handlebars->3->5"
@@ -5271,6 +5282,7 @@
     },
     {
       "en": "ChatSession",
+      "nl": "Chat sessie",
       "xloc": [
         "messenger.handlebars->13->14"
       ]
@@ -22687,6 +22699,7 @@
     },
     {
       "en": "Save conversation",
+      "nl": "Gesprek opslaan",
       "xloc": [
         "messenger.handlebars->xtop->1"
       ]
