@@ -5823,11 +5823,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var fileOptions = obj.renderPages[obj.path.basename(filename)];
             if (fileOptions != null) {
                 for (var i in acceptLanguages) {
-                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { break; } // English requested, break out.
+                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) { args.lang = 'en'; break; } // English requested, break out.
                     if (fileOptions[acceptLanguages[i]] != null) {
                         // Found a match. If the file no longer exists, default to English.
                         obj.fs.exists(fileOptions[acceptLanguages[i]] + '.handlebars', function (exists) {
-                            if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { res.render(filename, args); }
+                            if (exists) { args.lang = acceptLanguages[i]; res.render(fileOptions[acceptLanguages[i]], args); } else { args.lang = 'en'; res.render(filename, args); }
                         });
                         return;
                     }
