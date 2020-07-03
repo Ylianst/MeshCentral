@@ -2245,7 +2245,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2260,6 +2260,36 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'service':
+                    if (args['_'].length != 1)
+                    {
+                        response = "Proper usage: service status|restart";                      // Display usage
+                    }
+                    else
+                    {
+                        var s = require('service-manager').manager.getService(process.platform == 'win32' ? 'Mesh Agent' : 'meshagent');
+                        switch(args['_'][0].toLowerCase())
+                        {
+                            case 'status':
+                                response = 'Service ' + (s.isRunning() ? (s.isMe() ? '[SELF]' : '[RUNNING]') : ('[NOT RUNNING]'));
+                                break;
+                            case 'restart':
+                                if (s.isMe())
+                                {
+                                    s.restart();
+                                }
+                                else
+                                {
+                                    response = 'Restarting another agent instance is not allowed';
+                                }
+                                break;
+                            default:
+                                response = "Proper usage: service status|restart";                      // Display usage
+                                break;
+                        }
+                        if (process.platform == 'win32') { s.close(); }
+                    }
+                    break;
                 case 'zip':
                     if (args['_'].length == 0)
                     {
