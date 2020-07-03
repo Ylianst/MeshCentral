@@ -775,7 +775,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes';
+                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,showconfig,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes,watchdog';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
@@ -928,6 +928,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var stats = parent.getStats();
                             for (var i in stats) {
                                 if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
+                            }
+                            break;
+                        }
+                        case 'watchdog': {
+                            if (parent.parent.watchdog == null) {
+                                r = 'Server watchdog not active.';
+                            } else {
+                                r = 'Server watchdog active.\r\n';
+                                if (parent.parent.watchdogmaxtime != null) { r += 'Largest timeout was ' + parent.parent.watchdogmax + 'ms on ' + parent.parent.watchdogmaxtime + '\r\n'; }
+                                for (var i in parent.parent.watchdogtable) { r += parent.parent.watchdogtable[i] + '\r\n'; }
                             }
                             break;
                         }
@@ -1089,23 +1099,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
                             if (parent.parent.webViewsOverridePath) { r += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
                             if (parent.parent.webViewsOverridePath) { r += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
-                            break;
-                        }
-                        case 'showconfig': {
-                            // Make a copy of the configuration and hide any secrets
-                            var config = common.Clone(parent.parent.config);
-                            if (config.settings) {
-                                if (config.settings.configkey) { config.settings.configkey = '(present)'; }
-                                if (config.settings.sessionkey) { config.settings.sessionkey = '(present)'; }
-                                if (config.settings.dbencryptkey) { config.settings.dbencryptkey = '(present)'; }
-                            }
-                            if (config.domains) {
-                                for (var i in config.domains) {
-                                    if (config.domains[i].yubikey && config.domains[i].yubikey.secret) { config.domains[i].yubikey.secret = '(present)'; }
-                                }
-                            }
-
-                            r = JSON.stringify(removeAllUnderScore(config), null, 4);
                             break;
                         }
                         case 'migrationagents': {

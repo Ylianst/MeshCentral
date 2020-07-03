@@ -435,7 +435,7 @@ function CreateMeshCentralServer(config, args) {
             try {
                 var errlogpath = null;
                 if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
-                obj.fs.appendFileSync(obj.getConfigFilePath('mesherrors.txt'), '-------- ' + new Date().toLocaleString() + ' ---- ' + getCurrentVerion() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
+                obj.fs.appendFileSync(errlogpath, '-------- ' + new Date().toLocaleString() + ' ---- ' + getCurrentVerion() + ' --------\r\n\r\n' + data + '\r\n\r\n\r\n');
             } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
         });
         childProcess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
@@ -1430,6 +1430,34 @@ function CreateMeshCentralServer(config, args) {
                             }
                         }
                     }
+                }
+
+                // Start watchdog timer if needed
+                // This is used to monitor if NodeJS is servicing IO correctly or getting held up a lot. Add this line to the settings section of config.json
+                //   "watchDog": { "interval": 100, "timeout": 150 }
+                // This will check every 100ms, if the timer is more than 150ms late, it will warn.
+                if ((typeof config.settings.watchdog == 'object') && (typeof config.settings.watchdog.interval == 'number') && (typeof config.settings.watchdog.timeout == 'number') && (config.settings.watchdog.interval >= 50) && (config.settings.watchdog.timeout >= 50)) {
+                    obj.watchdogtime = Date.now();
+                    obj.watchdogmax = 0;
+                    obj.watchdogmaxtime = null;
+                    obj.watchdogtable = [];
+                    obj.watchdog = setInterval(function () {
+                        var now = Date.now(), delta = now - obj.watchdogtime - config.settings.watchdog.interval;
+                        if (delta > obj.watchdogmax) { obj.watchdogmax = delta; obj.watchdogmaxtime = new Date().toLocaleString(); }
+                        if (delta > config.settings.watchdog.timeout) {
+                            const msg = obj.common.format("Watchdog timer timeout, {0}ms.", delta);
+                            obj.watchdogtable.push(new Date().toLocaleString() + ', ' + delta + 'ms');
+                            while (obj.watchdogtable.length > 10) { obj.watchdogtable.shift(); }
+                            obj.debug('main', msg);
+                            try {
+                                var errlogpath = null;
+                                if (typeof obj.args.mesherrorlogpath == 'string') { errlogpath = obj.path.join(obj.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = obj.getConfigFilePath('mesherrors.txt'); }
+                                obj.fs.appendFileSync(errlogpath, new Date().toLocaleString() + ': ' + msg + '\r\n');
+                            } catch (ex) { console.log('ERROR: Unable to write to mesherrors.txt.'); }
+                        }
+                        obj.watchdogtime = now;
+                    }, config.settings.watchdog.interval);
+                    obj.debug('main', "Started watchdog timer.");
                 }
             });
         });
