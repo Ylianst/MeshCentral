@@ -2245,7 +2245,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2260,6 +2260,32 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'coredump':
+                    if (args['_'].length != 1)
+                    {
+                        response = "Proper usage: coredump on|off|status";                      // Display usage
+                    }
+                    else
+                    {
+                        switch (args['_'][0].toLowerCase())
+                        {
+                            case 'on':
+                                process.coreDumpLocation = process.platform == 'win32' ? (process.execPath.replace('.exe', '.dmp')) : (process.execPath + '.dmp');
+                                response = 'coredump is now on';
+                                break;
+                            case 'off':
+                                process.coreDumpLocation = null;
+                                response = 'coredump is now off';
+                                break;
+                            case 'status':
+                                response = 'coredump is: ' + (process.coreDumpLocation == null ? 'off' : 'on');
+                                break;
+                            default:
+                                response = "Proper usage: coredump on|off|status";                      // Display usage
+                                break;
+                        }
+                    }
+                    break;
                 case 'service':
                     if (args['_'].length != 1)
                     {
