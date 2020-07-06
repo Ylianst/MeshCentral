@@ -49,6 +49,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_CHATNOTIFY = 16384;
     const MESHRIGHT_UNINSTALL = 32768;
     const MESHRIGHT_NODESKTOP = 65536;
+    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;           // 0x00000001
@@ -61,6 +62,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_NOMESHCMD = 128;            // 0x00000080
     const SITERIGHT_USERGROUPS = 256;           // 0x00000100
     const SITERIGHT_RECORDINGS = 512;           // 0x00000200
+    const SITERIGHT_ADMIN = 0xFFFFFFFF;         // 0xFFFFFFFF
 
     var obj = {};
     obj.user = user;
@@ -299,7 +301,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (id.startsWith('mesh/')) {
                                 // Check if we have rights to get this message. If we have limited events on this mesh, don't send the event to the user.
                                 var meshrights = parent.GetMeshRights(user, id);
-                                if ((meshrights == 0xFFFFFFFF) || ((meshrights & MESHRIGHT_LIMITEVENTS) == 0) || (ids.indexOf(user._id) >= 0)) {
+                                if ((meshrights === MESHRIGHT_ADMIN) || ((meshrights & MESHRIGHT_LIMITEVENTS) == 0) || (ids.indexOf(user._id) >= 0)) {
                                     // We have the device group rights to see this event or we are directly targetted by the event
                                     ws.send(JSON.stringify({ action: 'event', event: event }));
                                 } else {
@@ -401,7 +403,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = args.redirport; }
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
             if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) { serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
-            if (user.siteadmin == 0xFFFFFFFF) {
+            if (user.siteadmin === SITERIGHT_ADMIN) {
                 if (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) { serverinfo.manageAllDeviceGroups = true; }
                 if (obj.crossDomain === true) { serverinfo.crossDomain = []; for (var i in parent.parent.config.domains) { serverinfo.crossDomain.push(i); } }
             }
@@ -412,7 +414,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Send user information to web socket, this is the first thing we send
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
 
-            if (user.siteadmin == 0xFFFFFFFF) {
+            if (user.siteadmin === SITERIGHT_ADMIN) {
                 // Send server tracing information
                 try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
 
@@ -765,7 +767,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'serverconsole':
                 {
                     // This is a server console message, only process this if full administrator
-                    if (user.siteadmin != 0xFFFFFFFF) break;
+                    if (user.siteadmin != SITERIGHT_ADMIN) break;
 
                     var r = '';
                     var cmdargs = splitArgs(command.value);
@@ -1235,7 +1237,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var limit = 10000;
                             if (common.validateInt(command.limit, 1, 60000) == true) { limit = command.limit; }
 
-                            if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != 0xFFFFFFFF)) {
+                            if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != MESHRIGHT_ADMIN)) {
                                 // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
                                 db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, function (err, docs) {
                                     if (err != null) return;
@@ -1260,7 +1262,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // TODO (UserGroups)
 
                         // Remove MeshID's that we do not have rights to see events for
-                        for (var link in obj.user.links) { if (((obj.user.links[link].rights & MESHRIGHT_LIMITEVENTS) != 0) && ((obj.user.links[link].rights != 0xFFFFFFFF))) { exGroupFilter2.push(link); } }
+                        for (var link in obj.user.links) { if (((obj.user.links[link].rights & MESHRIGHT_LIMITEVENTS) != 0) && ((obj.user.links[link].rights != MESHRIGHT_ADMIN))) { exGroupFilter2.push(link); } }
                         for (var i in filter2) { if (exGroupFilter2.indexOf(filter2[i]) == -1) { filter.push(filter2[i]); } }
 
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
@@ -1467,7 +1469,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             deluser = parent.users[deluserid];
                             if (deluser == null) { err = 'User does not exists'; }
                             else if ((obj.crossDomain !== true) && ((delusersplit.length != 3) || (delusersplit[1] != domain.id))) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
-                            else if ((deluser.siteadmin == 0xFFFFFFFF) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Permission denied'; } // Need full admin to remote another administrator
+                            else if ((deluser.siteadmin === SITERIGHT_ADMIN) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Permission denied'; } // Need full admin to remote another administrator
                             else if ((obj.crossDomain !== true) && (user.groups != null) && (user.groups.length > 0) && ((deluser.groups == null) || (findOne(deluser.groups, user.groups) == false))) { err = 'Invalid user group'; } // Can only perform this operation on other users of our group.
                         }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -1702,7 +1704,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             newuserid = 'user/' + newuserdomain.id + '/' + command.username.toLowerCase();
                             if (command.siteadmin != null) {
                                 if ((typeof command.siteadmin != 'number') || (Number.isInteger(command.siteadmin) == false)) { err = 'Invalid site permissions'; } // Check permissions
-                                else if ((user.siteadmin != 0xFFFFFFFF) && ((command.siteadmin & (0xFFFFFFFF - 224)) != 0)) { err = 'Invalid site permissions'; }
+                                else if ((user.siteadmin != SITERIGHT_ADMIN) && ((command.siteadmin & (SITERIGHT_ADMIN - 224)) != 0)) { err = 'Invalid site permissions'; }
                             }
                             if (parent.users[newuserid]) { err = 'User already exists'; } // Account already exists
                             else if ((newuserdomain.auth == 'sspi') || (newuserdomain.auth == 'ldap')) { err = 'Unable to add user in this mode'; }
@@ -1818,10 +1820,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     change = 0;
                     if (chguser) {
                         // If the target user is admin and we are not admin, no changes can be made.
-                        if ((chguser.siteadmin == 0xFFFFFFFF) && (user.siteadmin != 0xFFFFFFFF)) return;
+                        if ((chguser.siteadmin === SITERIGHT_ADMIN) && (user.siteadmin != SITERIGHT_ADMIN)) return;
 
                         // Can only perform this operation on other users of our group.
-                        if (user.siteadmin != 0xFFFFFFFF) {
+                        if (user.siteadmin != SITERIGHT_ADMIN) {
                             if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) return;
                         }
 
@@ -1845,7 +1847,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Site admins can change any server rights, user managers can only change AccountLock, NoMeshCmd and NoNewGroups
                         if (common.validateInt(command.siteadmin) && (chguser._id !== user._id) && (chguser.siteadmin != command.siteadmin)) { // We can't change our own siteadmin permissions.
                             var chgusersiteadmin = chguser.siteadmin ? chguser.siteadmin : 0;
-                            if (user.siteadmin == 0xFFFFFFFF) { chguser.siteadmin = command.siteadmin; change = 1; }
+                            if (user.siteadmin === SITERIGHT_ADMIN) { chguser.siteadmin = command.siteadmin; change = 1; }
                             else if (user.siteadmin & 2) {
                                 var mask = 0xFFFFFF1D; // Mask: 2 (User Mangement) + 32 (Account locked) + 64 (No New Groups) + 128 (No Tools)
                                 if ((user.siteadmin & 256) != 0) { mask -= 256; } // Mask: Manage User Groups
@@ -1856,7 +1858,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // When sending a notification about a group change, we need to send to all the previous and new groups.
                         var allTargetGroups = chguser.groups;
-                        if ((Array.isArray(command.groups)) && ((user._id != command.id) || (user.siteadmin == 0xFFFFFFFF))) {
+                        if ((Array.isArray(command.groups)) && ((user._id != command.id) || (user.siteadmin === SITERIGHT_ADMIN))) {
                             if (command.groups.length == 0) {
                                 // Remove the user groups
                                 if (chguser.groups != null) { delete chguser.groups; change = 1; }
@@ -1891,7 +1893,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         }
-                        if ((chguser.siteadmin) && (chguser.siteadmin != 0xFFFFFFFF) && (chguser.siteadmin & 32)) {
+                        if ((chguser.siteadmin) && (chguser.siteadmin !== SITERIGHT_ADMIN) && (chguser.siteadmin & 32)) {
                             // If the user is locked out of this account, disconnect now
                             parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
                         }
@@ -1934,9 +1936,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 else if (parent.userGroups[command.clone] == null) { err = "Invalid clone groupid"; }
                             }
 
-                            // Get new user group domain
-                            ugrpdomain = parent.parent.config.domains[clonesplit[1]];
-                            if (ugrpdomain == null) { err = "Invalid domain"; }
+                            if (err == null) {
+                                // Get new user group domain
+                                ugrpdomain = parent.parent.config.domains[clonesplit[1]];
+                                if (ugrpdomain == null) { err = "Invalid domain"; }
+                            }
                         } else {
                             // Get new user group domain
                             ugrpdomain = domain;
@@ -1945,7 +1949,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // In some situations, we need a verified email address to create a device group.
-                        if ((err == null) && (parent.parent.mailserver != null) && (ugrpdomain.auth != 'sspi') && (ugrpdomain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) { err = "Email verification required"; } // User must verify it's email first.
+                        if ((err == null) && (parent.parent.mailserver != null) && (ugrpdomain.auth != 'sspi') && (ugrpdomain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = "Email verification required"; } // User must verify it's email first.
                     } catch (ex) { err = "Validation exception: " + ex; }
 
                     // Handle any errors
@@ -2355,7 +2359,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var chguser = parent.users[command.userid];
                     if (chguser) {
                         // If we are not full administrator, we can't change anything on a different full administrator
-                        if ((user.siteadmin != 0xFFFFFFFF) & (chguser.siteadmin == 0xFFFFFFFF)) break;
+                        if ((user.siteadmin != SITERIGHT_ADMIN) & (chguser.siteadmin === SITERIGHT_ADMIN)) break;
 
                         // Can only perform this operation on other users of our group.
                         if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
@@ -2499,10 +2503,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var err = null;
                     try {
                         // Check if we have new group restriction
-                        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0)) { err = 'Permission denied'; }
+                        if ((user.siteadmin != SITERIGHT_ADMIN) && ((user.siteadmin & 64) != 0)) { err = 'Permission denied'; }
 
                         // In some situations, we need a verified email address to create a device group.
-                        else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != 0xFFFFFFFF)) { err = 'Email verification required'; } // User must verify it's email first.
+                        else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Email verification required'; } // User must verify it's email first.
 
                         // Create mesh
                         else if (common.validateString(command.meshname, 1, 64) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
@@ -2582,7 +2586,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Check if this user has rights to do this
                     var err = null;
-                    if (parent.GetMeshRights(user, mesh) != 0xFFFFFFFF) { err = 'Access denied'; }
+                    if (parent.GetMeshRights(user, mesh) != MESHRIGHT_ADMIN) { err = 'Access denied'; }
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = 'Invalid group'; } // Invalid domain, operation only valid for current domain
 
                     // Handle any errors
@@ -2760,14 +2764,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             var targetMeshRights = 0;
                             if ((newuser.links != null) && (newuser.links[command.meshid] != null) && (newuser.links[command.meshid].rights != null)) { targetMeshRights = newuser.links[command.meshid].rights; }
-                            if ((targetMeshRights == 0xFFFFFFFF) && (selfMeshRights != 0xFFFFFFFF)) { msgs.push("Can't change rights of device group administrator"); continue; } // A non-admin can't kick out an admin
+                            if ((targetMeshRights === MESHRIGHT_ADMIN) && (selfMeshRights != MESHRIGHT_ADMIN)) { msgs.push("Can't change rights of device group administrator"); continue; } // A non-admin can't kick out an admin
 
                             if (command.remove === true) {
                                 // Remove mesh from user or user group
                                 delete newuser.links[command.meshid];
                             } else {
                                 // Adjust rights since we can't add more rights that we have outself for MESHRIGHT_MANAGEUSERS
-                                if ((selfMeshRights != 0xFFFFFFFF) && (command.meshadmin == 0xFFFFFFFF)) { msgs.push("Can't set device group administrator, if not administrator"); continue; }
+                                if ((selfMeshRights != MESHRIGHT_ADMIN) && (command.meshadmin == MESHRIGHT_ADMIN)) { msgs.push("Can't set device group administrator, if not administrator"); continue; }
                                 if (((selfMeshRights & 2) == 0) && ((command.meshadmin & 2) != 0) && ((targetMeshRights & 2) == 0)) { command.meshadmin -= 2; }
 
                                 // Add mesh to user or user group
@@ -3008,7 +3012,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Remove mesh from user
                         if (deluser.links != null && deluser.links[command.meshid] != null) {
                             var delmeshrights = deluser.links[command.meshid].rights;
-                            if ((delmeshrights == 0xFFFFFFFF) && (parent.GetMeshRights(user, mesh) != 0xFFFFFFFF)) return; // A non-admin can't kick out an admin
+                            if ((delmeshrights == MESHRIGHT_ADMIN) && (parent.GetMeshRights(user, mesh) != MESHRIGHT_ADMIN)) return; // A non-admin can't kick out an admin
                             delete deluser.links[command.meshid];
                             if (deluserid.startsWith('user/')) { db.SetUser(deluser); }
                             else if (deluserid.startsWith('ugrp/')) { db.Set(deluser); }
@@ -3523,7 +3527,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != 0xFFFFFFFF))) return;
+                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
 
                         if (command.type == 'default') {
                             // Send the default core to the agent
@@ -3555,7 +3559,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != 0xFFFFFFFF))) return;
+                        if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
 
                         // Force mesh agent disconnection
                         parent.forceMeshAgentDisconnect(user, domain, node._id, command.disconnectMode);
@@ -4188,7 +4192,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'traceinfo': {
-                if ((user.siteadmin == 0xFFFFFFFF) && (typeof command.traceSources == 'object')) {
+                if ((user.siteadmin === SITERIGHT_ADMIN) && (typeof command.traceSources == 'object')) {
                     parent.parent.debugRemoteSources = command.traceSources;
                     parent.parent.DispatchEvent(['*'], obj, { action: 'traceinfo', userid: user._id, username: user.name, traceSources: command.traceSources, nolog: 1, domain: domain.id });
                 }
@@ -4228,7 +4232,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Get the node and the rights for this node
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     // Check if this user has rights to do this
-                    if (rights == 0xFFFFFFFF) {
+                    if (rights == MESHRIGHT_ADMIN) {
                         var token = parent.parent.mqttbroker.generateLogin(node.meshid, node._id);
                         var r = { action: 'getmqttlogin', responseid: command.responseid, nodeid: node._id, user: token.user, pass: token.pass };
                         const serverName = parent.getWebServerName(domain);
@@ -4278,7 +4282,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'distributeCore': {
                 // This is only available when plugins are enabled since it could cause stress on the server
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 for (var i in command.nodes) {
                     parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
                 }
@@ -4286,14 +4290,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'plugins': {
                 // Since plugin actions generally require a server restart, use the Full admin permission
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.db.getPlugins(function(err, docs) {
                     try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
                 });
                 break;
             }
             case 'pluginLatestCheck': {
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.getPluginLatest()
                 .then(function(latest) {
                     try { ws.send(JSON.stringify({ action: 'pluginVersionsAvailable', list: latest })); } catch (ex) { } 
@@ -4301,7 +4305,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'addplugin': {
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 try {
                     parent.parent.pluginHandler.getPluginConfig(command.url)
                     .then(parent.parent.pluginHandler.addPlugin)
@@ -4318,7 +4322,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'installplugin': {
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.installPlugin(command.id, command.version_only, null, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
@@ -4329,7 +4333,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'disableplugin': {
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.disablePlugin(command.id, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
@@ -4340,7 +4344,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'removeplugin': {
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.removePlugin(command.id, function(){
                     parent.db.getPlugins(function(err, docs) {
                         try { ws.send(JSON.stringify({ action: 'updatePluginList', list: docs, result: err })); } catch (ex) { } 
@@ -4349,7 +4353,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'getpluginversions': {
-                if ((user.siteadmin != 0xFFFFFFFF) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.getPluginVersions(command.id)
                 .then(function (versionInfo) {
                     try { ws.send(JSON.stringify({ action: 'downgradePluginVersions', info: versionInfo, error: null })); } catch (ex) { } 

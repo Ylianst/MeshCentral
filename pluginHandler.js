@@ -27,6 +27,7 @@ module.exports.pluginHandler = function (parent) {
 
     obj.fs = require('fs');
     obj.path = require('path');
+    obj.common = require('./common.js');
     obj.parent = parent;
     obj.pluginPath = obj.parent.path.join(obj.parent.datapath, 'plugins');
     obj.plugins = {};
@@ -471,7 +472,7 @@ module.exports.pluginHandler = function (parent) {
                         versStr += chunk;
                     });
                     res.on('end', function () {
-                        if (versStr[0] == '{' || versStr[0] == '[') { // let's be sure we're JSON
+                        if ((versStr[0] == '{') || (versStr[0] == '[')) { // let's be sure we're JSON
                             try {
                                 var vers = JSON.parse(versStr);
                                 var vList = [];
@@ -515,9 +516,11 @@ module.exports.pluginHandler = function (parent) {
     };
 
     obj.handleAdminReq = function (req, res, user, serv) {
+        if (obj.common.isAlphaNumeric(req.query.pin) !== true) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
+        if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
         serv.app.set('views', path);
-        if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminReq == 'function') {
+        if ((obj.plugins[req.query.pin] != null) && (typeof obj.plugins[req.query.pin].handleAdminReq == 'function')) {
             obj.plugins[req.query.pin].handleAdminReq(req, res, user);
         } else {
             res.sendStatus(401);
@@ -525,9 +528,11 @@ module.exports.pluginHandler = function (parent) {
     }
 
     obj.handleAdminPostReq = function (req, res, user, serv) {
+        if (obj.common.isAlphaNumeric(req.query.pin) !== true) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
+        if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
         serv.app.set('views', path);
-        if (obj.plugins[req.query.pin] != null && typeof obj.plugins[req.query.pin].handleAdminPostReq == 'function') {
+        if ((obj.plugins[req.query.pin] != null) && (typeof obj.plugins[req.query.pin].handleAdminPostReq == 'function')) {
             obj.plugins[req.query.pin].handleAdminPostReq(req, res, user);
         } else {
             res.sendStatus(401);
