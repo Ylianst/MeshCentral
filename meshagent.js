@@ -975,6 +975,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
         });
 
+        // Set agent core dump
+        if ((parent.parent.config.settings.agentcoredump === true) || (parent.parent.config.settings.agentcoredump === false)) {
+            obj.send(JSON.stringify({ action: 'coredump', value: parent.parent.config.settings.agentcoredump }));
+        }
+
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
         if (domain.iplocation == true) {
             // Check if we already have IP location information for this node
@@ -1270,7 +1275,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
 
                             // Update the device Intel AMT information
-                            ChangeAgentCoreInfo({ "intelamt": { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
+                            ChangeAgentCoreInfo({ 'intelamt': { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
 
                             // Send the activation response
                             obj.send(JSON.stringify(signResponse));

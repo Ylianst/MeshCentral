@@ -12480,11 +12480,7 @@
       "nl": "even wachten, reset e-mail verzonden.",
       "pt": "Aguarde, redefina o email enviado.",
       "ru": "Подождите, письмо для сброса отправлено.",
-      "zh-chs": "稍等，重置已發送的郵件。",
-      "xloc": [
-        "login-mobile.handlebars->5->1",
-        "login.handlebars->5->1"
-      ]
+      "zh-chs": "稍等，重置已發送的郵件。"
     },
     {
       "cs": "Drží se jeden záznam pro kopii",
@@ -12869,6 +12865,13 @@
       "xloc": [
         "default-mobile.handlebars->9->367",
         "default.handlebars->27->883"
+      ]
+    },
+    {
+      "en": "If valid, reset mail sent.",
+      "xloc": [
+        "login-mobile.handlebars->5->1",
+        "login.handlebars->5->1"
       ]
     },
     {

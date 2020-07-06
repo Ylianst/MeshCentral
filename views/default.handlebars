@@ -6959,7 +6959,7 @@
                 for (var i in p) {
                     if (p[i].p != 0) {
                         var c = p[i].c;
-                        if (c.length > 30) { c = '<span title="' + EscapeHtml(c) + '">' + EscapeHTML(c.substring(0,30)) + '...</span>' } else { c = EscapeHtml(c); }
+                        if (c.length > 30) { c = '<span title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0,30)) + '...</span>' } else { c = EscapeHtml(c); }
                         x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
                     }
                 }
@@ -7555,7 +7555,7 @@
                 } else {
                     var link = shortname;
                     if (f.s > 0) { link = '<a href=# style=cursor:pointer onclick="return p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')">' + shortname + '</a>'; }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHTML(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
