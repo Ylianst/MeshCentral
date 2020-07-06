@@ -976,7 +976,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
 
         // Set agent core dump
-        if ((parent.parent.config.settings.agentcoredump === true) || (parent.parent.config.settings.agentcoredump === false)) {
+        if ((parent.parent.config.settings != null) && ((parent.parent.config.settings.agentcoredump === true) || (parent.parent.config.settings.agentcoredump === false))) {
             obj.send(JSON.stringify({ action: 'coredump', value: parent.parent.config.settings.agentcoredump }));
         }
 
