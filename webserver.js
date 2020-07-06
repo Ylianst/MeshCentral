@@ -1357,7 +1357,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((err != null) || (docs.length == 0)) {
                     parent.debug('web', 'handleResetAccountRequest: Account not found');
                     req.session.loginmode = '3';
-                    req.session.messageid = 107; // Account not found.
+                    req.session.messageid = 1; // If valid, reset mail sent. Instead of "Account not found" (107), we send this hold on message so users can't know if this account exists or not.
                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 } else {
                     // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
@@ -1388,7 +1388,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
-                                            req.session.messageid = 1; // Hold on, reset mail sent.
+                                            req.session.messageid = 1; // If valid, reset mail sent.
                                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                         }
                                     } else {
@@ -1408,7 +1408,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
-                                    req.session.messageid = 1; // Hold on, reset mail sent.
+                                    req.session.messageid = 1; // If valid, reset mail sent.
                                     if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 }
                             } else {
@@ -2828,7 +2828,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) return;
 
         // Check the query
-        if ((req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true)) { res.sendStatus(401); return; }
+        if ((domain.sessionrecording == null) || (req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true)) { res.sendStatus(401); return; }
 
         // Get the recording path
         var recordingsPath = null;
@@ -2923,7 +2923,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } catch (ex) {
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"file.bin\"' });
         }
-        try { res.sendFile(file.fullpath); } catch (e) { res.sendStatus(404); }
+        obj.fs.exists(file.fullpath, function (exists) { if (exists == true) { res.sendFile(file.fullpath); } else { res.sendStatus(404); } });
     }
 
     // Upload a MeshCore.js file to the server

@@ -516,7 +516,7 @@ module.exports.pluginHandler = function (parent) {
     };
 
     obj.handleAdminReq = function (req, res, user, serv) {
-        if (obj.common.isAlphaNumeric(req.query.pin) !== true) { res.sendStatus(401); return; }
+        if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
         if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
         serv.app.set('views', path);
@@ -528,7 +528,7 @@ module.exports.pluginHandler = function (parent) {
     }
 
     obj.handleAdminPostReq = function (req, res, user, serv) {
-        if (obj.common.isAlphaNumeric(req.query.pin) !== true) { res.sendStatus(401); return; }
+        if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
         if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
         serv.app.set('views', path);
