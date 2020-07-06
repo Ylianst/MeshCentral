@@ -1751,7 +1751,7 @@
                     var publiclink = '';
                     if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink("' + publicPath + '/' + f.nx + '")\'>' + "Link" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -2378,14 +2378,14 @@
                 if (node.intelamt != null) {
                     var str = '';
                     var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
-                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + node.intelamt.ver; } else
+                    if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + EscapeHtml(node.intelamt.ver); } else
 
                         if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
                         else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
                             if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span>' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str = ' <span>' + "ACM" + '</span>'; } }
-                            str += (', v' + node.intelamt.ver);
+                            str += (', v' + EscapeHtml(node.intelamt.ver));
                         }
 
                     if (node.intelamt.tls == 1) { str += ', <span>' + "TLS" + '</span>'; }
@@ -3669,7 +3669,7 @@
                         if (m[0].gatewaymac) {
                             x += addDetailItem("MAC Layer", format("MAC: {0}, Gateway: {1}", EscapeHtml(m[0].mac), EscapeHtml(m[0].gatewaymac)));
                         } else {
-                            x += addDetailItem("MAC Layer", format("MAC: {0}", m[0].mac));
+                            x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
                     }
                     for (var j = 0; j < m.length; j++) {
@@ -3698,7 +3698,7 @@
             // Attribute: Intel AMT
             if (node.intelamt != null) {
                 var x = '';
-                x += addDetailItem("Version", (node.intelamt.ver) ? ('v' + node.intelamt.ver) : ('<i>' + "Unknown" + '</i>'), s);
+                x += addDetailItem("Version", (node.intelamt.ver) ? ('v' + EscapeHtml(node.intelamt.ver)) : ('<i>' + "Unknown" + '</i>'), s);
                 var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
                 var provisioningMode = '';
                 if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
@@ -4220,7 +4220,7 @@
         function addLink(x, f) { return '<a style=cursor:pointer;color:darkblue;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
-        function getFileSizeStr(size) { if (size == 1) return "1 byte"; return format('{0} bytes', size); }
+        function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();

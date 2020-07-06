@@ -74,7 +74,7 @@
         if (name != '') { document.title = name + ' - ' + document.title; }
 
         function load() {
-            if (name != '') { QH('computerName', name); }
+            if (name != '') { QH('computerName', EscapeHtml(name)); }
             client = MstscClient.create(Q('myCanvas'));
             Q('inputDomain').focus();
             canvas = Q('myCanvas');
