@@ -978,6 +978,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Set agent core dump
         if ((parent.parent.config.settings != null) && ((parent.parent.config.settings.agentcoredump === true) || (parent.parent.config.settings.agentcoredump === false))) {
             obj.send(JSON.stringify({ action: 'coredump', value: parent.parent.config.settings.agentcoredump }));
+            if (parent.parent.config.settings.agentcoredump === true) { obj.send(JSON.stringify({ action: 'getcoredump' })); }
         }
 
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
@@ -1366,6 +1367,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if ((command.state == 'ac') || (command.state == 'dc')) { obj.sessions.battery.state = command.state; } else { delete obj.sessions.battery.state; }
                     if ((typeof command.level == 'number') && (command.level >= 0) && (command.level <= 100)) { obj.sessions.battery.level = command.level; } else { delete obj.sessions.battery.level; }
                     obj.updateSessions();
+                    break;
+                }
+                case 'getcoredump': {
+                    // Indicates if the agent has a coredump available
+                    if (command.exists === true) {
+                        //console.log('CoreDump for agent ' + obj.remoteaddrport);
+                        obj.coreDumpPresent = true;
+                        // TODO: We need to look at getting the dump uploaded to the server.
+                    }
                     break;
                 }
                 case 'plugin': {

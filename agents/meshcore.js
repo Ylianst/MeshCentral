@@ -966,6 +966,14 @@ function createMeshCore(agent) {
                         process.coreDumpLocation = null;
                     }
                     break;
+                case 'getcoredump':
+                    var r = { action: 'getcoredump', value: (process.coreDumpLocation != null) };
+                    if (process.platform == 'win32') {
+                        r.exists = r.value ? fs.existsSync(process.coreDumpLocation) : false;
+                    } else {
+                        r.exists = (r.value && (process.cwd() != '//')) ? fs.existsSync(process.cwd() + 'core') : false;
+                    }
+                    mesh.SendCommand(JSON.stringify(r));
                 default:
                     // Unknown action, ignore it.
                     break;
@@ -2284,6 +2292,13 @@ function createMeshCore(agent) {
                                 break;
                             case 'status':
                                 response = 'coredump is: ' + ((process.coreDumpLocation == null) ? 'off' : 'on');
+                                if (process.coreDumpLocation != null) {
+                                    if (process.platform == 'win32') {
+                                        if (fs.existsSync(process.coreDumpLocation)) { response += '\r\n  CoreDump present at: ' + process.coreDumpLocation; }
+                                    } else {
+                                        if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { response += '\r\n  CoreDump present at: ' + process.cwd() + 'core'; }
+                                    }
+                                }
                                 break;
                             default:
                                 response = "Proper usage: coredump on|off|status"; // Display usage
