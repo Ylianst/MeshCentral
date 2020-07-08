@@ -669,7 +669,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Start NeDB main collection and setup indexes
         obj.file = new Datastore(datastoreOptions);
-        obj.file.persistence.setAutocompactionInterval(36000);
+        obj.file.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.file.ensureIndex({ fieldName: 'type' });
         obj.file.ensureIndex({ fieldName: 'domain' });
         obj.file.ensureIndex({ fieldName: 'meshid', sparse: true });
@@ -678,14 +678,14 @@ module.exports.CreateDB = function (parent, func) {
 
         // Setup the events collection and setup indexes
         obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true });
-        obj.eventsfile.persistence.setAutocompactionInterval(36000);
+        obj.eventsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
         obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
         obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 20 }); // Limit the power event log to 20 days (Seconds * Minutes * Hours * Days)
 
         // Setup the power collection and setup indexes
         obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true });
-        obj.powerfile.persistence.setAutocompactionInterval(36000);
+        obj.powerfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
         obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 10 }); // Limit the power event log to 10 days (Seconds * Minutes * Hours * Days)
 
@@ -694,14 +694,14 @@ module.exports.CreateDB = function (parent, func) {
 
         // Setup the server stats collection and setup indexes
         obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true });
-        obj.serverstatsfile.persistence.setAutocompactionInterval(36000);
+        obj.serverstatsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: 60 * 60 * 24 * 30 }); // Limit the server stats log to 30 days (Seconds * Minutes * Hours * Days)
         obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
 
         // Setup plugin info collection
         if (parent.config.settings != null) {
             obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
-            obj.pluginsfile.persistence.setAutocompactionInterval(36000);
+            obj.pluginsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         }
 
         setupFunctions(func); // Completed setup of NeDB
