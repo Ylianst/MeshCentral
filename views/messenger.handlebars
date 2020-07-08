@@ -62,7 +62,7 @@
             var webrtcconfiguration = '{{{webrtconfig}}}';
             if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
             var windowFocus = true;
-            var chatTestSession = new Date().toString() + '\r\n';
+            var chatTextSession = new Date().toString() + '\r\n';
 
             // File transfer state
             var fileUploads = [];
@@ -121,7 +121,7 @@
             }
 
             function onUserInputFocus(x) { userInputFocus = x; }
-            function displayClear() { chatTestSession = new Date().toString() + '\r\n'; QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
+            function displayClear() { chatTextSession = new Date().toString() + '\r\n'; QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
 
             // Polyfill FileReader if needed
             if (!FileReader.prototype.readAsBinaryString) {
@@ -156,7 +156,7 @@
 
             // Display a control message
             function displayControl(msg) {
-                chatTestSession += ("Control" + '> ' + msg + '\r\n');
+                chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Control" + '> ' + msg + '\r\n');
                 QA('xmsg', '<div style="clear:both"><div style="color:gray;float:left;margin-bottom:2px">' + EscapeHtml(msg) + '</div><div></div></div>');
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;//Q('xmsg').scrollHeight;
             }
@@ -171,7 +171,7 @@
 
             // Display a message from the remote user
             function displayRemote(msg) {
-                chatTestSession += ("Remote" + '> ' + msg + '\r\n');
+                chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Remote" + '> ' + msg + '\r\n');
                 QA('xmsg', '<div style="clear:both"><div class="remoteBubble">' + EscapeHtml(msg) + '</div><div></div></div>');
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
 
@@ -194,7 +194,7 @@
                 var outtext = Q('xouttext').value;
                 if (outtext.length > 0) {
                     Q('xouttext').value = '';
-                    chatTestSession += ("Local" + '> ' + outtext + '\r\n');
+                    chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Local" + '> ' + outtext + '\r\n');
                     QA('xmsg', '<div style="clear:both"><div class="localBubble">' + EscapeHtml(outtext) + '</div><div></div></div>');
                     Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
                     send({ action: 'chat', msg: outtext });
@@ -429,8 +429,7 @@
                 if (state != 2) return;
                 file.id = Math.random();
                 fileUploads.push(file);
-                console.log(file);
-                chatTestSession += ("Upload" + '> ' + file.name + '\r\n');
+                chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Upload" + '> ' + file.name + ' (' + file.size + ' ' + "bytes" + ')\r\n');
                 QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="localBubble" style="width:240px;cursor:pointer" onclick="cancelFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
                 send({ action: 'file', size: file.size, id: file.id, type: file.type, name: file.name });
@@ -440,8 +439,7 @@
             function startFileDownload(file) {
                 if (state != 2) return;
                 fileDownloads[file.id] = file;
-                console.log(file);
-                chatTestSession += ("Download" + '> ' + file.name + '\r\n');
+                chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Download" + '> ' + file.name + ' (' + file.size + ' ' + "bytes" + ')\r\n');
                 QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:16px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
                 Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
             }
@@ -646,7 +644,7 @@
             }
 
             function saveChatSession() {
-                saveAs(data2blob(chatTestSession), "ChatSession");
+                saveAs(data2blob(chatTextSession), "ChatSession");
             }
 
             start();

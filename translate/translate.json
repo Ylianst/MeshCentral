@@ -5284,7 +5284,7 @@
       "en": "ChatSession",
       "nl": "Chat sessie",
       "xloc": [
-        "messenger.handlebars->13->14"
+        "messenger.handlebars->13->16"
       ]
     },
     {
@@ -6522,7 +6522,7 @@
       "ru": "Подключено.",
       "zh-chs": "連接的。",
       "xloc": [
-        "messenger.handlebars->13->12"
+        "messenger.handlebars->13->14"
       ]
     },
     {
@@ -8999,7 +8999,7 @@
       "zh-chs": "下載",
       "xloc": [
         "download.handlebars->container->page_content->column_l->1",
-        "messenger.handlebars->13->10"
+        "messenger.handlebars->13->11"
       ]
     },
     {
@@ -10675,7 +10675,7 @@
       "ru": "Ошибка: Не указан ключ подключения.",
       "zh-chs": "錯誤：未指定連接密鑰。",
       "xloc": [
-        "messenger.handlebars->13->13"
+        "messenger.handlebars->13->15"
       ]
     },
     {
@@ -28593,7 +28593,7 @@
       "ru": "В ожидании другой стороны...",
       "zh-chs": "正在等待其他用戶...",
       "xloc": [
-        "messenger.handlebars->13->11"
+        "messenger.handlebars->13->13"
       ]
     },
     {
@@ -29940,6 +29940,13 @@
       "xloc": [
         "default.handlebars->27->453",
         "default.handlebars->27->454"
+      ]
+    },
+    {
+      "en": "bytes",
+      "xloc": [
+        "messenger.handlebars->13->10",
+        "messenger.handlebars->13->12"
       ]
     },
     {
