@@ -391,6 +391,18 @@ module.exports.CreateDB = function (parent, func) {
             const dbcollectionname = (parent.args.mongodbcol) ? (parent.args.mongodbcol) : 'meshcentral';
             const db = client.db(dbname);
 
+            // Check the database version
+            db.admin().serverInfo(function (err, info) {
+                if ((err != null) || (info == null) || (info.versionArray == null) || (Array.isArray(info.versionArray) == false) || (info.versionArray.length < 2) || (typeof info.versionArray[0] != 'number') || (typeof info.versionArray[1] != 'number')) {
+                    console.log('WARNING: Unable to check MongoDB version.');
+                } else {
+                    if ((info.versionArray[0] < 3) || ((info.versionArray[0] == 3) && (info.versionArray[1] < 6))) {
+                        // We are running with mongoDB older than 3.6, this is not good.
+                        parent.addServerWarning("Current version of MongoDB (" + info.version + ") is too old, please upgrade to MongoDB 3.6 or better.");
+                    }
+                }
+            });
+
             // Setup MongoDB main collection and indexes
             obj.file = db.collection(dbcollectionname);
             obj.file.indexes(function (err, indexes) {
