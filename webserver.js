@@ -2998,9 +2998,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // See if we need to create the folder
                     var domainx = 'domain';
                     if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
-                    try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
-                    try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
-                    try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
+                    try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
+                    try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (ex) { }
+                    try { obj.fs.mkdirSync(xfile.fullpath); } catch (ex) { }
 
                     // Upload method where all the file data is within the fields.
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
@@ -3423,7 +3423,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
         });
-    }
+    }    
 
     // Handle a Intel AMT activation request
     function handleAmtActivateWebSocket(ws, req) {
@@ -3611,6 +3611,90 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // If close or error, do nothing.
         ws.on('error', function (err) { });
+        ws.on('close', function (req) { });
+    }
+
+    // Setup agent to/from server file transfer handler
+    function handleAgentFileTransfer(ws, req) {
+        var domain = checkAgentIpAddress(ws, req);
+        if (domain == null) { parent.debug('web', 'Got agent file transfer connection with bad domain or blocked IP address ' + req.clientIp + ', dropping.'); ws.close(); return; }
+        if (req.query.c == null) { parent.debug('web', 'Got agent file transfer connection without a cookie from ' + req.clientIp + ', dropping.'); ws.close(); return; }
+        var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
+        if ((c == null) || (c.a != 'aft')) { parent.debug('web', 'Got agent file transfer connection with invalid cookie from ' + req.clientIp + ', dropping.'); ws.close(); return; }
+        ws.xcmd = c.b; ws.xarg = c.c, ws.xfilelen = 0;
+        ws.send('c'); // Indicate connection of the tunnel. In this case, we are the termination point.
+        ws.send('5'); // Indicate we want to perform file transfers (5 = Files).
+        if (ws.xcmd == 'coredump') {
+            // Check the agent core dump folder if not already present.
+            var coreDumpPath = obj.path.join(parent.datapath, 'coredumps');
+            if (obj.fs.existsSync(coreDumpPath) == false) { try { obj.fs.mkdirSync(coreDumpPath); } catch (ex) { } }
+            ws.xfilepath = obj.path.join(parent.datapath, 'coredumps', ws.xarg);
+            ws.xid = 'coredump';
+            ws.send(JSON.stringify({ action: 'download', sub: 'start', ask: 'coredump', id: 'coredump' })); // Ask for a directory (test)
+        }
+
+        // When data is received from the web socket, echo it back
+        ws.on('message', function (data) {
+            if (typeof data == 'string') {
+                // Control message
+                var cmd = null;
+                try { cmd = JSON.parse(data); } catch (ex) { }
+                if ((cmd == null) || (cmd.action != 'download') || (cmd.sub == null)) return;
+                switch (cmd.sub) {
+                    case 'start': {
+                        // Perform an async file open
+                        var callback = function onFileOpen(err, fd) {
+                            onFileOpen.xws.xfile = fd;
+                            onFileOpen.xws.send(JSON.stringify({ action: 'download', sub: 'startack', id: onFileOpen.xws.xid, ack: 1 })); // Ask for a directory (test)
+                        };
+                        callback.xws = this;
+                        obj.fs.open(this.xfilepath, 'w', callback)
+                        break;
+                    }
+                }
+            } else {
+                // Binary message
+                if (data.length < 4) return;
+                var flags = data.readInt32BE(0);
+                if ((data.length > 4)) {
+                    // Write the file
+                    this.xfilelen += (data.length - 4);
+                    try {
+                        var callback = function onFileDataWritten(err, bytesWritten, buffer) {
+                            if (onFileDataWritten.xflags & 1) {
+                                // End of file
+                                parent.debug('web', "Completed downloads of agent dumpfile, " + onFileDataWritten.xws.xfilelen + " bytes.");
+                                if (onFileDataWritten.xws.xfile) { try { obj.fs.close(onFileDataWritten.xws.xfile, function (err) { }); } catch (ex) { } }
+                                onFileDataWritten.xws.send(JSON.stringify({ action: 'markcoredump' })); // Ask to delete the core dump file
+                                try { onFileDataWritten.xws.close(); } catch (ex) { }
+                            } else {
+                                // Send ack
+                                onFileDataWritten.xws.send(JSON.stringify({ action: 'download', sub: 'ack', id: onFileDataWritten.xws.xid })); // Ask for a directory (test)
+                            }
+                        };
+                        callback.xws = this;
+                        callback.xflags = flags;
+                        obj.fs.write(this.xfile, data, 4, data.length - 4, callback);
+                    } catch (ex) { }
+                } else {
+                    if (flags & 1) {
+                        // End of file
+                        parent.debug('web', "Completed downloads of agent dumpfile, " + this.xfilelen + " bytes.");
+                        if (this.xfile) { try { obj.fs.close(this.xfile, function (err) { }); } catch (ex) { } }
+                        this.send(JSON.stringify({ action: 'markcoredump' })); // Ask to delete the core dump file
+                        try { this.close(); } catch (ex) { }
+                    } else {
+                        // Send ack
+                        this.send(JSON.stringify({ action: 'download', sub: 'ack', id: this.xid })); // Ask for a directory (test)
+                    }
+                }
+            }
+        });
+
+        // If error, do nothing.
+        ws.on('error', function (err) { console.log('Agent file transfer server error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.'); });
+
+        // If closed, do nothing
         ws.on('close', function (req) { });
     }
 
@@ -4428,6 +4512,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
+            obj.app.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
                 PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie) {
                     if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
@@ -4830,6 +4915,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         }
                     });
                 });
+
+                // Setup agent to/from server file transfer handler
+                obj.agentapp.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
             }
 
             // Memory Tracking

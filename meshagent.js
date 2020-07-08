@@ -1375,6 +1375,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         //console.log('CoreDump for agent ' + obj.remoteaddrport);
                         obj.coreDumpPresent = true;
                         // TODO: We need to look at getting the dump uploaded to the server.
+                        if (typeof command.agenthashhex == 'string') { obj.RequestCoreDump(command.agenthashhex); }
                     }
                     break;
                 }
@@ -1553,6 +1554,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
             }
         });
+    }
+
+    // Request that the core dump file on this agent be uploaded to the server
+    obj.RequestCoreDump = function (agenthashhex) {
+        if (agenthashhex.length > 16) { agenthashhex = agenthashhex.substring(0, 16); }
+        const cookie = parent.parent.encodeCookie({ a: 'aft', b: 'coredump', c: obj.agentInfo.agentId + '-' + agenthashhex + '-' + obj.nodeid + '.dmp' }, parent.parent.loginCookieEncryptionKey);
+        obj.send('{"action":"msg","type":"tunnel","value":"*/' + (((domain.dns == null) && (domain.id != '')) ? (domain.id + '/') : '') + 'agenttransfer.ashx?c=' + cookie + '","rights":"4294967295"}');
     }
 
     // Generate a random Intel AMT password

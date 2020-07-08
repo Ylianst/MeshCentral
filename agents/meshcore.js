@@ -959,6 +959,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'coredump':
+                    // Set the current agent coredump situation.
                     if (data.value === true) {
                         // TODO: This replace() below is not ideal, would be better to remove the .exe at the end instead of replace.
                         process.coreDumpLocation = (process.platform == 'win32') ? (process.execPath.replace('.exe', '.dmp')) : (process.execPath + '.dmp');
@@ -967,12 +968,12 @@ function createMeshCore(agent) {
                     }
                     break;
                 case 'getcoredump':
+                    // Ask the agent if a core dump is currently available, if yes, also return the hash of the agent.
                     var r = { action: 'getcoredump', value: (process.coreDumpLocation != null) };
-                    if (process.platform == 'win32') {
-                        r.exists = r.value ? fs.existsSync(process.coreDumpLocation) : false;
-                    } else {
-                        r.exists = (r.value && (process.cwd() != '//')) ? fs.existsSync(process.cwd() + 'core') : false;
-                    }
+                    var coreDumpPath = null;
+                    if (process.platform == 'win32') { coreDumpPath = process.coreDumpLocation; } else { coreDumpPath = (process.cwd() != '//') ? fs.existsSync(process.cwd() + 'core') : null; }
+                    if ((coreDumpPath != null) && (fs.existsSync(coreDumpPath))) { r.exists = (db.Get('CoreDumpTime') != require('fs').statSync(coreDumpPath).mtime); }
+                    if (r.exists == true) { r.agenthashhex = getSHA384FileHash(process.execPath).toString('hex'); }
                     mesh.SendCommand(JSON.stringify(r));
                 default:
                     // Unknown action, ignore it.
@@ -1913,6 +1914,17 @@ function createMeshCore(agent) {
                         }
                         break;
                     }
+                    case 'markcoredump': {
+                        // If we are asking for the coredump file, set the right path.
+                        var coreDumpPath = null;
+                        if (process.platform == 'win32') {
+                            if (fs.existsSync(process.coreDumpLocation)) { coreDumpPath = process.coreDumpLocation; }
+                        } else {
+                            if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { coreDumpPath = process.cwd() + 'core'; }
+                        }
+                        if (coreDumpPath != null) { db.Put('CoreDumpTime', require('fs').statSync(coreDumpPath).mtime); }
+                        break;
+                    }
                     case 'rename': {
                         // Rename a file or folder
                         var oldfullpath = obj.path.join(cmd.path, cmd.oldname);
@@ -1925,13 +1937,20 @@ function createMeshCore(agent) {
                         // Download a file
                         var sendNextBlock = 0;
                         if (cmd.sub == 'start') { // Setup the download
+                            if ((cmd.path == null) && (cmd.ask == 'coredump')) { // If we are asking for the coredump file, set the right path.
+                                if (process.platform == 'win32') {
+                                    if (fs.existsSync(process.coreDumpLocation)) { cmd.path = process.coreDumpLocation; }
+                                } else {
+                                    if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
+                                }
+                            }
                             MeshServerLog('Download: \"' + cmd.path + '\"', this.httprequest);
-                            if (this.filedownload != null) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
+                            if ((cmd.path == null) || (this.filedownload != null)) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
                             this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
                             try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
                             if (this.filedownload) { this.write({ action: 'download', sub: 'start', id: cmd.id }); }
                         } else if ((this.filedownload != null) && (cmd.id == this.filedownload.id)) { // Download commands
-                            if (cmd.sub == 'startack') { sendNextBlock = 8; } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
+                            if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
                         }
                         // Send the next download block(s)
                         while (sendNextBlock > 0) {
@@ -2278,7 +2297,7 @@ function createMeshCore(agent) {
                 }
                 case 'coredump':
                     if (args['_'].length != 1) {
-                        response = "Proper usage: coredump on|off|status"; // Display usage
+                        response = "Proper usage: coredump on|off|status|clear"; // Display usage
                     } else {
                         switch (args['_'][0].toLowerCase())
                         {
@@ -2299,6 +2318,10 @@ function createMeshCore(agent) {
                                         if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { response += '\r\n  CoreDump present at: ' + process.cwd() + 'core'; }
                                     }
                                 }
+                                break;
+                            case 'clear':
+                                db.Put('CoreDumpTime', null);
+                                response = 'coredump db cleared';
                                 break;
                             default:
                                 response = "Proper usage: coredump on|off|status"; // Display usage
