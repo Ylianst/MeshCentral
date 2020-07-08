@@ -978,7 +978,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Set agent core dump
         if ((parent.parent.config.settings != null) && ((parent.parent.config.settings.agentcoredump === true) || (parent.parent.config.settings.agentcoredump === false))) {
             obj.send(JSON.stringify({ action: 'coredump', value: parent.parent.config.settings.agentcoredump }));
-            if (parent.parent.config.settings.agentcoredump === true) { obj.send(JSON.stringify({ action: 'getcoredump' })); }
+            if (parent.parent.config.settings.agentcoredump === true) {
+                // Check if we requested a core dump file in the last minute, if not, ask if one is present.
+                if ((parent.lastCoreDumpRequest == null) || ((Date.now() - parent.lastCoreDumpRequest) >= 60000)) { obj.send(JSON.stringify({ action: 'getcoredump' })); }
+            }
         }
 
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
@@ -1370,12 +1373,27 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'getcoredump': {
+                    // Check if we requested a core dump file in the last minute, if so, ignore this.
+                    if ((parent.lastCoreDumpRequest != null) && ((Date.now() - parent.lastCoreDumpRequest) < 60000)) break;
+
                     // Indicates if the agent has a coredump available
-                    if (command.exists === true) {
-                        //console.log('CoreDump for agent ' + obj.remoteaddrport);
-                        obj.coreDumpPresent = true;
-                        // TODO: We need to look at getting the dump uploaded to the server.
-                        if (typeof command.agenthashhex == 'string') { obj.RequestCoreDump(command.agenthashhex); }
+                    if ((command.exists === true) && (typeof command.agenthashhex == 'string') && (command.agenthashhex.length == 96)) {
+                        // Check if we already have this exact dump file
+                        const coreDumpFile = parent.path.join(parent.parent.datapath, 'coredumps', obj.agentInfo.agentId + '-' + command.agenthashhex + '-' + obj.nodeid + '.dmp');
+                        parent.fs.stat(coreDumpFile, function (err, stats) {
+                            if (stats != null) return;
+                            obj.coreDumpPresent = true;
+
+                            // Check how many files are in the coredumps folder
+                            const coreDumpPath = parent.path.join(parent.parent.datapath, 'coredumps');
+                            parent.fs.readdir(coreDumpPath, function (err, files) {
+                                if ((files != null) && (files.length >= 20)) return; // Don't get more than 20 core dump files.
+
+                                // Get the core dump uploaded to the server.
+                                parent.lastCoreDumpRequest = Date.now();
+                                obj.RequestCoreDump(command.agenthashhex);
+                            });
+                        });
                     }
                     break;
                 }
