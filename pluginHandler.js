@@ -518,7 +518,8 @@ module.exports.pluginHandler = function (parent) {
     obj.handleAdminReq = function (req, res, user, serv) {
         if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
-        if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
+        // path isn't a filename, it is a folder path
+        //if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
         serv.app.set('views', path);
         if ((obj.plugins[req.query.pin] != null) && (typeof obj.plugins[req.query.pin].handleAdminReq == 'function')) {
             obj.plugins[req.query.pin].handleAdminReq(req, res, user);
@@ -530,7 +531,8 @@ module.exports.pluginHandler = function (parent) {
     obj.handleAdminPostReq = function (req, res, user, serv) {
         if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');
-        if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
+        // path isn't a filename, it is a folder path
+        //if (obj.common.IsFilenameValid(path) !== true) { res.sendStatus(401); return; }
         serv.app.set('views', path);
         if ((obj.plugins[req.query.pin] != null) && (typeof obj.plugins[req.query.pin].handleAdminPostReq == 'function')) {
             obj.plugins[req.query.pin].handleAdminPostReq(req, res, user);
