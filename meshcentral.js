@@ -1033,6 +1033,9 @@ function CreateMeshCentralServer(config, args) {
         var bannedDomains = ['public', 'private', 'images', 'scripts', 'styles', 'views']; // List of banned domains
         for (i in obj.config.domains) { for (var j in bannedDomains) { if (i == bannedDomains[j]) { console.log("ERROR: Domain '" + i + "' is not allowed domain name in config.json."); return; } } }
         for (i in obj.config.domains) {
+            // Remove any domains that start with underscore
+            if (i.startsWith('_')) { delete obj.config.domains[i]; continue; }
+
             // Apply default domain settings if present
             if (typeof obj.config.domaindefaults == 'object') { for (var j in obj.config.domaindefaults) { if (obj.config.domains[i][j] == null) { obj.config.domains[i][j] = obj.config.domaindefaults[j]; } } }
 
@@ -2586,6 +2589,7 @@ function mainStart() {
         if (require('os').platform() == 'win32') { for (var i in config.domains) { domainCount++; if (config.domains[i].auth == 'sspi') { sspi = true; } else { allsspi = false; } } } else { allsspi = false; }
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
+            if (i.startsWith('_')) continue;
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
             if (config.domains[i].mstsc === true) { mstsc = true; }
