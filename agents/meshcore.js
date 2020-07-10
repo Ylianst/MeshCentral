@@ -712,6 +712,7 @@ function createMeshCore(agent) {
                                     tunnel.consent = data.consent;
                                     tunnel.privacybartext = data.privacybartext ? data.privacybartext : "Sharing desktop with: {0}";
                                     tunnel.username = data.username;
+                                    tunnel.realname = data.realname ? data.realname : data.username;
                                     tunnel.userid = data.userid;
                                     tunnel.remoteaddr = data.remoteaddr;
                                     tunnel.state = 0;
@@ -1624,10 +1625,10 @@ function createMeshCore(agent) {
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty('connectionCount')) {
                         this.httprequest.desktop.kvm.connectionCount++;
-                        this.httprequest.desktop.kvm.users.push(this.httprequest.username);
+                        this.httprequest.desktop.kvm.users.push(this.httprequest.realname);
                     } else {
                         this.httprequest.desktop.kvm.connectionCount = 1;
-                        this.httprequest.desktop.kvm.users = [this.httprequest.username];
+                        this.httprequest.desktop.kvm.users = [this.httprequest.realname];
                     }
 
                     if ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))) {
@@ -1645,10 +1646,10 @@ function createMeshCore(agent) {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                        var consentMessage = this.httprequest.username + " requesting remote desktop access. Grant access?", consentTitle = 'MeshCentral';
+                        var consentMessage = this.httprequest.realname + " requesting remote desktop access. Grant access?", consentTitle = 'MeshCentral';
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                            if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.username); }
+                            if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.realname); }
                         }
                         var pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
                         pr.ws = this;
@@ -1664,10 +1665,10 @@ function createMeshCore(agent) {
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
                                     // User Notifications is required
-                                    var notifyMessage = this.ws.httprequest.username + " started a remote desktop session.", notifyTitle = "MeshCentral";
+                                    var notifyMessage = this.ws.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
                                     if (this.ws.httprequest.soptions != null) {
                                         if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                        if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.username); }
+                                        if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.realname); }
                                     }
                                     try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                                 }
@@ -1713,10 +1714,10 @@ function createMeshCore(agent) {
                         if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                             // User Notifications is required
                             MeshServerLog("Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                            var notifyMessage = this.httprequest.username + " started a remote desktop session.", notifyTitle = "MeshCentral";
+                            var notifyMessage = this.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
                             if (this.httprequest.soptions != null) {
                                 if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
-                                if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.username); }
+                                if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.realname); }
                             }
                             try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                         } else {
@@ -1789,10 +1790,10 @@ function createMeshCore(agent) {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                        var consentMessage = this.httprequest.username + " requesting remote file Access. Grant access?", consentTitle = 'MeshCentral';
+                        var consentMessage = this.httprequest.realname + " requesting remote file Access. Grant access?", consentTitle = 'MeshCentral';
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                            if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.username); }
+                            if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname); }
                         }
                         var pr = require('message-box').create(consentTitle, consentMessage, 30);
                         pr.ws = this;
@@ -1808,10 +1809,10 @@ function createMeshCore(agent) {
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
                                     // User Notifications is required
-                                    var notifyMessage = this.ws.httprequest.username + " started a remote file session.", notifyTitle = "MeshCentral";
+                                    var notifyMessage = this.ws.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
                                     if (this.ws.httprequest.soptions != null) {
                                         if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                        if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.username); }
+                                        if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.realname); }
                                     }
                                     try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                                 }
@@ -1829,10 +1830,10 @@ function createMeshCore(agent) {
                         if (this.httprequest.consent && (this.httprequest.consent & 4)) {
                             // User Notifications is required
                             MeshServerLog("Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                            var notifyMessage = this.httprequest.username + " started a remote file session.", notifyTitle = "MeshCentral";
+                            var notifyMessage = this.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
                             if (this.httprequest.soptions != null) {
                                 if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
-                                if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.username); }
+                                if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.realname); }
                             }
                             try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                         } else {

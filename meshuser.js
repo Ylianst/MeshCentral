@@ -195,8 +195,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
                         if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
                         command.username = user.name;       // Add user name
+                        command.realname = user.realname;   // Add real name
                         command.userid = user._id;          // Add user id
-                        command.remoteaddr = req.clientIp; // User's IP address
+                        command.remoteaddr = req.clientIp;  // User's IP address
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                         delete command.nodeid;              // Remove the nodeid since it's implied
                         try { agent.send(JSON.stringify(command)); } catch (ex) { }
@@ -218,8 +219,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
                             if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
                             command.username = user.name;           // Add user name
+                            command.realname = user.realname;       // Add real name
                             command.userid = user._id;              // Add user id
-                            command.remoteaddr = req.clientIp; // User's IP address
+                            command.remoteaddr = req.clientIp;      // User's IP address
                             if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                             parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         }
@@ -1835,7 +1837,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Validate and change email
                         if (edituserdomain.usernameisemail !== true) {
-                            if (common.validateString(command.email, 1, 1024) && (chguser.email != command.email)) { chguser.email = command.email.toLowerCase(); change = 1; }
+                            if (common.validateString(command.email, 1, 1024) && (chguser.email != command.email)) {
+                                if (command.email == '') { delete chguser.email; } else { chguser.email = command.email.toLowerCase(); }
+                                change = 1;
+                            }
+                        }
+
+                        // Validate and change realm name
+                        if (common.validateString(command.realname, 1, 256) && (chguser.realname != command.realname)) {
+                            if (command.realname == '') { delete chguser.realname; } else { chguser.realname = command.realname; }
+                            change = 1;
                         }
 
                         // Make changes

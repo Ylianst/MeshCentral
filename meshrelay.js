@@ -95,6 +95,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     command.consent = mesh.consent;     // Add user consent
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                     command.username = user.name;       // Add user name
+                    command.realname = user.realname;   // Add real name
                     if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                     delete command.nodeid;              // Remove the nodeid since it's implyed.
                     agent.send(JSON.stringify(command));
@@ -113,6 +114,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         command.consent = mesh.consent;         // Add user consent
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                         command.username = user.name;           // Add user name
+                        command.realname = user.realname;       // Add real name
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                         parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         return true;
