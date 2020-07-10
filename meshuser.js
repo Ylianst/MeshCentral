@@ -1796,11 +1796,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                     // Perform email invitation
                                     if ((command.emailInvitation == true) && (command.emailVerified == true) && command.email && parent.parent.mailserver) {
-                                        parent.parent.mailserver.sendAccountInviteMail(newuserdomain, user.name, newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
+                                        parent.parent.mailserver.sendAccountInviteMail(newuserdomain, (user.realname ? user.realname : user.name), newusername, command.email.toLowerCase(), command.pass, parent.getLanguageCodes(req));
                                     }
 
                                     // Log in the auth log
-                                    if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created user account ' + newuser.name); }
+                                    if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created a user account ' + newuser.name); }
 
                                     // OK Response
                                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'adduser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -3643,7 +3643,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Perform email invitation
-                    parent.parent.mailserver.sendAgentInviteMail(domain, user.name, command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire, parent.getLanguageCodes(req));
+                    parent.parent.mailserver.sendAgentInviteMail(domain, (user.realname ? user.realname : user.name), command.email.toLowerCase(), command.meshid, command.name, command.os, command.msg, command.flags, command.expire, parent.getLanguageCodes(req));
 
                     // Send a response if needed
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'inviteAgent', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
