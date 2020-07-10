@@ -4300,14 +4300,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
-        // Setup websocket options if needed.
-        var webSocketOptions;
-        if (args.wscompression === true) { webSocketOptions = { wsOptions: { perMessageDeflate: true } } }
-
         // Start the server, only after users and meshes are loaded from the database.
         if (obj.args.notls || obj.args.tlsoffload) {
             // Setup the HTTP server without TLS
-            obj.expressWs = require('express-ws')(obj.app, webSocketOptions);
+            obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
         } else {
             // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
             //const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 }; // This does not work with TLS 1.3
@@ -4319,7 +4315,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             //obj.tlsServer.on('tlsClientError', function (err) { console.log('tlsClientError', err); });
             obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
             obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
-            obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, webSocketOptions);
+            obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
         }
 
         // Start a second agent-only server if needed
@@ -4332,7 +4328,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             if (agentPortTls == false) {
                 // Setup the HTTP server without TLS
-                obj.expressWsAlt = require('express-ws')(obj.agentapp, webSocketOptions);
+                obj.expressWsAlt = require('express-ws')(obj.agentapp, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
             } else {
                 // Setup the agent HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
                 // If TLS is used on the agent port, we always use the default TLS certificate.
@@ -4343,7 +4339,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 //obj.tlsAltServer.on('tlsClientError', function (err) { console.log('tlsClientError', err); });
                 obj.tlsAltServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
                 obj.tlsAltServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
-                obj.expressWsAlt = require('express-ws')(obj.agentapp, obj.tlsAltServer, webSocketOptions);
+                obj.expressWsAlt = require('express-ws')(obj.agentapp, obj.tlsAltServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
             }
         }
 
