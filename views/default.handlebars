@@ -11349,6 +11349,7 @@
             var x = '<div style=min-height:80px><table style=width:100%>';
             if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", user.name); } // If title bar is hidden, display the user name here
             var email = user.email?EscapeHtml(user.email):'<i>' + "Not set" + '</i>', everify = '';
+            var realname = user.realname?EscapeHtml(user.realname):'<i>' + "Not set" + '</i>';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
 
             if ((serverinfo.crossDomain) || (debugmode != 0)) {
@@ -11359,10 +11360,12 @@
                 if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", EscapeHtml(user._id.split('/')[2])); }
             }
 
-            if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email.
+            if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email or real name
                 x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
+                x += addDeviceAttribute("Real Name", realname + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserRealNameChangeDialog(event,"' + userid + '") />');
             } else {
                 x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>');
+                x += addDeviceAttribute("Real Name", realname);
             }
 
             if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
@@ -11482,6 +11485,22 @@
 
         // Send to the server the user's new phone number
         function p30editPhoneEx() { meshserver.send({ action: 'edituser', id: currentUser._id, phone: Q('d2phoneinput').value }); }
+
+        // Display the user's real name change dialog box
+        function p30showUserRealNameChangeDialog(event) {
+            if (xxdialogMode) return false;
+            var x = '';
+            x += addHtmlValue("Real Name", '<input id=dp30realname style=width:230px maxlength=256 />');
+            setDialogMode(2, format("Change Real Name for {0}", EscapeHtml(currentUser.name)), 3, p30showUserRealNameChangeDialogEx, x);
+            Q('dp30realname').focus();
+            Q('dp30realname').value = (currentUser.realname?currentUser.realname:'');
+            return false;
+        }
+
+        // Send to the server the new user's real name
+        function p30showUserRealNameChangeDialogEx() {
+            meshserver.send({ action: 'edituser', id: currentUser._id, realname: Q('dp30realname').value });
+        }
 
         // Display the user's email change dialog box
         function p30showUserEmailChangeDialog(event) {

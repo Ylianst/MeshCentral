@@ -140,6 +140,7 @@
       "_geoLocation": true,
       "_novnc": false,
       "_mstsc": true,
+      "_WebEmailsPath": "/myserver/email-templates",
       "_consentMessages": {
         "title": "MeshCentral",
         "desktop": "{0} requesting remote desktop access. Grant access?",
