@@ -1844,7 +1844,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // Validate and change realm name
-                        if (common.validateString(command.realname, 1, 256) && (chguser.realname != command.realname)) {
+                        if (common.validateString(command.realname, 0, 256) && (chguser.realname != command.realname)) {
                             if (command.realname == '') { delete chguser.realname; } else { chguser.realname = command.realname; }
                             change = 1;
                         }
