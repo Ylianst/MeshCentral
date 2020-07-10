@@ -48,12 +48,18 @@
     "node-forge": "^0.8.4",
     "ws": "^6.2.1",
     "xmldom": "^0.1.27",
-    "yauzl": "^2.10.0"
+    "yauzl": "^2.10.0",
+    "snyk": "^1.361.3"
   },
   "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/Ylianst/MeshCentral.git"
   },
-  "readme": "readme.txt"
+  "readme": "readme.txt",
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
