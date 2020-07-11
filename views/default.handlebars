@@ -4233,7 +4233,7 @@
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option><option value=102>' + "Move to device group" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=106>' + "Run commands" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option><option value=102>' + "Move to device group" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -4273,6 +4273,26 @@
             } else if (op == 105) {
                 // Export device information
                 p2downloadDeviceInfo();
+            } else if (op == 106) {
+                // Run commands
+                var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
+                for (var i in chkNodeIds) { 
+                    var n = getNodeFromId(chkNodeIds[i]);
+                    if (n.agent) { if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                }
+                if ((wintype == true) || (linuxtype == true)) {
+                    var x = "Run commands on selected devices." + '<br /><br />';
+                    if (wintype == true) {
+                        x += '<select id=d2cmdtype style=width:100%>';
+                        x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
+                        if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
+                        x += '</select>';
+                    }
+                    x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+                    setDialogMode(2, "Run Commands", 3, d2groupActionFunctionRunCommands, x);
+                    Q('d2runcmd').focus();
+                    //QE('idx_dlgOkButton', true);
+                }
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
@@ -4309,6 +4329,11 @@
 
         function d2groupActionFunctionDelCheck() { QE('idx_dlgOkButton', Q('d2check').checked); }
         function d2groupActionFunctionDelExec() { meshserver.send({ action: 'removedevices', nodeids: getCheckedDevices() }); uncheckAllDevices(); }
+        function d2groupActionFunctionRunCommands() {
+            var type = 3;
+            try { type = parseInt(Q('d2cmdtype').value); } catch (ex) { }
+            meshserver.send({ action: 'runcommands', nodeids: getCheckedDevices(), type: type, cmds: Q('d2runcmd').value }); uncheckAllDevices();
+        }
 
         function onSortSelectChange(skipsave) {
             sort = document.getElementById('sortselect').selectedIndex;
@@ -5763,7 +5788,7 @@
             var x = "Select an operation to perform on this device." + '<br /><br />';
             var y = '<select id=d2deviceop style=float:right;width:250px>';
             if ((rights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
-            if ((rights & 8) != 0) { y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; } // Remote control permission
+            if ((rights & 8) != 0) { y += '<option value=106>' + "Run Commands" + '</option><option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; } // Remote control permission
             if ((currentNode.conn & 16) != 0) { y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
             if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
@@ -5782,10 +5807,27 @@
             } else if (op == 104) {
                 // Uninstall agent
                 p10showSendUninstallAgentDialog([currentNode._id]);
+            } else if (op == 106) {
+                // Run commands
+                var wintype = false, linuxtype = false;
+                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if ((wintype == true) || (linuxtype == true)) {
+                    var x = "Run commands on this device." + '<br /><br />';
+                    if (wintype == true) { x += '<select id=d2cmdtype style=width:100%><option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option></select>'; }
+                    x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+                    setDialogMode(2, "Run Commands", 3, deviceRunCmdsFunctionEx, x);
+                    Q('d2runcmd').focus();
+                }
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) });
             }
+        }
+
+        function deviceRunCmdsFunctionEx() {
+            var cmdType = 3;
+            if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { cmdType = Q('d2cmdtype').value; }
+            meshserver.send({ action: 'runcommands', nodeids: [ currentNode._id ], type: parseInt(cmdType), cmds: Q('d2runcmd').value });
         }
 
         // Called when MeshCommander needs new credentials or updated credentials.
@@ -8043,7 +8085,6 @@
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { if (eventList[i].h == h) { xevent = eventList[i]; break; } }
             if (xevent) {
-                console.log(xevent);
                 var x = '<div style=overflow-y:auto>';
                 for (var i in xevent) {
                     if ((i == 'h') || (i == '_id') || (i == 'ids') || (i == 'domain') || (xevent[i] == null) || (typeof xevent[i] == 'object')) continue;

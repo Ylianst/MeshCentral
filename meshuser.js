@@ -3338,18 +3338,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Get('if' + node._id, function (err, nodeifs) {
                                 if ((nodeifs != null) && (nodeifs.length == 1)) {
                                     var macs = [], nodeif = nodeifs[0];
-                                    for (var i in nodeif.netif) { if (nodeif.netif[i].mac) { macs.push(nodeif.netif[i].mac); } }
+                                    for (var j in nodeif.netif) { if (nodeif.netif[j].mac) { macs.push(nodeif.netif[j].mac); } }
 
                                     // Have the server send a wake-on-lan packet (Will not work in WAN-only)
                                     if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs); }
 
                                     // Get the list of mesh this user as access to
                                     var targetMeshes = [];
-                                    for (i in user.links) { targetMeshes.push(i); } // TODO: Include used security groups!!
+                                    for (j in user.links) { targetMeshes.push(j); } // TODO: Include used security groups!!
 
                                     // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
-                                    for (i in parent.wsagents) {
-                                        var agent = parent.wsagents[i];
+                                    for (j in parent.wsagents) {
+                                        var agent = parent.wsagents[j];
                                         if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
                                             //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
                                             try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
@@ -3360,6 +3360,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                         // Confirm we may be doing something (TODO)
                         try { ws.send(JSON.stringify({ action: 'wakedevices' })); } catch (ex) { }
+                    }
+                    break;
+                }
+            case 'runcommands':
+                {
+                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+                    if (typeof command.type != 'number') break; // Check command type
+                    if (typeof command.cmds != 'string') break; // Check commands
+
+                    for (i in command.nodeids) {
+                        // Get the node and the rights for this node
+                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                            // Check we have the rights to run commands on this device
+                            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+
+                            // Get the agent and run the commands
+                            var agent = parent.wsagents[node._id];
+                            if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                // Check if this agent is correct for this command type
+                                // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
+                                var commandsOk = false;
+                                if ((agent.agentInfo.agentId > 0) && (agent.agentInfo.agentId < 5)) {
+                                    // Windows Agent
+                                    if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
+                                } else {
+                                    // Non-Windows Agent
+                                    if (command.type == 3) { commandsOk = true; }
+                                }
+                                if (commandsOk == true) {
+                                    try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds })); } catch (ex) { }
+                                }
+                            }
+                        });
                     }
                     break;
                 }
