@@ -5105,6 +5105,7 @@
     },
     {
       "en": "Change Real Name for {0}",
+      "nl": "Verander echte naam voor {0}",
       "xloc": [
         "default.handlebars->27->1706"
       ]
@@ -12875,6 +12876,7 @@
     },
     {
       "en": "If valid, reset mail sent.",
+      "nl": "Indien geldig, verzend de reset e-mail.",
       "xloc": [
         "login-mobile.handlebars->5->1",
         "login.handlebars->5->1"
@@ -15495,6 +15497,7 @@
     },
     {
       "en": "Linux/BSD/macOS Command Shell",
+      "nl": "Linux/BSD/macOS Command Shell",
       "xloc": [
         "default.handlebars->27->434"
       ]
@@ -21224,6 +21227,7 @@
     },
     {
       "en": "Real Name",
+      "nl": "Echte naam",
       "xloc": [
         "default.handlebars->27->1650",
         "default.handlebars->27->1652",
@@ -22509,6 +22513,7 @@
     },
     {
       "en": "Run Commands",
+      "nl": "Voer opdrachten uit",
       "xloc": [
         "default.handlebars->27->435",
         "default.handlebars->27->662",
@@ -22524,18 +22529,21 @@
     },
     {
       "en": "Run commands",
+      "nl": "Voer opdrachten uit",
       "xloc": [
         "default.handlebars->27->420"
       ]
     },
     {
       "en": "Run commands on selected devices.",
+      "nl": "Voer opdrachten uit op geselecteerde apparaten.",
       "xloc": [
         "default.handlebars->27->431"
       ]
     },
     {
       "en": "Run commands on this device.",
+      "nl": "Voer opdrachten uit op dit apparaat.",
       "xloc": [
         "default.handlebars->27->670"
       ]
@@ -29316,6 +29324,7 @@
     },
     {
       "en": "Windows Command Prompt",
+      "nl": "Windows opdrachtprompt",
       "xloc": [
         "default.handlebars->27->432",
         "default.handlebars->27->671"
@@ -29359,6 +29368,7 @@
     },
     {
       "en": "Windows PowerShell",
+      "nl": "Windows PowerShell",
       "xloc": [
         "default.handlebars->27->433",
         "default.handlebars->27->672"
@@ -30005,6 +30015,17 @@
     },
     {
       "en": "bytes",
+      "cs": "bajtů",
+      "de": "Bytes",
+      "es": "bytes",
+      "fr": "octets",
+      "hi": "बाइट्स",
+      "ja": "バイト",
+      "ko": "B",
+      "nl": "bytes",
+      "pt": "bytes",
+      "ru": "байт",
+      "zh-chs": "個字節",
       "xloc": [
         "messenger.handlebars->13->10",
         "messenger.handlebars->13->12"
