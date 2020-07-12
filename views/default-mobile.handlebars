@@ -662,6 +662,7 @@
                     <option value=7>Alt-F4</option>
                     <option value=8>Ctrl-W</option>
                     <option value=9>Alt-Tab</option>
+                    <option value=12>Shift-F10</option>
                 </select>
             </div>
             <div id=dialog7 style="margin:auto;margin:3px">
@@ -3012,6 +3013,12 @@
                     desktop.m.sendkey([[0xff09, 1], [0xff09, 0]]); // Intel AMT: 'TAB' press, 'TAB' release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9]]); // MeshAgent: 'TAB' press, 'TAB' release
+                }
+            } else if (ks == 12) { // Shift-F10
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[0xffe1, 1], [0xffc7, 1], [0xffc7, 0], [0xffe1, 0]]); // Intel AMT: Left-Shift Down, F10 down, F10 up, Left-Shift Up
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 16], [desktop.m.KeyAction.DOWN, 121], [desktop.m.KeyAction.UP, 121], [desktop.m.KeyAction.UP, 16]]); // MeshAgent: Left-Shift Down, F10 down, F10 up, Left-Shift Up
                 }
             }
         }

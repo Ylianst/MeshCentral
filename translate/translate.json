@@ -24104,6 +24104,12 @@
       ]
     },
     {
+      "en": "Shift-F10",
+      "xloc": [
+        "default-mobile.handlebars->dialog->3->dialog3->deskkeys->25"
+      ]
+    },
+    {
       "cs": "Zobrazit",
       "de": "Anzeigen",
       "en": "Show",
