@@ -175,8 +175,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Route a command to a target node
-    function routeCommandToNode(command) {
-        if (common.validateString(command.nodeid, 8, 128) == false) return false;
+    function routeCommandToNode(command, func) {
+        if (common.validateString(command.nodeid, 8, 128) == false) { if (func) { func(false); } return false; }
         var splitnodeid = command.nodeid.split('/');
         // Check that we are in the same domain and the user has rights over this node.
         if ((splitnodeid[0] == 'node') && (splitnodeid[1] == domain.id)) {
@@ -201,7 +201,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                         delete command.nodeid;              // Remove the nodeid since it's implied
                         try { agent.send(JSON.stringify(command)); } catch (ex) { }
-                    }
+                    } else { if (func) { func(false); } }
                 });
             } else {
                 // Check if a peer server is connected to this agent
@@ -224,11 +224,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             command.remoteaddr = req.clientIp;      // User's IP address
                             if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                             parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
-                        }
+                        } else { if (func) { func(false); } }
                     });
-                }
+                } else { if (func) { func(false); } return false; }
             }
-        }
+        } else { if (func) { func(false); } return false; }
         return true;
     }
 
@@ -391,7 +391,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
 
             // Build server information object
-            var serverinfo = { name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now() };
+            var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now() };
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
@@ -1207,8 +1207,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
+                    // If a response is needed, set a callback function
+                    var func = null;
+                    if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
+
                     // Route this command to a target node
-                    routeCommandToNode(command);
+                    routeCommandToNode(command, func);
                     break;
                 }
             case 'events':
