@@ -3370,10 +3370,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (typeof command.cmds != 'string') break; // Check commands
 
                     for (i in command.nodeids) {
+                        var nodeid = command.nodeids[i], err = null;
+
+                        // Argument validation
+                        if (common.validateString(nodeid, 1, 1024) == false) { err = 'Invalid nodeid'; }  // Check nodeid
+                        else {
+                            if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
+                            if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                        }
+                        if (err != null) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: err })); } catch (ex) { } }
+                            continue;
+                        }
+
                         // Get the node and the rights for this node
-                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
+                            // Check if this node was found
+                            if (node == null) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid nodeid' })); } catch (ex) { } }
+                                return;
+                            }
+
                             // Check we have the rights to run commands on this device
-                            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+                            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // Get the agent and run the commands
                             var agent = parent.wsagents[node._id];
@@ -3384,13 +3406,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((agent.agentInfo.agentId > 0) && (agent.agentInfo.agentId < 5)) {
                                     // Windows Agent
                                     if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
+                                    else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
                                 } else {
                                     // Non-Windows Agent
                                     if (command.type == 3) { commandsOk = true; }
+                                    else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
                                 }
                                 if (commandsOk == true) {
+                                    // Send the commands to the agent
                                     try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds })); } catch (ex) { }
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                                } else {
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
                                 }
+                            } else {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
                             }
                         });
                     }
