@@ -1638,11 +1638,12 @@ function createMeshCore(agent) {
                             }
                         } else {
                             for (var i in this.httprequest.desktop.kvm.users) {
-                                if (this.httprequest.desktop.kvm.users[i] == this.httprequest.username && this.httprequest.desktop.kvm.connectionBar) {
+                                if ((this.httprequest.desktop.kvm.users[i] == this.httprequest.username) && this.httprequest.desktop.kvm.connectionBar) {
+                                    for (var j in this.httprequest.desktop.kvm.rusers) { if (this.httprequest.desktop.kvm.rusers[j] == this.httprequest.realname) { this.httprequest.desktop.kvm.rusers.splice(j, 1); break; } }
                                     this.httprequest.desktop.kvm.users.splice(i, 1);
                                     this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                                     this.httprequest.desktop.kvm.connectionBar.close();
-                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.sort().join(', ')), require('MeshAgent')._tsid);
+                                    this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.join(', ')).replace('{1}', this.httprequest.desktop.kvm.rusers.join(', ')), require('MeshAgent')._tsid);
                                     this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                                     this.httprequest.desktop.kvm.connectionBar.on('close', function () {
                                         MeshServerLog("Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
@@ -1658,10 +1659,14 @@ function createMeshCore(agent) {
                     };
                     if (this.httprequest.desktop.kvm.hasOwnProperty('connectionCount')) {
                         this.httprequest.desktop.kvm.connectionCount++;
-                        this.httprequest.desktop.kvm.users.push(this.httprequest.realname);
+                        this.httprequest.desktop.kvm.rusers.push(this.httprequest.realname);
+                        this.httprequest.desktop.kvm.users.push(this.httprequest.username);
+                        this.httprequest.desktop.kvm.rusers.sort();
+                        this.httprequest.desktop.kvm.users.sort();
                     } else {
                         this.httprequest.desktop.kvm.connectionCount = 1;
-                        this.httprequest.desktop.kvm.users = [this.httprequest.realname];
+                        this.httprequest.desktop.kvm.rusers = [this.httprequest.realname];
+                        this.httprequest.desktop.kvm.users = [this.httprequest.username];
                     }
 
                     if ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))) {
@@ -1682,7 +1687,7 @@ function createMeshCore(agent) {
                         var consentMessage = this.httprequest.realname + " requesting remote desktop access. Grant access?", consentTitle = 'MeshCentral';
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                            if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.realname); }
+                            if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                         }
                         var pr = require('message-box').create(consentTitle, consentMessage, 30, null, tsid);
                         pr.ws = this;
@@ -1701,7 +1706,7 @@ function createMeshCore(agent) {
                                     var notifyMessage = this.ws.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
                                     if (this.ws.httprequest.soptions != null) {
                                         if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                        if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.realname); }
+                                        if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
                                     }
                                     try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                                 }
@@ -1712,7 +1717,7 @@ function createMeshCore(agent) {
                                         this.ws.httprequest.desktop.kvm.connectionBar.close();
                                     }
                                     try {
-                                        this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.users.sort().join(', ')), require('MeshAgent')._tsid);
+                                        this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.users.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.rusers.join(', ')), require('MeshAgent')._tsid);
                                         MeshServerLog("Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     }
                                     catch (xx) {
@@ -1750,7 +1755,7 @@ function createMeshCore(agent) {
                             var notifyMessage = this.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
                             if (this.httprequest.soptions != null) {
                                 if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
-                                if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.realname); }
+                                if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                             }
                             try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                         } else {
@@ -1763,7 +1768,7 @@ function createMeshCore(agent) {
                                 this.httprequest.desktop.kvm.connectionBar.close();
                             }
                             try {
-                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.sort().join(', ')), require('MeshAgent')._tsid);
+                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
                                 MeshServerLog("Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
                             }
                             catch (xx) {
@@ -1826,7 +1831,7 @@ function createMeshCore(agent) {
                         var consentMessage = this.httprequest.realname + " requesting remote file Access. Grant access?", consentTitle = 'MeshCentral';
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                            if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname); }
+                            if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                         }
                         var pr = require('message-box').create(consentTitle, consentMessage, 30);
                         pr.ws = this;
@@ -1845,7 +1850,7 @@ function createMeshCore(agent) {
                                     var notifyMessage = this.ws.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
                                     if (this.ws.httprequest.soptions != null) {
                                         if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                        if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.realname); }
+                                        if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
                                     }
                                     try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                                 }
@@ -1866,7 +1871,7 @@ function createMeshCore(agent) {
                             var notifyMessage = this.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
                             if (this.httprequest.soptions != null) {
                                 if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
-                                if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.realname); }
+                                if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                             }
                             try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                         } else {
