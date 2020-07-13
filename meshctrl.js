@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -41,6 +41,7 @@ if (args['_'].length == 0) {
     console.log("  GenerateInviteLink        - Create an invitation link.");
     console.log("  Broadcast                 - Display a message to all online users.");
     console.log("  ShowEvents                - Display real-time server events in JSON format.");
+    console.log("  RunCommand                - Run a shell command on a remote device.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
@@ -155,6 +156,12 @@ if (args['_'].length == 0) {
         case 'generateinvitelink': {
             if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id [groupid] or --group [groupname]"); }
             else if (args.hours == null) { console.log("Invitation validity period missing, use --hours [hours]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'runcommand': {
+            if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
+            else if (args.run == null) { console.log("Missing run, use --run \"command\""); }
             else { ok = true; }
             break;
         }
@@ -408,6 +415,17 @@ if (args['_'].length == 0) {
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --raw                  - Output raw data in JSON format.");
                         console.log("  --json                 - Give results in JSON format.");
+                        break;
+                    }
+                    case 'runcommand': {
+                        console.log("Run a shell command on a remote device, Example usages:\r\n");
+                        console.log("  MeshCtrl RunCommand --id deviceid --run \"command\"");
+                        console.log("  MeshCtrl RunCommand --id deviceid --run \"command\" --powershell");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("  --run \"[command]\"    - Shell command to execute on the remote device.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --powershell           - Run in Windows PowerShell.");
                         break;
                     }
                     default: {
@@ -768,6 +786,10 @@ function serverConnect() {
                 ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
                 break;
             }
+            case 'runcommand': {
+                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl' }));
+                break;
+            }
         }
     });
 
@@ -847,6 +869,7 @@ function serverConnect() {
             case 'adddeviceuser': //
             case 'createusergroup': //
             case 'deleteusergroup': //
+            case 'runcommands':
             case 'userbroadcast': { // BROADCAST
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
