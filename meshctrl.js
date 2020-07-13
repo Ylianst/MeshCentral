@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -42,6 +42,7 @@ if (args['_'].length == 0) {
     console.log("  Broadcast                 - Display a message to all online users.");
     console.log("  ShowEvents                - Display real-time server events in JSON format.");
     console.log("  RunCommand                - Run a shell command on a remote device.");
+    console.log("  Shell                     - Access command shell of a remote device.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
@@ -162,6 +163,11 @@ if (args['_'].length == 0) {
         case 'runcommand': {
             if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
             else if (args.run == null) { console.log("Missing run, use --run \"command\""); }
+            else { ok = true; }
+            break;
+        }
+        case 'shell': {
+            if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
             else { ok = true; }
             break;
         }
@@ -426,6 +432,16 @@ if (args['_'].length == 0) {
                         console.log("  --run \"[command]\"    - Shell command to execute on the remote device.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --powershell           - Run in Windows PowerShell.");
+                        break;
+                    }
+                    case 'shell': {
+                        console.log("Access a command shell on a remote device, Example usages:\r\n");
+                        console.log("  MeshCtrl Shell --id deviceid");
+                        console.log("  MeshCtrl Shell --id deviceid --powershell");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --powershell           - Run a Windows PowerShell.");
                         break;
                     }
                     default: {
@@ -790,6 +806,10 @@ function serverConnect() {
                 ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl' }));
                 break;
             }
+            case 'shell': {
+                ws.send("{\"action\":\"authcookie\"}");
+                break;
+            }
         }
     });
 
@@ -811,6 +831,7 @@ function serverConnect() {
         }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
+                settings.currentDomain = data.serverinfo.domain;
                 if (settings.cmd == 'serverinfo') {
                     if (args.json) {
                         console.log(JSON.stringify(data.serverinfo, ' ', 2));
@@ -818,6 +839,15 @@ function serverConnect() {
                         for (var i in data.serverinfo) { console.log(i + ':', data.serverinfo[i]); }
                     }
                     process.exit();
+                }
+                break;
+            }
+            case 'authcookie': { // SHELL
+                if (settings.cmd == 'shell') {
+                    if ((args.id.split('/') != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
+                    var id = getRandomHex(6);
+                    ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=1&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
+                    connectShell(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=1&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.cookie));
                 }
                 break;
             }
@@ -858,6 +888,7 @@ function serverConnect() {
                 }
                 break;
             }
+            case 'msg': // SHELL
             case 'adduser': // ADDUSER
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
@@ -1055,6 +1086,54 @@ function serverConnect() {
     });
 }
 
+// Connect tunnel to a remote agent shell
+function connectShell(url) {
+    // Setup WebSocket options
+    var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
+
+    // Setup the HTTP proxy if needed
+    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(require('url').parse(args.proxy)); }
+
+    // Connect the WebSocket
+    console.log('Connecting...');
+    const WebSocket = require('ws');
+    settings.tunnelwsstate = 0;
+    settings.tunnelws = new WebSocket(url, options);
+    settings.tunnelws.on('open', function () { console.log('Waiting for Agent...'); }); // Wait for agent connection
+    settings.tunnelws.on('close', function () { console.log('Connection Closed.'); process.exit(); });
+    settings.tunnelws.on('error', function (err) { console.log(err); process.exit(); });
+    settings.tunnelws.on('message', function (rawdata) {
+        var data = rawdata.toString();
+        if (settings.tunnelwsstate == 1) {
+            process.stdout.write(data);
+        } else if (settings.tunnelwsstate == 0) {
+            if (data == 'c') {
+                // Send terminal size
+                var termSize = null;
+                if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
+                if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'options', cols: termSize[0], rows: termSize[1] })); }
+                console.log('Connected.');
+                settings.tunnelwsstate = 1;
+                settings.tunnelws.send('1');
+            }
+            else if (data == 'cr') { console.log('Connected, session is being recorded.'); settings.tunnelwsstate = 1; settings.tunnelws.send('1'); }
+            process.stdin.setEncoding('utf8');
+            process.stdin.setRawMode(true);
+            process.stdout.setEncoding('utf8');
+            process.stdin.unpipe(process.stdout);
+            process.stdout.unpipe(process.stdin);
+            process.stdin.on('data', function (data) { settings.tunnelws.send(Buffer.from(data)); });
+            //process.stdin.on('readable', function () { var chunk; while ((chunk = process.stdin.read()) !== null) { settings.tunnelws.send(Buffer.from(chunk)); } });
+            process.stdin.on('end', function () { process.exit(); });
+            process.stdout.on('resize', function() {
+                var termSize = null;
+                if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
+                if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: termSize[0], rows: termSize[1] })); }
+            });
+        }
+    });
+}
+
 // Encode an object as a cookie using a key using AES-GCM. (key must be 32 bytes or more)
 function encodeCookie(o, key) {
     try {
@@ -1069,6 +1148,7 @@ function encodeCookie(o, key) {
 // Generate a random Intel AMT password
 function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
 function getRandomAmtPassword() { var p; do { p = Buffer.from(crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
+function getRandomHex(count) { return Buffer.from(crypto.randomBytes(count), 'binary').toString('hex'); }
 function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 
 function displayDeviceInfo(sysinfo, lastconnect, network) {
