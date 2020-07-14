@@ -3939,7 +3939,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
                 if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
                     meshsettings += 'MeshServer=local\r\n';
-                    if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (typeof obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
+                    if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
                 }
                 if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
                 if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
@@ -4123,7 +4123,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
         if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
             meshsettings += 'MeshServer=local\r\n';
-            if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (typeof obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
+            if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
         if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
@@ -4223,7 +4223,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
         if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
             meshsettings += 'MeshServer=local\r\n';
-            if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (typeof obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
+            if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
         if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
