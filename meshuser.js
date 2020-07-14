@@ -175,7 +175,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     // Route a command to a target node
-    function routeCommandToNode(command, func) {
+    function routeCommandToNode(command, requiredRights, requiredNonRights, func) {
         if (common.validateString(command.nodeid, 8, 128) == false) { if (func) { func(false); } return false; }
         var splitnodeid = command.nodeid.split('/');
         // Check that we are in the same domain and the user has rights over this node.
@@ -187,6 +187,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
                     var mesh = parent.meshes[agent.dbMeshKey];
                     if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
+                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
+                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
+
                         command.sessionid = ws.sessionId;   // Set the session id, required for responses
                         command.rights = rights;            // Add user rights flags to the message
                         command.consent = 0;
@@ -209,6 +212,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
+                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
+                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
+
                         var mesh = parent.meshes[routing.meshid];
                         if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
                             command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
@@ -1182,6 +1188,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'msg':
                 {
+                    // Rights check
+                    var requiredRights = null, requiredNonRights = null;
+
                     // Before routing this command, let's do some security checking.
                     // If this is a tunnel request, we need to make sure the NodeID in the URL matches the NodeID in the command.
                     if (command.type == 'tunnel') {
@@ -1190,6 +1199,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         try { url = require('url').parse(command.value, true); } catch (ex) { }
                         if (url == null) break; // Bad URL
                         if (url.query && url.query.nodeid && (url.query.nodeid != command.nodeid)) break; // Bad NodeID in URL query string
+
+                        // Check rights
+                        if (url.query.p == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
+                        else if ((url.query.p == '4') || (url.query.p == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
 
                         // Add user consent messages
                         command.soptions = {};
@@ -1212,7 +1225,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
 
                     // Route this command to a target node
-                    routeCommandToNode(command, func);
+                    routeCommandToNode(command, requiredRights, requiredNonRights, func);
                     break;
                 }
             case 'events':
