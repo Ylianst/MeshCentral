@@ -7,25 +7,26 @@
     "settings": {
       "type": "object",
       "properties": {
-        "cert": { "type": "string" },
+        "cert": { "type": "string", "description": "Set this to the primary DNS name of this MeshCentral server." },
         "mongoDb": { "type": "string" },
         "mongoDbName": { "type": "string" },
         "mongoDbChangeStream": { "type": "boolean" },
         "mongoDumpPath": { "type": "string" },
-        "WANonly": { "type": "boolean", "default": false },
-        "LANonly": { "type": "boolean", "default": false },
+        "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
+        "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
         "sessionTime": { "type": "integer" },
         "sessionKey": { "type": "string" },
         "sessionSameSite": { "type": "string" },
         "dbEncryptKey": { "type": "string" },
+        "multicastKey": { "type": "string", "description": "When set, encrypts all multicast LAN traffic to agents using this key. This is only useful in LAN mode when agents and tools will multicast to find the server." },
         "dbRecordsEncryptKey": { "type": "string" },
         "dbRecordsDecryptKey": { "type": "string" },
         "dbExpire": {
           "type": "object",
           "properties": {
-            "events": { "type": "integer" },
-            "powerevents": { "type": "integer" },
-            "statsevents": { "type": "integer" }
+            "events": { "type": "integer", "default": 1728000, "description": "Amount of time in seconds that events are kept in the database." },
+            "powerevents": { "type": "integer", "default": 864000, "description": "Amount of time in seconds that device power events are kept in the database." },
+            "statsevents": { "type": "integer", "default": 2592000, "description": "Amount of time in seconds that server statistics are kept in the database." }
           }
         },
         "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
@@ -42,7 +43,7 @@
         "agentCoreDump": { "type": "boolean", "default": false, "description": "Automatically activates and transfers any agent crash dump files to the server in meshcentral-data/coredumps." },
         "exactPorts": { "type": "boolean", "default": false },
         "allowLoginToken": { "type": "boolean", "default": false },
-        "allowFraming": { "type": "boolean", "default": false },
+        "allowFraming": { "type": "boolean", "default": false, "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe." },
         "cookieIpCheck": { "type": "boolean" },
         "cookieEncoding": { "type": "string", "enum": [ "hex", "base64" ], "default": "base64", "description": "Encoding format of cookies in the HTTP headers, this is typically Base64 but some reverse proxies will require HEX." },
         "webRTC": { "type": "boolean", "default": false, "description": "When enabled, allows use of WebRTC to allow direct network traffic between the agent and browser." },
