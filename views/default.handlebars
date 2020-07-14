@@ -12831,7 +12831,7 @@
             if ((mesh == null) || (mesh.links == null)) { return 0; }
 
             // Check if super user
-            if (serverinfo.manageAllDeviceGroups) return 0xFFFFFFFF;
+            if (serverinfo.manageAllDeviceGroups && (userid == userinfo._id)) return 0xFFFFFFFF;
 
             // Check device group link permission
             var rights = 0, r = mesh.links[userid];
@@ -12867,7 +12867,7 @@
             if (mesh.links[userid] != null) { return true; } // User has visilibity thru a direct link
 
             // Check if user user
-            if (serverinfo.manageAllDeviceGroups) return true;
+            if (serverinfo.manageAllDeviceGroups && (userid == userinfo._id)) return true;
 
             // Check permissions thru user groups
             var user = null;
