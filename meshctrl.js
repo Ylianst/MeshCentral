@@ -847,7 +847,7 @@ function serverConnect() {
                     if ((args.id.split('/') != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
                     var id = getRandomHex(6);
                     ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=1&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
-                    connectShell(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=1&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.cookie));
+                    connectShell(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=1&nodeid=' + args.id + '&id=' + id + '&auth=' + data.cookie));
                 }
                 break;
             }
