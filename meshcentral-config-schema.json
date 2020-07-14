@@ -18,7 +18,6 @@
         "sessionKey": { "type": "string" },
         "sessionSameSite": { "type": "string" },
         "dbEncryptKey": { "type": "string" },
-        "multicastKey": { "type": "string", "description": "When set, encrypts all multicast LAN traffic to agents using this key. This is only useful in LAN mode when agents and tools will multicast to find the server." },
         "dbRecordsEncryptKey": { "type": "string" },
         "dbRecordsDecryptKey": { "type": "string" },
         "dbExpire": {
@@ -75,7 +74,8 @@
           "additionalProperties": false,
           "properties": {
             "name": { "type": "string" },
-            "info": { "type": "string" }
+            "info": { "type": "string" },
+            "key": { "type": "string", "description": "When set, encrypts all LAN discovery traffic to agents and tools using this key. This is only useful in LAN/Hybrid mode when agents and tools user multicast to find the server." }
           },
           "required": [ "name", "info" ]
         },

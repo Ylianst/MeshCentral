@@ -660,7 +660,7 @@ module.exports.CreateDB = function (parent, func) {
         // If a DB encryption key is provided, perform database encryption
         if ((typeof parent.args.dbencryptkey == 'string') && (parent.args.dbencryptkey.length != 0)) {
             // Hash the database password into a AES256 key and setup encryption and decryption.
-            obj.dbKey = parent.crypto.createHash('sha384').update(parent.args.dbencryptkey).digest("raw").slice(0, 32);
+            obj.dbKey = parent.crypto.createHash('sha384').update(parent.args.dbencryptkey).digest('raw').slice(0, 32);
             datastoreOptions.afterSerialization = function (plaintext) {
                 const iv = parent.crypto.randomBytes(16);
                 const aes = parent.crypto.createCipheriv('aes-256-cbc', obj.dbKey, iv);
