@@ -353,6 +353,9 @@
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
+                        <td>
+                            <input type="button" style="display:none" value="Download Report" onclick=p3showReportDialog() />
+                        </td>
                         <td class="auto-style1">
                             Show
                             <select id=p3limitdropdown onchange=refreshEvents()>
@@ -10337,6 +10340,34 @@
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
         }
 
+        function p3showReportDialog() {
+            if (xxdialogMode) return;
+            var x = '<div style=float:right><img src=\'images/report60.png\' height=74 width=60 style=padding-top:2px /></div><div>';
+            x += addHtmlValue("Report Type", '<select id=d2reportType style=width:160px onchange=p3showReportValidation()><option value=1>' + "All Events" + '</option>');
+            x += addHtmlValue("Time Span", '<select id=d2reportSpan style=width:160px onchange=p3showReportValidation()><option value=1>' + "All Available" + '</option><option value=2>' + "One Day" + '</option></select>');
+            x += '<div id=d2daySelector>' + addHtmlValue("Report Day", '<input type=date id=d2reportDay style=width:160px onchange=p3showReportValidation()></input>') + '</div>';
+            x += addHtmlValue("Group By", '<select id=d2reportGroupBy style=width:160px onchange=p3showReportValidation()><option value=1>' + "None" + '</option><option value=2>' + "Device Group" + '</option><option value=3>' + "User" + '</option>');
+            x += addHtmlValue("Format", '<select id=d2reportFormat style=width:160px onchange=p3showReportValidation()><option value=1>' + "CSV" + '</option><option value=2>' + "JSON" + '</option>');
+            x += '</div>';
+            setDialogMode(2, "Download Report", 3, null, x);
+            p3showReportValidation();
+            Q('d2reportType').focus();
+        }
+
+        function p3showReportValidation() {
+            var reportType = Q('d2reportType').value;
+            var reportSpan = Q('d2reportSpan').value;
+            var reportDay = Q('d2reportDay').value;
+            var reportGroupBy = Q('d2reportGroupBy').value;
+            var reportFormat = Q('d2reportFormat').value;
+            QV('d2daySelector', reportSpan == 2);
+            //console.log(reportType, reportSpan, reportDay, reportGroupBy, reportFormat);
+
+            var ok = true;
+            if ((reportSpan == 2) && (reportDay == '')) ok = false;
+            QE('idx_dlgOkButton', ok);
+        }
+
         function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
@@ -10729,7 +10760,7 @@
             }
 
             if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
-            x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email type=email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
