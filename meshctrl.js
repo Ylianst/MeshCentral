@@ -252,6 +252,7 @@ if (args['_'].length == 0) {
                         console.log("  --idexists [id]        - Return 1 if id exists, 0 if not.");
                         console.log("  --nameexists [name]    - Return id if name exists.");
                         console.log("  --emailexists [email]  - Return id if email exists.");
+                        console.log("  --hex                  - Display meshid in hex format.");
                         console.log("  --json                 - Show result as JSON.");
                         break;
                     }
@@ -1020,7 +1021,9 @@ function serverConnect() {
                         console.log('id, name\r\n---------------');
                         for (var i in data.meshes) {
                             const m = data.meshes[i];
-                            var t = "\"" + m._id.split('/')[2] + "\", \"" + m.name + "\"";
+                            var mid = m._id.split('/')[2];
+                            if (args.hex) { mid = Buffer.from(mid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase(); }
+                            var t = "\"" + mid + "\", \"" + m.name + "\"";
                             console.log(t);
                         }
                     }
