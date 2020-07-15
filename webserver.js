@@ -3018,6 +3018,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         });
                                     });
                                 })(xfile.fullpath, names[i], filedata);
+                            } else {
+                                // Send a notification
+                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: names[i], nolog: 1, id: Math.random() });
                             }
                         }
                     }
@@ -3048,10 +3051,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 }
                             });
                         } else {
+                            // Send a notification
+                            obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
                             try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
                         }
                     }
                 }
+            } else {
+                // Send a notification
+                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: "Disk quota exceed", nolog: 1, id: Math.random() });
             }
             res.send('');
         });
