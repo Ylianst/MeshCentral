@@ -219,8 +219,8 @@ module.exports.CreateMeshScanner = function (parent) {
 
         //console.log('Received ' + msg.length + ' bytes from ' + info.address + ':' + info.port + ', on interface: ' + server.xxlocal + '.');
         if ((msg.length == 96) && (msg.toString('ascii') == obj.agentCertificateHashHex)) {
-            if (server.xxtype == 4) { var p = encryptPacket(obj.multicastPacket4); try { server.send(p, 0, p, info.port, info.address); } catch (e) { } }
-            if (server.xxtype == 6) { var p = encryptPacket(obj.multicastPacket6); try { server.send(p, 0, p, info.port, info.address); } catch (e) { } }
+            if (server.xxtype == 4) { var p = encryptPacket(obj.multicastPacket4); try { server.send(p, 0, p.length, info.port, info.address); } catch (e) { } }
+            if (server.xxtype == 6) { var p = encryptPacket(obj.multicastPacket6); try { server.send(p, 0, p.length, info.port, info.address); } catch (e) { } }
         } else if (msg.toString('ascii') == 'MeshServerScan') {
             if (server.xxtype == 4) { var p = encryptPacket(obj.multicastPacket4x); try { server.send(p, 0, p.length, info.port, info.address); } catch (e) { } }
             if (server.xxtype == 6) { var p = encryptPacket(obj.multicastPacket6x); try { server.send(p, 0, p.length, info.port, info.address); } catch (e) { } }
