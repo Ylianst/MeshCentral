@@ -3355,19 +3355,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Get('if' + node._id, function (err, nodeifs) {
                                 if ((nodeifs != null) && (nodeifs.length == 1)) {
                                     var macs = [], nodeif = nodeifs[0];
-                                    for (var j in nodeif.netif) { if (nodeif.netif[j].mac) { macs.push(nodeif.netif[j].mac); } }
+                                    if (nodeif.netif) {
+                                        for (var j in nodeif.netif) { if (nodeif.netif[j].mac && (nodeif.netif[j].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif[j].mac) == -1)) { macs.push(nodeif.netif[j].mac); } }
+                                    } else if (nodeif.netif2) {
+                                        for (var j in nodeif.netif2) { for (var k in nodeif.netif2[j]) { if (nodeif.netif2[j][k].mac && (nodeif.netif2[j][k].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif2[j][k].mac) == -1)) { macs.push(nodeif.netif2[j][k].mac); } } }
+                                    }
+                                    if (macs.length == 0) return;
 
                                     // Have the server send a wake-on-lan packet (Will not work in WAN-only)
                                     if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs); }
 
-                                    // Get the list of mesh this user as access to
-                                    var targetMeshes = [];
-                                    for (j in user.links) { targetMeshes.push(j); } // TODO: Include used security groups!!
+                                    // Get the list of device groups this user as wake permissions on
+                                    var targets = [], targetDeviceGroups = parent.GetAllMeshWithRights(user, MESHRIGHT_WAKEDEVICE);
+                                    for (j in targetDeviceGroups) { targets.push(targetDeviceGroups[j]._id); }
+                                    for (j in user.links) { if ((j.startsWith('node/')) && (typeof user.links[j].rights == 'number') && ((user.links[j].rights & MESHRIGHT_WAKEDEVICE) != 0)) { targets.push(j); } }
 
                                     // Go thru all the connected agents and send wake-on-lan on all the ones in the target mesh list
                                     for (j in parent.wsagents) {
                                         var agent = parent.wsagents[j];
-                                        if ((targetMeshes.indexOf(agent.dbMeshKey) >= 0) && (agent.authenticated == 2)) {
+                                        if ((agent.authenticated == 2) && ((targets.indexOf(agent.dbMeshKey) >= 0) || (targets.indexOf(agent.dbNodeKey) >= 0))) {
                                             //console.log('Asking agent ' + agent.dbNodeKey + ' to wake ' + macs.join(','));
                                             try { agent.send(JSON.stringify({ action: 'wakeonlan', macs: macs })); } catch (ex) { }
                                         }
