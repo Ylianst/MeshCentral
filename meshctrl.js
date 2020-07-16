@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -43,6 +43,8 @@ if (args['_'].length == 0) {
     console.log("  ShowEvents                - Display real-time server events in JSON format.");
     console.log("  RunCommand                - Run a shell command on a remote device.");
     console.log("  Shell                     - Access command shell of a remote device.");
+    console.log("  Upload                    - Upload a file to a remote device.");
+    console.log("  Download                  - Download a file from a remote device.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
@@ -168,6 +170,21 @@ if (args['_'].length == 0) {
         }
         case 'shell': {
             if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
+            else { ok = true; }
+            break;
+        }
+        case 'upload': {
+            if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
+            else if (args.file == null) { console.log("Local file missing, use --file [file] specify the file to upload"); }
+            else if (args.target == null) { console.log("Remote target path missing, use --target [path] to specify the remote location"); }
+            else if (require('fs').existsSync(args.file) == false) { console.log("Local file does not exists, check --file"); }
+            else { ok = true; }
+            break;
+        }
+        case 'download': {
+            if (args.id == null) { console.log("Missing device id, use --id [deviceid]"); }
+            else if (args.file == null) { console.log("Remote file missing, use --file [file] specify the remote file to download"); }
+            else if (args.target == null) { console.log("Target path missing, use --target [path] to specify the local download location"); }
             else { ok = true; }
             break;
         }
@@ -443,6 +460,27 @@ if (args['_'].length == 0) {
                         console.log("  --id [deviceid]        - The device identifier.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --powershell           - Run a Windows PowerShell.");
+                        break;
+                    }
+                    case 'upload': {
+                        console.log("Upload a local file to a remote device, Example usages:\r\n");
+                        console.log("  MeshCtrl Upload --id deviceid --file sample.txt --target c:\\");
+                        console.log("  MeshCtrl Upload --id deviceid --file sample.txt --target /tmp");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("  --file [localfile]     - The local file to upload.");
+                        console.log("  --target [remotepath]  - The remote path to upload the file to.");
+                        break;
+                    }
+                    case 'download': {
+                        console.log("Download a file from a remote device, Example usages:\r\n");
+                        console.log("  MeshCtrl Download --id deviceid --file C:\\sample.txt --target c:\\temp");
+                        console.log("  MeshCtrl Download --id deviceid --file /tmp/sample.txt --target /tmp");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --id [deviceid]        - The device identifier.");
+                        console.log("  --file [remotefile]    - The remote file to download.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --target [localpath]   - The local path to download the file to.");
                         break;
                     }
                     default: {
@@ -807,7 +845,9 @@ function serverConnect() {
                 ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl' }));
                 break;
             }
-            case 'shell': {
+            case 'shell':
+            case 'upload':
+            case 'download': {
                 ws.send("{\"action\":\"authcookie\"}");
                 break;
             }
@@ -843,12 +883,14 @@ function serverConnect() {
                 }
                 break;
             }
-            case 'authcookie': { // SHELL
-                if (settings.cmd == 'shell') {
+            case 'authcookie': { // SHELL, UPLOAD, DOWNLOAD
+                if ((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) {
+                    var protocol = 1; // Terminal
+                    if ((settings.cmd == 'upload') || (settings.cmd == 'download')) { protocol = 5; } // Files
                     if ((args.id.split('/') != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
                     var id = getRandomHex(6);
-                    ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=1&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
-                    connectShell(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=1&nodeid=' + args.id + '&id=' + id + '&auth=' + data.cookie));
+                    ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=' + protocol + '&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
+                    connectTunnel(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=' + protocol + '&nodeid=' + args.id + '&id=' + id + '&auth=' + data.cookie));
                 }
                 break;
             }
@@ -1022,7 +1064,7 @@ function serverConnect() {
                         for (var i in data.meshes) {
                             const m = data.meshes[i];
                             var mid = m._id.split('/')[2];
-                            if (args.hex) { mid = Buffer.from(mid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase(); }
+                            if (args.hex) { mid = '0x' + Buffer.from(mid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase(); }
                             var t = "\"" + mid + "\", \"" + m.name + "\"";
                             console.log(t);
                         }
@@ -1089,8 +1131,8 @@ function serverConnect() {
     });
 }
 
-// Connect tunnel to a remote agent shell
-function connectShell(url) {
+// Connect tunnel to a remote agent
+function connectTunnel(url) {
     // Setup WebSocket options
     var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
 
@@ -1105,36 +1147,115 @@ function connectShell(url) {
     settings.tunnelws.on('open', function () { console.log('Waiting for Agent...'); }); // Wait for agent connection
     settings.tunnelws.on('close', function () { console.log('Connection Closed.'); process.exit(); });
     settings.tunnelws.on('error', function (err) { console.log(err); process.exit(); });
-    settings.tunnelws.on('message', function (rawdata) {
-        var data = rawdata.toString();
-        if (settings.tunnelwsstate == 1) {
-            process.stdout.write(data);
-        } else if (settings.tunnelwsstate == 0) {
-            if (data == 'c') {
+
+    if (settings.cmd == 'shell') {
+        // This code does all of the work for a shell command
+        settings.tunnelws.on('message', function (rawdata) {
+            var data = rawdata.toString();
+            if (settings.tunnelwsstate == 1) {
+                process.stdout.write(data);
+            } else if (settings.tunnelwsstate == 0) {
+                if (data == 'c') { console.log('Connected.'); } else if (data == 'cr') { console.log('Connected, session is being recorded.'); } else return;
                 // Send terminal size
                 var termSize = null;
                 if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
                 if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'options', cols: termSize[0], rows: termSize[1] })); }
-                console.log('Connected.');
                 settings.tunnelwsstate = 1;
-                settings.tunnelws.send('1');
+                settings.tunnelws.send('1'); // Terminal
+                process.stdin.setEncoding('utf8');
+                process.stdin.setRawMode(true);
+                process.stdout.setEncoding('utf8');
+                process.stdin.unpipe(process.stdout);
+                process.stdout.unpipe(process.stdin);
+                process.stdin.on('data', function (data) { settings.tunnelws.send(Buffer.from(data)); });
+                //process.stdin.on('readable', function () { var chunk; while ((chunk = process.stdin.read()) !== null) { settings.tunnelws.send(Buffer.from(chunk)); } });
+                process.stdin.on('end', function () { process.exit(); });
+                process.stdout.on('resize', function () {
+                    var termSize = null;
+                    if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
+                    if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: termSize[0], rows: termSize[1] })); }
+                });
             }
-            else if (data == 'cr') { console.log('Connected, session is being recorded.'); settings.tunnelwsstate = 1; settings.tunnelws.send('1'); }
-            process.stdin.setEncoding('utf8');
-            process.stdin.setRawMode(true);
-            process.stdout.setEncoding('utf8');
-            process.stdin.unpipe(process.stdout);
-            process.stdout.unpipe(process.stdin);
-            process.stdin.on('data', function (data) { settings.tunnelws.send(Buffer.from(data)); });
-            //process.stdin.on('readable', function () { var chunk; while ((chunk = process.stdin.read()) !== null) { settings.tunnelws.send(Buffer.from(chunk)); } });
-            process.stdin.on('end', function () { process.exit(); });
-            process.stdout.on('resize', function() {
-                var termSize = null;
-                if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
-                if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: termSize[0], rows: termSize[1] })); }
-            });
-        }
-    });
+        });
+    } else if (settings.cmd == 'upload') {
+        // This code does all of the work for a file upload
+        // node meshctrl upload --id oL4Y6Eg0qjnpHFrp1AxfxnBPenbDGnDSkC@HSOnAheIyd51pKhqSCUgJZakzwfKl --file readme.md --target c:\
+        settings.tunnelws.on('message', function (rawdata) {
+            if (settings.tunnelwsstate == 1) {
+                var cmd = null;
+                try { cmd = JSON.parse(rawdata.toString()); } catch (ex) { return; }
+                if (cmd.reqid == 'up') {
+                    if ((cmd.action == 'uploadack') || (cmd.action == 'uploadstart')) {
+                        var buf = Buffer.alloc(4096);
+                        var len = require('fs').readSync(settings.uploadFile, buf, 0, 4096, settings.uploadPtr);
+                        settings.uploadPtr += len;
+                        if (len > 0) {
+                            settings.tunnelws.send(buf.slice(0, len));
+                        } else {
+                            console.log('Upload done, ' + settings.uploadPtr + ' bytes sent.');
+                            if (settings.uploadFile != null) { require('fs').closeSync(settings.uploadFile); }
+                            process.exit();
+                        }
+                    } else if (cmd.action == 'uploaderror') {
+                        if (settings.uploadFile != null) { require('fs').closeSync(settings.uploadFile); }
+                        console.log('Upload error.');
+                        process.exit();
+                    }
+                }
+            } else if (settings.tunnelwsstate == 0) {
+                var data = rawdata.toString();
+                if (data == 'c') { console.log('Connected.'); } else if (data == 'cr') { console.log('Connected, session is being recorded.'); } else return;
+                settings.tunnelwsstate = 1;
+                settings.tunnelws.send('5'); // Files
+                settings.uploadSize = require('fs').statSync(args.file).size;
+                settings.uploadFile = require('fs').openSync(args.file, 'r');
+                settings.uploadPtr = 0;
+                settings.tunnelws.send(JSON.stringify({ action: 'upload', reqid: 'up', path: require('path').dirname(args.target), name: require('path').basename(args.file), size: settings.uploadSize }));
+            }
+        });
+    } else if (settings.cmd == 'download') {
+        // This code does all of the work for a file download
+        // node meshctrl download --id oL4Y6Eg0qjnpHFrp1AxfxnBPenbDGnDSkC@HSOnAheIyd51pKhqSCUgJZakzwfKl --file c:\temp\MC-8Languages.png --target c:\temp\bob.png
+        settings.tunnelws.on('message', function (rawdata) {
+            if (settings.tunnelwsstate == 1) {
+                if ((rawdata.length > 0) && (rawdata[0] != '{')) {
+                    // This is binary data, this test is ok because 4 first bytes is a control value.
+                    if ((rawdata.length > 4) && (settings.downloadFile != null)) { settings.downloadSize += (rawdata.length - 4); require('fs').writeSync(settings.downloadFile, rawdata, 4, rawdata.length - 4); }
+                    if ((rawdata[3] & 1) != 0) { // Check end flag
+                        // File is done, close everything.
+                        if (settings.downloadFile != null) { require('fs').closeSync(settings.downloadFile); }
+                        console.log('Download completed, ' + settings.downloadSize + ' bytes written.');
+                        process.exit();
+                    } else {
+                        settings.tunnelws.send(JSON.stringify({ action: 'download', sub: 'ack', id: args.file })); // Send the ACK
+                    }
+                } else {
+                    // This is text data
+                    var cmd = null;
+                    try { cmd = JSON.parse(rawdata.toString()); } catch (ex) { return; }
+                    if (cmd.action == 'download') {
+                        if (cmd.id != args.file) return;
+                        if (cmd.sub == 'start') {
+                            settings.downloadFile = require('fs').openSync(args.target, 'w');
+                            settings.downloadSize = 0;
+                            settings.tunnelws.send(JSON.stringify({ action: 'download', sub: 'startack', id: args.file }));
+                            console.log('Download started...');
+                        } else if (cmd.sub == 'cancel') {
+                            if (settings.downloadFile != null) { require('fs').closeSync(settings.downloadFile); }
+                            console.log('Download canceled.');
+                            process.exit();
+                        }
+                    }
+                }
+            } else if (settings.tunnelwsstate == 0) {
+                var data = rawdata.toString();
+                if (data == 'c') { console.log('Connected.'); } else if (data == 'cr') { console.log('Connected, session is being recorded.'); } else return;
+                settings.tunnelwsstate = 1;
+                settings.tunnelws.send('5'); // Files
+                settings.tunnelws.send(JSON.stringify({ action: 'download', sub: 'start', id: args.file, path: args.file }));
+            }
+        });
+    }
 }
 
 // Encode an object as a cookie using a key using AES-GCM. (key must be 32 bytes or more)
