@@ -2160,7 +2160,41 @@ function CreateMeshCentralServer(config, args) {
                         outStream.bufferList = [];
                         outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
                         outStream._read = function (size) { }; // Do nothing, this is not going to be called.
-                        outStream.on('finish', function () { this.meshAgentBinary.data = Buffer.concat(this.bufferList); this.meshAgentBinary.size = this.meshAgentBinary.data.length; delete this.bufferList; }) // Merge all chunks
+                        outStream.on('finish', function () {
+                            // Merge all chunks
+                            this.meshAgentBinary.data = Buffer.concat(this.bufferList);
+                            this.meshAgentBinary.size = this.meshAgentBinary.data.length;
+                            delete this.bufferList;
+
+                            // Compress the agent using ZIP
+                            var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
+
+                            const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
+                            const onZipEnd = function onZipEnd() {
+                                // Concat all the buffer for create compressed zip agent
+                                var concatData = Buffer.concat(onZipData.x.zacc);
+                                delete onZipData.x.zacc;
+
+                                // Hash the compressed binary
+                                var hash = obj.crypto.createHash('sha384').update(concatData);
+                                onZipData.x.zhash = hash.digest('binary');
+                                onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
+
+                                // Set the agent
+                                onZipData.x.zdata = concatData;
+                                onZipData.x.zsize = concatData.length;
+                            }
+                            const onZipError = function onZipError() { delete onZipData.x.zacc; }
+                            this.meshAgentBinary.zacc = [];
+                            onZipData.x = this.meshAgentBinary;
+                            onZipEnd.x = this.meshAgentBinary;
+                            onZipError.x = this.meshAgentBinary;
+                            archive.on('data', onZipData);
+                            archive.on('end', onZipEnd);
+                            archive.on('error', onZipError);
+                            archive.append(this.meshAgentBinary.data, { name: 'meshagent' });
+                            archive.finalize();
+                        })
                         obj.exeHandler.streamExeWithMeshPolicy(
                             {
                                 platform: 'win32',
