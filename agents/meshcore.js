@@ -701,6 +701,7 @@ function createMeshCore(agent) {
                                 if (xurl != null) {
                                     xurl = xurl.split('$').join('%24').split('@').join('%40'); // Escape the $ and @ characters
                                     var woptions = http.parseUri(xurl);
+                                    woptions.perMessageDeflate = true;
                                     woptions.rejectUnauthorized = 0;
                                     //sendConsoleText(JSON.stringify(woptions));
                                     //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
@@ -1188,7 +1189,8 @@ function createMeshCore(agent) {
 
     function onTunnelClosed() {
         if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
-        //sendConsoleText("Tunnel #" + this.httprequest.index + " closed.", this.httprequest.sessionid);
+
+//        sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
         delete tunnels[this.httprequest.index];
 
         /*
