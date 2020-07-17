@@ -71,36 +71,36 @@ if (args['_'].length == 0) {
         case 'listdevicegroups': { ok = true; break; }
         case 'listdevices': { ok = true; break; }
         case 'listusersofdevicegroup': {
-            if (args.id == null) { console.log("Missing group id, use --id '[groupid]'"); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing group id, use --id '[groupid]'")); }
             else { ok = true; }
             break;
         }
         case 'deviceinfo': {
-            if (args.id == null) { console.log("Missing device id, use --id '[deviceid]'"); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
             break;
         }
         case 'addusertodevicegroup': {
-            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id '[groupid]' or --group [groupname]"); }
+            if ((args.id == null) && (args.group == null)) { console.log(winRemoveSingleQuotes("Device group identifier missing, use --id '[groupid]' or --group [groupname]")); }
             else if (args.userid == null) { console.log("Add user to group missing useid, use --userid [userid]"); }
             else { ok = true; }
             break;
         }
         case 'removeuserfromdevicegroup': {
-            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id '[groupid]' or --group [groupname]"); }
+            if ((args.id == null) && (args.group == null)) { console.log(winRemoveSingleQuotes("Device group identifier missing, use --id '[groupid]' or --group [groupname]")); }
             else if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
             else { ok = true; }
             break;
         }
         case 'addusertodevice': {
             if (args.userid == null) { console.log("Add user to device missing userid, use --userid [userid]"); }
-            else if (args.id == null) { console.log("Add user to device missing device id, use --id '[deviceid]'"); }
+            else if (args.id == null) { console.log(winRemoveSingleQuotes("Add user to device missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
             break;
         }
         case 'removeuserfromdevice': {
             if (args.userid == null) { console.log("Remove user from device missing userid, use --userid [userid]"); }
-            else if (args.id == null) { console.log("Remove user from device missing device id, use --id '[deviceid]'"); }
+            else if (args.id == null) { console.log(winRemoveSingleQuotes("Remove user from device missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
             break;
         }
@@ -110,13 +110,13 @@ if (args['_'].length == 0) {
             break;
         }
         case 'removedevicegroup': {
-            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id '[groupid]' or --group [groupname]"); }
+            if ((args.id == null) && (args.group == null)) { console.log(winRemoveSingleQuotes("Device group identifier missing, use --id '[groupid]' or --group [groupname]")); }
             else { ok = true; }
             break;
         }
         case 'movetodevicegroup': {
-            if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id '[groupid]' or --group [groupname]"); }
-            else if (args.devid == null) { console.log("Device identifier missing, use --devid '[deviceid]'"); }
+            if ((args.id == null) && (args.group == null)) { console.log(winRemoveSingleQuotes("Device group identifier missing, use --id '[groupid]' or --group [groupname]")); }
+            else if (args.devid == null) { console.log(winRemoveSingleQuotes("Device identifier missing, use --devid '[deviceid]'")); }
             else { ok = true; }
             break;
         }
@@ -146,7 +146,7 @@ if (args['_'].length == 0) {
             break;
         }
         case 'removeusergroup': {
-            if (args.groupid == null) { console.log("Remove user group id missing, use --groupid '[id]'"); }
+            if (args.groupid == null) { console.log(winRemoveSingleQuotes("Remove user group id missing, use --groupid '[id]'")); }
             else { ok = true; }
             break;
         }
@@ -163,18 +163,18 @@ if (args['_'].length == 0) {
             break;
         }
         case 'runcommand': {
-            if (args.id == null) { console.log("Missing device id, use --id '[deviceid]'"); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else if (args.run == null) { console.log("Missing run, use --run \"command\""); }
             else { ok = true; }
             break;
         }
         case 'shell': {
-            if (args.id == null) { console.log("Missing device id, use --id '[deviceid]'"); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
             break;
         }
         case 'upload': {
-            if (args.id == null) { console.log("Missing device id, use --id '[deviceid]'"); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else if (args.file == null) { console.log("Local file missing, use --file [file] specify the file to upload"); }
             else if (args.target == null) { console.log("Remote target path missing, use --target [path] to specify the remote location"); }
             else if (require('fs').existsSync(args.file) == false) { console.log("Local file does not exists, check --file"); }
@@ -182,7 +182,7 @@ if (args['_'].length == 0) {
             break;
         }
         case 'download': {
-            if (args.id == null) { console.log("Missing device id, use --id '[deviceid]'"); }
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else if (args.file == null) { console.log("Remote file missing, use --file [file] specify the remote file to download"); }
             else if (args.target == null) { console.log("Target path missing, use --target [path] to specify the local download location"); }
             else { ok = true; }
@@ -199,10 +199,14 @@ if (args['_'].length == 0) {
                     }
                     case 'sendinviteemail': {
                         console.log("Send invitation email with instructions on how to install the mesh agent for a specific device group. Example usage:\r\n");
-                        console.log("  MeshCtrl SendInviteEmail --id 'groupid' --message \"msg\" --email user@sample.com");
-                        console.log("  MeshCtrl SendInviteEmail --group \"My Computers\" --name \"Jack\" --email user@sample.com");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl SendInviteEmail --id 'groupid' --message \"msg\" --email user@sample.com"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl SendInviteEmail --group \"My Computers\" --name \"Jack\" --email user@sample.com"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --email [email]        - Email address.");
                         console.log("\r\nOptional arguments:\r\n");
@@ -212,10 +216,14 @@ if (args['_'].length == 0) {
                     }
                     case 'generateinvitelink': {
                         console.log("Generate a agent invitation URL for a given group. Example usage:\r\n");
-                        console.log("  MeshCtrl GenerateInviteLink --id 'groupid' --hours 24");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl GenerateInviteLink --id 'groupid' --hours 24"));
                         console.log("  MeshCtrl GenerateInviteLink --group \"My Computers\" --hours 0");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
                         break;
@@ -276,9 +284,13 @@ if (args['_'].length == 0) {
                     case 'listdevices': {
                         console.log("List devices, Example usages:\r\n");
                         console.log("  MeshCtrl ListDevices");
-                        console.log("  MeshCtrl ListDevices -id '[groupid]' --json");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl ListDevices -id '[groupid]' --json"));
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Filter by group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Filter by group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Filter by group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Filter by group name (or --id).");
                         console.log("  --count                - Only return the device count.");
                         console.log("  --json                 - Show result as JSON.");
@@ -288,7 +300,11 @@ if (args['_'].length == 0) {
                         console.log("List users that have permissions for a given device group, Example usage:\r\n");
                         console.log("  MeshCtrl ListUserOfDeviceGroup ");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier.");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier.");
+                        }
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --json                 - Show result as JSON.");
                         break;
@@ -336,25 +352,41 @@ if (args['_'].length == 0) {
                         console.log("Remove a device group, Example usages:\r\n");
                         console.log("  MeshCtrl RemoveDeviceGroup --id 'groupid'");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         break;
                     }
                     case 'movetodevicegroup': {
                         console.log("Move a device to a new device group, Example usages:\r\n");
-                        console.log("  MeshCtrl MoveToDeviceGroup --devid 'deviceid' --id 'groupid'");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl MoveToDeviceGroup --devid 'deviceid' --id 'groupid'"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Device group name (or --id).");
-                        console.log("  --devid '[deviceid]'   - Device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --devid [deviceid]     - Device identifier.");
+                        } else {
+                            console.log("  --devid '[deviceid]'   - Device identifier.");
+                        }
                         break;
                     }
                     case 'addusertodevicegroup': {
                         console.log("Add a user to a device group, Example usages:\r\n");
-                        console.log("  MeshCtrl AddUserToDeviceGroup --id 'groupid' --userid userid --fullrights");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AddUserToDeviceGroup --id 'groupid' --userid userid --fullrights"));
                         console.log("  MeshCtrl AddUserToDeviceGroup --group groupname --userid userid --editgroup --manageusers");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --userid [userid]      - The user identifier.");
                         console.log("\r\nOptional arguments:\r\n");
@@ -384,19 +416,27 @@ if (args['_'].length == 0) {
                     }
                     case 'removeuserfromdevicegroup': {
                         console.log("Remove a user from a device group, Example usages:\r\n");
-                        console.log("  MeshCtrl RemoveuserFromDeviceGroup --id 'groupid' --userid userid");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveuserFromDeviceGroup --id 'groupid' --userid userid"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("  --userid [userid]      - The user identifier.");
                         break;
                     }
                     case 'addusertodevice': {
                         console.log("Add a user to a device, Example usages:\r\n");
-                        console.log("  MeshCtrl AddUserToDevice --id 'deviceid' --userid userid --fullrights");
-                        console.log("  MeshCtrl AddUserToDevice --id 'deviceid' --userid userid --remotecontrol");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AddUserToDevice --id 'deviceid' --userid userid --fullrights"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AddUserToDevice --id 'deviceid' --userid userid --remotecontrol"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("  --userid [userid]      - The user identifier.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --fullrights           - Allow full rights over this device.");
@@ -417,9 +457,13 @@ if (args['_'].length == 0) {
                     }
                     case 'removeuserfromdevice': {
                         console.log("Remove a user from a device, Example usages:\r\n");
-                        console.log("  MeshCtrl RemoveuserFromDeviceGroup --id 'deviceid' --userid userid");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveuserFromDeviceGroup --id 'deviceid' --userid userid"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("  --userid [userid]      - The user identifier.");
                         break;
                     }
@@ -432,10 +476,14 @@ if (args['_'].length == 0) {
                     }
                     case 'deviceinfo': {
                         console.log("Display information about a device, Example usages:\r\n");
-                        console.log("  MeshCtrl DeviceInfo --id 'deviceid'");
-                        console.log("  MeshCtrl DeviceInfo --id 'deviceid' --json");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceInfo --id 'deviceid'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceInfo --id 'deviceid' --json"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --raw                  - Output raw data in JSON format.");
                         console.log("  --json                 - Give results in JSON format.");
@@ -443,10 +491,14 @@ if (args['_'].length == 0) {
                     }
                     case 'runcommand': {
                         console.log("Run a shell command on a remote device, Example usages:\r\n");
-                        console.log("  MeshCtrl RunCommand --id 'deviceid' --run \"command\"");
-                        console.log("  MeshCtrl RunCommand --id 'deviceid' --run \"command\" --powershell");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\""));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\" --powershell"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("  --run \"[command]\"    - Shell command to execute on the remote device.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --powershell           - Run in Windows PowerShell.");
@@ -454,30 +506,42 @@ if (args['_'].length == 0) {
                     }
                     case 'shell': {
                         console.log("Access a command shell on a remote device, Example usages:\r\n");
-                        console.log("  MeshCtrl Shell --id 'deviceid'");
-                        console.log("  MeshCtrl Shell --id 'deviceid' --powershell");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl Shell --id 'deviceid'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl Shell --id 'deviceid' --powershell"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --powershell           - Run a Windows PowerShell.");
                         break;
                     }
                     case 'upload': {
                         console.log("Upload a local file to a remote device, Example usages:\r\n");
-                        console.log("  MeshCtrl Upload --id 'deviceid' --file sample.txt --target c:\\");
-                        console.log("  MeshCtrl Upload --id 'deviceid' --file sample.txt --target /tmp");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl Upload --id 'deviceid' --file sample.txt --target c:\\"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl Upload --id 'deviceid' --file sample.txt --target /tmp"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("  --file [localfile]     - The local file to upload.");
                         console.log("  --target [remotepath]  - The remote path to upload the file to.");
                         break;
                     }
                     case 'download': {
                         console.log("Download a file from a remote device, Example usages:\r\n");
-                        console.log("  MeshCtrl Download --id 'deviceid' --file C:\\sample.txt --target c:\\temp");
-                        console.log("  MeshCtrl Download --id 'deviceid' --file /tmp/sample.txt --target /tmp");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl Download --id 'deviceid' --file C:\\sample.txt --target c:\\temp"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl Download --id 'deviceid' --file /tmp/sample.txt --target /tmp"));
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --id '[deviceid]'      - The device identifier.");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         console.log("  --file [remotefile]    - The remote file to download.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --target [localpath]   - The local path to download the file to.");
@@ -1274,6 +1338,7 @@ function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z
 function getRandomAmtPassword() { var p; do { p = Buffer.from(crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
 function getRandomHex(count) { return Buffer.from(crypto.randomBytes(count), 'binary').toString('hex'); }
 function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+function winRemoveSingleQuotes(str) { if (process.platform != 'win32') return str; else return str.split('\'').join(''); }
 
 function displayDeviceInfo(sysinfo, lastconnect, network) {
     var node = sysinfo.node;

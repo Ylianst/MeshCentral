@@ -250,7 +250,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     // The new core will only be sent after the agent updates.
                                     obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
 
-                                    // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
+                                    // We got the agent file open on the server side, tell the agent we are sending an update ending with the SHA384 hash of the result
                                     //console.log("Agent update file open.");
                                     obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0)); // Command 13, start mesh agent download
 
@@ -283,7 +283,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 // The new core will only be sent after the agent updates.
                                 obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0));
 
-                                // We got the agent file open on the server side, tell the agent we are sending an update starting with the SHA384 hash of the result
+                                // We got the agent file open on the server side, tell the agent we are sending an update ending with the SHA384 hash of the result
                                 obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0)); // Command 13, start mesh agent download
 
                                 // Send the first mesh agent update data block
@@ -292,10 +292,29 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentUpdate.buf[2] = 0;
                                 obj.agentUpdate.buf[3] = 1;
 
-                                const len = Math.min(parent.parent.agentUpdateBlockSize, obj.agentExeInfo.data.length - obj.agentUpdate.ptr);
+                                /*
+                                // If agent supports compression, send the compressed agent if possible.
+                                if ((obj.agentInfo.capabilities & 0x80) && (obj.agentExeInfo.zdata != null)) {
+                                    // Send compressed data
+                                    obj.agentUpdate.agentUpdateData = obj.agentExeInfo.zdata;
+                                    obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.zhash;
+                                    //console.log('Sending compressed update agent', obj.agentExeInfo.zhashhex);
+                                } else {
+                                    // Send uncompressed data
+                                    obj.agentUpdate.agentUpdateData = obj.agentExeInfo.data;
+                                    obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.hash;
+                                    //console.log('Sending uncompressed update agent', obj.agentExeInfo.hashhex);
+                                }
+                                */
+
+                                // Send uncompressed data
+                                obj.agentUpdate.agentUpdateData = obj.agentExeInfo.data;
+                                obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.hash;
+
+                                const len = Math.min(parent.parent.agentUpdateBlockSize, obj.agentUpdate.agentUpdateData.length - obj.agentUpdate.ptr);
                                 if (len > 0) {
                                     // Send the first block
-                                    obj.agentExeInfo.data.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
+                                    obj.agentUpdate.agentUpdateData.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
                                     obj.agentUpdate.ptr += len;
                                     obj.sendBinary(obj.agentUpdate.buf); // Command 14, mesh agent first data block
                                     parent.parent.debug('agentupdate', "Sent first block of " + len + " bytes from RAM.");
@@ -349,17 +368,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             });
                         } else {
                             // Send the agent from RAM
-                            const len = Math.min(parent.parent.agentUpdateBlockSize, obj.agentExeInfo.data.length - obj.agentUpdate.ptr);
+                            const len = Math.min(parent.parent.agentUpdateBlockSize, obj.agentUpdate.agentUpdateData.length - obj.agentUpdate.ptr);
                             if (len > 0) {
-                                obj.agentExeInfo.data.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
+                                obj.agentUpdate.agentUpdateData.copy(obj.agentUpdate.buf, 4, obj.agentUpdate.ptr, obj.agentUpdate.ptr + len);
                                 if (len == parent.parent.agentUpdateBlockSize) { obj.sendBinary(obj.agentUpdate.buf); } else { obj.sendBinary(obj.agentUpdate.buf.slice(0, len + 4)); } // Command 14, mesh agent next data block
                                 parent.parent.debug('agentupdate', "Sending RAM agent #" + obj.agentExeInfo.id + " block, ptr=" + obj.agentUpdate.ptr + ", len=" + len + ".");
                                 obj.agentUpdate.ptr += len;
                             }
 
-                            if (obj.agentUpdate.ptr == obj.agentExeInfo.data.length) {
+                            if (obj.agentUpdate.ptr == obj.agentUpdate.agentUpdateData.length) {
                                 parent.parent.debug('agentupdate', "Completed agent #" + obj.agentExeInfo.id + " update from RAM, ptr=" + obj.agentUpdate.ptr + ".");
-                                obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentExeInfo.hash); // Command 13, end mesh agent download, send agent SHA384 hash
+                                obj.sendBinary(common.ShortToStr(13) + common.ShortToStr(0) + obj.agentUpdate.agentUpdateHash); // Command 13, end mesh agent download, send agent SHA384 hash
                                 parent.parent.taskLimiter.completed(obj.agentUpdate.taskid); // Indicate this task complete
                                 delete obj.agentUpdate.buf;
                                 delete obj.agentUpdate;
