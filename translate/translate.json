@@ -3258,6 +3258,7 @@
     },
     {
       "en": "All Available",
+      "nl": "Alle beschikbare",
       "xloc": [
         "default.handlebars->27->1466"
       ]
@@ -3278,6 +3279,7 @@
     },
     {
       "en": "All Events",
+      "nl": "Alle gebeurtenissen",
       "xloc": [
         "default.handlebars->27->1464"
       ]
@@ -4886,6 +4888,16 @@
     },
     {
       "en": "CSV",
+      "cs": "CSV",
+      "de": "CSV",
+      "es": "CSV",
+      "fr": "CSV",
+      "ja": "CSV",
+      "ko": "CSV",
+      "nl": "CSV",
+      "pt": "CSV",
+      "ru": "CSV",
+      "zh-chs": "CSV",
       "xloc": [
         "default.handlebars->27->1474"
       ]
@@ -9135,6 +9147,7 @@
     },
     {
       "en": "Download Report",
+      "nl": "Rapport downloaden",
       "xloc": [
         "default.handlebars->27->1476",
         "default.handlebars->container->column_l->p3->3->1->0->3"
@@ -11388,6 +11401,7 @@
     },
     {
       "en": "Format",
+      "en": "Formaat",
       "xloc": [
         "default.handlebars->27->1473"
       ]
@@ -12159,6 +12173,7 @@
     },
     {
       "en": "Group By",
+      "nl": "Groeperen op",
       "xloc": [
         "default.handlebars->27->1469"
       ]
@@ -14341,6 +14356,17 @@
     },
     {
       "en": "JSON",
+      "cs": "JSON",
+      "de": "JSON",
+      "es": "JSON",
+      "fr": "JSON",
+      "hi": "JSON",
+      "ja": "JSON,
+      "ko": "JSON",
+      "nl": "JSON",
+      "pt": "JSON",
+      "ru": "JSON",
+      "zh-chs": "JSON",
       "xloc": [
         "default.handlebars->27->1475"
       ]
@@ -19391,6 +19417,7 @@
     },
     {
       "en": "One Day",
+      "nl": "één dag",
       "xloc": [
         "default.handlebars->27->1467"
       ]
@@ -22110,12 +22137,14 @@
     },
     {
       "en": "Report Day",
+      "nl": "Dag rapport",
       "xloc": [
         "default.handlebars->27->1468"
       ]
     },
     {
       "en": "Report Type",
+      "nl": "Rapporttype",
       "xloc": [
         "default.handlebars->27->1463"
       ]
@@ -24176,6 +24205,7 @@
     },
     {
       "en": "Shift-F10",
+      "nl": "Shift-F10",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->25"
       ]
@@ -26405,6 +26435,7 @@
     },
     {
       "en": "Time Span",
+      "nl": "Tijdspanne",
       "xloc": [
         "default.handlebars->27->1465"
       ]
