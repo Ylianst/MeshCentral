@@ -55,6 +55,7 @@ function CreateMeshCentralServer(config, args) {
     obj.certificateOperations = null;
     obj.defaultMeshCmd = null;
     obj.defaultMeshCores = {};
+    obj.defaultMeshCoresDeflate = {};
     obj.defaultMeshCoresHash = {};
     obj.meshAgentBinaries = {};       // Mesh Agent Binaries, Architecture type --> { hash:(sha384 hash), size:(binary size), path:(binary path) }
     obj.meshAgentInstallScripts = {}; // Mesh Install Scripts, Script ID -- { hash:(sha384 hash), size:(binary size), path:(binary path) }
@@ -1992,6 +1993,11 @@ function CreateMeshCentralServer(config, args) {
                 obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
                 //console.log('Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.'); // DEBUG, Print the core size
                 //obj.fs.writeFile("C:\\temp\\" + i + ".js", obj.defaultMeshCores[i].substring(4)); // DEBUG, Write the core to file
+
+                // Compress the mesh cores with DEFLATE
+                var callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
+                callback.i = i;
+                require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').Z_BEST_COMPRESSION }, callback); 
             }
         }
 
