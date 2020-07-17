@@ -19,7 +19,7 @@ if (args['_'].length == 0) {
     console.log("  ServerInfo                - Show server information.");
     console.log("  UserInfo                  - Show user information.");
     console.log("  ListUsers                 - List user accounts.");
-    console.log("  ListUsersSessions         - List online users.");
+    console.log("  ListUserSessions          - List online users.");
     console.log("  ListUserGroups            - List user groups.");
     console.log("  ListDevices               - List devices.");
     console.log("  ListDeviceGroups          - List device groups.");
