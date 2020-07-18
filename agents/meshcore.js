@@ -643,6 +643,7 @@ function createMeshCore(agent) {
 
     // Send a wake-on-lan packet
     function sendWakeOnLan(hexMac) {
+        hexMac = hexMac.split(':').join('');
         var count = 0;
         try {
             var interfaces = require('os').networkInterfaces();
@@ -650,17 +651,12 @@ function createMeshCore(agent) {
             for (var x = 1; x <= 16; ++x) { magic += hexMac; }
             var magicbin = Buffer.from(magic, 'hex');
 
-            for (var adapter in interfaces)
-            {
-                if (interfaces.hasOwnProperty(adapter))
-                {
-                    for (var i = 0; i < interfaces[adapter].length; ++i)
-                    {
+            for (var adapter in interfaces) {
+                if (interfaces.hasOwnProperty(adapter)) {
+                    for (var i = 0; i < interfaces[adapter].length; ++i) {
                         var addr = interfaces[adapter][i];
-                        if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00'))
-                        {
-                            try
-                            {
+                        if ((addr.family == 'IPv4') && (addr.mac != '00:00:00:00:00:00')) {
+                            try {
                                 var socket = require('dgram').createSocket({ type: 'udp4' });
                                 socket.bind({ address: addr.address });
                                 socket.setBroadcast(true);
@@ -668,14 +664,12 @@ function createMeshCore(agent) {
                                 socket.descriptorMetadata = 'WoL (' + addr.address + ' => ' + hexMac + ')';
                                 count++;
                             }
-                            catch(ee)
-                            {
-                            }
+                            catch (ex) { }
                         }
                     }
                 }
             }
-        } catch (e) { }
+        } catch (ex) { }
         return count;
     }
 
@@ -701,7 +695,8 @@ function createMeshCore(agent) {
                                 if (xurl != null) {
                                     xurl = xurl.split('$').join('%24').split('@').join('%40'); // Escape the $ and @ characters
                                     var woptions = http.parseUri(xurl);
-                                    woptions.perMessageDeflate = true;
+                                    woptions.perMessageDeflate = false;
+                                    if (typeof data.perMessageDeflate == 'boolean') { woptions.perMessageDeflate = data.perMessageDeflate; }
                                     woptions.rejectUnauthorized = 0;
                                     //sendConsoleText(JSON.stringify(woptions));
                                     //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
@@ -1188,9 +1183,25 @@ function createMeshCore(agent) {
     }
 
     function onTunnelClosed() {
-        if (tunnels[this.httprequest.index] == null) return; // Stop duplicate calls.
+        var tunnel = tunnels[this.httprequest.index];
+        if (tunnel == null) return; // Stop duplicate calls.
 
-//        sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
+        // Sent tunnel statistics to the server
+        mesh.SendCommand({
+            action: 'tunnelCloseStats',
+            url: tunnel.url,
+            userid: tunnel.userid,
+            protocol: tunnel.protocol,
+            sessionid: tunnel.sessionid,
+            sent: this.bytesSent_uncompressed + '',
+            sentActual: this.bytesSent_actual + '',
+            sentRatio: this.bytesSent_ratio,
+            received: this.bytesReceived_uncompressed + '',
+            receivedActual: this.bytesReceived_actual + '',
+            receivedRatio: this.bytesReceived_ratio
+        });
+
+        //sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
         delete tunnels[this.httprequest.index];
 
         /*
