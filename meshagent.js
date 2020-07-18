@@ -239,7 +239,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
                             if (obj.nodeid != null) { parent.parent.debug('agent', "Agent update required, NodeID=0x" + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                             parent.agentStats.agentBinaryUpdate++;
-                            if (obj.agentExeInfo.data == null) {
+                            if ((obj.agentExeInfo.data == null) && (((obj.agentInfo.capabilities & 0x80) == 0) || (obj.agentExeInfo.zdata == null))) {
                                 // Read the agent from disk
                                 parent.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
                                     if (obj.agentExeInfo == null) return; // Agent disconnected during this call.
@@ -292,7 +292,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentUpdate.buf[2] = 0;
                                 obj.agentUpdate.buf[3] = 1;
 
-                                /*
                                 // If agent supports compression, send the compressed agent if possible.
                                 if ((obj.agentInfo.capabilities & 0x80) && (obj.agentExeInfo.zdata != null)) {
                                     // Send compressed data
@@ -305,11 +304,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.hash;
                                     //console.log('Sending uncompressed update agent', obj.agentExeInfo.hashhex);
                                 }
-                                */
-
-                                // Send uncompressed data
-                                obj.agentUpdate.agentUpdateData = obj.agentExeInfo.data;
-                                obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.hash;
 
                                 const len = Math.min(parent.parent.agentUpdateBlockSize, obj.agentUpdate.agentUpdateData.length - obj.agentUpdate.ptr);
                                 if (len > 0) {
@@ -1416,6 +1410,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             });
                         });
                     }
+                    break;
+                }
+                case 'tunnelCloseStats': {
+                    // TODO: This this extra stats from the tunnel, you can merge this into the tunnel event in the database.
+                    //console.log(command);
                     break;
                 }
                 case 'plugin': {
