@@ -2227,7 +2227,8 @@ function OnWebSocket(msg, s, head) {
         if (this.parent.tunneling == false) {
             msg = msg.toString();
             if ((msg == 'c') || (msg == 'cr')) {
-                this.parent.tunneling = true; this.pipe(this.parent.tcp); this.parent.tcp.pipe(this); debug(1, "Tunnel active");
+                // Pipe the connection, but don't pipe text websocket frames into the TCP socket.
+                this.parent.tunneling = true; this.pipe(this.parent.tcp, { dataTypeSkip: 1 }); this.parent.tcp.pipe(this); debug(1, "Tunnel active");
             } else if ((msg.length > 6) && (msg.substring(0, 6) == 'error:')) {
                 console.log(msg.substring(6));
                 disconnectTunnel(this.tcp, this, msg.substring(6));

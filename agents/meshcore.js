@@ -1179,7 +1179,10 @@ function createMeshCore(agent) {
 
     // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
     function onTcpRelayServerTunnelData(data) {
-        if (this.first == true) { this.first = false; this.pipe(this.tcprelay); } // Pipe Server --> Target
+        if (this.first == true) {
+            this.first = false; 
+            this.pipe(this.tcprelay, { dataTypeSkip: 1 }); // Pipe Server --> Target (don't pipe text type websocket frames)
+        }
     }
 
     function onTunnelClosed() {
@@ -2277,6 +2280,13 @@ function createMeshCore(agent) {
                 var sdp = null;
                 try { sdp = ws.webrtc.setOffer(obj.sdp); } catch (ex) { }
                 if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
+                break;
+            }
+            case 'ping': {
+                ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"pong\"}"); // Send pong response
+                break;
+            }
+            case 'pong': { // NOP
                 break;
             }
             case 'rtt': {
