@@ -124,7 +124,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
     // Find a free port starting with the specified one and going up.
     function CheckListenPort(port, addr, func) {
         var s = obj.net.createServer(function (socket) { });
-        obj.tcpServer = s.listen(port, function () { s.close(function () { if (func) { func(port, addr); } }); }).on("error", function (err) {
+        obj.tcpServer = s.listen(port, addr, function () { s.close(function () { if (func) { func(port, addr); } }); }).on("error", function (err) {
             if (args.exactports) { console.error("ERROR: MeshCentral HTTP server port " + port + " not available."); process.exit(); }
             else { if (port < 65535) { CheckListenPort(port + 1, addr, func); } else { if (func) { func(0); } } }
         });
