@@ -179,7 +179,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 var taskLimiterOptions = { hash: meshcorehash, core: parent.parent.defaultMeshCores[corename], name: corename };
 
                                 // If the agent supports compression, sent the core compressed.
-                                if ((obj.agentInfo.capabilities & 0x80) && (parent.parent.defaultMeshCoresDeflate[corename])) { args.core = parent.parent.defaultMeshCoresDeflate[corename]; }
+                                if ((obj.agentInfo.capabilities & 0x80) && (parent.parent.defaultMeshCoresDeflate[corename])) {
+                                    args.core = parent.parent.defaultMeshCoresDeflate[corename];
+                                }
 
                                 // Update new core with task limiting so not to flood the server. This is a high priority task.
                                 obj.agentCoreUpdatePending = true;
@@ -297,12 +299,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     // Send compressed data
                                     obj.agentUpdate.agentUpdateData = obj.agentExeInfo.zdata;
                                     obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.zhash;
-                                    //console.log('Sending compressed update agent', obj.agentExeInfo.zhashhex);
                                 } else {
                                     // Send uncompressed data
                                     obj.agentUpdate.agentUpdateData = obj.agentExeInfo.data;
                                     obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.hash;
-                                    //console.log('Sending uncompressed update agent', obj.agentExeInfo.hashhex);
                                 }
 
                                 const len = Math.min(parent.parent.agentUpdateBlockSize, obj.agentUpdate.agentUpdateData.length - obj.agentUpdate.ptr);
@@ -1415,6 +1415,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'tunnelCloseStats': {
                     // TODO: This this extra stats from the tunnel, you can merge this into the tunnel event in the database.
                     //console.log(command);
+
+                    // Event the session closed compression data.
+                    var event = { etype: 'node', action: 'sessioncompression', nodeid: obj.dbNodeKey, domain: domain.id, sent: command.sent, sentActual: command.sentActual, msg: 'Agent closed session with ' + command.sentRatio + '% agent to server compression. Sent: ' + command.sent + ', Compressed: ' + command.sentActual + '.' };
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
                     break;
                 }
                 case 'plugin': {
