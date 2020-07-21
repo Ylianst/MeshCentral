@@ -649,14 +649,12 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
 
         // Check if WebSocket compression is supported. It's broken in NodeJS v11.11 to v12.15
-        if ((obj.args.wscompression == true) || (obj.args.agentwscompression == true)) {
-            const verSplit = process.version.substring(1).split('.');
-            var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
-            if ((ver >= 11.11) && (ver <= 12.15)) {
-                obj.args.wscompression = obj.args.agentwscompression = false;
-                obj.config.settings.wscompression = obj.config.settings.agentwscompression = false;
-                addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15.');
-            }
+        const verSplit = process.version.substring(1).split('.');
+        var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
+        if ((ver >= 11.11) && (ver <= 12.15)) {
+            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15.'); }
+            obj.args.wscompression = obj.args.agentwscompression = false;
+            obj.config.settings.wscompression = obj.config.settings.agentwscompression = false;
         }
 
         // Local console tracing
@@ -2218,6 +2216,37 @@ function CreateMeshCentralServer(config, args) {
                     } else {
                         // Load the agent as-is
                         obj.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+
+                        // Compress the agent using ZIP
+                        var archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
+
+                        const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
+                        const onZipEnd = function onZipEnd() {
+                            // Concat all the buffer for create compressed zip agent
+                            var concatData = Buffer.concat(onZipData.x.zacc);
+                            delete onZipData.x.zacc;
+
+                            // Hash the compressed binary
+                            var hash = obj.crypto.createHash('sha384').update(concatData);
+                            onZipData.x.zhash = hash.digest('binary');
+                            onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
+
+                            // Set the agent
+                            onZipData.x.zdata = concatData;
+                            onZipData.x.zsize = concatData.length;
+
+                            console.log('Packed', onZipData.x.size, onZipData.x.zsize);
+                        }
+                        const onZipError = function onZipError() { delete onZipData.x.zacc; }
+                        obj.meshAgentBinaries[archid].zacc = [];
+                        onZipData.x = obj.meshAgentBinaries[archid];
+                        onZipEnd.x = obj.meshAgentBinaries[archid];
+                        onZipError.x = obj.meshAgentBinaries[archid];
+                        archive.on('data', onZipData);
+                        archive.on('end', onZipEnd);
+                        archive.on('error', onZipError);
+                        archive.append(obj.meshAgentBinaries[archid].data, { name: 'meshagent' });
+                        archive.finalize();
                     }
                 }
 

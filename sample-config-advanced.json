@@ -40,6 +40,7 @@
     "_compression": true,
     "_wscompression": false,
     "_agentwscompression": true,
+    "_agentsInRam": false,
     "_webRTC": false,
     "_nice404": false,
     "_clickOnce": false,

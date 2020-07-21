@@ -51,6 +51,7 @@
         "selfUpdate": { "type": "boolean", "default": false, "description": "When true, this server will attempt to self-update everyday after midnight." },
         "browserPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval and expects a response from the browser." },
         "browserPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval." },
+        "agentsInRam": { "type": "boolean", "default": false, "description": "Loads all agent binaries in RAM for faster agent updates." },
         "agentPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the agent at x seconds interval and expects a response from the agent." },
         "agentPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the agent at x seconds interval." },
         "agentIdleTimeout": { "type": "integer", "minimum": 1 },

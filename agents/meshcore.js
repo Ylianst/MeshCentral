@@ -1189,20 +1189,22 @@ function createMeshCore(agent) {
         var tunnel = tunnels[this.httprequest.index];
         if (tunnel == null) return; // Stop duplicate calls.
 
-        // Sent tunnel statistics to the server
-        mesh.SendCommand({
-            action: 'tunnelCloseStats',
-            url: tunnel.url,
-            userid: tunnel.userid,
-            protocol: tunnel.protocol,
-            sessionid: tunnel.sessionid,
-            sent: this.bytesSent_uncompressed + '',
-            sentActual: this.bytesSent_actual + '',
-            sentRatio: this.bytesSent_ratio,
-            received: this.bytesReceived_uncompressed + '',
-            receivedActual: this.bytesReceived_actual + '',
-            receivedRatio: this.bytesReceived_ratio
-        });
+        // Sent tunnel statistics to the server, only send this if compression was used.
+        if (this.bytesSent_uncompressed.toString() != this.bytesSent_actual.toString()) {
+            mesh.SendCommand({
+                action: 'tunnelCloseStats',
+                url: tunnel.url,
+                userid: tunnel.userid,
+                protocol: tunnel.protocol,
+                sessionid: tunnel.sessionid,
+                sent: this.bytesSent_uncompressed.toString(),
+                sentActual: this.bytesSent_actual.toString(),
+                sentRatio: this.bytesSent_ratio,
+                received: this.bytesReceived_uncompressed.toString(),
+                receivedActual: this.bytesReceived_actual.toString(),
+                receivedRatio: this.bytesReceived_ratio
+            });
+        }
 
         //sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
         delete tunnels[this.httprequest.index];
@@ -1340,7 +1342,7 @@ function createMeshCore(agent) {
                         var consentMessage = this.httprequest.username + " requesting remote terminal access. Grant access?", consentTitle = 'MeshCentral';
                         if (this.httprequest.soptions != null) {
                             if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                            if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.username); }
+                            if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                         }
                         this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
                         this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
@@ -1547,7 +1549,7 @@ function createMeshCore(agent) {
                                         var notifyMessage = this.ws.httprequest.username + " started a remote terminal session.", notifyTitle = "MeshCentral";
                                         if (this.ws.httprequest.soptions != null) {
                                             if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                            if (this.ws.httprequest.soptions.notifyMsgTerminal != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgTerminal.replace('{0}', this.ws.httprequest.username); }
+                                            if (this.ws.httprequest.soptions.notifyMsgTerminal != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgTerminal.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
                                         }
                                         try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                                     }
