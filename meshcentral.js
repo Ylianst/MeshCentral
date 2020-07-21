@@ -648,6 +648,17 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.trustedproxy == 'string') { obj.args.trustedproxy = obj.args.trustedproxy.split(' ').join('').split(','); }
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
 
+        // Check if WebSocket compression is supported. It's broken in NodeJS v11.11 to v12.15
+        if ((obj.args.wscompression == true) || (obj.args.agentwscompression == true)) {
+            const verSplit = process.version.substring(1).split('.');
+            var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
+            if ((ver >= 11.11) && (ver <= 12.15)) {
+                obj.args.wscompression = obj.args.agentwscompression = false;
+                obj.config.settings.wscompression = obj.config.settings.agentwscompression = false;
+                addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15.');
+            }
+        }
+
         // Local console tracing
         if (typeof obj.args.debug == 'string') { obj.debugSources = obj.args.debug.toLowerCase().split(','); }
         else if (typeof obj.args.debug == 'object') { obj.debugSources = obj.args.debug; }

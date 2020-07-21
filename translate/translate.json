@@ -11401,7 +11401,6 @@
     },
     {
       "en": "Format",
-      "en": "Formaat",
       "xloc": [
         "default.handlebars->27->1473"
       ]
@@ -14361,7 +14360,7 @@
       "es": "JSON",
       "fr": "JSON",
       "hi": "JSON",
-      "ja": "JSON,
+      "ja": "JSON",
       "ko": "JSON",
       "nl": "JSON",
       "pt": "JSON",
