@@ -1219,8 +1219,8 @@ function createMeshCore(agent) {
         */
 
         // If there is a upload or download active on this connection, close the file
-        if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
-        if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; }
+        if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
+        if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); delete this.httprequest.downloadFile; }
 
         // Clean up WebRTC
         if (this.webrtc != null) {
@@ -1244,8 +1244,16 @@ function createMeshCore(agent) {
         // If this is upload data, save it to file
         if (this.httprequest.uploadFile) {
             if (typeof data == 'object') {
-                try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
-                this.write(new Buffer(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
+                // Save the data to file being uploaded.
+                if (this.httprequest.uploadFile) {
+                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileSave ERROR'); this.write(new Buffer(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+                    this.write(new Buffer(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
+                }
+            } else if (typeof data == 'string') {
+                // Close the file and confirm. We need to make this added round trip since websocket deflate compression can cause the last message before a websocket close to not be received.
+                if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
+                this.write(new Buffer(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                this.end();
             }
             return;
         }
@@ -2044,7 +2052,7 @@ function createMeshCore(agent) {
                     */
                     case 'upload': {
                         // Upload a file, browser to agent
-                        if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
+                        if (this.httprequest.uploadFile != null) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
                         MeshServerLog('Upload: \"' + filepath + '\"', this.httprequest);
