@@ -7961,7 +7961,6 @@
         function p13uploadReconnect() {
             uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
             uploadFile.ws.attemptWebRTC = false;
-            uploadFile.ws.ctrlMsgAllowed = false;
             uploadFile.ws.onStateChanged = onFileUploadStateChange;
             uploadFile.ws.Start(filesNode._id);
         }
@@ -8016,6 +8015,9 @@
                 for (var i = 0; i < 8; i++) { p13uploadNextPart(true); } // Send 8 more blocks of 4 k to full the websocket.
             } else if (cmd.action == 'uploadack') {
                 p13uploadNextPart(false);
+            } else if (cmd.action == 'uploaddone') {
+                if (uploadFile.ws != null) { uploadFile.ws.Stop(); uploadFile.ws = null; }
+                if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadReconnect(); } else { p13uploadFileCancel(); }
             } else if (cmd.action == 'uploaderror') {
                 p13uploadFileCancel();
             }
@@ -8025,12 +8027,11 @@
         function p13uploadNextPart(dataPriming) {
             var data = uploadFile.xdata;
             var start = uploadFile.xptr;
-            var end = uploadFile.xptr + 4096;
-            if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
-            if (start == data.byteLength) {
-                if (uploadFile.ws != null) { uploadFile.ws.Stop(); uploadFile.ws = null; }
-                if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadReconnect(); } else { p13uploadFileCancel(); }
+            if (start >= data.byteLength) {
+                uploadFile.ws.sendCtrlMsg('{"ctrlChannel":"102938","type":"close"}');
             } else {
+                var end = uploadFile.xptr + 16384;
+                if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
                 var datapart = data.slice(start, end);
                 uploadFile.ws.send(datapart);
                 uploadFile.xptr = end;
