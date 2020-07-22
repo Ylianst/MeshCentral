@@ -10570,8 +10570,11 @@
             for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) checkcount++; }
             if (checkcount == 0) return;
 
+            var optionalActions = '';
+            if (serverinfo.emailcheck) { optionalActions += '<option value=4>' + "Validate Email" + '</option><option value=5>' + "Invalidate Email" + '</option>'; }
+
             var x = "Select an operation to perform on all selected users." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select style=width:240px id=d3groupop><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option><option value=3>' + "Delete account" + '</option></select>');
+            x += addHtmlValue("Operation", '<select style=width:240px id=d3groupop><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option>' + optionalActions + '<option value=3>' + "Delete account" + '</option></select>');
             setDialogMode(2, "Group Action", 3, p3usersGroupActionFunctionEx, x);
         }
 
@@ -10597,6 +10600,18 @@
                 x += '<label><input id=d3check type=checkbox onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
                 setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
+            } else if (op == 4) {
+                // Validate emails
+                for (var i in userids) {
+                    var user = users[userids[i]];
+                    if (user.emailVerified !== true) { meshserver.send({ action: 'edituser', id: user._id, emailVerified: true }); }
+                }
+            } else if (op == 5) {
+                // Invalidate emails
+                for (var i in userids) {
+                    var user = users[userids[i]];
+                    if (user.emailVerified === true) { meshserver.send({ action: 'edituser', id: user._id, emailVerified: false }); }
+                }
             }
         }
 
