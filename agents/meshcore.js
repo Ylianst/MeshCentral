@@ -2012,10 +2012,10 @@ function createMeshCore(agent) {
                         // Send the next download block(s)
                         while (sendNextBlock > 0) {
                             sendNextBlock--;
-                            var buf = new Buffer(4096);
-                            var len = fs.readSync(this.filedownload.f, buf, 4, 4092, null);
+                            var buf = new Buffer(16384);
+                            var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
                             this.filedownload.ptr += len;
-                            if (len < 4092) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
+                            if (len < 16380) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
                             this.write(buf.slice(0, len + 4)); // Write as binary
                         }
                         break;
