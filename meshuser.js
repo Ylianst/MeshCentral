@@ -1219,6 +1219,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (typeof domain.notificationmessages.files == 'string') { command.soptions.notifyMsgFiles = domain.notificationmessages.files; }
                         }
 
+                        // Add userid
+                        command.userid = user._id;
+
                         // Add tunnel pre-message deflate
                         if (typeof parent.parent.config.settings.agentwscompression == 'boolean') { command.perMessageDeflate = parent.parent.config.settings.agentwscompression; }
                     }

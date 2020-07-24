@@ -3341,7 +3341,7 @@
                     var devNotify = '';
                     if (node.sessions != null) {
                         // Sessions are active
-                        if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null)) {
+                        if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
                             if (view == 2) {
                                 devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifySmallDot src=images/icon-relay-notify10.png width=10 height=10>';
                             } else {
@@ -3632,6 +3632,12 @@
                 } else if (i == 'files') {
                     x += '<u>' + "Files" + '</u>';
                     for (var j in node.sessions.files) { x += addHtmlValue4(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j])))); }
+                } else if (i == 'tcp') {
+                    x += '<u>' + "TCP Routing" + '</u>';
+                    for (var j in node.sessions.tcp) { x += addHtmlValue4(getUserName(j), ((node.sessions.tcp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.tcp[j])))); }
+                } else if (i == 'udp') {
+                    x += '<u>' + "UDP Routing" + '</u>';
+                    for (var j in node.sessions.udp) { x += addHtmlValue4(getUserName(j), ((node.sessions.udp[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.udp[j])))); }
                 }
             }
             if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
@@ -5262,7 +5268,7 @@
                 currentNode = node;
 
                 // Device Notification
-                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null)));
+                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
 
                 // Device Battery
                 QV('p10deviceBattery', false);

@@ -341,7 +341,7 @@ function createMeshCore(agent) {
     var nextTunnelIndex = 1;
     var amtPolicy = null;
     var apftunnel = null;
-    var tunnelUserCount = { terminal: {}, files: {} }; // List of userid->count sessions for terminal and files.
+    var tunnelUserCount = { terminal: {}, files: {}, tcp: {}, udp: {} }; // List of userid->count sessions for terminal, files and TCP/UDP routing
 
     // Add to the server event log
     function MeshServerLog(msg, state) {
@@ -1127,7 +1127,6 @@ function createMeshCore(agent) {
             });
         }
 
-
         //sendConsoleText('onTunnelUpgrade - ' + this.tcpport + ' - ' + this.udpport);
 
         if (this.tcpport != null) {
@@ -1138,6 +1137,12 @@ function createMeshCore(agent) {
             if (this.tcpaddr != null) { connectionOptions.host = this.tcpaddr; } else { connectionOptions.host = '127.0.0.1'; }
             s.tcprelay = net.createConnection(connectionOptions, onTcpRelayTargetTunnelConnect);
             s.tcprelay.peerindex = this.index;
+
+            // Add the TCP session to the count and update the server
+            if (s.httprequest.userid != null) {
+                if (tunnelUserCount.tcp[s.httprequest.userid] == null) { tunnelUserCount.tcp[s.httprequest.userid] = 1; } else { tunnelUserCount.tcp[s.httprequest.userid]++; }
+                try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (ex) { }
+            }
         } if (this.udpport != null) {
             // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
             s.data = onUdpRelayServerTunnelData;
@@ -1148,6 +1153,12 @@ function createMeshCore(agent) {
             s.udprelay.udpport = this.udpport;
             s.udprelay.udpaddr = this.udpaddr;
             s.udprelay.first = true;
+
+            // Add the UDP session to the count and update the server
+            if (s.httprequest.userid != null) {
+                if (tunnelUserCount.udp[s.httprequest.userid] == null) { tunnelUserCount.udp[s.httprequest.userid] = 1; } else { tunnelUserCount.udp[s.httprequest.userid]++; }
+                try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.tcp }); } catch (ex) { }
+            }
         } else {
             // This is a normal connect for KVM/Terminal/Files
             s.data = onTunnelData;
@@ -1188,6 +1199,17 @@ function createMeshCore(agent) {
     function onTunnelClosed() {
         var tunnel = tunnels[this.httprequest.index];
         if (tunnel == null) return; // Stop duplicate calls.
+
+        // If this is a routing session, clean up and send the new session counts.
+        if (this.httprequest.userid != null) {
+            if (this.httprequest.tcpport != null) {
+                if (tunnelUserCount.tcp[this.httprequest.userid] != null) { tunnelUserCount.tcp[this.httprequest.userid]--; if (tunnelUserCount.tcp[this.httprequest.userid] <= 0) { delete tunnelUserCount.tcp[this.httprequest.userid]; } }
+                try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (ex) { }
+            } else if (this.httprequest.udpport != null) {
+                if (tunnelUserCount.udp[this.httprequest.userid] != null) { tunnelUserCount.udp[this.httprequest.userid]--; if (tunnelUserCount.udp[this.httprequest.userid] <= 0) { delete tunnelUserCount.udp[this.httprequest.userid]; } }
+                try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.udp }); } catch (ex) { }
+            }
+        }
 
         // Sent tunnel statistics to the server, only send this if compression was used.
         if (this.bytesSent_uncompressed.toString() != this.bytesSent_actual.toString()) {
