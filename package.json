@@ -2,10 +2,14 @@
   "name": "meshcentral",
   "version": "0.5.94",
   "keywords": [
-    "Remote Management",
-    "Intel AMT",
-    "Active Management",
-    "Remote Desktop"
+    "Remote Device Management",
+    "Remote Device Monitoring",
+    "Remote Desktop",
+    "Remote Terminal",
+    "Remote File Access",
+    "KVM",
+    "Intel Active Management Technology",
+    "Intel AMT"
   ],
   "homepage": "http://meshcommander.com",
   "description": "Web based remote computer management and file server",
