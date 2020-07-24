@@ -1119,6 +1119,8 @@ function serverConnect() {
                     for (var i in data.meshes) { settings.xmeshes[data.meshes[i]._id] = data.meshes[i]; }
                 } else if (settings.cmd == 'listdevicegroups') {
                     if (args.json) {
+                        // If asked, add the MeshID hex encoding to the JSON.
+                        if (args.hex) { for (var i in data.meshes) { data.meshes[i]._idhex = '0x' + Buffer.from(data.meshes[i]._id.split('/')[2].replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase(); } }
                         console.log(JSON.stringify(data.meshes, ' ', 2));
                     } else {
                         if (args.idexists) { for (var i in data.meshes) { const u = data.meshes[i]; if ((u._id == args.idexists) || (u._id.split('/')[2] == args.idexists)) { console.log('1'); process.exit(); return; } } console.log('0'); process.exit(); return; }
