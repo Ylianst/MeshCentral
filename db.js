@@ -809,7 +809,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.Get = function (_id, func) {
                 sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], function (err, docs) {
                     if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
-                    func(_id, func);
+                    func(err, docs);
                 });
             }
             obj.GetAll = function (func) { sqlDbQuery('SELECT domain, doc FROM meshcentral.main', null, func); }
