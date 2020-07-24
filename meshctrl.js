@@ -352,7 +352,7 @@ if (args['_'].length == 0) {
                     }
                     case 'removedevicegroup': {
                         console.log("Remove a device group, Example usages:\r\n");
-                        console.log("  MeshCtrl RemoveDeviceGroup --id 'groupid'");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveDeviceGroup --id 'groupid'"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [groupid]         - Device group identifier (or --group).");
@@ -364,7 +364,9 @@ if (args['_'].length == 0) {
                     }
                     case 'editdevicegroup': {
                         console.log("Edit a device group, Example usages:\r\n");
-                        console.log("  MeshCtrl EditDeviceGroup --id 'groupid' --name 'NewName'");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDeviceGroup --id 'groupid' --name \"New Name\""));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDeviceGroup --id 'groupid' --desc \"Description\" --consent 63"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDeviceGroup --id 'groupid' --invitecodes \"code1,code2\" --backgroundonly"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [groupid]         - Device group identifier (or --group).");
@@ -374,7 +376,7 @@ if (args['_'].length == 0) {
                         console.log("  --group [groupname]    - Device group name (or --id).");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --name [name]          - Set new device group name.");
-                        console.log("  --desc [name]          - Set new device group description, blank to clear.");
+                        console.log("  --desc [description]   - Set new device group description, blank to clear.");
                         console.log("  --flags [number]       - Set device group flags, sum of the values below, 0 for none.");
                         console.log("     1 = Auto remove device on disconnect.");
                         console.log("     2 = Sync hostname.");
