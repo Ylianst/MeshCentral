@@ -2590,6 +2590,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'deletemesh':
                 {
+                    // Delete a mesh and all computers within it
                     var err = null;
 
                     // Resolve the device group name if needed
@@ -2602,8 +2603,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
+                    // Validate input
                     try {
-                        // Delete a mesh and all computers within it
                         if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
                         else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -2682,54 +2683,77 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'editmesh':
                 {
                     // Change the name or description of a device group (mesh)
-                    if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
-                    mesh = parent.meshes[command.meshid];
-                    change = '';
+                    var err = null;
 
-                    if (mesh) {
-                        // Check if this user has rights to do this
-                        if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_EDITMESH) == 0) return;
-                        if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-
-                        if ((common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
-                        if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
-                        if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
-                        if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Group "' + mesh.name + '" consent changed'; mesh.consent = command.consent; }
-
-                        // See if we need to change device group invitation codes
-                        if (mesh.mtype == 2) {
-                            if (command.invite === '*') {
-                                // Clear invite codes
-                                if (mesh.invite != null) { delete mesh.invite; }
-                                if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
-                            } else if (typeof command.invite === 'object') {
-                                // Set invite codes
-                                if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
-                                    // Check if an invite code is not already in use.
-                                    var dup = null;
-                                    for (var i in command.invite.codes) {
-                                        for (var j in parent.meshes) {
-                                            if ((j != command.meshid) && (parent.meshes[j].domain == domain.id) && (parent.meshes[j].invite != null) && (parent.meshes[j].invite.codes.indexOf(command.invite.codes[i]) >= 0)) { dup = command.invite.codes[i]; break; }
-                                        }
-                                    }
-                                    if (dup != null) {
-                                        // A duplicate was found, don't allow this change.
-                                        displayNotificationMessage('Error, invite code \"' + dup + '\" already in use.', 'Invite Codes');
-                                        return;
-                                    }
-                                    mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
-                                    if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
-                                }
+                    // Resolve the device group name if needed
+                    if ((typeof command.meshidname == 'string') && (command.meshid == null)) {
+                        for (var i in parent.meshes) {
+                            var m = parent.meshes[i];
+                            if ((m.mtype == 2) && (m.name == command.meshidname) && parent.IsMeshViewable(user, m)) {
+                                if (command.meshid == null) { command.meshid = m._id; } else { err = 'Duplicate device groups found'; }
                             }
                         }
+                    }
 
-                        if (change != '') {
-                            db.Set(mesh);
-                            var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
+                    // Validate input
+                    try {
+                        if (common.validateString(command.meshid, 1, 1024) == false) { err = 'Invalid group identifier'; } // Check the meshid
+                        else if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                        if (err == null) {
+                            mesh = parent.meshes[command.meshid];
+                            if (mesh == null) { err = 'Invalid group identifier '; }
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'editmesh', responseid: command.responseid, result: err })); } catch (ex) { } } break; }
+                    
+                    change = '';
+
+                    // Check if this user has rights to do this
+                    if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_EDITMESH) == 0) return;
+                    if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
+
+                    if ((common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
+                    if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
+                    if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
+                    if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Group "' + mesh.name + '" consent changed'; mesh.consent = command.consent; }
+
+                    // See if we need to change device group invitation codes
+                    if (mesh.mtype == 2) {
+                        if (command.invite === '*') {
+                            // Clear invite codes
+                            if (mesh.invite != null) { delete mesh.invite; }
+                            if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
+                        } else if ((typeof command.invite == 'object') && (Array.isArray(command.invite.codes)) && (typeof command.invite.flags == 'number')) {
+                            // Set invite codes
+                            if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
+                                // Check if an invite code is not already in use.
+                                var dup = null;
+                                for (var i in command.invite.codes) {
+                                    for (var j in parent.meshes) {
+                                        if ((j != command.meshid) && (parent.meshes[j].domain == domain.id) && (parent.meshes[j].invite != null) && (parent.meshes[j].invite.codes.indexOf(command.invite.codes[i]) >= 0)) { dup = command.invite.codes[i]; break; }
+                                    }
+                                }
+                                if (dup != null) {
+                                    // A duplicate was found, don't allow this change.
+                                    displayNotificationMessage('Error, invite code \"' + dup + '\" already in use.', 'Invite Codes');
+                                    return;
+                                }
+                                mesh.invite = { codes: command.invite.codes, flags: command.invite.flags };
+                                if (change != '') { change += ' and invite code changed'; } else { change += 'Group "' + mesh.name + '" invite code changed'; }
+                            }
                         }
                     }
+
+                    if (change != '') {
+                        db.Set(mesh);
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
+                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
+                    }
+
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'editmesh', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
             case 'addmeshuser':

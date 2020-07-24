@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -32,6 +32,7 @@ if (args['_'].length == 0) {
     console.log("  RemoveUserGroup           - Delete a user group.");
     console.log("  AddDeviceGroup            - Create a new device group.");
     console.log("  RemoveDeviceGroup         - Delete a device group.");
+    console.log("  EditDeviceGroup           - Change a device group values.");
     console.log("  MoveToDeviceGroup         - Move a device to a different device group.");
     console.log("  AddUserToDeviceGroup      - Add a user to a device group.");
     console.log("  RemoveUserFromDeviceGroup - Remove a user from a device group.");
@@ -109,6 +110,7 @@ if (args['_'].length == 0) {
             else { ok = true; }
             break;
         }
+        case 'editdevicegroup':
         case 'removedevicegroup': {
             if ((args.id == null) && (args.group == null)) { console.log(winRemoveSingleQuotes("Device group identifier missing, use --id '[groupid]' or --group [groupname]")); }
             else { ok = true; }
@@ -358,6 +360,35 @@ if (args['_'].length == 0) {
                             console.log("  --id '[groupid]'       - Device group identifier (or --group).");
                         }
                         console.log("  --group [groupname]    - Device group name (or --id).");
+                        break;
+                    }
+                    case 'editdevicegroup': {
+                        console.log("Edit a device group, Example usages:\r\n");
+                        console.log("  MeshCtrl EditDeviceGroup --id 'groupid' --name 'NewName'");
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier (or --group).");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier (or --group).");
+                        }
+                        console.log("  --group [groupname]    - Device group name (or --id).");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --name [name]          - Set new device group name.");
+                        console.log("  --desc [name]          - Set new device group description, blank to clear.");
+                        console.log("  --flags [number]       - Set device group flags, sum of the values below, 0 for none.");
+                        console.log("     1 = Auto remove device on disconnect.");
+                        console.log("     2 = Sync hostname.");
+                        console.log("  --consent [number]     - Set device group consent options, sum of the values below, 0 for none.");
+                        console.log("     1 = Desktop notify user.");
+                        console.log("     2 = Terminal notify user.");
+                        console.log("     4 = Files notify user.");
+                        console.log("     8 = Desktop prompt for user consent.");
+                        console.log("    16 = Terminal prompt for user consent.");
+                        console.log("    32 = Files prompt for user consent.");
+                        console.log("    64 = Desktop show connection toolbar.");
+                        console.log("  --invitecodes [aa,bb]  - Comma seperated list of invite codes, blank to clear.");
+                        console.log("    --backgroundonly     - When used with invitecodes, set agent to only install in background.");
+                        console.log("    --interactiveonly    - When used with invitecodes, set agent to only run on demand.");
                         break;
                     }
                     case 'movetodevicegroup': {
@@ -814,6 +845,31 @@ function serverConnect() {
                 ws.send(JSON.stringify(op));
                 break;
             }
+            case 'editdevicegroup': {
+                var op = { action: 'editmesh', responseid: 'meshctrl' };
+                if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshidname = args.group; }
+                if ((typeof args.name == 'string') && (args.name != '')) { op.meshname = args.name; }
+                if (args.desc === true) { op.desc = ""; } else if (typeof args.desc == 'string') { op.desc = args.desc; }
+                if (args.invitecodes === true) { op.invite = "*"; } else if (typeof args.invitecodes == 'string') {
+                    var invitecodes = args.invitecodes.split(','), invitecodes2 = [];
+                    for (var i in invitecodes) { if (invitecodes[i].length > 0) { invitecodes2.push(invitecodes[i]); } }
+                    if (invitecodes2.length > 0) {
+                        op.invite = { codes: invitecodes2, flags: 0 };
+                        if (args.backgroundonly === true) { op.invite.flags = 2; }
+                        else if (args.interactiveonly === true) { op.invite.flags = 1; }
+                    }
+                }
+                if (args.flags != null) {
+                    var flags = parseInt(args.flags);
+                    if (typeof flags == 'number') { op.flags = flags; }
+                }
+                if (args.consent != null) {
+                    var consent = parseInt(args.consent);
+                    if (typeof consent == 'number') { op.consent = consent; }
+                }
+                ws.send(JSON.stringify(op));
+                break;
+            }
             case 'movetodevicegroup': {
                 var op = { action: 'changeDeviceMesh', responseid: 'meshctrl', nodeids: [ args.devid ] };
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
@@ -1000,6 +1056,7 @@ function serverConnect() {
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
             case 'deletemesh': // REMOVEDEVICEGROUP
+            case 'editmesh': // EDITDEVICEGROUP
             case 'changeDeviceMesh':
             case 'addmeshuser': //
             case 'removemeshuser': //
