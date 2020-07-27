@@ -11405,6 +11405,7 @@
     },
     {
       "en": "Format",
+      "nl": "Formaat",
       "xloc": [
         "default.handlebars->27->1479"
       ]
@@ -14138,6 +14139,7 @@
     },
     {
       "en": "Invalidate Email",
+      "nl": "E-mail ongeldig maken",
       "xloc": [
         "default.handlebars->27->1521"
       ]
@@ -25735,6 +25737,7 @@
     },
     {
       "en": "TCP Routing",
+      "nl": "TCP routering",
       "xloc": [
         "default-mobile.handlebars->9->170",
         "default.handlebars->27->239"
@@ -27144,6 +27147,7 @@
     },
     {
       "en": "UDP Routing",
+      "nl": "UDP routering",
       "xloc": [
         "default-mobile.handlebars->9->173",
         "default.handlebars->27->242"
@@ -28440,6 +28444,7 @@
     },
     {
       "en": "Validate Email",
+      "nl": "E-mail valideren",
       "xloc": [
         "default.handlebars->27->1520"
       ]
