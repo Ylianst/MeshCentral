@@ -4944,32 +4944,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 });
             }
 
-            // Creates a login token using the user/pass that is passed in as URL arguments.
-            // For example: https://localhost/createLoginToken.ashx?user=admin&pass=admin&a=3
-            // It's not advised to use this to create login tokens since the URL is often logged and you got credentials in the URL.
-            // Since it's bad, it's only offered when an untrusted certificate is used as a way to help developers get started. 
-            if (obj.isTrustedCert() == false) {
-                obj.app.get(url + 'createLoginToken.ashx', function (req, res) {
-                    // A web socket session can be authenticated in many ways (Default user, session, user/pass and cookie). Check authentication here.
-                    if ((req.query.user != null) && (req.query.pass != null)) {
-                        // A user/pass is provided in URL arguments
-                        obj.authenticate(req.query.user, req.query.pass, getDomain(req), function (err, userid) {
-                            if ((err == null) && (obj.users[userid])) {
-                                // User is authenticated, create a token
-                                var x = { a: 3 }; for (var i in req.query) { if ((i != 'user') && (i != 'pass')) { x[i] = obj.common.toNumber(req.query[i]); } } x.u = userid;
-                                res.send(obj.parent.encodeCookie(x, obj.parent.loginCookieEncryptionKey));
-                            } else {
-                                res.sendStatus(404);
-                            }
-                        });
-                    } else {
-                        res.sendStatus(404);
-                    }
-                });
-            }
-
-            //obj.app.get(url + 'stop', function (req, res) { res.send('Stopping Server, <a href="' + url + '">click here to login</a>.'); setTimeout(function () { parent.Stop(); }, 500); });
-
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
             if (parent.config.domains[i].webpublicpath != null) {
                 // Use domain public path
