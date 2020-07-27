@@ -4937,13 +4937,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.agentapp.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
             }
 
-            // Memory Tracking
-            if (typeof obj.args.memorytracking == 'number') {
-                obj.app.get(url + 'memorytracking.csv', function (req, res) {
-                    try { res.sendFile(obj.parent.getConfigFilePath('memorytracking.csv')); } catch (e) { res.sendStatus(404); }
-                });
-            }
-
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
             if (parent.config.domains[i].webpublicpath != null) {
                 // Use domain public path
