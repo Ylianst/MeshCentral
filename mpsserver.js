@@ -16,6 +16,8 @@
 // Construct a Intel AMT MPS server object
 module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var obj = {};
+    obj.fs = require('fs');
+    obj.path = require('path');
     obj.parent = parent;
     obj.db = db;
     obj.args = args;
@@ -28,6 +30,12 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     const net = require('net');
     const tls = require('tls');
     const MAX_IDLE = 90000;         // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
+
+    // This MPS server is also a tiny HTTPS server. HTTP responses are here.
+    obj.httpResponses = {
+        '/': '<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>MeshCentral MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>'
+        //'/text.ico': { file: 'c:\\temp\\test.iso', maxserve: 3, maxtime: Date.now() + 15000 }
+    };
 
     if (obj.args.mpstlsoffload) {
         obj.server = net.createServer(onConnection);
@@ -223,9 +231,18 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
             // Detect if this is an HTTPS request, if it is, return a simple answer and disconnect. This is useful for debugging access to the MPS port.
             if (socket.tag.first == true) {
-                if (socket.tag.accumulator.length < 3) return;
+                if (socket.tag.accumulator.length < 5) return;
                 //if (!socket.tag.clientCert.subject) { console.log("MPS Connection, no client cert: " + socket.remoteAddress); socket.write('HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMeshCentral2 MPS server.\r\nNo client certificate given.'); socket.end(); return; }
-                if (socket.tag.accumulator.substring(0, 3) == 'GET') { if (args.mpsdebug) { console.log("MPS Connection, HTTP GET detected: " + socket.remoteAddress); } socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>MeshCentral2 MPS server.<br />Intel&reg; AMT computers should connect here.</body></html>"); socket.end(); return; }
+                if ((socket.tag.accumulator.substring(0, 4) == 'GET ') || (socket.tag.accumulator.substring(0, 5) == 'HEAD ')) {
+                    if (args.mpsdebug) { console.log("MPS Connection, HTTP request detected: " + socket.remoteAddress); }
+                    socket.removeAllListeners('data');
+                    socket.removeAllListeners('close');
+                    socket.on('data', onHttpData);
+                    socket.on('close', onHttpClose);
+                    obj.httpSocket = socket;
+                    onHttpData.call(socket, data);
+                    return;
+                }
 
                 // If the MQTT broker is active, look for inbound MQTT connections
                 if (parent.mqttbroker != null) {
@@ -238,8 +255,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (chunk.readUInt8(0) == 16 && ((chunk.slice(4, 8).toString() === 'MQTT') || (chunk.slice(5, 9).toString() === 'MQTT')
                         || (chunk.slice(6, 10).toString() === 'MQTT') || (chunk.slice(7, 11).toString() === 'MQTT'))) {
                         parent.debug('mps', "MQTT connection detected.");
-                        socket.removeAllListeners("data");
-                        socket.removeAllListeners("close");
+                        socket.removeAllListeners('data');
+                        socket.removeAllListeners('close');
                         socket.setNoDelay(true);
                         socket.serialtunnel = SerialTunnel();
                         socket.serialtunnel.xtransport = 'mps';
@@ -934,7 +951,75 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         if ((socket != null) && (socket.tag != null)) { socket.tag.meshid = newMeshId; }
     }
 
+    // Called when handling incoming HTTP data
+    function onHttpData(data) {
+        if (this.xdata == null) { this.xdata = data; } else { this.xdata += data; }
+        var headersize = this.xdata.indexOf('\r\n\r\n');
+        if (headersize < 0) { if (this.xdata.length > 4096) { this.end(); } return; }
+        var headers = this.xdata.substring(0, headersize).split('\r\n');
+        if (headers.length < 1) { this.end(); return; }
+        var headerObj = {};
+        for (var i = 1; i < headers.length; i++) { var j = headers[i].indexOf(': '); if (i > 0) { headerObj[headers[i].substring(0, j).toLowerCase()] = headers[i].substring(j + 2); } }
+        var hostHeader = (headerObj['host'] != null) ? ('Host: ' + headerObj['host'] + '\r\n') : '';
+        var directives = headers[0].split(' ');
+        if ((directives.length != 3) || ((directives[0] != 'GET') && (directives[0] != 'HEAD'))) { this.end(); return; }
+        //console.log('WebServer, request', directives[0], directives[1]);
+        var responseCode = 404, responseType = 'application/octet-stream', responseData = '', r = null;
+        if (obj.httpResponses != null) { r = obj.httpResponses[directives[1]]; }
+        if ((r != null) && (r.maxtime != null) && (r.maxtime < Date.now())) { r = null; delete obj.httpResponses[directives[1]]; } // Check if this entry is expired.
+        if (r != null) {
+            if (typeof r == 'string') {
+                responseCode = 200; responseType = 'text/html'; responseData = r;
+            } else if (typeof r == 'object') {
+                responseCode = 200;
+                if (r.type) { responseType = r.type; }
+                if (r.data) { responseData = r.data; }
+                if (r.shortfile) { try { responseData = obj.fs.readFileSync(r.shortfile); } catch (ex) { responseCode = 404; responseType = 'text/html'; responseData = 'File not found'; } }
+                if (r.file) {
+                    // Send the file header and pipe the rest of the file
+                    var filestats = null;
+                    try { filestats = obj.fs.statSync(r.file); } catch (ex) { }
+                    if ((filestats == null) || (typeof filestats.size != 'number') || (filestats.size <= 0)) {
+                        responseCode = 404; responseType = 'text/html'; responseData = 'File not found';
+                    } else {
+                        this.write('HTTP/1.1 200 OK\r\n' + hostHeader + 'Content-Type: ' + responseType + '\r\nConnection: keep-alive\r\nContent-Length: ' + filestats.size + '\r\n\r\n');
+                        if (directives[0] == 'GET') {
+                            obj.fs.createReadStream(r.file, { flags: 'r' }).pipe(this);
+                            if (typeof r.maxserve == 'number') { r.maxserve--; if (r.maxserve == 0) { delete obj.httpResponses[directives[1]]; } } // Check if this entry was server the maximum amount of times.
+                        }
+                        delete this.xdata;
+                        return;
+                    }
+                }
+            }
+        } else {
+            responseType = 'text/html';
+            responseData = 'Invalid request';
+        }
+        this.write('HTTP/1.1 ' + responseCode + ' OK\r\n' + hostHeader + 'Connection: keep-alive\r\nContent-Type: ' + responseType + '\r\nContent-Length: ' + responseData.length + '\r\n\r\n');
+        this.write(responseData);
+        delete this.xdata;
+    }
+
+    // Called when handling HTTP data and the socket closes
+    function onHttpClose() { }
+
+    // Add a HTTP file response
+    obj.addHttpFileResponse = function (path, file, maxserve, minutes) {
+        var r = { file: file };
+        if (typeof maxserve == 'number') { r.maxserve = maxserve; }
+        if (typeof minutes == 'number') { r.maxtime = Date.now() + (60000 * minutes); }
+        obj.httpResponses[path] = r;
+
+        // Clean up any expired files
+        const now = Date.now();
+        for (var i in obj.httpResponses) { if ((obj.httpResponses[i].maxtime != null) && (obj.httpResponses[i].maxtime < now)) { delete obj.httpResponses[i]; } }
+    }
+
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
+
+    // Example, this will add a file to stream, served 2 times max and 3 minutes max.
+    //obj.addHttpFileResponse('/a.png', 'c:\\temp\\MC2-LetsEncrypt.png', 2, 3);
 
     return obj;
 };
