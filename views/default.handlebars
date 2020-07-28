@@ -48,6 +48,7 @@
         <div id="cxconsole" class="cmtext" onclick="cmaction(7,event)">Console</div>
         <div id="cxplugins" class="cmtext" onclick="cmaction(8,event)" style="display:none">Plugins</div>
         <hr id="cxmgroupsplit" />
+        <div id="cxstar" class="cmtext" onclick="cmaction(10,event)" style="display:none">Toggle Star</div>
         <div id="cxmdesktop" class="cmtext" onclick="cmaction(9,event)" style="display:none">Multi-Desktop</div>
     </div>
     <div id="meshContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
@@ -494,7 +495,10 @@
                             </td>
                             <td style=width:20px></td>
                             <td style=width:200px;vertical-align:top;position:relative valign=top>
-                                <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyLargeDot src=images/icon-relay-notify-40.png width=40 height=40>
+                                <div class="deviceNotifyLargeDot">
+                                    <img id="p10deviceStar" class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>
+                                    <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyLargeDotSub src=images/icon-relay-notify-40.png width=40 height=40>
+                                </div>
                                 <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
                                 <div id=MainComputerState></div>
@@ -1217,6 +1221,7 @@
         var events = [];
         var users = null;
         var wssessions = null;
+        var stars = {}; // Devices that have been "stared" by the user.
         var nodeShortIdent = 0;
         var desktop;
         var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false };
@@ -1308,6 +1313,9 @@
 
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; }
             toggleFullScreen();
+
+            // Setup stared devices
+            try { stars = JSON.parse(getstore('stars', '{}')); } catch (ex) {}
 
             // Setup page visuals
             var hide = 0;
@@ -2039,6 +2047,9 @@
                         }
                     }
 
+                    // Remove any stars for nodes that don't exist
+                    for (var i in stars) { if (getNodeFromId(i) == null) { delete stars[i]; } }
+
                     // If we are currently looking at a node this is now gone, change the view.
                     if ((currentNode != null) && (IsNodeViewable(currentNode) == false)) { currentNode = null; go(1); }
 
@@ -2461,6 +2472,8 @@
                             // New user web state, update the web page as needed
                             try {
                                 if (localStorage != null) {
+                                    // TODO: The problem with this "old" values is that if changed from a different tab, the old and new values will be the same.
+                                    // So comparing against these values is not a good idea.
                                     var oldShowRealNames = localStorage.getItem('showRealNames');
                                     var oldUiMode = localStorage.getItem('uiMode');
                                     var oldSort = localStorage.getItem('sort');
@@ -2479,6 +2492,7 @@
                                     if ((webstate.loctag != null) && (webstate.loctag != oldLoctag)) { if (webstate.loctag != null) { args.locale = webstate.loctag; } else { delete args.locale; } mainUpdate(0xFFFFFFFF); }
                                     if ((webstate.nightMode != null) && (webstate.nightMode != oldNightMode)) { nightMode = (webstate.nightMode == '1'); if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; } }
                                     if ((webstate.footerBar != null) && (webstate.footerBar != oldFooterBar)) { footerBar = (webstate.footerBar == '1'); QS('container')['grid-template-rows'] = null; QS('container')['-ms-grid-rows'] = null; adjustPanels(); }
+                                    if ((webstate.stars != null) && (webstate.stars != JSON.stringify(stars))) { stars = JSON.parse(webstate.stars); if (Q('SearchInput').value == '*') { mainUpdate(5); } else { mainUpdate(4); } }
                                 }
                             } catch (ex) {}
                             break;
@@ -3337,15 +3351,26 @@
                     if (showRealNames == true && node.rname != null) name = EscapeHtml(node.rname);
                     if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
 
-                    // Setup device notification
-                    var devNotify = '';
+                    // Add device notification icons
+                    var devNotify = '', devNotifySub = '';
+
+                    // This device is "starred"
+                    if (stars[node._id] == 1) {
+                        if (view == 2) {
+                            devNotifySub += '<img class=deviceNotifySmallDotSub src=images/icon-star-notify-10.png width=10 height=10>';
+                        } else {
+                            devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>';
+                        }
+                    }
+
+                    // This device has session information
                     if (node.sessions != null) {
                         // Sessions are active
                         if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
                             if (view == 2) {
-                                devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifySmallDot src=images/icon-relay-notify10.png width=10 height=10>';
+                                devNotifySub += '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifySmallDotSub src=images/icon-relay-notify10.png width=10 height=10>';
                             } else {
-                                devNotify = '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifyDot src=images/icon-relay-notify.png width=16 height=16>';
+                                devNotifySub += '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>';
                             }
                         }
 
@@ -3367,6 +3392,15 @@
                             if (levelnum > 0) {
                                 devNotify += '<div class="deviceBatterySmall deviceBatterySmall' + levelnum + '" title="' + ((statestr != null)?(statestr + ', ' + levelstr):levelstr) + '"></div>';
                             }
+                        }
+                    }
+
+                    // Add any device icons
+                    if (devNotifySub != '') {
+                        if (view == 2) {
+                            devNotify += '<div class=deviceNotifySmallDot>' + devNotifySub + '</div>';
+                        } else {
+                            devNotify += '<div class=deviceNotifyDot>' + devNotifySub + '</div>';
                         }
                     }
 
@@ -4205,12 +4239,10 @@
             if (checkcount > 0) {
                 QE('GroupActionButton', true);
                 Q('SelectAllButton').value = "Select None";
-                QV('cxmgroupsplit', true);
                 QV('cxmdesktop', true);
             } else {
                 QE('GroupActionButton', false);
                 Q('SelectAllButton').value = "Select All";
-                QV('cxmgroupsplit', false);
                 QV('cxmdesktop', false);
             }
 
@@ -4390,12 +4422,15 @@
                 for (var d in nodes) {
                     nodes[d].v = (((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0));
                 }
-            }  else if (userSearch != null) {
+            } else if (userSearch != null) {
                 // User search
                 for (var d in nodes) {
                     nodes[d].v = false;
                     if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { nodes[d].v = true; } } }
                 }
+            } else if (x == '*') {
+                // Star filter
+                for (var d in nodes) { nodes[d].v = (stars[nodes[d]._id] == 1); }
             } else {
                 // Device name search
                 try {
@@ -4473,6 +4508,8 @@
                     QV('cxfiles', ((mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
                     QV('cxconsole', (consoleRights && (mesh.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
+                    QV('cxmgroupsplit', true);
+                    QV('cxstar', true);
                     break;
                 }
                 default: {
@@ -4517,6 +4554,17 @@
                         if ((panel == 13) && (files == null)) { connectFiles(null); } // files
                     }
                 }
+            }
+            if (action == 10) {
+                // Toggle star
+                var elements = document.getElementsByClassName('DeviceCheckbox'), selectedDevices = [];
+                for (var i = 0; i < elements.length; i++) { if (elements[i].checked === true) { selectedDevices.push(elements[i].defaultValue.substring(6)); } }
+                if (selectedDevices.length == 0) { selectedDevices.push(nodeid); }
+                for (var i in selectedDevices) { if (stars[selectedDevices[i]] != null) { delete stars[selectedDevices[i]]; delete selectedDevices[i]; } }
+                var starcount = Object.keys(stars).length;
+                for (var i in selectedDevices) { if ((starcount < 20) && (stars[selectedDevices[i]] == null)) { stars[selectedDevices[i]] = 1; starcount++; } }
+                putstore('stars', JSON.stringify(stars));
+                if (Q('SearchInput').value == '*') { mainUpdate(5); } else { mainUpdate(4); }
             }
         }
 
@@ -5269,6 +5317,7 @@
 
                 // Device Notification
                 QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
+                QV('p10deviceStar', stars[currentNode._id] == 1);
 
                 // Device Battery
                 QV('p10deviceBattery', false);
@@ -13041,7 +13090,7 @@
                         var k = localStorage.key(i);
                         if (k[0] != '_') {
                             s[k] = localStorage.getItem(k);
-                            if ((k != 'desktopsettings') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
+                            if ((k != 'desktopsettings') && (k != 'stars') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
                         }
                     }
                 } catch (ex) {}

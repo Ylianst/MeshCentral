@@ -5704,8 +5704,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var out = {};
         for (var i in acceptableUserWebStateStrings) {
             var n = acceptableUserWebStateStrings[i];
-            if ((state[n] != null) && ((typeof state[n] == 'number') || (typeof state[n] == 'boolean') || ((typeof state[n] == 'string') && (state[n].length < 32)))) { out[n] = state[n]; }
+            if ((state[n] != null) && ((typeof state[n] == 'number') || (typeof state[n] == 'boolean') || ((typeof state[n] == 'string') && (state[n].length < 64)))) { out[n] = state[n]; }
         }
+        if ((typeof state.stars == 'string') && (state.stars.length < 2048)) { out.stars = state.stars; }
         if (typeof state.desktopsettings == 'string') { try { state.desktopsettings = JSON.parse(state.desktopsettings); } catch (ex) { delete state.desktopsettings; } }
         if (state.desktopsettings != null) {
             out.desktopsettings = {};
