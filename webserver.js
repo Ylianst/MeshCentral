@@ -948,6 +948,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.loginmode = '4';
                                 req.session.tokenemail = ((user.email != null) && (user.emailVerified == true) && (parent.mailserver != null) && (user.otpekey != null));
                                 req.session.tokensms = ((user.phone != null) && (parent.smsserver != null));
+                                req.session.tokenuserid = userid;
                                 req.session.tokenusername = xusername;
                                 req.session.tokenpassword = xpassword;
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1042,6 +1043,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             parent.debug('web', 'handleLoginRequest: login ok, password change requested');
             req.session.loginmode = '6';
             req.session.messageid = 113; // Password change requested.
+            req.session.resettokenuserid = userid;
             req.session.resettokenusername = xusername;
             req.session.resettokenpassword = xpassword;
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1062,6 +1064,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         //req.session.regenerate(function () {
         // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
         delete req.session.loginmode;
+        delete req.session.tokenuserid;
         delete req.session.tokenusername;
         delete req.session.tokenpassword;
         delete req.session.tokenemail;
@@ -1254,8 +1257,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof req.session.resettokenusername != 'string') || (typeof req.session.resettokenpassword != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
             delete req.session.loginmode;
+            delete req.session.tokenuserid;
             delete req.session.tokenusername;
             delete req.session.tokenpassword;
+            delete req.session.resettokenuserid;
             delete req.session.resettokenusername;
             delete req.session.resettokenpassword;
             delete req.session.tokenemail;
@@ -1317,8 +1322,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Failed, error out.
                 parent.debug('web', 'handleResetPasswordRequest: failed authenticate()');
                 delete req.session.loginmode;
+                delete req.session.tokenuserid;
                 delete req.session.tokenusername;
                 delete req.session.tokenpassword;
+                delete req.session.resettokenuserid;
                 delete req.session.resettokenusername;
                 delete req.session.resettokenpassword;
                 delete req.session.tokenemail;
@@ -2268,8 +2275,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Send back the login application
             // If this is a 2 factor auth request, look for a hardware key challenge.
             // Normal login 2 factor request
-            if (req.session && (req.session.loginmode == '4') && (req.session.tokenusername)) {
-                var user = obj.users['user/' + domain.id + '/' + req.session.tokenusername.toLowerCase()];
+            if (req.session && (req.session.loginmode == '4') && (req.session.tokenuserid)) {
+                var user = obj.users[req.session.tokenuserid];
                 if (user != null) {
                     parent.debug('web', 'handleRootRequestEx: sending 2FA challenge.');
                     getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
