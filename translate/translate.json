@@ -26720,6 +26720,12 @@
       ]
     },
     {
+      "en": "Toggle Star",
+      "xloc": [
+        "default.handlebars->contextMenu->cxstar"
+      ]
+    },
+    {
       "cs": "Přepnout režim zobrazení",
       "de": "Ansichtsmodus umschalten",
       "en": "Toggle View Mode",
