@@ -2071,7 +2071,7 @@
                     if (node != null) {
                         node.lastconnect = message.time;
                         node.lastaddr = message.addr;
-                        if ((currentNode._id == node._id) && (Q('MainComputerState').innerHTML == '')) {
+                        if ((currentNode._id == node._id) && (Q('MainComputerState').innerHTML == '') && (node.lastconnect != null)) {
                             QH('MainComputerState', '<span>' + "Last seen:" + '<br />' + printDateTime(new Date(node.lastconnect)) + '</span>');
                         }
                     }
