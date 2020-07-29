@@ -341,7 +341,7 @@ function createMeshCore(agent) {
     var nextTunnelIndex = 1;
     var amtPolicy = null;
     var apftunnel = null;
-    var tunnelUserCount = { terminal: {}, files: {}, tcp: {}, udp: {} }; // List of userid->count sessions for terminal, files and TCP/UDP routing
+    var tunnelUserCount = { terminal: {}, files: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files and TCP/UDP routing
 
     // Add to the server event log
     function MeshServerLog(msg, state) {
@@ -2374,7 +2374,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper';
+                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,addagentmsg,clearagentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2387,6 +2387,20 @@ function createMeshCore(agent) {
                     }
                     if (f != '') { fin += f; }
                     response = "Available commands: \r\n" + fin + ".";
+                    break;
+                }
+                case 'addagentmsg': {
+                    if (args['_'].length != 1) {
+                        response = "Proper usage: addagentmsg \"Alert Message\""; // Display usage
+                    } else {
+                        tunnelUserCount.msg[args['_']] = 1;
+                        try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (ex) { }
+                    }
+                    break;
+                }
+                case 'clearagentmsg': {
+                    tunnelUserCount.msg = {};
+                    try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (ex) { }
                     break;
                 }
                 case 'coredump':

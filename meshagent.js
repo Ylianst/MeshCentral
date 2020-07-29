@@ -179,7 +179,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 var taskLimiterOptions = { hash: meshcorehash, core: parent.parent.defaultMeshCores[corename], name: corename };
 
                                 // If the agent supports compression, sent the core compressed.
-                                if ((obj.agentInfo.capabilities & 0x80) && (parent.parent.defaultMeshCoresDeflate[corename])) {
+                                if ((obj.agentInfo.capabilities & 0x100) && (parent.parent.defaultMeshCoresDeflate[corename])) {
                                     args.core = parent.parent.defaultMeshCoresDeflate[corename];
                                 }
 
@@ -241,7 +241,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
                             if (obj.nodeid != null) { parent.parent.debug('agent', "Agent update required, NodeID=0x" + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                             parent.agentStats.agentBinaryUpdate++;
-                            if ((obj.agentExeInfo.data == null) && (((obj.agentInfo.capabilities & 0x80) == 0) || (obj.agentExeInfo.zdata == null))) {
+                            if ((obj.agentExeInfo.data == null) && (((obj.agentInfo.capabilities & 0x100) == 0) || (obj.agentExeInfo.zdata == null))) {
                                 // Read the agent from disk
                                 parent.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
                                     if (obj.agentExeInfo == null) return; // Agent disconnected during this call.
@@ -295,7 +295,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.agentUpdate.buf[3] = 1;
 
                                 // If agent supports compression, send the compressed agent if possible.
-                                if ((obj.agentInfo.capabilities & 0x80) && (obj.agentExeInfo.zdata != null)) {
+                                if ((obj.agentInfo.capabilities & 0x100) && (obj.agentExeInfo.zdata != null)) {
                                     // Send compressed data
                                     obj.agentUpdate.agentUpdateData = obj.agentExeInfo.zdata;
                                     obj.agentUpdate.agentUpdateHash = obj.agentExeInfo.zhash;
@@ -1377,6 +1377,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     else if (command.type == 'files') { obj.sessions.files = command.value; }
                     else if (command.type == 'tcp') { obj.sessions.tcp = command.value; }
                     else if (command.type == 'udp') { obj.sessions.udp = command.value; }
+                    else if (command.type == 'msg') { obj.sessions.msg = command.value; }
                     obj.updateSessions();
                     break;
                 }

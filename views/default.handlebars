@@ -496,8 +496,9 @@
                             <td style=width:20px></td>
                             <td style=width:200px;vertical-align:top;position:relative valign=top>
                                 <div class="deviceNotifyLargeDot">
+                                    <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event) class=deviceNotifyDotSub></div>
                                     <img id="p10deviceStar" class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>
-                                    <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyLargeDotSub src=images/icon-relay-notify-40.png width=40 height=40>
+                                    <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>
                                 </div>
                                 <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
@@ -2913,6 +2914,7 @@
 
                             // If we are looking at the sessions dialog box for this device now, update it
                             if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
+                            if (xxdialogTag == ('MESSAGES-' + message.event.nodeid)) { showDeviceMessages(message.event.nodeid, true); }
 
                             break;
                         }
@@ -3365,6 +3367,15 @@
 
                     // This device has session information
                     if (node.sessions != null) {
+                        // Display any agent messages
+                        if (node.sessions.msg != null) {
+                            if (view == 2) {
+                                devNotifySub += '<div onclick=showDeviceMessages(\'' + node._id + '\',null,event) style="width:10;height:10" class=deviceNotifySmallDotSub></div>';
+                            } else {
+                                devNotifySub += '<div onclick=showDeviceMessages(\'' + node._id + '\',null,event) style="width:16;height:16" class=deviceNotifyDotSub>' + Object.keys(node.sessions.msg).length + '</div>';
+                            }
+                        }
+
                         // Sessions are active
                         if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
                             if (view == 2) {
@@ -3675,6 +3686,22 @@
                 }
             }
             if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
+            return false;
+        }
+
+        // Show currently active sessions on this device
+        function showDeviceMessages(nodeid, force, e) {
+            if (e) haltEvent(e);
+            if (xxdialogMode && !force) return false;
+            var node = null, x = '';
+            if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
+            if ((node == null) || (node.sessions == null) || (node.sessions.msg == null)) { setDialogMode(0); return false; }
+            for (var i in node.sessions.msg) {
+                var msg = i;
+                if (typeof node.sessions.msg[i].msg == 'string') { msg = node.sessions.msg[i].msg; }
+                x += '<div style="border-radius:5px;background-color:#BBB;width:100%;padding:4px;margin-bottom:4px">' + EscapeHtml(i) + '</div>';
+            }
+            if (x != '') setDialogMode(2, "Agent Messages" + ' - ' + EscapeHtml(node.name), 1, null, x, 'MESSAGES-' + node._id);
             return false;
         }
 
@@ -5318,6 +5345,7 @@
                 // Device Notification
                 QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
+                if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
 
                 // Device Battery
                 QV('p10deviceBattery', false);
