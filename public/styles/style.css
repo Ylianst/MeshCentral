@@ -755,6 +755,7 @@ NoMeshesPanel img {
 .deviceNotifyDotSub {
     text-align:center;
     color:#FFF;
+    height:16px;
     width:16px;
     background-color:#00F;
     padding:2px;
@@ -762,6 +763,8 @@ NoMeshesPanel img {
     box-shadow: 2px 2px 10px black;
     cursor:pointer;
     margin-left:3px;
+    font-size: 14px;
+    float:left;
 }
 
     .deviceNotifyDotSub:hover {
@@ -778,6 +781,7 @@ NoMeshesPanel img {
 .deviceNotifySmallDotSub {
     text-align:center;
     color:#FFF;
+    height:10px;
     width:10px;
     padding:2px;
     background-color:#00F;
@@ -785,6 +789,8 @@ NoMeshesPanel img {
     box-shadow: 2px 2px 10px black;
     cursor:pointer;
     margin-left:2px;
+    font-size: 6px;
+    float:left;
 }
 
     .deviceNotifySmallDotSub:hover {
@@ -838,7 +844,7 @@ NoMeshesPanel img {
 .deviceNotifyLargeDot {
     position:absolute;
     right:10px;
-    top:140px;
+    top:170px;
     height:40px;
 }
 

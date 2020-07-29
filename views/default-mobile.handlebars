@@ -230,6 +230,7 @@
             box-shadow: 2px 2px 10px black;
             cursor:pointer;
             margin-left:3px;
+            float:left;
         }
 
             .deviceNotifyDotSub:hover {
@@ -253,6 +254,7 @@
             box-shadow: 2px 2px 10px black;
             cursor:pointer;
             margin-left:2px;
+            float:left;
         }
 
         .deviceNotifySmallDotSub:hover {
@@ -268,8 +270,8 @@
 
         .deviceNotifyLargeDotSub {
             text-align:center;
-            width:40px;
-            height:40px;
+            width:35px;
+            height:35px;
             color:#FFF;
             padding:2px;
             background-color:#00F;
@@ -277,6 +279,8 @@
             box-shadow: 2px 2px 10px black;
             cursor:pointer;
             margin-left:4px;
+            font-size:30px;
+            float:left;
         }
 
             .deviceNotifyLargeDotSub:hover {
@@ -518,8 +522,9 @@
                     </table>
                     <div id=p10general style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
                         <div class="deviceNotifyLargeDot">
-                            <img id="p10deviceStar" class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>
-                            <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDotSub src=images/icon-relay-notify-40.png width=40 height=40>
+                            <img id="p10deviceStar" class=deviceNotifyLargeDotSub src=images/icon-star-notify-40.png width=35 height=35>
+                            <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event) class=deviceNotifyLargeDotSub></div>
+                            <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDotSub src=images/icon-relay-notify-40.png width=35 height=35>
                         </div>
                         <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                         <div id=p10html style="margin-left:8px;margin-right:8px"></div>
@@ -2167,6 +2172,11 @@
 
                 // This device has session information
                 if (nodes[i].sessions != null) {
+                    // Display any agent messages
+                    if (nodes[i].sessions.msg != null) {
+                        devNotifySub += '<div style="width:16;height:16" class=deviceNotifyDotSub>' + Object.keys(nodes[i].sessions.msg).length + '</div>';
+                    }
+
                     // Sessions are active
                     if ((nodes[i].sessions.kvm != null) || (nodes[i].sessions.terminal != null) || (nodes[i].sessions.files != null) || (nodes[i].sessions.tcp != null) || (nodes[i].sessions.udp != null)) {
                         devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>';
@@ -2286,6 +2296,22 @@
             if (x != '') setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id);
         }
 
+        // Show currently active sessions on this device
+        function showDeviceMessages(nodeid, force, e) {
+            if (e) haltEvent(e);
+            if (xxdialogMode && !force) return false;
+            var node = null, x = '';
+            if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
+            if ((node == null) || (node.sessions == null) || (node.sessions.msg == null)) { setDialogMode(0); return false; }
+            for (var i in node.sessions.msg) {
+                var msg = i;
+                if (typeof node.sessions.msg[i].msg == 'string') { msg = node.sessions.msg[i].msg; }
+                x += '<div style="border-radius:5px;background-color:#BBB;width:100%;padding:4px;margin-bottom:4px">' + EscapeHtml(i) + '</div>';
+            }
+            if (x != '') setDialogMode(2, "Agent Messages" + ' - ' + EscapeHtml(node.name), 1, null, x, 'MESSAGES-' + node._id);
+            return false;
+        }
+
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var powerStateStrings = ['', "Powered", "Sleeping", "Sleeping", "Deep Sleep", "Hibernating", "Soft-Off", "Present"];
         var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined"];
@@ -2370,6 +2396,7 @@
                 // Setup session notification
                 QV('p10deviceNotify', (currentNode.sessions != null) && ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
+                if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
 
                 // Device Battery
                 QV('p10deviceBattery', false);
@@ -2557,7 +2584,7 @@
             go(panel);
 
             // Update the footer menu
-            setupDeviceMenu();
+            if (xxcurrentView == 10) { setupDeviceMenu(); }
         }
 
         function deviceToastFunction() {
