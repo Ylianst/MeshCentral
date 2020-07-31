@@ -6105,11 +6105,10 @@
             if (nodeids.length == 1) { try { targetMeshId = meshes[getNodeFromId(nodeids[0])]._id; } catch (ex) { } }
 
             // List all available alternative groups
-            var y = '<select id=p10newGroup style=width:236px>', count = 0;
-            for (var i in meshes) {
-                var meshrights = GetMeshRights(i);
-                if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { count++; y += '<option value=\'' + meshes[i]._id + '\'>' + meshes[i].name + '</option>'; }
-            }
+            var y = '<select id=p10newGroup style=width:236px>', count = 0, altGroups = [];
+            for (var i in meshes) { var meshrights = GetMeshRights(i); if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { altGroups.push(meshes[i]); } }
+            altGroups.sort(nameSort);
+            for (var i in altGroups) { count++; y += '<option value=\'' + altGroups[i]._id + '\'>' + altGroups[i].name + '</option>'; }
             y += '</select>';
 
             if (count > 0) {
