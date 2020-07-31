@@ -785,12 +785,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,args,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes,watchdog';
+                            var fin = '', f = '', availcommands = 'help,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes,watchdog';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
                             if (f != '') { fin += f; }
-                            r = 'Available commands: \r\n' + fin + '.';
+                            if (cmdargs['_'].length == 0) {
+                                r = 'Available commands: \r\n' + fin + '\r\nType help <command> for details.';
+                            } else {
+                                var cmd2 = cmdargs['_'][0].toLowerCase();
+                                switch (cmd2) {
+                                    case 'info': { r = "info: Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."; break; }
+                                    case 'versions': { r = "versions: Returns all internal versions for NodeJS running this server."; break; }
+                                    case 'resetserver': { r = "resetserver: Causes the server to reset, this is sometimes useful is the config.json file was changed."; break; }
+                                    case 'usersessions': { r = "usersessions: Returns a list of active sessions grouped by user."; break; }
+                                    case 'closeusersessions': { r = "closeusersessions: Disconnects all sessions for a specified user."; break; }
+                                    case 'tasklimiter': { r = "tasklimiter: Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."; break; }
+                                    default: { r = 'No help information about this command.'; break; }
+                                }
+                            }
                             break;
                         }
                         case 'certhashes': {
@@ -983,7 +996,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'print': {
-                            console.log(cmdargs["_"][0]);
+                            console.log(cmdargs['_'][0]);
                             break;
                         }
                         case 'updatecheck': {
