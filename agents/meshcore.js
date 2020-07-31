@@ -2393,7 +2393,7 @@ function createMeshCore(agent) {
                     if (args['_'].length != 1) {
                         response = "Proper usage: addagentmsg \"Alert Message\""; // Display usage
                     } else {
-                        tunnelUserCount.msg[args['_']] = 1;
+                        tunnelUserCount.msg[args['_'][0]] = 1;
                         try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (ex) { }
                     }
                     break;
@@ -3444,6 +3444,11 @@ function createMeshCore(agent) {
             meInfoStr = null;
             sendPeriodicServerUpdate();
             if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); } // 20 minutes
+
+            // Send any state messages
+            if (Object.keys(tunnelUserCount.msg).length > 0) {
+                try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (ex) { }
+            }
         }
     }
 
