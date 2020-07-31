@@ -2105,6 +2105,7 @@
                                 if (message.nodeid != null) { n.nodeid = message.nodeid; }
                                 if (message.tag != null) { n.tag = message.tag; }
                                 if (message.username != null) { n.username = message.username; }
+                                if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                                 addNotification(n);
                             } else if (message.type == 'ps') {
                                 showDeskToolsProcesses(message);
@@ -2140,6 +2141,7 @@
                             if (message.id != null) { n.id = message.id; }
                             if (message.tag != null) { n.tag = message.tag; }
                             if (message.username != null) { n.username = message.username; }
+                            if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                             addNotification(n);
                         }
                     }
@@ -2878,6 +2880,7 @@
                             var n = { text: message.event.value, title: message.event.title, icon: message.event.icon };
                             if (message.id != null) { n.id = message.id; }
                             if (message.event.tag != null) { n.tag = message.event.tag; }
+                            if (typeof message.maxtime == 'number') { n.maxtime = message.maxtime; }
                             addNotification(n);
                             break;
                         }
@@ -5841,7 +5844,9 @@
 
         function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Notes", 2, showNotesEx, '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>', noteid);
+            var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+            if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
+            setDialogMode(2, "Notes", 2, showNotesEx, x, noteid);
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
@@ -10794,12 +10799,21 @@
         function showUserAlertDialog(e, userid) {
             if (xxdialogMode) return;
             haltEvent(e);
-            setDialogMode(2, format("Notify {0}", EscapeHtml(users[decodeURIComponent(userid)].name)), 3, showUserAlertDialogEx, "Send a text notification to this user." + '<textarea id=d2notifyText maxlength=2048 style="width:100%;height:184px;resize:none"></textarea>', userid);
+            var x =  '<div style=margin-bottom:6px>' + "Send a text notification to this user." + '</div><textarea id=d2notifyText maxlength=2048 style="width:100%;height:184px;resize:none;background-color:#fcf3cf"></textarea>';
+            x += '<select style=width:100% id=broadcastMessageMaxTime>';
+            x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
+            x += '<option value=10>' + "Show for 10 seconds" + '</option>';
+            x += '<option value=60>' + "Show for 1 minute" + '</option>';
+            x += '<option value=300>' + "Show for 5 minutes" + '</option>';
+            x += '</select>';
+            setDialogMode(2, format("Notify {0}", EscapeHtml(users[decodeURIComponent(userid)].name)), 3, showUserAlertDialogEx, x, userid);
             Q('d2notifyText').focus();
             return false;
         }
 
-        function showUserAlertDialogEx(button, userid) { meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: Q('d2notifyText').value }); }
+        function showUserAlertDialogEx(button, userid) {
+            meshserver.send({ action: 'notifyuser', userid: decodeURIComponent(userid), msg: Q('d2notifyText').value, maxtime: parseInt(Q('broadcastMessageMaxTime').value) });
+        }
 
         function p4batchAccountCreate() {
             if (xxdialogMode) return;
@@ -10864,13 +10878,19 @@
 
         function showUserBroadcastDialog(targetid) {
             if (xxdialogMode) return;
-            var x = "Broadcast a message to all connected users." + '<textarea id=broadcastMessage value="" maxlength="256"/></textarea>';
+            var x = '<div style=margin-bottom:6px>' + "Broadcast a message to all connected users." + '</div><textarea id=broadcastMessage style="width:100%;height:184px;resize:none;background-color:#fcf3cf" value="" maxlength=2048 /></textarea>';
+            x += '<select style=width:100% id=broadcastMessageMaxTime>';
+            x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
+            x += '<option value=10>' + "Show for 10 seconds" + '</option>';
+            x += '<option value=60>' + "Show for 1 minute" + '</option>';
+            x += '<option value=300>' + "Show for 5 minutes" + '</option>';
+            x += '</select>';
             setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x, targetid?decodeURIComponent(targetid):null);
             Q('broadcastMessage').focus();
         }
 
         function showUserBroadcastDialogEx(b, targetid) {
-            meshserver.send({ action: 'userbroadcast', msg: Q('broadcastMessage').value, target: targetid });
+            meshserver.send({ action: 'userbroadcast', msg: Q('broadcastMessage').value, target: targetid, maxtime: parseInt(Q('broadcastMessageMaxTime').value) });
         }
 
         function showCreateNewAccountDialog() {
@@ -11621,10 +11641,10 @@
             x += '</table></div><br />';
 
             // Add action buttons
-            x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + userid + '") />';
-            if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + userid + '") />'; }
+            x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(userid) + '") />';
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(userid) + '") />'; }
             if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + userid + '") />'; }
-            if (!self && (activeSessions > 0)) { x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + userid + '") />'; }
+            if (!self && (activeSessions > 0)) { x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(userid) + '") />'; }
 
             // Setup the panel
             QH('p30html', x);
@@ -12319,6 +12339,9 @@
                 notification.onclick = function (e) { notificationSelected(e.target.id, true); }
                 n.notification = notification;
             }
+
+            // If the notification has a max time, setup the timer here.
+            if ((typeof n.maxtime == 'number') && (n.maxtime > 0)) { var trigger = function notifyRemoveTrigger() { notificationDelete(notifyRemoveTrigger.xid); }; trigger.xid = n.id; setTimeout(trigger, n.maxtime * 1000); }
         }
 
         // Remove all notifications
