@@ -12,10 +12,10 @@
 /*jshint node: true */
 /*jshint strict: false */
 /*jshint esversion: 6 */
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const crypto = require("crypto");
+const fs = require('fs');
+const crypto = require('crypto');
 
 // Binary encoding and decoding functions
 module.exports.ReadShort = function (v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); };
@@ -40,7 +40,7 @@ module.exports.format = function (format) { var args = Array.prototype.slice.cal
 
 // Print object for HTML
 module.exports.ObjectToStringEx = function (x, c) {
-    var r = "", i;
+    var r = '', i;
     if (x != 0 && (!x || x == null)) return "(Null)";
     if (x instanceof Array) { for (i in x) { r += '<br />' + gap(c) + "Item #" + i + ": " + module.exports.ObjectToStringEx(x[i], c + 1); } }
     else if (x instanceof Object) { for (i in x) { r += '<br />' + gap(c) + i + " = " + module.exports.ObjectToStringEx(x[i], c + 1); } }
@@ -50,7 +50,7 @@ module.exports.ObjectToStringEx = function (x, c) {
 
 // Print object for console
 module.exports.ObjectToStringEx2 = function (x, c) {
-    var r = "", i;
+    var r = '', i;
     if (x != 0 && (!x || x == null)) return "(Null)";
     if (x instanceof Array) { for (i in x) { r += '\r\n' + gap2(c) + "Item #" + i + ": " + module.exports.ObjectToStringEx2(x[i], c + 1); } }
     else if (x instanceof Object) { for (i in x) { r += '\r\n' + gap2(c) + i + " = " + module.exports.ObjectToStringEx2(x[i], c + 1); } }
@@ -130,7 +130,7 @@ module.exports.ComputeDigesthash = function (username, password, realm, method, 
 module.exports.toNumber = function (str) { var x = parseInt(str); if (x == str) return x; return str; };
 module.exports.escapeHtml = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' }[s]; }); };
 module.exports.escapeHtmlBreaks = function (string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); };
-module.exports.zeroPad = function(num, c) { if (c == null) { c = 2; } var s = "000000" + num; return s.substr(s.length - c); }
+module.exports.zeroPad = function(num, c) { if (c == null) { c = 2; } var s = '000000' + num; return s.substr(s.length - c); }
 
 // Lowercase all the names in a object recursively
 // Allow for exception keys, child of exceptions will not get lower-cased.

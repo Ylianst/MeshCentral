@@ -4300,7 +4300,7 @@
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=106>' + "Run commands" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option><option value=102>' + "Move to device group" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=106>' + "Run commands" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option><option value=102>' + "Move to device group" + '</option>' + '</option><option value=107>' + "Edit tags" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -4360,10 +4360,37 @@
                     Q('d2runcmd').focus();
                     //QE('idx_dlgOkButton', true);
                 }
+            } else if (op == 107) {
+                // Edit tags
+                var x = "Perform batch device tag operation" + '<br /><br />';
+                x += addHtmlValue("Operation", '<select id=d2deviceop style=float:right;width:250px><option value=1>' + "Add tags" + '</option><option value=2>' + "Set tags" + '</option><option value=3>' + "Remove tags" + '</option></select>');
+                x += addHtmlValue("Tags", '<input id=dp10devicevalue maxlength=4096 placeholder="' + "Tag1, Tag2, Tag3" + '" />');
+                setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionTagsExec, x);
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
                 uncheckAllDevices();
+            }
+        }
+
+        function d2groupActionFunctionTagsExec() {
+            var chkNodeIds = getCheckedDevices(), op = Q('d2deviceop').value, optags = Q('dp10devicevalue').value;
+            if (op == 2) { // Set tags
+                for (var i in chkNodeIds) { meshserver.send({ action: 'changedevice', nodeid: chkNodeIds[i], tags: optags }); }
+            } else {
+                var taggroup = [];
+                optags = optags.split(',');
+                for (var i in optags) { var tname = optags[i].trim(); if ((tname.length > 0) && (tname.length < 64) && (taggroup.indexOf(tname) == -1)) { taggroup.push(tname); } }
+                for (var i in chkNodeIds) {
+                    var nodeTags = null, tagChanges = false, n = getNodeFromId(chkNodeIds[i]);
+                    if (n.tags != null) { nodeTags = Clone(n.tags); }
+                    if (nodeTags == null) { nodeTags = []; }
+                    for (var j = 0; j < optags.length; j++) {
+                        if ((op == 1) && (nodeTags.indexOf(optags[j]) == -1)) { nodeTags.push(optags[j]); tagChanges = true; } // Add new tags
+                        if (op == 3) { var k = nodeTags.indexOf(optags[j]); if (k >= 0) { nodeTags.splice(k, 1); tagChanges = true; } } // Remove tags
+                    }
+                    if (tagChanges) { meshserver.send({ action: 'changedevice', nodeid: chkNodeIds[i], tags: nodeTags.join(',') }); }
+                }
             }
         }
 
@@ -6284,9 +6311,10 @@
         var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
         var showEditNodeValueDialog_modes3 = ['', '', '', "Tag1, Tag2, Tag3"];
+        var showEditNodeValueDialog_modes4 = [64, 64, 64, 4096];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=64 placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
