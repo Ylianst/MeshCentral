@@ -11984,21 +11984,27 @@
         var p52recordings = null;
         function updateRecordings() {
             // Save the list of currently checked recordings
-            var checkedRecordings = [], elements = document.getElementsByClassName('RecordingCheckbox');
+            var checkedRecordings = [], elements = document.getElementsByClassName('RecordingCheckbox'), x = '';
             for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedRecordings.push(elements[i].value); } }
 
-            // Display the users using the sorted list
-            var x = '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
-            x += '<th>' + "Session" + '<th style=width:110px>' + nobreak("Start Time") + '<th style=width:110px>' + "Duration" + '<th style=width:110px>' + "Size";
-            if (p52recordings != null) {
-                var recdate = null;
-                for (var i in p52recordings) {
-                    var rec = p52recordings[i], rect = new Date(rec.time), day = printDate(rect);
-                    if (day != recdate) { recdate = day; x += '<tr><td class=userTableHeader colspan=4>' + day; }
-                    x += addRecordingHtml(i, rec);
+            if (p52recordings == null) {
+                x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "Loading..." + "</i></div>";
+            } else if (p52recordings.length == 0) {
+                x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "No recordings." + "</i></div>";
+            } else {
+                // Display the users using the sorted list
+                x += '<table class=p3usersTable cellpadding=0 cellspacing=0>', addHeader = true;
+                x += '<th>' + "Session" + '<th style=width:110px>' + nobreak("Start Time") + '<th style=width:110px>' + "Duration" + '<th style=width:110px>' + "Size";
+                if (p52recordings != null) {
+                    var recdate = null;
+                    for (var i in p52recordings) {
+                        var rec = p52recordings[i], rect = new Date(rec.time), day = printDate(rect);
+                        if (day != recdate) { recdate = day; x += '<tr><td class=userTableHeader colspan=4>' + day; }
+                        x += addRecordingHtml(i, rec);
+                    }
                 }
+                x += '</table>';
             }
-            x += '</table>';
             QH('p52recordings', x);
 
             // Re-check recordings
