@@ -1644,6 +1644,17 @@
     },
     {
       "en": "</i></div>",
+      "cs": "</i></div>",
+      "de": "</i></div>",
+      "es": "</i></div>",
+      "fr": "</i></div>",
+      "hi": "</i></div>",
+      "ja": "</i></div>",
+      "ko": "</i></div>",
+      "nl": "</i></div>",
+      "pt": "</i></div>",
+      "ru": "</i></div>",
+      "zh-chs": "</i></div>"
       "xloc": [
         "default.handlebars->27->1797",
         "default.handlebars->27->1799"
@@ -2773,6 +2784,7 @@
     },
     {
       "en": "Add tags",
+      "nl": "Voeg tags toe",
       "xloc": [
         "default.handlebars->27->446"
       ]
@@ -3064,6 +3076,7 @@
     },
     {
       "en": "Agent Messages",
+      "nl": "Agent berichten",
       "xloc": [
         "default-mobile.handlebars->9->177",
         "default.handlebars->27->246"
@@ -9851,6 +9864,7 @@
     },
     {
       "en": "Edit Device Tags",
+      "nl": "Berwerk apparaat tags",
       "xloc": [
         "default.handlebars->27->451"
       ]
@@ -10020,6 +10034,7 @@
     },
     {
       "en": "Edit tags",
+      "nl": "Bewerk tags",
       "xloc": [
         "default.handlebars->27->433"
       ]
@@ -18848,6 +18863,7 @@
     },
     {
       "en": "No recordings.",
+      "nL": "Geen opnames.",
       "xloc": [
         "default.handlebars->27->1798"
       ]
@@ -20324,6 +20340,7 @@
     },
     {
       "en": "Perform batch device tag operation",
+      "nl": "Voer een batch-apparaat tag bewerking uit",
       "xloc": [
         "default.handlebars->27->444"
       ]
@@ -22065,6 +22082,7 @@
     },
     {
       "en": "Remove tags",
+      "nl": "Verwijder tags",
       "xloc": [
         "default.handlebars->27->448"
       ]
@@ -24108,6 +24126,7 @@
     },
     {
       "en": "Set tags",
+      "nl": "Stel tags in",
       "xloc": [
         "default.handlebars->27->447"
       ]
@@ -24441,6 +24460,7 @@
     },
     {
       "en": "Show for 1 minute",
+      "nl": "Toon gedurende 1 minuut",
       "xloc": [
         "default.handlebars->27->1547",
         "default.handlebars->27->1570"
@@ -24448,6 +24468,7 @@
     },
     {
       "en": "Show for 10 seconds",
+      "nl": "Toon gedurende 10 seconden",
       "xloc": [
         "default.handlebars->27->1546",
         "default.handlebars->27->1569"
@@ -24455,6 +24476,7 @@
     },
     {
       "en": "Show for 5 minutes",
+      "nl": "Toon gedurende 5 minuten",
       "xloc": [
         "default.handlebars->27->1548",
         "default.handlebars->27->1571"
@@ -24462,6 +24484,7 @@
     },
     {
       "en": "Show message until dismissed by user",
+      "nl": "Toon bericht totdat het door de gebruiker wordt afgewezen",
       "xloc": [
         "default.handlebars->27->1545",
         "default.handlebars->27->1568"
@@ -26809,6 +26832,7 @@
     },
     {
       "en": "Toggle Star",
+      "nl": "(De)Markeren",
       "xloc": [
         "default.handlebars->contextMenu->cxstar"
       ]
