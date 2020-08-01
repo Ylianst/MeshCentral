@@ -2374,7 +2374,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,addagentmsg,clearagentmsg';
+                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -2389,11 +2389,24 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
-                case 'addagentmsg': {
-                    if (args['_'].length != 1) {
-                        response = "Proper usage: addagentmsg \"Alert Message\""; // Display usage
+                case 'agentmsg': {
+                    if (args['_'].length == 0) {
+                        response = "Proper usage:\r\n  agentmsg add \"[message]\" [iconIndex]\r\n  agentmsg remove [index]\r\n  agentmsg list"; // Display usage
                     } else {
-                        tunnelUserCount.msg[args['_'][0]] = 1;
+                        if ((args['_'][0] == 'add') && (args['_'].length > 1)) {
+                            var msgIndex = 1, iconIndex = 0;
+                            while (tunnelUserCount.msg[msgIndex] != null) { msgIndex++; }
+                            if (args['_'].length >= 3) { try { iconIndex = parseInt(args['_'][2]); } catch (ex) { } }
+                            if (typeof iconIndex != 'number') { iconIndex = 0; }
+                            tunnelUserCount.msg[msgIndex] = { msg: args['_'][1], icon: iconIndex };
+                            response = 'Agent message ' + msgIndex + ' added.';
+                        } else if ((args['_'][0] == 'remove') && (args['_'].length > 1)) {
+                            var msgIndex = 0;
+                            try { msgIndex = parseInt(args['_'][1]); } catch (ex) { }
+                            if (tunnelUserCount.msg[msgIndex] == null) { response = "Message not found."; } else { delete tunnelUserCount.msg[msgIndex]; response = "Message removed."; }
+                        } else if (args['_'][0] == 'list') {
+                            response = JSON.stringify(tunnelUserCount.msg, null, 2);
+                        }
                         try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (ex) { }
                     }
                     break;

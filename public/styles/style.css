@@ -797,6 +797,25 @@ NoMeshesPanel img {
         background-color:#44F;
     }
 
+.NotifyIcon1 { width:48px; height:48px; background: url(../images/notify48.png) 0px 0px; }
+.NotifyIcon2 { width:48px; height:48px; background: url(../images/notify48.png) -48px 0px; }
+.NotifyIcon3 { width:48px; height:48px; background: url(../images/notify48.png) -96px 0px; }
+.NotifyIcon4 { width:48px; height:48px; background: url(../images/notify48.png) -144px 0px; }
+.NotifyIcon5 { width:48px; height:48px; background: url(../images/notify48.png) -192px 0px; }
+.NotifyIcon6 { width:48px; height:48px; background: url(../images/notify48.png) -240px 0px; }
+.NotifyIcon7 { width:48px; height:48px; background: url(../images/notify48.png) -288px 0px; }
+.NotifyIcon8 { width:48px; height:48px; background: url(../images/notify48.png) -336px 0px; }
+.NotifyIcon9 { width:48px; height:48px; background: url(../images/notify48.png) -384px 0px; }
+.NotifyIconSmall1 { width:24px; height:24px; background: url(../images/notify24.png) 0px 0px; }
+.NotifyIconSmall2 { width:24px; height:24px; background: url(../images/notify24.png) -24px 0px; }
+.NotifyIconSmall3 { width:24px; height:24px; background: url(../images/notify24.png) -48px 0px; }
+.NotifyIconSmall4 { width:24px; height:24px; background: url(../images/notify24.png) -72px 0px; }
+.NotifyIconSmall5 { width:24px; height:24px; background: url(../images/notify24.png) -96px 0px; }
+.NotifyIconSmall6 { width:24px; height:24px; background: url(../images/notify24.png) -120px 0px; }
+.NotifyIconSmall7 { width:24px; height:24px; background: url(../images/notify24.png) -144px 0px; }
+.NotifyIconSmall8 { width:24px; height:24px; background: url(../images/notify24.png) -168px 0px; }
+.NotifyIconSmall9 { width:24px; height:24px; background: url(../images/notify24.png) -192px 0px; }
+
 .deviceBatteryLarge {
     position:absolute;
     left:10px;
