@@ -3911,7 +3911,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
 
-        if (req.query.id != null) {
+        if ((req.query.meshinstall != null) && (req.query.id != null)) {
+            if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+
+            // Send meshagent with included self installer for a specific platform back
+            // Start by getting the .msh for this request
+            var meshsettings = getMshFromRequest(req, res, domain);
+            if (meshsettings == null) { res.sendStatus(401); return; }
+
+            // Get the interactive install script, this only works for non-Windows agents
+            var agentid = parseInt(req.query.meshinstall);
+            var argentInfo = obj.parent.meshAgentBinaries[agentid];
+            var scriptInfo = obj.parent.meshAgentInstallScripts[6];
+            if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { res.sendStatus(404); return; }
+
+            // Change the .msh file into JSON format and merge it into the install script
+            var tokens, msh = {}, meshsettingslines = meshsettings.split('\r').join('').split('\n');
+            for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
+            var js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
+
+            res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshagent"' });
+            res.statusCode = 200;
+            obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(js, 'utf8'), peinfo: argentInfo.pe });
+        } else if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
             if (argentInfo == null) { res.sendStatus(404); return; }
@@ -4012,7 +4034,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') + '"' });
             res.statusCode = 200;
             if (argentInfo.signedMeshCmdPath != null) {
-                // If we hav a pre-signed MeshCmd, send that.
+                // If we have a pre-signed MeshCmd, send that.
                 res.sendFile(argentInfo.signedMeshCmdPath);
             } else {
                 // Merge JavaScript to a unsigned agent and send that.
@@ -4073,6 +4095,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             domain = checkUserIpAddress(req, res); // Recheck the domain to apply user IP filtering.
             if (domain == null) return;
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+            if ((req.session == null) || (req.session.userid == null)) { res.sendStatus(404); return; }
+
             // Send a list of available mesh agents
             var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body><table>';
             response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th><th>MeshCmd</th></tr>';
@@ -4200,14 +4224,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         });
     }
 
-    // Handle a request to download a mesh settings
-    obj.handleMeshSettingsRequest = function (req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { return; }
-        //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-
+    // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
+    function getMshFromRequest(req, res, domain) {
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { return null; }
 
         // Check if the meshid is a time limited, encrypted cookie
         var meshcookie = obj.parent.decodeCookie(req.query.id, obj.parent.invitationLinkEncryptionKey);
@@ -4215,11 +4235,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Fetch the mesh object
         var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.id];
-        if (mesh == null) { res.sendStatus(401); return; }
+        if (mesh == null) { return null; }
 
         // If needed, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
-            if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { res.sendStatus(401); return; }
+            if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { return null; }
         }
 
         var meshidhex = Buffer.from(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
@@ -4245,6 +4265,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
         if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
+        return meshsettings;
+    }
+
+    // Handle a request to download a mesh settings
+    obj.handleMeshSettingsRequest = function (req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { return; }
+        //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
+
+        var meshsettings = getMshFromRequest(req, res, domain);
+        if (meshsettings == null) { res.sendStatus(401); return; }
 
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshagent.msh"' });
         res.send(meshsettings);

@@ -4105,8 +4105,19 @@
 
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return false;
-            var mesh = meshes[meshid], x = '', installType = 0;
-            x += addHtmlValue("Operating System", '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=2>' + "Apple MacOS" + '</option><option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>');
+            var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
+            if (debugmode > 0) { moreoptions = '<option value=5>' + "Linux/macOS Binary Installer" + '</option>'; }
+            x += addHtmlValue("Operating System", '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option>' + moreoptions + '<option value=2>' + "Apple MacOS" + '</option><option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>');
+
+            if (debugmode > 0) { 
+                var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 16 : 'Apple OSX x86-64', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64', 30 : 'FreeBSD x86-64' };
+                moreoptions = '';
+                for (var i in binaryInstallAgents) { moreoptions += '<option value=' + i + '>' + binaryInstallAgents[i] + '</option>' }
+                x += '<div id=aginsSysTypeDiv>';
+                x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
+                x += '</div>';
+            }
+
             x += '<div id=aginsTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
             x += '</div><hr>';
@@ -4143,6 +4154,13 @@
             x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
             x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += '</div>';
+
+            if (debugmode > 0) { 
+                // Linux binary installer
+                x += '<div id=agins_linux_inst style=display:none>' + "This is a executable that will only run as root and on OS's with graphical user interfaces." + '<br /><br />';
+                x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk href="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
+                x += '</div>';
+            }
 
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
             var servername = serverinfo.name;
@@ -4192,6 +4210,7 @@
             var c = 'https://' + servername + portStr + domainUrl + url;
             if (addflag == 1) c += Q('aginsType').value;
             c += (urlargs.key?('&key=' + urlargs.key):'');
+            if (debugmode > 0) { if (Q('aginsSelect').value == 5) { c += '&meshinstall=' + Q('aginsSysType').value; } }
             copyTextToClip(c);
         }
 
@@ -4202,7 +4221,12 @@
             QV('agins_osx', v == 2);
             QV('agins_windows_un', v == 3);
             QV('agins_linux_un', v == 4);
-            QV('aginsTypeDiv', v == 0);
+            if (debugmode > 0) {
+                QV('agins_linux_inst', v == 5);
+                QV('aginsSysTypeDiv', v == 5);
+                Q('aginsbinlnk').href = (Q('aginsbinlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value;
+            }
+            QV('aginsTypeDiv', (v == 0) || (v == 5));
 
             // Fix the links if needed
             Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'');
@@ -12012,9 +12036,9 @@
             for (var i=0;i<elements.length;i++) { if (elements[i].checked) { checkedRecordings.push(elements[i].value); } }
 
             if (p52recordings == null) {
-                x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "Loading..." + "</i></div>";
+                x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "Loading..." + '</i></div>';
             } else if (p52recordings.length == 0) {
-                x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "No recordings." + "</i></div>";
+                x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "No recordings." + '</i></div>';
             } else {
                 // Display the users using the sorted list
                 x += '<table class=p3usersTable cellpadding=0 cellspacing=0>';
