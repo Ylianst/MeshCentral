@@ -6886,6 +6886,7 @@
     },
     {
       "en": "Copy agent URL to clipboard",
+      "nl": "Kopieer de agent URL naar het klembord",
       "xloc": [
         "default.handlebars->27->390"
       ]
@@ -15627,6 +15628,7 @@
     },
     {
       "en": "Linux/macOS Binary Installer",
+      "nl": "Linux/macOS binair installatieprogramma",
       "xloc": [
         "default.handlebars->27->350"
       ]
@@ -25848,6 +25850,7 @@
     },
     {
       "en": "System Type",
+      "nl": "Systeem type",
       "xloc": [
         "default.handlebars->27->357"
       ]
@@ -26356,6 +26359,7 @@
     },
     {
       "en": "This is a executable that will only run as root and on OS's with graphical user interfaces.",
+      "nl": "Dit is een uitvoerbaar bestand dat alleen zal draaien als root en op besturingssystemen met grafische gebruikersinterfaces.",
       "xloc": [
         "default.handlebars->27->387"
       ]
@@ -30823,6 +30827,17 @@
     },
     {
       "en": "meshagent",
+      "cs": "MeshAgenta",
+      "de": "Mesh-Agent",
+      "es": "MeshAgent",
+      "fr": "MeshAgent",
+      "hi": "MeshAgent",
+      "ja": "MeshAgent",
+      "ko": "MeshAgent",
+      "nl": "MeshAgent",
+      "pt": "MeshAgent",
+      "ru": "MeshAgent",
+      "zh-chs": "MeshAgent",
       "xloc": [
         "default.handlebars->27->389"
       ]
