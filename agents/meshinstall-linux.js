@@ -14,12 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
-TODO: in msh, when:
-InstallFlags=1    --> Interactive only, show connect button, not install/uninstal.
-InstallFlags=2    --> Background only, show only install/uninstal, not connect.
-*/
-
 var msh = {};
 var s = null;
 try { s = require('service-manager').manager.getService('meshagent'); } catch (e) { }

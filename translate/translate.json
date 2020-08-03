@@ -1478,7 +1478,10 @@
       "nl": "64bit versie van de MacOS Mesh Agent",
       "pt": "Versão de 64 bits do MacOS Mesh Agent",
       "ru": "64-битная версия MacOS Mesh Agent",
-      "zh-chs": "64位版本的MacOS Mesh Agent",
+      "zh-chs": "64位版本的MacOS Mesh Agent"
+    },
+    {
+      "en": "64bit version of macOS Mesh Agent",
       "xloc": [
         "default.handlebars->27->377"
       ]
@@ -3608,10 +3611,7 @@
       "nl": "Apple MacOS",
       "pt": "Apple MacOS",
       "ru": "Apple MacOS",
-      "zh-chs": "蘋果MacOS",
-      "xloc": [
-        "default.handlebars->27->354"
-      ]
+      "zh-chs": "蘋果MacOS"
     },
     {
       "cs": "pouze Apple MacOS",
@@ -3625,7 +3625,16 @@
       "nl": "Alleen Apple MacOS",
       "pt": "Apenas Apple MacOS ",
       "ru": "Только Apple MacOS",
-      "zh-chs": "僅限Apple MacOS",
+      "zh-chs": "僅限Apple MacOS"
+    },
+    {
+      "en": "Apple macOS",
+      "xloc": [
+        "default.handlebars->27->354"
+      ]
+    },
+    {
+      "en": "Apple macOS only",
       "xloc": [
         "default.handlebars->27->325"
       ]
@@ -6819,10 +6828,7 @@
       "nl": "Kopieer MacOS agent link naar het klembord",
       "pt": "Copiar o URL do agente MacOS para a área de transferência",
       "ru": "Скопировать ссылку MacOS agent в буфер обмена",
-      "zh-chs": "將MacOS代理URL複製到剪貼板",
-      "xloc": [
-        "default.handlebars->27->378"
-      ]
+      "zh-chs": "將MacOS代理URL複製到剪貼板"
     },
     {
       "cs": "Zkopírujte adresu URL agenta Windows 32bit do schránky",
@@ -6908,6 +6914,12 @@
         "default.handlebars->27->1450",
         "default.handlebars->27->1464",
         "default.handlebars->27->348"
+      ]
+    },
+    {
+      "en": "Copy macOS agent URL to clipboard",
+      "xloc": [
+        "default.handlebars->27->378"
       ]
     },
     {
@@ -15405,7 +15417,7 @@
       "ru": "Linux / BSD",
       "zh-chs": "Linux / BSD",
       "xloc": [
-        "default.handlebars->27->353"
+        "default.handlebars->27->352"
       ]
     },
     {
@@ -15423,6 +15435,12 @@
       "zh-chs": "Linux / BSD（卸載）",
       "xloc": [
         "default.handlebars->27->356"
+      ]
+    },
+    {
+      "en": "Linux / BSD / macOS Binary Installer",
+      "xloc": [
+        "default.handlebars->27->353"
       ]
     },
     {
@@ -15628,10 +15646,7 @@
     },
     {
       "en": "Linux/macOS Binary Installer",
-      "nl": "Linux/macOS binair installatieprogramma",
-      "xloc": [
-        "default.handlebars->27->350"
-      ]
+      "nl": "Linux/macOS binair installatieprogramma"
     },
     {
       "cs": "Seznam",
@@ -16322,10 +16337,7 @@
       "nl": "MacOS (64bit)",
       "pt": "MacOS (64 bits)",
       "ru": "MacOS (64bit)",
-      "zh-chs": "MacOS（64位）",
-      "xloc": [
-        "default.handlebars->27->735"
-      ]
+      "zh-chs": "MacOS（64位）"
     },
     {
       "cs": "macOS 32bit",
@@ -16341,8 +16353,7 @@
       "ru": "MacOS 32bit",
       "zh-chs": "MacOS 32位",
       "xloc": [
-        "default-mobile.handlebars->9->17",
-        "default.handlebars->27->24"
+        "default-mobile.handlebars->9->17"
       ]
     },
     {
@@ -16359,8 +16370,7 @@
       "ru": "MacOS 64bit",
       "zh-chs": "MacOS 64位",
       "xloc": [
-        "default-mobile.handlebars->9->22",
-        "default.handlebars->27->29"
+        "default-mobile.handlebars->9->22"
       ]
     },
     {
@@ -17255,10 +17265,7 @@
       "nl": "MeshCmd (MacOS, 64bit)",
       "pt": "MeshCmd (MacOS, 64bit)",
       "ru": "MeshCmd (MacOS, 64bit)",
-      "zh-chs": "MeshCmd（MacOS，64位）",
-      "xloc": [
-        "default.handlebars->27->750"
-      ]
+      "zh-chs": "MeshCmd（MacOS，64位）"
     },
     {
       "cs": "MeshCmd (spustitelný soubor Win32)",
@@ -17292,6 +17299,12 @@
       "zh-chs": "MeshCmd（Win64可執行文件）",
       "xloc": [
         "default.handlebars->27->747"
+      ]
+    },
+    {
+      "en": "MeshCmd (macOS, 64bit)",
+      "xloc": [
+        "default.handlebars->27->750"
       ]
     },
     {
@@ -19677,7 +19690,7 @@
       "xloc": [
         "default-mobile.handlebars->9->328",
         "default.handlebars->27->321",
-        "default.handlebars->27->351",
+        "default.handlebars->27->350",
         "default.handlebars->27->560",
         "default.handlebars->27->739",
         "default.handlebars->27->862"
@@ -26358,11 +26371,14 @@
       ]
     },
     {
-      "en": "This is a executable that will only run as root and on OS's with graphical user interfaces.",
-      "nl": "Dit is een uitvoerbaar bestand dat alleen zal draaien als root en op besturingssystemen met grafische gebruikersinterfaces.",
+      "en": "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file.",
       "xloc": [
         "default.handlebars->27->387"
       ]
+    },
+    {
+      "en": "This is a executable that will only run as root and on OS's with graphical user interfaces.",
+      "nl": "Dit is een uitvoerbaar bestand dat alleen zal draaien als root en op besturingssystemen met grafische gebruikersinterfaces."
     },
     {
       "cs": "Toto je portál pro vzdálenou správu a podporu počítače.",
@@ -29421,7 +29437,7 @@
       "ru": "Windows",
       "zh-chs": "視窗",
       "xloc": [
-        "default.handlebars->27->352"
+        "default.handlebars->27->351"
       ]
     },
     {
@@ -30823,6 +30839,24 @@
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->75->1",
         "terms.handlebars->container->column_l->75->1"
+      ]
+    },
+    {
+      "en": "macOS (64bit)",
+      "xloc": [
+        "default.handlebars->27->735"
+      ]
+    },
+    {
+      "en": "macOS 32bit",
+      "xloc": [
+        "default.handlebars->27->24"
+      ]
+    },
+    {
+      "en": "macOS 64bit",
+      "xloc": [
+        "default.handlebars->27->29"
       ]
     },
     {
