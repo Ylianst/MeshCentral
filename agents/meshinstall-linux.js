@@ -95,6 +95,10 @@ if (process.platform != 'darwin')
         process.exit();
     }
 }
+else
+{
+    if (!require('user-sessions').isRoot()) { console.log('\n' + "This utility requires elevated permissions. Please try again with sudo."); process.exit(); }
+}
 
 if (!s)
 {
