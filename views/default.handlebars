@@ -1204,7 +1204,7 @@
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "MacOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "MacOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "macOS 32bit", "Android x86", "PogoPlug ARM", "Android APK", "Linux Poky x86-32bit", "macOS 64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "Unknown", "Unknown", "FreeBSD x86-64"];
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
@@ -4057,7 +4057,7 @@
                 x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
                 x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
-                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple MacOS only" + '</option><option value=2>' + "Linux only" + '</option></select>');
+                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option></select>');
                 x += '<div id=d2agentexpirediv>';
                 x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire style=width:236px><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
                 x += '</div>';
@@ -4106,18 +4106,16 @@
         function addAgentToMesh(meshid) {
             if (xxdialogMode) return false;
             var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
-            if (debugmode > 0) { moreoptions = '<option value=5>' + "Linux/macOS Binary Installer" + '</option>'; }
-            x += addHtmlValue("Operating System", '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option>' + moreoptions + '<option value=2>' + "Apple MacOS" + '</option><option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>');
+            x += addHtmlValue("Operating System", '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option><option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option></select>');
 
-            if (debugmode > 0) { 
-                var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 16 : 'Apple OSX x86-64', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64', 30 : 'FreeBSD x86-64' };
-                moreoptions = '';
-                for (var i in binaryInstallAgents) { moreoptions += '<option value=' + i + '>' + binaryInstallAgents[i] + '</option>' }
-                x += '<div id=aginsSysTypeDiv>';
-                x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
-                x += '</div>';
-            }
+            // Add Linux/macOS binary installer option
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 16 : 'Apple OSX x86-64', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 30 : 'FreeBSD x86-64' };
+            for (var i in binaryInstallAgents) { moreoptions += '<option value=' + i + '>' + binaryInstallAgents[i] + '</option>' }
+            x += '<div id=aginsSysTypeDiv>';
+            x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
+            x += '</div>';
 
+            // Add installation type option
             x += '<div id=aginsTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
             x += '</div><hr>';
@@ -4127,7 +4125,6 @@
             meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
 
             // Windows agent install
-            //x += "<div id=agins_windows>To add a new computer to device group \"" + EscapeHtml(mesh.name) + "\", download the mesh agent and configuration file and install the agent on the computer to manage.<br /><br />";
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk href="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title="' + "32bit version of the MeshAgent" + '">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk href="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)" title="' + "64bit version of the MeshAgent" + '">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
@@ -4139,9 +4136,9 @@
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += '<div style=\'font-size:x-small\'>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div></div>';
 
-            // MacOS agent install
+            // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '" download rel="noreferrer noopener" target="_blank" title="' + "64bit version of MacOS Mesh Agent" + '">MacOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy MacOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
+            x += addHtmlValue("Mesh Agent", '<a href="meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '" download rel="noreferrer noopener" target="_blank" title="' + "64bit version of macOS Mesh Agent" + '">macOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
             // Windows agent uninstall
@@ -4155,12 +4152,10 @@
             x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=width:100%;resize:none;height:120px;overflow:scroll;font-size:12px readonly></textarea>';
             x += '</div>';
 
-            if (debugmode > 0) { 
-                // Linux binary installer
-                x += '<div id=agins_linux_inst style=display:none>' + "This is a executable that will only run as root and on OS's with graphical user interfaces." + '<br /><br />';
-                x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk href="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
-                x += '</div>';
-            }
+            // Linux binary installer
+            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file." + '<br /><br />';
+            x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk href="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += '</div>';
 
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
             var servername = serverinfo.name;
@@ -4210,7 +4205,7 @@
             var c = 'https://' + servername + portStr + domainUrl + url;
             if (addflag == 1) c += Q('aginsType').value;
             c += (urlargs.key?('&key=' + urlargs.key):'');
-            if (debugmode > 0) { if (Q('aginsSelect').value == 5) { c += '&meshinstall=' + Q('aginsSysType').value; } }
+            if (Q('aginsSelect').value == 5) { c += '&meshinstall=' + Q('aginsSysType').value; }
             copyTextToClip(c);
         }
 
@@ -4221,17 +4216,15 @@
             QV('agins_osx', v == 2);
             QV('agins_windows_un', v == 3);
             QV('agins_linux_un', v == 4);
-            if (debugmode > 0) {
-                QV('agins_linux_inst', v == 5);
-                QV('aginsSysTypeDiv', v == 5);
-                Q('aginsbinlnk').href = (Q('aginsbinlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value;
-            }
+            QV('agins_linux_inst', v == 5);
+            QV('aginsSysTypeDiv', v == 5);
+            Q('aginsbinlnk').href = (Q('aginsbinlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value;
             QV('aginsTypeDiv', (v == 0) || (v == 5));
 
             // Fix the links if needed
             Q('aginsw32lnk').href = (Q('aginsw32lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'');
             Q('aginsw64lnk').href = (Q('aginsw64lnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'');
-            if (debugmode > 0) { Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''); }
+            Q('aginswmshlnk').href = (Q('aginswmshlnk').href.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'');
         }
 
         function validateDeviceToMesh() {
@@ -6287,7 +6280,7 @@
             y += '<option value=4>' + "Windows (64bit)" + '</option>';
             y += '<option value=5>' + "Linux x86 (32bit)" + '</option>';
             y += '<option value=6>' + "Linux x86 (64bit)" + '</option>';
-            y += '<option value=16>' + "MacOS (64bit)" + '</option>';
+            y += '<option value=16>' + "macOS (64bit)" + '</option>';
             y += '<option value=25>' + "Linux ARM, Raspberry Pi (32bit)" + '</option>';
             y += '</select>';
 
@@ -6310,7 +6303,7 @@
             if (os == 4) { osn = "MeshCmd (Win64 executable)"; }
             if (os == 5) { osn = "MeshCmd (Linux x86, 32bit)"; }
             if (os == 6) { osn = "MeshCmd (Linux x86, 64bit)"; }
-            if (os == 16) { osn = "MeshCmd (MacOS, 64bit)"; }
+            if (os == 16) { osn = "MeshCmd (macOS, 64bit)"; }
             if (os == 25) { osn = "MeshCmd (Linux ARM, 32bit)"; }
             QH('meshcmddownloadid', osn);
             Q('meshcmddownloadid').setAttribute('href', 'meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):''));
@@ -6447,7 +6440,7 @@
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
-            QV('DeskClip', (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on MacOS
+            QV('DeskClip', (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
             QE('DeskClip', deskState == 3);
             QE('DeskType', deskState == 3);
             QV('DeskWD', inputAllowed);
@@ -7260,7 +7253,7 @@
         var deskPreferedStickyDisplay = -1;
         function deskSetDisplay(e) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(Q('termdisplays').value)); Q('termdisplays').blur(); }
 
-        // Double click detection. This is important for MacOS.
+        // Double click detection. This is important for macOS.
         var dblClickDetectArgs = { t:0, x:0, y:0 };
         function dblClickDetect(e) {
             if (e.buttons != 1) return;
