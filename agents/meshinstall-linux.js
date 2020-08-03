@@ -68,6 +68,12 @@ else
 if ((msh.InstallFlags & 1) == 1) { buttons.unshift("Connect"); }
 if ((msh.InstallFlags & 2) == 2)
 {
+    if (!require('user-sessions').isRoot())
+    {
+        console.log('\n' + "Elevated permissions is required to install/uninstall the agent.");
+        console.log("Please try again with sudo.");
+        process.exit();
+    }
     if (s)
     {
         if (process.platform == 'darwin' || require('message-box').kdialog)
