@@ -24,33 +24,115 @@ var msh = {};
 var s = null;
 try { s = require('service-manager').manager.getService('meshagent'); } catch (e) { }
 
-var buttons = ["Connect", "Cancel"];
-if (s) {
-    buttons.unshift("Uninstall");
-    buttons.unshift("Update");
-} else {
-    buttons.unshift("Install");
+function _install()
+{
+    var mstr = require('fs').createWriteStream(process.execPath + '.msh', { flags: 'wb' });
+    mstr.write('MeshName=' + msh.MeshName + '\n');
+    mstr.write('MeshType=' + msh.MeshType + '\n');
+    mstr.write('MeshID=' + msh.MeshID + '\n');
+    mstr.write('ServerID=' + msh.ServerID + '\n');
+    mstr.write('MeshServer=' + msh.MeshServer + '\n');
+    mstr.end();
+
+    global._child = require('child_process').execFile(process.execPath,
+        [process.execPath.split('/').pop(), '-fullinstall', '--no-embedded=1', '--copy-msh=1']);
+
+    global._child.stdout.on('data', function (c) { process.stdout.write(c.toString()); });
+    global._child.stderr.on('data', function (c) { process.stdout.write(c.toString()); });
+    global._child.waitExit();
+}
+function _uninstall()
+{
+    global._child = require('child_process').execFile(process.execPath,
+        [process.execPath.split('/').pop(), '-fulluninstall', '--no-embedded=1']);
+
+    global._child.stdout.on('data', function (c) { process.stdout.write(c.toString()); });
+    global._child.stderr.on('data', function (c) { process.stdout.write(c.toString()); });
+    global._child.waitExit();
 }
 
-if ((require('message-box').zenity == null) || (!require('message-box').zenity.extra)) {
-    console.log('\n' + "This installer cannot run on this system.");
-    console.log("Try installing/updating Zenity, and run again." + '\n');
-    process.exit();
+var s = null;
+try { s = require('service-manager').manager.getService('meshagent'); } catch (e) { }
+var buttons = ['Cancel'];
+
+if (msh.InstallFlags == null)
+{
+    msh.InstallFlags = 3;
+}
+else
+{
+    msh.InstallFlags = parseInt(msh.InstallFlags.toString());
 }
 
-if (!s) {
+
+if ((msh.InstallFlags & 1) == 1) { buttons.unshift("Connect"); }
+if ((msh.InstallFlags & 2) == 2)
+{
+    if (s)
+    {
+        if (process.platform == 'darwin' || require('message-box').kdialog)
+        {
+            buttons.unshift("Setup");
+        }
+        else
+        {
+            buttons.unshift("Uninstall");
+            buttons.unshift("Update");
+        }
+    }
+    else
+    {
+        buttons.unshift("Install");
+    }
+}
+
+if (process.platform != 'darwin')
+{
+    if (!require('message-box').kdialog && (require('message-box').zenity == null || (!require('message-box').zenity.extra)))
+    {
+        console.log('\n' + "This installer cannot run on this system.");
+        console.log("Try installing/updating Zenity, and run again." + '\n');
+        process.exit();
+    }
+}
+
+if (!s)
+{
     msg = "Agent: " + "NOT INSTALLED" + '\n';
-} else {
+} else
+{
     msg = "Agent: " + (s.isRunning() ? "RUNNING" : "NOT RUNNING") + '\n';
 }
+
 msg += ("Device Group: " + msh.MeshName + '\n');
 msg += ("Server URL: " + msh.MeshServer + '\n');
 
 var p = require('message-box').create("MeshCentral Agent Setup", msg, 99999, buttons);
-p.then(function (v) {
-    switch (v) {
+p.then(function (v)
+{
+    switch (v)
+    {
         case "Cancel":
             process.exit();
+            break;
+        case "Setup":
+            var d = require('message-box').create("MeshCentral Agent", msg, 99999, ["Update", "Uninstall", "Cancel"]);
+            d.then(function (v)
+            {
+                switch (v)
+                {
+                    case "Update":
+                    case "Install":
+                        _install();
+                        break;
+                    case "Uninstall":
+                        _uninstall();
+                        break;
+                    default:
+                        break;
+                }
+                process.exit();
+            }).catch(function (v) { process.exit(); });
             break;
         case "Connect":
             global._child = require('child_process').execFile(process.execPath,
@@ -68,34 +150,24 @@ p.then(function (v) {
             msg = ("Device Group: " + msh.MeshName + '\n');
             msg += ("Server URL: " + msh.MeshServer + '\n');
 
+            if (process.platform != 'darwin')
+            {
+                if (!require('message-box').zenity && require('message-box').kdialog)
+                {
+                    msg += ('\n'+"Press OK to Disconnect");
+                }
+            }
+
             var d = require('message-box').create("MeshCentral Agent", msg, 99999, ["Disconnect"]);
             d.then(function (v) { process.exit(); }).catch(function (v) { process.exit(); });
             break;
         case "Uninstall":
-            global._child = require('child_process').execFile(process.execPath,
-                [process.execPath.split('/').pop(), '-fulluninstall', '--no-embedded=1']);
-
-            global._child.stdout.on('data', function (c) { process.stdout.write(c.toString()); });
-            global._child.stderr.on('data', function (c) { process.stdout.write(c.toString()); });
-            global._child.waitExit();
+            _uninstall();
             process.exit();
             break;
         case "Install":
         case "Update":
-            var mstr = require('fs').createWriteStream(process.execPath + '.msh', { flags: 'wb' });
-            mstr.write('MeshName=' + msh.MeshName + '\n');
-            mstr.write('MeshType=' + msh.MeshType + '\n');
-            mstr.write('MeshID=' + msh.MeshID + '\n');
-            mstr.write('ServerID=' + msh.ServerID + '\n');
-            mstr.write('MeshServer=' + msh.MeshServer + '\n');
-            mstr.end();
-
-            global._child = require('child_process').execFile(process.execPath,
-                [process.execPath.split('/').pop(), '-fullinstall', '--no-embedded=1', '--copy-msh=1']);
-
-            global._child.stdout.on('data', function (c) { process.stdout.write(c.toString()); });
-            global._child.stderr.on('data', function (c) { process.stdout.write(c.toString()); });
-            global._child.waitExit();
+            _install();
             process.exit();
             break;
         default:
@@ -103,7 +175,8 @@ p.then(function (v) {
             process.exit();
             break;
     }
-}).catch(function (e) {
+}).catch(function (e)
+{
+    console.log(e);
     process.exit();
 });
-
