@@ -1467,21 +1467,18 @@
       ]
     },
     {
-      "cs": "64bitová verze agenta MacOS Mesh Agent",
-      "de": "64-Bit-Version des MacOS Mesh-Agenten",
-      "en": "64bit version of MacOS Mesh Agent",
-      "es": "versión de 64bit de Agente Mesh para MacOs ",
-      "fr": "Version 64 bits de MacOS Mesh Agent",
-      "hi": "MacOS मेष एजेंट का 64 बिट संस्करण",
-      "ja": "MacOS Mesh Agentの64ビットバージョン",
-      "ko": "MacOS용 MeshAgent의 64비트 버전",
-      "nl": "64bit versie van de MacOS Mesh Agent",
-      "pt": "Versão de 64 bits do MacOS Mesh Agent",
-      "ru": "64-битная версия MacOS Mesh Agent",
-      "zh-chs": "64位版本的MacOS Mesh Agent"
-    },
-    {
       "en": "64bit version of macOS Mesh Agent",
+      "cs": "64bitová verze agenta macOS Mesh Agent",
+      "de": "64-Bit-Version des macOS Mesh-Agenten",
+      "es": "versión de 64bit de Agente Mesh para macOs ",
+      "fr": "Version 64 bits de macOS Mesh Agent",
+      "hi": "macOS मेष एजेंट का 64 बिट संस्करण",
+      "ja": "macOS Mesh Agentの64ビットバージョン",
+      "ko": "macOS용 MeshAgent의 64비트 버전",
+      "nl": "64bit versie van de macOS Mesh Agent",
+      "pt": "Versão de 64 bits do macOS Mesh Agent",
+      "ru": "64-битная версия macOS Mesh Agent",
+      "zh-chs": "64位版本的macOS Mesh Agent"
       "xloc": [
         "default.handlebars->27->377"
       ]
@@ -3600,41 +3597,35 @@
       ]
     },
     {
-      "cs": "Apple MacOS",
-      "de": "Apple MacOS",
-      "en": "Apple MacOS",
-      "es": "Apple MacOS",
-      "fr": "Apple MacOS",
-      "hi": "Apple MacOS",
-      "ja": "Apple MacOS",
-      "ko": "Apple MacOS",
-      "nl": "Apple MacOS",
-      "pt": "Apple MacOS",
-      "ru": "Apple MacOS",
-      "zh-chs": "蘋果MacOS"
-    },
-    {
-      "cs": "pouze Apple MacOS",
-      "de": "Nur Apple MacOS",
-      "en": "Apple MacOS only",
-      "es": "Solo Apple MacOS",
-      "fr": "Apple MacOS seulement",
-      "hi": "केवल Apple MacOS",
-      "ja": "Apple MacOSのみ",
-      "ko": "오직 Apple MacOS만",
-      "nl": "Alleen Apple MacOS",
-      "pt": "Apenas Apple MacOS ",
-      "ru": "Только Apple MacOS",
-      "zh-chs": "僅限Apple MacOS"
-    },
-    {
       "en": "Apple macOS",
+      "cs": "Apple macOS",
+      "de": "Apple macOS",
+      "es": "Apple macOS",
+      "fr": "Apple macOS",
+      "hi": "Apple macOS",
+      "ja": "Apple macOS",
+      "ko": "Apple macOS",
+      "nl": "Apple macOS",
+      "pt": "Apple macOS",
+      "ru": "Apple macOS",
+      "zh-chs": "蘋果macOS"
       "xloc": [
         "default.handlebars->27->354"
       ]
     },
     {
       "en": "Apple macOS only",
+      "cs": "pouze Apple macOS",
+      "de": "Nur Apple macOS",
+      "es": "Solo Apple macOS",
+      "fr": "Apple macOS seulement",
+      "hi": "केवल Apple macOS",
+      "ja": "Apple macOSのみ",
+      "ko": "오직 Apple macOS만",
+      "nl": "Alleen Apple macOS",
+      "pt": "Apenas Apple macOS ",
+      "ru": "Только Apple macOS",
+      "zh-chs": "僅限Apple macOS"
       "xloc": [
         "default.handlebars->27->325"
       ]
@@ -6817,20 +6808,6 @@
       ]
     },
     {
-      "cs": "Kopírovat odkaz pro MacOS agenta do schránky",
-      "de": "MacOS-Agenten-URL in Zwischenablage kopieren",
-      "en": "Copy MacOS agent URL to clipboard",
-      "es": "Copiar URL del Agente para MacOS al portapapeles",
-      "fr": "Copier l'URL de l'agent MacOS dans le presse-papiers",
-      "hi": "MacOS एजेंट URL को क्लिपबोर्ड पर कॉपी करें",
-      "ja": "MacOSエージェントのURLをクリップボードにコピーします",
-      "ko": "MacOS 에이전트 웹 주소를 클립보드에 복사",
-      "nl": "Kopieer MacOS agent link naar het klembord",
-      "pt": "Copiar o URL do agente MacOS para a área de transferência",
-      "ru": "Скопировать ссылку MacOS agent в буфер обмена",
-      "zh-chs": "將MacOS代理URL複製到剪貼板"
-    },
-    {
       "cs": "Zkopírujte adresu URL agenta Windows 32bit do schránky",
       "de": "Kopieren Sie die Windows 32-Bit-Agenten-URL in die Zwischenablage",
       "en": "Copy Windows 32bit agent URL to clipboard",
@@ -6918,6 +6895,17 @@
     },
     {
       "en": "Copy macOS agent URL to clipboard",
+      "cs": "Kopírovat odkaz pro macOS agenta do schránky",
+      "de": "macOS-Agenten-URL in Zwischenablage kopieren",
+      "es": "Copiar URL del Agente para macOS al portapapeles",
+      "fr": "Copier l'URL de l'agent macOS dans le presse-papiers",
+      "hi": "macOS एजेंट URL को क्लिपबोर्ड पर कॉपी करें",
+      "ja": "macOSエージェントのURLをクリップボードにコピーします",
+      "ko": "macOS 에이전트 웹 주소를 클립보드에 복사",
+      "nl": "Kopieer macOS agent link naar het klembord",
+      "pt": "Copiar o URL do agente macOS para a área de transferência",
+      "ru": "Скопировать ссылку macOS agent в буфер обмена",
+      "zh-chs": "將macOS代理URL複製到剪貼板"
       "xloc": [
         "default.handlebars->27->378"
       ]
@@ -8176,6 +8164,7 @@
     },
     {
       "en": "DesktopSession",
+      "nl": "Desktop sessie",
       "xloc": [
         "default.handlebars->27->799"
       ]
@@ -15439,6 +15428,7 @@
     },
     {
       "en": "Linux / BSD / macOS Binary Installer",
+      "nl": "Linux / BSD / macOS Biniar installatieprogramma",
       "xloc": [
         "default.handlebars->27->353"
       ]
@@ -16324,20 +16314,6 @@
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tmacostab"
       ]
-    },
-    {
-      "cs": "macOS (64bit)",
-      "de": "MacOS (64bit)",
-      "en": "MacOS (64bit)",
-      "es": "MacOS (64bit)",
-      "fr": "MacOS (64bit)",
-      "hi": "MacOS (64 बिट)",
-      "ja": "MacOS（64ビット）",
-      "ko": "MacOS (64비트)",
-      "nl": "MacOS (64bit)",
-      "pt": "MacOS (64 bits)",
-      "ru": "MacOS (64bit)",
-      "zh-chs": "MacOS（64位）"
     },
     {
       "cs": "macOS 32bit",
@@ -17254,20 +17230,6 @@
       ]
     },
     {
-      "cs": "MeshCmd (MacOS, 64bit)",
-      "de": "MeshCmd (MacOS, 64bit)",
-      "en": "MeshCmd (MacOS, 64bit)",
-      "es": "MeshCmd (MacOS, 64bit)",
-      "fr": "MeshCmd (MacOS, 64bit)",
-      "hi": "MeshCmd (मैकओएस, 64 बिट)",
-      "ja": "MeshCmd（MacOS、64ビット）",
-      "ko": "MeshCmd (MacOS, 64비트)",
-      "nl": "MeshCmd (MacOS, 64bit)",
-      "pt": "MeshCmd (MacOS, 64bit)",
-      "ru": "MeshCmd (MacOS, 64bit)",
-      "zh-chs": "MeshCmd（MacOS，64位）"
-    },
-    {
       "cs": "MeshCmd (spustitelný soubor Win32)",
       "de": "MeshCmd (ausführbare Win32-Datei)",
       "en": "MeshCmd (Win32 executable)",
@@ -17303,6 +17265,18 @@
     },
     {
       "en": "MeshCmd (macOS, 64bit)",
+      "cs": "MeshCmd (macOS, 64bit)",
+      "de": "MeshCmd (macOS, 64bit)",
+      "en": "MeshCmd (macOS, 64bit)",
+      "es": "MeshCmd (macOS, 64bit)",
+      "fr": "MeshCmd (macOS, 64bit)",
+      "hi": "MeshCmd (मैकओएस, 64 बिट)",
+      "ja": "MeshCmd（macOS、64ビット）",
+      "ko": "MeshCmd (macOS, 64비트)",
+      "nl": "MeshCmd (macOS, 64bit)",
+      "pt": "MeshCmd (macOS, 64bit)",
+      "ru": "MeshCmd (macOS, 64bit)",
+      "zh-chs": "MeshCmd（macOS，64位）"
       "xloc": [
         "default.handlebars->27->750"
       ]
@@ -18880,7 +18854,7 @@
     },
     {
       "en": "No recordings.",
-      "nL": "Geen opnames.",
+      "nl": "Geen opnames.",
       "xloc": [
         "default.handlebars->27->1805"
       ]
@@ -26372,6 +26346,7 @@
     },
     {
       "en": "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file.",
+      "nl": "Dit is een uitvoerbaar bestand op besturingssystemen met grafische gebruikersinterfaces.U moet 'chmod + x meshagent' gebruiken en dit bestand uitvoeren.",
       "xloc": [
         "default.handlebars->27->387"
       ]
@@ -30843,18 +30818,51 @@
     },
     {
       "en": "macOS (64bit)",
+      "cs": "macOS (64bit)",
+      "de": "macOS (64bit)",
+      "es": "macOS (64bit)",
+      "fr": "macOS (64bit)",
+      "hi": "मैकओएस (64 बिट)",
+      "ja": "macOS (64ビット)",
+      "ko": "macOS (64비트)",
+      "nl": "macOS (64bit)",
+      "pt": "macOS (64 bits)",
+      "ru": "macOS (64bit)",
+      "zh-chs": "macOS (64位)",
       "xloc": [
         "default.handlebars->27->735"
       ]
     },
     {
       "en": "macOS 32bit",
+      "cs": "macOS 32bit",
+      "de": "macOS 32bit",
+      "es": "macOS 32bit",
+      "fr": "macOS 32bit",
+      "hi": "macOS 32 बिट",
+      "ja": "macOS 32ビット",
+      "ko": "macOS 32비트",
+      "nl": "macOS 32bit",
+      "pt": "macOS 32 bits",
+      "ru": "macOS 32bit",
+      "zh-chs": "macOS 32位",
       "xloc": [
         "default.handlebars->27->24"
       ]
     },
     {
       "en": "macOS 64bit",
+      "cs": "macOS 64bit",
+      "de": "macOS 64bit",
+      "es": "macOS 64bit",
+      "fr": "macOS 64bit",
+      "hi": "मैकओएस 64 बिट",
+      "ja": "macOS 64ビット",
+      "ko": "macOS 64비트",
+      "nl": "macOS 64bit",
+      "pt": "macOS 64 bits",
+      "ru": "macOS 64bit",
+      "zh-chs": "macOS 64位",
       "xloc": [
         "default.handlebars->27->29"
       ]
