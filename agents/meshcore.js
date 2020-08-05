@@ -660,6 +660,8 @@ function createMeshCore(agent) {
                                 var socket = require('dgram').createSocket({ type: 'udp4' });
                                 socket.bind({ address: addr.address });
                                 socket.setBroadcast(true);
+                                socket.setMulticastInterface(addr.address);
+                                socket.setMulticastTTL(1);
                                 socket.send(magicbin, 7, '255.255.255.255');
                                 socket.descriptorMetadata = 'WoL (' + addr.address + ' => ' + hexMac + ')';
                                 count++;
