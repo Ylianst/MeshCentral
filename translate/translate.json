@@ -1478,7 +1478,7 @@
       "nl": "64bit versie van de macOS Mesh Agent",
       "pt": "Versão de 64 bits do macOS Mesh Agent",
       "ru": "64-битная версия macOS Mesh Agent",
-      "zh-chs": "64位版本的macOS Mesh Agent"
+      "zh-chs": "64位版本的macOS Mesh Agent",
       "xloc": [
         "default.handlebars->27->377"
       ]
@@ -3608,7 +3608,7 @@
       "nl": "Apple macOS",
       "pt": "Apple macOS",
       "ru": "Apple macOS",
-      "zh-chs": "蘋果macOS"
+      "zh-chs": "蘋果macOS",
       "xloc": [
         "default.handlebars->27->354"
       ]
@@ -3625,7 +3625,7 @@
       "nl": "Alleen Apple macOS",
       "pt": "Apenas Apple macOS ",
       "ru": "Только Apple macOS",
-      "zh-chs": "僅限Apple macOS"
+      "zh-chs": "僅限Apple macOS",
       "xloc": [
         "default.handlebars->27->325"
       ]
@@ -6905,7 +6905,7 @@
       "nl": "Kopieer macOS agent link naar het klembord",
       "pt": "Copiar o URL do agente macOS para a área de transferência",
       "ru": "Скопировать ссылку macOS agent в буфер обмена",
-      "zh-chs": "將macOS代理URL複製到剪貼板"
+      "zh-chs": "將macOS代理URL複製到剪貼板",
       "xloc": [
         "default.handlebars->27->378"
       ]
@@ -17267,7 +17267,6 @@
       "en": "MeshCmd (macOS, 64bit)",
       "cs": "MeshCmd (macOS, 64bit)",
       "de": "MeshCmd (macOS, 64bit)",
-      "en": "MeshCmd (macOS, 64bit)",
       "es": "MeshCmd (macOS, 64bit)",
       "fr": "MeshCmd (macOS, 64bit)",
       "hi": "MeshCmd (मैकओएस, 64 बिट)",
@@ -17276,7 +17275,7 @@
       "nl": "MeshCmd (macOS, 64bit)",
       "pt": "MeshCmd (macOS, 64bit)",
       "ru": "MeshCmd (macOS, 64bit)",
-      "zh-chs": "MeshCmd（macOS，64位）"
+      "zh-chs": "MeshCmd（macOS，64位）",
       "xloc": [
         "default.handlebars->27->750"
       ]
