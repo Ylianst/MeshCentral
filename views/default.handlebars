@@ -354,7 +354,7 @@
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
-                        <td>
+                        <td class="auto-style1">
                             <input type="button" style="display:none" value="Download Report" onclick=p3showReportDialog() />
                         </td>
                         <td class="auto-style1">
@@ -1792,15 +1792,18 @@
         function updateSiteAdmin() {
             var noServerBackup = '{{{noServerBackup}}}';
             var siteRights = userinfo.siteadmin;
+            var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0));
             if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
             // Update account actions
-            QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
+            QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0) && (accountSettingsLocked == false)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
+            QV('p2AccountActions', !accountSettingsLocked)
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000));
             QV('manageEmail2FA', features & 0x00800000);
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
+            QV('p2AccountImage', !accountSettingsLocked)
             QV('p2ServerActions', siteRights & 21);
             QV('LeftMenuMyServer', siteRights & 21); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
@@ -1878,8 +1881,9 @@
         var backupCodesWarningDone = false;
         function updateSelf() {
             var authFactorCount = count2factoraAuths(); // Get the number of 2nd factors
+            var accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0));
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
-            QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
+            QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (accountSettingsLocked == false));
             QV('manageOtp', authFactorCount > 0);
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
@@ -9183,14 +9187,16 @@
                 x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1));
             }
 
-            // Display user notification
-            var meshNotify = 0, meshNotifyStr = [];
-            if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
-            if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
-            if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
-            if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
-            if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
-            x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+            if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 1024) == 0)) { 
+                // Display user notification
+                var meshNotify = 0, meshNotifyStr = [];
+                if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
+                if (meshNotify & 2) { meshNotifyStr.push("Connect"); }
+                if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
+                if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
+                if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
+                x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+            }
 
             // Display invitation codes
             if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
@@ -9567,6 +9573,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20settingslock>' + "Lock Account Settings" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -10633,7 +10640,7 @@
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { permissions += "Locked" + ',&nbsp;'; }
             permissions += '<span title=\'' + "Server Permissions" + '\'>';
 
-            var urights = user.siteadmin & (0xFFFFFFFF - 224);
+            var urights = user.siteadmin & (0xFFFFFFFF - 1248);
             if ((user.siteadmin == null) || (urights == 0)) {
                 permissions += "User";
             } else if (urights == 8) {
@@ -10645,7 +10652,7 @@
             } else {
                 permissions += "Partial";
             }
-            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128)) != 0)) { permissions += '*'; }
+            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128 + 1024)) != 0)) { permissions += '*'; }
             permissions += '</span>';
             //if ((user.quota != null) && ((user.siteadmin & 8) != 0)) { msg += ", " + (user.quota / 1024) + " k"; }
             if (self) { permissions += '</a>'; }
@@ -11035,6 +11042,7 @@
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_locksettings>' + "Lock Account Settings" + '</label><br>';
             x += '</div>';
             setDialogMode(2, "Server Permissions", 2 + (uself?0:1), showUserAdminDialogEx, x, user);
             if (user.siteadmin && user.siteadmin != 0) {
@@ -11046,6 +11054,7 @@
                 Q('ua_lockedaccount').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 32) != 0));     // Account locked
                 Q('ua_nonewgroups').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 64) != 0));       // No New Groups
                 Q('ua_nomeshcmd').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 128) != 0));        // No Tools (MeshCMD / Router)
+                Q('ua_locksettings').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0));    // Lock account settings
             }
             if ((userinfo.siteadmin & 2) != 0) {
                 Q('ua_manageusers').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2) != 0));        // Manage Users
@@ -11075,6 +11084,7 @@
             QE('ua_lockedaccount', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_nonewgroups', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             QE('ua_nomeshcmd', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
+            QE('ua_locksettings', !uself && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF) && (userinfo._id != user._id));
             Q('ua_fileaccessquota').value = (user.quota != null)?(user.quota / 1024):'';
             showUserAdminDialogValidate();
             return false;
@@ -11091,8 +11101,9 @@
                 QE('ua_nonewgroups', !Q('ua_fulladmin').checked);
                 QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
                 QE('ua_manageusergroups', !Q('ua_fulladmin').checked);
-                QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
                 QE('ua_managerecordings', !Q('ua_fulladmin').checked);
+                QE('ua_locksettings', !Q('ua_fulladmin').checked);
+                QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
             }
         }
 
@@ -11109,6 +11120,7 @@
                 if (Q('ua_nomeshcmd').checked == true) siteadmin += 128;
                 if (Q('ua_manageusergroups').checked == true) siteadmin += 256;
                 if (Q('ua_managerecordings').checked == true) siteadmin += 512;
+                if (Q('ua_locksettings').checked == true) siteadmin += 1024;
             }
             var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
@@ -11580,8 +11592,8 @@
             // Server permissions
             var msg = [], premsg = '';
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { premsg = '<img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" /> '; msg.push("Locked account"); }
-            if ((user.siteadmin == null) || ((user.siteadmin & (0xFFFFFFFF - 224)) == 0)) { msg.push("No server rights"); } else if (user.siteadmin == 8) { msg.push("Access to server files"); } else if (user.siteadmin == 0xFFFFFFFF) { msg.push("Full administrator"); } else { msg.push("Partial rights"); }
-            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128)) != 0)) { msg.push("Restrictions"); }
+            if ((user.siteadmin == null) || ((user.siteadmin & (0xFFFFFFFF - 1248)) == 0)) { msg.push("No server rights"); } else if (user.siteadmin == 8) { msg.push("Access to server files"); } else if (user.siteadmin == 0xFFFFFFFF) { msg.push("Full administrator"); } else { msg.push("Partial rights"); }
+            if ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & (64 + 128 + 1024)) != 0)) { msg.push("Restrictions"); }
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';

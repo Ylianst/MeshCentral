@@ -1754,6 +1754,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
         if (!user) { parent.debug('web', 'handleDeleteAccountRequest: user not found.'); res.sendStatus(404); return; }
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) { parent.debug('web', 'handleDeleteAccountRequest: account settings locked.'); res.sendStatus(404); return; }
 
         // Check if the password is correct
         obj.authenticate(user._id.split('/')[2], req.body.apassword1, domain, function (err, userid) {
@@ -1871,6 +1872,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!user) {
             parent.debug('web', 'handlePasswordChangeRequest: user not found.');
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
+        }
+
+        // Check account settings locked
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) {
+            parent.debug('web', 'handlePasswordChangeRequest: account settings locked.');
+            res.sendStatus(404);
             return;
         }
 
