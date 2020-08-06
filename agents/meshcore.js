@@ -1270,13 +1270,13 @@ function createMeshCore(agent) {
             if (typeof data == 'object') {
                 // Save the data to file being uploaded.
                 if (this.httprequest.uploadFile) {
-                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileSave ERROR'); this.write(new Buffer(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
-                    this.write(new Buffer(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
+                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileSave ERROR'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+                    this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
                 }
             } else if (typeof data == 'string') {
                 // Close the file and confirm. We need to make this added round trip since websocket deflate compression can cause the last message before a websocket close to not be received.
                 if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
-                this.write(new Buffer(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
                 this.end();
             }
             return;
@@ -1284,7 +1284,7 @@ function createMeshCore(agent) {
         /*
         // If this is a download, send more of the file
         if (this.httprequest.downloadFile) {
-            var buf = new Buffer(4096);
+            var buf = Buffer.alloc(4096);
             var len = fs.readSync(this.httprequest.downloadFile, buf, 0, 4096, null);
             this.httprequest.downloadFilePtr += len;
             if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
@@ -1939,7 +1939,7 @@ function createMeshCore(agent) {
             } else if (this.httprequest.protocol == 2) {
                 // Send data into remote desktop
                 if (this.httprequest.desktop.state == 0) {
-                    this.write(new Buffer(String.fromCharCode(0x11, 0xFE, 0x00, 0x00, 0x4D, 0x45, 0x53, 0x48, 0x00, 0x00, 0x00, 0x00, 0x02)));
+                    this.write(Buffer.from(String.fromCharCode(0x11, 0xFE, 0x00, 0x00, 0x4D, 0x45, 0x53, 0x48, 0x00, 0x00, 0x00, 0x00, 0x02)));
                     this.httprequest.desktop.state = 1;
                 } else {
                     this.httprequest.desktop.write(data);
@@ -1970,7 +1970,7 @@ function createMeshCore(agent) {
                         // Send the folder content to the browser
                         var response = getDirectoryInfo(cmd.path);
                         if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
-                        this.write(new Buffer(JSON.stringify(response)));
+                        this.write(Buffer.from(JSON.stringify(response)));
 
                         /*
                         // Start the directory watcher
@@ -2044,7 +2044,7 @@ function createMeshCore(agent) {
                         // Send the next download block(s)
                         while (sendNextBlock > 0) {
                             sendNextBlock--;
-                            var buf = new Buffer(16384);
+                            var buf = Buffer.alloc(16384);
                             var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
                             this.filedownload.ptr += len;
                             if (len < 16380) { buf.writeInt32BE(0x01000001, 0); fs.closeSync(this.filedownload.f); delete this.filedownload; sendNextBlock = 0; } else { buf.writeInt32BE(0x01000000, 0); }
@@ -2058,10 +2058,10 @@ function createMeshCore(agent) {
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
                         //console.log('Download: ' + filepath);
-                        try { this.httprequest.downloadFile = fs.openSync(filepath, 'rbN'); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'downloaderror', reqid: cmd.reqid }))); break; }
+                        try { this.httprequest.downloadFile = fs.openSync(filepath, 'rbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'downloaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.downloadFileId = cmd.reqid;
                         this.httprequest.downloadFilePtr = 0;
-                        if (this.httprequest.downloadFile) { this.write(new Buffer(JSON.stringify({ action: 'downloadstart', reqid: this.httprequest.downloadFileId }))); }
+                        if (this.httprequest.downloadFile) { this.write(Buffer.from(JSON.stringify({ action: 'downloadstart', reqid: this.httprequest.downloadFileId }))); }
                         break;
                     }
                     case 'download2': {
@@ -2080,9 +2080,9 @@ function createMeshCore(agent) {
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
                         MeshServerLog('Upload: \"' + filepath + '\"', this.httprequest);
-                        try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
+                        try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.uploadFileid = cmd.reqid;
-                        if (this.httprequest.uploadFile) { this.write(new Buffer(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
+                        if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
                         break;
                     }
                     case 'copy': {

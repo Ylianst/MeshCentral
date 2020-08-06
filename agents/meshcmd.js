@@ -2364,7 +2364,7 @@ function pushToStorage(name, linkname, data, func, ptr) {
     });
     var header = (ptr > 0) ? '<metadata></metadata>' : '<metadata><headers><h>Content-Encoding:gzip</h><h>Content-Type:text/html</h></headers>' + ((linkname != null) ? ('<link>' + linkname + '</link>') : '') + '</metadata>';
     var blocklen = ((data.length - ptr) > (7000 - header.length)) ? (7000 - header.length) : (data.length - ptr);
-    req.write(Buffer.concat([new Buffer(header), data.slice(ptr, ptr + blocklen)]));
+    req.write(Buffer.concat([Buffer.from(header), data.slice(ptr, ptr + blocklen)]));
     ptr += blocklen;
     req.end();
 }
