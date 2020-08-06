@@ -32,37 +32,38 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const USERCONSENT_ShowConnectionToolbar = 64;
 
     // Mesh Rights
-    const MESHRIGHT_EDITMESH = 1;
-    const MESHRIGHT_MANAGEUSERS = 2;
-    const MESHRIGHT_MANAGECOMPUTERS = 4;
-    const MESHRIGHT_REMOTECONTROL = 8;
-    const MESHRIGHT_AGENTCONSOLE = 16;
-    const MESHRIGHT_SERVERFILES = 32;
-    const MESHRIGHT_WAKEDEVICE = 64;
-    const MESHRIGHT_SETNOTES = 128;
-    const MESHRIGHT_REMOTEVIEWONLY = 256;
-    const MESHRIGHT_NOTERMINAL = 512;
-    const MESHRIGHT_NOFILES = 1024;
-    const MESHRIGHT_NOAMT = 2048;
-    const MESHRIGHT_DESKLIMITEDINPUT = 4096;
-    const MESHRIGHT_LIMITEVENTS = 8192;
-    const MESHRIGHT_CHATNOTIFY = 16384;
-    const MESHRIGHT_UNINSTALL = 32768;
-    const MESHRIGHT_NODESKTOP = 65536;
-    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
+    const MESHRIGHT_EDITMESH            = 0x00000001;
+    const MESHRIGHT_MANAGEUSERS         = 0x00000002;
+    const MESHRIGHT_MANAGECOMPUTERS     = 0x00000004;
+    const MESHRIGHT_REMOTECONTROL       = 0x00000008;
+    const MESHRIGHT_AGENTCONSOLE        = 0x00000010;
+    const MESHRIGHT_SERVERFILES         = 0x00000020;
+    const MESHRIGHT_WAKEDEVICE          = 0x00000040;
+    const MESHRIGHT_SETNOTES            = 0x00000080;
+    const MESHRIGHT_REMOTEVIEWONLY      = 0x00000100;
+    const MESHRIGHT_NOTERMINAL          = 0x00000200;
+    const MESHRIGHT_NOFILES             = 0x00000400;
+    const MESHRIGHT_NOAMT               = 0x00000800;
+    const MESHRIGHT_DESKLIMITEDINPUT    = 0x00001000;
+    const MESHRIGHT_LIMITEVENTS         = 0x00002000;
+    const MESHRIGHT_CHATNOTIFY          = 0x00004000;
+    const MESHRIGHT_UNINSTALL           = 0x00008000;
+    const MESHRIGHT_NODESKTOP           = 0x00010000;
+    const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
-    const SITERIGHT_SERVERBACKUP = 1;           // 0x00000001
-    const SITERIGHT_MANAGEUSERS = 2;            // 0x00000002
-    const SITERIGHT_SERVERRESTORE = 4;          // 0x00000004
-    const SITERIGHT_FILEACCESS = 8;             // 0x00000008
-    const SITERIGHT_SERVERUPDATE = 16;          // 0x00000010
-    const SITERIGHT_LOCKED = 32;                // 0x00000020
-    const SITERIGHT_NONEWGROUPS = 64;           // 0x00000040
-    const SITERIGHT_NOMESHCMD = 128;            // 0x00000080
-    const SITERIGHT_USERGROUPS = 256;           // 0x00000100
-    const SITERIGHT_RECORDINGS = 512;           // 0x00000200
-    const SITERIGHT_ADMIN = 0xFFFFFFFF;         // 0xFFFFFFFF
+    const SITERIGHT_SERVERBACKUP        = 0x00000001;
+    const SITERIGHT_MANAGEUSERS         = 0x00000002;
+    const SITERIGHT_SERVERRESTORE       = 0x00000004;
+    const SITERIGHT_FILEACCESS          = 0x00000008;
+    const SITERIGHT_SERVERUPDATE        = 0x00000010;
+    const SITERIGHT_LOCKED              = 0x00000020;
+    const SITERIGHT_NONEWGROUPS         = 0x00000040;
+    const SITERIGHT_NOMESHCMD           = 0x00000080;
+    const SITERIGHT_USERGROUPS          = 0x00000100;
+    const SITERIGHT_RECORDINGS          = 0x00000200;
+    const SITERIGHT_LOCKSETTINGS        = 0x00000400;
+    const SITERIGHT_ADMIN               = 0xFFFFFFFF;
 
     var obj = {};
     obj.user = user;
@@ -1368,6 +1369,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changelang':
                 {
+                    // If this account is settings locked, return here.
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
+
                     if (common.validateString(command.lang, 1, 6) == false) return;
 
                     // Always lowercase the email address
@@ -1393,6 +1397,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // If the email is the username, this command is not allowed.
                     if (domain.usernameisemail) return;
+
+                    // If this account is settings locked, return here.
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
 
                     // Change our own email address
                     if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
@@ -1439,6 +1446,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'verifyemail':
                 {
+                    // If this account is settings locked, return here.
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
+
                     // Send a account email verification email
                     if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
                     if (common.validateString(command.email, 3, 1024) == false) return;
@@ -2311,6 +2321,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changemeshnotify':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     var err = null;
                     try {
                         // Change the current user's notification flags for a meshid
@@ -2347,6 +2359,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'changepassword':
                 {
+                    // If this account is settings locked, return here.
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
+
                     // Change our own password
                     if (common.validateString(command.oldpass, 1, 256) == false) break;
                     if (common.validateString(command.newpass, 1, 256) == false) break;
@@ -3848,6 +3863,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpemail':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Check input
                     if (typeof command.enabled != 'boolean') return;
                     
@@ -3870,6 +3887,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-request':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
@@ -3884,6 +3903,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-setup':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
@@ -3912,6 +3933,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otpauth-clear':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
@@ -3939,23 +3962,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
-                    // Perform a sub-action
                     var actionTaken = false, actionText = null;
-                    if (command.subaction == 1) { // Generate a new set of tokens
-                        var randomNumbers = [], v;
-                        for (var i = 0; i < 10; i++) { do { v = getRandomEightDigitInteger(); } while (randomNumbers.indexOf(v) >= 0); randomNumbers.push(v); }
-                        user.otpkeys = { keys: [] };
-                        for (var i = 0; i < 10; i++) { user.otpkeys.keys[i] = { p: randomNumbers[i], u: true } }
-                        actionTaken = true;
-                        actionText = 'New 2FA backup codes generated.';
-                    } else if (command.subaction == 2) { // Clear all tokens
-                        actionTaken = (user.otpkeys != null);
-                        delete user.otpkeys;
-                        if (actionTaken) { actionText = '2FA backup codes cleared.'; }
-                    }
+                    if ((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 1024) == 0)) { // Don't allow generation of tokens if the account is settings locked
+                        // Perform a sub-action
+                        if (command.subaction == 1) { // Generate a new set of tokens
+                            var randomNumbers = [], v;
+                            for (var i = 0; i < 10; i++) { do { v = getRandomEightDigitInteger(); } while (randomNumbers.indexOf(v) >= 0); randomNumbers.push(v); }
+                            user.otpkeys = { keys: [] };
+                            for (var i = 0; i < 10; i++) { user.otpkeys.keys[i] = { p: randomNumbers[i], u: true } }
+                            actionTaken = true;
+                            actionText = 'New 2FA backup codes generated.';
+                        } else if (command.subaction == 2) { // Clear all tokens
+                            actionTaken = (user.otpkeys != null);
+                            delete user.otpkeys;
+                            if (actionTaken) { actionText = '2FA backup codes cleared.'; }
+                        }
 
-                    // Save the changed user
-                    if (actionTaken) { parent.db.SetUser(user); }
+                        // Save the changed user
+                        if (actionTaken) { parent.db.SetUser(user); }
+                    }
 
                     // Return one time passwords for this user
                     if (count2factoraAuths() > 0) {
@@ -3987,6 +4012,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-remove':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false || command.index == null) break;
@@ -4009,6 +4036,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'otp-hkey-yubikey-add':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
                     var yubikeyotp = null;
                     try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
@@ -4062,6 +4091,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-startregister':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (command.name == null)) break;
@@ -4074,6 +4105,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'webauthn-endregister':
                 {
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if ((twoStepLoginSupported == false) || (obj.webAuthnReqistrationRequest == null)) return;
 
@@ -4113,6 +4145,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'verifyPhone': {
+                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (parent.parent.smsserver == null) return;
                 if (common.validateString(command.phone, 1, 18) == false) break; // Check phone length
                 if (command.phone.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) == false) break; // Check phone
@@ -4124,6 +4157,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'confirmPhone': {
+                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if ((parent.parent.smsserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedSmsCookieCheck == 1)) break; // Input checks
                 var cookie = parent.parent.decodeCookie(command.cookie);
                 if (cookie == null) break; // Invalid cookie
@@ -4150,6 +4184,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'removePhone': {
+                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (user.phone == null) break;
 
                 // Clear the user's phone
@@ -4232,6 +4267,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'userWebState': {
+                if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (common.validateString(command.state, 1, 10000) == false) break; // Check state size, no more than 10k
                 command.state = parent.filterUserWebState(command.state); // Filter the state to remove anything bad
                 if ((command.state == null) || (typeof command.state !== 'string')) { console.log('tt'); break; } // If state did not validate correctly, quit here.
