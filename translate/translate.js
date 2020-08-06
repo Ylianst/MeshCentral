@@ -33,6 +33,7 @@ var meshCentralSourceFiles = [
     "../views/message.handlebars",
     "../views/messenger.handlebars",
     "../views/player.handlebars",
+    "../views/desktop.handlebars",
     "../views/mstsc.handlebars",
     "../emails/account-check.html",
     "../emails/account-invite.html",

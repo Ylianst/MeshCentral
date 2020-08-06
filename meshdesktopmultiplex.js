@@ -787,7 +787,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
     // Get node information
     parent.db.Get(nodeid, function (err, nodes) {
-        if ((err != null) || (nodes.length != 1)) { func(null); }
+        if ((err != null) || (nodes.length != 1)) { func(null); return; }
         obj.meshid = nodes[0].meshid;
         obj.icon = nodes[0].icon;
         obj.name = nodes[0].name;
