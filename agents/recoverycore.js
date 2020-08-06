@@ -233,8 +233,8 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                             s.on('data', function (data) {
                                                 // If this is upload data, save it to file
                                                 if (this.httprequest.uploadFile) {
-                                                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
-                                                    this.write(new Buffer(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
+                                                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+                                                    this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data
                                                     return;
                                                 }
 
@@ -334,7 +334,7 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                                 // Send the folder content to the browser
                                                                 var response = getDirectoryInfo(cmd.path);
                                                                 if (cmd.reqid != undefined) { response.reqid = cmd.reqid; }
-                                                                this.write(new Buffer(JSON.stringify(response)));
+                                                                this.write(Buffer.from(JSON.stringify(response)));
                                                                 break;
                                                             case 'mkdir': {
                                                                 // Create a new empty folder
@@ -360,9 +360,9 @@ require('MeshAgent').AddCommandHandler(function (data) {
                                                                 if (this.httprequest.uploadFile != undefined) { fs.closeSync(this.httprequest.uploadFile); this.httprequest.uploadFile = undefined; }
                                                                 if (cmd.path == undefined) break;
                                                                 var filepath = cmd.name ? path.join(cmd.path, cmd.name) : cmd.path;
-                                                                try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(new Buffer(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
+                                                                try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                                                                 this.httprequest.uploadFileid = cmd.reqid;
-                                                                if (this.httprequest.uploadFile) { this.write(new Buffer(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
+                                                                if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
                                                                 break;
                                                             }
                                                             case 'copy': {
