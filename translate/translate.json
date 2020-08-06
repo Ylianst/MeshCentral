@@ -481,7 +481,8 @@
       "ru": ", Soft-KVM",
       "zh-chs": "，軟KVM",
       "xloc": [
-        "default.handlebars->27->769"
+        "default.handlebars->27->769",
+        "desktop.handlebars->3->12"
       ]
     },
     {
@@ -503,6 +504,7 @@
         "default.handlebars->27->776",
         "default.handlebars->27->809",
         "default.handlebars->27->821",
+        "desktop.handlebars->3->19",
         "xterm.handlebars->9->6"
       ]
     },
@@ -583,7 +585,8 @@
       "en": ", {0} watching",
       "nl": ", {0} kijken",
       "xloc": [
-        "default.handlebars->27->770"
+        "default.handlebars->27->770",
+        "desktop.handlebars->3->13"
       ]
     },
     {
@@ -717,7 +720,8 @@
       "en": "1 connection",
       "nl": "1 verbinding",
       "xloc": [
-        "default.handlebars->27->772"
+        "default.handlebars->27->772",
+        "desktop.handlebars->3->15"
       ]
     },
     {
@@ -997,7 +1001,8 @@
       "zh-chs": "100％",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1"
       ]
     },
     {
@@ -1049,7 +1054,8 @@
       "zh-chs": "12.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->15",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15"
       ]
     },
     {
@@ -1139,7 +1145,8 @@
       "zh-chs": "25%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->13",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13"
       ]
     },
     {
@@ -1285,7 +1292,8 @@
       "zh-chs": "37.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->11",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11"
       ]
     },
     {
@@ -1409,7 +1417,8 @@
       "zh-chs": "50%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->9",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9"
       ]
     },
     {
@@ -1463,7 +1472,8 @@
       "zh-chs": "62.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->7",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7"
       ]
     },
     {
@@ -1572,7 +1582,8 @@
       "zh-chs": "75%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->5",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5"
       ]
     },
     {
@@ -1625,7 +1636,8 @@
       "zh-chs": "87.5%",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3"
       ]
     },
     {
@@ -3096,7 +3108,8 @@
       "zh-chs": "代理遠程桌面",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->1"
       ]
     },
     {
@@ -3371,7 +3384,8 @@
       "zh-chs": "Alt-F4",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->19",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->17"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->17",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->17"
       ]
     },
     {
@@ -3389,7 +3403,8 @@
       "zh-chs": "Alt-Tab",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->23",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->21"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->21",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->21"
       ]
     },
     {
@@ -4279,7 +4294,8 @@
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3",
-        "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3"
+        "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
     {
@@ -4977,6 +4993,7 @@
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->27->1226",
         "default.handlebars->container->dialog->idx_dlgButtonBar",
+        "desktop.handlebars->p11->dialog->idx_dlgButtonBar",
         "login-mobile.handlebars->dialog->idx_dlgButtonBar",
         "login.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
@@ -5902,7 +5919,8 @@
       "ru": "Буфер обмена",
       "zh-chs": "剪貼板",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
     {
@@ -5922,7 +5940,8 @@
         "default-mobile.handlebars->9->57",
         "default.handlebars->27->137",
         "default.handlebars->27->145",
-        "default.handlebars->27->798"
+        "default.handlebars->27->798",
+        "desktop.handlebars->3->36"
       ]
     },
     {
@@ -6420,6 +6439,7 @@
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1span",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2span",
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->connectbutton1span",
         "mstsc.handlebars->main->1->3->1->8->1->0",
         "xterm.handlebars->p11->deskarea0->deskarea1->3"
       ]
@@ -6492,7 +6512,8 @@
       "zh-chs": "使用Intel AMT硬件KVM連接",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1hspan",
-        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2hspan"
+        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2hspan",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->connectbutton1hspan"
       ]
     },
     {
@@ -6511,6 +6532,7 @@
       "xloc": [
         "default-mobile.handlebars->9->4",
         "default.handlebars->27->11",
+        "desktop.handlebars->3->4",
         "xterm.handlebars->9->4"
       ]
     },
@@ -6605,6 +6627,7 @@
         "default.handlebars->27->251",
         "default.handlebars->27->860",
         "default.handlebars->27->9",
+        "desktop.handlebars->3->2",
         "xterm.handlebars->9->2"
       ]
     },
@@ -7363,7 +7386,8 @@
       "zh-chs": "Ctrl + Alt + Del",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->1",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->1",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->1"
       ]
     },
     {
@@ -7381,7 +7405,8 @@
       "zh-chs": "Ctrl-W",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->21",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->19"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->19",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->19"
       ]
     },
     {
@@ -7486,7 +7511,8 @@
       "ru": "DataChannel",
       "zh-chs": "數據通道",
       "xloc": [
-        "default.handlebars->27->768"
+        "default.handlebars->27->768",
+        "desktop.handlebars->3->11"
       ]
     },
     {
@@ -7594,6 +7620,7 @@
         "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "default.handlebars->container->dialog->idx_dlgButtonBar->5",
         "default.handlebars->filesContextMenu->5",
+        "desktop.handlebars->p11->dialog->idx_dlgButtonBar->5",
         "player.handlebars->p11->dialog->idx_dlgButtonBar->5",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar->5"
       ]
@@ -7920,7 +7947,8 @@
       "ko": "거부",
       "zh-chs": "被拒绝",
       "xloc": [
-        "default.handlebars->27->764"
+        "default.handlebars->27->764",
+        "desktop.handlebars->3->7"
       ]
     },
     {
@@ -8054,7 +8082,8 @@
         "default.handlebars->27->502",
         "default.handlebars->27->804",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevDesktop",
-        "default.handlebars->contextMenu->cxdesktop"
+        "default.handlebars->contextMenu->cxdesktop",
+        "desktop.handlebars->3->41"
       ]
     },
     {
@@ -8142,7 +8171,8 @@
       "nl": "Desktop sessie wachttijd",
       "zh-chs": "桌面会话延迟",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
+        "desktop.handlebars->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -8825,6 +8855,7 @@
         "default.handlebars->27->820",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->disconnectbutton1span",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->disconnectbutton2span",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->disconnectbutton1span",
         "xterm.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -8870,6 +8901,8 @@
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->deskstatus",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->termstatus",
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3->p13Status",
+        "desktop.handlebars->3->1",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->deskstatus",
         "xterm.handlebars->9->1"
       ]
     },
@@ -8937,7 +8970,8 @@
       "ru": "Отображаемое имя",
       "zh-chs": "顯示名稱",
       "xloc": [
-        "default.handlebars->27->789"
+        "default.handlebars->27->789",
+        "desktop.handlebars->3->27"
       ]
     },
     {
@@ -10028,7 +10062,8 @@
       "ru": "Редактировать настройки удаленного рабочего стола",
       "zh-chs": "編輯遠程桌面設置",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1"
       ]
     },
     {
@@ -10689,7 +10724,8 @@
       "ru": "Для удаленного набора введите текст, используя английскую раскладку и нажмите OK. Перед продолжением убедитесь, что курсор на удаленном компьютере установлен в правильное положение.",
       "zh-chs": "輸入文本，然後單擊“確定”以使用美式英語鍵盤遠程輸入文本。在繼續操作之前，請確保將遠程光標放置在正確的位置。",
       "xloc": [
-        "default.handlebars->27->783"
+        "default.handlebars->27->783",
+        "desktop.handlebars->3->21"
       ]
     },
     {
@@ -11033,7 +11069,8 @@
       "ko": "원격 터미널 세션을 시작하지 못했습니다 : {0} ({1})",
       "zh-chs": "无法启动远程终端会话{0}（{1}）",
       "xloc": [
-        "default.handlebars->27->765"
+        "default.handlebars->27->765",
+        "desktop.handlebars->3->8"
       ]
     },
     {
@@ -11068,7 +11105,8 @@
       "zh-chs": "快速",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
       ]
     },
     {
@@ -11155,7 +11193,8 @@
       "ru": "Драйвер файловой системы",
       "zh-chs": "FileSystemDriver",
       "xloc": [
-        "default.handlebars->27->792"
+        "default.handlebars->27->792",
+        "desktop.handlebars->3->30"
       ]
     },
     {
@@ -11470,7 +11509,8 @@
       "ru": "Частота кадров",
       "zh-chs": "影格速率",
       "xloc": [
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->1"
       ]
     },
     {
@@ -12353,7 +12393,8 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1hspan",
-        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2hspan"
+        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2hspan",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->connectbutton1hspan"
       ]
     },
     {
@@ -13034,7 +13075,8 @@
       "ru": "Кодировка изображения",
       "zh-chs": "圖像編碼",
       "xloc": [
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->1"
       ]
     },
     {
@@ -13137,7 +13179,8 @@
       "zh-chs": "輸入值",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->13->DeskControlSpan",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->9->DeskControlSpan"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->9->DeskControlSpan",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->9->DeskControlSpan"
       ]
     },
     {
@@ -13525,6 +13568,7 @@
       "xloc": [
         "default-mobile.handlebars->9->5",
         "default.handlebars->27->12",
+        "desktop.handlebars->3->5",
         "xterm.handlebars->9->5"
       ]
     },
@@ -13901,7 +13945,8 @@
       "zh-chs": "英特爾®AMT硬件KVM",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->1"
       ]
     },
     {
@@ -13953,7 +13998,8 @@
       "ru": "Интерактивный",
       "zh-chs": "互動",
       "xloc": [
-        "default.handlebars->27->793"
+        "default.handlebars->27->793",
+        "desktop.handlebars->3->31"
       ]
     },
     {
@@ -14531,7 +14577,8 @@
       "ru": "Драйвер ядра",
       "zh-chs": "內核驅動程序",
       "xloc": [
-        "default.handlebars->27->794"
+        "default.handlebars->27->794",
+        "desktop.handlebars->3->32"
       ]
     },
     {
@@ -15731,7 +15778,8 @@
       "ru": "Раскладка локальной клавиатуры",
       "zh-chs": "本地鍵盤圖",
       "xloc": [
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->5"
       ]
     },
     {
@@ -16837,7 +16885,8 @@
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->3",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3"
       ]
     },
     {
@@ -17905,7 +17954,8 @@
         "default.handlebars->27->919",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader->3",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->3",
-        "default.handlebars->container->column_l->p42->p42tbl->1->0->2"
+        "default.handlebars->container->column_l->p42->p42tbl->1->0->2",
+        "desktop.handlebars->3->26"
       ]
     },
     {
@@ -19388,6 +19438,7 @@
         "default.handlebars->27->1227",
         "default.handlebars->27->567",
         "default.handlebars->container->dialog->idx_dlgButtonBar",
+        "desktop.handlebars->p11->dialog->idx_dlgButtonBar",
         "login-mobile.handlebars->dialog->idx_dlgButtonBar",
         "login.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
@@ -19784,7 +19835,8 @@
       "ru": "Другие настройки",
       "zh-chs": "其他設定",
       "xloc": [
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->1"
       ]
     },
     {
@@ -19818,7 +19870,8 @@
       "ru": "Собственный процесс",
       "zh-chs": "自己的過程",
       "xloc": [
-        "default.handlebars->27->795"
+        "default.handlebars->27->795",
+        "desktop.handlebars->3->33"
       ]
     },
     {
@@ -19837,7 +19890,8 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea3->deskarea3x->DeskTools->5->1->0",
         "default.handlebars->27->791",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsProcessTab->deskToolsHeader->1",
+        "desktop.handlebars->3->29"
       ]
     },
     {
@@ -20962,7 +21016,8 @@
       "zh-chs": "過程控制",
       "xloc": [
         "default-mobile.handlebars->9->289",
-        "default.handlebars->27->805"
+        "default.handlebars->27->805",
+        "desktop.handlebars->3->42"
       ]
     },
     {
@@ -21153,7 +21208,8 @@
       "zh-chs": "質量",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->3->1"
       ]
     },
     {
@@ -21188,7 +21244,8 @@
       "zh-chs": "RAW16，非常慢",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->7",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->7"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->7",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->7"
       ]
     },
     {
@@ -21206,7 +21263,8 @@
       "zh-chs": "RAW8，慢",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->5",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->5"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->5",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->5"
       ]
     },
     {
@@ -21289,7 +21347,8 @@
       "zh-chs": "RLE16，推薦",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->3"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->3",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->3"
       ]
     },
     {
@@ -21307,7 +21366,8 @@
       "zh-chs": "RLE8，最快",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->1"
       ]
     },
     {
@@ -21408,7 +21468,8 @@
       "en": "Received invalid network data",
       "nl": "Ongeldige netwerkgegevens ontvangen",
       "xloc": [
-        "default.handlebars->27->767"
+        "default.handlebars->27->767",
+        "desktop.handlebars->3->10"
       ]
     },
     {
@@ -21698,7 +21759,8 @@
       "ru": "Удаленный буфер обмена",
       "zh-chs": "遠程剪貼板",
       "xloc": [
-        "default.handlebars->27->786"
+        "default.handlebars->27->786",
+        "desktop.handlebars->3->24"
       ]
     },
     {
@@ -21747,7 +21809,8 @@
       "xloc": [
         "default-mobile.handlebars->9->285",
         "default.handlebars->27->253",
-        "default.handlebars->27->778"
+        "default.handlebars->27->778",
+        "desktop.handlebars->3->20"
       ]
     },
     {
@@ -21764,7 +21827,8 @@
       "ru": "Ввод с удаленной клавиатуры",
       "zh-chs": "遠程鍵盤輸入",
       "xloc": [
-        "default.handlebars->27->784"
+        "default.handlebars->27->784",
+        "desktop.handlebars->3->22"
       ]
     },
     {
@@ -21832,7 +21896,8 @@
       "ru": "Удаленный буфер обмена действителен в течении 60 секунд.",
       "zh-chs": "遠程剪貼板的有效期為60秒。",
       "xloc": [
-        "default.handlebars->27->785"
+        "default.handlebars->27->785",
+        "desktop.handlebars->3->23"
       ]
     },
     {
@@ -22438,6 +22503,7 @@
       "zh-chs": "重新開始",
       "xloc": [
         "default.handlebars->27->801",
+        "desktop.handlebars->3->39",
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
@@ -22648,7 +22714,8 @@
       "ru": "Повернуть влево",
       "zh-chs": "向左旋轉",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1"
       ]
     },
     {
@@ -22665,7 +22732,8 @@
       "ru": "Повернуть вправо",
       "zh-chs": "右旋",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1"
       ]
     },
     {
@@ -22926,7 +22994,8 @@
       "ru": "Сохранить снимок экрана удаленного рабочего стола",
       "zh-chs": "保存遠程桌面的屏幕截圖",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
+        "desktop.handlebars->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -22982,7 +23051,8 @@
       "zh-chs": "縮放比例",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->1"
       ]
     },
     {
@@ -23437,6 +23507,7 @@
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->specialKeyDropDown",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3",
         "messenger.handlebars->xbottom"
       ]
     },
@@ -24048,7 +24119,8 @@
       "ru": "Детали службы",
       "zh-chs": "服務詳情",
       "xloc": [
-        "default.handlebars->27->802"
+        "default.handlebars->27->802",
+        "desktop.handlebars->3->40"
       ]
     },
     {
@@ -24079,7 +24151,8 @@
       "en": "Session Information",
       "nl": "Sessie informatie",
       "xloc": [
-        "default.handlebars->27->775"
+        "default.handlebars->27->775",
+        "desktop.handlebars->3->18"
       ]
     },
     {
@@ -24097,7 +24170,8 @@
       "zh-chs": "上課時間",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1",
+        "desktop.handlebars->p11->deskarea0->deskarea4->1"
       ]
     },
     {
@@ -24181,7 +24255,8 @@
       "ru": "Настройки...",
       "zh-chs": "設定...",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1"
       ]
     },
     {
@@ -24237,6 +24312,7 @@
         "default.handlebars->27->223",
         "default.handlebars->27->226",
         "default.handlebars->27->252",
+        "desktop.handlebars->3->3",
         "xterm.handlebars->9->3"
       ]
     },
@@ -24271,7 +24347,8 @@
       "ru": "Общий процесс",
       "zh-chs": "共享過程",
       "xloc": [
-        "default.handlebars->27->796"
+        "default.handlebars->27->796",
+        "desktop.handlebars->3->34"
       ]
     },
     {
@@ -24289,7 +24366,8 @@
       "zh-chs": "Shift + Win + M",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->15",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->13"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->13",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->13"
       ]
     },
     {
@@ -24334,7 +24412,8 @@
       "zh-chs": "顯示焦點工具",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->5->1->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->1"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->1",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->1"
       ]
     },
     {
@@ -24370,7 +24449,8 @@
       "zh-chs": "顯示本地鼠標光標",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->5->1->4",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->3"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->3",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->3"
       ]
     },
     {
@@ -24840,7 +24920,8 @@
       "zh-chs": "慢",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->5",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
       ]
     },
     {
@@ -25462,7 +25543,8 @@
       "ru": "Старт",
       "zh-chs": "開始",
       "xloc": [
-        "default.handlebars->27->799"
+        "default.handlebars->27->799",
+        "desktop.handlebars->3->37"
       ]
     },
     {
@@ -25475,7 +25557,8 @@
       "xloc": [
         "default.handlebars->27->1813",
         "default.handlebars->27->1832",
-        "default.handlebars->27->771"
+        "default.handlebars->27->771",
+        "desktop.handlebars->3->14"
       ]
     },
     {
@@ -25493,7 +25576,8 @@
       "zh-chs": "州",
       "xloc": [
         "default.handlebars->27->790",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->1"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea3x->DeskTools->deskToolsArea->DeskToolsServiceTab->deskToolsServiceHeader->1",
+        "desktop.handlebars->3->28"
       ]
     },
     {
@@ -25546,7 +25630,8 @@
       "ru": "Стоп",
       "zh-chs": "停止",
       "xloc": [
-        "default.handlebars->27->800"
+        "default.handlebars->27->800",
+        "desktop.handlebars->3->38"
       ]
     },
     {
@@ -25562,7 +25647,8 @@
       "ru": "Остановить процесс",
       "zh-chs": "停止程序",
       "xloc": [
-        "default.handlebars->27->787"
+        "default.handlebars->27->787",
+        "desktop.handlebars->3->25"
       ]
     },
     {
@@ -25580,7 +25666,8 @@
       "zh-chs": "停止進程＃{0} \\“ {1} \\”？",
       "xloc": [
         "default-mobile.handlebars->9->290",
-        "default.handlebars->27->806"
+        "default.handlebars->27->806",
+        "desktop.handlebars->3->43"
       ]
     },
     {
@@ -26593,7 +26680,8 @@
       "en": "Timeout",
       "nl": "Time-out",
       "xloc": [
-        "default.handlebars->27->766"
+        "default.handlebars->27->766",
+        "desktop.handlebars->3->9"
       ]
     },
     {
@@ -26871,6 +26959,7 @@
       "zh-chs": "切換查看模式",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1",
         "player.handlebars->p11->deskarea0->deskarea1->1"
       ]
     },
@@ -26922,7 +27011,8 @@
       "ru": "Разрешить мышь и ввод с клавиатуры",
       "zh-chs": "切換鼠標和鍵盤輸入",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->9"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->9",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->9"
       ]
     },
     {
@@ -27245,7 +27335,9 @@
         "default.handlebars->27->1295",
         "default.handlebars->27->1298",
         "default.handlebars->27->797",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
+        "desktop.handlebars->3->35",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
     {
@@ -28402,7 +28494,8 @@
       "en": "User \\\"{0}\\\"",
       "nl": "Gebuiker \\\"{0}\\\"",
       "xloc": [
-        "default.handlebars->27->774"
+        "default.handlebars->27->774",
+        "desktop.handlebars->3->17"
       ]
     },
     {
@@ -28773,7 +28866,8 @@
       "zh-chs": "非常慢",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->7",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
+        "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
       ]
     },
     {
@@ -28939,7 +29033,8 @@
       "ko": "사용자가 액세스 권한을 부여하기를 기다리는 중 ...",
       "zh-chs": "正在等待用户授予访问权限...",
       "xloc": [
-        "default.handlebars->27->763"
+        "default.handlebars->27->763",
+        "desktop.handlebars->3->6"
       ]
     },
     {
@@ -29247,7 +29342,8 @@
       "zh-chs": "贏得",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->5",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->3"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->3",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->3"
       ]
     },
     {
@@ -29265,7 +29361,8 @@
       "zh-chs": "勝負",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->7",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->5"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->5",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->5"
       ]
     },
     {
@@ -29283,7 +29380,8 @@
       "zh-chs": "贏+ L",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->11",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->9"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->9",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->9"
       ]
     },
     {
@@ -29300,7 +29398,8 @@
       "ru": "Win+Влево",
       "zh-chs": "贏+左",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->23"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->23",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->23"
       ]
     },
     {
@@ -29318,7 +29417,8 @@
       "zh-chs": "Win + M",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->13",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->11"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->11",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->11"
       ]
     },
     {
@@ -29336,7 +29436,8 @@
       "zh-chs": "Win + R",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->17",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->15"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->15",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->15"
       ]
     },
     {
@@ -29353,7 +29454,8 @@
       "ru": "Win+Вправо",
       "zh-chs": "贏+右",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->25"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->25",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->25"
       ]
     },
     {
@@ -29371,7 +29473,8 @@
       "zh-chs": "勝+勝",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->9",
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->7",
+        "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->7"
       ]
     },
     {
@@ -31356,7 +31459,8 @@
       "en": "{0} connections",
       "nl": "{0} verbindingen",
       "xloc": [
-        "default.handlebars->27->773"
+        "default.handlebars->27->773",
+        "desktop.handlebars->3->16"
       ]
     },
     {
@@ -31837,7 +31941,8 @@
       "ru": "↺",
       "ko": "↺",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->5"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->5",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1->5"
       ]
     },
     {
@@ -31852,7 +31957,8 @@
       "ru": "↻",
       "ko": "↻",
       "xloc": [
-        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->7"
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->7",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1->7"
       ]
     },
     {
@@ -31868,6 +31974,7 @@
       "ko": "⇲",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1->3",
+        "desktop.handlebars->p11->deskarea0->deskarea1->1->3",
         "player.handlebars->p11->deskarea0->deskarea1->1->1"
       ]
     },
@@ -31951,6 +32058,8 @@
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->idx_deskFullBtn2",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->idx_termFullBtn2",
         "default.handlebars->container->dialog->dialogHeader->id_dialogclose",
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->idx_deskFullBtn2",
+        "desktop.handlebars->p11->dialog->dialogHeader->id_dialogclose",
         "player.handlebars->p11->dialog->dialogHeader->id_dialogclose",
         "xterm.handlebars->p11->dialog->dialogHeader->id_dialogclose"
       ]

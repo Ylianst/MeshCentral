@@ -2863,7 +2863,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         try { res.sendFile(obj.path.join(recordingsPath, req.query.file)); } catch (ex) { res.sendStatus(404); }
     }
 
-    // Server the player page
+    // Serve the player page
     function handlePlayerRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -2871,6 +2871,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         parent.debug('web', 'handlePlayerRequest: sending player');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         render(req, res, getRenderPage('player', req, domain), getRenderArgs({}, req, domain));
+    }
+
+    // Serve the guest desktop page
+    function handleDesktopRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        parent.debug('web', 'handleDesktopRequest: sending guest desktop page');
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+        render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort }, req, domain));
     }
 
     // Handle domain redirection
@@ -4574,6 +4585,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'recordings.ashx', handleGetRecordings);
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
+            obj.app.get(url + 'desktop', handleDesktopRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
             obj.app.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
