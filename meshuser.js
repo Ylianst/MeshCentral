@@ -4362,11 +4362,51 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Create the server url
                 var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                 var xdomain = (domain.dns == null) ? domain.id : '';
-                if (xdomain != '') xdomain += "/";
-                var url = "http" + (args.notls ? '' : 's') + "://" + serverName + ":" + httpsPort + "/" + xdomain + "agentinvite?c=" + inviteCookie;
-                if (serverName.split('.') == 1) { url = "/" + xdomain + "agentinvite?c=" + inviteCookie; }
+                if (xdomain != '') xdomain += '/';
+                var url = 'http' + (args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agentinvite?c=' + inviteCookie;
+                if (serverName.split('.') == 1) { url = '/' + xdomain + 'agentinvite?c=' + inviteCookie; }
 
                 ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, url: url, expire: command.expire, cookie: inviteCookie, responseid: command.responseid, tag: command.tag }));
+                break;
+            }
+            case 'createDeviceShareLink': {
+                var err = null;
+                if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the meshid
+                else if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
+                else if (common.validateInt(command.expire, 1, 60) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
+                else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
+                else {
+                    if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                    var snode = command.nodeid.split('/');
+                    if ((snode.length != 3) || (snode[0] != 'node') || (snode[1] != domain.id)) { err = 'Invalid node id'; }
+                }
+
+                // Handle any errors
+                if (err != null) {
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: err })); } catch (ex) { } }
+                    break;
+                }
+
+                // Get the device from the database
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    if ((node == null) || ((rights & 8) == 0)) return;
+
+                    // Create cookie
+                    var expireTime = Date.now() + (60000 * command.expire);
+                    const inviteCookie = parent.parent.encodeCookie({ a: 5, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, expire: expireTime }, parent.parent.invitationLinkEncryptionKey);
+                    if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
+                    command.expire = expireTime;
+
+                    // Create the server url
+                    var serverName = parent.getWebServerName(domain);
+                    var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                    var xdomain = (domain.dns == null) ? domain.id : '';
+                    if (xdomain != '') xdomain += '/';
+                    var url = 'http' + (args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'desktop?c=' + inviteCookie;
+                    if (serverName.split('.') == 1) { url = '/' + xdomain + 'desktop?c=' + inviteCookie; }
+                    command.url = url;
+                    ws.send(JSON.stringify(command));
+                });
                 break;
             }
             case 'traceinfo': {
