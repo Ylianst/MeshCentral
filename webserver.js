@@ -2892,7 +2892,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         parent.debug('web', 'handleDesktopRequest: sending guest desktop page');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort }, req, domain));
+        render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort }, req, domain));
     }
 
     // Handle domain redirection

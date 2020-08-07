@@ -19,6 +19,7 @@
     <script type="text/javascript" src="scripts/zlib-inflate{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     <title>{{{title}}}</title>
 </head>
 <body style="overflow:hidden;background-color:black">
@@ -52,7 +53,7 @@
             <div id=deskarea4 class="areaFoot">
                 <div class="toright2">
                     <span id="DeskLatency" title="Desktop Session Latency"></span>
-                    <span id="DeskTimer" title="Session time"></span>&nbsp;
+                    <span id="DeskTimer" style="display:none" title="Session time"></span>&nbsp;
                     <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                     <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
                 </div>
@@ -163,10 +164,11 @@
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
-        var desktopNodeId = '{nodeid}';
+        var desktopNodeId = '{{{nodeid}}}';
         var urlargs = parseUriArgs();
         var debugmode = urlargs.debug;
         var attemptWebRTC = false;
+        var updateSessionTimer = null;
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
 
         function start() {
@@ -265,7 +267,8 @@
             var inputAllowed = true; // TODO
             QE('connectbutton1', agentPresent);
             QE('connectbutton1h', intelAmtPresent);
-            QV('DeskClip', agentPresent && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
+            //QV('DeskClip', agentPresent && ((desktop == null) || (desktop.contype != 2))); // Clipboard not supported on macOS
+            QV('DeskClip', false); // Clipboard not supported on this page
             QE('DeskClip', deskState == 3);
             QE('DeskType', deskState == 3);
             QV('DeskWD', inputAllowed);
@@ -423,7 +426,7 @@
                 desktop.Stop();
                 webRtcDesktopReset();
                 desktop = null;
-                if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
+                //if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
             }
         }
 
@@ -533,17 +536,7 @@
                 QH('DeskTimer', '');
             }
 
-            // Terminal
-            seconds = 0;
-            if (terminal && terminal.startTime) {
-                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
-                seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
-            } else {
-                QH('TermTimer', '');
-            }
-
-            if ((desktop == null) && (terminal == null)) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
+            if (desktop == null) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
         }
 
         function showDesktopSettings() {
@@ -857,6 +850,7 @@
             }
         }
 
+        /*
         // Show clipboard dialog
         function showDeskClip() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
@@ -879,8 +873,9 @@
         function showDeskClipSet() {
             if (desktop == null || desktop.State != 3) return;
             meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
-            QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22));
+            //QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22));
         }
+        */
 
         // Send CTRL-ALT-DEL
         function sendCAD() {
@@ -888,6 +883,7 @@
             desktop.m.sendcad();
         }
 
+        /*
         // Show process dialogs
         function toggleDeskTools() {
             if (xxdialogMode) return;
@@ -1015,6 +1011,7 @@
                 setTimeout(function () { refreshDeskTools(1) }, 1000);
             }
         }
+        */
 
         // Toggle mouse and keyboard input
         function toggleKvmControl() { QS('DeskControlSpan').color = Q('DeskControl').checked ? null : 'red'; }
@@ -1022,7 +1019,7 @@
         // Save the desktop image to file
         function deskSaveImage() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            var d = new Date(), n = "Desktop" + '-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
+            var d = new Date(), n = "Desktop" + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
             Q('Desk')['toBlob'](function (blob) { saveAs(blob, n + '.png'); });
         }
 
@@ -1088,7 +1085,7 @@
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
             if (y) QH('id_dialogtitle', y);
-            for (var i = 1; i < 3; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
+            for (var i = 1; i < 8; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
             if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
         }
