@@ -4389,7 +4389,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Get the device from the database
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    // If node not found or we don't have remote control, reject.
                     if ((node == null) || ((rights & 8) == 0)) return;
+
+                    // If there is MESHRIGHT_DESKLIMITEDINPUT or MESHRIGHT_REMOTEVIEWONLY on this account, reject this request.
+                    if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
 
                     // Create cookie
                     var expireTime = Date.now() + (60000 * command.expire);
