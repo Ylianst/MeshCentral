@@ -19,6 +19,7 @@
     <script type="text/javascript" src="scripts/zlib-inflate{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32{{min}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
+    <title>{{{title}}}</title>
 </head>
 <body style="overflow:hidden;background-color:black">
     <div id=p11 class="noselect" style="overflow:hidden">
@@ -482,6 +483,7 @@
         }
 
         function onDesktopStateChange(xdesktop, state) {
+            console.log('onDesktopStateChange', state);
             var xstate = state;
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
