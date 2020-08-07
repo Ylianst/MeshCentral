@@ -2981,7 +2981,12 @@
                     x += addHtmlValue("Device", node.name);
                     x += addHtmlValue("Guest Name", message.guestname);
                     x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
-                    x += addHtmlValue("User Consent", ["None", "Notify Only", "Prompt for consent"][message.consent]);
+                    var y = [];
+                    if (message.consent & 1) { y.push("Notify"); }
+                    if (message.consent & 8) { y.push("Prompt"); }
+                    if (message.consent & 64) { y.push("Privacy bar"); }
+                    if (y.length == 0) { y.push("None"); }
+                    x += addHtmlValue("User Consent", y.join(', '));
                     x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink target="_blank" style=cursor:pointer>' + "Remote Desktop Link" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
@@ -5942,8 +5947,8 @@
             if (xxdialogMode) return;
             var x = "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour." + '<br /><br />';
             x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
-            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px><option value=5>' + "5 minutes" + '</option><option value=10>' + "10 minutes" + '</option><option value=15>' + "15 minutes" + '</option><option value=30>' + "30 minutes" + '</option><option value=45>' + "45 minutes" + '</option><option value=60>' + "1 hour" + '</option></select>');
-            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=2>' + "Prompt for consent" + '</option><option value=1>' + "Notify Only" + '</option></select>');
+            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px><option value=1>' + "1 minute" + '</option><option value=5>' + "5 minutes" + '</option><option value=10>' + "10 minutes" + '</option><option value=15>' + "15 minutes" + '</option><option value=30>' + "30 minutes" + '</option><option value=45>' + "45 minutes" + '</option><option value=60>' + "1 hour" + '</option></select>');
+            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=73>' + "Prompt for consent" + '</option><option value=65>' + "Notify Only" + '</option></select>');
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
             showShareDeviceValidate();
         }

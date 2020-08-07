@@ -43,7 +43,7 @@
                     &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
                 </div>
             </div>
-            <div id=deskarea3x style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);">
+            <div id=deskarea3x style="max-height:calc(100vh - 52px);height:calc(100vh - 52px);">
                 <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
                 <div id=DeskParent>
                     <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
@@ -157,19 +157,20 @@
         var agentPresent = true;
         var intelAmtPresent = false;
         var deskAspectRatio = 0;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 100, localkeymap: false };
         var p11DeskConsoleMsgTimer = null;
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
-        var authRelayCookie = '{{{authRelayCookie}}}';
-        var desktopNodeId = '{{{nodeid}}}';
         var urlargs = parseUriArgs();
         var debugmode = urlargs.debug;
         var attemptWebRTC = false;
         var updateSessionTimer = null;
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
+        var webPageFullScreen = false;
+        var expire = '{{{expire}}}';
+        if (expire != '') { QH('p11power', format("Expires at {0}", printTime(new Date(parseInt(expire))))) }
 
         function start() {
             window.onresize = deskAdjust;
@@ -387,13 +388,13 @@
                             }
                         }
                     };
-                    desktop.Start(desktopNodeId, 16994, '*', '*', 0);
+                    desktop.Start(null, 16994, '*', '*', 0);
                     desktop.contype = 2;
                 } else if ((contype == null) || (contype == 1) || (contype == 3)) {
                     // Setup the Mesh Agent remote desktop
                     var meshserver = null;
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                    desktop.m.mouseCursorActive(xxcurrentView == 11);
+                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
+                    desktop.m.mouseCursorActive(true);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -417,7 +418,7 @@
                     if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
-                    desktop.Start(desktopNodeId);
+                    desktop.Start(null);
                     desktop.latency.callback = function (ms) { console.log('latency', ms); updateSessionTime(); };
                     desktop.contype = 1;
                 }
@@ -486,7 +487,6 @@
         }
 
         function onDesktopStateChange(xdesktop, state) {
-            console.log('onDesktopStateChange', state);
             var xstate = state;
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
@@ -1102,6 +1102,9 @@
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function setSessionActivity() { sessionActivity = Date.now(); /*QH('idleTimeoutNotify', '');*/ }
+        function printDate(d) { return d.toLocaleDateString(urlargs.locale); }
+        function printTime(d) { return d.toLocaleTimeString(urlargs.locale); }
+        function printDateTime(d) { return d.toLocaleString(urlargs.locale); }
 
         start();
     </script>
