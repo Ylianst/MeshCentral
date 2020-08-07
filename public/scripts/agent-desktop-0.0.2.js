@@ -12,7 +12,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     var obj = {}
     obj.CanvasId = canvasid;
     if (typeof canvasid === 'string') obj.CanvasId = Q(canvasid);
-    obj.Canvas = obj.CanvasId.getContext("2d");
+    obj.Canvas = obj.CanvasId.getContext('2d');
     obj.scrolldiv = scrolldiv;
     obj.State = 0;
     obj.PendingOperations = [];

@@ -709,8 +709,8 @@ function createMeshCore(agent) {
                                     tunnel.rights = data.rights;
                                     tunnel.consent = data.consent;
                                     tunnel.privacybartext = data.privacybartext ? data.privacybartext : "Sharing desktop with: {0}";
-                                    tunnel.username = data.username;
-                                    tunnel.realname = data.realname ? data.realname : data.username;
+                                    tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
+                                    tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                     tunnel.userid = data.userid;
                                     tunnel.remoteaddr = data.remoteaddr;
                                     tunnel.state = 0;

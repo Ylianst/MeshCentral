@@ -14,6 +14,7 @@
 "use strict";
 
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
+    if (cookie && (cookie.nid != null)) { req.query.nodeid = cookie.nid; }
     var obj = {};
     obj.ws = ws;
     obj.id = req.query.id;
@@ -493,7 +494,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                 // Send connection request to agent
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
-                if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+                if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }

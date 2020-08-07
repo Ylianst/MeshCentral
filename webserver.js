@@ -2884,15 +2884,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((c == null) || (c.a !== 5) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.expire != 'number') || (c.expire <= Date.now())) { res.sendStatus(404); return; }
 
         // Looks good, let's create the outbound session cookies.
-        // TODO: Make sure to restrict these cookies to a specific NodeID and remote desktop usage.
-        const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
-        const authRelayCookie = obj.parent.encodeCookie({ ruserid: c.uid, domainid: domain.id, nid: c.nid }, obj.parent.loginCookieEncryptionKey);
+        // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
+        const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, gn: c.gn, cf: 65 | c.cf, r: 8, expire: c.expire }, obj.parent.loginCookieEncryptionKey);
 
         // Lets respond by sending out the desktop viewer.
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        parent.debug('web', 'handleDesktopRequest: sending guest desktop page');
+        parent.debug('web', 'handleDesktopRequest: Sending guest desktop page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-        render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort }, req, domain));
+        render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire }, req, domain));
     }
 
     // Handle domain redirection
