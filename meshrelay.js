@@ -16,8 +16,8 @@
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
     const currentTime = Date.now();
     if (cookie) {
-        if ((typeof cookie.expire == 'number') && (cookie.expire <= currentTime)) { delete req.query.nodeid; }
-        else if (typeof cookie.nid == 'string') { req.query.nodeid = cookie.nid; }
+        if ((typeof cookie.expire == 'number') && (cookie.expire <= currentTime)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Expires cookie (' + req.clientIp + ')'); } catch (e) { console.log(e); } return; }
+        if (typeof cookie.nid == 'string') { req.query.nodeid = cookie.nid; }
     }
     var obj = {};
     obj.ws = ws;
@@ -301,7 +301,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             } else {
                 // Wait for other relay connection
                 ws._socket.pause(); // Hold traffic until the other connection
-                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
+                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 30000) };
                 parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
@@ -484,7 +484,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 
     // If this session has a expire time, setup the expire timer now.
-    if (cookie && (typeof cookie.expire == 'number')) { obj.expireTimer = setTimeout(obj.close, cookie.expire - currentTime); }
+    if (cookie && (typeof cookie.expire == 'number')) { obj.expireTimer = setTimeout(closeBothSides, cookie.expire - currentTime); }
 
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (user != null);
