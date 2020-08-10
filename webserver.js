@@ -2875,7 +2875,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Serve the guest desktop page
     function handleDesktopRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req, res);
         if (domain == null) { return; }
         if (req.query.c == null) { res.sendStatus(404); return; }
 
