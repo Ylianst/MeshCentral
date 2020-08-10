@@ -41,7 +41,7 @@
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
         <div id="cxdesktop" class="cmtext" onclick="cmaction(3,event)">Desktop</div>
-        <div id="cxterminal" class="cmtext" onclick="cmaction(2,event)">Terminal</div>
+        {{!-- <div id="cxterminal" class="cmtext" onclick="cmaction(2,event)">Terminal</div> --}}
         <div id="cxfiles" class="cmtext" onclick="cmaction(4,event)">Files</div>
         <div id="cxevents" class="cmtext" onclick="cmaction(5,event)">Events</div>
         <div id="cxdetails" class="cmtext" onclick="cmaction(6,event)">Details</div>
@@ -157,7 +157,7 @@
                             <tr>
                                 <td tabindex=0 id=MainDev class="topbar_td style3x" onclick=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onclick=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onclick=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                {{!-- <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onclick=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td> --}}
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onclick=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onclick=go(16,event) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
                                 <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onclick=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>

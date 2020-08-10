@@ -8,7 +8,7 @@
     "Remote Terminal",
     "Remote File Access",
     "KVM",
-    "2FA",    
+    "2FA",
     "Intel Active Management Technology",
     "Intel AMT"
   ],
@@ -35,6 +35,7 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
+    "archiver": "^4.0.2",
     "body-parser": "^1.19.0",
     "cbor": "^4.1.5",
     "compression": "^1.7.4",
@@ -48,6 +49,8 @@
     "multiparty": "^4.2.1",
     "nedb": "^1.8.0",
     "node-forge": "^0.8.4",
+    "node-windows": "^0.1.14",
+    "otplib": "^10.2.3",
     "ws": "^6.2.1",
     "xmldom": "^0.1.27",
     "yauzl": "^2.10.0"
