@@ -9448,8 +9448,8 @@
             if (editType == 2) { consent = (currentUser.consent) ? currentUser.consent : 0; title = "Edit User Consent"; }
             if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag1 ' + ' checked' + '>' + "Notify user" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag2 ' + ' checked' + '>' + "Prompt for user consent" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
@@ -9478,8 +9478,10 @@
 
         function p20editmeshconsentEx(b, editType) {
             var consent = 0;
-            if (Q('d20flag1').checked) { consent += 0x0001; }
-            if (Q('d20flag2').checked) { consent += 0x0008; }
+            consent += 0x0001;
+            consent += 0x0008;
+            if (!Q('d20flag1').checked) { consent -= 0x0001; }
+            if (!Q('d20flag2').checked) { consent -= 0x0008; }
             if (Q('d20flag3').checked) { consent += 0x0002; }
             if (Q('d20flag4').checked) { consent += 0x0010; }
             if (Q('d20flag5').checked) { consent += 0x0004; }
