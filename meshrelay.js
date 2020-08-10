@@ -14,6 +14,11 @@
 "use strict";
 
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
+    const currentTime = Date.now();
+    if (cookie) {
+        if ((typeof cookie.expire == 'number') && (cookie.expire <= currentTime)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Expires cookie (' + req.clientIp + ')'); } catch (e) { console.log(e); } return; }
+        if (typeof cookie.nid == 'string') { req.query.nodeid = cookie.nid; }
+    }
     var obj = {};
     obj.ws = ws;
     obj.id = req.query.id;
@@ -72,6 +77,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         delete obj.id;
         delete obj.ws;
         delete obj.peer;
+        delete obj.expireTimer;
     };
 
     obj.sendAgentMessage = function (command, userid, domainid) {
@@ -91,8 +97,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 mesh = parent.meshes[agent.dbMeshKey];
                 if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                     if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
-                    command.rights = rights.rights;     // Add user rights flags to the message
-                    command.consent = mesh.consent;     // Add user consent
+                    command.rights = rights;            // Add user rights flags to the message
+                    if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                     command.username = user.name;       // Add user name
                     command.realname = user.realname;   // Add real name
@@ -110,8 +116,8 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     mesh = parent.meshes[routing.meshid];
                     if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
                         if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
-                        command.rights = rights.rights;         // Add user rights flags to the message
-                        command.consent = mesh.consent;         // Add user consent
+                        command.rights = rights;                // Add user rights flags to the message
+                        if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
                         command.username = user.name;           // Add user name
                         command.realname = user.realname;       // Add real name
@@ -295,7 +301,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
             } else {
                 // Wait for other relay connection
                 ws._socket.pause(); // Hold traffic until the other connection
-                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(function () { closeBothSides(); }, 30000) };
+                parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 30000) };
                 parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
 
                 // Check if a peer server has this connection
@@ -477,6 +483,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         } catch (ex) { console.log(ex); func(logfile, tag); }
     }
 
+    // If this session has a expire time, setup the expire timer now.
+    if (cookie && (typeof cookie.expire == 'number')) { obj.expireTimer = setTimeout(closeBothSides, cookie.expire - currentTime); }
+
     // Mark this relay session as authenticated if this is the user end.
     obj.authenticated = (user != null);
     if (obj.authenticated) {
@@ -493,7 +502,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                 // Send connection request to agent
                 const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
-                if (obj.id == undefined) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
+                if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); } // If there is no connection id, generate one.
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
@@ -559,6 +568,37 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
                 }
                 performRelay();
+            });
+            return obj;
+        } else if ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.cf == 'number') && (typeof cookie.gn == 'string')) {
+            // We have routing instructions in the cookie, but first, check user access for this node.
+            parent.db.Get(cookie.nid, function (err, docs) {
+                if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
+                const node = docs[0];
+
+                // Check if this user has permission to manage this computer
+                if ((parent.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (e) { } return; }
+
+                // Send connection request to agent
+                if (obj.id == null) { obj.id = ('' + Math.random()).substring(2); }
+                const rcookie = parent.parent.encodeCookie({ ruserid: user._id, nodeid: node._id }, parent.parent.loginCookieEncryptionKey);
+                const command = { nodeid: node._id, action: 'msg', type: 'tunnel', userid: user._id, value: '*/meshrelay.ashx?p=2&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, usage: 2, rights: cookie.r, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                if (typeof domain.consentmessages == 'object') {
+                    if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
+                    if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
+                    if (typeof domain.consentmessages.terminal == 'string') { command.soptions.consentMsgTerminal = domain.consentmessages.terminal; }
+                    if (typeof domain.consentmessages.files == 'string') { command.soptions.consentMsgFiles = domain.consentmessages.files; }
+                }
+                if (typeof domain.notificationmessages == 'object') {
+                    if (typeof domain.notificationmessages.title == 'string') { command.soptions.notifyTitle = domain.notificationmessages.title; }
+                    if (typeof domain.notificationmessages.desktop == 'string') { command.soptions.notifyMsgDesktop = domain.notificationmessages.desktop; }
+                    if (typeof domain.notificationmessages.terminal == 'string') { command.soptions.notifyMsgTerminal = domain.notificationmessages.terminal; }
+                    if (typeof domain.notificationmessages.files == 'string') { command.soptions.notifyMsgFiles = domain.notificationmessages.files; }
+                }
+                parent.parent.debug('relay', 'Relay: Sending agent tunnel command: ' + JSON.stringify(command));
+                if (obj.sendAgentMessage(command, user._id, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'Relay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
+
+                performRelay(0);
             });
             return obj;
         }

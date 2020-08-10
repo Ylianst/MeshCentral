@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "0.6.1",
+  "version": "0.6.4",
   "keywords": [
     "Remote Device Management",
     "Remote Device Monitoring",
@@ -9,6 +9,10 @@
     "Remote File Access",
     "KVM",
     "2FA",
+<<<<<<< HEAD
+=======
+    "Two-Factor Authentication",
+>>>>>>> 1e82f3c6e356a0fbdb35a930a13fc82375d9f2a2
     "Intel Active Management Technology",
     "Intel AMT"
   ],

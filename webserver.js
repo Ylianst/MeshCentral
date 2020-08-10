@@ -1754,6 +1754,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
         }
         if (!user) { parent.debug('web', 'handleDeleteAccountRequest: user not found.'); res.sendStatus(404); return; }
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) { parent.debug('web', 'handleDeleteAccountRequest: account settings locked.'); res.sendStatus(404); return; }
 
         // Check if the password is correct
         obj.authenticate(user._id.split('/')[2], req.body.apassword1, domain, function (err, userid) {
@@ -1871,6 +1872,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (!user) {
             parent.debug('web', 'handlePasswordChangeRequest: user not found.');
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
+        }
+
+        // Check account settings locked
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) {
+            parent.debug('web', 'handlePasswordChangeRequest: account settings locked.');
+            res.sendStatus(404);
             return;
         }
 
@@ -2855,7 +2863,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         try { res.sendFile(obj.path.join(recordingsPath, req.query.file)); } catch (ex) { res.sendStatus(404); }
     }
 
-    // Server the player page
+    // Serve the player page
     function handlePlayerRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -2863,6 +2871,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         parent.debug('web', 'handlePlayerRequest: sending player');
         res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
         render(req, res, getRenderPage('player', req, domain), getRenderArgs({}, req, domain));
+    }
+
+    // Serve the guest desktop page
+    function handleDesktopRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (req.query.c == null) { res.sendStatus(404); return; }
+
+        // Check the inbound desktop sharing cookie
+        var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
+        if ((c == null) || (c.a !== 5) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.expire != 'number') || (c.expire <= Date.now())) { res.sendStatus(404); return; }
+
+        // Looks good, let's create the outbound session cookies.
+        // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
+        const authCookie = obj.parent.encodeCookie({ userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, gn: c.gn, cf: 65 | c.cf, r: 8, expire: c.expire }, obj.parent.loginCookieEncryptionKey);
+
+        // Lets respond by sending out the desktop viewer.
+        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        parent.debug('web', 'handleDesktopRequest: Sending guest desktop page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
+        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+        render(req, res, getRenderPage('desktop', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire }, req, domain));
     }
 
     // Handle domain redirection
@@ -4566,6 +4595,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'recordings.ashx', handleGetRecordings);
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
+            obj.app.get(url + 'desktop', handleDesktopRequest);
             obj.app.ws(url + 'amtactivate', handleAmtActivateWebSocket);
             obj.app.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
             obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
