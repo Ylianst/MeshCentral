@@ -544,7 +544,7 @@
                         <div>
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick='connectDesktop(event,3, null, 0x0008 + 0x0040)' onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
@@ -6517,6 +6517,7 @@
         }
 
         function connectDesktop(e, contype, tsid, consent) {
+            /* */
             if (xxdialogMode) return;
             if ((e != null) && (e.shiftKey != false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
             QV('p11DeskSessionSelector', false);
