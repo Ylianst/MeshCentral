@@ -544,7 +544,7 @@
                         <div>
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
-                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick='connectDesktop(event,3, null, 0x0008 + 0x0040)' onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick='connectDesktop(event,3, null, 0x0008)' onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
@@ -6517,7 +6517,6 @@
         }
 
         function connectDesktop(e, contype, tsid, consent) {
-            /* */
             if (xxdialogMode) return;
             if ((e != null) && (e.shiftKey != false) && (contype == 3)) { contype = 1; } // If the shift key is not pressed, don't try to ask for session list.
             QV('p11DeskSessionSelector', false);
@@ -9449,26 +9448,18 @@
             if (editType == 2) { consent = (currentUser.consent) ? currentUser.consent : 0; title = "Edit User Consent"; }
             if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : ' ') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : ' ') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Files" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
             setDialogMode(2, title, 3, p20editmeshconsentEx, x, editType);
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
-                if (serverinfo.consent & 0x0008) { Q('d20flag2').checked = true; }
-
-                if (serverinfo.consent & 0x0010) { Q('d20flag4').checked = true; }
                 if (serverinfo.consent & 0x0004) { Q('d20flag5').checked = true; }
                 if (serverinfo.consent & 0x0020) { Q('d20flag6').checked = true; }
                 if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; }
                 QE('d20flag1', !(serverinfo.consent & 0x0001));
-                QE('d20flag2', !(serverinfo.consent & 0x0008));
- 
-                QE('d20flag4', !(serverinfo.consent & 0x0010));
                 QE('d20flag5', !(serverinfo.consent & 0x0004));
                 QE('d20flag6', !(serverinfo.consent & 0x0020));
                 QE('d20flag7', !(serverinfo.consent & 0x0040));
@@ -9477,12 +9468,7 @@
 
         function p20editmeshconsentEx(b, editType) {
             var consent = 0;
-            consent += 0x0001;
-            consent += 0x0008;
-            if (!Q('d20flag1').checked) { consent -= 0x0001; }
-            if (!Q('d20flag2').checked) { consent -= 0x0008; }
-
-            if (Q('d20flag4').checked) { consent += 0x0010; }
+            if (Q('d20flag1').checked) { consent += 0x0001; }
             if (Q('d20flag5').checked) { consent += 0x0004; }
             if (Q('d20flag6').checked) { consent += 0x0020; }
             if (Q('d20flag7').checked) { consent += 0x0040; }
@@ -9495,14 +9481,12 @@
             if (xxdialogMode) return;
             var flags = (currentMesh.flags)?currentMesh.flags:0;
             var x = '<div><label><input type=checkbox id=d20flag1 ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((flags & 2) ? 'checked' : '') + '>' + "Sync server device name to hostname" + '</label><br></div>';
             setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
         }
 
         function p20editmeshfeaturesEx() {
             var flags = 0;
             if (Q('d20flag1').checked) { flags += 1; }
-            if (Q('d20flag2').checked) { flags += 2; }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags });
         }
 
