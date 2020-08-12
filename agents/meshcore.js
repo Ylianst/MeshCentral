@@ -435,9 +435,34 @@ function createMeshCore(agent) {
                     if (mesh.isControlChannelConnected) { mesh.SendCommand({ action: 'smbios', value: SMBiosTablesRaw }); }
 
                     // If SMBios tables say that Intel AMT is present, try to connect MEI
-                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
+                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true))
+                    {
                         var amtmodule = require('amt-manage');
                         amt = new amtmodule(mesh, db, false);
+                        amt.on('portBinding_LMS', function (map)
+                        {
+                            var j = { action: 'lmsinfo', value: { ports: map.keys() } };
+                            mesh.SendCommand(j);
+                        });
+                        amt.on('stateChange_LMS', function (v)
+                        {
+                            if (!meshCoreObj.intelamt) { meshCoreObj.intelamt = {}; }
+                            switch(v)
+                            {
+                                case 0:
+                                    meshCoreObj.intelamt.microlms = 'DISABLED';
+                                    break;
+                                case 1:
+                                    meshCoreObj.intelamt.microlms = 'CONNECTING';
+                                    break;
+                                case 2:
+                                    meshCoreObj.intelamt.microlms = 'CONNECTED';
+                                    break;
+                                default:
+                                    break;
+                            }
+                            mesh.SendCommand(meshCoreObj);
+                        });
                         amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } }
                         if (amtPolicy != null) { amt.setPolicy(amtPolicy); }
                         amt.start();
@@ -3492,7 +3517,26 @@ function createMeshCore(agent) {
             amt.getAmtInfo(function (meinfo) {
                 try {
                     if (meinfo == null) return;
-                    var intelamt = {}, p = false;
+                    var intelamt = {};
+                    if (amt != null)
+                    {
+                        switch(amt.lmsstate)
+                        {
+                            case 0:
+                                intelamt.microlms = 'DISABLED'
+                                break;
+                            case 1:
+                                intelamt.microlms = 'CONNECTING'
+                                break;
+                            case 2:
+                                intelamt.microlms = 'CONNECTED'
+                                break;
+                            default:
+                                intelamt.microlms = 'unknown'
+                                break;
+                        }
+                    }
+                    var p = false;
                     if ((meinfo.Versions != null) && (meinfo.Versions.AMT != null)) { intelamt.ver = meinfo.Versions.AMT; p = true; if (meinfo.Versions.Sku != null) { intelamt.sku = parseInt(meinfo.Versions.Sku); } }
                     if (meinfo.ProvisioningState != null) { intelamt.state = meinfo.ProvisioningState; p = true; }
                     if (meinfo.Flags != null) { intelamt.flags = meinfo.Flags; p = true; }
