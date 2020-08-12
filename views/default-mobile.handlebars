@@ -1140,6 +1140,7 @@
                                     updateDevices();
                                     if (Q('SearchInput').value == '*') { onSearchInputChanged(); }
                                 }
+                                if (currentNode) { refreshDevice(currentNode._id); }
                             }
                             break;
                         }
