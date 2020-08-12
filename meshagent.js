@@ -1424,6 +1424,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
                     break;
                 }
+                case 'lmsinfo': {
+                    // Agents send the LMS port bindings
+                    // Example: {"action":"lmsinfo","value":{"ports":["623","16992"]}}
+                    break;
+                }
                 case 'plugin': {
                     if ((parent.parent.pluginHandler == null) || (typeof command.plugin != 'string')) break;
                     try {
@@ -1436,8 +1441,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
-                    parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + command + '.');
-                    console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + command + '.');
+                    parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
+                    console.log('Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
                     break;
                 }
             }
