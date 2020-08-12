@@ -36,8 +36,38 @@ function AmtManager(agent, db, isdebug) {
     var obj = this;
     var mestate;
     var trustedHashes = null;;
+
+    require('events').EventEmitter.call(obj, true)
+        .createEvent('stateChange_LMS')
+        .createEvent('portBinding_LMS');
+    obj._lmsstate = 0;
+    obj._mapping = [];
+
+    obj.on('newListener', function (name, callback)
+    {
+        if(name == 'portBinding_LMS')
+        {
+            callback.call(this, this._mapping);
+        }
+    });
+
+    Object.defineProperty(obj, 'lmsstate',
+        {
+            get: function ()
+            {
+                return (this._lmsstate);
+            },
+            set: function (value)
+            {
+                if (this._lmsstate != value)
+                {
+                    this._lmsstate = value;
+                    this.emit('stateChange_LMS', value);
+                }
+            }
+        });
+
     obj.state = 0;
-    obj.lmsstate = 0;
     obj.onStateChange = null;
     obj.setDebug = function (x) { isdebug = x; }
     
@@ -124,7 +154,11 @@ function AmtManager(agent, db, isdebug) {
             amtLms = new lme_heci();
             amtLms.on('error', function (e) { amtLmsState = 0; obj.lmsstate = 0; amtLms = null; debug("LMS error: " + e); setupMeiOsAdmin(1); });
             amtLms.on('connect', function () { amtLmsState = 2; obj.lmsstate = 2; debug("LMS connected"); setupMeiOsAdmin(2); });
-            //amtLms.on('bind', function (map) { });
+            amtLms.on('bind', function (map)
+            {
+                obj._mapping = map;
+                obj.emit('portBinding_LMS', map);
+            });
             amtLms.on('notify', function (data, options, str, code) {
                 //debug('LMS notify');
                 if (code == 'iAMT0052-3') {
