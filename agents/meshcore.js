@@ -2140,16 +2140,33 @@ function createMeshCore(agent) {
                     }
                     case 'zip':
                         // Zip a bunch of files
-                        sendConsoleText('Zip: ' + JSON.stringify(cmd));
-                        var p = [];
-                        for (var i in cmd.files) { p.push(cmd.path + '/' + cmd.files[i]); }
-                        var ofile = cmd.path + '/' + cmd.outfile;
-                        sendConsoleText('Writing ' + ofile + '...');
+                        var fp, stat, p = [];
+                        for (var i in cmd.files) {
+                            // Right now, we only zip files.
+                            // TODO: Support folder compression
+                            // TODO: Support compression relative to a root path
+                            // TODO: Support the 'cancel' operation below
+                            fp = cmd.path + '/' + cmd.files[i];
+                            stat = null;
+                            try { stat = fs.statSync(fp); } catch (e) { }
+                            if ((stat != null) && (stat.isDirectory() == false) && (stat.size != null) && (stat.size > 0)) { p.push(fp);     }
+                        }
+                        if (p.length == 0) return;
+                        var ofile = cmd.path + '/' + cmd.output;
+                        this.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zipping' })));
                         var out = require('fs').createWriteStream(ofile, { flags: 'wb' });
                         out.fname = ofile;
-                        out.on('close', function () { sendConsoleText('DONE writing ' + this.fname); });
+                        out.xws = this;
+                        out.on('close', function () {
+                            this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null })));
+                            this.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' })));
+                        });
                         var zip = require('zip-writer').write({ files: p });
                         zip.pipe(out);
+                        break;
+                    case 'cancel':
+                        // TODO: Cancel zip operation if present
+                        //sendConsoleText('Cancel operation');
                         break;
                     default:
                         // Unknown action, ignore it.

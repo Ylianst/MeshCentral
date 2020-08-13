@@ -7651,6 +7651,7 @@
                     QV('filesRecordIcon', false);
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
+                    if (xxdialogTag == 'fileMsgDialog') { setDialogMode(0); }
                     break;
                 case 3:
                     p13targetpath = '';
@@ -7709,6 +7710,8 @@
         var p13targetpath = null;
         var p13filetreelocation = [];
 
+        function p13fileOperationDialogEx(b) { if ((b == 0) && (files != null)) { files.sendText({ action: 'cancel' }); } }
+
         function p13gotFiles(data) {
             if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; } // This is ok because 4 first bytes is a control value.
             //console.log('p13gotFiles', data);
@@ -7717,6 +7720,20 @@
 
             // Process file upload commands
             if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data); return; }
+
+            // Display a dialog message
+            if (data.action == 'dialogmessage') {
+                if ((data.msg == null) && (xxdialogTag == 'fileMsgDialog')) {
+                    setDialogMode(0); // Close the dialog box
+                } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '<div>', 'fileMsgDialog');
+                }
+                return;
+            }
+
+            // Refresh file folder
+            if (data.action == 'refresh') { p13folderup(9999); return; }
 
             if (data.path != null) {
                 data.path = data.path.replace(/\//g, '\\');
