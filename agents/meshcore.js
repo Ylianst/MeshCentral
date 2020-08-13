@@ -2138,6 +2138,19 @@ function createMeshCore(agent) {
                         }
                         break;
                     }
+                    case 'zip':
+                        // Zip a bunch of files
+                        sendConsoleText('Zip: ' + JSON.stringify(cmd));
+                        var p = [];
+                        for (var i in cmd.files) { p.push(cmd.path + '/' + cmd.files[i]); }
+                        var ofile = cmd.path + '/' + cmd.outfile;
+                        sendConsoleText('Writing ' + ofile + '...');
+                        var out = require('fs').createWriteStream(ofile, { flags: 'wb' });
+                        out.fname = ofile;
+                        out.on('close', function () { sendConsoleText('DONE writing ' + this.fname); });
+                        var zip = require('zip-writer').write({ files: p });
+                        zip.pipe(out);
+                        break;
                     default:
                         // Unknown action, ignore it.
                         break;
@@ -2518,12 +2531,9 @@ function createMeshCore(agent) {
                     }
                     break;
                 case 'zip':
-                    if (args['_'].length == 0)
-                    {
+                    if (args['_'].length == 0) {
                         response = "Proper usage: zip (output file name), input1 [, input n]"; // Display usage
-                    }
-                    else
-                    {
+                    } else {
                         var p = args['_'].join(' ').split(',');
                         var ofile = p.shift();
                         sendConsoleText('Writing ' + ofile + '...');
@@ -2536,24 +2546,16 @@ function createMeshCore(agent) {
                     }
                     break;
                 case 'unzip':
-                    if (args['_'].length == 0)
-                    {
+                    if (args['_'].length == 0) {
                         response = "Proper usage: unzip input, destination"; // Display usage
-                    }
-                    else
-                    {
+                    } else {
                         var p = args['_'].join(' ').split(',');
-                        if (p.length != 2)
-                        {
-                            response = "Proper usage: unzip input, destination"; // Display usage
-                            break;
-                        }
+                        if (p.length != 2) { response = "Proper usage: unzip input, destination"; break; } // Display usage
                         var prom = require('zip-reader').read(p[0]);
                         prom._dest = p[1];
                         prom.self = this;
                         prom.sessionid = sessionid;
-                        prom.then(function (zipped)
-                        {
+                        prom.then(function (zipped) {
                             sendConsoleText('Extracting to ' + this._dest + '...', this.sessionid);
                             zipped.extractAll(this._dest).then(function () { sendConsoleText('finished unzipping', this.sessionid); }, function (e) { sendConsoleText('Error unzipping: ' + e, this.sessionid); }).parentPromise.sessionid = this.sessionid;
                         }, function (e) { sendConsoleText('Error unzipping: ' + e, this.sessionid); });

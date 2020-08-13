@@ -730,6 +730,7 @@
                                 <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
                                 <input type=button id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" />&nbsp;
                                 <input type=button id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" />&nbsp;
+                                <input type=button id=p13ZipButton disabled="disabled" value="Zip" onclick="p13zipFiles()" />&nbsp;
                                 <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" />&nbsp;
                             </div>
                         </td>
@@ -7839,6 +7840,7 @@
                 QE('p13RefreshButton', false);
                 QE('p13CutButton', false);
                 QE('p13CopyButton', false);
+                QE('p13ZipButton', false);
                 QE('p13PasteButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
@@ -7853,6 +7855,7 @@
                 QE('p13RefreshButton', true);
                 QE('p13CutButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13ZipButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
             }
         }
@@ -7881,6 +7884,20 @@
                     break;
                 }
             }
+        }
+
+        function p13zipFiles() {
+            var inputFiles = [], checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { inputFiles.push(p13filetree.dir[checkboxes[i].value].n); } }
+            setDialogMode(2, "Zip Filename", 3, p13zipFilesEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="" />', { action: 'zip', path: p13filetreelocation.join('/'), files: inputFiles});
+            focusTextBox('p13renameinput');
+            p13fileNameCheck();
+        }
+
+        function p13zipFilesEx(b, tag) {
+            tag.output = Q('p13renameinput').value;
+            if (!tag.output.toLowerCase().endsWith('.zip')) { tag.output += '.zip'; }
+            files.sendText(tag);
         }
 
         var p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0;
