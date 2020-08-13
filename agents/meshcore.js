@@ -1268,7 +1268,7 @@ function createMeshCore(agent) {
         */
 
         // If there is a upload or download active on this connection, close the file
-        if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
+        if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; delete this.httprequest.uploadFileid; delete this.httprequest.uploadFilePath; }
         if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); delete this.httprequest.downloadFile; }
 
         // Clean up WebRTC
@@ -1291,31 +1291,18 @@ function createMeshCore(agent) {
         //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
 
         // If this is upload data, save it to file
-        if (this.httprequest.uploadFile) {
-            if (typeof data == 'object') {
-                // Save the data to file being uploaded.
-                if (this.httprequest.uploadFile) {
-                    try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileSave ERROR'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
-                    this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
-                }
-            } else if (typeof data == 'string') {
-                // Close the file and confirm. We need to make this added round trip since websocket deflate compression can cause the last message before a websocket close to not be received.
-                if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
-                this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
-                this.end();
+        if ((this.httprequest.uploadFile) && (typeof data == 'object') && (data[0] != 123)) {
+            // Save the data to file being uploaded.
+            if (data[0] == 0) {
+                // If data starts with zero, skip the first byte. This is used to escape binary file data from JSON.
+                try { fs.writeSync(this.httprequest.uploadFile, data, 1, data.length - 1); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
+            } else {
+                // If data does not start with zero, save as-is.
+                try { fs.writeSync(this.httprequest.uploadFile, data); } catch (e) { sendConsoleText('FileUpload Error'); this.write(Buffer.from(JSON.stringify({ action: 'uploaderror' }))); return; } // Write to the file, if there is a problem, error out.
             }
+            this.write(Buffer.from(JSON.stringify({ action: 'uploadack', reqid: this.httprequest.uploadFileid }))); // Ask for more data.
             return;
         }
-        /*
-        // If this is a download, send more of the file
-        if (this.httprequest.downloadFile) {
-            var buf = Buffer.alloc(4096);
-            var len = fs.readSync(this.httprequest.downloadFile, buf, 0, 4096, null);
-            this.httprequest.downloadFilePtr += len;
-            if (len > 0) { this.write(buf.slice(0, len)); } else { fs.closeSync(this.httprequest.downloadFile); this.httprequest.downloadFile = undefined; this.end(); }
-            return;
-        }
-        */
 
         if (this.httprequest.state == 0) {
             // Check if this is a relay connection
@@ -1867,8 +1854,7 @@ function createMeshCore(agent) {
                     this.on('data', onTunnelControlData);
                     //this.write('MeshCore KVM Hello!1');
 
-                } else if (this.httprequest.protocol == 5)
-                {
+                } else if (this.httprequest.protocol == 5) {
                     //
                     // Remote Files
                     //
@@ -2104,10 +2090,34 @@ function createMeshCore(agent) {
                         if (this.httprequest.uploadFile != null) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; }
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
+                        this.httprequest.uploadFilePath = filepath;
                         MeshServerLog('Upload: \"' + filepath + '\"', this.httprequest);
                         try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.uploadFileid = cmd.reqid;
                         if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
+                        break;
+                    }
+                    case 'uploaddone': {
+                        // Indicates that an upload is done
+                        if (this.httprequest.uploadFile) {
+                            fs.closeSync(this.httprequest.uploadFile);
+                            this.write(Buffer.from(JSON.stringify({ action: 'uploaddone', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                            delete this.httprequest.uploadFile;
+                            delete this.httprequest.uploadFileid;
+                            delete this.httprequest.uploadFilePath;
+                        }
+                        break;
+                    }
+                    case 'uploadcancel': {
+                        // Indicates that an upload is canceled
+                        if (this.httprequest.uploadFile) {
+                            fs.closeSync(this.httprequest.uploadFile);
+                            fs.unlinkSync(this.httprequest.uploadFilePath);
+                            this.write(Buffer.from(JSON.stringify({ action: 'uploadcancel', reqid: this.httprequest.uploadFileid }))); // Indicate that we closed the file.
+                            delete this.httprequest.uploadFile;
+                            delete this.httprequest.uploadFileid;
+                            delete this.httprequest.uploadFilePath;
+                        }
                         break;
                     }
                     case 'copy': {

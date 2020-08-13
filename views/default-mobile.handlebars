@@ -3304,27 +3304,31 @@
         var p13filetreelocation = [];
 
         function p13gotFiles(data) {
-            setSessionActivity();
-            //console.log('p13gotFiles', data);
-            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; }
+            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; } // This is ok because 4 first bytes is a control value.
             //console.log('p13gotFiles', data);
             data = JSON.parse(decode_utf8(data));
             if (data.action == 'download') { p13gotDownloadCommand(data); return; }
-            data.path = data.path.replace(/\//g, '\\');
-            if ((p13filetree != null) && (data.path == p13filetree.path)) {
-                // This is an update to the same folder
-                var checkedNames = p13getCheckedNames();
-                p13filetree = data;
-                p13updateFiles(checkedNames);
-            } else {
-                // Make both paths use the same seperator not start with /
-                var x1 = data.path.replace(/\//g, '\\'), x2 = p13targetpath.replace(/\//g, '\\');
-                while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
-                while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
-                if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
-                    // This is a different folder
+
+            // Process file upload commands
+            if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data); return; }
+
+            if (data.path != null) {
+                data.path = data.path.replace(/\//g, '\\');
+                if ((p13filetree != null) && (data.path == p13filetree.path)) {
+                    // This is an update to the same folder
+                    var checkedNames = p13getCheckedNames();
                     p13filetree = data;
-                    p13updateFiles();
+                    p13updateFiles(checkedNames);
+                } else {
+                    // Make both paths use the same seperator not start with /
+                    var x1 = data.path.replace(/\//g, '\\'), x2 = p13targetpath.replace(/\//g, '\\');
+                    while ((x1.length > 0) && (x1[0] == '\\')) { x1 = x1.substring(1); }
+                    while ((x2.length > 0) && (x2[0] == '\\')) { x2 = x2.substring(1); }
+                    if ((x1 == x2) || ((data.path == '\\') && (p13targetpath == ''))) {
+                        // This is a different folder
+                        p13filetree = data;
+                        p13updateFiles();
+                    }
                 }
             }
         }
@@ -3614,35 +3618,35 @@
         var uploadFile;
         function p13doUploadFiles(files) {
             if (xxdialogMode) return;
+
+            // Check if we are going to overwrite any files
+            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+            var targetFiles = [], overWriteCount = 0;
+            for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
+            for (var i = 0; i < files.length; i++) {
+                if (winAgent) {
+                    if (targetFiles.indexOf(files[i].name.toLowerCase()) >= 0) { overWriteCount++; }
+                } else {
+                    if (targetFiles.indexOf(files[i].name) >= 0) { overWriteCount++; }
+                }
+            }
+
+            if (overWriteCount == 0) {
+                // If no overwrite, go ahead with upload
+                p13uploadFileContinue(1, files);
+            } else {
+                // Otherwise, prompt for confirmation
+                setDialogMode(2, "Upload File", 3, p13uploadFileContinue, format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount), files);
+            }
+        }
+
+        function p13uploadFileContinue(b, files) {
             uploadFile = {};
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
             uploadFile.xfilePtr = -1;
             setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
-            p13uploadReconnect();
-        }
-
-        function onFileUploadStateChange(xdownloadFile, state) {
-            switch (state) {
-                case 0:
-                    p13folderup(9999);
-                    break;
-                case 3:
-                    p13uploadNextFile();
-                    break;
-                default:
-                    console.log('Unknown onFileUploadStateChange state', state);
-                    break;
-            }
-        }
-
-        // Connect again
-        function p13uploadReconnect() {
-            uploadFile.ws = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotUploadData), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-            uploadFile.ws.attemptWebRTC = false;
-            uploadFile.ws.ctrlMsgAllowed = false;
-            uploadFile.ws.onStateChanged = onFileUploadStateChange;
-            uploadFile.ws.Start(filesNode._id);
+            p13uploadNextFile();
         }
 
         // Push the next file
@@ -3654,61 +3658,69 @@
                 QH('p13dfileName', file.name);
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
-
-                uploadFile.xreader = new FileReader();
-                uploadFile.xreader.onload = function () {
-                    uploadFile.xdata = uploadFile.xreader.result;
-                    uploadFile.ws.sendText({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength });
-                };
-                uploadFile.xreader.readAsArrayBuffer(file);
+                if (file.xdata == null) {
+                    // Load the data
+                    uploadFile.xreader = new FileReader();
+                    uploadFile.xreader.onload = function () {
+                        uploadFile.xdata = uploadFile.xreader.result;
+                        files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    };
+                    uploadFile.xreader.readAsArrayBuffer(file);
+                } else {
+                    // Data already loaded
+                    uploadFile.xdata = file.xdata;
+                    files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                }
             } else {
-                p13uploadFileCancel();
+                p13uploadFileTransferDone();
             }
         }
 
         // Used to cancel the entire transfer.
         function p13uploadFileCancel(button, tag) {
-            if (uploadFile != null) {
-                if (uploadFile.ws != null) {
-                    uploadFile.ws.Stop();
-                    uploadFile.ws = null;
-                }
-                uploadFile = null;
-            }
-            setDialogMode(0); // Close any dialog boxes if present
+            if (uploadFile != null) { files.sendText(JSON.stringify({ action: 'uploadcancel', reqid: uploadFile.xfilePtr })); uploadFile = null; }
+            p13uploadFileTransferDone();
+        }
+
+        // Used to cancel the entire transfer.
+        function p13uploadFileTransferDone() {
+            uploadFile = null; // No more files to upload, clean up.
+            setDialogMode(0); // Close the dialog box
+            p13folderup(9999); // Refresh the current folder
         }
 
         // Receive upload ack from the mesh agent, use this to keep sending more data
-        function p13gotUploadData(data) {
-            var cmd = JSON.parse(data);
+        function p13gotUploadData(cmd) {
             if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
-
-            if (cmd.action == 'uploadstart') {
-                p13uploadNextPart(false);
-                for (var i = 0; i < 8; i++) { p13uploadNextPart(true); } // Send 8 more blocks of 4 k to full the websocket.
-            } else if (cmd.action == 'uploadack') {
-                p13uploadNextPart(false);
-            } else if (cmd.action == 'uploaderror') {
-                p13uploadFileCancel();
+            switch (cmd.action) {
+                case 'uploadstart': { p13uploadNextPart(false); for (var i = 0; i < 8; i++) { p13uploadNextPart(true); } break; } // Send 8 more blocks of 16k to fill the websocket.
+                case 'uploadack': { p13uploadNextPart(false); break; }
+                case 'uploaddone': { if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); } else { p13uploadFileTransferDone(); } break; }
+                case 'uploaderror': { p13uploadFileCancel(); break; }
             }
         }
 
         // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
         function p13uploadNextPart(dataPriming) {
-            var data = uploadFile.xdata;
-            var start = uploadFile.xptr;
-            var end = uploadFile.xptr + 4096;
-            if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
-            if (start == data.byteLength) {
-                if (uploadFile.ws != null) { uploadFile.ws.Stop(); uploadFile.ws = null; }
-                if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadReconnect(); } else { p13uploadFileCancel(); }
+            var data = uploadFile.xdata, start = uploadFile.xptr;
+            if (start >= data.byteLength) {
+                files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
             } else {
-                var datapart = data.slice(start, end);
-                uploadFile.ws.send(datapart);
+                var end = uploadFile.xptr + 16384;
+                if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
+                var dataslice = new Uint8Array(data.slice(start, end))
+                if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
+                    var datapart = new Uint8Array(end - start + 1);
+                    datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
+                    files.send(datapart);
+                } else {
+                    files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                }
                 uploadFile.xptr = end;
                 Q('d2progressBar').value = end;
             }
         }
+
         //
         // DEVICE DETAILS
         //
