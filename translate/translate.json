@@ -23316,7 +23316,7 @@
       "en": "Run MeshCentral Router and click \\\"install\\\" to make it launchable from the browser.",
       "nl": "Start MeshCentral Router en klik \\\"install\\\" om het startbaar te maken vanuit de browser.",
       "fi": "Suorita MeshCentral Reititin ja napsauta \\\"asenna\\\", jotta se voidaan käynnistää selaimesta.",
-      "es": "Ejecute MeshCentral Router y haga clic en \\ \"instalar \\\" para que se pueda iniciar desde el navegador.",
+      "es": "Ejecute MeshCentral Router y haga clic en \\\"instalar\\\" para que se pueda iniciar desde el navegador.",
       "xloc": [
         "default.handlebars->27->759"
       ]
@@ -27331,7 +27331,7 @@
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, downloadt u de volgende scriptbestanden en gebruikt u <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> om het script uit te voeren om computers te configureren.",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, baixe os seguintes arquivos de script e use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> para executar o script para configurar computadores.",
       "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующие файлы со скриптами и используйте <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a>, чтобы запустить скрипт для настройки компьютеров.",
-      "zh-chs": "要將新的英特爾&reg;AMT設備添加到具有CIRA的設備組“ {0} \\”中，請下載以下腳本文件，並使用<a href ='http：//meshcommander.com'rel ='noreferrer noopener'target =' _blank'> MeshCommander </a>來運行腳本來配置計算機。",
+      "zh-chs": "要將新的英特爾&reg;AMT設備添加到具有CIRA的設備組“{0}”中，請下載以下腳本文件，並使用<a href ='http：//meshcommander.com'rel ='noreferrer noopener'target =' _blank'> MeshCommander </a>來運行腳本來配置計算機。",
       "xloc": [
         "default.handlebars->27->306"
       ]
@@ -27348,7 +27348,7 @@
       "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT",
       "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT",
       "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Intel AMT",
-      "zh-chs": "要將新的英特爾&reg;AMT設備添加到具有CIRA的設備組“ {0} \\”，請在英特爾AMT中將以下證書作為受信任的根加載",
+      "zh-chs": "要將新的英特爾&reg;AMT設備添加到具有CIRA的設備組“{0}”，請在英特爾AMT中將以下證書作為受信任的根加載",
       "xloc": [
         "default.handlebars->27->309"
       ]
@@ -27382,7 +27382,7 @@
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. Deze agent heeft server- en apparaatgroepinformatie erin ingebed.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este agente possui informações de servidor e grupo de dispositivos incorporadas.",
       "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Agent и установите его для управления этим компьютером. В этот агент встроена информация о текущем сервере и группе устройств.",
-      "zh-chs": "要將新計算機添加到設備組\\“ {0} \\”，請下載網狀代理並安裝該計算機以進行管理。該代理中嵌入了服務器和設備組信息。",
+      "zh-chs": "要將新計算機添加到設備組“{0}”，請下載網狀代理並安裝該計算機以進行管理。該代理中嵌入了服務器和設備組信息。",
       "xloc": [
         "default.handlebars->27->377"
       ]
@@ -27399,7 +27399,7 @@
       "nl": "Als u een nieuwe computer aan apparaatgroep \\\"{0}\\\" wilt toevoegen, downloadt u de mesh-agent en installeert u deze op de te beheren computer. In dit installatieprogramma van de agent zijn server- en apparaatgroepgegevens ingebed.",
       "pt": "Para adicionar um novo computador ao grupo de dispositivos \\\"{0}\\\", faça o download do agente de malha e instale-o no computador para gerenciar. Este instalador do agente possui informações de servidor e grupo de dispositivos incorporadas.",
       "ru": "Чтобы добавить новый компьютер в группу устройств \\\"{0}\\\", скачайте Mesh Agent и установите его для управления этим компьютером. В этот установщик агента встроена информация о текущем сервере и группе устройств.",
-      "zh-chs": "要將新計算機添加到設備組\\“ {0} \\”，請下載網狀代理並安裝該計算機以進行管理。該代理安裝程序中嵌入了服務器和設備組信息。",
+      "zh-chs": "要將新計算機添加到設備組“{0}”，請下載網狀代理並安裝該計算機以進行管理。該代理安裝程序中嵌入了服務器和設備組信息。",
       "xloc": [
         "default.handlebars->27->390"
       ]
@@ -27500,7 +27500,7 @@
       "nl": "Om een mesh-agent te verwijderen, download het onderstaande bestand, voer het uit en klik op \\\"deïnstalleer\\\".",
       "pt": "Para remover um agente de malha, faça o download do arquivo abaixo, execute-o e clique em \\\"uninstall\\\".",
       "ru": "Для удаления Mesh Agent скачайте файл ниже, запустите его и нажмите \\\"удалить\\\".",
-      "zh-chs": "要刪除網格代理，請下載以下文件，運行並單擊\\“卸載\\”。",
+      "zh-chs": "要刪除網格代理，請下載以下文件，運行並單擊“卸載”。",
       "xloc": [
         "default.handlebars->27->394"
       ]
