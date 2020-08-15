@@ -809,6 +809,13 @@
     {
       "en": "1 minute",
       "es": "1 minuto",
+      "cs": "1 minuta",
+      "de": "1 Minute",
+      "fr": "1 minute",
+      "nl": "1 minuut",
+      "pt": "1 minuto",
+      "ru": "1 минута",
+      "fi": "1 minuutti",
       "xloc": [
         "default.handlebars->27->702"
       ]
@@ -1030,6 +1037,7 @@
     },
     {
       "en": "10 minutes",
+      "nl": "10 minuten",
       "es": "10 minutos",
       "xloc": [
         "default.handlebars->27->704"
@@ -1113,6 +1121,7 @@
     },
     {
       "en": "15 minutes",
+      "nl": "15 minuten",
       "es": "15 minutos",
       "xloc": [
         "default.handlebars->27->705"
@@ -1329,6 +1338,7 @@
     },
     {
       "en": "30 minutes",
+      "nl": "30 minuten",
       "es": "30 minutos",
       "xloc": [
         "default.handlebars->27->706"
@@ -1429,6 +1439,7 @@
     },
     {
       "en": "45 minutes",
+      "nl": "45 minuten",
       "es": "45 minutos",
       "xloc": [
         "default.handlebars->27->707"
@@ -1454,6 +1465,7 @@
     },
     {
       "en": "5 minutes",
+      "nl": "5 minuten",
       "es": "5 minutos",
       "xloc": [
         "default.handlebars->27->703"
@@ -6255,6 +6267,7 @@
     },
     {
       "en": "Compressing files...",
+      "nl": "Bestanden comprimeren...",
       "xloc": [
         "default.handlebars->27->850"
       ]
@@ -7446,6 +7459,7 @@
     },
     {
       "en": "Create a link to share this device with a guest",
+      "nl": "Maak een link om dit apparaat met een gast te delen",
       "es": "Crear un enlace para compartir este dispositivo con un invitado",
       "xloc": [
         "default.handlebars->27->614"
@@ -7522,6 +7536,7 @@
     },
     {
       "en": "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour.",
+      "nl": "Creëert een link waarmee een gast zonder account maximaal 1 uur op het externe bureaublad van dit apparaat kan gaan.",
       "es": "Crea un enlace que permite a un invitado acceder al escritorio remoto sin requerir una cuenta en este dispositivo durante hasta 1 hora.",
       "xloc": [
         "default.handlebars->27->699"
@@ -11260,6 +11275,7 @@
     },
     {
       "en": "Expire Time",
+      "nl": "Verval datum",
       "es": "Tiempo de expiración",
       "xloc": [
         "default.handlebars->27->185",
@@ -11268,6 +11284,7 @@
     },
     {
       "en": "Expires at {0}",
+      "nl": "Vervald om {0}",
       "es": "Expira el {0}",
       "xloc": [
         "desktop.handlebars->3->6"
@@ -11505,6 +11522,7 @@
     },
     {
       "en": "File Operation",
+      "nl": "Bestandsbewerking",
       "xloc": [
         "default.handlebars->27->849"
       ]
@@ -12722,6 +12740,7 @@
     },
     {
       "en": "Guest Name",
+      "nl": "Gast naam",
       "es": "Nombre del invitado",
       "xloc": [
         "default.handlebars->27->184",
@@ -15892,7 +15911,7 @@
     },
     {
       "en": "Linux / BSD / macOS Binary Installer",
-      "nl": "Linux / BSD / macOS Biniar installatieprogramma",
+      "nl": "Linux / BSD / macOS Binair installatieprogramma",
       "es": "Instalador binario para Linux / BSD / macOS",
       "xloc": [
         "default.handlebars->27->368"
@@ -16290,6 +16309,7 @@
     },
     {
       "en": "Lock Account Settings",
+      "nl": "Vergrendel accountinstellingen",
       "es": "Bloquear configuración de la cuenta",
       "xloc": [
         "default.handlebars->27->1403",
@@ -19856,6 +19876,7 @@
     },
     {
       "en": "Notify Only",
+      "nl": "Alleen informeren",
       "es": "Solo notificaciones",
       "xloc": [
         "default.handlebars->27->711"
@@ -21507,6 +21528,7 @@
     },
     {
       "en": "Privacy bar",
+      "nl": "Privacy balk",
       "es": "Barra de Privacidad",
       "xloc": [
         "default.handlebars->27->188"
@@ -21552,6 +21574,7 @@
     },
     {
       "en": "Prompt",
+      "nl": "Melden",
       "es": "Notificacion",
       "xloc": [
         "default.handlebars->27->187"
@@ -21559,6 +21582,7 @@
     },
     {
       "en": "Prompt for consent",
+      "nl": "Toestemming vragen",
       "es": "Notificacion para Consentimiento",
       "xloc": [
         "default.handlebars->27->710"
@@ -22333,6 +22357,7 @@
     },
     {
       "en": "Remote Desktop Link",
+      "nl": "Extern bureaublad koppeling",
       "es": "Enlace de Escritorio Remoto",
       "xloc": [
         "default.handlebars->27->191"
@@ -24895,6 +24920,7 @@
     },
     {
       "en": "Share",
+      "nl": "Delen",
       "es": "Compartir",
       "xloc": [
         "default.handlebars->27->613"
@@ -24902,6 +24928,7 @@
     },
     {
       "en": "Share Device",
+      "nl": "Deel apparaat",
       "es": "Compartir dispositivo",
       "xloc": [
         "default.handlebars->27->193",
@@ -30668,12 +30695,14 @@
     },
     {
       "en": "Zip",
+      "nl": "Zip",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
     },
     {
       "en": "Zip Filename",
+      "nl": "Zip bestandsnaam",
       "xloc": [
         "default.handlebars->27->865"
       ]
