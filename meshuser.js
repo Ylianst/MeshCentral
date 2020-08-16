@@ -346,7 +346,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Take a look at server stats
                 var os = require('os');
                 var stats = { action: 'serverstats', totalmem: os.totalmem(), freemem: os.freemem() };
-                if (parent.parent.platform != 'win32') { stats.cpuavg = os.loadavg(); }
+                if (parent.parent.platform != 'win32') {
+                    stats.cpuavg = os.loadavg();
+                    try { stats.availablemem = 1024 * Number(/MemAvailable:[ ]+(\d+)/.exec(fs.readFileSync('/proc/meminfo', 'utf8'))[1]); } catch (ex) { }
+                }
 
                 // Count the number of device groups that are not deleted
                 var activeDeviceGroups = 0;
