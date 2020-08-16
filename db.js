@@ -255,7 +255,7 @@ module.exports.CreateDB = function (parent, func) {
     // Encrypt an database object
     function performTypedRecordEncrypt(data) {
         if (obj.dbRecordsEncryptKey == null) return data;
-        if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash']); }
+        if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash', 'oldpasswords']); }
         else if ((data.type == 'node') && (data.intelamt != null)) { var xdata = Clone(data); xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass']); return xdata; }
         return data;
     }
