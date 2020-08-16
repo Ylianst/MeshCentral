@@ -231,7 +231,7 @@ module.exports.CreateMeshScanner = function (parent) {
     obj.wakeOnLan = function (macs) {
         var i, j;
         for (i in macs) {
-            var mac = macs[i];
+            var mac = macs[i].split(':').join('');
             var hexpacket = 'FFFFFFFFFFFF';
             for (j = 0; j < 16; j++) { hexpacket += mac; }
             var wakepacket = Buffer.from(hexpacket, 'hex');
