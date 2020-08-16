@@ -2371,37 +2371,53 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Start by checking the old password
                     parent.checkUserPassword(domain, user, command.oldpass, function (result) {
                         if (result == true) {
-                            // Update the password
-                            require('./pass').hash(command.newpass, function (err, salt, hash, tag) {
-                                if (err) {
+                            parent.checkOldUserPasswords(domain, user, command.newpass, function (result) {
+                                if (result == true) {
                                     // Send user notification of error
-                                    displayNotificationMessage('Error, password not changed.', 'Account Settings', 'ServerNotify');
+                                    displayNotificationMessage('Error, unable to change to previously used password.', 'Account Settings', 'ServerNotify');
                                 } else {
-                                    // Change the password
-                                    if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (command.hint != null)) {
-                                        var hint = command.hint;
-                                        if (hint.length > 250) { hint = hint.substring(0, 250); }
-                                        user.passhint = hint;
-                                    }
-                                    user.salt = salt;
-                                    user.hash = hash;
-                                    user.passchange = Math.floor(Date.now() / 1000);
-                                    delete user.passtype;
-                                    db.SetUser(user);
+                                    // Update the password
+                                    require('./pass').hash(command.newpass, function (err, salt, hash, tag) {
+                                        if (err) {
+                                            // Send user notification of error
+                                            displayNotificationMessage('Error, password not changed.', 'Account Settings', 'ServerNotify');
+                                        } else {
+                                            const nowSeconds = Math.floor(Date.now() / 1000);
 
-                                    var targets = ['*', 'server-users'];
-                                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id };
-                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                    parent.parent.DispatchEvent(targets, obj, event);
+                                            // Change the password
+                                            if (domain.passwordrequirements != null) {
+                                                // Save password hint if this feature is enabled
+                                                if ((domain.passwordrequirements.hint === true) && (command.hint != null)) { var hint = command.hint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; } else { delete user.passhint; }
 
-                                    // Send user notification of password change
-                                    displayNotificationMessage('Password changed.', 'Account Settings', 'ServerNotify');
+                                                // Save previous password if this feature is enabled
+                                                if ((typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
+                                                    if (user.oldpasswords == null) { user.oldpasswords = []; }
+                                                    user.oldpasswords.push({ salt: user.salt, hash: user.hash, start: user.passchange, end: nowSeconds });
+                                                    const extraOldPasswords = user.oldpasswords.length - domain.passwordrequirements.oldpasswordban;
+                                                    if (extraOldPasswords > 0) { user.oldpasswords.splice(0, extraOldPasswords); }
+                                                }
+                                            }
+                                            user.salt = salt;
+                                            user.hash = hash;
+                                            user.passchange = nowSeconds;
+                                            delete user.passtype;
+                                            db.SetUser(user);
 
-                                    // Log in the auth log
-                                    if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed this password'); }
+                                            var targets = ['*', 'server-users'];
+                                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id };
+                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                            parent.parent.DispatchEvent(targets, obj, event);
+
+                                            // Send user notification of password change
+                                            displayNotificationMessage('Password changed.', 'Account Settings', 'ServerNotify');
+
+                                            // Log in the auth log
+                                            if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed this password'); }
+                                        }
+                                    }, 0);
                                 }
-                            }, 0);
+                            });
                         } else {
                             // Send user notification of error
                             displayNotificationMessage('Current password not correct.', 'Account Settings', 'ServerNotify');
