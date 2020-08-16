@@ -1289,7 +1289,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Check if the password is the same as a previous one
                 obj.checkOldUserPasswords(domain, user, req.body.rpassword1, function (result) {
-                    if (result == true) {
+                    if (result != 0) {
                         // This is the same password as an older one, request a password change again
                         parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (2)');
                         req.session.loginmode = '6';
@@ -1870,6 +1870,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Check a user's old passwords
+    // Callback: 0=OK, 1=OldPass, 2=CommonPass
     obj.checkOldUserPasswords = function (domain, user, password, func) {
         // Check how many old passwords we need to check
         if ((typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
@@ -1884,11 +1885,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // If there is no old passwords, exit now.
         var oldPassCount = 1;
         if (user.oldpasswords != null) { oldPassCount += user.oldpasswords.length; }
-        var oldPassCheckState = { response: false, count: oldPassCount, user: user, func: func };
+        var oldPassCheckState = { response: 0, count: oldPassCount, user: user, func: func };
+
+        // Test against common passwords if this feature is enabled
+        // Example of common passwords: 123456789, password123
+        if ((domain.passwordrequirements != null) && (domain.passwordrequirements.bancommonpasswords == true)) {
+            oldPassCheckState.count++;
+            require('wildleek')(password).then(function (wild) {
+                if (wild == true) { oldPassCheckState.response = 2; }
+                if (--oldPassCheckState.count == 0) { oldPassCheckState.func(oldPassCheckState.response); }
+            });
+        }
 
         // Try current password
         require('./pass').hash(password, user.salt, function oldPassCheck(err, hash, tag) {
-            if ((err == null) && (hash == tag.user.hash)) { tag.response = true; }
+            if ((err == null) && (hash == tag.user.hash)) { tag.response = 1; }
             if (--tag.count == 0) { tag.func(tag.response); }
         }, oldPassCheckState);
 
@@ -1898,7 +1909,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 const oldpassword = user.oldpasswords[i];
                 // Default strong password hashing (pbkdf2 SHA384)
                 require('./pass').hash(password, oldpassword.salt, function oldPassCheck(err, hash, tag) {
-                    if ((err == null) && (hash == tag.oldPassword.hash)) { tag.state.response = true; }
+                    if ((err == null) && (hash == tag.oldPassword.hash)) { tag.state.response = 1; }
                     if (--tag.state.count == 0) { tag.state.func(tag.state.response); }
                 }, { oldPassword: oldpassword, state: oldPassCheckState });
             }
@@ -1939,8 +1950,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (result == true) {
                 // Check if the new password is allowed, only do this if this feature is enabled.
                 parent.checkOldUserPasswords(domain, user, command.newpass, function (result) {
-                    if (result == true) {
+                    if (result == 1) {
                         parent.debug('web', 'handlePasswordChangeRequest: old password reuse attempt.');
+                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                    } else if (result == 2) {
+                        parent.debug('web', 'handlePasswordChangeRequest: commonly used password use attempt.');
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                     } else {
                         // Update the password
