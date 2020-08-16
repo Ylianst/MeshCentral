@@ -10203,6 +10203,14 @@
             return format("{0} Gb", Math.round(bytes / 1024 / 1024 / 1024));
         }
 
+        function getNiceSize3(bytes) {
+            if (bytes <= 0) return "None";
+            if (bytes < 2048) return format("{0} b", bytes);
+            if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
+            if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
+            return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+        }
+
         function p5getQuotabar(f) {
             while (f.t > 1 && f.t != 4) { f = f.parent; }
             if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
@@ -12389,12 +12397,12 @@
             window.serverStatCpu = new Chart(document.getElementById('serverCpuChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
-                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
+                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '40px' }
             });
             window.serverStatMemory = new Chart(document.getElementById('serverMemoryChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
-                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '60px' }
+                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '40px' }
             });
         }
 
@@ -12436,9 +12444,14 @@
                 QS('serverCpuChartView')['display'] = 'inline-block';
                 window.serverStatCpu.update();
             }
-            if ((typeof message.totalmem == 'number') && (typeof message.freemem == 'number')) {
+            if ((typeof message.totalmem == 'number') && (typeof message.availablemem == 'number')) {
+                window.serverStatMemory.config.data.datasets[0].data = [message.totalmem - message.availablemem, message.availablemem];
+                QH('serverMemoryChartText', '<div style=margin-bottom:5px>' + "Available Memory" + '</div><div><b>' + getNiceSize3(message.availablemem) + '</b> ' + "free" + ', <b>' + getNiceSize3(message.totalmem) + '</b> ' + "total" + '</div>');
+                QS('serverMemoryChartView')['display'] = 'inline-block';
+                window.serverStatMemory.update();
+            } else if ((typeof message.totalmem == 'number') && (typeof message.freemem == 'number')) {
                 window.serverStatMemory.config.data.datasets[0].data = [message.totalmem - message.freemem, message.freemem];
-                QH('serverMemoryChartText', '<div style=margin-bottom:5px>' + "Memory" + '</div><div><b>' + getNiceSize2(message.freemem) + '</b> ' + "free" + ', <b>' + getNiceSize2(message.totalmem) + '</b> ' + "total" + '</div>');
+                QH('serverMemoryChartText', '<div style=margin-bottom:5px>' + "Memory" + '</div><div><b>' + getNiceSize3(message.freemem) + '</b> ' + "free" + ', <b>' + getNiceSize3(message.totalmem) + '</b> ' + "total" + '</div>');
                 QS('serverMemoryChartView')['display'] = 'inline-block';
                 window.serverStatMemory.update();
             }
@@ -13258,7 +13271,7 @@
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
         function getUserName(userid) {  if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
-
+        function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
     </script>
 </body>
 </html>
