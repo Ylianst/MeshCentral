@@ -9046,21 +9046,26 @@
         }
 
         function updateMeshes() {
-            var r = '';
-            var c = 0, count = 0;
-            for (i in meshes) {
+            var r = '', c = 0, count = 0;
+
+            // Sort the device groups
+            var sortedMeshes = [];
+            for (i in meshes) { sortedMeshes.push(meshes[i]); }
+            sortedMeshes.sort(nameSort);
+
+            for (i in sortedMeshes) {
                 // Mesh positioning
                 if (c > 1) { r += '</tr><tr>'; c = 0; }
                 c++;
                 count++;
 
                 // Mesh rights
-                var meshrights = GetMeshRights(meshes[i]);
+                var meshrights = GetMeshRights(sortedMeshes[i]);
                 var rights = "Partial Rights";
                 if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
 
                 // Print the mesh information
-                r += '<div onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div tabindex=0 style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\') onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + i + '\')"><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(meshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
+                r += '<div onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div tabindex=0 style=height:100%;cursor:pointer onclick=gotoMesh(\'' + i + '\') onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + i + '\')"><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(sortedMeshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
             }
 
             meshcount = count;
