@@ -136,7 +136,9 @@
         "nonalpha": 1,
         "reset": 90,
         "force2factor": true,
-        "skip2factor": "127.0.0.1,192.168.2.0/24"
+        "skip2factor": "127.0.0.1,192.168.2.0/24",
+        "oldPasswordBan": 5,
+        "banCommonPasswords": false
       },
       "_agentInviteCodes": true,
       "_agentNoProxy": true,

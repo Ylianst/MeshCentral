@@ -2375,9 +2375,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.checkUserPassword(domain, user, command.oldpass, function (result) {
                         if (result == true) {
                             parent.checkOldUserPasswords(domain, user, command.newpass, function (result) {
-                                if (result == true) {
+                                if (result == 1) {
                                     // Send user notification of error
                                     displayNotificationMessage('Error, unable to change to previously used password.', 'Account Settings', 'ServerNotify');
+                                } else if (result == 2) {
+                                    // Send user notification of error
+                                    displayNotificationMessage('Error, unable to change to commonly used password.', 'Account Settings', 'ServerNotify');
                                 } else {
                                     // Update the password
                                     require('./pass').hash(command.newpass, function (err, salt, hash, tag) {
