@@ -236,6 +236,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else { if (func) { func(false); } return false; }
             }
         } else { if (func) { func(false); } return false; }
+        if (func) { func(true); }
         return true;
     }
 
@@ -1205,8 +1206,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'msg':
                 {
+                    // Check the nodeid
+                    if (common.validateString(command.nodeid, 1, 1024) == false) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'msg', result: 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } }
+                        return;
+                    } 
+
                     // Rights check
                     var requiredRights = null, requiredNonRights = null;
+
+                    // Complete the nodeid if needed
+                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
 
                     // Before routing this command, let's do some security checking.
                     // If this is a tunnel request, we need to make sure the NodeID in the URL matches the NodeID in the command.
@@ -3577,13 +3587,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'toast':
                 {
-                    if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (common.validateString(command.title, 1, 512) == false) break; // Check title
-                    if (common.validateString(command.msg, 1, 4096) == false) break; // Check message
+                    var err = null;
+
+                    // Perform input validation
+                    try {
+                        if (common.validateStrArray(command.nodeids, 1, 256) == false) { err = "Invalid nodeids"; } // Check nodeids
+                        else if (common.validateString(command.title, 1, 512) == false) { err = "Invalid title"; } // Check title
+                        else if (common.validateString(command.msg, 1, 4096) == false) { err = "Invalid message"; } // Check message
+                        else {
+                            var nodeids = [];
+                            for (i in command.nodeids) { if (command.nodeids[i].indexOf('/') == -1) { nodeids.push('node/' + domain.id + '/' + command.nodeids[i]); } else { nodeids.push(command.nodeids[i]); } }
+                            command.nodeids = nodeids;
+                        }
+                    } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
+                    
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
+                    
                     for (i in command.nodeids) {
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
-                            // Check we have the rights to delete this device
+                            // Check we have the rights to notify this device
                             if ((rights & MESHRIGHT_CHATNOTIFY) == 0) return;
 
                             // Get this device and send toast command
@@ -3593,6 +3620,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         });
                     }
+
+                    // Send response if required
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
             case 'getnetworkinfo':
