@@ -2614,7 +2614,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Create the new device group
                         var links = {};
                         links[user._id] = { name: user.name, rights: 4294967295 };
-                        mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links };
+                        mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, creation: Date.now(), creatorid: user._id, creatorname: user.name };
                         db.Set(mesh);
                         parent.meshes[meshid] = mesh;
                         parent.parent.AddEventDispatch([meshid], ws);

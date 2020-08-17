@@ -9154,6 +9154,17 @@
             x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
+            // Display device group creator
+            if ((currentMesh.creatorid != null) && (users != null) && (users[currentMesh.creatorid] != null)) {
+                var meshcreator = users[currentMesh.creatorid];
+                x += addHtmlValue("Creator", '<a onclick=gotoUser(\"' + encodeURIComponentEx(meshcreator._id) + '\",false,null)>' + EscapeHtml(meshcreator.name) + '</a>');
+            } else if (currentMesh.creatorname != null) {
+                x += addHtmlValue("Creator", EscapeHtml(currentMesh.creatorname));
+            }
+
+            // Display creation time
+            if (currentMesh.creation != null) { x += addHtmlValue("Creation Time", printDateTime(new Date(currentMesh.creation))); }
+
             // Display features
             if (currentMesh.mtype == 2) {
                 var meshFeatures = [];
