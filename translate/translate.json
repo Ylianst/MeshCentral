@@ -544,7 +544,8 @@
       "en": ", for this link to work you must download MeshCentral Router run it and click the install button.",
       "nl": ", om deze link te laten werken, moet u MeshCentral Router downloaden, het uitvoeren en op de installatieknop klikken.",
       "fi": ", jotta tämä linkki toimisi, sinun on ladattava MeshCentral Reititin ja suoritettava se napsauttamalla asennuspainiketta.",
-      "es": ", para que este enlace funcione, debe descargar MeshCentral Router, ejecutarlo y hacer clic en el botón de instalación."
+      "es": ", para que este enlace funcione, debe descargar MeshCentral Router, ejecutarlo y hacer clic en el botón de instalación.",
+      "fr": ", pour que ce lien fonctionne vous devez télécharger MeshCentral Router, le lancer et cliquer sur le bouton d'installation."
     },
     {
       "cs": ", klikněte na něj pravým tlačítkem nebo stiskněte klávesu Ctrl a klikněte na něj levým tlačítkem. Pak vyberte „Otevřít“ a postupujte podle pokynů.",
@@ -568,7 +569,7 @@
       "de": ", ausführen und \"Installieren\" oder \"Verbinden\" wählen.",
       "en": ", run it and press \"Install\" or \"Connect\".",
       "es": "ejecútelo y presione \"Instalar\" o \"Conectar\".",
-      "fr": ", exécutez le puis cliquez sur \"Install\" or \"Connect.",
+      "fr": ", exécutez le puis cliquez sur \"Install\" ou \"Connect\".",
       "hi": ", इसे चलाएं और \"इंस्टॉल करें\" या \"कनेक्ट\" दबाएं।",
       "ja": "、実行して「インストール」または「接続」を押します。",
       "ko": ". 그리고 실행한 후에 \"설치\" 또는 \"연결\"을 누르십시오.",
@@ -603,6 +604,7 @@
       "nl": ", {0} kijken",
       "fi": ", {0} katselee",
       "es": ", {0} viendo",
+      "fr": ", {0} regarde",
       "xloc": [
         "default.handlebars->27->797",
         "desktop.handlebars->3->14"
@@ -742,6 +744,7 @@
       "nl": "1 verbinding",
       "fi": "1 yhteys",
       "es": "1 conexión(es)",
+      "fr": "1 connexion",
       "xloc": [
         "default.handlebars->27->799",
         "desktop.handlebars->3->16"
@@ -1039,6 +1042,7 @@
       "en": "10 minutes",
       "nl": "10 minuten",
       "es": "10 minutos",
+      "fr": "10 minutes",
       "xloc": [
         "default.handlebars->27->704"
       ]
@@ -1123,6 +1127,7 @@
       "en": "15 minutes",
       "nl": "15 minuten",
       "es": "15 minutos",
+      "fr": "15 minutes",
       "xloc": [
         "default.handlebars->27->705"
       ]
@@ -1226,6 +1231,7 @@
       "nl": "256 kleuren",
       "fi": "256 väriä",
       "es": "256 colores",
+      "fr": "256 couleurs",
       "xloc": [
         "player.handlebars->3->18"
       ]
@@ -1340,6 +1346,7 @@
       "en": "30 minutes",
       "nl": "30 minuten",
       "es": "30 minutos",
+      "fr": "30 minutes",
       "xloc": [
         "default.handlebars->27->706"
       ]
@@ -1441,6 +1448,7 @@
       "en": "45 minutes",
       "nl": "45 minuten",
       "es": "45 minutos",
+      "fr": "45 minutes",
       "xloc": [
         "default.handlebars->27->707"
       ]
@@ -1467,6 +1475,7 @@
       "en": "5 minutes",
       "nl": "5 minuten",
       "es": "5 minutos",
+      "fr": "5 minutes",
       "xloc": [
         "default.handlebars->27->703"
       ]
@@ -1624,6 +1633,7 @@
       "nl": "65536 kleuren",
       "fi": "65536 väriä",
       "es": "65536 colores",
+      "fr": "65536 couleurs",
       "xloc": [
         "player.handlebars->3->20"
       ]
@@ -1648,7 +1658,7 @@
       "de": "7-Tage-Energiezustand",
       "en": "7 Day Power State",
       "es": "Estado de energía de 7 días",
-      "fr": "Alimentation sur les 7 derniers jours",
+      "fr": "Etat d'alimentation sur les 7 derniers jours",
       "hi": "7 डे पावर स्टेट",
       "ja": "7日間の電源状態",
       "ko": "7일간 전원 상태",
@@ -2954,6 +2964,7 @@
       "en": "Add tags",
       "nl": "Voeg tags toe",
       "es": "Agregar etiquetas",
+      "fr": "Ajouter des tags",
       "xloc": [
         "default.handlebars->27->467"
       ]
@@ -3485,6 +3496,7 @@
       "en": "All Available",
       "nl": "Alle beschikbare",
       "es": "Todo disponible",
+      "fr": "Tous ceux disponibles",
       "xloc": [
         "default.handlebars->27->1530"
       ]
@@ -3509,6 +3521,7 @@
       "nl": "Alle gebeurtenissen",
       "fi": "Kaikki tapahtumat",
       "es": "Todos los eventos",
+      "fr": "Tous les évènements",
       "xloc": [
         "default.handlebars->27->1528"
       ]
@@ -4538,6 +4551,7 @@
     },
     {
       "en": "Available Memory",
+      "fr": "Mémoire disponible",
       "xloc": [
         "default.handlebars->27->1909"
       ]
@@ -5425,6 +5439,7 @@
       "nl": "Verander echte naam voor {0}",
       "fi": "Vaihda Nimi käyttäjälle {0}",
       "es": "Cambiar nombre real por {0}",
+      "fr": "Changer le Nom complet pour {0}",
       "xloc": [
         "default.handlebars->27->1795"
       ]
@@ -5613,6 +5628,7 @@
       "en": "ChatSession",
       "nl": "Chat sessie",
       "es": "Sesión de Chat",
+      "fr": "Session Chat",
       "xloc": [
         "messenger.handlebars->13->16"
       ]
@@ -6209,6 +6225,7 @@
       "en": "Color Quality",
       "nl": "Kleurkwaliteit",
       "es": "Calidad del color",
+      "fr": "Nombre de couleurs",
       "xloc": [
         "player.handlebars->3->17",
         "player.handlebars->3->19"
@@ -6274,6 +6291,7 @@
     {
       "en": "Compressing files...",
       "nl": "Bestanden comprimeren...",
+      "fr": "Compression des fichiers ...",
       "xloc": [
         "default.handlebars->27->850"
       ]
@@ -7173,6 +7191,7 @@
       "en": "Copy agent URL to clipboard",
       "nl": "Kopieer de agent URL naar het klembord",
       "es": "Copiar la URL del agente en el portapapeles",
+      "fr": "Copier l'URL de l'agent dans le presse papier",
       "xloc": [
         "default.handlebars->27->405"
       ]
@@ -7467,6 +7486,7 @@
       "en": "Create a link to share this device with a guest",
       "nl": "Maak een link om dit apparaat met een gast te delen",
       "es": "Crear un enlace para compartir este dispositivo con un invitado",
+      "fr": "Créer un lien pour partager cet appareil avec un invité",
       "xloc": [
         "default.handlebars->27->614"
       ]
@@ -7544,6 +7564,7 @@
       "en": "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour.",
       "nl": "Creëert een link waarmee een gast zonder account maximaal 1 uur op het externe bureaublad van dit apparaat kan gaan.",
       "es": "Crea un enlace que permite a un invitado acceder al escritorio remoto sin requerir una cuenta en este dispositivo durante hasta 1 hora.",
+      "fr": "Créer un lien qui autorise un invité sans compte à prendre en main cet appareil pendant maximum 1 heure.",
       "xloc": [
         "default.handlebars->27->699"
       ]
@@ -7887,6 +7908,7 @@
       "en": "Default",
       "nl": "Standaard",
       "es": "Por defecto",
+      "fr": "Par défaut",
       "xloc": [
         "default.handlebars->27->1621",
         "default.handlebars->27->1668",
@@ -8832,6 +8854,7 @@
       "en": "Device is battery powered",
       "nl": "Apparaat werkt op batterijen",
       "es": "La batería del dispositivo esta conectada",
+      "fr": "L'appareil est sur batterie",
       "xloc": [
         "default-mobile.handlebars->9->152",
         "default-mobile.handlebars->9->212",
@@ -9035,6 +9058,7 @@
       "en": "Device is plugged-in",
       "nl": "Apparaat is aangesloten",
       "es": "El dispositivo esta conectado",
+      "fr": "L'appareil est branché sur secteur",
       "xloc": [
         "default-mobile.handlebars->9->151",
         "default-mobile.handlebars->9->211",
@@ -9337,6 +9361,7 @@
       "en": "Domain",
       "nl": "Domein",
       "es": "Dominio",
+      "fr": "Domaine",
       "xloc": [
         "default.handlebars->27->1622",
         "default.handlebars->27->1669",
@@ -9547,6 +9572,7 @@
       "en": "Download Report",
       "nl": "Rapport downloaden",
       "es": "Descargar reporte",
+      "fr": "Télécharger le rapport",
       "xloc": [
         "default.handlebars->27->1540",
         "default.handlebars->container->column_l->p3->3->1->0->3"
@@ -10233,6 +10259,7 @@
       "en": "Edit Device Tags",
       "nl": "Berwerk apparaat tags",
       "es": "Editar etiquetas del dispositivo",
+      "fr": "Éditer les tags d'appareil",
       "xloc": [
         "default.handlebars->27->472"
       ]
@@ -10406,6 +10433,7 @@
       "en": "Edit tags",
       "nl": "Bewerk tags",
       "es": "Editar etiquetas",
+      "fr": "Éditer les tags",
       "xloc": [
         "default.handlebars->27->454"
       ]
@@ -10750,6 +10778,7 @@
       "en": "Enabled",
       "nl": "Ingeschakeld",
       "es": "Habilitado",
+      "fr": "Activer",
       "xloc": [
         "default.handlebars->27->1871"
       ]
@@ -10776,6 +10805,7 @@
       "nl": "Eindtijd",
       "fi": "päättymisaika",
       "es": "Tiempo de finalización",
+      "fr": "Heure de fin",
       "xloc": [
         "default.handlebars->27->1868"
       ]
@@ -11283,6 +11313,7 @@
       "en": "Expire Time",
       "nl": "Verval datum",
       "es": "Tiempo de expiración",
+      "fr": "Heure d'expiration",
       "xloc": [
         "default.handlebars->27->185",
         "default.handlebars->27->701"
@@ -11292,6 +11323,7 @@
       "en": "Expires at {0}",
       "nl": "Vervald om {0}",
       "es": "Expira el {0}",
+      "fr": "Expire à {0}",
       "xloc": [
         "desktop.handlebars->3->6"
       ]
@@ -11368,6 +11400,7 @@
       "en": "FQDN",
       "nl": "FQDN",
       "es": "FQDN",
+      "fr": "FQDN",
       "xloc": [
         "default.handlebars->27->93"
       ]
@@ -11529,6 +11562,7 @@
     {
       "en": "File Operation",
       "nl": "Bestandsbewerking",
+      "fr": "Opération sur les fichiers",
       "xloc": [
         "default.handlebars->27->849"
       ]
@@ -12647,6 +12681,7 @@
       "en": "Group By",
       "nl": "Groeperen op",
       "es": "Agrupar Por",
+      "fr": "Grouper par",
       "xloc": [
         "default.handlebars->27->1533"
       ]
@@ -12655,6 +12690,7 @@
       "en": "Group Identifier",
       "nl": "Groepsidentificatie",
       "es": "Identificador del Grupo",
+      "fr": "Identifiant de groupe",
       "xloc": [
         "default.handlebars->27->1680"
       ]
@@ -12748,6 +12784,7 @@
       "en": "Guest Name",
       "nl": "Gast naam",
       "es": "Nombre del invitado",
+      "fr": "Nom de l'invité",
       "xloc": [
         "default.handlebars->27->184",
         "default.handlebars->27->700"
@@ -13353,6 +13390,7 @@
       "en": "IPv6 address",
       "nl": "IPv6 adres",
       "es": "Dirección IPv6",
+      "fr": "Adresse IPv6",
       "xloc": [
         "default.handlebars->27->94"
       ]
@@ -13361,6 +13399,7 @@
       "en": "IPv6 gateway",
       "nl": "IPv6 gateway",
       "es": "Puerta (gateway) IPv6",
+      "fr": "Passerelle IPv6",
       "xloc": [
         "default.handlebars->27->98"
       ]
@@ -13369,6 +13408,7 @@
       "en": "IPv6 mask",
       "nl": "IPv6 mask",
       "es": "Mascara IPv6",
+      "fr": "Masque IPv6",
       "xloc": [
         "default.handlebars->27->96"
       ]
@@ -13430,6 +13470,7 @@
       "en": "If valid, reset mail sent.",
       "nl": "Indien geldig, verzend de reset e-mail.",
       "es": "Si es correcto, enviar correo de restablecimiento",
+      "fr": "Si valide le mail de réinitialisation a été envoyé.",
       "xloc": [
         "login-mobile.handlebars->5->1",
         "login.handlebars->5->1"
@@ -13775,6 +13816,7 @@
       "en": "Intel AMT Redirection",
       "nl": "Intel AMT omleiding",
       "es": "Redirección de Intel AMT",
+      "fr": "Redirection Intel AMT",
       "xloc": [
         "default.handlebars->27->1858"
       ]
@@ -13783,6 +13825,7 @@
       "en": "Intel AMT WSMAN",
       "nl": "Intel AMT WSMAN",
       "es": "Intel AMT WSMAN",
+      "fr": "WSMAN Intel AMT",
       "xloc": [
         "default.handlebars->27->1857"
       ]
@@ -14649,6 +14692,7 @@
       "en": "Invalidate Email",
       "nl": "E-mail ongeldig maken",
       "es": "Correo invalido",
+      "fr": "Email invalide",
       "xloc": [
         "default.handlebars->27->1579"
       ]
@@ -15037,6 +15081,7 @@
       "en": "Keys",
       "nl": "Sleutels",
       "es": "Llaves",
+      "fr": "Touches",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
@@ -15664,6 +15709,7 @@
       "nl": "Start MeshCentral Router",
       "fi": "Käynnistä MeshCentral Reititin",
       "es": "Ejecutar MeshCentral Router",
+      "fr": "Lancer MeshCentral Router",
       "xloc": [
         "default.handlebars->27->760"
       ]
@@ -15672,6 +15718,7 @@
       "en": "Launch noVNC session to this device",
       "nl": "Start een noVNC-sessie op dit apparaat",
       "es": "Ejecutar sesión de noVNC en este dispositivo",
+      "fr": "Lancer une session noVNC sur cet appareil",
       "xloc": [
         "default.handlebars->27->633"
       ]
@@ -15680,6 +15727,7 @@
       "en": "Launch web-based RDP session to this device",
       "nl": "Start een webgebaseerde RDP-sessie op dit apparaat",
       "es": "Ejecutar sesión de RDP basada en el navegador para este dispositivo",
+      "fr": "Lancer une session RDP par navigateur sur cet appareil",
       "xloc": [
         "default.handlebars->27->635"
       ]
@@ -15919,6 +15967,7 @@
       "en": "Linux / BSD / macOS Binary Installer",
       "nl": "Linux / BSD / macOS Binair installatieprogramma",
       "es": "Instalador binario para Linux / BSD / macOS",
+      "fr": "Exécutable d'installation Linux / BSD / macOS",
       "xloc": [
         "default.handlebars->27->368"
       ]
@@ -16121,6 +16170,7 @@
       "en": "Linux/BSD/macOS Command Shell",
       "nl": "Linux/BSD/macOS Command Shell",
       "es": "Linux/BSD/macOS Shell de Comandos",
+      "fr": "Commandes d'installation Linux / BSD / macOS",
       "xloc": [
         "default.handlebars->27->463"
       ]
@@ -16128,7 +16178,8 @@
     {
       "en": "Linux/macOS Binary Installer",
       "nl": "Linux/macOS binair installatieprogramma",
-      "es": "Instalador binario para Linux/macOS"
+      "es": "Instalador binario para Linux/macOS",
+      "fr": "Exécutable d'installation Linux / macOS"
     },
     {
       "cs": "Seznam",
@@ -16317,6 +16368,7 @@
       "en": "Lock Account Settings",
       "nl": "Vergrendel accountinstellingen",
       "es": "Bloquear configuración de la cuenta",
+      "fr": "Verrouiller les paramètres de compte",
       "xloc": [
         "default.handlebars->27->1403",
         "default.handlebars->27->1651"
@@ -16418,6 +16470,7 @@
       "en": "Log in using an existing account",
       "nl": "Log in met een bestaand account",
       "es": "Ingresar usando una cuenta existente",
+      "fr": "S'authentifier en utilisant un compte existant",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->3"
@@ -17012,6 +17065,7 @@
       "nl": "Beheeer opnames",
       "fi": "Hallinnoi nauhoituksia",
       "es": "Administrar Grabaciones",
+      "fr": "Gérer les enregistrements",
       "xloc": [
         "default.handlebars->27->1647"
       ]
@@ -18350,6 +18404,7 @@
       "en": "My User Recordings",
       "nl": "Mijn gebruikersopnames",
       "es": "Mis Grabaciones",
+      "fr": "Mes enregistrements",
       "xloc": [
         "default.handlebars->container->column_l->p52->p52title->1"
       ]
@@ -19405,6 +19460,7 @@
       "en": "No recordings.",
       "nl": "Geen opnames.",
       "es": "No hay Grabaciones.",
+      "fr": "Pas d'enregistrements.",
       "xloc": [
         "default.handlebars->27->1846"
       ]
@@ -19711,6 +19767,7 @@
       "en": "Not on server",
       "nl": "Niet op de server",
       "es": "No esta en el servidor",
+      "fr": "Pas sur le serveur",
       "xloc": [
         "default.handlebars->27->1862"
       ]
@@ -19885,6 +19942,7 @@
       "en": "Notify Only",
       "nl": "Alleen informeren",
       "es": "Solo notificaciones",
+      "fr": "Notifier seulement",
       "xloc": [
         "default.handlebars->27->711"
       ]
@@ -20045,6 +20103,7 @@
       "en": "One Day",
       "nl": "één dag",
       "es": "Un día",
+      "fr": "Un jour",
       "xloc": [
         "default.handlebars->27->1531"
       ]
@@ -20072,6 +20131,7 @@
       "nl": "Online",
       "fi": "Online-tilassa",
       "es": "En Linea",
+      "fr": "En ligne",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9->1"
@@ -20119,6 +20179,7 @@
       "nl": "Toon alleen apparaten die online zijn",
       "fi": "Näytä vain online-tilassa olevat laitteet",
       "es": "Solo mostrar dispositivos que están en linea",
+      "fr": "Montrer uniquement les appareils en ligne",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9"
       ]
@@ -20919,6 +20980,7 @@
       "en": "Perform batch device tag operation",
       "nl": "Voer een batch-apparaat tag bewerking uit",
       "es": "Realizar operación de etiqueta de dispositivos por lotes",
+      "fr": "Appliquer des tag en lot",
       "xloc": [
         "default.handlebars->27->465"
       ]
@@ -21380,6 +21442,7 @@
       "nl": "Stroomstatus",
       "fi": "Virran tila",
       "es": "Estado de Energia",
+      "fr": "État d'alimentation",
       "xloc": [
         "default-mobile.handlebars->9->267"
       ]
@@ -21484,6 +21547,7 @@
       "en": "Present on server",
       "nl": "Aanwezig op de server",
       "es": "Presente en el Servidor",
+      "fr": "Présent sur le serveur",
       "xloc": [
         "default.handlebars->27->1861"
       ]
@@ -21583,6 +21647,7 @@
       "en": "Prompt",
       "nl": "Melden",
       "es": "Notificacion",
+      "fr": "Demander",
       "xloc": [
         "default.handlebars->27->187"
       ]
@@ -21591,6 +21656,7 @@
       "en": "Prompt for consent",
       "nl": "Toestemming vragen",
       "es": "Notificacion para Consentimiento",
+      "fr": "Demander le consentement",
       "xloc": [
         "default.handlebars->27->710"
       ]
@@ -22005,6 +22071,7 @@
       "nl": "Echte naam",
       "fi": "Oikea nimi",
       "es": "Nombre Real",
+      "fr": "Nom complet",
       "xloc": [
         "default.handlebars->27->1739",
         "default.handlebars->27->1741",
@@ -22032,6 +22099,7 @@
       "en": "Received invalid network data",
       "nl": "Ongeldige netwerkgegevens ontvangen",
       "es": "Se recibieron datos de red no válidos",
+      "fr": "Données réseau reçues non valides",
       "xloc": [
         "default.handlebars->27->794",
         "desktop.handlebars->3->11"
@@ -22054,6 +22122,7 @@
       "en": "Recording Details",
       "nl": "Opname details",
       "es": "Detalles de la Grabación",
+      "fr": "Détails d'enregistrements",
       "xloc": [
         "default.handlebars->27->1873"
       ]
@@ -22062,6 +22131,7 @@
       "en": "Recordings",
       "nl": "Opnames",
       "es": "Grabaciones",
+      "fr": "Enregistrements",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersRecordings"
       ]
@@ -22355,6 +22425,7 @@
       "en": "Remote Desktop",
       "nl": "Extern bureaublad",
       "es": "Escritorio Remoto",
+      "fr": "Bureau distant",
       "xloc": [
         "default-mobile.handlebars->9->158",
         "default-mobile.handlebars->9->161",
@@ -22366,6 +22437,7 @@
       "en": "Remote Desktop Link",
       "nl": "Extern bureaublad koppeling",
       "es": "Enlace de Escritorio Remoto",
+      "fr": "Lien de bureau distant",
       "xloc": [
         "default.handlebars->27->191"
       ]
@@ -22727,6 +22799,7 @@
       "en": "Remove tags",
       "nl": "Verwijder tags",
       "es": "Eliminar etiquetas",
+      "fr": "Supprimer les tags",
       "xloc": [
         "default.handlebars->27->469"
       ]
@@ -22864,6 +22937,7 @@
       "en": "Report Day",
       "nl": "Dag rapport",
       "es": "Reporte del día",
+      "fr": "Rapport jour",
       "xloc": [
         "default.handlebars->27->1532"
       ]
@@ -22872,6 +22946,7 @@
       "en": "Report Type",
       "nl": "Rapporttype",
       "es": "Tipo de Reporte",
+      "fr": "Type de rapport",
       "xloc": [
         "default.handlebars->27->1527"
       ]
@@ -23338,6 +23413,7 @@
       "en": "Run Commands",
       "nl": "Voer opdrachten uit",
       "es": "Ejecutar Comandos",
+      "fr": "Exécuter des commandes",
       "xloc": [
         "default.handlebars->27->464",
         "default.handlebars->27->715",
@@ -23349,6 +23425,7 @@
       "nl": "Start MeshCentral Router en klik \\\"install\\\" om het startbaar te maken vanuit de browser.",
       "fi": "Suorita MeshCentral Reititin ja napsauta \\\"asenna\\\", jotta se voidaan käynnistää selaimesta.",
       "es": "Ejecute MeshCentral Router y haga clic en \\\"instalar\\\" para que se pueda iniciar desde el navegador.",
+      "fr": "Exécuter MeshCentral Router et cliquer sur \\\"installer\\\" pour le rendre lançable depuis le navigateur.",
       "xloc": [
         "default.handlebars->27->759"
       ]
@@ -23357,6 +23434,7 @@
       "en": "Run commands",
       "nl": "Voer opdrachten uit",
       "es": "Ejecutar Comandos",
+      "fr": "Exécuter des commandes",
       "xloc": [
         "default.handlebars->27->448"
       ]
@@ -23365,6 +23443,7 @@
       "en": "Run commands on selected devices.",
       "nl": "Voer opdrachten uit op geselecteerde apparaten.",
       "es": "Ejecutar Comandos en los dispositivos seleccionados.",
+      "fr": "Exécuter des commandes sur les appareils sélectionnés.",
       "xloc": [
         "default.handlebars->27->460"
       ]
@@ -23373,6 +23452,7 @@
       "en": "Run commands on this device.",
       "nl": "Voer opdrachten uit op dit apparaat.",
       "es": "Ejecutar comandos en este dispositivo",
+      "fr": "Exécuter des commandes sur cet appareil.",
       "xloc": [
         "default.handlebars->27->723"
       ]
@@ -23592,6 +23672,7 @@
       "en": "Save conversation",
       "nl": "Gesprek opslaan",
       "es": "Guardar Conversación",
+      "fr": "Enregistrer la conversation",
       "xloc": [
         "messenger.handlebars->xtop->1"
       ]
@@ -23733,6 +23814,7 @@
       "en": "Screen",
       "nl": "Scherm",
       "es": "Pantalla",
+      "fr": "Écran",
       "xloc": [
         "default-mobile.handlebars->9->287"
       ]
@@ -23741,6 +23823,7 @@
       "en": "Screen Selection",
       "nl": "Scherm Selectie",
       "es": "Seleccionar pantalla",
+      "fr": "Sélection d'écran",
       "xloc": [
         "default-mobile.handlebars->9->288"
       ]
@@ -23749,6 +23832,7 @@
       "en": "Screens",
       "nl": "Schermen",
       "es": "Pantallas",
+      "fr": "Écrans",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
       ]
@@ -24115,6 +24199,7 @@
       "en": "Send Email",
       "nl": "E-mail verzenden",
       "es": "Enviar Correo",
+      "fr": "Envoyer l'Email",
       "xloc": [
         "default.handlebars->27->1591"
       ]
@@ -24748,6 +24833,7 @@
       "en": "Session",
       "nl": "Sessie",
       "es": "Sesión",
+      "fr": "Session",
       "xloc": [
         "default.handlebars->27->1847"
       ]
@@ -24756,6 +24842,7 @@
       "en": "Session Information",
       "nl": "Sessie informatie",
       "es": "Información de la Sesión",
+      "fr": "Information de session",
       "xloc": [
         "default.handlebars->27->802",
         "desktop.handlebars->3->19"
@@ -24801,6 +24888,7 @@
       "en": "Sessions",
       "nl": "Sessies",
       "es": "Sesiones",
+      "fr": "Sessions",
       "xloc": [
         "default-mobile.handlebars->9->176",
         "default.handlebars->27->256"
@@ -24810,6 +24898,7 @@
       "en": "Set tags",
       "nl": "Stel tags in",
       "es": "Establecer etiquetas",
+      "fr": "Appliquer des tags",
       "xloc": [
         "default.handlebars->27->468"
       ]
@@ -24929,6 +25018,7 @@
       "en": "Share",
       "nl": "Delen",
       "es": "Compartir",
+      "fr": "Partager",
       "xloc": [
         "default.handlebars->27->613"
       ]
@@ -24937,6 +25027,7 @@
       "en": "Share Device",
       "nl": "Deel apparaat",
       "es": "Compartir dispositivo",
+      "fr": "Partager un appareil",
       "xloc": [
         "default.handlebars->27->193",
         "default.handlebars->27->712"
@@ -25170,6 +25261,7 @@
       "en": "Show for 1 minute",
       "nl": "Toon gedurende 1 minuut",
       "es": "Mostrar por 1 minuto",
+      "fr": "Montrer pour 1 minute",
       "xloc": [
         "default.handlebars->27->1595",
         "default.handlebars->27->1618"
@@ -25179,6 +25271,7 @@
       "en": "Show for 10 seconds",
       "nl": "Toon gedurende 10 seconden",
       "es": "Mostrar por 10 Segundos",
+      "fr": "Montrer pour 10 secondes",
       "xloc": [
         "default.handlebars->27->1594",
         "default.handlebars->27->1617"
@@ -25188,6 +25281,7 @@
       "en": "Show for 5 minutes",
       "nl": "Toon gedurende 5 minuten",
       "es": "Mostrar por 5 minutos",
+      "fr": "Montrer pour 5 minutes",
       "xloc": [
         "default.handlebars->27->1596",
         "default.handlebars->27->1619"
@@ -25197,6 +25291,7 @@
       "en": "Show message until dismissed by user",
       "nl": "Toon bericht totdat het door de gebruiker wordt afgewezen",
       "es": "Mostrar mensaje hasta que el usuario lo descarte",
+      "fr": "Montrer le message jusqu'à validation par l'utilisateur",
       "xloc": [
         "default.handlebars->27->1593",
         "default.handlebars->27->1616"
@@ -25223,6 +25318,7 @@
       "en": "Sign-in using Azure",
       "nl": "Log in met Azure",
       "es": "Ingresar usando Azure",
+      "fr": "S'authentifier en utilisant Azure",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-azure",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-azure"
@@ -25232,6 +25328,7 @@
       "en": "Sign-in using GitHub",
       "nl": "Log in met GitHub",
       "es": "Ingresar usando GitHub",
+      "fr": "S'authentifier en utilisant GitHub",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-github",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-github"
@@ -25241,6 +25338,7 @@
       "en": "Sign-in using Google",
       "nl": "Log in met Google",
       "es": "Ingresar usando Google",
+      "fr": "S'authentifier en utilisant Google",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-google",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-google"
@@ -25250,6 +25348,7 @@
       "en": "Sign-in using Intel",
       "nl": "Log in met Intel",
       "es": "Ingresar usando Intel",
+      "fr": "S'authentifier en utilisant Intel",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-intel",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-intel"
@@ -25259,6 +25358,7 @@
       "en": "Sign-in using JumpCloud",
       "nl": "Log in met JumpCloud",
       "es": "Ingresar usando JumpCloud",
+      "fr": "S'authentifier en utilisant JumpCloud",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-jumpcloud",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-jumpcloud"
@@ -25268,6 +25368,7 @@
       "en": "Sign-in using Reddit",
       "nl": "Log in met Reddit",
       "es": "Ingresar usando Reddit",
+      "fr": "S'authentifier en utilisant Reddit",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-reddit",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-reddit"
@@ -25277,6 +25378,7 @@
       "en": "Sign-in using Twitter",
       "nl": "Log in met Twitter",
       "es": "Ingresar usando Twitter",
+      "fr": "S'authentifier en utilisant Twitter",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-twitter",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-twitter"
@@ -25357,6 +25459,7 @@
       "en": "Single Sign-in",
       "nl": "Eenmalige aanmelding",
       "es": "Inicio de sesión simple",
+      "fr": "Authentification unique",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-saml",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-saml"
@@ -26191,12 +26294,14 @@
       "en": "Start MeshCentral Router",
       "nl": "Start MeshCentral Router",
       "fi": "Käynnistä MeshCentral Reititin",
-      "es": "Iniciar MeshCentral Router"
+      "es": "Iniciar MeshCentral Router",
+      "fr": "Démarrer MeshCentral Router"
     },
     {
       "en": "Start Time",
       "nl": "Start tijd",
       "es": "Tiempo de Inicio",
+      "fr": "Heure de démarrage",
       "xloc": [
         "default.handlebars->27->1848",
         "default.handlebars->27->1867",
@@ -26401,6 +26506,7 @@
       "nl": "Onderwerp",
       "fi": "Otsikko",
       "es": "Asunto",
+      "fr": "Sujet",
       "xloc": [
         "default.handlebars->27->1590"
       ]
@@ -26588,6 +26694,7 @@
       "en": "TCP Routing",
       "nl": "TCP routering",
       "es": "Enrutamiento TCP",
+      "fr": "Routage TCP",
       "xloc": [
         "default-mobile.handlebars->9->170",
         "default.handlebars->27->250"
@@ -27091,6 +27198,7 @@
       "en": "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file.",
       "nl": "Dit is een uitvoerbaar bestand op besturingssystemen met grafische gebruikersinterfaces.U moet 'chmod + x meshagent' gebruiken en dit bestand uitvoeren.",
       "es": "Este es un ejecutable en sistemas operativos con interfaces gráficas de usuario. Necesita 'chmod + x meshagent' y ejecutar este archivo.",
+      "fr": "C'est un exécutable pour les OS avec interface graphique. Vous devrez 'chmod +x meshagent' et lancer ce fichier.",
       "xloc": [
         "default.handlebars->27->402"
       ]
@@ -27098,7 +27206,8 @@
     {
       "en": "This is a executable that will only run as root and on OS's with graphical user interfaces.",
       "nl": "Dit is een uitvoerbaar bestand dat alleen zal draaien als root en op besturingssystemen met grafische gebruikersinterfaces.",
-      "es": "Este es un ejecutable que solo se ejecutará como root y en sistemas operativos con interfaces gráficas de usuario."
+      "es": "Este es un ejecutable que solo se ejecutará como root y en sistemas operativos con interfaces gráficas de usuario.",
+      "fr": "Ceci est un exécutable qui ne peut être lancé que en tant que root et sur des OS avec interface graphique."
     },
     {
       "cs": "Toto je portál pro vzdálenou správu a podporu počítače.",
@@ -27323,6 +27432,7 @@
       "en": "Time Span",
       "nl": "Tijdspanne",
       "es": "Espacio de Tiempo",
+      "fr": "Période",
       "xloc": [
         "default.handlebars->27->1529"
       ]
@@ -27331,6 +27441,7 @@
       "en": "Timeout",
       "nl": "Time-out",
       "es": "Timeout",
+      "fr": "Timeout",
       "xloc": [
         "default.handlebars->27->793",
         "desktop.handlebars->3->10"
@@ -27594,6 +27705,7 @@
       "en": "Toggle Star",
       "nl": "(De)Markeren",
       "es": "Favoritos",
+      "fr": "Activer/Désactiver l'étoile",
       "xloc": [
         "default.handlebars->contextMenu->cxstar"
       ]
@@ -28033,6 +28145,7 @@
       "en": "UDP Routing",
       "nl": "UDP routering",
       "es": "Enrutamiento UDP",
+      "fr": "Routage UDP",
       "xloc": [
         "default-mobile.handlebars->9->173",
         "default.handlebars->27->253"
@@ -28973,6 +29086,7 @@
       "en": "User ID",
       "nl": "Gebruikers ID",
       "es": "ID de usuario",
+      "fr": "ID utilisateur",
       "xloc": [
         "default-mobile.handlebars->9->447"
       ]
@@ -29000,6 +29114,7 @@
       "en": "User Identifiers",
       "nl": "Gebruikers-ID's",
       "es": "Identificadores de Usuario",
+      "fr": "Identifiant utilisateur",
       "xloc": [
         "default.handlebars->27->1376",
         "default.handlebars->27->1720"
@@ -29158,6 +29273,7 @@
       "en": "User \\\"{0}\\\"",
       "nl": "Gebuiker \\\"{0}\\\"",
       "es": "Usuario",
+      "fr": "Utilisateur \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->27->801",
         "desktop.handlebars->3->18"
@@ -29341,6 +29457,7 @@
       "en": "Validate Email",
       "nl": "E-mail valideren",
       "es": "Validar Correo",
+      "fr": "Valider l'Email",
       "xloc": [
         "default.handlebars->27->1578"
       ]
@@ -29890,6 +30007,7 @@
       "en": "Web-RDP",
       "nl": "Web-RDP",
       "es": "Web-RDP",
+      "fr": "Web-RDP",
       "xloc": [
         "default.handlebars->27->636"
       ]
@@ -30382,6 +30500,7 @@
       "en": "Windows Command Prompt",
       "nl": "Windows opdrachtprompt",
       "es": "Consola de Windows",
+      "fr": "Ligne de commande Windows",
       "xloc": [
         "default.handlebars->27->461",
         "default.handlebars->27->724"
@@ -30427,6 +30546,7 @@
       "en": "Windows PowerShell",
       "nl": "Windows PowerShell",
       "es": "Windows PowerShell",
+      "fr": "Windows PowerShell",
       "xloc": [
         "default.handlebars->27->462",
         "default.handlebars->27->725"
@@ -30645,6 +30765,7 @@
       "en": "You have been invited to install an application that will allow a remote operator to securely access your computer including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Select your operating system and follow the instructions below for installation.",
       "nl": "U bent uitgenodigd om een applicatie te installeren waarmee een externe beheerder veilig toegang heeft tot uw computer, inclusief het bureaublad en de bestanden. Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie er toegang krijgt tot uw computer.Selecteer uw besturingssysteem en volg de onderstaande instructies voor installatie.",
       "es": "Se le ha invitado a instalar una aplicación que permitirá a un operador remoto acceder de forma segura a su computadora, incluidos el escritorio y los archivos. Solo siga las instrucciones a continuación si se esperaba esta invitación y sabe quién accederá a su computadora. Seleccione su sistema operativo y siga las instrucciones a continuación para la instalación.",
+      "fr": "Vous avez été invité à installer une application qui va autoriser un administrateur distant à accéder de façon sécurisé à votre ordinateur, incluant le bureau et les fichiers. Ne suivez les instructions qui suivent que si cette invitation était attendu et que vous connaissez qui accédera à votre ordinateur. Sélectionnez votre Système d'exploitation et suivez les instructions ci-dessous pour l'installation.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
       ]
@@ -30703,6 +30824,7 @@
     {
       "en": "Zip",
       "nl": "Zip",
+      "fr": "Zip",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
@@ -30710,6 +30832,7 @@
     {
       "en": "Zip Filename",
       "nl": "Zip bestandsnaam",
+      "fr": "Nom de fichier Zip",
       "xloc": [
         "default.handlebars->27->865"
       ]
@@ -31733,6 +31856,7 @@
       "en": "noVNC",
       "nl": "noVNC",
       "es": "noVNC",
+      "fr": "no VNC",
       "xloc": [
         "default.handlebars->27->634"
       ]
@@ -31741,6 +31865,7 @@
       "en": "noVNC Connection",
       "nl": "noVNC verbinding",
       "es": "Conexión noVNC",
+      "fr": "Connexion noVNC",
       "xloc": [
         "default.handlebars->27->503"
       ]
@@ -31750,6 +31875,7 @@
       "nl": "noVNC externe verbindingspoort:",
       "fi": "noVNC-etäyhteysportti:",
       "es": "noVNC puerto de conexión remoto:",
+      "fr": "Port distant de connexion noVNC :",
       "xloc": [
         "default.handlebars->27->502"
       ]
@@ -32184,6 +32310,7 @@
       "en": "{0} connections",
       "nl": "{0} verbindingen",
       "es": "{0} conexiones",
+      "fr": "{0} connexions",
       "xloc": [
         "default.handlebars->27->800",
         "desktop.handlebars->3->17"
