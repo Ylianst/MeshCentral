@@ -603,7 +603,7 @@ if (args['_'].length == 0) {
                     }
                     case 'deviceopenurl': {
                         console.log("Open a web page on a remote device, Example usages:\r\n");
-                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceOpenUrl --id 'deviceid' --url http://meshcentral.com"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceOpenUrl --id 'deviceid' --openurl http://meshcentral.com"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]        - The device identifier.");
