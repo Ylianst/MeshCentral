@@ -162,6 +162,7 @@
       "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
       "_agentAllowedIP": "192.168.0.100/24",
       "_agentBlockedIP": "127.0.0.1,::1",
+      "_orphanAgentUser": "admin",
       "___userSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
       "_userSessionIdleTimeout": 30,
       "__userConsentFlags__": "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",

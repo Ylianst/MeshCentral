@@ -54,6 +54,7 @@
         "agentsInRam": { "type": "boolean", "default": false, "description": "Loads all agent binaries in RAM for faster agent updates." },
         "agentPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the agent at x seconds interval and expects a response from the agent." },
         "agentPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the agent at x seconds interval." },
+        "orphanAgentUser": { "type": "string", "default": null, "description": "If an agent attempts to connect to a unknown device group, automatically create a new device group and grant access to the specified user. Example: admin" },
         "agentIdleTimeout": { "type": "integer", "minimum": 1 },
         "compression": { "type": "boolean", "default": true, "description": "Enables GZIP compression for web requests." },
         "wscompression": { "type": "boolean", "default": false, "description": "Enables server-side, websocket per-message deflate compression." },
