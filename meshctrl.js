@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -46,6 +46,9 @@ if (args['_'].length == 0) {
     console.log("  Shell                     - Access command shell of a remote device.");
     console.log("  Upload                    - Upload a file to a remote device.");
     console.log("  Download                  - Download a file from a remote device.");
+    console.log("  DeviceOpenUrl             - Open a URL on a remote device.");
+    console.log("  DeviceMessage             - Open a message box on a remote device.");
+    console.log("  DeviceToast               - Display a toast notification on a remote device.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
@@ -187,6 +190,24 @@ if (args['_'].length == 0) {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else if (args.file == null) { console.log("Remote file missing, use --file [file] specify the remote file to download"); }
             else if (args.target == null) { console.log("Target path missing, use --target [path] to specify the local download location"); }
+            else { ok = true; }
+            break;
+        }
+        case 'deviceopenurl': {
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else if (args.openurl == null) { console.log("Remote URL, use --openurl [url] specify the link to open."); }
+            else { ok = true; }
+            break;
+        }
+        case 'devicemessage': {
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else if (args.msg == null) { console.log("Remote message, use --msg \"[message]\" specify a remote message."); }
+            else { ok = true; }
+            break;
+        }
+        case 'devicetoast': {
+            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
+            else if (args.msg == null) { console.log("Remote message, use --msg \"[message]\" specify a remote message."); }
             else { ok = true; }
             break;
         }
@@ -578,6 +599,48 @@ if (args['_'].length == 0) {
                         console.log("  --file [remotefile]    - The remote file to download.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --target [localpath]   - The local path to download the file to.");
+                        break;
+                    }
+                    case 'deviceopenurl': {
+                        console.log("Open a web page on a remote device, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceOpenUrl --id 'deviceid' --url http://meshcentral.com"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
+                        console.log("  --openurl [url]        - Link to the web page.");
+                        break;
+                    }
+                    case 'devicemessage': {
+                        console.log("Display a message on the remote device, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\""));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\" --title \"title\""));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
+                        console.log("  --msg [message]        - The message to display.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --title [title]        - Messagebox title, default is \"MeshCentral\".");
+                        break;
+                    }
+                    case 'devicetoast': {
+                        console.log("Display a toast message on the remote device, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceToast --id 'deviceid' --msg \"message\""));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceToast --id 'deviceid' --msg \"message\" --title \"title\""));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
+                        console.log("  --msg [message]        - The message to display.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --title [title]        - Toast title, default is \"MeshCentral\".");
                         break;
                     }
                     default: {
@@ -973,6 +1036,18 @@ function serverConnect() {
                 ws.send("{\"action\":\"authcookie\"}");
                 break;
             }
+            case 'deviceopenurl': {
+                ws.send(JSON.stringify({ action: 'msg', type: 'openUrl', nodeid: args.id, url: args.openurl, responseid: 'meshctrl' }));
+                break;
+            }
+            case 'devicemessage': {
+                ws.send(JSON.stringify({ action: 'msg', type: 'messagebox', nodeid: args.id, title: args.title ? args.title : "MeshCentral", msg: args.msg, responseid: 'meshctrl' }));
+                break;
+            }
+            case 'devicetoast': {
+                ws.send(JSON.stringify({ action: 'toast', nodeids: [args.id], title: args.title ? args.title : "MeshCentral", msg: args.msg, responseid: 'meshctrl' }));
+                break;
+            }
         }
     });
 
@@ -988,10 +1063,7 @@ function serverConnect() {
         var data = null;
         try { data = JSON.parse(rawdata); } catch (ex) { }
         if (data == null) { console.log('Unable to parse data: ' + rawdata); }
-        if (settings.cmd == 'showevents') {
-            console.log(data);
-            return;
-        }
+        if (settings.cmd == 'showevents') { console.log(data); return; }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
                 settings.currentDomain = data.serverinfo.domain;
@@ -1054,6 +1126,7 @@ function serverConnect() {
                 break;
             }
             case 'msg': // SHELL
+            case 'toast': // TOAST
             case 'adduser': // ADDUSER
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
