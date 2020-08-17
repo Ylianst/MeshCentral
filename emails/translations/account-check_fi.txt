@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - Sähköpostivarmistus
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) tarkistaa sähköpostiosoitetta. Seuraa linkkiä prosessin loppuun saattamiseksi:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
-If you did not initiate this request, please ignore this mail.
+Jos et suorittanut tätä pyyntöä, voit ohitaa tämän sähköpostin.

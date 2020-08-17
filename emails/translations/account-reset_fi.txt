@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - Tili nollattu
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
+Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) pyytää tilin salasanan palauttamista. Seuraa linkkiä prosessin loppuun saattamiseksi:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
-If you did not initiate this request, please ignore this mail.
+Jos et suorittanut tätä pyyntöä, voit ohitaa tämän sähköpostin.

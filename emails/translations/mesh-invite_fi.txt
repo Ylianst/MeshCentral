@@ -2,10 +2,10 @@
 ~<area-name>
 Hei [[[NAME]]],
 ~</area-name>
-User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/) is requesting you install software to start the remote control session.
+Käyttäjä[[[USERNAME]]] palvelimella [[[SERVERNAME]]] ([[[SERVERURL]]]/) pyytää sinua asentamaan ohjelmiston etähallintaistunnon käynnistämiseksi.
 ~<area-msg>
 ~
-Message: [[[MSG]]]
+Viesti: [[[MSG]]]
 ~
 ~</area-msg>
 ~<area-windows>
@@ -29,7 +29,7 @@ For Linux, cut & paste the following in a terminal to install the agent:
 ~<area-link>
 To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]] and follow the instructions.
 ~</area-link>
-If you did not initiate this request, please ignore this mail.
+Jos et suorittanut tätä pyyntöä, voit ohitaa tämän sähköpostin.
 ~
-Best regards,
+Ystävällisin terveisin,
 ~[[[USERNAME]]]
