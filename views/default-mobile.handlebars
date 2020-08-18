@@ -345,6 +345,40 @@
         .deviceBatterySmall9 { background: url(../images/batteries24.png) -112px 0px; }
         .deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; }
         .deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; }
+
+        .devList1 {
+            height: 50px;
+            cursor: pointer;
+            position: relative;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .devList2 {
+            float: left;
+            margin-left: 4px
+        }
+
+        .devList3 {
+            width: auto;
+            height: 40px;
+            background-color: lightgray;
+            margin-left: 60px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-radius: 8px 0px 0px 8px;
+        }
+
+        .devList4 {
+            padding-left: 12px;
+            padding-top: 2px;
+        }
+
+        .devList5 {
+            padding-left: 12px;
+            padding-top: 3px;
+            color: gray
+        }
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -374,7 +408,7 @@
                     </div>
                 </div>
                 <div id=p2 style="display:none;position:absolute;top:0;left:0;right:0;bottom:0">
-                    <div id=xdevices style="position:absolute;overflow-y:auto;top:0;left:0;right:0;bottom:30px"></div>
+                    <div id=xdevices style="position:absolute;overflow-y:auto;top:0;left:0;right:0;bottom:30px" onscroll="onDevicesScroll()" ontouchstart="onDeviceTouch(true)" ontouchend="onDeviceTouch(false)"></div>
                     <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:30px;left:0;right:0;bottom:0px;background-color:#aaa">
                         <div style="margin:4px">
                             <span style="width:20px;display:inline-block;text-align:center;cursor:pointer" onclick=clearSearchInput()><b>X</b></span>
@@ -2202,7 +2236,7 @@
                         var bat = nodes[i].sessions.battery;
                         var statestr = '';
                         if (bat.state == 'ac') { statestr = "Device is plugged-in"; }
-                        if (bat.state == 'dc') { statestr = "Device is battery powered"; }
+                        else if (bat.state == 'dc') { statestr = "Device is battery powered"; }
 
                         var levelstr = '', levelnum = -1;
                         if ((typeof bat.level == 'number') && (bat.level >= 0) && (bat.level <= 100)) {
@@ -2224,11 +2258,7 @@
                 // Node
                 var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
                 if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
-                r += '<div style=cursor:pointer;position:relative onclick=goForward(\'' + nodes[i]._id + '\')>' + devNotify;
-                r += '<div class="i' + icon + '" style="float:left;margin-left:4px"></div>';
-                r += '<div style="width:auto;height:40px;background-color:lightgray;margin-top:5px;margin-bottom:5px;margin-left:60px;padding-top:5px;padding-bottom:5px;border-radius:8px 0px 0px 8px">';
-                r += '<div><div style=padding-left:12px;padding-top:2px><b>' + name + '</b></div><div style=padding-left:12px;padding-top:3px;color:gray>' + nodestate + '</div></div>';
-                r += '</div></div>';
+                r += '<div name=xxdevice class=devList1 onclick=goForward(\'' + nodes[i]._id + '\')><div style=display:none>' + devNotify + '<div class="i' + icon + ' devList2"></div><div class=devList3><div class=devList4><b>' + name + '</b></div><div class=devList5>' + nodestate + '</div></div></div></div>';
 
                 // If we are displaying devices by group, put the device in the right group.
                 /*
@@ -2281,6 +2311,29 @@
             deviceHeaderSet();
             for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
             for (var i in deviceHeadersTitles) { Q(i).title = deviceHeadersTitles[i]; }
+            onDevicesScrollEx();
+        }
+
+        var onDevicesTouchActive = false;
+        var onDevicesScrollnagleTimer = null;
+        function onDevicesScroll() {
+            if (onDevicesScrollnagleTimer != null) { clearTimeout(onDevicesScrollnagleTimer); onDevicesScrollnagleTimer = null; }
+            if (onDevicesTouchActive) return;
+            onDevicesScrollnagleTimer = setTimeout(onDevicesScrollEx, 50);
+        }
+
+        function onDeviceTouch(x) {
+            if (onDevicesTouchActive == x) return;
+            onDevicesTouchActive = x;
+            if (x == false) onDevicesScrollEx();
+        }
+
+        function onDevicesScrollEx() {
+            onDevicesScrollnagleTimer = null;
+            var visibleTop = Q('xdevices').scrollTop - 250, visibleBottom = Q('xdevices').scrollTop + Q('xdevices').clientHeight + 250, devdivs = document.getElementsByName('xxdevice');
+            for (var i = 0; i < devdivs.length; i++) {
+                devdivs[i].childNodes[0].style.display = ((devdivs[i].offsetTop >= visibleTop) && (devdivs[i].offsetTop < visibleBottom)) ? null : 'none';
+            }
         }
 
         // Show currently active sessions on this device
@@ -4336,7 +4389,7 @@
 
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function center() { QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); deskAdjust(); /*drawDeviceTimeline();*/ }
+        function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); deskAdjust(); /*drawDeviceTimeline();*/ }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
