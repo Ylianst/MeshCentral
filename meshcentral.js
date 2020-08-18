@@ -1427,11 +1427,13 @@ function CreateMeshCentralServer(config, args) {
                     if (Array.isArray(obj.config.domains[i].managealldevicegroups)) {
                         for (var j in obj.config.domains[i].managealldevicegroups) {
                             if (typeof obj.config.domains[i].managealldevicegroups[j] == 'string') {
-                                obj.config.settings.managealldevicegroups.push('user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j]);
+                                const u = 'user/' + i + '/' + obj.config.domains[i].managealldevicegroups[j];
+                                if (obj.config.settings.managealldevicegroups.indexOf(u) == -1) { obj.config.settings.managealldevicegroups.push(u); }
                             }
                         }
                     }
                 }
+                obj.config.settings.managealldevicegroups.sort();
 
                 // Start watchdog timer if needed
                 // This is used to monitor if NodeJS is servicing IO correctly or getting held up a lot. Add this line to the settings section of config.json

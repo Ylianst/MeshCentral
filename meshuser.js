@@ -1030,7 +1030,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { }
                             try { info.database = ["Unknown", "NeDB", "MongoJS", "MongoDB", "MariaDB", "MySQL"][parent.parent.db.databaseType]; } catch (ex) { }
                             try { info.productionMode = ((process.env.NODE_ENV != null) && (process.env.NODE_ENV == 'production')); } catch (ex) { }
-
+                            try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
                             r = JSON.stringify(info, null, 4);
                             break;
                         }
