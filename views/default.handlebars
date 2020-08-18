@@ -11052,6 +11052,7 @@
             x += '<div id=d2MngUsr><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>' + "Manage Users" + '</label><br></div>';
             x += '<div id=d2MngGrp><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusergroups>' + "Manage User Groups" + '</label><br></div>';
             x += '<div id=d2MngRec><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_managerecordings>' + "Manage Recordings" + '</label><br></div>';
+            x += '<div id=d2AllEvnt><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_allevents>' + "View All Events" + '</label><br></div>';
             if (x != '') { x += '<hr/>'; }
             x = '<div><div id=d2AdminPermissions>' + x;
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
@@ -11082,6 +11083,10 @@
             if ((userinfo.siteadmin & 512) != 0) {
                 Q('ua_managerecordings').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 512) != 0)); // Manage Recordings
                 QE('ua_managerecordings', !uself && (userinfo.siteadmin & 512));
+            }
+            if ((userinfo.siteadmin & 2048) != 0) {
+                Q('ua_allevents').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 2048) != 0));       // View all events
+                QE('ua_allevents', !uself && (userinfo.siteadmin & 2048));
             }
 
             QE('ua_fulladmin', !uself && (userinfo.siteadmin == 0xFFFFFFFF));
@@ -11117,6 +11122,7 @@
                 QE('ua_nomeshcmd', !Q('ua_fulladmin').checked);
                 QE('ua_manageusergroups', !Q('ua_fulladmin').checked);
                 QE('ua_managerecordings', !Q('ua_fulladmin').checked);
+                QE('ua_allevents', !Q('ua_fulladmin').checked);
                 QE('ua_locksettings', !Q('ua_fulladmin').checked);
                 QE('ua_fileaccessquota', Q('ua_fileaccess').checked && !Q('ua_fulladmin').checked);
             }
@@ -11136,6 +11142,7 @@
                 if (Q('ua_manageusergroups').checked == true) siteadmin += 256;
                 if (Q('ua_managerecordings').checked == true) siteadmin += 512;
                 if (Q('ua_locksettings').checked == true) siteadmin += 1024;
+                if (Q('ua_allevents').checked == true) siteadmin += 2048;
             }
             var x = { action: 'edituser', id: user._id, siteadmin: siteadmin };
             if (isNaN(quota) == false) { x.quota = (quota * 1024); }
