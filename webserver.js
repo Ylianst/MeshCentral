@@ -3193,7 +3193,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const user = obj.users[userid];
         const subscriptions = [userid, 'server-global'];
         if (user.siteadmin != null) {
-            if (user.siteadmin == 0xFFFFFFFF) subscriptions.push('*');
+            // Allow full site administrators and user managers to get all events.
+            if ((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2) != 0)) subscriptions.push('*');
             if ((user.siteadmin & 2) != 0) {
                 if ((user.groups == null) || (user.groups.length == 0)) {
                     // Subscribe to all user changes
