@@ -2161,12 +2161,13 @@ function createMeshCore(agent) {
                             this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null })));
                             this.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' })));
                         });
-                        var zip = require('zip-writer').write({ files: p });
-                        zip.pipe(out);
+                        this.zip = require('zip-writer').write({ files: p });
+                        this.zip.pipe(out);
                         break;
                     case 'cancel':
                         // TODO: Cancel zip operation if present
                         //sendConsoleText('Cancel operation');
+                        this.zip.cancel(function () { sendConsoleText('Zip operation was cancelled'); });
                         break;
                     default:
                         // Unknown action, ignore it.
