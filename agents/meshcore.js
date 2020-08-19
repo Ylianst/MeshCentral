@@ -2167,7 +2167,7 @@ function createMeshCore(agent) {
                     case 'cancel':
                         // TODO: Cancel zip operation if present
                         //sendConsoleText('Cancel operation');
-                        this.zip.cancel(function () { sendConsoleText('Zip operation was cancelled'); });
+                        try { this.zip.cancel(function () { sendConsoleText('Zip operation was cancelled'); }); } catch (ex) { }
                         break;
                     default:
                         // Unknown action, ignore it.
