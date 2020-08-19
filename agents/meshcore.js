@@ -2140,34 +2140,28 @@ function createMeshCore(agent) {
                     }
                     case 'zip':
                         // Zip a bunch of files
+                        if (this.zip != null) return; // Zip operating is currently running, exit now.
+
+                        // Check that the specified files exist & build full paths
                         var fp, stat, p = [];
-                        for (var i in cmd.files) {
-                            // Right now, we only zip files.
-                            // TODO: Support folder compression
-                            // TODO: Support compression relative to a root path
-                            // TODO: Support the 'cancel' operation below
-                            fp = cmd.path + '/' + cmd.files[i];
-                            stat = null;
-                            try { stat = fs.statSync(fp); } catch (e) { }
-                            if ((stat != null) && (stat.isDirectory() == false) && (stat.size != null) && (stat.size > 0)) { p.push(fp);     }
-                        }
-                        if (p.length == 0) return;
+                        for (var i in cmd.files) { fp = cmd.path + '/' + cmd.files[i]; stat = null; try { stat = fs.statSync(fp); } catch (e) { } if (stat != null) { p.push(fp); } }
+                        if (p.length == 0) return; // No files, quit now.
+
+                        // Setup file compression
                         var ofile = cmd.path + '/' + cmd.output;
                         this.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zipping' })));
                         var out = require('fs').createWriteStream(ofile, { flags: 'wb' });
-                        out.fname = ofile;
                         out.xws = this;
-                        out.on('close', function () {
-                            this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null })));
-                            this.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' })));
-                        });
-                        this.zip = require('zip-writer').write({ files: p });
+                        out.on('close', function () { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null }))); this.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' }))); this.xws.zip = null; });
+                        this.zip = require('zip-writer').write({ files: p, basePath: cmd.path });
+                        this.zip.xws = this;
+                        this.zip.on('progress', require('events').moderated(function (name, p) { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zippingFile', file: ((process.platform == 'win32') ? (name.split('/').join('\\')) : name), progress: p }))); }, 2000));
                         this.zip.pipe(out);
                         break;
                     case 'cancel':
-                        // TODO: Cancel zip operation if present
-                        //sendConsoleText('Cancel operation');
-                        try { this.zip.cancel(function () { sendConsoleText('Zip operation was cancelled'); }); } catch (ex) { }
+                        // Cancel zip operation if present
+                        try { this.zip.cancel(function () { }); } catch (ex) { }
+                        this.zip = null;
                         break;
                     default:
                         // Unknown action, ignore it.
