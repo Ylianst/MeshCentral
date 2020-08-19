@@ -9977,6 +9977,12 @@
       ]
     },
     {
+      "en": "Download remote clipboard to local clipboard",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
       "cs": "Stáhnout si zálohu serveru",
       "de": "Server-Datensicherung herunterladen",
       "en": "Download server backup",
@@ -29743,6 +29749,12 @@
       "zh-chs": "上載默認服務器核心",
       "xloc": [
         "default.handlebars->27->977"
+      ]
+    },
+    {
+      "en": "Upload local clipboard to remote device",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
     },
     {

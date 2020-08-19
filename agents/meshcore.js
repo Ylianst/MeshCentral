@@ -863,14 +863,14 @@ function createMeshCore(agent) {
                                 require('clipboard').dispatchRead().then(function (str) {
                                     if (str) {
                                         MeshServerLog("Getting clipboard content, " + str.length + " byte(s)", data);
-                                        mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str });
+                                        mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
                                     }
                                 });
                             } else {
                                 require("clipboard").read().then(function (str) {
                                     if (str) {
                                         MeshServerLog("Getting clipboard content, " + str.length + " byte(s)", data);
-                                        mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str });
+                                        mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
                                     }
                                 });
                             }
