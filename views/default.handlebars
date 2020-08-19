@@ -2593,7 +2593,7 @@
                         case 'createmesh': {
                             // A new mesh was created
                             if ((meshes[message.event.meshid] == null) && ((serverinfo.manageAllDeviceGroups) || (message.event.links[userinfo._id] != null))) { // Check if this is a mesh create for a mesh we own. If site administrator, we get all messages so need to ignore some.
-                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links };
+                                meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, creation: message.event.creation, creatorid: message.event.creatorid, creatorname: message.event.creatorname };
                                 mainUpdate(4 + 128 + 8192 + 16384);
                                 meshserver.send({ action: 'files' });
                             }
