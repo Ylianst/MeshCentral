@@ -97,6 +97,22 @@ module.exports.CertificateOperations = function (parent) {
                     if ((r.certs.length < 2) || (r.keys.length != 1)) continue;
                 }
 
+                // Reorder the certificates from leaf to root.
+                var orderedCerts = [], or = [], currenthash = null, orderingError = false;;
+                while ((orderingError == false) && (orderedCerts.length < r.certs.length)) {
+                    orderingError = true;
+                    for (var k in r.certs) {
+                        if (((currenthash == null) && (r.certs[k].subject.hash == r.certs[k].issuer.hash)) || ((r.certs[k].issuer.hash == currenthash) && (r.certs[k].subject.hash != r.certs[k].issuer.hash))) {
+                            currenthash = r.certs[k].subject.hash;
+                            orderedCerts.unshift(Buffer.from(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(r.certs[k])).data, 'binary').toString('base64'));
+                            or.unshift(r.certs[k]);
+                            orderingError = false;
+                        }
+                    }
+                }
+                if (orderingError == true) continue;
+                r.certs = or;
+
                 /*
                 // Debug: Display all certs & key as PEM
                 for (var k in r.certs) {
@@ -138,20 +154,6 @@ module.exports.CertificateOperations = function (parent) {
                 } else {
                     acmconfig.cn = certCommonName.value;
                 }
-
-                // Reorder the certificates from leaf to root.
-                var orderedCerts = [], currenthash = null, orderingError = false;;
-                while ((orderingError == false) && (orderedCerts.length < r.certs.length)) {
-                    orderingError = true;
-                    for (var k in r.certs) {
-                        if (((currenthash == null) && (r.certs[k].subject.hash == r.certs[k].issuer.hash)) || ((r.certs[k].issuer.hash == currenthash) && (r.certs[k].subject.hash != r.certs[k].issuer.hash))) {
-                            currenthash = r.certs[k].subject.hash;
-                            orderedCerts.unshift(Buffer.from(obj.forge.asn1.toDer(obj.pki.certificateToAsn1(r.certs[k])).data, 'binary').toString('base64'));
-                            orderingError = false;
-                        }
-                    }
-                }
-                if (orderingError == true) continue;
 
                 delete acmconfig.cert;
                 delete acmconfig.certpass;
