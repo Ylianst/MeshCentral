@@ -597,6 +597,8 @@
                             <span id=DeskBackgroundButton title="Toggle remote desktop background"><img src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img id=DeskClipboardOutButtonImage src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
                             <select id="deskkeys">
@@ -1458,6 +1460,9 @@
                 }
             }
 
+            // Enable browser clipboard read if supported
+            QV('DeskClipboardInButton', navigator.clipboard.readText != null);
+
             // Session Refresh Timer
             if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
         }
@@ -2118,8 +2123,12 @@
                                 showDeskToolsProcesses(message);
                             } else if (message.type == 'services') {
                                 showDeskToolsServices(message);
-                            } else if ((message.type == 'getclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
-                                Q('d2clipText').value = message.data;
+                            } else if ((message.type == 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                                if ((message.tag == 1) && (xxdialogTag == 'clipboard')) {
+                                    Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
+                                } else if (message.tag == 2) {
+                                    navigator.clipboard.writeText(message.data).then(function() { console.log('ok'); }).catch(function(err) { console.log(err); })  // Put remote clipboard data into our clipboard
+                                }
                             } else if ((message.type == 'setclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 // Display success/fail on the clipboard dialog box.
                                 QH('dlgClipStatus', message.success ? '<span style=color:green>' + "Success" + '</span>' : '<span style=color:red>' + "Failed" + '</span>')
@@ -5937,7 +5946,17 @@
         }
 
         function deviceMessageFunctionEx() {
+            if (desktop == null || desktop.State != 3) return;
             meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: '{{{title}}}', msg: Q('d2devMessage').value });
+        }
+
+        function deskClipboardInFunction() {
+            if (desktop == null || desktop.State != 3) return;
+            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
+        }
+
+        function deskClipboardOutFunction() {
+            if (navigator.clipboard.readText) { navigator.clipboard.readText().then(function(text) { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }).catch(function(err) { }); }
         }
 
         function deviceToastFunction() {
@@ -7112,7 +7131,7 @@
 
         function showDeskClipGet() {
             if (desktop == null || desktop.State != 3) return;
-            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id });
+            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 1 });
         }
 
         function showDeskClipSet() {
