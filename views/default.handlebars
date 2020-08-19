@@ -11,6 +11,7 @@
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0{{{min}}}.js"></script>
@@ -730,7 +731,7 @@
                                 <input type=button id=p13CutButton disabled="disabled" value="Cut" onclick="p13copyFile(1)" />&nbsp;
                                 <input type=button id=p13CopyButton disabled="disabled" value="Copy" onclick="p13copyFile(0)" />&nbsp;
                                 <input type=button id=p13PasteButton disabled="disabled" value="Paste" onclick="p13pasteFile()" />&nbsp;
-                                <input type=button id=p13ZipButton disabled="disabled" value="Zip" onclick="p13zipFiles()" />&nbsp;
+                                <input type=button id=p13ZipButton disabled="disabled" value="Zip" onclick="p13zipFiles()" style="display:none" />&nbsp;
                                 <input type=button id=p13RefreshButton disabled="disabled" value="Refresh" onclick="p13folderup(9999)" />&nbsp;
                             </div>
                         </td>
@@ -1311,6 +1312,7 @@
             QV('p13AutoConnect', debugmode); // Files
             QV('autoconnectbutton2', debugmode); // Terminal
             QV('autoconnectbutton1', debugmode); // Desktop
+            QV('p13ZipButton', debugmode); // ZIP Feature
             //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
             if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; }
@@ -3596,7 +3598,7 @@
 
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
-                if ((view < 3) && (sort == 0) && (nodes.length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
+                if ((view < 3) && (sort == 0) && (sortedMeshes.length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
                     r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {

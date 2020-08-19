@@ -203,7 +203,7 @@
       "fi": " Käyttäjien on kirjauduttava sisään tähän palvelimeen kerran, ennen kuin heidät voidaan lisätä laiteryhmään.",
       "xloc": [
         "default.handlebars->27->1378",
-        "default.handlebars->27->1722"
+        "default.handlebars->27->1723"
       ]
     },
     {
@@ -685,7 +685,7 @@
         "default-mobile.handlebars->9->108",
         "default-mobile.handlebars->9->295",
         "default.handlebars->27->1486",
-        "default.handlebars->27->1877",
+        "default.handlebars->27->1878",
         "default.handlebars->27->852"
       ]
     },
@@ -738,7 +738,7 @@
       "zh-chs": "1個活動會話",
       "fi": "1 aktiivinen istunto",
       "xloc": [
-        "default.handlebars->27->1791"
+        "default.handlebars->27->1792"
       ]
     },
     {
@@ -807,7 +807,7 @@
       "zh-chs": "1組",
       "fi": "1 ryhmä",
       "xloc": [
-        "default.handlebars->27->1756"
+        "default.handlebars->27->1757"
       ]
     },
     {
@@ -1279,7 +1279,7 @@
       "fi": "kaksivaiheinen todennus käytössä",
       "xloc": [
         "default.handlebars->27->1576",
-        "default.handlebars->27->1778"
+        "default.handlebars->27->1779"
       ]
     },
     {
@@ -2110,7 +2110,7 @@
       "zh-chs": "訪問服務器文件",
       "fi": "Pääsy palvelintiedostoihin",
       "xloc": [
-        "default.handlebars->27->1728"
+        "default.handlebars->27->1729"
       ]
     },
     {
@@ -2242,7 +2242,7 @@
       "fi": "Tili on lukittu",
       "xloc": [
         "default.handlebars->27->1578",
-        "default.handlebars->27->1725"
+        "default.handlebars->27->1726"
       ]
     },
     {
@@ -2532,8 +2532,8 @@
       "zh-chs": "添加設備",
       "fi": "Lisää Laite",
       "xloc": [
-        "default.handlebars->27->1702",
-        "default.handlebars->27->1826"
+        "default.handlebars->27->1703",
+        "default.handlebars->27->1827"
       ]
     },
     {
@@ -2570,8 +2570,8 @@
       "fi": "Lisää laiteryhmä",
       "xloc": [
         "default.handlebars->27->1411",
-        "default.handlebars->27->1696",
-        "default.handlebars->27->1814",
+        "default.handlebars->27->1697",
+        "default.handlebars->27->1815",
         "default.handlebars->27->227"
       ]
     },
@@ -2695,7 +2695,7 @@
       "zh-chs": "添加會員",
       "fi": "Lisää jäsenyys",
       "xloc": [
-        "default.handlebars->27->1844"
+        "default.handlebars->27->1845"
       ]
     },
     {
@@ -2792,7 +2792,7 @@
       "xloc": [
         "default.handlebars->27->1310",
         "default.handlebars->27->1410",
-        "default.handlebars->27->1820",
+        "default.handlebars->27->1821",
         "default.handlebars->27->649"
       ]
     },
@@ -2857,7 +2857,7 @@
       "fi": "Lisää Käyttäjiä",
       "xloc": [
         "default.handlebars->27->1309",
-        "default.handlebars->27->1691"
+        "default.handlebars->27->1692"
       ]
     },
     {
@@ -2893,7 +2893,7 @@
       "zh-chs": "將用戶添加到用戶組",
       "fi": "Lisää käyttäjät käyttäjäryhmään",
       "xloc": [
-        "default.handlebars->27->1724"
+        "default.handlebars->27->1725"
       ]
     },
     {
@@ -3121,7 +3121,7 @@
       "zh-chs": "管理領域",
       "fi": "Pääkäyttäjän alueet",
       "xloc": [
-        "default.handlebars->27->1760"
+        "default.handlebars->27->1761"
       ]
     },
     {
@@ -3292,7 +3292,7 @@
       "zh-chs": "座席錯誤計數器",
       "fi": "Agentin virhe laskurit",
       "xloc": [
-        "default.handlebars->27->1887"
+        "default.handlebars->27->1888"
       ]
     },
     {
@@ -3374,7 +3374,7 @@
       "zh-chs": "座席會議",
       "fi": "Agenttien istunnot",
       "xloc": [
-        "default.handlebars->27->1903"
+        "default.handlebars->27->1904"
       ]
     },
     {
@@ -3504,7 +3504,7 @@
       "zh-chs": "代理商",
       "fi": "Agentit",
       "xloc": [
-        "default.handlebars->27->1919"
+        "default.handlebars->27->1920"
       ]
     },
     {
@@ -3615,7 +3615,7 @@
       "fi": "Salli käyttäjien hallita tätä laiteryhmää ja tämän ryhmän laitteita.",
       "xloc": [
         "default.handlebars->27->1376",
-        "default.handlebars->27->1721"
+        "default.handlebars->27->1722"
       ]
     },
     {
@@ -3728,7 +3728,7 @@
       "fi": "Ilmoita aina",
       "xloc": [
         "default.handlebars->27->1290",
-        "default.handlebars->27->1769",
+        "default.handlebars->27->1770",
         "default.handlebars->27->589"
       ]
     },
@@ -3748,7 +3748,7 @@
       "fi": "Kysy Aina",
       "xloc": [
         "default.handlebars->27->1291",
-        "default.handlebars->27->1770",
+        "default.handlebars->27->1771",
         "default.handlebars->27->590"
       ]
     },
@@ -4391,7 +4391,7 @@
       "zh-chs": "您確定要{0}插件嗎：{1}",
       "fi": "Haluatko varmasti {0} laajennuksen: {1}",
       "xloc": [
-        "default.handlebars->27->1959"
+        "default.handlebars->27->1960"
       ]
     },
     {
@@ -4493,7 +4493,7 @@
       "zh-chs": "身份驗證應用",
       "fi": "Todennussovellus",
       "xloc": [
-        "default.handlebars->27->1773"
+        "default.handlebars->27->1774"
       ]
     },
     {
@@ -4637,7 +4637,7 @@
       "en": "Available Memory",
       "fr": "Mémoire disponible",
       "xloc": [
-        "default.handlebars->27->1912"
+        "default.handlebars->27->1913"
       ]
     },
     {
@@ -4836,7 +4836,7 @@
       "zh-chs": "備用碼",
       "fi": "Varmuuskoodit",
       "xloc": [
-        "default.handlebars->27->1775"
+        "default.handlebars->27->1776"
       ]
     },
     {
@@ -4854,7 +4854,7 @@
       "zh-chs": "錯誤的簽名",
       "fi": "Huono allekirjoitus",
       "xloc": [
-        "default.handlebars->27->1894"
+        "default.handlebars->27->1895"
       ]
     },
     {
@@ -4872,7 +4872,7 @@
       "zh-chs": "錯誤的網絡證書",
       "fi": "Huono Web-varmenne",
       "xloc": [
-        "default.handlebars->27->1893"
+        "default.handlebars->27->1894"
       ]
     },
     {
@@ -5018,7 +5018,7 @@
       "zh-chs": "廣播",
       "fi": "Yleislähetys",
       "xloc": [
-        "default.handlebars->27->1689",
+        "default.handlebars->27->1690",
         "default.handlebars->container->column_l->p4->3->1->0->3->1"
       ]
     },
@@ -5150,7 +5150,7 @@
       "zh-chs": "CIRA服務器",
       "fi": "CIRA-Palvelin",
       "xloc": [
-        "default.handlebars->27->1947"
+        "default.handlebars->27->1948"
       ]
     },
     {
@@ -5168,7 +5168,7 @@
       "zh-chs": "CIRA服務器命令",
       "fi": "CIRA-palvelimen komennot",
       "xloc": [
-        "default.handlebars->27->1948"
+        "default.handlebars->27->1949"
       ]
     },
     {
@@ -5204,7 +5204,7 @@
       "zh-chs": "CPU負載",
       "fi": "Prosessori kuorma",
       "xloc": [
-        "default.handlebars->27->1908"
+        "default.handlebars->27->1909"
       ]
     },
     {
@@ -5222,7 +5222,7 @@
       "zh-chs": "最近15分鐘的CPU負載",
       "fi": "Prosessorin kuorma viimeisen 15 minuutin aikana",
       "xloc": [
-        "default.handlebars->27->1911"
+        "default.handlebars->27->1912"
       ]
     },
     {
@@ -5240,7 +5240,7 @@
       "zh-chs": "最近5分鐘的CPU負載",
       "fi": "Prosessorin kuorma viimeisen 5 minuutin aikana",
       "xloc": [
-        "default.handlebars->27->1910"
+        "default.handlebars->27->1911"
       ]
     },
     {
@@ -5258,7 +5258,7 @@
       "zh-chs": "最後一分鐘的CPU負載",
       "fi": "Prosessorin kuorma viimeisen minuutin aikana",
       "xloc": [
-        "default.handlebars->27->1909"
+        "default.handlebars->27->1910"
       ]
     },
     {
@@ -5333,7 +5333,7 @@
       "zh-chs": "通話錯誤",
       "fi": "Soitto virhe",
       "xloc": [
-        "default.handlebars->27->1960"
+        "default.handlebars->27->1961"
       ]
     },
     {
@@ -5482,7 +5482,7 @@
       "zh-chs": "更改{0}的電子郵件",
       "fi": "Vaihda sähköpostiosoite käyttäjälle {0}",
       "xloc": [
-        "default.handlebars->27->1803"
+        "default.handlebars->27->1804"
       ]
     },
     {
@@ -5522,7 +5522,7 @@
       "xloc": [
         "default-mobile.handlebars->9->90",
         "default.handlebars->27->1232",
-        "default.handlebars->27->1790"
+        "default.handlebars->27->1791"
       ]
     },
     {
@@ -5540,7 +5540,7 @@
       "zh-chs": "更改{0}的密碼",
       "fi": "Vaihda Salasana käyttäjälle {0}",
       "xloc": [
-        "default.handlebars->27->1810"
+        "default.handlebars->27->1811"
       ]
     },
     {
@@ -5550,7 +5550,7 @@
       "es": "Cambiar nombre real por {0}",
       "fr": "Changer le Nom complet pour {0}",
       "xloc": [
-        "default.handlebars->27->1798"
+        "default.handlebars->27->1799"
       ]
     },
     {
@@ -5624,7 +5624,7 @@
       "zh-chs": "更改該用戶的密碼",
       "fi": "Vaihda tämän käyttäjän salasana",
       "xloc": [
-        "default.handlebars->27->1789"
+        "default.handlebars->27->1790"
       ]
     },
     {
@@ -5852,7 +5852,7 @@
       "fi": "Tarkistetaan...",
       "xloc": [
         "default.handlebars->27->1005",
-        "default.handlebars->27->1954"
+        "default.handlebars->27->1955"
       ]
     },
     {
@@ -6079,7 +6079,7 @@
       "zh-chs": "全部清除",
       "fi": "Tyhjennä kaikki",
       "xloc": [
-        "default.handlebars->27->1881"
+        "default.handlebars->27->1882"
       ]
     },
     {
@@ -6132,7 +6132,7 @@
       "zh-chs": "清除此通知",
       "fi": "Kuittaa tämä ilmoitus",
       "xloc": [
-        "default.handlebars->27->1880"
+        "default.handlebars->27->1881"
       ]
     },
     {
@@ -6213,7 +6213,7 @@
       "zh-chs": "单击此处编辑用户组名称",
       "fi": "Napsauta tätä muokataksesi käyttäjäryhmän nimeä",
       "xloc": [
-        "default.handlebars->27->1678"
+        "default.handlebars->27->1679"
       ]
     },
     {
@@ -6410,8 +6410,8 @@
       "zh-chs": "通用設備組",
       "fi": "Yleiset laiteryhmät",
       "xloc": [
-        "default.handlebars->27->1697",
-        "default.handlebars->27->1815"
+        "default.handlebars->27->1698",
+        "default.handlebars->27->1816"
       ]
     },
     {
@@ -6429,8 +6429,8 @@
       "zh-chs": "通用設備",
       "fi": "Yleiset laitteet",
       "xloc": [
-        "default.handlebars->27->1703",
-        "default.handlebars->27->1827"
+        "default.handlebars->27->1704",
+        "default.handlebars->27->1828"
       ]
     },
     {
@@ -6479,9 +6479,9 @@
         "default-mobile.handlebars->9->405",
         "default.handlebars->27->1355",
         "default.handlebars->27->1590",
-        "default.handlebars->27->1668",
-        "default.handlebars->27->1717",
-        "default.handlebars->27->1813",
+        "default.handlebars->27->1669",
+        "default.handlebars->27->1718",
+        "default.handlebars->27->1814",
         "default.handlebars->27->458",
         "default.handlebars->27->743",
         "default.handlebars->27->752"
@@ -6570,7 +6570,7 @@
       "zh-chs": "确认删除选定的用户组？",
       "fi": "Haluatko varmasti poistaa valitut käyttäjäryhmät?",
       "xloc": [
-        "default.handlebars->27->1667"
+        "default.handlebars->27->1668"
       ]
     },
     {
@@ -6588,7 +6588,7 @@
       "zh-chs": "確認刪除用戶{0}？",
       "fi": "Haluatko varmasti poistaa käyttäjän {0}?",
       "xloc": [
-        "default.handlebars->27->1812"
+        "default.handlebars->27->1813"
       ]
     },
     {
@@ -6603,7 +6603,7 @@
       "zh-chs": "确认删除用户\\“ {0} \\”的成员身份？",
       "fi": "Haluatko varmasti poistaa käytäjän \\\"{0}\\\" jäsenyyden?",
       "xloc": [
-        "default.handlebars->27->1720"
+        "default.handlebars->27->1721"
       ]
     },
     {
@@ -6618,7 +6618,7 @@
       "zh-chs": "确认删除用户组 “{0}” 的成员身份？",
       "fi": "Haluatko varmasti poistaa käyttäjäryhmän \\\"{0}\\\" jäsenyyden?",
       "xloc": [
-        "default.handlebars->27->1842"
+        "default.handlebars->27->1843"
       ]
     },
     {
@@ -6689,8 +6689,8 @@
       "zh-chs": "确认删除设备“ {0} ”的访问权限？",
       "fi": "Haluatko varmasti poistaa laitteen \\\"{0}\\\" käyttöoikeudet?",
       "xloc": [
-        "default.handlebars->27->1710",
-        "default.handlebars->27->1833"
+        "default.handlebars->27->1711",
+        "default.handlebars->27->1834"
       ]
     },
     {
@@ -6705,8 +6705,8 @@
       "zh-chs": "是否确认删除设备组“ {0}”的访问权限？",
       "fi": "Haluatko varmasti poistaa laiteryhmän \\\"{0}\\\" käyttöoikeudet?",
       "xloc": [
-        "default.handlebars->27->1712",
-        "default.handlebars->27->1846"
+        "default.handlebars->27->1713",
+        "default.handlebars->27->1847"
       ]
     },
     {
@@ -6721,7 +6721,7 @@
       "zh-chs": "确认删除用户\\“ {0} \\”的访问权限？",
       "fi": "Haluatko varmasti poistaa käyttäjän \\\"{0}\\\" käyttöoikeudet?",
       "xloc": [
-        "default.handlebars->27->1835"
+        "default.handlebars->27->1836"
       ]
     },
     {
@@ -6736,7 +6736,7 @@
       "zh-chs": "确认删除用户组“ {0}”的访问权限？",
       "fi": "Haluatko varmasti poistaa käyttäjäryhmän \\\"{0}\\\" käyttöoikeudet?",
       "xloc": [
-        "default.handlebars->27->1838"
+        "default.handlebars->27->1839"
       ]
     },
     {
@@ -6751,8 +6751,8 @@
       "zh-chs": "确认删除访问权限？",
       "fi": "Haluatko varmasti poistaa käyttöoikeudet?",
       "xloc": [
-        "default.handlebars->27->1836",
-        "default.handlebars->27->1839"
+        "default.handlebars->27->1837",
+        "default.handlebars->27->1840"
       ]
     },
     {
@@ -7018,7 +7018,7 @@
       "zh-chs": "連接的英特爾&reg;AMT",
       "fi": "Yhdistetyt Intel&reg; AMT",
       "xloc": [
-        "default.handlebars->27->1899"
+        "default.handlebars->27->1900"
       ]
     },
     {
@@ -7036,7 +7036,7 @@
       "zh-chs": "關聯用戶",
       "fi": "Yhdistetyt käyttäjät",
       "xloc": [
-        "default.handlebars->27->1904"
+        "default.handlebars->27->1905"
       ]
     },
     {
@@ -7118,7 +7118,7 @@
       "zh-chs": "連接數",
       "fi": "Yhteysmäärä",
       "xloc": [
-        "default.handlebars->27->1918"
+        "default.handlebars->27->1919"
       ]
     },
     {
@@ -7135,7 +7135,7 @@
       "ru": "Ретранслятор подключения",
       "zh-chs": "連接繼電器",
       "xloc": [
-        "default.handlebars->27->1946"
+        "default.handlebars->27->1947"
       ]
     },
     {
@@ -7270,7 +7270,7 @@
       "zh-chs": "Cookie編碼器",
       "fi": "Evästekooderi",
       "xloc": [
-        "default.handlebars->27->1932"
+        "default.handlebars->27->1933"
       ]
     },
     {
@@ -7608,7 +7608,7 @@
       "zh-chs": "核心服務器",
       "fi": "Ydin palvelin",
       "xloc": [
-        "default.handlebars->27->1931"
+        "default.handlebars->27->1932"
       ]
     },
     {
@@ -7682,7 +7682,7 @@
       "zh-chs": "創建用戶組",
       "fi": "Luo käyttäjäryhmä",
       "xloc": [
-        "default.handlebars->27->1675"
+        "default.handlebars->27->1676"
       ]
     },
     {
@@ -7791,7 +7791,7 @@
       "zh-chs": "創建",
       "fi": "Luotu",
       "xloc": [
-        "default.handlebars->27->1749"
+        "default.handlebars->27->1750"
       ]
     },
     {
@@ -8150,9 +8150,9 @@
       "fi": "Oletus",
       "xloc": [
         "default.handlebars->27->1624",
-        "default.handlebars->27->1671",
-        "default.handlebars->27->1682",
-        "default.handlebars->27->1738"
+        "default.handlebars->27->1672",
+        "default.handlebars->27->1683",
+        "default.handlebars->27->1739"
       ]
     },
     {
@@ -8312,7 +8312,7 @@
       "zh-chs": "刪除用戶",
       "fi": "Poista Käyttäjä",
       "xloc": [
-        "default.handlebars->27->1788"
+        "default.handlebars->27->1789"
       ]
     },
     {
@@ -8330,8 +8330,8 @@
       "zh-chs": "刪除用戶組",
       "fi": "Poista käyttäjäryhmä",
       "xloc": [
-        "default.handlebars->27->1708",
-        "default.handlebars->27->1718"
+        "default.handlebars->27->1709",
+        "default.handlebars->27->1719"
       ]
     },
     {
@@ -8346,7 +8346,7 @@
       "zh-chs": "删除用户组",
       "fi": "Poista käyttäjäryhmät",
       "xloc": [
-        "default.handlebars->27->1669"
+        "default.handlebars->27->1670"
       ]
     },
     {
@@ -8364,7 +8364,7 @@
       "zh-chs": "刪除用戶{0}",
       "fi": "Poista Käyttäjä {0}",
       "xloc": [
-        "default.handlebars->27->1811"
+        "default.handlebars->27->1812"
       ]
     },
     {
@@ -8417,7 +8417,7 @@
       "zh-chs": "删除群组",
       "fi": "Poista ryhmä",
       "xloc": [
-        "default.handlebars->27->1665"
+        "default.handlebars->27->1666"
       ]
     },
     {
@@ -8474,7 +8474,7 @@
       "zh-chs": "刪除用戶組{0}？",
       "fi": "Poistetaanko käyttäjäryhmä {0}?",
       "xloc": [
-        "default.handlebars->27->1716"
+        "default.handlebars->27->1717"
       ]
     },
     {
@@ -8619,10 +8619,10 @@
         "default.handlebars->27->1244",
         "default.handlebars->27->1272",
         "default.handlebars->27->1358",
-        "default.handlebars->27->1674",
-        "default.handlebars->27->1684",
+        "default.handlebars->27->1675",
         "default.handlebars->27->1685",
-        "default.handlebars->27->1714",
+        "default.handlebars->27->1686",
+        "default.handlebars->27->1715",
         "default.handlebars->27->548",
         "default.handlebars->27->549",
         "default.handlebars->27->77",
@@ -8664,7 +8664,7 @@
       "xloc": [
         "default-mobile.handlebars->9->256",
         "default.handlebars->27->1363",
-        "default.handlebars->27->1858",
+        "default.handlebars->27->1859",
         "default.handlebars->27->513",
         "default.handlebars->27->831",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevDesktop",
@@ -8706,7 +8706,7 @@
       "fi": "Työpöytä ilmoitus",
       "xloc": [
         "default.handlebars->27->1285",
-        "default.handlebars->27->1764",
+        "default.handlebars->27->1765",
         "default.handlebars->27->584"
       ]
     },
@@ -8726,7 +8726,7 @@
       "fi": "Työpöydän kehote",
       "xloc": [
         "default.handlebars->27->1284",
-        "default.handlebars->27->1763",
+        "default.handlebars->27->1764",
         "default.handlebars->27->583"
       ]
     },
@@ -8746,7 +8746,7 @@
       "fi": "Työpöydän kehote+työkalurivi",
       "xloc": [
         "default.handlebars->27->1282",
-        "default.handlebars->27->1761",
+        "default.handlebars->27->1762",
         "default.handlebars->27->581"
       ]
     },
@@ -8782,7 +8782,7 @@
       "fi": "Työpöydän työkalurivi",
       "xloc": [
         "default.handlebars->27->1283",
-        "default.handlebars->27->1762",
+        "default.handlebars->27->1763",
         "default.handlebars->27->582"
       ]
     },
@@ -8868,7 +8868,7 @@
       "xloc": [
         "default.handlebars->27->1385",
         "default.handlebars->27->183",
-        "default.handlebars->27->1830",
+        "default.handlebars->27->1831",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->5"
       ]
     },
@@ -8910,10 +8910,10 @@
         "default.handlebars->27->1383",
         "default.handlebars->27->1384",
         "default.handlebars->27->1538",
-        "default.handlebars->27->1700",
-        "default.handlebars->27->1706",
-        "default.handlebars->27->1818",
-        "default.handlebars->27->1867"
+        "default.handlebars->27->1701",
+        "default.handlebars->27->1707",
+        "default.handlebars->27->1819",
+        "default.handlebars->27->1868"
       ]
     },
     {
@@ -8952,10 +8952,10 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->3",
         "default.handlebars->27->1554",
-        "default.handlebars->27->1659",
-        "default.handlebars->27->1687",
-        "default.handlebars->27->1758",
-        "default.handlebars->27->1902",
+        "default.handlebars->27->1660",
+        "default.handlebars->27->1688",
+        "default.handlebars->27->1759",
+        "default.handlebars->27->1903",
         "default.handlebars->container->column_l->p2->p2info->7"
       ]
     },
@@ -9021,7 +9021,7 @@
       "fi": "Laitteen Nimi",
       "xloc": [
         "default-mobile.handlebars->9->278",
-        "default.handlebars->27->1866",
+        "default.handlebars->27->1867",
         "default.handlebars->27->280",
         "default.handlebars->27->784",
         "player.handlebars->3->9"
@@ -9448,8 +9448,8 @@
       "zh-chs": "设备",
       "fi": "Laitteet",
       "xloc": [
-        "default.handlebars->27->1660",
-        "default.handlebars->27->1688"
+        "default.handlebars->27->1661",
+        "default.handlebars->27->1689"
       ]
     },
     {
@@ -9660,9 +9660,9 @@
       "fr": "Domaine",
       "xloc": [
         "default.handlebars->27->1625",
-        "default.handlebars->27->1672",
-        "default.handlebars->27->1681",
-        "default.handlebars->27->1737",
+        "default.handlebars->27->1673",
+        "default.handlebars->27->1682",
+        "default.handlebars->27->1738",
         "mstsc.handlebars->main->1->3->1->2->1->0",
         "mstsc.handlebars->main->1->3->1->2->3"
       ]
@@ -10151,7 +10151,7 @@
       "zh-chs": "代理重复",
       "fi": "Monista Agentti",
       "xloc": [
-        "default.handlebars->27->1898"
+        "default.handlebars->27->1899"
       ]
     },
     {
@@ -10187,7 +10187,7 @@
       "zh-chs": "重複的用戶組",
       "fi": "Monista käyttäjäryhmä",
       "xloc": [
-        "default.handlebars->27->1676"
+        "default.handlebars->27->1677"
       ]
     },
     {
@@ -10220,8 +10220,8 @@
       "zh-chs": "持續時間",
       "fi": "Kesto",
       "xloc": [
-        "default.handlebars->27->1852",
-        "default.handlebars->27->1872",
+        "default.handlebars->27->1853",
+        "default.handlebars->27->1873",
         "player.handlebars->3->2"
       ]
     },
@@ -10744,7 +10744,7 @@
       "zh-chs": "編輯用戶組",
       "fi": "Muokkaa käyttäjäryhmää",
       "xloc": [
-        "default.handlebars->27->1715"
+        "default.handlebars->27->1716"
       ]
     },
     {
@@ -10807,10 +10807,10 @@
       "xloc": [
         "default-mobile.handlebars->9->78",
         "default.handlebars->27->1627",
-        "default.handlebars->27->1741",
-        "default.handlebars->27->1743",
-        "default.handlebars->27->1783",
-        "default.handlebars->27->1799",
+        "default.handlebars->27->1742",
+        "default.handlebars->27->1744",
+        "default.handlebars->27->1784",
+        "default.handlebars->27->1800",
         "default.handlebars->27->330",
         "login-mobile.handlebars->5->42",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
@@ -10952,7 +10952,7 @@
       "fi": "Sähköposti osoite on vahvistettu",
       "xloc": [
         "default.handlebars->27->1574",
-        "default.handlebars->27->1735"
+        "default.handlebars->27->1736"
       ]
     },
     {
@@ -10988,7 +10988,7 @@
       "zh-chs": "電子郵件未驗證",
       "fi": "Sähköposti osoitetta ei ole vahvistettu",
       "xloc": [
-        "default.handlebars->27->1736"
+        "default.handlebars->27->1737"
       ]
     },
     {
@@ -11045,7 +11045,7 @@
       "zh-chs": "电子邮件/短信流量",
       "fi": "Sähköposti/tekstiviesti liikenne",
       "xloc": [
-        "default.handlebars->27->1940"
+        "default.handlebars->27->1941"
       ]
     },
     {
@@ -11151,7 +11151,7 @@
       "fr": "Activer",
       "fi": "Käytössä",
       "xloc": [
-        "default.handlebars->27->1874"
+        "default.handlebars->27->1875"
       ]
     },
     {
@@ -11179,7 +11179,7 @@
       "es": "Tiempo de finalización",
       "fr": "Heure de fin",
       "xloc": [
-        "default.handlebars->27->1871"
+        "default.handlebars->27->1872"
       ]
     },
     {
@@ -11794,7 +11794,7 @@
       "zh-chs": "外部",
       "fi": "Ulkoinen",
       "xloc": [
-        "default.handlebars->27->1925"
+        "default.handlebars->27->1926"
       ]
     },
     {
@@ -12032,7 +12032,7 @@
         "default-mobile.handlebars->9->167",
         "default-mobile.handlebars->9->257",
         "default.handlebars->27->1370",
-        "default.handlebars->27->1859",
+        "default.handlebars->27->1860",
         "default.handlebars->27->247",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevFiles",
         "default.handlebars->contextMenu->cxfiles"
@@ -12072,7 +12072,7 @@
       "fi": "Tiedostot Ilmoita",
       "xloc": [
         "default.handlebars->27->1289",
-        "default.handlebars->27->1768",
+        "default.handlebars->27->1769",
         "default.handlebars->27->588"
       ]
     },
@@ -12092,7 +12092,7 @@
       "fi": "Tiedostot kysy",
       "xloc": [
         "default.handlebars->27->1288",
-        "default.handlebars->27->1767",
+        "default.handlebars->27->1768",
         "default.handlebars->27->587"
       ]
     },
@@ -12259,7 +12259,7 @@
       "fi": "Pakota salasanan palautus seuraavan kirjautumisen yhteydessä.",
       "xloc": [
         "default.handlebars->27->1632",
-        "default.handlebars->27->1808"
+        "default.handlebars->27->1809"
       ]
     },
     {
@@ -12360,8 +12360,8 @@
       "zh-chs": "自由",
       "fi": "Vapaata",
       "xloc": [
-        "default.handlebars->27->1883",
-        "default.handlebars->27->1885"
+        "default.handlebars->27->1884",
+        "default.handlebars->27->1886"
       ]
     },
     {
@@ -12671,7 +12671,7 @@
       "zh-chs": "正式管理員",
       "fi": "Täysi järjestelmänvalvoja",
       "xloc": [
-        "default.handlebars->27->1729"
+        "default.handlebars->27->1730"
       ]
     },
     {
@@ -13127,7 +13127,7 @@
       "fi": "Ryhmätoiminta",
       "xloc": [
         "default.handlebars->27->1588",
-        "default.handlebars->27->1666",
+        "default.handlebars->27->1667",
         "default.handlebars->27->456",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
         "default.handlebars->container->column_l->p4->3->1->0->3->3",
@@ -13151,7 +13151,7 @@
       "fr": "Identifiant de groupe",
       "fi": "Ryhmän tunniste",
       "xloc": [
-        "default.handlebars->27->1683"
+        "default.handlebars->27->1684"
       ]
     },
     {
@@ -13169,7 +13169,7 @@
       "zh-chs": "小組成員",
       "fi": "Ryhmän jäsenet",
       "xloc": [
-        "default.handlebars->27->1692"
+        "default.handlebars->27->1693"
       ]
     },
     {
@@ -13361,7 +13361,7 @@
       "zh-chs": "堆總數",
       "fi": "Pino yhteensä",
       "xloc": [
-        "default.handlebars->27->1927"
+        "default.handlebars->27->1928"
       ]
     },
     {
@@ -13379,7 +13379,7 @@
       "zh-chs": "堆使用",
       "fi": "Pinoa käytetty",
       "xloc": [
-        "default.handlebars->27->1926"
+        "default.handlebars->27->1927"
       ]
     },
     {
@@ -14279,8 +14279,8 @@
       "xloc": [
         "default.handlebars->27->1473",
         "default.handlebars->27->1481",
-        "default.handlebars->27->1923",
-        "default.handlebars->27->1945"
+        "default.handlebars->27->1924",
+        "default.handlebars->27->1946"
       ]
     },
     {
@@ -14326,7 +14326,7 @@
       "fr": "Redirection Intel AMT",
       "fi": "Intel AMT uudelleenohjaus",
       "xloc": [
-        "default.handlebars->27->1861"
+        "default.handlebars->27->1862"
       ]
     },
     {
@@ -14336,7 +14336,7 @@
       "fr": "WSMAN Intel AMT",
       "fi": "Intel AMT WSMAN",
       "xloc": [
-        "default.handlebars->27->1860"
+        "default.handlebars->27->1861"
       ]
     },
     {
@@ -15071,7 +15071,7 @@
       "zh-chs": "無效的設備組類型",
       "fi": "Virheellinen laiteryhmän tyyppi",
       "xloc": [
-        "default.handlebars->27->1897"
+        "default.handlebars->27->1898"
       ]
     },
     {
@@ -15089,7 +15089,7 @@
       "zh-chs": "無效的JSON",
       "fi": "Virheellinen JSON",
       "xloc": [
-        "default.handlebars->27->1891"
+        "default.handlebars->27->1892"
       ]
     },
     {
@@ -15144,7 +15144,7 @@
       "zh-chs": "無效的PKCS簽名",
       "fi": "Virheellinen PKCS-allekirjoitus",
       "xloc": [
-        "default.handlebars->27->1889"
+        "default.handlebars->27->1890"
       ]
     },
     {
@@ -15162,7 +15162,7 @@
       "zh-chs": "無效的RSA密碼",
       "fi": "Virheellinen RSA-allekirjoitus",
       "xloc": [
-        "default.handlebars->27->1890"
+        "default.handlebars->27->1891"
       ]
     },
     {
@@ -16058,7 +16058,7 @@
       "zh-chs": "上次登錄",
       "fi": "Edellinen kirjautuminen",
       "xloc": [
-        "default.handlebars->27->1750"
+        "default.handlebars->27->1751"
       ]
     },
     {
@@ -16124,7 +16124,7 @@
       "zh-chs": "上次更改：{0}",
       "fi": "Muutettu viimeksi: {0}",
       "xloc": [
-        "default.handlebars->27->1754"
+        "default.handlebars->27->1755"
       ]
     },
     {
@@ -16330,7 +16330,7 @@
       "nl": "Leeg laten voor geen.",
       "zh-chs": "一无所有。",
       "xloc": [
-        "default.handlebars->27->1794"
+        "default.handlebars->27->1795"
       ]
     },
     {
@@ -16371,7 +16371,7 @@
       "zh-chs": "減",
       "fi": "Vähemmän",
       "xloc": [
-        "default.handlebars->27->1962"
+        "default.handlebars->27->1963"
       ]
     },
     {
@@ -16843,7 +16843,7 @@
         "default-mobile.handlebars->9->72",
         "default.handlebars->27->1260",
         "default.handlebars->27->1264",
-        "default.handlebars->27->1848",
+        "default.handlebars->27->1849",
         "default.handlebars->27->756",
         "default.handlebars->27->993"
       ]
@@ -16972,7 +16972,7 @@
       "zh-chs": "鎖定賬戶",
       "fi": "Lukitse Tili",
       "xloc": [
-        "default.handlebars->27->1651"
+        "default.handlebars->27->1652"
       ]
     },
     {
@@ -16982,7 +16982,7 @@
       "fr": "Verrouiller les paramètres de compte",
       "xloc": [
         "default.handlebars->27->1406",
-        "default.handlebars->27->1654"
+        "default.handlebars->27->1655"
       ]
     },
     {
@@ -17036,7 +17036,7 @@
       "zh-chs": "賬戶鎖定",
       "fi": "Lukittu tili",
       "xloc": [
-        "default.handlebars->27->1726"
+        "default.handlebars->27->1727"
       ]
     },
     {
@@ -17562,7 +17562,7 @@
       "zh-chs": "主服務器消息",
       "fi": "Pääpalvelimen viestit",
       "xloc": [
-        "default.handlebars->27->1934"
+        "default.handlebars->27->1935"
       ]
     },
     {
@@ -18015,7 +18015,7 @@
       "zh-chs": "達到的會話數上限",
       "fi": "Istuntojen enimmäismäärä saavutettu",
       "xloc": [
-        "default.handlebars->27->1895"
+        "default.handlebars->27->1896"
       ]
     },
     {
@@ -18073,7 +18073,7 @@
       "zh-chs": "兆字節",
       "fi": "Megatavua",
       "xloc": [
-        "default.handlebars->27->1924"
+        "default.handlebars->27->1925"
       ]
     },
     {
@@ -18092,7 +18092,7 @@
       "fi": "Muisti",
       "xloc": [
         "default-mobile.handlebars->9->384",
-        "default.handlebars->27->1915",
+        "default.handlebars->27->1916",
         "default.handlebars->27->959",
         "default.handlebars->container->column_l->p40->3->1->p40type->3"
       ]
@@ -18235,7 +18235,7 @@
       "zh-chs": "MeshAgent流量",
       "fi": "MeshAgent liikenne",
       "xloc": [
-        "default.handlebars->27->1936"
+        "default.handlebars->27->1937"
       ]
     },
     {
@@ -18253,7 +18253,7 @@
       "zh-chs": "MeshAgent更新",
       "fi": "MeshAgent päivitys",
       "xloc": [
-        "default.handlebars->27->1937"
+        "default.handlebars->27->1938"
       ]
     },
     {
@@ -18360,7 +18360,7 @@
       "ru": "Соединения сервера MeshCentral",
       "zh-chs": "MeshCentral服務器對等",
       "xloc": [
-        "default.handlebars->27->1935"
+        "default.handlebars->27->1936"
       ]
     },
     {
@@ -18635,7 +18635,7 @@
       "zh-chs": "郵件調度程序",
       "fi": "Viestin lähettäjä",
       "xloc": [
-        "default.handlebars->27->1933"
+        "default.handlebars->27->1934"
       ]
     },
     {
@@ -18793,7 +18793,7 @@
       "zh-chs": "更多",
       "fi": "Lisää",
       "xloc": [
-        "default.handlebars->27->1961"
+        "default.handlebars->27->1962"
       ]
     },
     {
@@ -18873,7 +18873,7 @@
       "nl": "Multiplexor",
       "es": "Multiplexor",
       "xloc": [
-        "default.handlebars->27->1873"
+        "default.handlebars->27->1874"
       ]
     },
     {
@@ -19156,11 +19156,11 @@
         "default.handlebars->27->1271",
         "default.handlebars->27->1357",
         "default.handlebars->27->1553",
-        "default.handlebars->27->1657",
-        "default.handlebars->27->1673",
-        "default.handlebars->27->1680",
-        "default.handlebars->27->1713",
-        "default.handlebars->27->1732",
+        "default.handlebars->27->1658",
+        "default.handlebars->27->1674",
+        "default.handlebars->27->1681",
+        "default.handlebars->27->1714",
+        "default.handlebars->27->1733",
         "default.handlebars->27->538",
         "default.handlebars->27->76",
         "default.handlebars->27->815",
@@ -19574,7 +19574,7 @@
       "fi": "Ei tapahtumia",
       "xloc": [
         "default.handlebars->27->1529",
-        "default.handlebars->27->1847",
+        "default.handlebars->27->1848",
         "default.handlebars->27->891"
       ]
     },
@@ -19723,7 +19723,7 @@
       "zh-chs": "沒有會員",
       "fi": "Ei jäseniä",
       "xloc": [
-        "default.handlebars->27->1695"
+        "default.handlebars->27->1696"
       ]
     },
     {
@@ -19741,7 +19741,7 @@
       "zh-chs": "沒有新的設備組",
       "fi": "Ei uusia laiteryhmiä.",
       "xloc": [
-        "default.handlebars->27->1652"
+        "default.handlebars->27->1653"
       ]
     },
     {
@@ -19862,7 +19862,7 @@
       "zh-chs": "沒有工具（MeshCmd /路由器）",
       "fi": "Estä työkalut (MeshCmd/Router)",
       "xloc": [
-        "default.handlebars->27->1653"
+        "default.handlebars->27->1654"
       ]
     },
     {
@@ -19879,8 +19879,8 @@
       "ru": "Нет общих групп устройств",
       "zh-chs": "沒有共同的設備組",
       "xloc": [
-        "default.handlebars->27->1701",
-        "default.handlebars->27->1819"
+        "default.handlebars->27->1702",
+        "default.handlebars->27->1820"
       ]
     },
     {
@@ -19979,8 +19979,8 @@
       "ru": "Нет общих устройств",
       "zh-chs": "沒有共同的設備",
       "xloc": [
-        "default.handlebars->27->1707",
-        "default.handlebars->27->1831"
+        "default.handlebars->27->1708",
+        "default.handlebars->27->1832"
       ]
     },
     {
@@ -20071,7 +20071,7 @@
       "zh-chs": "找不到群組。",
       "fi": "Ryhmiä ei löytynyt.",
       "xloc": [
-        "default.handlebars->27->1656"
+        "default.handlebars->27->1657"
       ]
     },
     {
@@ -20170,7 +20170,7 @@
       "es": "No hay Grabaciones.",
       "fr": "Pas d'enregistrements.",
       "xloc": [
-        "default.handlebars->27->1849"
+        "default.handlebars->27->1850"
       ]
     },
     {
@@ -20188,7 +20188,7 @@
       "zh-chs": "沒有服務器權限",
       "fi": "Ei palvelin oikeuksia",
       "xloc": [
-        "default.handlebars->27->1727"
+        "default.handlebars->27->1728"
       ]
     },
     {
@@ -20206,7 +20206,7 @@
       "zh-chs": "沒有用戶組成員身份",
       "fi": "Ei käyttäjäryhmien jäsenyyksiä",
       "xloc": [
-        "default.handlebars->27->1825"
+        "default.handlebars->27->1826"
       ]
     },
     {
@@ -20312,13 +20312,13 @@
         "default.handlebars->27->1494",
         "default.handlebars->27->1499",
         "default.handlebars->27->1537",
-        "default.handlebars->27->1677",
-        "default.handlebars->27->1679",
+        "default.handlebars->27->1678",
+        "default.handlebars->27->1680",
         "default.handlebars->27->174",
-        "default.handlebars->27->1746",
-        "default.handlebars->27->1755",
-        "default.handlebars->27->1759",
-        "default.handlebars->27->1771",
+        "default.handlebars->27->1747",
+        "default.handlebars->27->1756",
+        "default.handlebars->27->1760",
+        "default.handlebars->27->1772",
         "default.handlebars->27->189",
         "default.handlebars->27->201",
         "default.handlebars->27->202",
@@ -20490,7 +20490,7 @@
       "fr": "Pas sur le serveur",
       "fi": "Ei palvelimella",
       "xloc": [
-        "default.handlebars->27->1865"
+        "default.handlebars->27->1866"
       ]
     },
     {
@@ -20508,8 +20508,8 @@
       "zh-chs": "沒有設置",
       "fi": "Ei asetettu",
       "xloc": [
-        "default.handlebars->27->1733",
-        "default.handlebars->27->1734"
+        "default.handlebars->27->1734",
+        "default.handlebars->27->1735"
       ]
     },
     {
@@ -20527,7 +20527,7 @@
       "zh-chs": "未經審核的",
       "fi": "Ei vahvistettu",
       "xloc": [
-        "default.handlebars->27->1801"
+        "default.handlebars->27->1802"
       ]
     },
     {
@@ -20546,7 +20546,7 @@
       "fi": "Muistiinpanot",
       "xloc": [
         "default.handlebars->27->1307",
-        "default.handlebars->27->1779",
+        "default.handlebars->27->1780",
         "default.handlebars->27->607",
         "default.handlebars->27->667",
         "default.handlebars->27->686",
@@ -20660,7 +20660,7 @@
       "zh-chs": "通知",
       "fi": "Ilmoita",
       "xloc": [
-        "default.handlebars->27->1785",
+        "default.handlebars->27->1786",
         "default.handlebars->27->186"
       ]
     },
@@ -20790,7 +20790,7 @@
       "zh-chs": "發生在{0}",
       "fi": "Tapahtui {0}",
       "xloc": [
-        "default.handlebars->27->1879"
+        "default.handlebars->27->1880"
       ]
     },
     {
@@ -21061,7 +21061,7 @@
       "xloc": [
         "default-mobile.handlebars->9->264",
         "default.handlebars->27->1584",
-        "default.handlebars->27->1664",
+        "default.handlebars->27->1665",
         "default.handlebars->27->446",
         "default.handlebars->27->466",
         "default.handlebars->27->721"
@@ -21313,7 +21313,7 @@
       "zh-chs": "部分權利",
       "fi": "Osittaiset oikeudet",
       "xloc": [
-        "default.handlebars->27->1730"
+        "default.handlebars->27->1731"
       ]
     },
     {
@@ -21352,10 +21352,10 @@
         "default-mobile.handlebars->9->269",
         "default.handlebars->27->1628",
         "default.handlebars->27->1629",
-        "default.handlebars->27->1751",
-        "default.handlebars->27->1753",
-        "default.handlebars->27->1804",
+        "default.handlebars->27->1752",
+        "default.handlebars->27->1754",
         "default.handlebars->27->1805",
+        "default.handlebars->27->1806",
         "default.handlebars->27->285",
         "default.handlebars->27->316",
         "default.handlebars->27->731",
@@ -21472,7 +21472,7 @@
       "zh-chs": "密碼提示",
       "fi": "Salasana vihje",
       "xloc": [
-        "default.handlebars->27->1806"
+        "default.handlebars->27->1807"
       ]
     },
     {
@@ -21815,7 +21815,7 @@
         "default-mobile.handlebars->9->65",
         "default-mobile.handlebars->9->67",
         "default.handlebars->27->159",
-        "default.handlebars->27->1796",
+        "default.handlebars->27->1797",
         "default.handlebars->27->985",
         "default.handlebars->27->988"
       ]
@@ -21831,7 +21831,7 @@
       "zh-chs": "电话号码",
       "fi": "Puhelinnumero",
       "xloc": [
-        "default.handlebars->27->1745"
+        "default.handlebars->27->1746"
       ]
     },
     {
@@ -21846,7 +21846,7 @@
       "fi": "Puhelinnumero:",
       "xloc": [
         "default-mobile.handlebars->9->66",
-        "default.handlebars->27->1795",
+        "default.handlebars->27->1796",
         "default.handlebars->27->987"
       ]
     },
@@ -21985,7 +21985,7 @@
       "zh-chs": "插件動作",
       "fi": "Laajennuksen toiminto",
       "xloc": [
-        "default.handlebars->27->1958",
+        "default.handlebars->27->1959",
         "default.handlebars->27->196"
       ]
     },
@@ -22324,7 +22324,7 @@
       "fr": "Présent sur le serveur",
       "fi": "Läsnä palvelimella",
       "xloc": [
-        "default.handlebars->27->1864"
+        "default.handlebars->27->1865"
       ]
     },
     {
@@ -22475,7 +22475,7 @@
       "zh-chs": "協議",
       "fi": "Protokolla",
       "xloc": [
-        "default.handlebars->27->1862",
+        "default.handlebars->27->1863",
         "player.handlebars->3->16"
       ]
     },
@@ -22801,7 +22801,7 @@
       "ru": "RSS",
       "zh-chs": "的RSS",
       "xloc": [
-        "default.handlebars->27->1928"
+        "default.handlebars->27->1929"
       ]
     },
     {
@@ -22863,9 +22863,9 @@
       "es": "Nombre Real",
       "fr": "Nom complet",
       "xloc": [
-        "default.handlebars->27->1742",
-        "default.handlebars->27->1744",
-        "default.handlebars->27->1797"
+        "default.handlebars->27->1743",
+        "default.handlebars->27->1745",
+        "default.handlebars->27->1798"
       ]
     },
     {
@@ -22916,7 +22916,7 @@
       "es": "Detalles de la Grabación",
       "fr": "Détails d'enregistrements",
       "xloc": [
-        "default.handlebars->27->1876"
+        "default.handlebars->27->1877"
       ]
     },
     {
@@ -23044,7 +23044,7 @@
       "ru": "Число ретрансляций",
       "zh-chs": "中繼計數",
       "xloc": [
-        "default.handlebars->27->1907"
+        "default.handlebars->27->1908"
       ]
     },
     {
@@ -23061,7 +23061,7 @@
       "ru": "Ошибки ретранслятора",
       "zh-chs": "中繼錯誤",
       "xloc": [
-        "default.handlebars->27->1900"
+        "default.handlebars->27->1901"
       ]
     },
     {
@@ -23078,8 +23078,8 @@
       "ru": "Сессии ретранслятора",
       "zh-chs": "接力會議",
       "xloc": [
-        "default.handlebars->27->1906",
-        "default.handlebars->27->1922"
+        "default.handlebars->27->1907",
+        "default.handlebars->27->1923"
       ]
     },
     {
@@ -23428,8 +23428,8 @@
       "zh-chs": "删除设备组权限",
       "fi": "Poista laiteryhmän oikeudet",
       "xloc": [
-        "default.handlebars->27->1711",
-        "default.handlebars->27->1845"
+        "default.handlebars->27->1712",
+        "default.handlebars->27->1846"
       ]
     },
     {
@@ -23443,8 +23443,8 @@
       "nl": "Apparaatmachtigingen verwijderen",
       "zh-chs": "删除设备权限",
       "xloc": [
-        "default.handlebars->27->1709",
-        "default.handlebars->27->1832"
+        "default.handlebars->27->1710",
+        "default.handlebars->27->1833"
       ]
     },
     {
@@ -23474,7 +23474,7 @@
       "zh-chs": "删除用户组成员身份",
       "fi": "Poista käyttäjä ryhmästä",
       "xloc": [
-        "default.handlebars->27->1841"
+        "default.handlebars->27->1842"
       ]
     },
     {
@@ -23489,7 +23489,7 @@
       "zh-chs": "删除用户组权限",
       "xloc": [
         "default.handlebars->27->1449",
-        "default.handlebars->27->1837"
+        "default.handlebars->27->1838"
       ]
     },
     {
@@ -23503,7 +23503,7 @@
       "nl": "Gebruikerslidmaatschap verwijderen",
       "zh-chs": "删除用户成员资格",
       "xloc": [
-        "default.handlebars->27->1719"
+        "default.handlebars->27->1720"
       ]
     },
     {
@@ -23518,7 +23518,7 @@
       "zh-chs": "删除用户权限",
       "xloc": [
         "default.handlebars->27->1447",
-        "default.handlebars->27->1834"
+        "default.handlebars->27->1835"
       ]
     },
     {
@@ -23535,7 +23535,7 @@
       "ru": "Удалить все двухфакторные аутентификации.",
       "zh-chs": "刪除所有第二因素驗證。",
       "xloc": [
-        "default.handlebars->27->1809"
+        "default.handlebars->27->1810"
       ]
     },
     {
@@ -23646,7 +23646,7 @@
       "zh-chs": "删除该用户",
       "fi": "Poista tämä käyttäjä",
       "xloc": [
-        "default.handlebars->27->1787"
+        "default.handlebars->27->1788"
       ]
     },
     {
@@ -23664,7 +23664,7 @@
       "zh-chs": "刪除用戶組成員身份",
       "fi": "Poista käyttäjä ryhmästä",
       "xloc": [
-        "default.handlebars->27->1823"
+        "default.handlebars->27->1824"
       ]
     },
     {
@@ -23678,7 +23678,7 @@
       "nl": "Gebruikersrechten voor dit apparaat verwijderen",
       "zh-chs": "删除此设备的用户组权限",
       "xloc": [
-        "default.handlebars->27->1705"
+        "default.handlebars->27->1706"
       ]
     },
     {
@@ -23695,7 +23695,7 @@
       "ru": "Удалить права группы пользователей для этой группы устройств",
       "zh-chs": "刪除該設備組的用戶組權限",
       "xloc": [
-        "default.handlebars->27->1699",
+        "default.handlebars->27->1700",
         "default.handlebars->27->651"
       ]
     },
@@ -23715,9 +23715,9 @@
       "fi": "Posta käyttäjältä oikeudet tähän laiteryhmään",
       "xloc": [
         "default.handlebars->27->1324",
-        "default.handlebars->27->1693",
-        "default.handlebars->27->1817",
-        "default.handlebars->27->1829",
+        "default.handlebars->27->1694",
+        "default.handlebars->27->1818",
+        "default.handlebars->27->1830",
         "default.handlebars->27->652"
       ]
     },
@@ -23801,7 +23801,7 @@
       "xloc": [
         "default-mobile.handlebars->9->89",
         "default.handlebars->27->1636",
-        "default.handlebars->27->1807"
+        "default.handlebars->27->1808"
       ]
     },
     {
@@ -24057,7 +24057,7 @@
       "zh-chs": "限制條件",
       "fi": "Rajoitukset",
       "xloc": [
-        "default.handlebars->27->1731"
+        "default.handlebars->27->1732"
       ]
     },
     {
@@ -24338,8 +24338,8 @@
       "zh-chs": "短信",
       "fi": "Tekstiviesti",
       "xloc": [
-        "default.handlebars->27->1776",
-        "default.handlebars->27->1781",
+        "default.handlebars->27->1777",
+        "default.handlebars->27->1782",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3"
       ]
@@ -24354,7 +24354,7 @@
       "nl": "SMS geschikt telefoonnummer voor deze gebruiker.",
       "zh-chs": "此用户的短信功能电话号码。",
       "xloc": [
-        "default.handlebars->27->1793"
+        "default.handlebars->27->1794"
       ]
     },
     {
@@ -24797,7 +24797,7 @@
       "xloc": [
         "default-mobile.handlebars->9->270",
         "default-mobile.handlebars->9->363",
-        "default.handlebars->27->1777",
+        "default.handlebars->27->1778",
         "default.handlebars->27->286",
         "default.handlebars->27->732",
         "default.handlebars->27->938"
@@ -24818,7 +24818,7 @@
       "zh-chs": "安全密鑰",
       "fi": "Suojausavain",
       "xloc": [
-        "default.handlebars->27->1774"
+        "default.handlebars->27->1775"
       ]
     },
     {
@@ -24856,7 +24856,7 @@
       "xloc": [
         "default.handlebars->27->1509",
         "default.handlebars->27->1580",
-        "default.handlebars->27->1662",
+        "default.handlebars->27->1663",
         "default.handlebars->27->442",
         "default.handlebars->27->853",
         "default.handlebars->27->855",
@@ -24885,7 +24885,7 @@
       "xloc": [
         "default.handlebars->27->1508",
         "default.handlebars->27->1579",
-        "default.handlebars->27->1661",
+        "default.handlebars->27->1662",
         "default.handlebars->27->441",
         "default.handlebars->27->854",
         "default.handlebars->meshContextMenu->cxselectnone"
@@ -24973,7 +24973,7 @@
       "zh-chs": "选择要对所有选定用户执行的操作。",
       "xloc": [
         "default.handlebars->27->1583",
-        "default.handlebars->27->1663"
+        "default.handlebars->27->1664"
       ]
     },
     {
@@ -25124,7 +25124,7 @@
       "zh-chs": "发送短信给该用户",
       "fi": "Lähetä tekstiviesti tälle käyttäjälle",
       "xloc": [
-        "default.handlebars->27->1782"
+        "default.handlebars->27->1783"
       ]
     },
     {
@@ -25134,7 +25134,7 @@
       "es": "Enviar un mensaje de correo a este usuario",
       "fi": "Lähetä sähköposti tälle käyttäjälle",
       "xloc": [
-        "default.handlebars->27->1784"
+        "default.handlebars->27->1785"
       ]
     },
     {
@@ -25152,7 +25152,7 @@
       "zh-chs": "向該組中的所有用戶發送通知。",
       "fi": "Lähetä ilmoitus kaikille tämän ryhmän jäsenille.",
       "xloc": [
-        "default.handlebars->27->1690"
+        "default.handlebars->27->1691"
       ]
     },
     {
@@ -25288,7 +25288,7 @@
       "ru": "Отправить уведомление пользователю",
       "zh-chs": "發送用戶通知",
       "xloc": [
-        "default.handlebars->27->1786"
+        "default.handlebars->27->1787"
       ]
     },
     {
@@ -25359,7 +25359,7 @@
       "zh-chs": "服務器證書",
       "fi": "Palvelimen sertifikaatti",
       "xloc": [
-        "default.handlebars->27->1938"
+        "default.handlebars->27->1939"
       ]
     },
     {
@@ -25377,7 +25377,7 @@
       "zh-chs": "服務器數據庫",
       "fi": "Palvelimen tietokanta",
       "xloc": [
-        "default.handlebars->27->1939"
+        "default.handlebars->27->1940"
       ]
     },
     {
@@ -25420,7 +25420,7 @@
       "fi": "Palvelimen oikeudet",
       "xloc": [
         "default.handlebars->27->1567",
-        "default.handlebars->27->1655"
+        "default.handlebars->27->1656"
       ]
     },
     {
@@ -25438,7 +25438,7 @@
       "zh-chs": "服務器配額",
       "fi": "Palvelimen kiintiö",
       "xloc": [
-        "default.handlebars->27->1748"
+        "default.handlebars->27->1749"
       ]
     },
     {
@@ -25474,7 +25474,7 @@
       "zh-chs": "服務器權限",
       "fi": "Palvelimen Oikeudet",
       "xloc": [
-        "default.handlebars->27->1747"
+        "default.handlebars->27->1748"
       ]
     },
     {
@@ -25492,7 +25492,7 @@
       "zh-chs": "服務器狀態",
       "fi": "Palvelimen Tila",
       "xloc": [
-        "default.handlebars->27->1886"
+        "default.handlebars->27->1887"
       ]
     },
     {
@@ -25527,7 +25527,7 @@
       "ru": "Трассировка сервера",
       "zh-chs": "服務器跟踪",
       "xloc": [
-        "default.handlebars->27->1949"
+        "default.handlebars->27->1950"
       ]
     },
     {
@@ -25673,7 +25673,7 @@
       "ru": "ServerStats.csv",
       "zh-chs": "ServerStats.csv",
       "xloc": [
-        "default.handlebars->27->1930"
+        "default.handlebars->27->1931"
       ]
     },
     {
@@ -25719,7 +25719,7 @@
       "fr": "Session",
       "fi": "Istunto",
       "xloc": [
-        "default.handlebars->27->1850"
+        "default.handlebars->27->1851"
       ]
     },
     {
@@ -26387,8 +26387,8 @@
       "zh-chs": "尺寸",
       "fi": "Koko",
       "xloc": [
-        "default.handlebars->27->1853",
-        "default.handlebars->27->1868",
+        "default.handlebars->27->1854",
+        "default.handlebars->27->1869",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize"
       ]
     },
@@ -27245,8 +27245,8 @@
       "fr": "Heure de démarrage",
       "fi": "Käynnistys aika",
       "xloc": [
-        "default.handlebars->27->1851",
-        "default.handlebars->27->1870",
+        "default.handlebars->27->1852",
+        "default.handlebars->27->1871",
         "default.handlebars->27->798",
         "desktop.handlebars->3->15"
       ]
@@ -27303,8 +27303,8 @@
       "zh-chs": "狀態",
       "fi": "Tila",
       "xloc": [
-        "default.handlebars->27->1800",
-        "default.handlebars->27->1863",
+        "default.handlebars->27->1801",
+        "default.handlebars->27->1864",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->7"
       ]
     },
@@ -27898,7 +27898,7 @@
       "xloc": [
         "default-mobile.handlebars->9->164",
         "default.handlebars->27->1367",
-        "default.handlebars->27->1857",
+        "default.handlebars->27->1858",
         "default.handlebars->27->244",
         "default.handlebars->27->514",
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevTerminal",
@@ -27938,7 +27938,7 @@
       "zh-chs": "終端通知",
       "xloc": [
         "default.handlebars->27->1287",
-        "default.handlebars->27->1766",
+        "default.handlebars->27->1767",
         "default.handlebars->27->586"
       ]
     },
@@ -27957,7 +27957,7 @@
       "zh-chs": "終端提示",
       "xloc": [
         "default.handlebars->27->1286",
-        "default.handlebars->27->1765",
+        "default.handlebars->27->1766",
         "default.handlebars->27->585"
       ]
     },
@@ -28105,7 +28105,7 @@
       "ru": "На данный момент уведомлений нет",
       "zh-chs": "目前沒有任何通知",
       "xloc": [
-        "default.handlebars->27->1878"
+        "default.handlebars->27->1879"
       ]
     },
     {
@@ -29412,9 +29412,9 @@
         "default.handlebars->27->1261",
         "default.handlebars->27->1262",
         "default.handlebars->27->13",
-        "default.handlebars->27->1840",
-        "default.handlebars->27->1855",
+        "default.handlebars->27->1841",
         "default.handlebars->27->1856",
+        "default.handlebars->27->1857",
         "default.handlebars->27->41",
         "default.handlebars->27->42",
         "default.handlebars->27->440",
@@ -29456,7 +29456,7 @@
       "zh-chs": "未知動作",
       "fi": "Tuntematon toimenpide",
       "xloc": [
-        "default.handlebars->27->1892"
+        "default.handlebars->27->1893"
       ]
     },
     {
@@ -29474,8 +29474,8 @@
       "zh-chs": "未知設備",
       "fi": "Tuntematon laite",
       "xloc": [
-        "default.handlebars->27->1704",
-        "default.handlebars->27->1828"
+        "default.handlebars->27->1705",
+        "default.handlebars->27->1829"
       ]
     },
     {
@@ -29493,9 +29493,9 @@
       "zh-chs": "未知設備組",
       "fi": "Tuntematon laiteryhmä",
       "xloc": [
-        "default.handlebars->27->1698",
-        "default.handlebars->27->1816",
-        "default.handlebars->27->1896"
+        "default.handlebars->27->1699",
+        "default.handlebars->27->1817",
+        "default.handlebars->27->1897"
       ]
     },
     {
@@ -29513,7 +29513,7 @@
       "zh-chs": "未知群組",
       "fi": "Tuntematon ryhmä",
       "xloc": [
-        "default.handlebars->27->1888"
+        "default.handlebars->27->1889"
       ]
     },
     {
@@ -29550,7 +29550,7 @@
       "zh-chs": "未知用戶組",
       "fi": "Tuntematon käyttäjäryhmä",
       "xloc": [
-        "default.handlebars->27->1822"
+        "default.handlebars->27->1823"
       ]
     },
     {
@@ -29643,7 +29643,7 @@
       "zh-chs": "最新",
       "fi": "Ajantasalla",
       "xloc": [
-        "default.handlebars->27->1956"
+        "default.handlebars->27->1957"
       ]
     },
     {
@@ -29899,8 +29899,8 @@
       "zh-chs": "用過的",
       "fi": "Käytetty",
       "xloc": [
-        "default.handlebars->27->1882",
-        "default.handlebars->27->1884"
+        "default.handlebars->27->1883",
+        "default.handlebars->27->1885"
       ]
     },
     {
@@ -29921,8 +29921,8 @@
         "default.handlebars->27->1325",
         "default.handlebars->27->1539",
         "default.handlebars->27->1568",
-        "default.handlebars->27->1694",
-        "default.handlebars->27->1875",
+        "default.handlebars->27->1695",
+        "default.handlebars->27->1876",
         "default.handlebars->27->222",
         "default.handlebars->27->654"
       ]
@@ -29980,7 +29980,7 @@
       "zh-chs": "用戶帳號",
       "fi": "Käyttäjätilit",
       "xloc": [
-        "default.handlebars->27->1901"
+        "default.handlebars->27->1902"
       ]
     },
     {
@@ -30018,7 +30018,7 @@
       "fi": "Käyttäjän suostumus",
       "xloc": [
         "default.handlebars->27->1293",
-        "default.handlebars->27->1772",
+        "default.handlebars->27->1773",
         "default.handlebars->27->190",
         "default.handlebars->27->592",
         "default.handlebars->27->709"
@@ -30041,9 +30041,9 @@
       "xloc": [
         "default.handlebars->27->1381",
         "default.handlebars->27->1382",
-        "default.handlebars->27->1670",
-        "default.handlebars->27->1824",
-        "default.handlebars->27->1843",
+        "default.handlebars->27->1671",
+        "default.handlebars->27->1825",
+        "default.handlebars->27->1844",
         "default.handlebars->27->653"
       ]
     },
@@ -30080,7 +30080,7 @@
       "zh-chs": "用戶組成員資格",
       "fi": "Käyttäjäryhmä jäsenyydet",
       "xloc": [
-        "default.handlebars->27->1821"
+        "default.handlebars->27->1822"
       ]
     },
     {
@@ -30108,8 +30108,8 @@
       "zh-chs": "用戶標識",
       "xloc": [
         "default.handlebars->27->1443",
-        "default.handlebars->27->1739",
-        "default.handlebars->27->1740"
+        "default.handlebars->27->1740",
+        "default.handlebars->27->1741"
       ]
     },
     {
@@ -30119,7 +30119,7 @@
       "fr": "Identifiant utilisateur",
       "xloc": [
         "default.handlebars->27->1379",
-        "default.handlebars->27->1723"
+        "default.handlebars->27->1724"
       ]
     },
     {
@@ -30217,7 +30217,7 @@
       "ru": "Сессии пользователя",
       "zh-chs": "用戶會話",
       "xloc": [
-        "default.handlebars->27->1921"
+        "default.handlebars->27->1922"
       ]
     },
     {
@@ -30424,9 +30424,9 @@
       "ru": "Пользователи",
       "zh-chs": "用戶數",
       "xloc": [
-        "default.handlebars->27->1658",
-        "default.handlebars->27->1686",
-        "default.handlebars->27->1920",
+        "default.handlebars->27->1659",
+        "default.handlebars->27->1687",
+        "default.handlebars->27->1921",
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersGeneral"
       ]
     },
@@ -30445,7 +30445,7 @@
       "zh-chs": "用戶會話",
       "fi": "Käyttäjien istuntoja",
       "xloc": [
-        "default.handlebars->27->1905"
+        "default.handlebars->27->1906"
       ]
     },
     {
@@ -30542,7 +30542,7 @@
       "zh-chs": "已驗證",
       "fi": "Vahvistettu",
       "xloc": [
-        "default.handlebars->27->1802"
+        "default.handlebars->27->1803"
       ]
     },
     {
@@ -30652,7 +30652,7 @@
       "zh-chs": "版本不兼容，请先升级您的MeshCentral安装",
       "fi": "Versio yhteensopimaton, päivitä ensin MeshCentral-asennus",
       "xloc": [
-        "default.handlebars->27->1952"
+        "default.handlebars->27->1953"
       ]
     },
     {
@@ -30712,6 +30712,12 @@
       ]
     },
     {
+      "en": "View All Events",
+      "xloc": [
+        "default.handlebars->27->1651"
+      ]
+    },
+    {
       "cs": "Zobrazit Changelog",
       "de": "Changelog anzeigen",
       "en": "View Changelog",
@@ -30725,8 +30731,8 @@
       "zh-chs": "查看变更日志",
       "fi": "Näytä muutosloki",
       "xloc": [
-        "default.handlebars->27->1955",
-        "default.handlebars->27->1957"
+        "default.handlebars->27->1956",
+        "default.handlebars->27->1958"
       ]
     },
     {
@@ -30780,7 +30786,7 @@
       "zh-chs": "查看有關此用戶的註釋",
       "fi": "Näytä tämän Käyttäjän huomautukset",
       "xloc": [
-        "default.handlebars->27->1780"
+        "default.handlebars->27->1781"
       ]
     },
     {
@@ -30998,8 +31004,8 @@
       "zh-chs": "網絡服務器",
       "fi": "Web-palvelin",
       "xloc": [
-        "default.handlebars->27->1941",
-        "default.handlebars->27->1942"
+        "default.handlebars->27->1942",
+        "default.handlebars->27->1943"
       ]
     },
     {
@@ -31017,7 +31023,7 @@
       "zh-chs": "Web服務器請求",
       "fi": "Web-palvelimen pyynnöt",
       "xloc": [
-        "default.handlebars->27->1943"
+        "default.handlebars->27->1944"
       ]
     },
     {
@@ -31034,7 +31040,7 @@
       "ru": "Ретранслятор Web Socket",
       "zh-chs": "Web套接字中繼",
       "xloc": [
-        "default.handlebars->27->1944"
+        "default.handlebars->27->1945"
       ]
     },
     {
@@ -31152,7 +31158,7 @@
       "zh-chs": "下次登錄時將更改。",
       "fi": "Vaihdetaan seuraavan kirjautumisen yhteydessä",
       "xloc": [
-        "default.handlebars->27->1752"
+        "default.handlebars->27->1753"
       ]
     },
     {
@@ -32194,7 +32200,7 @@
       "zh-chs": "\\\\'",
       "fi": "\\\\'",
       "xloc": [
-        "default.handlebars->27->1953"
+        "default.handlebars->27->1954"
       ]
     },
     {
@@ -32537,8 +32543,8 @@
       "zh-chs": "自由",
       "fi": "vapaata",
       "xloc": [
-        "default.handlebars->27->1913",
-        "default.handlebars->27->1916"
+        "default.handlebars->27->1914",
+        "default.handlebars->27->1917"
       ]
     },
     {
@@ -33022,7 +33028,7 @@
       "ru": "servertrace.csv",
       "zh-chs": "servertrace.csv",
       "xloc": [
-        "default.handlebars->27->1951"
+        "default.handlebars->27->1952"
       ]
     },
     {
@@ -33079,7 +33085,7 @@
       "ru": "time, conn.agent, conn.users, conn.usersessions, conn.relaysession, conn.intelamt, mem.external, mem.heapused, mem.heaptotal, mem.rss",
       "zh-chs": "時間，conn.agent，conn.users，conn.usersessions，conn.relaysession，conn.intelamt，mem.external，mem.heapused，mem.heaptotal，mem.rss",
       "xloc": [
-        "default.handlebars->27->1929"
+        "default.handlebars->27->1930"
       ]
     },
     {
@@ -33096,7 +33102,7 @@
       "ru": "time, source, message",
       "zh-chs": "時間，來源，訊息",
       "xloc": [
-        "default.handlebars->27->1950"
+        "default.handlebars->27->1951"
       ]
     },
     {
@@ -33128,8 +33134,8 @@
       "zh-chs": "總",
       "fi": "yhteensä",
       "xloc": [
-        "default.handlebars->27->1914",
-        "default.handlebars->27->1917"
+        "default.handlebars->27->1915",
+        "default.handlebars->27->1918"
       ]
     },
     {
@@ -33293,7 +33299,7 @@
       "xloc": [
         "default.handlebars->27->1496",
         "default.handlebars->27->1501",
-        "default.handlebars->27->1854"
+        "default.handlebars->27->1855"
       ]
     },
     {
@@ -33351,7 +33357,7 @@
       "zh-chs": "{0}個活動會話",
       "fi": "{0} aktiivista istuntoa",
       "xloc": [
-        "default.handlebars->27->1792"
+        "default.handlebars->27->1793"
       ]
     },
     {
@@ -33390,7 +33396,7 @@
       "xloc": [
         "default-mobile.handlebars->9->119",
         "default.handlebars->27->1511",
-        "default.handlebars->27->1869"
+        "default.handlebars->27->1870"
       ]
     },
     {
@@ -33455,7 +33461,7 @@
       "zh-chs": "{0}個群組",
       "fi": "{0} ryhmää",
       "xloc": [
-        "default.handlebars->27->1757"
+        "default.handlebars->27->1758"
       ]
     },
     {
