@@ -2205,61 +2205,7 @@
                 }
 
                 count++;
-                var title = EscapeHtml(nodes[i].name);
-                if (title.length == 0) { title = '<i>' + "None" + '</i>'; }
-                if ((nodes[i].rname != null) && (nodes[i].rname.length > 0)) { title += ' / ' + EscapeHtml(nodes[i].rname); }
-                var name = EscapeHtml(nodes[i].name);
-                if (showRealNames == true && nodes[i].rname != null) name = EscapeHtml(nodes[i].rname);
-                if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
-
-                // Add device notification icons
-                var devNotify = '', devNotifySub = '';
-
-                // This device is "starred"
-                if (stars[nodes[i]._id] == 1) {
-                    devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>';
-                }
-
-                // This device has session information
-                if (nodes[i].sessions != null) {
-                    // Display any agent messages
-                    if (nodes[i].sessions.msg != null) {
-                        devNotifySub += '<div style="width:16;height:16" class=deviceNotifyDotSub>' + Object.keys(nodes[i].sessions.msg).length + '</div>';
-                    }
-
-                    // Sessions are active
-                    if ((nodes[i].sessions.kvm != null) || (nodes[i].sessions.terminal != null) || (nodes[i].sessions.files != null) || (nodes[i].sessions.tcp != null) || (nodes[i].sessions.udp != null)) {
-                        devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>';
-                    }
-
-                    // Battery state
-                    if (nodes[i].sessions.battery != null) {
-                        var bat = nodes[i].sessions.battery;
-                        var statestr = '';
-                        if (bat.state == 'ac') { statestr = "Device is plugged-in"; }
-                        else if (bat.state == 'dc') { statestr = "Device is battery powered"; }
-
-                        var levelstr = '', levelnum = -1;
-                        if ((typeof bat.level == 'number') && (bat.level >= 0) && (bat.level <= 100)) {
-                            levelstr = bat.level + '%';
-                            levelnum = (Math.floor((bat.level + 10) / 25) + 1);
-                            if (levelnum > 5) { lvl = 5; }
-                            if (bat.state == 'ac') { if (bat.level == 100) { levelnum = 11; } else { levelnum += 5; } }
-                        }
-
-                        if (levelnum > 0) {
-                            devNotify += '<div class="deviceBatterySmall deviceBatterySmall' + levelnum + '" title="' + ((statestr != null) ? (statestr + ', ' + levelstr) : levelstr) + '"></div>';
-                        }
-                    }
-                }
-
-                // Add any device icons
-                if (devNotifySub != '') { devNotify += '<div class=deviceNotifyDot>' + devNotifySub + '</div>'; }
-
-                // Node
-                var icon = nodes[i].icon, nodestate = NodeStateStr(nodes[i]);
-                if ((!nodes[i].conn) || (nodes[i].conn == 0)) { icon += ' gray'; }
-                r += '<div name=xxdevice class=devList1 onclick=goForward(\'' + nodes[i]._id + '\')><div style=display:none>' + devNotify + '<div class="i' + icon + ' devList2"></div><div class=devList3><div class=devList4><b>' + name + '</b></div><div class=devList5>' + nodestate + '</div></div></div></div>';
+                r += '<div name=xxdevice class=devList1 id=\'' + nodes[i]._id + '\'></div>'; // This is a standin for the device, it gets rendered only if visible.
 
                 // If we are displaying devices by group, put the device in the right group.
                 /*
@@ -2333,7 +2279,69 @@
             onDevicesScrollnagleTimer = null;
             var visibleTop = Q('xdevices').scrollTop - 250, visibleBottom = Q('xdevices').scrollTop + Q('xdevices').clientHeight + 250, devdivs = document.getElementsByName('xxdevice');
             for (var i = 0; i < devdivs.length; i++) {
-                devdivs[i].childNodes[0].style.display = ((devdivs[i].offsetTop >= visibleTop) && (devdivs[i].offsetTop < visibleBottom)) ? null : 'none';
+                if ((devdivs[i].offsetTop >= visibleTop) && (devdivs[i].offsetTop < visibleBottom)) {
+                    // Show
+                    var node = getNodeFromId(devdivs[i].id)
+                    if (node == null) break;
+
+                    var title = EscapeHtml(node.name);
+                    if (title.length == 0) { title = '<i>' + "None" + '</i>'; }
+                    if ((node.rname != null) && (node.rname.length > 0)) { title += ' / ' + EscapeHtml(node.rname); }
+                    var name = EscapeHtml(node.name);
+                    if (showRealNames == true && node.rname != null) name = EscapeHtml(node.rname);
+                    if (name.length == 0) { name = '<i>' + "None" + '</i>'; }
+
+                    // Add device notification icons
+                    var devNotify = '', devNotifySub = '';
+
+                    // This device is "starred"
+                    if (stars[node._id] == 1) {
+                        devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>';
+                    }
+
+                    // This device has session information
+                    if (node.sessions != null) {
+                        // Display any agent messages
+                        if (node.sessions.msg != null) {
+                            devNotifySub += '<div style="width:16;height:16" class=deviceNotifyDotSub>' + Object.keys(node.sessions.msg).length + '</div>';
+                        }
+
+                        // Sessions are active
+                        if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
+                            devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>';
+                        }
+
+                        // Battery state
+                        if (node.sessions.battery != null) {
+                            var bat = node.sessions.battery;
+                            var statestr = '';
+                            if (bat.state == 'ac') { statestr = "Device is plugged-in"; }
+                            else if (bat.state == 'dc') { statestr = "Device is battery powered"; }
+
+                            var levelstr = '', levelnum = -1;
+                            if ((typeof bat.level == 'number') && (bat.level >= 0) && (bat.level <= 100)) {
+                                levelstr = bat.level + '%';
+                                levelnum = (Math.floor((bat.level + 10) / 25) + 1);
+                                if (levelnum > 5) { lvl = 5; }
+                                if (bat.state == 'ac') { if (bat.level == 100) { levelnum = 11; } else { levelnum += 5; } }
+                            }
+
+                            if (levelnum > 0) {
+                                devNotify += '<div class="deviceBatterySmall deviceBatterySmall' + levelnum + '" title="' + ((statestr != null) ? (statestr + ', ' + levelstr) : levelstr) + '"></div>';
+                            }
+                        }
+                    }
+
+                    // Add any device icons
+                    if (devNotifySub != '') { devNotify += '<div class=deviceNotifyDot>' + devNotifySub + '</div>'; }
+
+                    // Node
+                    var icon = node.icon, nodestate = NodeStateStr(node);
+                    if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
+                    devdivs[i].innerHTML = '<div onclick=goForward(\'' + node._id + '\')>' + devNotify + '<div class="i' + icon + ' devList2"></div><div class=devList3><div class=devList4><b>' + name + '</b></div><div class=devList5>' + nodestate + '</div></div></div>';
+                } else {
+                    devdivs[i].innerHTML = ''; // Hide
+                }
             }
         }
 
