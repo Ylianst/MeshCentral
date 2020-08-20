@@ -6478,19 +6478,29 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
-            QV('connectbutton1hspan',
-                (deskState == 0) &&
-                (rights & 8) &&
-                (
-                  ((currentNode.intelamt != null) &&
-                  (currentNode.intelamt.state == 2) &&
-                  (currentNode.intelamt.ver != null) &&
-                  ((currentNode.intelamt.sku == null) ||
-                  ((typeof currentNode.intelamt.sku == 'number') &&
-                  ((currentNode.intelamt.sku & 8) != 0))))
-                )
-            );
-
+            if (mesh.mtype == 1) {
+                QV('connectbutton1hspan',
+                    (deskState == 0) &&
+                    (rights & 8) &&
+                    (
+                        ((currentNode.intelamt != null) &&
+                        (currentNode.intelamt.state == 2))
+                    )
+                );
+            } else {
+                QV('connectbutton1hspan',
+                    (deskState == 0) &&
+                    (rights & 8) &&
+                    (
+                        ((currentNode.intelamt != null) &&
+                        (currentNode.intelamt.state == 2) &&
+                        (currentNode.intelamt.ver != null) &&
+                        ((currentNode.intelamt.sku == null) ||
+                        ((typeof currentNode.intelamt.sku == 'number') &&
+                        ((currentNode.intelamt.sku & 8) != 0))))
+                    )
+                );            
+            }
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
             QV('d7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == false) || (desktop.contype == 1))));
@@ -7356,8 +7366,13 @@
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
-            QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
-            QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
+            if (mesh.mtype == 1) {
+                QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
+                QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
+            } else {
+                QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
+                QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2) && (terminalNode.intelamt.ver != null));
+            }
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0); // If Agent (1) connected, enable Terminal
