@@ -112,6 +112,7 @@ function zeroPad(num, c) { if (c == null) { c = 2; } var s = "00000000" + num; r
 // String validation
 function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
 function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1) && (str.indexOf(':') == -1)) };
+function isSafeString2(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1)) };
 
 // Parse URL arguments, only keep safe values
 function parseUriArgs() {
@@ -124,7 +125,7 @@ function parseUriArgs() {
             case 0: { name = decodeURIComponent(parsedUri[x]); break; }
             case 1: {
                 r[name] = decodeURIComponent(parsedUri[x]);
-                if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+                if (!isSafeString2(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
                 break;
             } default: { break; }
         }
