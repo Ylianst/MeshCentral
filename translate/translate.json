@@ -4635,6 +4635,7 @@
     },
     {
       "en": "Available Memory",
+      "nl": "Beschikbaar geheugen",
       "fr": "Mémoire disponible",
       "xloc": [
         "default.handlebars->27->1914"
@@ -7796,6 +7797,7 @@
     },
     {
       "en": "Creation Time",
+      "nl": "Aanmaak tijd",
       "xloc": [
         "default.handlebars->27->1278"
       ]
@@ -7821,6 +7823,7 @@
     },
     {
       "en": "Creator",
+      "nl": "Maker",
       "xloc": [
         "default.handlebars->27->1276",
         "default.handlebars->27->1277"
@@ -9978,6 +9981,7 @@
     },
     {
       "en": "Download remote clipboard to local clipboard",
+      "nl": "Download het externe klembord naar het lokale klembord",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -25600,7 +25604,7 @@
       "hi": "सर्वर काट दिया गया",
       "ja": "サーバーが切断されました",
       "ko": "서버 연결이 끊어졌습니다",
-      "nl": "Server verbroken",
+      "nl": "Serververbinding verbroken ",
       "pt": "Servidor desconectado",
       "ru": "Сервер отключен",
       "zh-chs": "服務器已斷開連接",
@@ -29753,6 +29757,7 @@
     },
     {
       "en": "Upload local clipboard to remote device",
+      "nl": "Upload lokaal klembord naar het externe apparaat",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -30726,6 +30731,7 @@
     },
     {
       "en": "View All Events",
+      "nl": "Bekijk alle gebeurtenissen",
       "xloc": [
         "default.handlebars->27->1652"
       ]
