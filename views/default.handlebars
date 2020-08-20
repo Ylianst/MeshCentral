@@ -3607,7 +3607,7 @@
 
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
-                if ((view < 3) && (sort == 0) && (sortedMeshes.length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
+                if ((view < 3) && (sort == 0) && (Object.keys(meshes).length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
                     r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
