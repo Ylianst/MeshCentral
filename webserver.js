@@ -1873,7 +1873,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Callback: 0=OK, 1=OldPass, 2=CommonPass
     obj.checkOldUserPasswords = function (domain, user, password, func) {
         // Check how many old passwords we need to check
-        if ((typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
+        if ((domain.passwordrequirements != null) && (typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
             if (user.oldpasswords != null) {
                 const extraOldPasswords = user.oldpasswords.length - domain.passwordrequirements.oldpasswordban;
                 if (extraOldPasswords > 0) { user.oldpasswords.splice(0, extraOldPasswords); }
