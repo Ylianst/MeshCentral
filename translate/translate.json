@@ -587,6 +587,7 @@
       "fi": ", jotta tämä linkki toimisi, sinun on ladattava MeshCentral Reititin ja suoritettava se napsauttamalla asennuspainiketta.",
       "fr": ", pour que ce lien fonctionne vous devez télécharger MeshCentral Router, le lancer et cliquer sur le bouton d'installation.",
       "nl": ", om deze link te laten werken, moet u MeshCentral Router downloaden, het uitvoeren en op de installatieknop klikken.",
+      "zh-chs": "，要使此链接起作用，您必须下载MeshCentral Router运行它，然后单击安装按钮。",
       "zh-cht": "，要使此鏈接起作用，您必須下載MeshCentral Router運行它，然後單擊安裝按鈕。"
     },
     {
@@ -652,6 +653,7 @@
       "fi": ", {0} katselee",
       "fr": ", {0} regarde",
       "nl": ", {0} kijken",
+      "zh-chs": "，{0}观看",
       "zh-cht": "，{0}觀看",
       "xloc": [
         "default.handlebars->27->797",
@@ -802,6 +804,7 @@
       "fi": "1 yhteys",
       "fr": "1 connexion",
       "nl": "1 verbinding",
+      "zh-chs": "1位联络人",
       "zh-cht": "1位聯絡人",
       "xloc": [
         "default.handlebars->27->799",
@@ -880,6 +883,7 @@
       "nl": "1 minuut",
       "pt": "1 minuto",
       "ru": "1 минута",
+      "zh-chs": "1分钟",
       "zh-cht": "1分鐘",
       "xloc": [
         "default.handlebars->27->702"
@@ -1119,6 +1123,7 @@
       "es": "10 minutos",
       "fr": "10 minutes",
       "nl": "10 minuten",
+      "zh-chs": "10分钟",
       "zh-cht": "10分鐘",
       "xloc": [
         "default.handlebars->27->704"
@@ -1209,6 +1214,7 @@
       "es": "15 minutos",
       "fr": "15 minutes",
       "nl": "15 minuten",
+      "zh-chs": "15分钟",
       "zh-cht": "15分鐘",
       "xloc": [
         "default.handlebars->27->705"
@@ -1321,6 +1327,7 @@
       "fi": "256 väriä",
       "fr": "256 couleurs",
       "nl": "256 kleuren",
+      "zh-chs": "256色",
       "zh-cht": "256色",
       "xloc": [
         "player.handlebars->3->18"
@@ -1445,6 +1452,7 @@
       "es": "30 minutos",
       "fr": "30 minutes",
       "nl": "30 minuten",
+      "zh-chs": "30分钟",
       "zh-cht": "30分鐘",
       "xloc": [
         "default.handlebars->27->706"
@@ -1555,6 +1563,7 @@
       "es": "45 minutos",
       "fr": "45 minutes",
       "nl": "45 minuten",
+      "zh-chs": "45分钟",
       "zh-cht": "45分鐘",
       "xloc": [
         "default.handlebars->27->707"
@@ -1584,6 +1593,7 @@
       "es": "5 minutos",
       "fr": "5 minutes",
       "nl": "5 minuten",
+      "zh-chs": "5分钟",
       "zh-cht": "5分鐘",
       "xloc": [
         "default.handlebars->27->703"
@@ -1755,6 +1765,7 @@
       "fi": "65536 väriä",
       "fr": "65536 couleurs",
       "nl": "65536 kleuren",
+      "zh-chs": "65536色",
       "zh-cht": "65536色",
       "xloc": [
         "player.handlebars->3->20"
@@ -3166,6 +3177,7 @@
       "es": "Agregar etiquetas",
       "fr": "Ajouter des tags",
       "nl": "Voeg tags toe",
+      "zh-chs": "添加标签",
       "zh-cht": "添加標籤",
       "xloc": [
         "default.handlebars->27->467"
@@ -3491,6 +3503,7 @@
       "en": "Agent Messages",
       "es": "Mensajes del Agente",
       "nl": "Agent berichten",
+      "zh-chs": "代理讯息",
       "zh-cht": "代理訊息",
       "xloc": [
         "default-mobile.handlebars->9->177",
@@ -3738,6 +3751,7 @@
       "fi": "Kaikki käytettävissä olevat",
       "fr": "Tous ceux disponibles",
       "nl": "Alle beschikbare",
+      "zh-chs": "全部可用",
       "zh-cht": "全部可用",
       "xloc": [
         "default.handlebars->27->1535"
@@ -3765,6 +3779,7 @@
       "fi": "Kaikki tapahtumat",
       "fr": "Tous les évènements",
       "nl": "Alle gebeurtenissen",
+      "zh-chs": "所有活动",
       "zh-cht": "所有活動",
       "xloc": [
         "default.handlebars->27->1533"
@@ -4885,6 +4900,7 @@
       "en": "Available Memory",
       "fr": "Mémoire disponible",
       "nl": "Beschikbaar geheugen",
+      "zh-chs": "有效内存",
       "zh-cht": "有效內存",
       "xloc": [
         "default.handlebars->27->1915"
@@ -5846,6 +5862,7 @@
       "fi": "Vaihda Nimi käyttäjälle {0}",
       "fr": "Changer le Nom complet pour {0}",
       "nl": "Verander echte naam voor {0}",
+      "zh-chs": "更改{0}的真实名称",
       "zh-cht": "更改{0}的真實名稱",
       "xloc": [
         "default.handlebars->27->1801"
@@ -6054,6 +6071,7 @@
       "fi": "Chat istunto",
       "fr": "Session Chat",
       "nl": "Chat sessie",
+      "zh-chs": "聊天会话",
       "zh-cht": "聊天會話",
       "xloc": [
         "messenger.handlebars->13->16"
@@ -6286,6 +6304,8 @@
     },
     {
       "en": "Chinese (Traditional)",
+      "zh-chs": "中国传统的）",
+      "zh-cht": "中國傳統的）",
       "xloc": [
         "default.handlebars->27->1204"
       ]
@@ -6720,6 +6740,7 @@
       "fi": "Värin laatu",
       "fr": "Nombre de couleurs",
       "nl": "Kleurkwaliteit",
+      "zh-chs": "色彩品质",
       "zh-cht": "色彩品質",
       "xloc": [
         "player.handlebars->3->17",
@@ -6790,6 +6811,7 @@
       "en": "Compressing files...",
       "fr": "Compression des fichiers ...",
       "nl": "Bestanden comprimeren...",
+      "zh-chs": "压缩文件...",
       "zh-cht": "壓縮文件...",
       "xloc": [
         "default.handlebars->27->850"
@@ -7787,6 +7809,7 @@
       "es": "Copiar la URL del agente en el portapapeles",
       "fr": "Copier l'URL de l'agent dans le presse papier",
       "nl": "Kopieer de agent URL naar het klembord",
+      "zh-chs": "将座席URL复制到剪贴板",
       "zh-cht": "將座席URL複製到剪貼板",
       "xloc": [
         "default.handlebars->27->405"
@@ -8112,6 +8135,7 @@
       "es": "Crear un enlace para compartir este dispositivo con un invitado",
       "fr": "Créer un lien pour partager cet appareil avec un invité",
       "nl": "Maak een link om dit apparaat met een gast te delen",
+      "zh-chs": "创建链接以与访客共享此设备",
       "zh-cht": "創建鏈接以與訪客共享此設備",
       "xloc": [
         "default.handlebars->27->614"
@@ -8199,6 +8223,7 @@
       "es": "Crea un enlace que permite a un invitado acceder al escritorio remoto sin requerir una cuenta en este dispositivo durante hasta 1 hora.",
       "fr": "Créer un lien qui autorise un invité sans compte à prendre en main cet appareil pendant maximum 1 heure.",
       "nl": "Creëert een link waarmee een gast zonder account maximaal 1 uur op het externe bureaublad van dit apparaat kan gaan.",
+      "zh-chs": "创建一个链接，该链接允许没有帐户的访客将远程桌面访问此设备最多1小时。",
       "zh-cht": "創建一個鏈接，該鏈接允許沒有帳戶的訪客將遠程桌面訪問此設備最多1小時。",
       "xloc": [
         "default.handlebars->27->699"
@@ -8226,6 +8251,7 @@
     {
       "en": "Creation Time",
       "nl": "Aanmaak tijd",
+      "zh-chs": "创作时间",
       "zh-cht": "創作時間",
       "xloc": [
         "default.handlebars->27->1279"
@@ -8254,6 +8280,7 @@
     {
       "en": "Creator",
       "nl": "Maker",
+      "zh-chs": "创作者",
       "zh-cht": "創作者",
       "xloc": [
         "default.handlebars->27->1277",
@@ -8599,6 +8626,7 @@
       "fi": "Oletus",
       "fr": "Par défaut",
       "nl": "Standaard",
+      "zh-chs": "默认",
       "zh-cht": "默認",
       "xloc": [
         "default.handlebars->27->1626",
@@ -9274,6 +9302,7 @@
       "en": "DesktopSession",
       "es": "Sesión de escritorio",
       "nl": "Desktop sessie",
+      "zh-chs": "桌面会话",
       "zh-cht": "桌面會話",
       "xloc": [
         "default.handlebars->27->830"
@@ -9496,6 +9525,7 @@
       "fi": "Laiteviesti",
       "fr": "Message de Service",
       "nl": "Apparaatbericht",
+      "zh-chs": "设备信息",
       "zh-cht": "設備信息",
       "xloc": [
         "default.handlebars->27->696"
@@ -9626,6 +9656,7 @@
       "fi": "Laite on akkukäyttöinen",
       "fr": "L'appareil est sur batterie",
       "nl": "Apparaat werkt op batterijen",
+      "zh-chs": "设备由电池供电",
       "zh-cht": "設備由電池供電",
       "xloc": [
         "default-mobile.handlebars->9->157",
@@ -9854,6 +9885,7 @@
       "fi": "Laite on kytketty",
       "fr": "L'appareil est branché sur secteur",
       "nl": "Apparaat is aangesloten",
+      "zh-chs": "设备已插入",
       "zh-cht": "設備已插入",
       "xloc": [
         "default-mobile.handlebars->9->156",
@@ -10075,6 +10107,7 @@
       "fi": "Näytä viestiruutu etälaitteessa.",
       "fr": "Afficher un message sur le poste distant",
       "nl": "Geef een berichtvenster weer op het externe apparaat.",
+      "zh-chs": "在远程设备上显示一个消息框。",
       "zh-cht": "在遠程設備上顯示一個消息框。",
       "xloc": [
         "default.handlebars->27->697"
@@ -10105,6 +10138,7 @@
       "fi": "Näytä tekstiviesti etälaitteessa",
       "fr": "Afficher un message sur le poste distant",
       "nl": "Geef een tekstbericht weer op het externe apparaat",
+      "zh-chs": "在远程设备上显示短信",
       "zh-cht": "在遠程設備上顯示短信",
       "xloc": [
         "default.handlebars->27->612"
@@ -10190,6 +10224,7 @@
       "es": "Dominio",
       "fr": "Domaine",
       "nl": "Domein",
+      "zh-chs": "域",
       "zh-cht": "域",
       "xloc": [
         "default.handlebars->27->1627",
@@ -10426,6 +10461,7 @@
       "fi": "Lataa raportti",
       "fr": "Télécharger le rapport",
       "nl": "Rapport downloaden",
+      "zh-chs": "下载报告",
       "zh-cht": "下載報告",
       "xloc": [
         "default.handlebars->27->1545",
@@ -10530,6 +10566,7 @@
     {
       "en": "Download remote clipboard to local clipboard",
       "nl": "Download het externe klembord naar het lokale klembord",
+      "zh-chs": "将远程剪贴板下载到本地剪贴板",
       "zh-cht": "將遠程剪貼板下載到本地剪貼板",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -11198,6 +11235,7 @@
       "es": "Editar etiquetas del dispositivo",
       "fr": "Éditer les tags d'appareil",
       "nl": "Berwerk apparaat tags",
+      "zh-chs": "编辑设备标签",
       "zh-cht": "編輯設備標籤",
       "xloc": [
         "default.handlebars->27->472"
@@ -11392,6 +11430,7 @@
       "es": "Editar etiquetas",
       "fr": "Éditer les tags",
       "nl": "Bewerk tags",
+      "zh-chs": "编辑标签",
       "zh-cht": "編輯標籤",
       "xloc": [
         "default.handlebars->27->454"
@@ -11650,6 +11689,7 @@
       "es": "Se requiere restablecimiento de contraseña verificado y forzado por correo electrónico.",
       "fi": "Sähköposti osoite vahvistettu ja salasanan palautus pakotettu.",
       "nl": "E-mail geverifieerd en geforceerd opnieuw instellen van wachtwoord vereist.",
+      "zh-chs": "已通过电子邮件验证，并且需要重置密码。",
       "zh-cht": "已通過電子郵件驗證，並且需要重置密碼。",
       "xloc": [
         "default.handlebars->27->1636"
@@ -11777,6 +11817,7 @@
       "fi": "Käytössä",
       "fr": "Activer",
       "nl": "Ingeschakeld",
+      "zh-chs": "已启用",
       "zh-cht": "已啟用",
       "xloc": [
         "default.handlebars->27->1877"
@@ -11807,6 +11848,7 @@
       "fi": "päättymisaika",
       "fr": "Heure de fin",
       "nl": "Eindtijd",
+      "zh-chs": "时间结束",
       "zh-cht": "時間結束",
       "xloc": [
         "default.handlebars->27->1874"
@@ -12370,6 +12412,7 @@
       "es": "Tiempo de expiración",
       "fr": "Heure d'expiration",
       "nl": "Verval datum",
+      "zh-chs": "到期时间",
       "zh-cht": "到期時間",
       "xloc": [
         "default.handlebars->27->185",
@@ -12381,6 +12424,7 @@
       "es": "Expira el {0}",
       "fr": "Expire à {0}",
       "nl": "Vervald om {0}",
+      "zh-chs": "于{0}到期",
       "zh-cht": "於{0}到期",
       "xloc": [
         "desktop.handlebars->3->6"
@@ -12468,6 +12512,7 @@
       "fi": "FQDN",
       "fr": "FQDN",
       "nl": "FQDN",
+      "zh-chs": "合格域名",
       "zh-cht": "合格域名",
       "xloc": [
         "default.handlebars->27->93"
@@ -12649,6 +12694,7 @@
       "en": "File Operation",
       "fr": "Opération sur les fichiers",
       "nl": "Bestandsbewerking",
+      "zh-chs": "文件操作",
       "zh-cht": "文件操作",
       "xloc": [
         "default.handlebars->27->849",
@@ -13017,6 +13063,7 @@
       "es": "Formato",
       "fi": "Muoto",
       "nl": "Formaat",
+      "zh-chs": "格式",
       "zh-cht": "格式",
       "xloc": [
         "default.handlebars->27->1542"
@@ -13880,6 +13927,7 @@
       "fi": "Ryhmittele",
       "fr": "Grouper par",
       "nl": "Groeperen op",
+      "zh-chs": "通过...分组",
       "zh-cht": "通過...分組",
       "xloc": [
         "default.handlebars->27->1538"
@@ -13891,6 +13939,7 @@
       "fi": "Ryhmän tunniste",
       "fr": "Identifiant de groupe",
       "nl": "Groepsidentificatie",
+      "zh-chs": "组标识符",
       "zh-cht": "組標識符",
       "xloc": [
         "default.handlebars->27->1686"
@@ -13996,6 +14045,7 @@
       "es": "Nombre del invitado",
       "fr": "Nom de l'invité",
       "nl": "Gast naam",
+      "zh-chs": "客人姓名",
       "zh-cht": "客人姓名",
       "xloc": [
         "default.handlebars->27->184",
@@ -14644,6 +14694,7 @@
       "es": "Capa IPv6",
       "fi": "IPv6 Kerros",
       "nl": "IPv6 Layer",
+      "zh-chs": "IPv6层",
       "zh-cht": "IPv6層",
       "xloc": [
         "default-mobile.handlebars->9->349",
@@ -14658,6 +14709,7 @@
       "fi": "IPv6 osoite",
       "fr": "Adresse IPv6",
       "nl": "IPv6 adres",
+      "zh-chs": "IPv6地址",
       "zh-cht": "IPv6地址",
       "xloc": [
         "default.handlebars->27->94"
@@ -14669,6 +14721,7 @@
       "fi": "IPv6 yhdyskäytävä",
       "fr": "Passerelle IPv6",
       "nl": "IPv6 gateway",
+      "zh-chs": "IPv6网关",
       "zh-cht": "IPv6網關",
       "xloc": [
         "default.handlebars->27->98"
@@ -14680,6 +14733,7 @@
       "fi": "IPv6 peite",
       "fr": "Masque IPv6",
       "nl": "IPv6 mask",
+      "zh-chs": "IPv6掩码",
       "zh-cht": "IPv6掩碼",
       "xloc": [
         "default.handlebars->27->96"
@@ -14750,6 +14804,7 @@
       "fi": "Salasanan nollaus viesti lähetetty, jos sähköposti osoite on kelvollinen.",
       "fr": "Si valide le mail de réinitialisation a été envoyé.",
       "nl": "Indien geldig, verzend de reset e-mail.",
+      "zh-chs": "如果有效，请重置已发送的邮件。",
       "zh-cht": "如果有效，請重置已發送的郵件。",
       "xloc": [
         "login-mobile.handlebars->5->1",
@@ -15132,6 +15187,7 @@
       "fi": "Intel AMT uudelleenohjaus",
       "fr": "Redirection Intel AMT",
       "nl": "Intel AMT omleiding",
+      "zh-chs": "英特尔AMT重定向",
       "zh-cht": "英特爾AMT重定向",
       "xloc": [
         "default.handlebars->27->1864"
@@ -15143,6 +15199,7 @@
       "fi": "Intel AMT WSMAN",
       "fr": "WSMAN Intel AMT",
       "nl": "Intel AMT WSMAN",
+      "zh-chs": "英特尔AMT WSMAN",
       "zh-cht": "英特爾AMT WSMAN",
       "xloc": [
         "default.handlebars->27->1863"
@@ -15378,6 +15435,7 @@
       "nl": "Intel&reg; AMT KVM",
       "pt": "Intel&reg; AMT KVM",
       "ru": "Intel&reg; AMT KVM",
+      "zh-chs": "英特尔&reg;AMT KVM",
       "zh-cht": "英特爾&reg;AMT KVM",
       "xloc": [
         "player.handlebars->3->15"
@@ -16104,6 +16162,7 @@
       "fi": "Mitätöi sähköpostiosoite",
       "fr": "Email invalide",
       "nl": "E-mail ongeldig maken",
+      "zh-chs": "使电子邮件无效",
       "zh-cht": "使電子郵件無效",
       "xloc": [
         "default.handlebars->27->1584"
@@ -16530,6 +16589,7 @@
       "fi": "Avaimet",
       "fr": "Touches",
       "nl": "Sleutels",
+      "zh-chs": "按键",
       "zh-cht": "按鍵",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
@@ -17212,6 +17272,7 @@
       "fi": "Käynnistä MeshCentral Reititin",
       "fr": "Lancer MeshCentral Router",
       "nl": "Start MeshCentral Router",
+      "zh-chs": "启动MeshCentral路由器",
       "zh-cht": "啟動MeshCentral路由器",
       "xloc": [
         "default.handlebars->27->760"
@@ -17223,6 +17284,7 @@
       "fi": "Käynnistä noVNC istunto tähän laitteeseen",
       "fr": "Lancer une session noVNC sur cet appareil",
       "nl": "Start een noVNC-sessie op dit apparaat",
+      "zh-chs": "启动noVNC会话到此设备",
       "zh-cht": "啟動noVNC會話到此設備",
       "xloc": [
         "default.handlebars->27->633"
@@ -17234,6 +17296,7 @@
       "fi": "Käynnistä web-pohjainen RDP-istunto tähän laitteeseen",
       "fr": "Lancer une session RDP par navigateur sur cet appareil",
       "nl": "Start een webgebaseerde RDP-sessie op dit apparaat",
+      "zh-chs": "启动基于Web的RDP会话到此设备",
       "zh-cht": "啟動基於Web的RDP會話到此設備",
       "xloc": [
         "default.handlebars->27->635"
@@ -17495,6 +17558,7 @@
       "es": "Instalador binario para Linux / BSD / macOS",
       "fr": "Exécutable d'installation Linux / BSD / macOS",
       "nl": "Linux / BSD / macOS Binair installatieprogramma",
+      "zh-chs": "Linux / BSD / macOS二进制安装程序",
       "zh-cht": "Linux / BSD / macOS二進制安裝程序",
       "xloc": [
         "default.handlebars->27->368"
@@ -17722,6 +17786,7 @@
       "fi": "Linux/BSD/macOS komentokehote",
       "fr": "Commandes d'installation Linux / BSD / macOS",
       "nl": "Linux/BSD/macOS Command Shell",
+      "zh-chs": "Linux / BSD / macOS命令外壳",
       "zh-cht": "Linux / BSD / macOS命令外殼",
       "xloc": [
         "default.handlebars->27->463"
@@ -17732,6 +17797,7 @@
       "es": "Instalador binario para Linux/macOS",
       "fr": "Exécutable d'installation Linux / macOS",
       "nl": "Linux/macOS binair installatieprogramma",
+      "zh-chs": "Linux / macOS二进制安装程序",
       "zh-cht": "Linux / macOS二進制安裝程序"
     },
     {
@@ -17936,6 +18002,7 @@
       "es": "Bloquear configuración de la cuenta",
       "fr": "Verrouiller les paramètres de compte",
       "nl": "Vergrendel accountinstellingen",
+      "zh-chs": "锁定帐户设置",
       "zh-cht": "鎖定帳戶設置",
       "xloc": [
         "default.handlebars->27->1408",
@@ -18046,6 +18113,7 @@
       "fi": "Kirjaudu sisään käyttämällä olemassa olevaa tiliä",
       "fr": "S'authentifier en utilisant un compte existant",
       "nl": "Log in met een bestaand account",
+      "zh-chs": "使用现有帐户登录",
       "zh-cht": "使用現有帳戶登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->3",
@@ -18698,6 +18766,7 @@
       "fi": "Hallinnoi nauhoituksia",
       "fr": "Gérer les enregistrements",
       "nl": "Beheeer opnames",
+      "zh-chs": "管理录音",
       "zh-cht": "管理錄音",
       "xloc": [
         "default.handlebars->27->1652"
@@ -19931,6 +20000,7 @@
       "en": "Multiplexor",
       "es": "Multiplexor",
       "nl": "Multiplexor",
+      "zh-chs": "多路复用器",
       "zh-cht": "多路復用器",
       "xloc": [
         "default.handlebars->27->1876"
@@ -20158,6 +20228,7 @@
       "es": "Mis Grabaciones",
       "fr": "Mes enregistrements",
       "nl": "Mijn gebruikersopnames",
+      "zh-chs": "我的用户记录",
       "zh-cht": "我的用戶記錄",
       "xloc": [
         "default.handlebars->container->column_l->p52->p52title->1"
@@ -21298,6 +21369,7 @@
       "es": "No hay Grabaciones.",
       "fr": "Pas d'enregistrements.",
       "nl": "Geen opnames.",
+      "zh-chs": "没有录音。",
       "zh-cht": "沒有錄音。",
       "xloc": [
         "default.handlebars->27->1852"
@@ -21634,6 +21706,7 @@
       "fi": "Ei palvelimella",
       "fr": "Pas sur le serveur",
       "nl": "Niet op de server",
+      "zh-chs": "不在服务器上",
       "zh-cht": "不在服務器上",
       "xloc": [
         "default.handlebars->27->1868"
@@ -21824,6 +21897,7 @@
       "es": "Solo notificaciones",
       "fr": "Notifier seulement",
       "nl": "Alleen informeren",
+      "zh-chs": "仅通知",
       "zh-cht": "僅通知",
       "xloc": [
         "default.handlebars->27->711"
@@ -22000,6 +22074,7 @@
       "fi": "Yksi päivä",
       "fr": "Un jour",
       "nl": "één dag",
+      "zh-chs": "一天",
       "zh-cht": "一天",
       "xloc": [
         "default.handlebars->27->1536"
@@ -22031,6 +22106,7 @@
       "fi": "Online-tilassa",
       "fr": "En ligne",
       "nl": "Online",
+      "zh-chs": "线上",
       "zh-cht": "線上",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
@@ -22083,6 +22159,7 @@
       "fi": "Näytä vain online-tilassa olevat laitteet",
       "fr": "Montrer uniquement les appareils en ligne",
       "nl": "Toon alleen apparaten die online zijn",
+      "zh-chs": "仅显示在线设备",
       "zh-cht": "僅顯示在線設備",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9"
@@ -22951,6 +23028,7 @@
       "es": "Realizar operación de etiqueta de dispositivos por lotes",
       "fr": "Appliquer des tag en lot",
       "nl": "Voer een batch-apparaat tag bewerking uit",
+      "zh-chs": "执行批处理设备标签操作",
       "zh-cht": "執行批處理設備標籤操作",
       "xloc": [
         "default.handlebars->27->465"
@@ -23453,6 +23531,7 @@
       "fi": "Virran tila",
       "fr": "État d'alimentation",
       "nl": "Stroomstatus",
+      "zh-chs": "电源状态",
       "zh-cht": "電源狀態",
       "xloc": [
         "default-mobile.handlebars->9->267"
@@ -23569,6 +23648,7 @@
       "fi": "Läsnä palvelimella",
       "fr": "Présent sur le serveur",
       "nl": "Aanwezig op de server",
+      "zh-chs": "存在于服务器上",
       "zh-cht": "存在於服務器上",
       "xloc": [
         "default.handlebars->27->1867"
@@ -23620,6 +23700,7 @@
       "es": "Barra de Privacidad",
       "fi": "Tietosuojapalkki",
       "nl": "Privacy balk",
+      "zh-chs": "隐私栏",
       "zh-cht": "隱私欄",
       "xloc": [
         "default.handlebars->deskConnectContextMenu->5"
@@ -23629,6 +23710,7 @@
       "en": "Privacy bar",
       "es": "Barra de Privacidad",
       "nl": "Privacy balk",
+      "zh-chs": "隐私栏",
       "zh-cht": "隱私欄",
       "xloc": [
         "default.handlebars->27->188"
@@ -23680,6 +23762,7 @@
       "es": "Notificacion",
       "fr": "Demander",
       "nl": "Melden",
+      "zh-chs": "提示",
       "zh-cht": "提示",
       "xloc": [
         "default.handlebars->27->187"
@@ -23690,6 +23773,7 @@
       "es": "Notificacion para Consentimiento",
       "fr": "Demander le consentement",
       "nl": "Toestemming vragen",
+      "zh-chs": "提示同意",
       "zh-cht": "提示同意",
       "xloc": [
         "default.handlebars->27->710"
@@ -24140,6 +24224,7 @@
       "fi": "Oikea nimi",
       "fr": "Nom complet",
       "nl": "Echte naam",
+      "zh-chs": "真正的名字",
       "zh-cht": "真正的名字",
       "xloc": [
         "default.handlebars->27->1745",
@@ -24171,6 +24256,7 @@
       "es": "Se recibieron datos de red no válidos",
       "fr": "Données réseau reçues non valides",
       "nl": "Ongeldige netwerkgegevens ontvangen",
+      "zh-chs": "收到无效的网络数据",
       "zh-cht": "收到無效的網絡數據",
       "xloc": [
         "default.handlebars->27->794",
@@ -24197,6 +24283,7 @@
       "es": "Detalles de la Grabación",
       "fr": "Détails d'enregistrements",
       "nl": "Opname details",
+      "zh-chs": "记录细节",
       "zh-cht": "記錄細節",
       "xloc": [
         "default.handlebars->27->1879"
@@ -24207,6 +24294,7 @@
       "es": "Grabaciones",
       "fr": "Enregistrements",
       "nl": "Opnames",
+      "zh-chs": "录音",
       "zh-cht": "錄音",
       "xloc": [
         "default.handlebars->container->topbar->1->1->UsersSubMenuSpan->UsersSubMenu->1->0->UsersRecordings"
@@ -24525,6 +24613,7 @@
       "fi": "Etätyöpöytä",
       "fr": "Bureau distant",
       "nl": "Extern bureaublad",
+      "zh-chs": "远程桌面",
       "zh-cht": "遠程桌面",
       "xloc": [
         "default-mobile.handlebars->9->158",
@@ -24538,6 +24627,7 @@
       "es": "Enlace de Escritorio Remoto",
       "fr": "Lien de bureau distant",
       "nl": "Extern bureaublad koppeling",
+      "zh-chs": "远程桌面链接",
       "zh-cht": "遠程桌面鏈接",
       "xloc": [
         "default.handlebars->27->191"
@@ -24934,6 +25024,7 @@
       "es": "Eliminar etiquetas",
       "fr": "Supprimer les tags",
       "nl": "Verwijder tags",
+      "zh-chs": "移除标签",
       "zh-cht": "移除標籤",
       "xloc": [
         "default.handlebars->27->469"
@@ -25085,6 +25176,7 @@
       "es": "Reporte del día",
       "fr": "Rapport jour",
       "nl": "Dag rapport",
+      "zh-chs": "报告日",
       "zh-cht": "報告日",
       "xloc": [
         "default.handlebars->27->1537"
@@ -25095,6 +25187,7 @@
       "es": "Tipo de Reporte",
       "fr": "Type de rapport",
       "nl": "Rapporttype",
+      "zh-chs": "报告类型",
       "zh-cht": "報告類型",
       "xloc": [
         "default.handlebars->27->1532"
@@ -25605,6 +25698,7 @@
       "fi": "Suorita Komentoja",
       "fr": "Exécuter des commandes",
       "nl": "Voer opdrachten uit",
+      "zh-chs": "运行命令",
       "zh-cht": "運行命令",
       "xloc": [
         "default.handlebars->27->464",
@@ -25618,6 +25712,7 @@
       "fi": "Suorita MeshCentral Reititin ja napsauta \\\"asenna\\\", jotta se voidaan käynnistää selaimesta.",
       "fr": "Exécuter MeshCentral Router et cliquer sur \\\"installer\\\" pour le rendre lançable depuis le navigateur.",
       "nl": "Start MeshCentral Router en klik \\\"install\\\" om het startbaar te maken vanuit de browser.",
+      "zh-chs": "运行MeshCentral Router，然后单击\\“安装\\”以使其可从浏览器启动。",
       "zh-cht": "運行MeshCentral Router，然後單擊\\“安裝\\”以使其可從瀏覽器啟動。",
       "xloc": [
         "default.handlebars->27->759"
@@ -25629,6 +25724,7 @@
       "fi": "Suorita komentoja",
       "fr": "Exécuter des commandes",
       "nl": "Voer opdrachten uit",
+      "zh-chs": "运行命令",
       "zh-cht": "運行命令",
       "xloc": [
         "default.handlebars->27->448"
@@ -25640,6 +25736,7 @@
       "fi": "Suorita komentoja valituilla laitteilla.",
       "fr": "Exécuter des commandes sur les appareils sélectionnés.",
       "nl": "Voer opdrachten uit op geselecteerde apparaten.",
+      "zh-chs": "在所选设备上运行命令。",
       "zh-cht": "在所選設備上運行命令。",
       "xloc": [
         "default.handlebars->27->460"
@@ -25651,6 +25748,7 @@
       "fi": "Suorita komentoja tässä laittessa.",
       "fr": "Exécuter des commandes sur cet appareil.",
       "nl": "Voer opdrachten uit op dit apparaat.",
+      "zh-chs": "在此设备上运行命令。",
       "zh-cht": "在此設備上運行命令。",
       "xloc": [
         "default.handlebars->27->723"
@@ -25891,6 +25989,7 @@
       "fi": "Tallenna keskustelu",
       "fr": "Enregistrer la conversation",
       "nl": "Gesprek opslaan",
+      "zh-chs": "保存对话",
       "zh-cht": "保存對話",
       "xloc": [
         "messenger.handlebars->xtop->1"
@@ -26049,6 +26148,7 @@
       "fi": "Näyttö",
       "fr": "Écran",
       "nl": "Scherm",
+      "zh-chs": "屏幕",
       "zh-cht": "屏幕",
       "xloc": [
         "default-mobile.handlebars->9->287"
@@ -26060,6 +26160,7 @@
       "fi": "Näytön valinta",
       "fr": "Sélection d'écran",
       "nl": "Scherm Selectie",
+      "zh-chs": "屏幕选择",
       "zh-cht": "屏幕選擇",
       "xloc": [
         "default-mobile.handlebars->9->288"
@@ -26071,6 +26172,7 @@
       "fi": "Näytöt",
       "fr": "Écrans",
       "nl": "Schermen",
+      "zh-chs": "屏风",
       "zh-cht": "屏風",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
@@ -26467,6 +26569,7 @@
       "fi": "Lähetä Sähköposti",
       "fr": "Envoyer l'Email",
       "nl": "E-mail verzenden",
+      "zh-chs": "发电子邮件",
       "zh-cht": "發電子郵件",
       "xloc": [
         "default.handlebars->27->1596"
@@ -26547,6 +26650,7 @@
       "fi": "Lähetä sähköposti tälle käyttäjälle",
       "fr": "Envoyer un Mail à cet utilisateur",
       "nl": "Stuur een e-mailbericht naar deze gebruiker",
+      "zh-chs": "发送电子邮件给该用户",
       "zh-cht": "發送電子郵件給該用戶",
       "xloc": [
         "default.handlebars->27->1787"
@@ -27165,6 +27269,7 @@
       "fi": "Istunto",
       "fr": "Session",
       "nl": "Sessie",
+      "zh-chs": "届会",
       "zh-cht": "屆會",
       "xloc": [
         "default.handlebars->27->1853"
@@ -27176,6 +27281,7 @@
       "fi": "Istunnon tiedot",
       "fr": "Information de session",
       "nl": "Sessie informatie",
+      "zh-chs": "会议信息",
       "zh-cht": "會議信息",
       "xloc": [
         "default.handlebars->27->802",
@@ -27227,6 +27333,7 @@
       "fi": "Istuntoja",
       "fr": "Sessions",
       "nl": "Sessies",
+      "zh-chs": "届会",
       "zh-cht": "屆會",
       "xloc": [
         "default-mobile.handlebars->9->176",
@@ -27238,6 +27345,7 @@
       "es": "Establecer etiquetas",
       "fr": "Appliquer des tags",
       "nl": "Stel tags in",
+      "zh-chs": "设置标签",
       "zh-cht": "設置標籤",
       "xloc": [
         "default.handlebars->27->468"
@@ -27369,6 +27477,7 @@
       "es": "Compartir",
       "fr": "Partager",
       "nl": "Delen",
+      "zh-chs": "分享",
       "zh-cht": "分享",
       "xloc": [
         "default.handlebars->27->613"
@@ -27379,6 +27488,7 @@
       "es": "Compartir dispositivo",
       "fr": "Partager un appareil",
       "nl": "Deel apparaat",
+      "zh-chs": "共享设备",
       "zh-cht": "共享設備",
       "xloc": [
         "default.handlebars->27->193",
@@ -27447,6 +27557,7 @@
       "en": "Shift-F10",
       "es": "Shift-F10",
       "nl": "Shift-F10",
+      "zh-chs": "Shift-F10",
       "zh-cht": "Shift-F10",
       "xloc": [
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->25"
@@ -27632,6 +27743,7 @@
       "es": "Mostrar por 1 minuto",
       "fr": "Montrer pour 1 minute",
       "nl": "Toon gedurende 1 minuut",
+      "zh-chs": "显示1分钟",
       "zh-cht": "顯示1分鐘",
       "xloc": [
         "default.handlebars->27->1600",
@@ -27643,6 +27755,7 @@
       "es": "Mostrar por 10 Segundos",
       "fr": "Montrer pour 10 secondes",
       "nl": "Toon gedurende 10 seconden",
+      "zh-chs": "放映10秒",
       "zh-cht": "放映10秒",
       "xloc": [
         "default.handlebars->27->1599",
@@ -27654,6 +27767,7 @@
       "es": "Mostrar por 5 minutos",
       "fr": "Montrer pour 5 minutes",
       "nl": "Toon gedurende 5 minuten",
+      "zh-chs": "显示5分钟",
       "zh-cht": "顯示5分鐘",
       "xloc": [
         "default.handlebars->27->1601",
@@ -27665,6 +27779,7 @@
       "es": "Mostrar mensaje hasta que el usuario lo descarte",
       "fr": "Montrer le message jusqu'à validation par l'utilisateur",
       "nl": "Toon bericht totdat het door de gebruiker wordt afgewezen",
+      "zh-chs": "显示消息，直到被用户拒绝",
       "zh-cht": "顯示消息，直到被用戶拒絕",
       "xloc": [
         "default.handlebars->27->1598",
@@ -27696,6 +27811,7 @@
       "fi": "Kirjautuminen Azuren avulla",
       "fr": "S'authentifier en utilisant Azure",
       "nl": "Log in met Azure",
+      "zh-chs": "使用Azure登录",
       "zh-cht": "使用Azure登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-azure",
@@ -27708,6 +27824,7 @@
       "fi": "Kirjautuminen GitHubilla",
       "fr": "S'authentifier en utilisant GitHub",
       "nl": "Log in met GitHub",
+      "zh-chs": "使用GitHub登录",
       "zh-cht": "使用GitHub登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-github",
@@ -27720,6 +27837,7 @@
       "fi": "Kirjautuminen Googlella",
       "fr": "S'authentifier en utilisant Google",
       "nl": "Log in met Google",
+      "zh-chs": "使用Google登录",
       "zh-cht": "使用Google登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-google",
@@ -27732,6 +27850,7 @@
       "fi": "Kirjautuminen Intelin avulla",
       "fr": "S'authentifier en utilisant Intel",
       "nl": "Log in met Intel",
+      "zh-chs": "使用英特尔登录",
       "zh-cht": "使用英特爾登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-intel",
@@ -27744,6 +27863,7 @@
       "fi": "Kirjautuminen JumpCloudilla",
       "fr": "S'authentifier en utilisant JumpCloud",
       "nl": "Log in met JumpCloud",
+      "zh-chs": "使用JumpCloud登录",
       "zh-cht": "使用JumpCloud登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-jumpcloud",
@@ -27756,6 +27876,7 @@
       "fi": "Kirjautuminen Redditin avulla",
       "fr": "S'authentifier en utilisant Reddit",
       "nl": "Log in met Reddit",
+      "zh-chs": "使用Reddit登录",
       "zh-cht": "使用Reddit登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-reddit",
@@ -27768,6 +27889,7 @@
       "fi": "Kirjautuminen Twitterillä",
       "fr": "S'authentifier en utilisant Twitter",
       "nl": "Log in met Twitter",
+      "zh-chs": "使用Twitter登录",
       "zh-cht": "使用Twitter登錄",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-twitter",
@@ -27857,6 +27979,7 @@
       "fi": "Kertakirjautuminen",
       "fr": "Authentification unique",
       "nl": "Eenmalige aanmelding",
+      "zh-chs": "单一登入",
       "zh-cht": "單一登入",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-saml",
@@ -28775,6 +28898,7 @@
       "fi": "Käynnistä MeshCentral Reititin",
       "fr": "Démarrer MeshCentral Router",
       "nl": "Start MeshCentral Router",
+      "zh-chs": "启动MeshCentral路由器",
       "zh-cht": "啟動MeshCentral路由器"
     },
     {
@@ -28783,6 +28907,7 @@
       "fi": "Käynnistys aika",
       "fr": "Heure de démarrage",
       "nl": "Start tijd",
+      "zh-chs": "开始时间",
       "zh-cht": "開始時間",
       "xloc": [
         "default.handlebars->27->1854",
@@ -29010,6 +29135,7 @@
       "fi": "Otsikko",
       "fr": "Sujet",
       "nl": "Onderwerp",
+      "zh-chs": "学科",
       "zh-cht": "學科",
       "xloc": [
         "default.handlebars->27->1595"
@@ -29206,6 +29332,7 @@
       "en": "System Type",
       "es": "Tipo de Sistema",
       "nl": "Systeem type",
+      "zh-chs": "系统类型",
       "zh-cht": "系統類型",
       "xloc": [
         "default.handlebars->27->372"
@@ -29216,6 +29343,7 @@
       "es": "Enrutamiento TCP",
       "fr": "Routage TCP",
       "nl": "TCP routering",
+      "zh-chs": "TCP路由",
       "zh-cht": "TCP路由",
       "xloc": [
         "default-mobile.handlebars->9->170",
@@ -29756,6 +29884,7 @@
       "es": "Este es un ejecutable en sistemas operativos con interfaces gráficas de usuario. Necesita 'chmod + x meshagent' y ejecutar este archivo.",
       "fr": "C'est un exécutable pour les OS avec interface graphique. Vous devrez 'chmod +x meshagent' et lancer ce fichier.",
       "nl": "Dit is een uitvoerbaar bestand op besturingssystemen met grafische gebruikersinterfaces.U moet 'chmod + x meshagent' gebruiken en dit bestand uitvoeren.",
+      "zh-chs": "这是具有图形用户界面的OS上的可执行文件。您需要'chmod + x meshagent'并运行此文件。",
       "zh-cht": "這是具有圖形用戶界面的OS上的可執行文件。您需要'chmod + x meshagent'並運行此文件。",
       "xloc": [
         "default.handlebars->27->402"
@@ -29766,6 +29895,7 @@
       "es": "Este es un ejecutable que solo se ejecutará como root y en sistemas operativos con interfaces gráficas de usuario.",
       "fr": "Ceci est un exécutable qui ne peut être lancé que en tant que root et sur des OS avec interface graphique.",
       "nl": "Dit is een uitvoerbaar bestand dat alleen zal draaien als root en op besturingssystemen met grafische gebruikersinterfaces.",
+      "zh-chs": "这是一个可执行文件，将仅以root身份运行并在具有图形用户界面的OS上运行。",
       "zh-cht": "這是一個可執行文件，將僅以root用戶身份運行並在具有圖形用戶界面的OS上運行。"
     },
     {
@@ -30006,6 +30136,7 @@
       "fi": "Aikajänne",
       "fr": "Période",
       "nl": "Tijdspanne",
+      "zh-chs": "时间跨度",
       "zh-cht": "時間跨度",
       "xloc": [
         "default.handlebars->27->1534"
@@ -30017,6 +30148,7 @@
       "fi": "Aikakatkaisu",
       "fr": "Timeout",
       "nl": "Time-out",
+      "zh-chs": "超时",
       "zh-cht": "超時",
       "xloc": [
         "default.handlebars->27->793",
@@ -30297,6 +30429,7 @@
       "es": "Favoritos",
       "fr": "Activer/Désactiver l'étoile",
       "nl": "(De)Markeren",
+      "zh-chs": "切换星",
       "zh-cht": "切換星",
       "xloc": [
         "default.handlebars->contextMenu->cxstar"
@@ -30769,6 +30902,7 @@
       "es": "Enrutamiento UDP",
       "fr": "Routage UDP",
       "nl": "UDP routering",
+      "zh-chs": "UDP路由",
       "zh-cht": "UDP路由",
       "xloc": [
         "default-mobile.handlebars->9->173",
@@ -31428,6 +31562,7 @@
     {
       "en": "Upload local clipboard to remote device",
       "nl": "Upload lokaal klembord naar het externe apparaat",
+      "zh-chs": "将本地剪贴板上传到远程设备",
       "zh-cht": "將本地剪貼板上傳到遠程設備",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -31796,6 +31931,7 @@
       "fi": "Käyttäjätunnus",
       "fr": "ID utilisateur",
       "nl": "Gebruikers ID",
+      "zh-chs": "用户身份",
       "zh-cht": "用戶身份",
       "xloc": [
         "default-mobile.handlebars->9->447"
@@ -31826,6 +31962,7 @@
       "es": "Identificadores de Usuario",
       "fr": "Identifiant utilisateur",
       "nl": "Gebruikers-ID's",
+      "zh-chs": "用户标识符",
       "zh-cht": "用戶標識符",
       "xloc": [
         "default.handlebars->27->1381",
@@ -31999,6 +32136,7 @@
       "fi": "Käyttäjä \\\"{0}\\\"",
       "fr": "Utilisateur \\\"{0}\\\"",
       "nl": "Gebuiker \\\"{0}\\\"",
+      "zh-chs": "用户\\“ {0} \\”",
       "zh-cht": "用戶“ {0} ”",
       "xloc": [
         "default.handlebars->27->801",
@@ -32199,6 +32337,7 @@
       "es": "Validar Correo",
       "fr": "Valider l'Email",
       "nl": "E-mail valideren",
+      "zh-chs": "验证电子邮件",
       "zh-cht": "驗證電子郵件",
       "xloc": [
         "default.handlebars->27->1583"
@@ -32457,6 +32596,7 @@
     {
       "en": "View All Events",
       "nl": "Bekijk alle gebeurtenissen",
+      "zh-chs": "查看所有活动",
       "zh-cht": "查看所有活動",
       "xloc": [
         "default.handlebars->27->1653"
@@ -32811,6 +32951,7 @@
       "es": "Web-RDP",
       "fr": "Web-RDP",
       "nl": "Web-RDP",
+      "zh-chs": "网络RDP",
       "zh-cht": "網絡RDP",
       "xloc": [
         "default.handlebars->27->636"
@@ -33352,6 +33493,7 @@
       "fi": "Windowsin komentohehote",
       "fr": "Ligne de commande Windows",
       "nl": "Windows opdrachtprompt",
+      "zh-chs": "Windows命令提示符",
       "zh-cht": "Windows命令提示符",
       "xloc": [
         "default.handlebars->27->461",
@@ -33402,6 +33544,7 @@
       "fi": "Windows PowerShell",
       "fr": "Windows PowerShell",
       "nl": "Windows PowerShell",
+      "zh-chs": "Windows PowerShell",
       "zh-cht": "Windows PowerShell",
       "xloc": [
         "default.handlebars->27->462",
@@ -33640,6 +33783,7 @@
       "fi": "Sinut on kutsuttu asentamaan sovellus, jonka avulla etäoperaattori voi turvallisesti käyttää tietokonettasi, mukaan lukien työpöytääsi ja tiedostojasi. Noudata alla olevia ohjeita vain, jos tämä kutsu on odotettavissa ja tiedät, kuka käyttää tietokonettasi. Valitse käyttöjärjestelmä ja noudata asennusohjeita.",
       "fr": "Vous avez été invité à installer une application qui va autoriser un administrateur distant à accéder de façon sécurisé à votre ordinateur, incluant le bureau et les fichiers. Ne suivez les instructions qui suivent que si cette invitation était attendu et que vous connaissez qui accédera à votre ordinateur. Sélectionnez votre Système d'exploitation et suivez les instructions ci-dessous pour l'installation.",
       "nl": "U bent uitgenodigd om een applicatie te installeren waarmee een externe beheerder veilig toegang heeft tot uw computer, inclusief het bureaublad en de bestanden. Volg de onderstaande instructies alleen als deze uitnodiging werd verwacht en u weet wie er toegang krijgt tot uw computer.Selecteer uw besturingssysteem en volg de onderstaande instructies voor installatie.",
+      "zh-chs": "已邀请您安装一个应用程序，该应用程序将允许远程操作员安全地访问您的计算机，包括桌面和文件。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择您的操作系统，然后按照以下说明进行安装。",
       "zh-cht": "已邀請您安裝一個應用程序，該應用程序將允許遠程操作員安全地訪問您的計算機，包括桌面和文件。如果收到此邀請，並且只有知道誰將訪問您的計算機，請僅按照以下說明進行操作。選擇您的操作系統，然後按照以下說明進行安裝。",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
@@ -33704,6 +33848,7 @@
       "en": "Zip",
       "fr": "Zip",
       "nl": "Zip",
+      "zh-chs": "压缩",
       "zh-cht": "壓縮",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
@@ -33713,6 +33858,7 @@
       "en": "Zip Filename",
       "fr": "Nom de fichier Zip",
       "nl": "Zip bestandsnaam",
+      "zh-chs": "邮编文件名",
       "zh-cht": "郵編文件名",
       "xloc": [
         "default.handlebars->27->866"
@@ -34041,6 +34187,7 @@
       "fr": "a:",
       "nl": "a:",
       "pt": "a:",
+      "zh-chs": "A：",
       "zh-cht": "A：",
       "xloc": [
         "default.handlebars->27->498",
@@ -34129,6 +34276,7 @@
       "es": "atag:",
       "fi": "atag:",
       "nl": "atag:",
+      "zh-chs": "标签：",
       "zh-cht": "標籤：",
       "xloc": [
         "default.handlebars->27->496",
@@ -34256,6 +34404,7 @@
       "es": "data:image/png;base64,",
       "fi": "data:image/png;base64,",
       "nl": "data:image/png;base64,",
+      "zh-chs": "data：image / png; base64，",
       "zh-cht": "data：image / png; base64，",
       "xloc": [
         "player.handlebars->3->27"
@@ -34829,6 +34978,7 @@
       "fi": "noVNC",
       "fr": "no VNC",
       "nl": "noVNC",
+      "zh-chs": "无VNC",
       "zh-cht": "無VNC",
       "xloc": [
         "default.handlebars->27->634"
@@ -34840,6 +34990,7 @@
       "fi": "noVNC Yhteys",
       "fr": "Connexion noVNC",
       "nl": "noVNC verbinding",
+      "zh-chs": "noVNC连接",
       "zh-cht": "noVNC連接",
       "xloc": [
         "default.handlebars->27->503"
@@ -34851,6 +35002,7 @@
       "fi": "noVNC-etäyhteysportti:",
       "fr": "Port distant de connexion noVNC :",
       "nl": "noVNC externe verbindingspoort:",
+      "zh-chs": "noVNC远程连接端口：",
       "zh-cht": "noVNC遠程連接端口：",
       "xloc": [
         "default.handlebars->27->502"
@@ -35321,6 +35473,7 @@
       "fi": "{0} yhteyttä",
       "fr": "{0} connexions",
       "nl": "{0} verbindingen",
+      "zh-chs": "{0}个连接",
       "zh-cht": "{0}個連接",
       "xloc": [
         "default.handlebars->27->800",
