@@ -9128,7 +9128,7 @@
       "fr": "L'appareil est sur batterie",
       "fi": "Laite on akkukäyttöinen",
       "xloc": [
-        "default-mobile.handlebars->9->152",
+        "default-mobile.handlebars->9->157",
         "default-mobile.handlebars->9->212",
         "default.handlebars->27->204",
         "default.handlebars->27->534"
@@ -9344,7 +9344,7 @@
       "fr": "L'appareil est branché sur secteur",
       "fi": "Laite on kytketty",
       "xloc": [
-        "default-mobile.handlebars->9->151",
+        "default-mobile.handlebars->9->156",
         "default-mobile.handlebars->9->211",
         "default.handlebars->27->203",
         "default.handlebars->27->533"
@@ -19682,7 +19682,7 @@
       "zh-chs": "該組中沒有英特爾&reg;AMT設備",
       "fi": "Tässä ryhmässä ei ole Intel&reg; AMT-laitteita",
       "xloc": [
-        "default-mobile.handlebars->9->154"
+        "default-mobile.handlebars->9->150"
       ]
     },
     {
@@ -19929,7 +19929,7 @@
       "zh-chs": "沒有裝置",
       "fi": "Ei laitteita",
       "xloc": [
-        "default-mobile.handlebars->9->156"
+        "default-mobile.handlebars->9->152"
       ]
     },
     {
@@ -20027,7 +20027,7 @@
       "zh-chs": "該組中沒有設備",
       "fi": "Ei laitteita tässä ryhmässä",
       "xloc": [
-        "default-mobile.handlebars->9->155",
+        "default-mobile.handlebars->9->151",
         "default.handlebars->27->220"
       ]
     },
@@ -20046,7 +20046,7 @@
       "zh-chs": "沒有與此搜索匹配的設備。",
       "fi": "Ei hakua vastaavia laitteita.",
       "xloc": [
-        "default-mobile.handlebars->9->153",
+        "default-mobile.handlebars->9->149",
         "default.handlebars->27->217"
       ]
     },
@@ -20305,8 +20305,8 @@
       "fi": "Ei mitään",
       "xloc": [
         "default-mobile.handlebars->9->116",
-        "default-mobile.handlebars->9->149",
-        "default-mobile.handlebars->9->150",
+        "default-mobile.handlebars->9->154",
+        "default-mobile.handlebars->9->155",
         "default-mobile.handlebars->9->213",
         "default-mobile.handlebars->9->218",
         "default-mobile.handlebars->9->220",
@@ -29899,7 +29899,7 @@
       "zh-chs": "使用此網站的桌面版本添加設備。",
       "fi": "Lisää laitteita tämän sivuston työpöytäversion avulla.",
       "xloc": [
-        "default-mobile.handlebars->9->157"
+        "default-mobile.handlebars->9->153"
       ]
     },
     {
