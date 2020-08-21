@@ -1462,6 +1462,10 @@ function CreateMeshCentralServer(config, args) {
                     }, config.settings.watchdog.interval);
                     obj.debug('main', "Started watchdog timer.");
                 }
+
+                // Test
+                obj.db.performCloudBackup("C:\\Users\\Default.DESKTOP-9CGK2DI\\Desktop\\AmtWebApp\\meshcentral-backups\\meshcentral-autobackup-2020-08-20-20-11.zip");
+
             });
         });
     };
@@ -2705,7 +2709,10 @@ function mainStart() {
         if (nodeVersion < 8) { modules.push('util.promisify'); }
 
         // Setup encrypted zip support if needed
-        if (config.settings.autobackup && config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted'); }
+        if (config.settings.autobackup && config.settings.autobackup.zippassword) {
+            modules.push('archiver-zip-encrypted');
+            if (config.settings.autobackup.googledrive == true) { if (nodeVersion >= 8) { modules.push('googleapis'); } else { config.settings.autobackup.googledrive = false; } } // Enable Google Drive Support
+        }
 
         // Setup common password blocking
         if (wildleek == true) { modules.push('wildleek@2.0.0'); }
