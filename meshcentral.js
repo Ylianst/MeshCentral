@@ -648,11 +648,11 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.trustedproxy == 'string') { obj.args.trustedproxy = obj.args.trustedproxy.split(' ').join('').split(','); }
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
 
-        // Check if WebSocket compression is supported. It's broken in NodeJS v11.11 to v12.15
+        // Check if WebSocket compression is supported. It's known to be broken in NodeJS v11.11 to v12.15, and v13.2
         const verSplit = process.version.substring(1).split('.');
         var ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
-        if ((ver >= 11.11) && (ver <= 12.15)) {
-            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15.'); }
+        if (((ver >= 11.11) && (ver <= 12.15)) || (ver == 13.2)) {
+            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2'); }
             obj.args.wscompression = obj.args.agentwscompression = false;
             obj.config.settings.wscompression = obj.config.settings.agentwscompression = false;
         }
@@ -2708,7 +2708,7 @@ function mainStart() {
         // Setup encrypted zip support if needed
         if (config.settings.autobackup && config.settings.autobackup.zippassword) {
             modules.push('archiver-zip-encrypted');
-            if (config.settings.autobackup.googledrive == true) { if (nodeVersion >= 8) { modules.push('googleapis'); } else { config.settings.autobackup.googledrive = false; } } // Enable Google Drive Support
+            if (typeof config.settings.autobackup.googledrive == 'object') { if (nodeVersion >= 8) { modules.push('googleapis'); } else { delete config.settings.autobackup.googledrive; } } // Enable Google Drive Support
         }
 
         // Setup common password blocking

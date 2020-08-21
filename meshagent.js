@@ -1397,13 +1397,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Indicates if the agent has a coredump available
                     if ((command.exists === true) && (typeof command.agenthashhex == 'string') && (command.agenthashhex.length == 96)) {
                         // Check if we already have this exact dump file
-                        const coreDumpFile = parent.path.join(parent.parent.datapath, 'coredumps', obj.agentInfo.agentId + '-' + command.agenthashhex + '-' + obj.nodeid + '.dmp');
+                        const coreDumpFile = parent.path.join(parent.parent.datapath, '..', 'meshcentral-coredumps', obj.agentInfo.agentId + '-' + command.agenthashhex + '-' + obj.nodeid + '.dmp');
                         parent.fs.stat(coreDumpFile, function (err, stats) {
                             if (stats != null) return;
                             obj.coreDumpPresent = true;
 
                             // Check how many files are in the coredumps folder
-                            const coreDumpPath = parent.path.join(parent.parent.datapath, 'coredumps');
+                            const coreDumpPath = parent.path.join(parent.parent.datapath, '..', 'meshcentral-coredumps');
                             parent.fs.readdir(coreDumpPath, function (err, files) {
                                 if ((files != null) && (files.length >= 20)) return; // Don't get more than 20 core dump files.
 

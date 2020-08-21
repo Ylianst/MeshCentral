@@ -107,7 +107,15 @@
             "backupIntervalHours": { "type": "integer" },
             "keepLastDaysBackup": { "type": "integer" },
             "zipPassword": { "type": "string" },
-            "backupPath": { "type": "string" }
+            "backupPath": { "type": "string" },
+            "googleDrive": {
+              "type": "object",
+              "description": "Enabled automated upload of the server backups to a Google Drive account, once enabled you need to go in \"My Server\" tab as administrator to associate the account.",
+              "properties": {
+                "folderName": { "type": "integer", "default": "MeshCentral-Backups", "description": "The name of the folder to create in the Google Drive account." },
+                "maxFiles": { "type": "string", "default": null, "description": "The maximum number of files to keep in the Google Drive folder, older files will be removed if needed." }
+              }
+            }
           }
         },
         "redirects": { "type": "object" },

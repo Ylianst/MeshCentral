@@ -3758,9 +3758,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         ws.send('5'); // Indicate we want to perform file transfers (5 = Files).
         if (ws.xcmd == 'coredump') {
             // Check the agent core dump folder if not already present.
-            var coreDumpPath = obj.path.join(parent.datapath, 'coredumps');
+            var coreDumpPath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps');
             if (obj.fs.existsSync(coreDumpPath) == false) { try { obj.fs.mkdirSync(coreDumpPath); } catch (ex) { } }
-            ws.xfilepath = obj.path.join(parent.datapath, 'coredumps', ws.xarg);
+            ws.xfilepath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', ws.xarg);
             ws.xid = 'coredump';
             ws.send(JSON.stringify({ action: 'download', sub: 'start', ask: 'coredump', id: 'coredump' })); // Ask for a directory (test)
         }
