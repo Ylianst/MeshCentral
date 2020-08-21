@@ -445,6 +445,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
             }
 
+            // If we are site administrator and Google Drive backup is setup, send out the status.
+            if ((user.siteadmin === SITERIGHT_ADMIN) && (domain.id == '') && (typeof parent.parent.config.settings.autobackup == 'object') && (parent.parent.config.settings.autobackup.googledrive == true)) {
+                db.Get('GoogleDriveBackup', function (err, docs) {
+                    if (err != null) return;
+                    if (docs.length == 0) { try { ws.send(JSON.stringify({ action: 'serverBackup', service: 'googleDrive', state: 1 })); } catch (ex) { } }
+                    else { try { ws.send(JSON.stringify({ action: 'serverBackup', service: 'googleDrive', state: docs[0].state })); } catch (ex) { } }
+                });
+            }
+
             // We are all set, start receiving data
             ws._socket.resume();
             if (parent.parent.pluginHandler != null) parent.parent.pluginHandler.callHook('hook_userLoggedIn', user);
@@ -4659,6 +4668,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (command.values != null) { message.values = command.values; }
                 if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
                 parent.parent.DispatchEvent(['*', user._id], obj, message);
+                break;
+            }
+            case 'serverBackup': {
+                if (user.siteadmin != SITERIGHT_ADMIN) return;
+                if (command.service == 'googleDrive') {
+                    if (command.state == 0) {
+                        parent.db.Remove('GoogleDriveBackup', function () { try { ws.send(JSON.stringify({ action: 'serverBackup', service: 'googleDrive', state: 1 })); } catch (ex) { } });
+                    } else if (command.state == 1) {
+                        const {google} = require('googleapis');
+                        obj.oAuth2Client = new google.auth.OAuth2(command.clientid, command.clientsecret, "urn:ietf:wg:oauth:2.0:oob");
+                        obj.oAuth2Client.xxclientid = command.clientid;
+                        obj.oAuth2Client.xxclientsecret = command.clientsecret;
+                        //const authUrl = obj.oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: ['https://www.googleapis.com/auth/drive.file'] });
+                        const authUrl = obj.oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/drive.appdata', 'https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata', 'https://www.googleapis.com/auth/drive.metadata.readonly', 'https://www.googleapis.com/auth/drive.photos.readonly', 'https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.scripts'] });
+                        try { ws.send(JSON.stringify({ action: 'serverBackup', service: 'googleDrive', state: 2, url: authUrl })); } catch (ex) { }
+                    } else if ((command.state == 2) && (obj.oAuth2Client != null)) {
+                        obj.oAuth2Client.getToken(command.code, function (err, token) {
+                            if (err != null) {
+                                console.log('getToken', err);
+                            } else {
+                                parent.db.Set({ _id: 'GoogleDriveBackup', state: 3, clientid: obj.oAuth2Client.xxclientid, clientsecret: obj.oAuth2Client.xxclientsecret, token: token });
+                                try { ws.send(JSON.stringify({ action: 'serverBackup', service: 'googleDrive', state: 3 })); } catch (ex) { }
+                            }
+                        });
+                    }
+                }
                 break;
             }
             default: {

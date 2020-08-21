@@ -458,11 +458,12 @@
                     </div>
                     <div id="p2ServerActions">
                         <p><strong>Server actions</strong></p>
-                        <div class="mL">
-                            <div id="p2ServerActionsBackup"><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
-                            <div id="p2ServerActionsRestore"><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
-                            <div id="p2ServerActionsVersion"><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
-                            <div id="p2ServerActionsErrors"><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
+                        <div style="margin-left:25px">
+                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                            <div id="p2ServerActionsRestore"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
+                            <div id="p2ServerActionsGoogleBackup"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
+                            <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
+                            <div id="p2ServerActionsErrors"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
                         </div>
                     </div>
                     <br /><strong>Server Statistics</strong><br /><br />
@@ -1273,6 +1274,7 @@
         var xterm = null;
         var xtermfit = null;
         var xtermResizeTimer = null;
+        var miscState = {};
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -3046,6 +3048,21 @@
                     message.info.versionList.forEach(function(v) { vSelect += '<option value="' + v.zipball_url + '">' + v.name + '</option>'; });
                     vSelect += '</select>';
                     setDialogMode(2, "Plugin Action", 3, pluginActionEx, format('Select the version to downgrade the plugin: {0}', message.info.name) + '<hr />' + vSelect + '<hr />' + "Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something." + + '<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + message.info.id + '" />');
+                    break;
+                }
+                case 'serverBackup': {
+                    if (message.service == 'googleDrive') {
+                        QV('p2ServerActionsGoogleBackup', message.state > 0);
+                        QV('p2ServerActionsGoogleBackupCheck', message.state > 2);
+                        miscState['googleDrive'] = { state: message.state }
+                        if (message.state == 2) {
+                            var x = "Nagivate to the URL below, grant access and copy the token code back." + '<br /><br />';
+                            x += addHtmlValue("Activation", '<a href=\"' + message.url + '\" rel="noreferrer noopener" target="_blank">Browse to this URL</a>');
+                            x += addHtmlValue("Code", '<input id=gdcode style=width:240px></input>');
+                            setDialogMode(2, "Google Drive Backup", 1, server_setupGoogleDriveBackupEx, x, 'gd2');
+                            Q('gdcode').focus();
+                        }
+                    }
                     break;
                 }
                 case 'pluginError': {
@@ -9117,6 +9134,31 @@
             p20updateMesh();
             go(20);
             return false;
+        }
+
+        function server_setupGoogleDriveBackup() {
+            if (xxdialogMode || (miscState['googleDrive'] == null)) return false;
+            var gd = miscState['googleDrive'];
+            if (gd.state == 1) {
+                var x = "You can setup MeshCentral to automatically send a server backup to Google Drive. Start by entering a desktop Google API ClientID and ClientSecret for your account." + '<br /><br />';
+                x += addHtmlValue("Client ID", '<input id=gdclientid style=width:240px></input>');
+                x += addHtmlValue("Client Secret", '<input id=gdclientsecret style=width:240px></input>');
+                setDialogMode(2, "Google Drive Backup", 1, server_setupGoogleDriveBackupEx, x, 'gd1');
+                Q('gdclientid').focus();
+            } else if (gd.state == 3) {
+                var x = "Google Drive backup is currently active.";
+                x += '<br /><br /><label><input id=gdcheck type=checkbox onchange=server_setupGoogleDriveBackupCheck() />' + "Remove Configuration" + '</label>';
+                setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd0');
+                QE('idx_dlgOkButton', false);
+            }
+        }
+
+        function server_setupGoogleDriveBackupCheck() { QE('idx_dlgOkButton', Q('gdcheck').checked); }
+
+        function server_setupGoogleDriveBackupEx(b, t) {
+            if (t == 'gd0') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 0 }); }
+            if (t == 'gd1') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 1, clientid: Q('gdclientid').value, clientsecret: Q('gdclientsecret').value }); }
+            if (t == 'gd2') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 2, code: Q('gdcode').value }); }
         }
 
         function server_showRestoreDlg() {
