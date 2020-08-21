@@ -1463,9 +1463,6 @@ function CreateMeshCentralServer(config, args) {
                     obj.debug('main', "Started watchdog timer.");
                 }
 
-                // Test
-                obj.db.performCloudBackup("C:\\Users\\Default.DESKTOP-9CGK2DI\\Desktop\\AmtWebApp\\meshcentral-backups\\meshcentral-autobackup-2020-08-20-20-11.zip");
-
             });
         });
     };
