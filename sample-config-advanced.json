@@ -88,7 +88,11 @@
       "backupIntervalHours": 24,
       "keepLastDaysBackup": 10,
       "zipPassword": "MyReallySecretPassword3",
-      "_backupPath": "C:\\backups"
+      "_backupPath": "C:\\backups",
+      "_googleDrive": {
+        "folderName": "MeshCentral-Backups",
+        "maxFiles": 10
+      }
     },
     "_redirects": {
       "meshcommander": "https://www.meshcommander.com/"

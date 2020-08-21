@@ -461,7 +461,7 @@
                         <div style="margin-left:25px">
                             <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
                             <div id="p2ServerActionsRestore"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
-                            <div id="p2ServerActionsGoogleBackup"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
+                            <div id="p2ServerActionsGoogleBackup"  style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
                             <div id="p2ServerActionsErrors"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
                         </div>
@@ -3056,11 +3056,12 @@
                         QV('p2ServerActionsGoogleBackupCheck', message.state > 2);
                         miscState['googleDrive'] = { state: message.state }
                         if (message.state == 2) {
-                            var x = "Nagivate to the URL below, grant access and copy the token code back." + '<br /><br />';
+                            var x = '<img style=float:right src="images/googledrive-48.png" /><div>' + "Nagivate to the URL below, grant access and copy the token code back." + '</div><br />';
                             x += addHtmlValue("Activation", '<a href=\"' + message.url + '\" rel="noreferrer noopener" target="_blank">Browse to this URL</a>');
-                            x += addHtmlValue("Code", '<input id=gdcode style=width:240px></input>');
-                            setDialogMode(2, "Google Drive Backup", 1, server_setupGoogleDriveBackupEx, x, 'gd2');
+                            x += addHtmlValue("Code", '<input id=gdcode onkeyup=server_setupGoogleDriveBackupCheck3() style=width:240px></input>');
+                            setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd2');
                             Q('gdcode').focus();
+                            QE('idx_dlgOkButton', false);
                         }
                     }
                     break;
@@ -9139,21 +9140,25 @@
         function server_setupGoogleDriveBackup() {
             if (xxdialogMode || (miscState['googleDrive'] == null)) return false;
             var gd = miscState['googleDrive'];
-            if (gd.state == 1) {
-                var x = "You can setup MeshCentral to automatically send a server backup to Google Drive. Start by entering a desktop Google API ClientID and ClientSecret for your account." + '<br /><br />';
-                x += addHtmlValue("Client ID", '<input id=gdclientid style=width:240px></input>');
-                x += addHtmlValue("Client Secret", '<input id=gdclientsecret style=width:240px></input>');
-                setDialogMode(2, "Google Drive Backup", 1, server_setupGoogleDriveBackupEx, x, 'gd1');
+            if (gd.state < 3) {
+                var x = '<img style=float:right src="images/googledrive-48.png" /><div>' + "Setup this server to automatically upload backups to Google Drive. Start by creating and entering a Google Drive ClientID and ClientSecret for your account." + '</div><br />';
+                x += addHtmlValue("Credentials", '<a href="https://console.developers.google.com/apis/api/drive.googleapis.com/credentials" rel="noreferrer noopener" target="_blank">' + "Google Drive Console" + '</a>');
+                x += addHtmlValue("Client ID", '<input id=gdclientid style=width:240px placeholder="xxxxxxxx.apps.googleusercontent.com" onkeyup=server_setupGoogleDriveBackupCheck1()></input>');
+                x += addHtmlValue("Client Secret", '<input id=gdclientsecret style=width:240px onkeyup=server_setupGoogleDriveBackupCheck1()></input>');
+                setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd1');
                 Q('gdclientid').focus();
+                QE('idx_dlgOkButton', false);
             } else if (gd.state == 3) {
-                var x = "Google Drive backup is currently active.";
-                x += '<br /><br /><label><input id=gdcheck type=checkbox onchange=server_setupGoogleDriveBackupCheck() />' + "Remove Configuration" + '</label>';
+                var x = '<img style=float:right src="images/googledrive-48.png" /><div>' + "Google Drive backup is currently active." + '</div>';
+                x += '<br /><label><input id=gdcheck type=checkbox onchange=server_setupGoogleDriveBackupCheck2() />' + "Remove Configuration" + '</label>';
                 setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd0');
                 QE('idx_dlgOkButton', false);
             }
         }
 
-        function server_setupGoogleDriveBackupCheck() { QE('idx_dlgOkButton', Q('gdcheck').checked); }
+        function server_setupGoogleDriveBackupCheck1() { QE('idx_dlgOkButton', (Q('gdclientid').value.length > 0) && (Q('gdclientsecret').value.length > 0)); }
+        function server_setupGoogleDriveBackupCheck2() { QE('idx_dlgOkButton', Q('gdcheck').checked); }
+        function server_setupGoogleDriveBackupCheck3() { QE('idx_dlgOkButton', Q('gdcode').value.length > 0); }
 
         function server_setupGoogleDriveBackupEx(b, t) {
             if (t == 'gd0') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 0 }); }
@@ -13055,11 +13060,11 @@
                     if (installedPluginList['version_info'] != null && installedPluginList['version_info'][p._id] != null) {
                         var vin = installedPluginList['version_info'][p._id];
                         if (vin.hasUpdate) {
-                            p.upgradeAvail = '<a title="' + "View Changelog" + '" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            p.upgradeAvail = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
                         } else {
                             cant_action.push('upgrade');
                             if (p.status) p.upgradeAvail = "Up to date";
-                            else p.upgradeAvail = '<a title="' + "View Changelog" + '" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            else p.upgradeAvail = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
                         }
                         if (!vin.meshCentralCompat) {
                             p.upgradeAvail += vers_not_compat;
@@ -13077,7 +13082,7 @@
                     }
                     p.actions += '</select>';
 
-                    var tpl = '<td><img style=margin-top:3px src=images/plugin24.png></td><td class=gradTable1>&nbsp;</td><td class=gradTable2>' + p.nameHtml + '</td><td class=gradTable2>' + EscapeHtml(p.description) + '</td><td class=gradTable2 style=text-align:center><a href="' + EscapeHtml(p.homepage) + '" target="_blank">Home</a></td><td class=gradTable2 style=text-align:center>' + EscapeHtml(p.version) + '</td><td style=text-align:center class="pluginUpgradeAvailable gradTable2">' + p.upgradeAvail + '</td><td class=gradTable2 style="text-align:center;color:#' + p.statusColor + '">' + p.statusText + '</td><td class="pluginAction gradTable2" style=text-align:center>' + p.actions + '</td><td class=gradTable3>&nbsp;</td>';
+                    var tpl = '<td><img style=margin-top:3px src=images/plugin24.png></td><td class=gradTable1>&nbsp;</td><td class=gradTable2>' + p.nameHtml + '</td><td class=gradTable2>' + EscapeHtml(p.description) + '</td><td class=gradTable2 style=text-align:center><a href="' + EscapeHtml(p.homepage) + '" rel="noreferrer noopener" target="_blank">Home</a></td><td class=gradTable2 style=text-align:center>' + EscapeHtml(p.version) + '</td><td style=text-align:center class="pluginUpgradeAvailable gradTable2">' + p.upgradeAvail + '</td><td class=gradTable2 style="text-align:center;color:#' + p.statusColor + '">' + p.statusText + '</td><td class="pluginAction gradTable2" style=text-align:center>' + p.actions + '</td><td class=gradTable3>&nbsp;</td>';
                     var tr = tbl.insertRow(-1);
                     tr.innerHTML = tpl;
                     tr.classList.add('p42tblRow');

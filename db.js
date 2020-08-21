@@ -1385,10 +1385,10 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Perform cloud backup
-    obj.performCloudBackup = function(filename) {
-        if (parent.config.settings.autobackup.googledrive != true) return;
+    obj.performCloudBackup = function (filename) {
+        if (typeof parent.config.settings.autobackup.googledrive != 'object') return;
         obj.Get('GoogleDriveBackup', function (err, docs) {
-            if ((err != null) || (docs.length != 1) || (docs[0].state == 3)) return;
+            if ((err != null) || (docs.length != 1) || (docs[0].state != 3)) return;
             const {google} = require('googleapis');
             const oAuth2Client = new google.auth.OAuth2(docs[0].clientid, docs[0].clientsecret, "urn:ietf:wg:oauth:2.0:oob");
             oAuth2Client.on('tokens', function(tokens) { if (tokens.refresh_token) { docs[0].token = tokens.refresh_token; parent.db.Set(docs[0]); } }); // Update the token in the database
@@ -1398,36 +1398,44 @@ module.exports.CreateDB = function (parent, func) {
 
             // Called once we know our folder id, clean up and upload a backup.
             var useGoogleDrive = function (folderid) {
-                // List files to see if we need to delete some
-                drive.files.list({
-                    q: 'trashed = false and \'' + folderid + '\' in parents',
-                    fields: 'nextPageToken, files(id, name, size, createdTime)',
-                }, function (err, res) {
-                    if (err) { console.log('GoogleDrive error: ' + err); return; }
-                    // Delete any old files if more than 10 files are present in the backup folder.
-                    res.data.files.sort(createdTimeSort);
-                    while (res.data.files.length > 10) { drive.files.delete({ fileId: res.data.files.shift().id }, function (err, res) { }); }
-                });
+                // List files to see if we need to delete older ones
+                if (typeof parent.config.settings.autobackup.googledrive.maxfiles == 'number') {
+                    drive.files.list({
+                        q: 'trashed = false and \'' + folderid + '\' in parents',
+                        fields: 'nextPageToken, files(id, name, size, createdTime)',
+                    }, function (err, res) {
+                        if (err) { console.log('GoogleDrive (files.list) error: ' + err); return; }
+                        // Delete any old files if more than 10 files are present in the backup folder.
+                        res.data.files.sort(createdTimeSort);
+                        while (res.data.files.length >= parent.config.settings.autobackup.googledrive.maxfiles) { drive.files.delete({ fileId: res.data.files.shift().id }, function (err, res) { }); }
+                    });
+                }
 
+                //console.log('Uploading...');
                 // Upload the backup
                 drive.files.create({
                     requestBody: { name: require('path').basename(filename), mimeType: 'text/plain', parents: [folderid] },
                     media: { mimeType: 'application/zip', body: require('fs').createReadStream(filename) },
                 }, function (err, res) {
-                    if (err) { console.log('GoogleDrive error: ' + err); return; }
+                    if (err) { console.log('GoogleDrive (files.create) error: ' + err); return; }
+                    //console.log('Upload done.');
                 });
             }
 
+            // Fetch the folder name
+            var folderName = 'MeshCentral-Backups';
+            if (typeof parent.config.settings.autobackup.googledrive.foldername == 'string') { folderName = parent.config.settings.autobackup.googledrive.foldername; }
+
             // Find our backup folder, create one if needed.
             drive.files.list({
-                q: 'mimeType = \'application/vnd.google-apps.folder\' and name=\'MeshCentral-Backups\' and trashed = false',
+                q: 'mimeType = \'application/vnd.google-apps.folder\' and name=\'' + folderName + '\' and trashed = false',
                 fields: 'nextPageToken, files(id, name)',
             }, function (err, res) {
                 if (err) { console.log('GoogleDrive error: ' + err); return; }
                 if (res.data.files.length == 0) {
                     // Create a folder
-                    drive.files.create({ resource: { 'name': 'MeshCentral-Backups', 'mimeType': 'application/vnd.google-apps.folder' }, fields: 'id' }, function (err, file) {
-                        if (err) { console.log('GoogleDrive error: ' + err); return; }
+                    drive.files.create({ resource: { 'name': folderName, 'mimeType': 'application/vnd.google-apps.folder' }, fields: 'id' }, function (err, file) {
+                        if (err) { console.log('GoogleDrive (folder.create) error: ' + err); return; }
                         useGoogleDrive(file.data.id);
                     });
                 } else { useGoogleDrive(res.data.files[0].id); }
