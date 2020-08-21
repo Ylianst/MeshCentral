@@ -6305,6 +6305,7 @@
     },
     {
       "en": "Chinese (Traditional)",
+      "en": "Chinese (Traditioneel)",
       "zh-chs": "中国传统的）",
       "zh-cht": "中國傳統的）",
       "xloc": [
@@ -6675,6 +6676,7 @@
     },
     {
       "en": "Client ID",
+      "nl": "Client ID",
       "xloc": [
         "default.handlebars->27->1262"
       ]
@@ -6701,6 +6703,7 @@
     },
     {
       "en": "Client Secret",
+      "nl": "Client Secret",
       "xloc": [
         "default.handlebars->27->1263"
       ]
@@ -6749,6 +6752,7 @@
     },
     {
       "en": "Code",
+      "nl": "Code",
       "xloc": [
         "default.handlebars->27->200"
       ]
@@ -8258,7 +8262,7 @@
       "hi": "सृष्टि",
       "ja": "作成",
       "ko": "생성",
-      "nl": "Aanmaken",
+      "nl": "Aangemaakt",
       "pt": "Criação",
       "ru": "Создано",
       "zh-chs": "創建",
@@ -13878,6 +13882,7 @@
     },
     {
       "en": "Google Drive Backup",
+      "nl": "Google Drive Backup",
       "xloc": [
         "default.handlebars->27->1264",
         "default.handlebars->27->1267",
@@ -13886,12 +13891,14 @@
     },
     {
       "en": "Google Drive backup",
+      "nl": "Google Drive backup",
       "xloc": [
         "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsGoogleBackup->1->0"
       ]
     },
     {
       "en": "Google Drive backup is currently active.",
+      "nl": "Google Drive backup is momenteel aktief",
       "xloc": [
         "default.handlebars->27->1265"
       ]
@@ -20316,6 +20323,7 @@
     },
     {
       "en": "Nagivate to the URL below, grant access and copy the token code back.",
+      "nl": "Ga naar de onderstaande URL, verleen toegang en kopieer de tokencode terug.",
       "xloc": [
         "default.handlebars->27->198"
       ]
@@ -24834,6 +24842,7 @@
     },
     {
       "en": "Remove Configuration",
+      "nl": "Configuratie verwijderen",
       "xloc": [
         "default.handlebars->27->1266"
       ]
@@ -27189,7 +27198,7 @@
       "hi": "सर्वर काट दिया गया",
       "ja": "サーバーが切断されました",
       "ko": "서버 연결이 끊어졌습니다",
-      "nl": "Serververbinding verbroken ",
+      "nl": "Serververbinding verbroken",
       "pt": "Servidor desconectado",
       "ru": "Сервер отключен",
       "zh-chs": "服務器已斷開連接",
@@ -33830,6 +33839,7 @@
     },
     {
       "en": "You can setup MeshCentral to automatically send a server backup to Google Drive. Start by entering a desktop Google API ClientID and ClientSecret for your account.",
+      "ln": "U kunt MeshCentral zo instellen dat er automatisch een serverback-up naar Google Drive wordt verzonden.Begin met het invoeren van een desktop Google API ClientID en ClientSecret voor uw account.",
       "xloc": [
         "default.handlebars->27->1261"
       ]
@@ -34407,7 +34417,7 @@
       "hi": "पुन: कनेक्ट करने के लिए क्लिक करें",
       "ja": "クリックして再接続",
       "ko": "다시 연결하려면 클릭하십시오.",
-      "nl": "klik om opnieuw verbinding te maken",
+      "nl": " klik hier om opnieuw verbinding te maken",
       "pt": "clique para reconectar",
       "ru": "нажмите для переподключения",
       "zh-chs": "點擊重新連接",
