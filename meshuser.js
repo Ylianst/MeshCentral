@@ -1220,7 +1220,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateString(command.nodeid, 1, 1024) == false) {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'msg', result: 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } }
                         return;
-                    } 
+                    }
 
                     // Rights check
                     var requiredRights = null, requiredNonRights = null;
