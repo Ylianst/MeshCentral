@@ -6633,8 +6633,11 @@
     {
       "en": "Chinese (Traditioneel)",
       "tr": "Çince (Traditioneel)",
-      "zh-chs": "中国传统的）",
+      "zh-chs": "中国传统的",
       "zh-cht": "中國傳統的）"
+      "xloc": [
+        "default.handlebars->27->1214"
+      ]
     },
     {
       "cs": "ChromeOS",
@@ -8745,6 +8748,7 @@
     {
       "en": "Credentials",
       "tr": "Kimlik bilgileri",
+      "nl": "Inloggegevens",
       "xloc": [
         "default.handlebars->27->1268"
       ]
@@ -10523,6 +10527,7 @@
     {
       "en": "Device notification",
       "tr": "Cihaz bildirimi",
+      "nl": "Apparaatmelding",
       "xloc": [
         "default.handlebars->27->459"
       ]
@@ -14635,6 +14640,7 @@
     {
       "en": "Google Drive Console",
       "tr": "Google Drive Konsolu",
+      "nl": "Google Drive Console",
       "xloc": [
         "default.handlebars->27->1269"
       ]
@@ -19421,6 +19427,7 @@
     {
       "en": "MIPS24KC (OpenWRT)",
       "tr": "MIPS24KC (OpenWRT)",
+      "nl": "MIPS24KC (OpenWRT)",
       "xloc": [
         "default-mobile.handlebars->9->34",
         "default.handlebars->27->41"
@@ -20851,6 +20858,7 @@
     {
       "en": "Message Box",
       "tr": "Mesaj Kutusu",
+      "nl": "Berichten box",
       "xloc": [
         "default.handlebars->27->480"
       ]
@@ -24323,6 +24331,7 @@
     {
       "en": "Perform batch device notification",
       "tr": "Toplu cihaz bildirimi gerçekleştir",
+      "nl": "Voer een batchapparaatmelding uit",
       "xloc": [
         "default.handlebars->27->478"
       ]
@@ -29007,6 +29016,7 @@
     {
       "en": "Setup this server to automatically upload backups to Google Drive. Start by creating and entering a Google Drive ClientID and ClientSecret for your account.",
       "tr": "Yedeklemeleri Google Drive'a otomatik olarak yüklemek için bu sunucuyu kurun. Hesabınız için bir Google Drive ClientID ve ClientSecret oluşturup girerek başlayın.",
+      "nl": "Stel deze server in om automatisch back-ups naar Google Drive te uploaden. Begin met het maken en invoeren van een Google Drive ClientID en ClientSecret voor uw account.",
       "xloc": [
         "default.handlebars->27->1267"
       ]
@@ -31872,6 +31882,7 @@
     {
       "en": "Title",
       "tr": "Başlık",
+      "nl": "Titel",
       "xloc": [
         "default.handlebars->27->481"
       ]
@@ -32144,6 +32155,7 @@
     {
       "en": "Toast Notification",
       "tr": "Tost Bildirimi",
+      "nl": "Toast melding",
       "xloc": [
         "default.handlebars->27->479"
       ]
@@ -35695,8 +35707,8 @@
     },
     {
       "en": "You can setup MeshCentral to automatically send a server backup to Google Drive. Start by entering a desktop Google API ClientID and ClientSecret for your account.",
-      "ln": "U kunt MeshCentral zo instellen dat er automatisch een serverback-up naar Google Drive wordt verzonden.Begin met het invoeren van een desktop Google API ClientID en ClientSecret voor uw account.",
-      "tr": "MeshCentral'ı Google Drive'a otomatik olarak bir sunucu yedeği gönderecek şekilde kurabilirsiniz. Hesabınız için bir masaüstü Google API İstemci Kimliği ve ClientSecret girerek başlayın."
+      "nl": "U kunt MeshCentral zo instellen dat er automatisch een serverback-up naar Google Drive wordt verzonden.Begin met het invoeren van een desktop Google API ClientID en ClientSecret voor uw account.",
+      "tr": "MeshCentral'ı Google Drive'a otomatik olarak bir sunucu yedeği gönderecek şekilde kurabilirsiniz. Hesabınız için bir masaüstü Google API İstemci Kimliği ve ClientSecret girerek başlayın.",
     },
     {
       "en": "You have been invited to install an application that will allow a remote operator to securely access your computer including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Select your operating system and follow the instructions below for installation.",
