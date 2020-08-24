@@ -1,4 +1,4 @@
-[[[SERVERNAME]]]-アカウントのリセット
+[[[SERVERNAME]]] - アカウントのリセット
 こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]

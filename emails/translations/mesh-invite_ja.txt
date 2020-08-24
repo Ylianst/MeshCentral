@@ -1,4 +1,4 @@
-[[[SERVERNAME]]]-招待
+[[[SERVERNAME]]] - 招待
 ~<area-name>
 [[[NAME]]]様
 ~</area-name>

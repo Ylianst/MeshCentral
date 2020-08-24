@@ -2,7 +2,7 @@
 ~<area-name>
 Hallo [[[NAME]]],
 ~</area-name>
-Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]] /) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.
+Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]]/) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.
 ~<area-msg>
 ~
 Bericht: [[[MSG]]]
@@ -27,7 +27,7 @@ Voor Linux, knip het volgende en plak dit in een terminal om de agent te install
 ~
 ~</area-linux>
 ~<area-link>
-Om de software te installeren, navigeert u naar [[[SERVERURL]]] [[[LINKURL]]] en volgt u de instructies.
+Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]] en volgt u de instructies.
 ~</area-link>
 Als u dit verzoek niet heeft ingediend, dan kunt u deze e-mail negeren.
 ~

@@ -1,4 +1,4 @@
-[[[SERVERNAME]]]-邀请
+[[[SERVERNAME]]] - 邀请
 ~<area-name>
 您好[[[NAME]]]，
 ~</area-name>
