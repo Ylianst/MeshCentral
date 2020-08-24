@@ -6635,9 +6635,6 @@
       "tr": "Çince (Traditioneel)",
       "zh-chs": "中国传统的",
       "zh-cht": "中國傳統的）"
-      "xloc": [
-        "default.handlebars->27->1214"
-      ]
     },
     {
       "cs": "ChromeOS",
@@ -35708,7 +35705,7 @@
     {
       "en": "You can setup MeshCentral to automatically send a server backup to Google Drive. Start by entering a desktop Google API ClientID and ClientSecret for your account.",
       "nl": "U kunt MeshCentral zo instellen dat er automatisch een serverback-up naar Google Drive wordt verzonden.Begin met het invoeren van een desktop Google API ClientID en ClientSecret voor uw account.",
-      "tr": "MeshCentral'ı Google Drive'a otomatik olarak bir sunucu yedeği gönderecek şekilde kurabilirsiniz. Hesabınız için bir masaüstü Google API İstemci Kimliği ve ClientSecret girerek başlayın.",
+      "tr": "MeshCentral'ı Google Drive'a otomatik olarak bir sunucu yedeği gönderecek şekilde kurabilirsiniz. Hesabınız için bir masaüstü Google API İstemci Kimliği ve ClientSecret girerek başlayın."
     },
     {
       "en": "You have been invited to install an application that will allow a remote operator to securely access your computer including the desktop and files. Only follow the instructions below if this invitation was expected and you know who will be accessing your computer. Select your operating system and follow the instructions below for installation.",
