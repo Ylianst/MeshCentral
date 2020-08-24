@@ -1,4 +1,4 @@
-[[[SERVERNAME]]]-アカウントの招待
+[[[SERVERNAME]]] - アカウントの招待
 サーバー[[[SERVERNAME]]]（[[[SERVERURL]]] /）にアカウントが作成されました。ユーザー名 "[[[ACCOUNTNAME]]]"とパスワード "[[[PASSWORD] ]] "。
 ~
 宜しくお願いします、

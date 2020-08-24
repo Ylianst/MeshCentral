@@ -1,8 +1,8 @@
-[[[SERVERNAME]]]-邀請
+[[[SERVERNAME]]] - 邀請
 ~<area-name>
 您好[[[NAME]]]，
 ~</area-name>
-服務器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上的用戶[[[USERNAME]]]請求您安裝軟件以啟動遠程控制會話。
+服務器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用戶[[[USERNAME]]]請求您安裝軟件以啟動遠程控制會話。
 ~<area-msg>
 ~
 訊息：[[[MSG]]]
@@ -27,7 +27,7 @@
 ~
 ~</area-linux>
 ~<area-link>
-要安裝軟件，請導航至[[[SERVERURL]]] [[[LINKURL]]]，然後按照說明進行操作。
+要安裝軟件，請導航至[[[SERVERURL]]][[[LINKURL]]]，然後按照說明進行操作。
 ~</area-link>
 如果您沒有發起此請求，請忽略此郵件。
 ~

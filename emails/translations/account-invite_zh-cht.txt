@@ -1,5 +1,5 @@
-[[[SERVERNAME]]]-帳戶邀請
-在服務器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上為您創建了一個帳戶，您現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。
+[[[SERVERNAME]]] - 帳戶邀請
+在服務器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上為您創建了一個帳戶，您現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD]]]”。
 ~
 最好的祝福，
 ~[[[USERNAME]]]

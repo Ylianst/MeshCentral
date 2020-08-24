@@ -1,4 +1,4 @@
-[[[SERVERNAME]]]-电子邮件验证
+[[[SERVERNAME]]] - 电子邮件验证
 嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在执行电子邮件验证。导航至以下链接以完成该过程：
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
