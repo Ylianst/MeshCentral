@@ -3089,6 +3089,7 @@
                 if (getNodeFromId('{{currentNode}}') == null) return; // This node is not loaded yet
                 gotoDevice('{{currentNode}}', xviewmode);
             } else if (args.gotonode != null) {
+                if (args.gotonode.length == 96) { args.gotonode = btoa(hex2rstr(args.gotonode)).split('+').join('@').split('/').join('$'); } // This is a HEX encoded NodeID, convert it to Base64
                 if (getNodeFromId('node/' + domain + '/' + args.gotonode) == null) return; // This node is not loaded yet
                 gotoDevice('node/' + domain + '/' + args.gotonode, xviewmode);
                 goBackStack.push(1);
