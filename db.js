@@ -37,6 +37,7 @@ module.exports.CreateDB = function (parent, func) {
     obj.dbRecordsEncryptKey = null;
     obj.dbRecordsDecryptKey = null;
     obj.changeStream = false;
+    obj.pluginsActive = ((parent.config) && (parent.config.settings) && (parent.config.settings.plugins != null) && (parent.config.settings.plugins != false) && ((typeof parent.config.settings.plugins != 'object') || (parent.config.settings.plugins.enabled != false)));
 
     obj.SetupDatabase = function (func) {
         // Check if the database unique identifier is present
@@ -64,6 +65,15 @@ module.exports.CreateDB = function (parent, func) {
             func(ver);
         });
     };
+
+    // Perform database maintenance
+    obj.maintenance = function () {
+        if (obj.databaseType == 1) { // NeDB will not remove expired records unless we try to access them. This will force the removal.
+            obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+            obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+            obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+        }
+    }
 
     obj.cleanup = function (func) {
         // TODO: Remove all mesh links to invalid users
@@ -544,7 +554,7 @@ module.exports.CreateDB = function (parent, func) {
             });
 
             // Setup plugin info collection
-            if (parent.config.settings != null) { obj.pluginsfile = db.collection('plugins'); }
+            if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); }
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -648,7 +658,7 @@ module.exports.CreateDB = function (parent, func) {
         });
 
         // Setup plugin info collection
-        if (parent.config.settings != null) { obj.pluginsfile = db.collection('plugins'); }
+        if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); }
 
         setupFunctions(func); // Completed setup of MongoJS
     } else {
@@ -689,29 +699,32 @@ module.exports.CreateDB = function (parent, func) {
         obj.file.ensureIndex({ fieldName: 'email', sparse: true });
 
         // Setup the events collection and setup indexes
-        obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true });
+        obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true, corruptAlertThreshold: 1 });
         obj.eventsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
         obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
         obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireEventsSeconds });
+        obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
         // Setup the power collection and setup indexes
-        obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true });
+        obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true, corruptAlertThreshold: 1 });
         obj.powerfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
         obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
+        obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
         // Setup the SMBIOS collection
-        obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true });
+        obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true, corruptAlertThreshold: 1 });
 
         // Setup the server stats collection and setup indexes
-        obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true });
+        obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
         obj.serverstatsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireServerStatsSeconds });
         obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
+        obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
         // Setup plugin info collection
-        if (parent.config.settings != null) {
+        if (obj.pluginsActive) {
             obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
             obj.pluginsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
         }
@@ -938,7 +951,7 @@ module.exports.CreateDB = function (parent, func) {
             }
 
             // Plugin operations
-            if (parent.config.settings.plugins != null) {
+            if (obj.pluginsActive) {
                 obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO meshcentral.plugin VALUE (?, ?)', [null, JSON.stringify(value)], func); }; // Add a plugin
                 obj.getPlugins = function (func) { sqlDbQuery('SELECT doc FROM meshcentral.plugin', null, func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { sqlDbQuery('SELECT doc FROM meshcentral.plugin WHERE id = ?', [id], func); }; // Get plugin
@@ -1085,7 +1098,7 @@ module.exports.CreateDB = function (parent, func) {
             }
 
             // Plugin operations
-            if (parent.config.settings.plugins != null) {
+            if (obj.pluginsActive) {
                 obj.addPlugin = function (plugin, func) { plugin.type = 'plugin'; obj.pluginsfile.insertOne(plugin, func); }; // Add a plugin
                 obj.getPlugins = function (func) { obj.pluginsfile.find({ type: 'plugin' }).project({ type: 0 }).sort({ name: 1 }).toArray(func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { id = require('mongodb').ObjectID(id); obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).toArray(func); }; // Get plugin
@@ -1234,7 +1247,7 @@ module.exports.CreateDB = function (parent, func) {
             }
 
             // Plugin operations
-            if (parent.config.settings.plugins != null) {
+            if (obj.pluginsActive) {
                 obj.addPlugin = function (plugin, func) { plugin.type = 'plugin'; obj.pluginsfile.insert(plugin, func); }; // Add a plugin
                 obj.getPlugins = function (func) { obj.pluginsfile.find({ 'type': 'plugin' }, { 'type': 0 }).sort({ name: 1 }).exec(func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { obj.pluginsfile.find({ _id: id }).sort({ name: 1 }).exec(func); }; // Get plugin
