@@ -153,7 +153,7 @@
           "newAccountEmailDomains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "newAccountsRights": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "welcomeText": { "type": "string", "description": "Text that will be shown on the login screen." },
-          "welcomePicture": { "type": "string", "description": "Name of the JPG file that will be shown on the login screen. Out this file in the meshcentral-data folder and place the name here." },
+          "welcomePicture": { "type": "string", "description": "Name of the JPG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the name here." },
           "hide": { "type": "integer" },
           "footer": { "type": "string" },
           "certUrl": { "type": "string", "format": "uri", "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral." },
