@@ -6507,15 +6507,15 @@
 
         // Show and enable the right buttons
         function updateDesktopButtons() {
-            var mesh = meshes[currentNode.meshid];
             var deskState = 0;
             if (desktop != null) { deskState = desktop.State; }
             var rights = GetNodeRights(currentNode);
+            var mtype = (currentNode.agent == 1) ? 1 : 2;
 
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
-            if (mesh.mtype == 1) {
+            if (mtype == 1) {
                 QV('connectbutton1hspan',
                     (deskState == 0) &&
                     (rights & 8) &&
@@ -7397,13 +7397,13 @@
 
         // Show and enable the right buttons
         function updateTerminalButtons() {
-            var mesh = meshes[terminalNode.meshid];
+            var mtype = (currentNode.agent == 1) ? 1 : 2;
             var termState = ((terminal != null) && (terminal.state != 0));
 
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (currentNode.agent != null) && (currentNode.agent.caps & 2));
-            if (mesh.mtype == 1) {
+            if (mtype == 1) {
                 QV('connectbutton2hspan', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
                 QV('terminalSizeDropDown', (termState == false) && (terminalNode.intelamt != null) && (terminalNode.intelamt.state == 2));
             } else {
