@@ -206,7 +206,13 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                 obj.m.ProcessBinaryData(new Uint8Array(e.data));
             } else {
                 // Send as Text
-                obj.m.ProcessData(String.fromCharCode.apply(null, new Uint8Array(e.data)));
+                if (e.data.byteLength < 16000) { // Process small data block
+                    obj.m.ProcessData(String.fromCharCode.apply(null, new Uint8Array(e.data))); // This will stack overflow on Chrome with 100k+ blocks.
+                } else { // Process large data block
+                    var bb = new Blob([new Uint8Array(e.data)]), f = new FileReader();
+                    f.onload = function (e) { obj.m.ProcessData(e.target.result); };
+                    f.readAsText(bb);
+                }
             }
         }
     };
