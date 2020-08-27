@@ -18,8 +18,8 @@
         "sessionKey": { "type": "string" },
         "sessionSameSite": { "type": "string" },
         "dbEncryptKey": { "type": "string" },
-        "dbRecordsEncryptKey": { "type": "string" },
-        "dbRecordsDecryptKey": { "type": "string" },
+        "dbRecordsEncryptKey": { "type": "string", "default": null },
+        "dbRecordsDecryptKey": { "type": "string", "default": null },
         "dbExpire": {
           "type": "object",
           "properties": {
