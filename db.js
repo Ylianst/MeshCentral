@@ -244,7 +244,15 @@ module.exports.CreateDB = function (parent, func) {
             if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
             obj.GetAllType('node', function (err, docs) {
                 if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                func(count);
+                obj.GetAllType('mesh', function (err, docs) {
+                    if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
+                    if (obj.databaseType == 1) { // If we are using NeDB, compact the database.
+                        obj.file.persistence.compactDatafile();
+                        obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
+                    } else {
+                        func(count); // For all other databases, normal exit.
+                    }
+                });
             });
         });
     }
@@ -257,6 +265,8 @@ module.exports.CreateDB = function (parent, func) {
                 data[i] = performPartialRecordDecrypt(data[i]);
             } else if ((data[i].type == 'node') && (data[i].intelamt != null)) {
                 data[i].intelamt = performPartialRecordDecrypt(data[i].intelamt);
+            } else if ((data[i].type == 'mesh') && (data[i].amt != null)) {
+                data[i].amt = performPartialRecordDecrypt(data[i].amt);
             }
         }
         return data;
@@ -267,6 +277,7 @@ module.exports.CreateDB = function (parent, func) {
         if (obj.dbRecordsEncryptKey == null) return data;
         if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash', 'oldpasswords']); }
         else if ((data.type == 'node') && (data.intelamt != null)) { var xdata = Clone(data); xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass']); return xdata; }
+        else if ((data.type == 'mesh') && (data.amt != null)) { var xdata = Clone(data); xdata.amt = performPartialRecordEncrypt(xdata.amt, ['password']); return xdata; }
         return data;
     }
 
@@ -329,13 +340,13 @@ module.exports.CreateDB = function (parent, func) {
     // If a DB record encryption key is provided, perform database record encryption
     if ((typeof parent.args.dbrecordsencryptkey == 'string') && (parent.args.dbrecordsencryptkey.length != 0)) {
         // Hash the database password into a AES256 key and setup encryption and decryption.
-        obj.dbRecordsEncryptKey = obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsencryptkey).digest("raw").slice(0, 32);
+        obj.dbRecordsEncryptKey = obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsencryptkey).digest('raw').slice(0, 32);
     }
 
     // If a DB record decryption key is provided, perform database record decryption
     if ((typeof parent.args.dbrecordsdecryptkey == 'string') && (parent.args.dbrecordsdecryptkey.length != 0)) {
         // Hash the database password into a AES256 key and setup encryption and decryption.
-        obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsdecryptkey).digest("raw").slice(0, 32);
+        obj.dbRecordsDecryptKey = parent.crypto.createHash('sha384').update(parent.args.dbrecordsdecryptkey).digest('raw').slice(0, 32);
     }
 
     if (parent.args.mariadb || parent.args.mysql) {
