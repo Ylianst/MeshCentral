@@ -57,6 +57,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.express = require('express');
     obj.meshAgentHandler = require('./meshagent.js');
     obj.meshRelayHandler = require('./meshrelay.js');
+    obj.meshDeviceFileHandler = require('./meshdevicefile.js');
     obj.meshDesktopMultiplexHandler = require('./meshdesktopmultiplex.js');
     obj.meshIderHandler = require('./amt/amt-ider.js');
     obj.meshUserHandler = require('./meshuser.js');
@@ -2786,6 +2787,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
     }
 
+    // Handle device file request
+    function handleDeviceFile(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.query.c == null) || (req.query.m == null) || (req.query.n == null) || (req.query.f == null)) { res.sendStatus(404); return; }
+
+        // Check the inbound desktop sharing cookie
+        var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+        if ((c == null) || (c.domainid !== domain.id)) { res.sendStatus(404); return; }
+
+        // Check userid
+        const user = obj.users[c.userid];
+        if ((c == user)) { res.sendStatus(404); return; }
+
+        // Check if this user has permission to manage this computer
+        const meshid = 'mesh/' + domain.id + '/' + req.query.m;
+        const nodeid = 'node/' + domain.id + '/' + req.query.n;
+        if ((obj.GetNodeRights(c.userid, meshid, nodeid) & MESHRIGHT_REMOTECONTROL) == 0) { res.sendStatus(404); return; }
+
+        // All good, start the file transfer
+        req.query.id = getRandomLowerCase(12);
+        obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, null, res, req, domain, user, meshid, nodeid);
+    }
+
     // Handle logo request
     function handleLogoRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -4677,6 +4702,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
             obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.ws(url + 'control.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
+            obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
+            obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.post(url + 'translations', handleTranslationsRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);

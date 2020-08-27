@@ -107,6 +107,7 @@
     <Compile Include="meshctrl.js" />
     <Compile Include="meshdesktopmultiplex.js" />
     <Compile Include="meshmail.js" />
+    <Compile Include="meshrelay.js" />
     <Compile Include="meshsms.js" />
     <Compile Include="meshscanner.js" />
     <Compile Include="certoperations.js" />
@@ -115,7 +116,7 @@
     <Compile Include="interceptor.js" />
     <Compile Include="meshcentral.js" />
     <Compile Include="meshagent.js" />
-    <Compile Include="meshrelay.js" />
+    <Compile Include="meshdevicefile.js" />
     <Compile Include="meshuser.js" />
     <Compile Include="mpsserver.js" />
     <Compile Include="mqttbroker.js" />

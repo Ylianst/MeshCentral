@@ -1066,6 +1066,7 @@ function serverConnect() {
         if (settings.cmd == 'showevents') { console.log(data); return; }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
+                console.log(data);
                 settings.currentDomain = data.serverinfo.domain;
                 if (settings.cmd == 'serverinfo') {
                     if (args.json) {
