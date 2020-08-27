@@ -1239,7 +1239,7 @@ function createMeshCore(agent) {
         }
 
         // Sent tunnel statistics to the server, only send this if compression was used.
-        if (this.bytesSent_uncompressed.toString() != this.bytesSent_actual.toString()) {
+        if ((this.bytesSent_uncompressed) && (this.bytesSent_uncompressed.toString() != this.bytesSent_actual.toString())) {
             mesh.SendCommand({
                 action: 'tunnelCloseStats',
                 url: tunnel.url,
@@ -1256,7 +1256,7 @@ function createMeshCore(agent) {
         }
 
         //sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
-        delete tunnels[this.httprequest.index];
+        if (this.httprequest.index) { delete tunnels[this.httprequest.index]; }
 
         /*
         // Close the watcher if required
@@ -1269,7 +1269,7 @@ function createMeshCore(agent) {
 
         // If there is a upload or download active on this connection, close the file
         if (this.httprequest.uploadFile) { fs.closeSync(this.httprequest.uploadFile); delete this.httprequest.uploadFile; delete this.httprequest.uploadFileid; delete this.httprequest.uploadFilePath; }
-        if (this.httprequest.downloadFile) { fs.closeSync(this.httprequest.downloadFile); delete this.httprequest.downloadFile; }
+        if (this.httprequest.downloadFile) { delete this.httprequest.downloadFile; }
 
         // Clean up WebRTC
         if (this.webrtc != null) {
@@ -1311,12 +1311,29 @@ function createMeshCore(agent) {
         else
         {
             // Handle tunnel data
-            if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user)
+            if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
                 // Take a look at the protocol
                 if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
                 this.httprequest.protocol = parseInt(data);
                 if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }
-                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
+                if (this.httprequest.protocol == 10) {
+                    //
+                    // Basic file transfer
+                    //
+                    var stats = null;
+                    try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
+                    try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
+                    if (this.httprequest.downloadFile) {
+                        sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
+                        this.write(JSON.stringify({ op: 'ok', size: stats.size }));
+                        this.httprequest.downloadFile.pipe(this);
+                        this.httprequest.downloadFile.end = function () { }
+                    } else {
+                        sendConsoleText('BasicFileTransfer, cancel, ' + this.httprequest.xoptions.file);
+                        this.write(JSON.stringify({ op: 'cancel' }));
+                    }
+                }
+                else if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
                 {
                     //
                     // Remote Terminal
@@ -1808,8 +1825,7 @@ function createMeshCore(agent) {
                                 MeshServerLog("Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                             });
-                    }
-                    else {
+                    } else {
                         // User Consent Prompt is not required
                         if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                             // User Notifications is required
