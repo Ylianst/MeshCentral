@@ -1063,7 +1063,7 @@ function serverConnect() {
         var data = null;
         try { data = JSON.parse(rawdata); } catch (ex) { }
         if (data == null) { console.log('Unable to parse data: ' + rawdata); }
-        if (settings.cmd == 'showevents') { console.log(data); return; }
+        if (settings.cmd == 'showevents') { console.log(JSON.stringify(data, null, 2)); return; }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
                 console.log(data);
