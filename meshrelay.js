@@ -95,7 +95,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                 // Check if we have permission to send a message to that node
                 rights = parent.GetNodeRights(user, agent.dbMeshKey, agent.dbNodeKey);
                 mesh = parent.meshes[agent.dbMeshKey];
-                if ((rights != null) && (mesh != null) || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                if ((rights != null) && (mesh != null) || ((rights & MESHRIGHT_REMOTECONTROL) != 0)) {
                     if (ws.sessionId) { command.sessionid = ws.sessionId; }   // Set the session id, required for responses.
                     command.rights = rights;            // Add user rights flags to the message
                     if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
@@ -114,7 +114,7 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                     // Check if we have permission to send a message to that node
                     rights = parent.GetNodeRights(user, routing.meshid, command.nodeid);
                     mesh = parent.meshes[routing.meshid];
-                    if (rights != null || ((rights & 16) != 0)) { // TODO: 16 is console permission, may need more gradular permission checking
+                    if (rights != null || ((rights & MESHRIGHT_REMOTECONTROL) != 0)) {
                         if (ws.sessionId) { command.fromSessionid = ws.sessionId; }   // Set the session id, required for responses.
                         command.rights = rights;                // Add user rights flags to the message
                         if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
