@@ -1483,6 +1483,30 @@ function displayDeviceInfo(sysinfo, lastconnect, network) {
     if (lastconnect != null) { node.lastconnect = lastconnect.time; node.lastaddr = lastconnect.addr; }
     if (args.raw) { console.log(JSON.stringify(sysinfo, ' ', 2)); return; }
 
+    // General
+    var output = {}, outputCount = 0;
+    if (node.rname) { output["Server Name"] = node.name; outputCount++; }
+    if (node.host != null) { output["Hostname"] = node.host; outputCount++; }
+    if (node.ip != null) { output["IP Address"] = node.ip; outputCount++; }
+    if (node.desc != null) { output["Description"] = node.desc; outputCount++; }
+    if (node.icon != null) { output["Icon"] = node.icon; outputCount++; }
+    if (node.tags) { output["Tags"] = node.tags; outputCount++; }
+    if (node.av) {
+        var av = [];
+        for (var i in node.av) {
+            if (typeof node.av[i]['product'] == 'string') {
+                var n = node.av[i]['product'];
+                if (node.av[i]['updated'] === true) { n += ', updated'; }
+                if (node.av[i]['updated'] === false) { n += ', not updated'; }
+                if (node.av[i]['enabled'] === true) { n += ', enabled'; }
+                if (node.av[i]['enabled'] === false) { n += ', disabled'; }
+                av.push(n);
+            }
+        }
+        output["AntiVirus"] = av; outputCount++;
+    }
+    if (outputCount > 0) { info["General"] = output; }
+
     // Operating System
     if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
         var output = {}, outputCount = 0;
@@ -1612,7 +1636,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network) {
         for (var i in info) {
             console.log('--- ' + i + ' ---');
             for (var j in info[i]) {
-                if (typeof info[i][j] == 'string') {
+                if ((typeof info[i][j] == 'string') || (typeof info[i][j] == 'number')) {
                     console.log('  ' + j + ': ' + info[i][j]);
                 } else {
                     console.log('  ' + j + ':');
