@@ -1321,6 +1321,7 @@ function createMeshCore(agent) {
                     // Basic file transfer
                     //
                     var stats = null;
+                    if ((process.platform != 'win32') && (this.httprequest.xoptions.file.startsWith('/') == false)) { this.httprequest.xoptions.file = '/' + this.httprequest.xoptions.file; }
                     try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
                     try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
                     if (this.httprequest.downloadFile) {
@@ -2166,9 +2167,18 @@ function createMeshCore(agent) {
                         // Setup file compression
                         var ofile = cmd.path + '/' + cmd.output;
                         this.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zipping' })));
+                        this.zipfile = ofile;
+                        delete this.zipcancel;
                         var out = require('fs').createWriteStream(ofile, { flags: 'wb' });
                         out.xws = this;
-                        out.on('close', function () { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null }))); this.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' }))); this.xws.zip = null; });
+                        out.on('close', function () {
+                            this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null })));
+                            this.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' })));
+                            if (this.xws.zipcancel === true) { fs.unlinkSync(this.xws.zipfile); } // Delete the complete file.
+                            delete this.xws.zipcancel;
+                            delete this.xws.zipfile;
+                            delete this.xws.zip;
+                        });
                         this.zip = require('zip-writer').write({ files: p, basePath: cmd.path });
                         this.zip.xws = this;
                         this.zip.on('progress', require('events').moderated(function (name, p) { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zippingFile', file: ((process.platform == 'win32') ? (name.split('/').join('\\')) : name), progress: p }))); }, 2000));
@@ -2176,7 +2186,7 @@ function createMeshCore(agent) {
                         break;
                     case 'cancel':
                         // Cancel zip operation if present
-                        try { this.zip.cancel(function () { }); } catch (ex) { }
+                        try { this.zipcancel = true; this.zip.cancel(function () { }); } catch (ex) { }
                         this.zip = null;
                         break;
                     default:
