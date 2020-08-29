@@ -13139,7 +13139,7 @@
       "zh-chs": "導出設備信息",
       "zh-cht": "導出設備信息",
       "xloc": [
-        "default.handlebars->27->456"
+        "default.handlebars->27->457"
       ]
     },
     {
@@ -21114,7 +21114,7 @@
       "zh-chs": "移至設備組",
       "zh-cht": "移至設備組",
       "xloc": [
-        "default.handlebars->27->457"
+        "default.handlebars->27->448"
       ]
     },
     {
@@ -23584,7 +23584,7 @@
         "default-mobile.handlebars->9->264",
         "default.handlebars->27->1605",
         "default.handlebars->27->1686",
-        "default.handlebars->27->450",
+        "default.handlebars->27->451",
         "default.handlebars->27->471",
         "default.handlebars->27->731"
       ]
@@ -24936,7 +24936,7 @@
       "zh-chs": "關閉設備電源",
       "zh-cht": "關閉設備電源",
       "xloc": [
-        "default.handlebars->27->455"
+        "default.handlebars->27->456"
       ]
     },
     {
@@ -26834,7 +26834,7 @@
       "zh-chs": "重置設備",
       "zh-cht": "重置設備",
       "xloc": [
-        "default.handlebars->27->454"
+        "default.handlebars->27->455"
       ]
     },
     {
@@ -27195,7 +27195,7 @@
       "zh-chs": "运行命令",
       "zh-cht": "運行命令",
       "xloc": [
-        "default.handlebars->27->452"
+        "default.handlebars->27->453"
       ]
     },
     {
@@ -27973,7 +27973,7 @@
       "zh-chs": "選擇要在所有選定設備上執行的操作。僅在擁有適當權限的情況下才能執行操作。",
       "zh-cht": "選擇要在所有選定設備上執行的操作。僅在擁有適當權限的情況下才能執行操作。",
       "xloc": [
-        "default.handlebars->27->449"
+        "default.handlebars->27->450"
       ]
     },
     {
@@ -29734,7 +29734,7 @@
       "zh-chs": "睡眠裝置",
       "zh-cht": "睡眠裝置",
       "xloc": [
-        "default.handlebars->27->453"
+        "default.handlebars->27->454"
       ]
     },
     {
@@ -32947,9 +32947,14 @@
       "zh-cht": "卸載代理",
       "xloc": [
         "default-mobile.handlebars->9->426",
-        "default.handlebars->27->1426",
-        "default.handlebars->27->448",
+        "default.handlebars->27->449",
         "default.handlebars->27->730"
+      ]
+    },
+    {
+      "en": "Uninstall Agent / Delete Device",
+      "xloc": [
+        "default.handlebars->27->1426"
       ]
     },
     {
@@ -34703,7 +34708,7 @@
       "zh-chs": "喚醒設備",
       "zh-cht": "喚醒設備",
       "xloc": [
-        "default.handlebars->27->451"
+        "default.handlebars->27->452"
       ]
     },
     {

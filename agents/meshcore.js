@@ -251,17 +251,18 @@ function createMeshCore(agent) {
         return (svc);
     }
 
-    /*
     // TODO: Monitor the file 'batterystate.txt' in the agent's folder and sends battery update when this file is changed.
-    if (require('fs').existsSync('batterystate.txt')) {
+    /*
+    if (require('fs').existsSync(process.cwd() + 'batterystate.txt')) {
         // Setup manual battery monitoring
-        require('MeshAgent')._batteryFileWatcher = require('fs').watch('.', function (a) {
+        sendConsoleText('Manual Battery State Monitor');
+        require('MeshAgent')._batteryFileWatcher = require('fs').watch(process.cwd(), function (a) {
             if (require('MeshAgent')._batteryFileTimer != null) return;
             require('MeshAgent')._batteryFileTimer = setTimeout(function () {
                 sendConsoleText('Battery State Changed');
                 try {
                     require('MeshAgent')._batteryFileTimer = null;
-                    var data = require('fs').readFileSync('batterystate.txt').toString();
+                    var data = require('fs').readFileSync(process.cwd() + 'batterystate.txt').toString();
                     if (data.length < 10) {
                         data = data.split(',');
                         if ((data.length == 2) && ((data[0] == 'ac') || (data[0] == 'dc'))) { require('MeshAgent').SendCommand({ action: 'battery', state: data[0], level: parseInt(data[1]) }); }

@@ -3333,7 +3333,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Make sure that we have rights on both source and destination mesh
                             const targetMeshRights = parent.GetMeshRights(user, command.meshid);
-                            if (((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) || ((targetMeshRights & MESHRIGHT_MANAGECOMPUTERS) == 0)) {
+                            if (((rights & MESHRIGHT_EDITMESH) == 0) || ((targetMeshRights & MESHRIGHT_EDITMESH) == 0)) {
                                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: 'Permission denied' })); } catch (ex) { } }
                                 return;
                             }
@@ -3385,7 +3385,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
                             // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+                            if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
 
                             // Delete this node including network interface information, events and timeline
                             db.Remove(node._id);                            // Remove node with that id
