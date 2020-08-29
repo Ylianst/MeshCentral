@@ -4375,13 +4375,13 @@
 
             // Display the "Uninstall Agent" option if allowed and we selected connected devices.
             for (var i in nodeids) {
-                var node = getNodeFromId(nodeids[i]);
-                var rights = GetNodeRights(node);
-                if (((node.conn & 1) != 0) && ((rights & 32768) != 0)) { addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; break; }
+                var node = getNodeFromId(nodeids[i]), rights = GetNodeRights(node), added = 0;
+                if ((rights & 1) && ((added & 2) == 0)) { added += 2; addedOptions += '<option value=102>' + "Move to device group" + '</option>'; }
+                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added += 1; addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=106>' + "Run commands" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option><option value=102>' + "Move to device group" + '</option>' + '</option><option value=107>' + "Edit tags" + '</option><option value=108>' + "Device notification" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=106>' + "Run commands" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option>' + '</option><option value=107>' + "Edit tags" + '</option><option value=108>' + "Device notification" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -5689,9 +5689,11 @@
 
                 // Show bottom buttons
                 x = '<div class="p10html3right">';
-                if ((meshrights & 4) != 0) {
+                if ((meshrights & 1) != 0) { // MESHRIGHT_EDITMESH
                     // TODO: Show change group only if there is another mesh of the same type.
                     x += '&nbsp;<a href=# onclick=p10showChangeGroupDialog(["' + node._id + '"]) title="' + "Move this device to a different device group" + '">' + "Change Group" + '</a>';
+                }
+                if ((meshrights & 0x8000) != 0) { // MESHRIGHT_UNINSTALL
                     x += '&nbsp;<a href=# onclick=p10showDeleteNodeDialog("' + node._id + '") title="' + "Remove this device" + '">' + "Delete Device" + '</a>';
                 }
                 x += '</div><div class="p10html3left">';
@@ -9689,7 +9691,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20settingslock>' + "Lock Account Settings" + '</label><br>';
             x += '</div>';
 

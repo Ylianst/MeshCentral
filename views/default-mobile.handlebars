@@ -2630,7 +2630,7 @@
 
                 // Show bottom buttons
                 x = '<div style=float:right;font-size:x-small;margin-right:10px>';
-                if ((meshrights & 4) != 0) x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>' + "Delete Device" + '</a>';
+                if ((meshrights & 0x8000) != 0) { x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>' + "Delete Device" + '</a>'; }
                 x += '</div><div style=font-size:x-small>';
                 //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
                 //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
