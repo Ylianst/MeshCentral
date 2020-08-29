@@ -251,34 +251,50 @@ function createMeshCore(agent) {
         return (svc);
     }
 
-    if (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered())
-    {
-        require('MeshAgent')._battLevelChanged = function _battLevelChanged(val)
-        {
-            _battLevelChanged.self._currentBatteryLevel = val;
-            _battLevelChanged.self.SendCommand({ action: 'battery', state: _battLevelChanged.self._currentPowerState, level: val });
-        };
-        require('MeshAgent')._battLevelChanged.self = require('MeshAgent');
-        require('MeshAgent')._powerChanged = function _powerChanged(val)
-        {
-            _powerChanged.self._currentPowerState = (val == 'AC' ? 'ac' : 'dc');
-            _powerChanged.self.SendCommand({ action: 'battery', state: (val == 'AC' ? 'ac' : 'dc'), level: _powerChanged.self._currentBatteryLevel });
-        };
-        require('MeshAgent')._powerChanged.self = require('MeshAgent');
-        require('MeshAgent').on('Connected', function (status)
-        {
-            if (status == 0)
-            {
-                require('power-monitor').removeListener('acdc', this._powerChanged);
-                require('power-monitor').removeListener('batteryLevel', this._battLevelChanged);
-            }
-            else
-            {
-                require('power-monitor').on('acdc', this._powerChanged);
-                require('power-monitor').on('batteryLevel', this._battLevelChanged);
-            }
+    /*
+    // TODO: Monitor the file 'batterystate.txt' in the agent's folder and sends battery update when this file is changed.
+    if (require('fs').existsSync('batterystate.txt')) {
+        // Setup manual battery monitoring
+        require('MeshAgent')._batteryFileWatcher = require('fs').watch('.', function (a) {
+            if (require('MeshAgent')._batteryFileTimer != null) return;
+            require('MeshAgent')._batteryFileTimer = setTimeout(function () {
+                sendConsoleText('Battery State Changed');
+                try {
+                    require('MeshAgent')._batteryFileTimer = null;
+                    var data = require('fs').readFileSync('batterystate.txt').toString();
+                    if (data.length < 10) {
+                        data = data.split(',');
+                        if ((data.length == 2) && ((data[0] == 'ac') || (data[0] == 'dc'))) { require('MeshAgent').SendCommand({ action: 'battery', state: data[0], level: parseInt(data[1]) }); }
+                    }
+                } catch (ex) { }
+            }, 1000);
         });
-    }
+    } else {
+    */
+        // Setup normal battery monitoring
+        if (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered()) {
+            require('MeshAgent')._battLevelChanged = function _battLevelChanged(val) {
+                _battLevelChanged.self._currentBatteryLevel = val;
+                _battLevelChanged.self.SendCommand({ action: 'battery', state: _battLevelChanged.self._currentPowerState, level: val });
+            };
+            require('MeshAgent')._battLevelChanged.self = require('MeshAgent');
+            require('MeshAgent')._powerChanged = function _powerChanged(val) {
+                _powerChanged.self._currentPowerState = (val == 'AC' ? 'ac' : 'dc');
+                _powerChanged.self.SendCommand({ action: 'battery', state: (val == 'AC' ? 'ac' : 'dc'), level: _powerChanged.self._currentBatteryLevel });
+            };
+            require('MeshAgent')._powerChanged.self = require('MeshAgent');
+            require('MeshAgent').on('Connected', function (status) {
+                if (status == 0) {
+                    require('power-monitor').removeListener('acdc', this._powerChanged);
+                    require('power-monitor').removeListener('batteryLevel', this._battLevelChanged);
+                }
+                else {
+                    require('power-monitor').on('acdc', this._powerChanged);
+                    require('power-monitor').on('batteryLevel', this._battLevelChanged);
+                }
+            });
+        }
+    //}
 
 
     /*
@@ -1325,12 +1341,12 @@ function createMeshCore(agent) {
                     try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (e) { }
                     try { if (stats) { this.httprequest.downloadFile = fs.createReadStream(this.httprequest.xoptions.file, { flags: 'rbN' }); } } catch (e) { }
                     if (this.httprequest.downloadFile) {
-                        sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
+                        //sendConsoleText('BasicFileTransfer, ok, ' + this.httprequest.xoptions.file + ', ' + JSON.stringify(stats));
                         this.write(JSON.stringify({ op: 'ok', size: stats.size }));
                         this.httprequest.downloadFile.pipe(this);
                         this.httprequest.downloadFile.end = function () { }
                     } else {
-                        sendConsoleText('BasicFileTransfer, cancel, ' + this.httprequest.xoptions.file);
+                        //sendConsoleText('BasicFileTransfer, cancel, ' + this.httprequest.xoptions.file);
                         this.write(JSON.stringify({ op: 'cancel' }));
                     }
                 }
@@ -3506,7 +3522,7 @@ function createMeshCore(agent) {
     // Send a mesh agent console command
     function sendConsoleText(text, sessionid) {
         if (typeof text == 'object') { text = JSON.stringify(text); }
-        mesh.SendCommand({ action: 'msg', type: 'console', value: text, sessionid: sessionid });
+        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: text, sessionid: sessionid });
     }
 
     // Called before the process exits
