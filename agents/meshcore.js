@@ -251,27 +251,27 @@ function createMeshCore(agent) {
         return (svc);
     }
 
-    // TODO: Monitor the file 'batterystate.txt' in the agent's folder and sends battery update when this file is changed.
-    /*
-    if (require('fs').existsSync(process.cwd() + 'batterystate.txt')) {
+    // Monitor the file 'batterystate.txt' in the agent's folder and sends battery update when this file is changed.
+    if ((require('fs').existsSync(process.cwd() + 'batterystate.txt')) && (require('fs').watch != null)) {
         // Setup manual battery monitoring
-        sendConsoleText('Manual Battery State Monitor');
-        require('MeshAgent')._batteryFileWatcher = require('fs').watch(process.cwd(), function (a) {
+        require('MeshAgent')._batteryFileWatcher = require('fs').watch(process.cwd(), function () {
             if (require('MeshAgent')._batteryFileTimer != null) return;
             require('MeshAgent')._batteryFileTimer = setTimeout(function () {
-                sendConsoleText('Battery State Changed');
                 try {
                     require('MeshAgent')._batteryFileTimer = null;
-                    var data = require('fs').readFileSync(process.cwd() + 'batterystate.txt').toString();
-                    if (data.length < 10) {
+                    var data = null;
+                    try { data = require('fs').readFileSync(process.cwd() + 'batterystate.txt').toString(); } catch (ex) { }
+                    if ((data != null) && (data.length < 10)) {
                         data = data.split(',');
-                        if ((data.length == 2) && ((data[0] == 'ac') || (data[0] == 'dc'))) { require('MeshAgent').SendCommand({ action: 'battery', state: data[0], level: parseInt(data[1]) }); }
+                        if ((data.length == 2) && ((data[0] == 'ac') || (data[0] == 'dc'))) {
+                            var level = parseInt(data[1]);
+                            if ((level >= 0) && (level <= 100)) { require('MeshAgent').SendCommand({ action: 'battery', state: data[0], level: level }); }
+                        }
                     }
                 } catch (ex) { }
             }, 1000);
         });
     } else {
-    */
         // Setup normal battery monitoring
         if (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered()) {
             require('MeshAgent')._battLevelChanged = function _battLevelChanged(val) {
@@ -288,14 +288,13 @@ function createMeshCore(agent) {
                 if (status == 0) {
                     require('power-monitor').removeListener('acdc', this._powerChanged);
                     require('power-monitor').removeListener('batteryLevel', this._battLevelChanged);
-                }
-                else {
+                } else {
                     require('power-monitor').on('acdc', this._powerChanged);
                     require('power-monitor').on('batteryLevel', this._battLevelChanged);
                 }
             });
         }
-    //}
+    }
 
 
     /*
