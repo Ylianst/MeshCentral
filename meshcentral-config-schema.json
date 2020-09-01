@@ -141,6 +141,7 @@
       "items": {
         "type": "object",
         "properties": {
+          "siteStyle": { "type": "integer", "default": 1, "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages." }
           "title": { "type": "string" },
           "title2": { "type": "string" },
           "titlePicture": { "type": "string" },
