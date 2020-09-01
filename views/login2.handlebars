@@ -18,21 +18,10 @@
             background: linear-gradient(to bottom right, #369, #036);
         }
 
-        #flink a:link {
-          color: #c8c8c8;
-        }
-
-        #flink a:visited {
-          color: #c8c8c8;
-        }
-
-        #flink a:hover {
-          color: #c8c8c8;
-        }
-
-        #flink a:active {
-          color: #c8c8c8;
-        }
+        #flink a:link { color: #c8c8c8; }
+        #flink a:visited { color: #c8c8c8; }
+        #flink a:hover { color: #c8c8c8; }
+        #flink a:active { color: #c8c8c8; }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide login">
@@ -140,15 +129,15 @@
                         <div>
                             <b>Account Reset</b>
                         </div>
-                        <table>
+                        <table style="width:100%;margin-top:4px;margin-bottom:4px">
                             <tr>
-                                <td align=right width=100>Email:</td>
-                                <td><input id=remail type=text inputmode="email" name=email maxlength=256 onchange=validateReset() onkeyup=validateReset(event) /></td>
+                                <td>
+                                    <input id=remail title="Email" style="width:250px;border:0;border-radius:8px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Email" type=text maxlength=256 name=email onchange=validateReset() onkeyup=validateReset(event) />
+                                </td>
                             </tr>
                             <tr>
-                                <td colspan=2>
-                                    <div style=float:right><input id=eresetButton type=submit value="Reset Account" disabled="disabled" /></div>
-                                    <div id=passWarning style="padding-top:6px"></div>
+                                <td>
+                                    <input id=eresetButton style="width:250px;border:0;border-radius:4px;padding:6px" type=submit value="Reset Account" disabled="disabled" />
                                 </td>
                             </tr>
                         </table>

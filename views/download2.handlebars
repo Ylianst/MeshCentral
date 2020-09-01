@@ -9,38 +9,52 @@
     <link type=text/css href="/styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <title>{{{title1}}} - Download</title>
+        <style>
+        body {
+            background-color: cadetblue;
+            background: linear-gradient(to bottom right, #369, #036);
+            height:100%;
+            overflow:hidden;
+        }
+
+        a:link { color: #c8c8c8; }
+        a:visited { color: #c8c8c8; }
+        a:hover { color: #c8c8c8; }
+        a:active { color: #c8c8c8; }
+    </style>
 </head>
 <body>
-    <div id=container style=max-height:100vh>
-        <div id=mastheadx></div>
-        <div id=masthead style="background:url(logo.png) 0px 0px;background-color:#036;background-repeat:no-repeat;height:66px;width:100%;overflow:hidden">
-            <div style="float:left;text-shadow: 1px 1px 2px #000">{{{titlehtml}}}</div>
-            <div style=float:left;height:66px;color:#c8c8c8;padding-left:14px;padding-top:7px>
-                <strong><font style="font-size:46px;font-family:Arial,Helvetica,sans-serif;text-shadow: 1px 1px 2px #000">{{{title1}}}</font></strong>
-            </div>
-            <div style=float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:14px>
-                <strong><font style="font-size:14px;font-family:Arial,Helvetica,sans-serif;text-shadow: 1px 1px 2px #000">{{{title2}}}</font></strong>
-            </div>
-        </div>
-        <div id=page_content style=max-height:calc(100vh-138px)>
-            <div id=column_l>
-                <h1>Download</h1>
-                <p id="message" style=margin-left:20px></p>
-                <br />
-            </div>
-            <div id=footer>
-                <table cellpadding=0 cellspacing=10 style=width:100%>
+    <img style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;opacity:0.1" src="../../images/login/back.png" />
+    <table id="centralTable" class="container" style="height:100%;z-index:1">
+        <tr>
+            <td style="width:100%;text-align:center">
+                <div id="message" style="display:none;color:#c8c8c8;font-size:20px"></div>
+                <table id="filetable" style="margin: 0 auto;color:#c8c8c8">
                     <tr>
-                        <td style=text-align:left></td>
-                        <td style=text-align:right>
-                            {{{rootCertLink}}}
-                            &nbsp;<a href=terms>Terms &amp; Privacy</a>
+                        <td>
+                            <a id=fileimagelink>
+                                <img id=fileimage src="../../images/login/file48.png" title="File" loading="lazy" width="48" height="48" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF;margin-right:8px" />
+                            </a>
+                        </td>
+                        <td style="text-align:left">
+                            <div id="flink" style="font-size:22px">
+                                <a id="filelink"></a>
+                            </div>
+                            <div id="filesize" style="font-size:16px"></div>
                         </td>
                     </tr>
                 </table>
-            </div>
-        </div>
-    </div>
+            </td>
+        </tr>
+        <tr style="height:20px">
+            <td>
+                <div>
+                    <div id="flink" style="margin-left:4px">{{{footer}}}</div>
+                    <div id="flink" style="float:right;margin-right:4px">{{{rootCertLink}}}&nbsp;<a href=../../terms>Terms &amp; Privacy</a></div>
+                </div>
+            </td>
+        </tr>
+    </table>
     <script>
         var messageid = parseInt('{{{messageid}}}');
         var fileurl = '{{{fileurl}}}';
@@ -58,9 +72,14 @@
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
 
+        QV('filetable', messageid == 1);
+        QV('message', messageid == 2);
+
         if (messageid == 1) {
-            var lenstr = (filesize == 1)?format("1 byte"):format("{0} bytes", filesize);
-            QH('message', '<a href="' + fileurl + '">' + EscapeHtml(filename) + '</a>, ' + lenstr);
+            QH('filelink', EscapeHtml(filename));
+            Q('filelink').href = fileurl;
+            Q('fileimagelink').href = fileurl;
+            if (filesize == 1) { QH('filesize', format("1 byte")); } else { QH('filesize', format("{0} bytes", filesize)); }
         } else if (messageid == 2) {
             QH('message', "Invalid file link");
         }
