@@ -464,8 +464,6 @@
     <Content Include="public\images\meshicon50.png" />
     <Content Include="public\images\trash.png" />
     <Content Include="public\mstsc\css\signin.css" />
-    <Content Include="public\mstsc\index.html" />
-    <Content Include="public\mstsc\keymap.html" />
     <Content Include="public\mstsc\LICENSE" />
     <Content Include="public\novnc\app\images\alt.svg" />
     <Content Include="public\novnc\app\images\clipboard.svg" />
