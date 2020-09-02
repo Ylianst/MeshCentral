@@ -4366,7 +4366,7 @@
         }
 
         function groupActionFunction() {
-            var addedOptions = '', nodeids = getCheckedDevices();
+            var addedOptions = '', nodeids = getCheckedDevices(), added = 0;
 
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
@@ -4375,9 +4375,9 @@
 
             // Display the "Uninstall Agent" option if allowed and we selected connected devices.
             for (var i in nodeids) {
-                var node = getNodeFromId(nodeids[i]), rights = GetNodeRights(node), added = 0;
-                if ((rights & 1) && ((added & 2) == 0)) { added += 2; addedOptions += '<option value=102>' + "Move to device group" + '</option>'; }
-                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added += 1; addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; }
+                var node = getNodeFromId(nodeids[i]), rights = GetNodeRights(node);
+                if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions += '<option value=102>' + "Move to device group" + '</option>'; }
+                if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
