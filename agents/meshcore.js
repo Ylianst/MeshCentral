@@ -2197,7 +2197,7 @@ function createMeshCore(agent) {
                         });
                         this.zip = require('zip-writer').write({ files: p, basePath: cmd.path });
                         this.zip.xws = this;
-                        this.zip.on('progress', require('events').moderated(function (name, p) { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zippingFile', file: ((process.platform == 'win32') ? (name.split('/').join('\\')) : name), progress: p }))); }, 2000));
+                        this.zip.on('progress', require('events').moderated(function (name, p) { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zippingFile', file: ((process.platform == 'win32') ? (name.split('/').join('\\')) : name), progress: p }))); }, 1000));
                         this.zip.pipe(out);
                         break;
                     case 'cancel':
