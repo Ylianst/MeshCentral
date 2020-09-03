@@ -5,7 +5,7 @@
 服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。
 ~<area-msg>
 ~
-讯息：[[[MSG]]]
+消息：[[[MSG]]]
 ~
 ~</area-msg>
 ~<area-windows>

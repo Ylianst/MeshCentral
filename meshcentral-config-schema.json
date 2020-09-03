@@ -141,10 +141,11 @@
       "items": {
         "type": "object",
         "properties": {
-          "siteStyle": { "type": "integer", "default": 1, "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages." }
-          "title": { "type": "string" },
-          "title2": { "type": "string" },
-          "titlePicture": { "type": "string" },
+          "siteStyle": { "type": "integer", "default": 1, "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages." },
+          "title": { "type": "string", "default": "MeshCentral", "description": "The title of this web site. All web pages will have this title." },
+          "title2": { "type": "string", "default": null, "description": "Secondary title text that is placed on the upper right on the title on many web pages." },
+          "titlePicture": { "type": "string", "default": null, "description": "Web site .png logo file that is 450x66 in size placed in meshcentral-data that is used on the top of many pages." },
+          "loginPicture": { "type": "string", "default": null, "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2." },
           "userQuota": { "type": "integer" },
           "meshQuota": { "type": "integer" },
           "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
@@ -154,7 +155,7 @@
           "newAccountEmailDomains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "newAccountsRights": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "welcomeText": { "type": "string", "description": "Text that will be shown on the login screen." },
-          "welcomePicture": { "type": "string", "description": "Name of the JPG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the name here." },
+          "welcomePicture": { "type": "string", "description": "Name of the PNG or JPEG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the file name here." },
           "hide": { "type": "integer" },
           "footer": { "type": "string" },
           "certUrl": { "type": "string", "format": "uri", "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral." },

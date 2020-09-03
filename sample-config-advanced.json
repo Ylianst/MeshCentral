@@ -118,6 +118,7 @@
       "title": "MyServer",
       "title2": "Servername",
       "_titlePicture": "title-sample.png",
+      "_loginPicture": "title-sample.png",
       "_userQuota": 1048576,
       "_meshQuota": 248576,
       "minify": true,

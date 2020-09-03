@@ -25,11 +25,13 @@
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" class="arg_hide login">
-    <img style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;opacity:0.1" src="images/login/back.png" />
+    <img style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;opacity:0.1" src="welcome.png" />
     <table id="centralTable" class="container" style="height:100%;z-index:1">
         <tr>
             <td id="logincell">
-                <div style="font-size:46px;font-family:Arial,Helvetica,sans-serif;font-weight:bold;padding-bottom:10px;color:#c8c8c8;text-shadow: 2px 2px 2px #000;">{{{title1}}}</div>
+                {{{titlehtml}}}
+                <img id="loginPicture" />
+                <div style="font-size:46px;font-family:Arial,Helvetica,sans-serif;font-weight:bold;padding-bottom:10px;color:#c8c8c8;text-shadow: 2px 2px 2px #000;">{{{title1}}}<sup style="font-size:20px"> {{{title2}}}</sup></div>
                 <div id=loginpanel style="display:none;box-shadow:1px 1px 4px #000">
                     <form method=post>
                         <input type=hidden name=action value=login />
@@ -37,22 +39,22 @@
                         <table style="width:100%">
                             <tr>
                                 <td>
-                                    <input id=username title="Username" style="width:250px;border:0;border-radius:8px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
+                                    <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <input id=password title="Password" style="width:250px;border:0;border-radius:8px;padding:8px;background-color:#FFF8CC" autocomplete="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
+                                    <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <div id=showPassHintLink title="Password Hint" style="width:250px;border:0;border-radius:8px;padding:8px;background-color:#FFF8CC;display:none"><a onclick="return showPassHint(event);" href="#" style="cursor:pointer">Show Hint</a></div>
+                                    <div id=showPassHintLink title="Password Hint" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC;display:none"><a onclick="return showPassHint(event);" href="#" style="cursor:pointer">Show Hint</a></div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <input id=loginButton style="width:250px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                    <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
                                 </td>
                             </tr>
                         </table>
@@ -132,12 +134,12 @@
                         <table style="width:100%;margin-top:4px;margin-bottom:4px">
                             <tr>
                                 <td>
-                                    <input id=remail title="Email" style="width:250px;border:0;border-radius:8px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Email" type=text maxlength=256 name=email onchange=validateReset() onkeyup=validateReset(event) />
+                                    <input id=remail title="Email" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" autocomplete="username" placeholder="Email" type=text maxlength=256 name=email onchange=validateReset() onkeyup=validateReset(event) />
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <input id=eresetButton style="width:250px;border:0;border-radius:4px;padding:6px" type=submit value="Reset Account" disabled="disabled" />
+                                    <input id=eresetButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Reset Account" disabled="disabled" />
                                 </td>
                             </tr>
                         </table>
@@ -153,14 +155,14 @@
                         <table style="width:100%">
                             <tr>
                                 <td>
-                                    <input id=tokenInput autocomplete="one-time-code" title="Token" style="width:250px;border:0;border-radius:8px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
+                                    <input id=tokenInput autocomplete="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=checkToken(event) onpaste=resetCheckToken(event) onkeyup=checkToken(event) onkeydown=checkToken(event) /><br />
                                     <input id=hwtokenInput type=text name=hwtoken style="display:none" />
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div>
-                                        <input id=tokenOkButton style="width:250px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                        <input id=tokenOkButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
                                     </div>
                                 </td>
                             </tr>
@@ -265,8 +267,8 @@
         <tr style="height:20px">
             <td>
                 <div>
-                    <div id="flink" style="margin-left:4px">{{{footer}}}</div>
                     <div id="flink" style="float:right;margin-right:4px">{{{rootCertLink}}}&nbsp;<a href=terms>Terms &amp; Privacy</a></div>
+                    <div id="flink" style="margin-left:4px">{{{footer}}}</div>
                 </div>
             </td>
         </tr>
@@ -311,6 +313,8 @@
         var authStrategies = '{{{authStrategies}}}'.split(',');
 
         function startup() {
+            if (decodeURIComponent('{{{loginpicture}}}') == 'true') { Q('loginPicture').src = "loginlogo.png"; }
+
             // Display the right server message
             var i;
             var messageid = parseInt('{{{messageid}}}');

@@ -2459,7 +2459,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
         // Render the login page
-        render(req, res, getRenderPage((domain.sitestyle == 2)?'login2':'login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, customui: customui, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(',') }, req, domain));
+        render(req, res, getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, customui: customui, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(','), loginpicture: (typeof domain.loginpicture == 'string') }, req, domain));
     }
 
     // Handle a post request on the root
@@ -2822,7 +2822,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain.titlepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.titlepicture] != null)) {
                 // Use the logo in the database
-                res.set({ 'Content-Type': 'image/jpeg' });
+                res.set({ 'Content-Type': domain.titlepicture.toLowerCase().endsWith('.png')?'image/png':'image/jpeg' });
                 res.send(parent.configurationFiles[domain.titlepicture]);
                 return;
             } else {
@@ -2840,6 +2840,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else {
             // Use the default logo picture
             try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
+        }
+    }
+
+    // Handle login logo request
+    function handleLoginLogoRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+
+        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        if (domain.loginpicture) {
+            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.loginpicture] != null)) {
+                // Use the logo in the database
+                res.set({ 'Content-Type': domain.loginpicture.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
+                res.send(parent.configurationFiles[domain.loginpicture]);
+                return;
+            } else {
+                // Use the logo on file
+                try { res.sendFile(obj.path.join(obj.parent.datapath, domain.loginpicture)); return; } catch (ex) { res.sendStatus(404); }
+            }
         }
     }
 
@@ -2916,7 +2935,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain.welcomepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.welcomepicture] != null)) {
                 // Use the welcome image in the database
-                res.set({ 'Content-Type': 'image/jpeg' });
+                res.set({ 'Content-Type': domain.welcomepicture.toLowerCase().endsWith('.png')?'image/png':'image/jpeg' });
                 res.send(parent.configurationFiles[domain.welcomepicture]);
                 return;
             }
@@ -2925,29 +2944,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             try { res.sendFile(obj.path.join(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
         }
 
+        var imagefile = 'images/mainwelcome.jpg';
+        if (domain.sitestyle == 2) { imagefile = 'images/login/back.png'; }
         if (domain.webpublicpath != null) {
-            obj.fs.exists(obj.path.join(domain.webpublicpath, 'images/mainwelcome.jpg'), function (exists) {
+            obj.fs.exists(obj.path.join(domain.webpublicpath, imagefile), function (exists) {
                 if (exists) {
                     // Use the domain logo picture
-                    try { res.sendFile(obj.path.join(domain.webpublicpath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+                    try { res.sendFile(obj.path.join(domain.webpublicpath, imagefile)); } catch (ex) { res.sendStatus(404); }
                 } else {
                     // Use the default logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
                 }
             });
         } else if (parent.webPublicOverridePath) {
-            obj.fs.exists(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg'), function (exists) {
+            obj.fs.exists(obj.path.join(obj.parent.webPublicOverridePath, imagefile), function (exists) {
                 if (exists) {
                     // Use the override logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, imagefile)); } catch (ex) { res.sendStatus(404); }
                 } else {
                     // Use the default logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
                 }
             });
         } else {
             // Use the default logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/mainwelcome.jpg')); } catch (ex) { res.sendStatus(404); }
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
         }
     }
 
@@ -4707,8 +4728,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
             obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
             obj.app.get(url + 'logo.png', handleLogoRequest);
+            obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
             obj.app.post(url + 'translations', handleTranslationsRequest);
             obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
+            obj.app.get(url + 'welcome.png', handleWelcomeImageRequest);
             obj.app.get(url + 'recordings.ashx', handleGetRecordings);
             obj.app.get(url + 'player.htm', handlePlayerRequest);
             obj.app.get(url + 'player', handlePlayerRequest);
