@@ -31486,7 +31486,7 @@
         "download2.handlebars->centralTable->1->2->1->1->flink->1",
         "login-mobile.handlebars->container->footer->1->1->0->3->1",
         "login.handlebars->container->footer->3->termsLinkFooter",
-        "login2.handlebars->centralTable->1->2->1->1->flink->1",
+        "login2.handlebars->centralTable->1->4->1->1->flink->1",
         "message.handlebars->container->page_content->footer->1->1->0->3->1"
       ]
     },
