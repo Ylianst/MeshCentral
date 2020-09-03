@@ -440,7 +440,7 @@ function startEx(argv) {
 function totext(source, target, lang) {
     // Load the source language file
     var sourceLangFileData = null;
-    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
+    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { console.log(ex); }
     if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { log("Invalid source language file."); process.exit(); return; }
 
     log('Writing ' + lang + '...');
@@ -485,7 +485,7 @@ function totext(source, target, lang) {
 function fromtext(source, target, lang) {
     // Load the source language file
     var sourceLangFileData = null;
-    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
+    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { console.log(ex); }
     if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { log("Invalid source language file."); process.exit(); return; }
 
     log('Updating ' + lang + '...');
@@ -514,12 +514,12 @@ function fromtext(source, target, lang) {
 function merge(source, target, lang) {
     // Load the source language file
     var sourceLangFileData = null;
-    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { }
+    try { sourceLangFileData = JSON.parse(fs.readFileSync(source)); } catch (ex) { console.log(ex); }
     if ((sourceLangFileData == null) || (sourceLangFileData.strings == null)) { log("Invalid source language file."); process.exit(); return; }
 
     // Load the target language file
     var targetLangFileData = null;
-    try { targetLangFileData = JSON.parse(fs.readFileSync(target)); } catch (ex) { }
+    try { targetLangFileData = JSON.parse(fs.readFileSync(target)); } catch (ex) { console.log(ex); }
     if ((targetLangFileData == null) || (targetLangFileData.strings == null)) { log("Invalid target language file."); process.exit(); return; }
 
     log('Merging ' + lang + '...');
