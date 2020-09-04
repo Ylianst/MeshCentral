@@ -68,7 +68,7 @@
         "userBlockedIP": { "type": [ "string", "array" ] },
         "agentAllowedIP": { "type": [ "string", "array" ] },
         "agentBlockedIP": { "type": [ "string", "array" ] },
-        "authLog": { "type": "string" },
+        "authLog": { "type": "string", "default": null, "description": "File path and name of the authentication log to be created. This log can be parsed by Fail2ban." },
         "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
         "manageCrossDomain": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
         "localDiscovery": {
@@ -175,6 +175,13 @@
               "banCommonPasswords": { "type": "boolean", "description": "Uses WildLeek to block use of the 10000 most commonly used passwords." }
             }
           },
+          "auth": { "type": "string", "default": null, "enum": [null, "sspi", "ldap"], "description": "Type of user authentication to use, this can be SSPI on Windows or LDAP. If not set, username/password is used." },
+          "ldapUserKey": { "type": "string" },
+          "ldapUserName": { "type": "string" },
+          "ldapUserEmail": { "type": "string" },
+          "ldapUserRealName": { "type": "string" },
+          "ldapUserPhoneNumber": { "type": "string" },
+          "ldapOptions": { "type": "object", "description": "LDAP options passed to ldapauth-fork" },
           "agentInviteCodes": { "type": "boolean", "default": false, "description": "Enabled a feature where you can set one or more invitation codes in a device group. You can then give a invitation link to users who can use it to download the agent." },
           "agentNoProxy": { "type": "boolean", "default": false, "description": "When enabled, all newly installed MeshAgents will be instructed to no use a HTTP/HTTPS proxy even if one is configured on the remote system" },
           "geoLocation": { "type": "boolean", "default": false, "description": "Enables the geo-location feature and device location map in the user interface, this feature is not being worked on." },
