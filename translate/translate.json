@@ -6643,6 +6643,7 @@
     },
     {
       "en": "Chinese (Traditional)",
+      "nl": "Chinese (Traditioneel)",
       "tr": "Çin geleneği)",
       "zh-chs": "繁体中文",
       "zh-cht": "繁體中文",
@@ -6651,7 +6652,7 @@
       ]
     },
     {
-      "en": "Chinese (Traditioneel)",
+
       "tr": "Çince (Traditioneel)",
       "zh-chs": "中国传统的",
       "zh-cht": "中國傳統的）"
@@ -13411,6 +13412,7 @@
     },
     {
       "en": "File",
+      "nl": "Bestand",
       "xloc": [
         "download2.handlebars->centralTable->1->0->1->filetable->1->0->1->fileimagelink"
       ]
@@ -17088,6 +17090,7 @@
     },
     {
       "en": "Invalid file link",
+      "nl": "Ongeldige bestandslink",
       "xloc": [
         "download.handlebars->3->3",
         "download2.handlebars->5->3"
@@ -32475,6 +32478,7 @@
     },
     {
       "en": "Token",
+      "nl": "Token",
       "xloc": [
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1"
@@ -33067,6 +33071,7 @@
     },
     {
       "en": "Uninstall Agent / Delete Device",
+      "nl": "Verwijder Agent / Verwijder apparaat",
       "xloc": [
         "default.handlebars->27->1426"
       ]
@@ -36999,6 +37004,7 @@
     },
     {
       "en": "loginlogo.png",
+      "nl": "loginlogo.png",
       "xloc": [
         "login2.handlebars->7->1"
       ]
