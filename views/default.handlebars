@@ -4464,7 +4464,7 @@
         function d2groupActionFunctionNotifyExec() {
             var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices();
             if (msg.length == 0) return;
-            if (title == '') { title = '{{{title}}}'; }
+            if (title == '') { title = decodeURIComponent('{{{extitle}}}'); }
             if (op == 1) { // MessageBox
                 for (var i = 0; i < chkNodeIds.length; i++) { meshserver.send({ action: 'msg', type: 'messagebox', nodeid: chkNodeIds[i], title: title, msg: msg }); }
             } else if (op == 2) { // Toast
@@ -5985,7 +5985,7 @@
         }
 
         function deviceMessageFunctionEx() {
-            meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: '{{{title}}}', msg: Q('d2devMessage').value });
+            meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devMessage').value });
         }
 
         function deskClipboardInFunction() {
@@ -6004,7 +6004,7 @@
         }
 
         function deviceToastFunctionEx() {
-            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: '{{{title}}}', msg: Q('d2devToast').value });
+            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devToast').value });
         }
 
         function showShareDevice() {
@@ -12487,16 +12487,16 @@
                     var node = getNodeFromId(n.nodeid);
                     if (node) {
                         if (notifySettings & 16) { // Notify with group name
-                            notification = new Notification('{{{title}}} - ' + meshes[node.meshid].name + ' - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
+                            notification = new Notification(decodeURIComponent('{{{extitle}}}') + ' - ' + meshes[node.meshid].name + ' - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
                         } else {
-                            notification = new Notification('{{{title}}} - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
+                            notification = new Notification(decodeURIComponent('{{{extitle}}}') + ' - ' + node.name, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + node.icon + '.png' });
                         }
                     }
                 } else {
                     if (n.icon == null) { n.icon = 0; }
                     var title = n.title;
                     if (title == null) { title = ''; } else { title = ' - ' + n.title; }
-                    notification = new Notification('{{{title}}}' + title, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + n.icon + '.png' });
+                    notification = new Notification(decodeURIComponent('{{{extitle}}}') + title, { tag: n.tag, body: text, icon: '/images/notify/icons128-' + n.icon + '.png' });
                 }
                 notification.id = n.id;
                 notification.xtag = n.tag;

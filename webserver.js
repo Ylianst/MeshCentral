@@ -5997,7 +5997,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             xargs.title1 = domain.title1 ? domain.title1 : '';
             xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
         }
-        xargs.extitle = encodeURIComponent(xargs.title);
+        xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
         xargs.domainurl = domain.url;
         if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
         return xargs;
