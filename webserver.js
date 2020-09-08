@@ -2459,7 +2459,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
         // Render the login page
-        render(req, res, getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, customui: customui, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(','), loginpicture: (typeof domain.loginpicture == 'string') }, req, domain));
+        render(req, res, getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain), getRenderArgs({ loginmode: loginmode, rootCertLink: getRootCertLink(), newAccount: newAccountsAllowed, newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), serverDnsName: obj.getWebServerName(domain), serverPublicPort: httpsPort, emailcheck: emailcheck, features: features, sessiontime: args.sessiontime, passRequirements: passRequirements, customui: customui, footer: (domain.footer == null) ? '' : domain.footer, hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'), messageid: msgid, passhint: passhint, welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null, hwstate: hwstate, otpemail: otpemail, otpsms: otpsms, twoFactorCookieDays: twoFactorCookieDays, authStrategies: authStrategies.join(','), loginpicture: (typeof domain.loginpicture == 'string') }, req, domain, (domain.sitestyle == 2) ? 'login2' : 'login'));
     }
 
     // Handle a post request on the root
@@ -5978,13 +5978,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     // Return the correct render page arguments.
-    function getRenderArgs(xargs, req, domain) {
+    function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
         if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
         xargs.min = minify ? '-min' : '';
         xargs.titlehtml = domain.titlehtml;
         xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
-        if ((domain.titlepicture == null) && (domain.titlehtml == null)) {
+        if (
+            ((page == 'login2') && (domain.loginpicture == null) && (domain.titlehtml == null)) ||
+            ((page != 'login2') && (domain.titlepicture == null) && (domain.titlehtml == null))
+        ) {
             if (domain.title == null) {
                 xargs.title1 = 'MeshCentral';
                 xargs.title2 = '';
