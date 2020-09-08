@@ -3624,7 +3624,7 @@
                 }
 
                 // Add a "Add Device Group" option
-                r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:10px>';
+                r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:small>';
                 if ((view < 3) && (sort == 0) && (Object.keys(meshes).length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
                     r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
@@ -3904,22 +3904,22 @@
             if ((meshrights & 4) == 0) return '';
             var r = '';
             if ((features & 1024) == 0) { // If CIRA is allowed
-                r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '" onclick=\'return addCiraDeviceToMesh("' + mesh._id + '")\'>' + "Add CIRA" + '</a>';
+                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '" onclick=\'return addCiraDeviceToMesh("' + mesh._id + '")\'>' + "Add CIRA" + '</a>';
             }
             if (mesh.mtype == 1) {
                 if ((features & 1) == 0) { // If not WAN-Only
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
                 }
                 if (mesh.amt && (mesh.amt.type == 2)) { // CCM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Perform Intel AMT client control mode (CCM) activation." + '" onclick=\'return showCcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel AMT client control mode (CCM) activation." + '" onclick=\'return showCcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
                 } else if (mesh.amt && (mesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Perform Intel AMT admin control mode (ACM) activation." + '" onclick=\'return showAcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel AMT admin control mode (ACM) activation." + '" onclick=\'return showAcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
                 }
             }
             if (mesh.mtype == 2) {
-                r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
-                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:10px title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
+                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
+                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
             }
             return r;
         }
@@ -9403,7 +9403,7 @@
             x += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
-            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:x-small;text-align:right><span><a href=# onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
+            if (meshrights == 0xFFFFFFFF) { x += '<div style=font-size:small;text-align:right><span><a href=# onclick=p20showDeleteMeshDialog() style=cursor:pointer>' + "Delete Group" + '</a></span></div>'; }
 
             QH('p20info', x);
 
@@ -11527,7 +11527,7 @@
             x += '</tbody></table>';
 
             if ((userinfo.siteadmin & 256) != 0) {
-                x += '<div style=font-size:x-small;text-align:right><span><a href=# onclick=p51showDeleteUserGroupDialog() style=cursor:pointer>' + "Delete User Group" + '</a></span></div>';
+                x += '<div style=font-size:small;text-align:right><span><a href=# onclick=p51showDeleteUserGroupDialog() style=cursor:pointer>' + "Delete User Group" + '</a></span></div>';
             }
 
             QH('p51group2', x);
@@ -11822,9 +11822,9 @@
             var userAdminRights = (((userinfo.siteadmin != null) && (userinfo.siteadmin & 2) && (user.siteadmin != 0xFFFFFFFF)) || (userinfo.siteadmin == 0xFFFFFFFF));
 
             // Show bottom buttons
-            x = '<div style=float:right;font-size:x-small>';
+            x = '<div style=float:right;font-size:small>';
             if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
-            x += '</div><div style=font-size:x-small>';
+            x += '</div><div style=font-size:small>';
             // If user admin rights and not SSPI/LDAP and UserID does not start with ~, show change password
             if (userAdminRights && ((features & 0x00080000) == 0) && (user._id.split('/')[2][0] != '~')) { x += '<a href=# style=cursor:pointer onclick=\'return p30showUserChangePassDialog(' + multiFactor + ')\' title="' + "Change the password for this user" + '">' + "Change Password" + '</a>'; }
             x += '</div><br>'
