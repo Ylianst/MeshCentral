@@ -3583,21 +3583,21 @@
       ]
     },
     {
-      "cs": "Agent + Intel AMT",
-      "de": "Agent + Intel AMT",
-      "en": "Agent + Intel AMT",
+      "cs": "Agent + Intel&reg; AMT",
+      "de": "Agent + Intel&reg; AMT",
+      "en": "Agent + Intel&reg; AMT",
       "es": "Agente + Intel&reg; AMT",
-      "fi": "Agentti + Intel AMT",
-      "fr": "Agent + Intel AMT",
+      "fi": "Agentti + Intel&reg; AMT",
+      "fr": "Agent + Intel&reg; AMT",
       "hi": "एजेंट + इंटेल एएमटी",
-      "ja": "エージェント+ Intel AMT",
+      "ja": "エージェント+ Intel&reg; AMT",
       "ko": "에이전트 + 인텔 AMT",
-      "nl": "Agent + Intel AMT",
-      "pt": "Agente + Intel AMT",
-      "ru": "Агент + Intel AMT",
-      "tr": "Aracı + Intel AMT",
+      "nl": "Agent + Intel&reg; AMT",
+      "pt": "Agente + Intel&reg; AMT",
+      "ru": "Агент + Intel&reg; AMT",
+      "tr": "Aracı + Intel&reg; AMT",
       "zh-chs": "代理+英特尔AMT",
-      "zh-cht": "代理+Intel AMT",
+      "zh-cht": "代理+Intel&reg; AMT",
       "xloc": [
         "default.handlebars->27->1495",
         "default.handlebars->27->1503"
@@ -7288,7 +7288,7 @@
     {
       "cs": "Potvrdit kopírování {0} zaznámů do tohoto umístění?",
       "de": "Bestätigen Sie das Kopieren von {0} Einträgen an diesen Ort?",
-      "en": "Confirm copy of {0} entries's to this location?",
+      "en": "Confirm copy of {0} entries to this location?",
       "es": "¿Confirmar la copia de {1} entradas a esta ubicación?",
       "fi": "Haluatko varmasti kopioida {0} kojdetta tänne?",
       "fr": "Confirmer la copie de {0} entrées à cet emplacement?",
@@ -7302,8 +7302,13 @@
       "zh-chs": "确认{0}个条目的复制到此位置？",
       "zh-cht": "確認{0}個條目的複製到此位置？",
       "xloc": [
-        "default-mobile.handlebars->9->308",
         "default.handlebars->27->877"
+      ]
+    },
+    {
+      "en": "Confirm copy of {0} entries's to this location?",
+      "xloc": [
+        "default-mobile.handlebars->9->308"
       ]
     },
     {
@@ -7326,7 +7331,7 @@
     {
       "cs": "Potvrdit smázání vybraných zařízení?",
       "de": "Bestätigen Sie das Löschen der gewählten Geräte?",
-      "en": "Confirm delete selected devices(s)?",
+      "en": "Confirm delete selected device(s)?",
       "es": "¿Confirmar la eliminación de los dispositivos seleccionados?",
       "fi": "Haluatko varmasti poistaa valitut laitteet?",
       "fr": "Supprimer les appareils sélectionnés ?",
@@ -7345,7 +7350,7 @@
     },
     {
       "de": "Bestätigen Sie das Löschen der gewählten Benutzergruppen?",
-      "en": "Confirm delete selected user groups(s)?",
+      "en": "Confirm delete selected user group(s)?",
       "es": "¿Confirmar la eliminación de grupos de usuarios seleccionados?",
       "fi": "Haluatko varmasti poistaa valitut käyttäjäryhmät?",
       "fr": "Confirmer la suppression des groupes d'utilisateurs sélectionnés?",
@@ -7438,7 +7443,7 @@
     {
       "cs": "Potvrdit přesun {0} záznamů do tohoto umístění?",
       "de": "Bestätigen Sie das Verschieben von {0} Einträgen an diesen Ort?",
-      "en": "Confirm move of {0} entries's to this location?",
+      "en": "Confirm move of {0} entries to this location?",
       "es": "¿Confirmar el movimiento de {1} entradas a esta ubicación?",
       "fi": "Haluatko varmasti siirtää {0} kohdetta tänne?",
       "fr": "Confirmer le déplacement de {0} entrées vers cet emplacement?",
@@ -7452,8 +7457,13 @@
       "zh-chs": "确认将{0}个条目移到此位置？",
       "zh-cht": "確認將{0}個條目移到該位置？",
       "xloc": [
-        "default-mobile.handlebars->9->310",
         "default.handlebars->27->879"
+      ]
+    },
+    {
+      "en": "Confirm move of {0} entries's to this location?",
+      "xloc": [
+        "default-mobile.handlebars->9->310"
       ]
     },
     {
@@ -7796,25 +7806,33 @@
       ]
     },
     {
-      "cs": "Připojit pomocí Intel AMT hardware KVM",
-      "de": "Verbinden per Intel-AMT-Hardware-KVM",
       "en": "Connect using Intel AMT hardware KVM",
+      "xloc": [
+        "desktop.handlebars->p11->deskarea0->deskarea1->3->connectbutton1hspan"
+      ]
+    },
+    {
+      "cs": "Připojit pomocí Intel&reg; AMT hardware KVM",
+      "de": "Verbinden per Intel&reg; AMT-Hardware-KVM",
+      "en": "Connect using Intel&reg; AMT hardware KVM",
       "es": "Conectar usando el hardware Intel&reg; AMT KVM",
       "fi": "Yhdistä käyttäen Intel&reg; AMT laitteisto KVM:ää",
-      "fr": "Se connecter en utilisant le KVM d'Intel AMT",
-      "hi": "Intel AMT हार्डवेयर KVM का उपयोग करके कनेक्ट करें",
-      "ja": "Intel AMTハードウェアKVMを使用して接続する",
-      "ko": "Intel AMT 하드웨어 KVM을 사용하여 연결",
-      "nl": "Maak verbinding met Intel AMT hardware KVM",
-      "pt": "Conectar-se usando o KVM de hardware Intel AMT",
-      "ru": "Подключение с использованием аппаратного обеспечения Intel AMT KVM",
-      "tr": "Intel AMT donanımı KVM'yi kullanarak bağlanın",
-      "zh-chs": "使用Intel AMT硬件KVM连接",
-      "zh-cht": "使用Intel AMT硬件KVM連接",
+      "fr": "Se connecter en utilisant le KVM d'Intel&reg; AMT",
+      "hi": "Intel&reg; AMT हार्डवेयर KVM का उपयोग करके कनेक्ट करें",
+      "ja": "Intel&reg; AMTハードウェアKVMを使用して接続する",
+      "ko": "Intel&reg; AMT 하드웨어 KVM을 사용하여 연결",
+      "nl": "Maak verbinding met Intel&reg; AMT hardware KVM",
+      "pt": "Conectar-se usando o KVM de hardware Intel&reg; AMT",
+      "ru": "Подключение с использованием аппаратного обеспечения Intel&reg; AMT KVM",
+      "tr": "Intel&reg; AMT donanımı KVM'yi kullanarak bağlanın",
+      "zh-chs": "使用Intel&reg; AMT硬件KVM连接",
+      "zh-cht": "使用Intel&reg; AMT硬件KVM連接"
+    },
+    {
+      "en": "Connect using Intel® AMT hardware KVM",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->connectbutton1hspan",
-        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2hspan",
-        "desktop.handlebars->p11->deskarea0->deskarea1->3->connectbutton1hspan"
+        "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->connectbutton2hspan"
       ]
     },
     {
@@ -12854,21 +12872,21 @@
       ]
     },
     {
-      "cs": "Zadejte rozsah IP adres pro vyhledání Intel AMT zařízení.",
-      "de": "Geben Sie einen Bereich von IP-Adressen ein, um nach Intel-AMT-Geräten zu suchen.",
-      "en": "Enter a range of IP addresses to scan for Intel AMT devices.",
+      "cs": "Zadejte rozsah IP adres pro vyhledání Intel&reg; AMT zařízení.",
+      "de": "Geben Sie einen Bereich von IP-Adressen ein, um nach Intel&reg; AMT-Geräten zu suchen.",
+      "en": "Enter a range of IP addresses to scan for Intel&reg; AMT devices.",
       "es": "Ingrese un rango de direcciones IP para buscar dispositivos Intel&reg; AMT.",
       "fi": "Syötä IP-alue, josta etsitään Intel&reg; AMT-laitteita.",
-      "fr": "Saisir une plage d'adresse IP pour détecter les appareils Intel AMT.",
+      "fr": "Saisir une plage d'adresse IP pour détecter les appareils Intel&reg; AMT.",
       "hi": "इंटेल एएमटी उपकरणों के लिए स्कैन करने के लिए आईपी पते की एक श्रृंखला दर्ज करें।",
       "ja": "IPアドレスの範囲を入力して、Intel AMTデバイスをスキャンします。",
-      "ko": "Intel AMT 장치를 검색할 IP 주소 범위를 입력하십시오.",
-      "nl": "Voer een reeks IP-adressen in om te scannen op Intel AMT-apparaten.",
-      "pt": "Digite um intervalo de endereços IP para procurar dispositivos Intel AMT.",
-      "ru": "Введите диапазон IP-адресов для сканирования Intel AMT устройств.",
-      "tr": "Intel AMT cihazlarını taramak için bir IP adresi aralığı girin.",
+      "ko": "Intel&reg; AMT 장치를 검색할 IP 주소 범위를 입력하십시오.",
+      "nl": "Voer een reeks IP-adressen in om te scannen op Intel&reg; AMT-apparaten.",
+      "pt": "Digite um intervalo de endereços IP para procurar dispositivos Intel&reg; AMT.",
+      "ru": "Введите диапазон IP-адресов для сканирования Intel&reg; AMT устройств.",
+      "tr": "Intel&reg; AMT cihazlarını taramak için bir IP adresi aralığı girin.",
       "zh-chs": "输入IP地址范围以扫描英特尔AMT设备。",
-      "zh-cht": "輸入IP地址範圍以掃描Intel AMT裝置。",
+      "zh-cht": "輸入IP地址範圍以掃描Intel&reg; AMT裝置。",
       "xloc": [
         "default.handlebars->27->299"
       ]
@@ -16049,210 +16067,9 @@
       ]
     },
     {
-      "cs": "Intel AMT",
-      "de": "Intel AMT",
       "en": "Intel AMT",
-      "es": "Intel&reg; AMT",
-      "fi": "Intel AMT",
-      "fr": "Intel AMT",
-      "hi": "इंटेल एएमटी",
-      "ja": "Intel AMT",
-      "ko": "인텔 AMT",
-      "nl": "Intel AMT",
-      "pt": "Intel AMT",
-      "ru": "Intel AMT",
-      "tr": "Intel AMT",
-      "zh-chs": "英特尔AMT",
-      "zh-cht": "Intel AMT",
       "xloc": [
-        "default.handlebars->27->1494",
-        "default.handlebars->27->1502",
-        "default.handlebars->27->1945",
-        "default.handlebars->27->1967"
-      ]
-    },
-    {
-      "cs": "Intel AMT CIRA připojeno",
-      "de": "Intel AMT CIRA verbunden",
-      "en": "Intel AMT CIRA connected",
-      "es": "Intel&reg; AMT CIRA conectado",
-      "fi": "Intel AMT CIRA yhdistetty",
-      "fr": "Intel AMT CIRA connecté",
-      "hi": "इंटेल AMT CIRA जुड़ा हुआ है",
-      "ja": "Intel AMT CIRAが接続されました",
-      "ko": "Intel AMT CIRA 연결",
-      "nl": "Intel AMT CIRA verbonden",
-      "pt": "Intel AMT CIRA conectado",
-      "ru": "Подключен Intel AMT CIRA",
-      "tr": "Intel AMT CIRA bağlandı",
-      "zh-chs": "英特尔AMT CIRA已连接",
-      "zh-cht": "Intel AMT CIRA已連接",
-      "xloc": [
-        "default.handlebars->27->162"
-      ]
-    },
-    {
-      "cs": "Intel AMT CIRA odpojeno",
-      "de": "Intel AMT CIRA getrennt",
-      "en": "Intel AMT CIRA disconnected",
-      "es": "Intel&reg; AMT CIRA desconectado",
-      "fi": "Intel AMT CIRA yhteys katkaistu",
-      "fr": "Intel AMT CIRA déconnecté",
-      "hi": "इंटेल AMT CIRA डिस्कनेक्ट हो गया",
-      "ja": "Intel AMT CIRAが切断されました",
-      "ko": "Intel AMT CIRA 연결이 끊어졌습니다",
-      "nl": "Intel AMT CIRA verbroken",
-      "pt": "Intel AMT CIRA desconectado",
-      "ru": "Отключен Intel AMT CIRA",
-      "tr": "Intel AMT CIRA bağlantısı kesildi",
-      "zh-chs": "英特尔AMT CIRA已断开连接",
-      "zh-cht": "Intel AMT CIRA已斷開連接",
-      "xloc": [
-        "default.handlebars->27->166"
-      ]
-    },
-    {
-      "en": "Intel AMT Redirection",
-      "es": "Redirección de Intel&reg; AMT",
-      "fi": "Intel AMT uudelleenohjaus",
-      "fr": "Redirection Intel AMT",
-      "nl": "Intel AMT omleiding",
-      "tr": "Intel AMT Yeniden Yönlendirme",
-      "zh-chs": "英特尔AMT重新导向",
-      "zh-cht": "Intel AMT重定向",
-      "xloc": [
-        "default.handlebars->27->1883"
-      ]
-    },
-    {
-      "en": "Intel AMT WSMAN",
-      "es": "Intel&reg; AMT WSMAN",
-      "fi": "Intel AMT WSMAN",
-      "fr": "WSMAN Intel AMT",
-      "nl": "Intel AMT WSMAN",
-      "tr": "Intel AMT WSMAN",
-      "zh-chs": "英特尔AMT WSMAN",
-      "zh-cht": "Intel AMT WSMAN",
-      "xloc": [
-        "default.handlebars->27->1882"
-      ]
-    },
-    {
-      "cs": "Intel AMT zjištěno",
-      "de": "Intel AMT erkannt",
-      "en": "Intel AMT detected",
-      "es": "Intel&reg; AMT detectado",
-      "fi": "Intel AMT havaittu",
-      "fr": "Intel AMT détecté",
-      "hi": "इंटेल एएमटी का पता चला",
-      "ja": "Intel AMTが検出されました",
-      "ko": "인텔 AMT 감지",
-      "nl": "Intel AMT gedetecteerd",
-      "pt": "Intel AMT detectado",
-      "ru": "Обнаружен Intel AMT",
-      "tr": "Intel AMT algılandı",
-      "zh-chs": "检测到英特尔AMT",
-      "zh-cht": "檢測到Intel AMT",
-      "xloc": [
-        "default.handlebars->27->161"
-      ]
-    },
-    {
-      "cs": "Intel AMT je aktivováno v režimu správce",
-      "de": "Intel AMT ist im Admin Control Mode aktiviert",
-      "en": "Intel AMT is activated in Admin Control Mode",
-      "es": "Intel&reg; AMT esta activado en Admin Control Mode (ACM)",
-      "fi": "Intel AMT on aktivoitu Järjestelmänvalvojan ohjaustilassa",
-      "fr": "Intel AMT est activé en mode administrateur",
-      "hi": "इंटेल एएमटी एडमिन कंट्रोल मोड में सक्रिय है",
-      "ja": "Intel AMTは管理制御モードでアクティブ化されます",
-      "ko": "관리 제어 모드에서 Intel AMT가 활성화 됨",
-      "nl": "Intel AMT wordt geactiveerd in de beheerdersmodus",
-      "pt": "O Intel AMT é ativado no modo de controle de administrador",
-      "ru": "Intel AMT активирован в режиме администратора",
-      "tr": "Intel AMT, Yönetici Kontrol Modunda etkinleştirilir",
-      "zh-chs": "在Intel AMT尔AMT",
-      "zh-cht": "在管理控制模式下啟動了Intel AMT",
-      "xloc": [
-        "default.handlebars->27->569"
-      ]
-    },
-    {
-      "cs": "Intel AMT je aktivováno v režimu uživatele",
-      "de": "Intel AMT ist im Client Control Mode aktiviert",
-      "en": "Intel AMT is activated in Client Control Mode",
-      "es": "Intel&reg; AMT está activado en Modo de Control de Cliente (CCM)",
-      "fi": "Intel AMT on aktivoitu asiakasohjaustilassa",
-      "fr": "Intel AMT est activé en mode client",
-      "hi": "Intel AMT क्लाइंट कंट्रोल मोड में सक्रिय है",
-      "ja": "Intel AMTはクライアントコントロールモードでアクティブ化されます",
-      "ko": "클라이언트 제어 모드에서 Intel AMT가 활성화 됨",
-      "nl": "Intel AMT wordt geactiveerd in Client Control Mode",
-      "pt": "O Intel AMT é ativado no modo de controle do cliente",
-      "ru": "Intel AMT активирован в режиме клиента",
-      "tr": "Intel AMT, İstemci Kontrol Modunda etkinleştirilir",
-      "zh-chs": "英特尔AMT在客户端控制模式下被激活",
-      "zh-cht": "Intel AMT在客户端控制模式下被启动",
-      "xloc": [
-        "default.handlebars->27->567"
-      ]
-    },
-    {
-      "cs": "Intel AMT je nastaveno s TLS zabezpečením",
-      "de": "Intel AMT ist mit TLS-Netzwerksicherheit eingerichtet",
-      "en": "Intel AMT is setup with TLS network security",
-      "es": "Intel&reg; AMT está configurado con seguridad de red TLS",
-      "fr": "Intel AMT est configuré avec une sécurité réseau TLS",
-      "hi": "इंटेल एएमटी टीएलएस नेटवर्क सुरक्षा के साथ सेटअप है",
-      "ja": "Intel AMTはTLSネットワークセキュリティでセットアップされています",
-      "ko": "Intel AMT는 TLS 네트워크 보안으로 설치되었습니다.",
-      "nl": "Intel AMT is ingesteld met TLS-netwerkbeveiliging",
-      "pt": "O Intel AMT está configurado com segurança de rede TLS",
-      "ru": "Intel AMT настроен с TLS безопасностью сети",
-      "tr": "Intel AMT, TLS ağ güvenliğiyle kuruldu",
-      "zh-chs": "英特尔AMT已设置TLS网络安全",
-      "zh-cht": "Intel AMT已設置TLS網絡安全性",
-      "xloc": [
-        "default.handlebars->27->571"
-      ]
-    },
-    {
-      "cs": "Intel AMT není zjištěno",
-      "de": "Intel AMT nicht erkannt",
-      "en": "Intel AMT not detected",
-      "es": "Intel&reg; AMT no detectado",
-      "fi": "Intel AMT:tä ei havaittu",
-      "fr": "Intel AMT non détecté",
-      "hi": "इंटेल एएमटी का पता नहीं चला",
-      "ja": "Intel AMTが検出されません",
-      "ko": "인텔 AMT가 감지되지 않습니다.",
-      "nl": "Intel AMT niet gedetecteerd",
-      "pt": "Intel AMT não detectado",
-      "ru": "Intel AMT не обнаружен",
-      "tr": "Intel AMT algılanmadı",
-      "zh-chs": "未检测到英特尔AMT",
-      "zh-cht": "未檢測到Intel AMT",
-      "xloc": [
-        "default.handlebars->27->165"
-      ]
-    },
-    {
-      "cs": "Je třeba, aby Intel AMT bylo nastaveno s důvěryhodným FQDN v MEBx nebo bude třeba drátová LAN síť:",
-      "de": "Intel AMT benötigt einen gesetzten Trusted FQDN im MEBx oder eine drahtgebundene Verbindung zum LAN:",
-      "en": "Intel AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:",
-      "es": "Intel&reg; AMT deberá configurarse con un FQDN de confianza en MEBx o tener una LAN con cable en la red:",
-      "fr": "Intel AMT devra être configuré avec un FQDN approuvé dans MEBx ou avoir un LAN câblé sur le réseau:",
-      "hi": "इंटेल एएमटी को एमईबीएक्स में एक विश्वसनीय एफक्यूडीएन के साथ सेट करने की आवश्यकता होगी या नेटवर्क पर एक वायर्ड लैन होगा:",
-      "ja": "Intel AMTは、MEBxで信頼できるFQDNを使用して設定するか、ネットワーク上に有線LANが必要です。",
-      "ko": "Intel AMT는 MEBx에서 Trusted FQDN으로 설정하거나 네트워크에 유선 LAN이 있어야합니다.",
-      "nl": "Intel AMT moet worden ingesteld met een vertrouwd FQDN in MEBx of een bekabeld LAN op het netwerk hebben:",
-      "pt": "A Intel AMT precisará ser configurada com um FQDN confiável na MEBx ou ter uma LAN com fio na rede:",
-      "ru": "Intel AMT необходимо установить с доверенным FQDN в MEBx или иметь кабельное подключение к локальной сети:",
-      "tr": "Intel AMT'nin MEBx'te Güvenilir FQDN ile ayarlanması veya ağda kablolu LAN'a sahip olması gerekir:",
-      "zh-chs": "英特尔AMT将需要在MEBx中设置受信任的FQDN，或者在有线的网络上：",
-      "zh-cht": "Intel AMT將需要在MEBx中設置受信任的FQDN，或者在有線的網絡上：",
-      "xloc": [
-        "default.handlebars->27->297"
+        "default.handlebars->27->1945"
       ]
     },
     {
@@ -16297,6 +16114,9 @@
         "default-mobile.handlebars->9->241",
         "default.handlebars->27->1317",
         "default.handlebars->27->1327",
+        "default.handlebars->27->1494",
+        "default.handlebars->27->1502",
+        "default.handlebars->27->1967",
         "default.handlebars->27->525",
         "default.handlebars->27->580",
         "default.handlebars->27->608"
@@ -16321,6 +16141,46 @@
       "xloc": [
         "default-mobile.handlebars->9->240",
         "default.handlebars->27->606"
+      ]
+    },
+    {
+      "cs": "Intel&reg; AMT CIRA připojeno",
+      "de": "Intel&reg; AMT CIRA verbunden",
+      "en": "Intel&reg; AMT CIRA connected",
+      "es": "Intel&reg; AMT CIRA conectado",
+      "fi": "Intel&reg; AMT CIRA yhdistetty",
+      "fr": "Intel&reg; AMT CIRA connecté",
+      "hi": "इंटेल AMT CIRA जुड़ा हुआ है",
+      "ja": "Intel&reg; AMT CIRAが接続されました",
+      "ko": "Intel&reg; AMT CIRA 연결",
+      "nl": "Intel&reg; AMT CIRA verbonden",
+      "pt": "Intel&reg; AMT CIRA conectado",
+      "ru": "Подключен Intel&reg; AMT CIRA",
+      "tr": "Intel&reg; AMT CIRA bağlandı",
+      "zh-chs": "英特尔AMT CIRA已连接",
+      "zh-cht": "Intel&reg; AMT CIRA已連接",
+      "xloc": [
+        "default.handlebars->27->162"
+      ]
+    },
+    {
+      "cs": "Intel&reg; AMT CIRA odpojeno",
+      "de": "Intel&reg; AMT CIRA getrennt",
+      "en": "Intel&reg; AMT CIRA disconnected",
+      "es": "Intel&reg; AMT CIRA desconectado",
+      "fi": "Intel&reg; AMT CIRA yhteys katkaistu",
+      "fr": "Intel&reg; AMT CIRA déconnecté",
+      "hi": "इंटेल AMT CIRA डिस्कनेक्ट हो गया",
+      "ja": "Intel&reg; AMT CIRAが切断されました",
+      "ko": "Intel&reg; AMT CIRA 연결이 끊어졌습니다",
+      "nl": "Intel&reg; AMT CIRA verbroken",
+      "pt": "Intel&reg; AMT CIRA desconectado",
+      "ru": "Отключен Intel&reg; AMT CIRA",
+      "tr": "Intel&reg; AMT CIRA bağlantısı kesildi",
+      "zh-chs": "英特尔AMT CIRA已断开连接",
+      "zh-cht": "Intel&reg; AMT CIRA已斷開連接",
+      "xloc": [
+        "default.handlebars->27->166"
       ]
     },
     {
@@ -16422,6 +16282,7 @@
       "zh-chs": "英特尔&reg;AMT重定向",
       "zh-cht": "Intel&reg; AMT重定向",
       "xloc": [
+        "default.handlebars->27->1883",
         "player.handlebars->3->14"
       ]
     },
@@ -16461,6 +16322,7 @@
       "zh-chs": "英特尔&reg;AMT WSMAN",
       "zh-cht": "Intle&reg; AMT WSMAN",
       "xloc": [
+        "default.handlebars->27->1882",
         "player.handlebars->3->13"
       ]
     },
@@ -16546,8 +16408,49 @@
       "zh-cht": "檢測到Intel&reg; AMT",
       "xloc": [
         "default-mobile.handlebars->9->252",
+        "default.handlebars->27->161",
         "default.handlebars->27->653",
         "default.handlebars->27->654"
+      ]
+    },
+    {
+      "cs": "Intel&reg; AMT je aktivováno v režimu správce",
+      "de": "Intel&reg; AMT ist im Admin Control Mode aktiviert",
+      "en": "Intel&reg; AMT is activated in Admin Control Mode",
+      "es": "Intel&reg; AMT esta activado en Admin Control Mode (ACM)",
+      "fi": "Intel&reg; AMT on aktivoitu Järjestelmänvalvojan ohjaustilassa",
+      "fr": "Intel&reg; AMT est activé en mode administrateur",
+      "hi": "इंटेल एएमटी एडमिन कंट्रोल मोड में सक्रिय है",
+      "ja": "Intel&reg; AMTは管理制御モードでアクティブ化されます",
+      "ko": "관리 제어 모드에서 Intel AMT가 활성화 됨",
+      "nl": "Intel&reg; AMT wordt geactiveerd in de beheerdersmodus",
+      "pt": "O Intel&reg; AMT é ativado no modo de controle de administrador",
+      "ru": "Intel&reg; AMT активирован в режиме администратора",
+      "tr": "Intel&reg; AMT, Yönetici Kontrol Modunda etkinleştirilir",
+      "zh-chs": "在Intel&reg; AMT尔AMT",
+      "zh-cht": "在管理控制模式下啟動了Intel&reg; AMT",
+      "xloc": [
+        "default.handlebars->27->569"
+      ]
+    },
+    {
+      "cs": "Intel&reg; AMT je aktivováno v režimu uživatele",
+      "de": "Intel&reg; AMT ist im Client Control Mode aktiviert",
+      "en": "Intel&reg; AMT is activated in Client Control Mode",
+      "es": "Intel&reg; AMT está activado en Modo de Control de Cliente (CCM)",
+      "fi": "Intel&reg; AMT on aktivoitu asiakasohjaustilassa",
+      "fr": "Intel&reg; AMT est activé en mode client",
+      "hi": "Intel&reg; AMT क्लाइंट कंट्रोल मोड में सक्रिय है",
+      "ja": "Intel&reg; AMTはクライアントコントロールモードでアクティブ化されます",
+      "ko": "클라이언트 제어 모드에서 Intel&reg; AMT가 활성화 됨",
+      "nl": "Intel&reg; AMT wordt geactiveerd in Client Control Mode",
+      "pt": "O Intel&reg; AMT é ativado no modo de controle do cliente",
+      "ru": "Intel&reg; AMT активирован в режиме клиента",
+      "tr": "Intel&reg; AMT, İstemci Kontrol Modunda etkinleştirilir",
+      "zh-chs": "英特尔AMT在客户端控制模式下被激活",
+      "zh-cht": "Intel&reg; AMT在客户端控制模式下被启动",
+      "xloc": [
+        "default.handlebars->27->567"
       ]
     },
     {
@@ -16590,6 +16493,45 @@
       ]
     },
     {
+      "cs": "Intel&reg; AMT je nastaveno s TLS zabezpečením",
+      "de": "Intel&reg; AMT ist mit TLS-Netzwerksicherheit eingerichtet",
+      "en": "Intel&reg; AMT is setup with TLS network security",
+      "es": "Intel&reg; AMT está configurado con seguridad de red TLS",
+      "fr": "Intel&reg; AMT est configuré avec une sécurité réseau TLS",
+      "hi": "इंटेल एएमटी टीएलएस नेटवर्क सुरक्षा के साथ सेटअप है",
+      "ja": "Intel&reg; AMTはTLSネットワークセキュリティでセットアップされています",
+      "ko": "Intel&reg; AMT는 TLS 네트워크 보안으로 설치되었습니다.",
+      "nl": "Intel&reg; AMT is ingesteld met TLS-netwerkbeveiliging",
+      "pt": "O Intel&reg; AMT está configurado com segurança de rede TLS",
+      "ru": "Intel&reg; AMT настроен с TLS безопасностью сети",
+      "tr": "Intel&reg; AMT, TLS ağ güvenliğiyle kuruldu",
+      "zh-chs": "英特尔AMT已设置TLS网络安全",
+      "zh-cht": "Intel&reg; AMT已設置TLS網絡安全性",
+      "xloc": [
+        "default.handlebars->27->571"
+      ]
+    },
+    {
+      "cs": "Intel&reg; AMT není zjištěno",
+      "de": "Intel&reg; AMT nicht erkannt",
+      "en": "Intel&reg; AMT not detected",
+      "es": "Intel&reg; AMT no detectado",
+      "fi": "Intel&reg; AMT:tä ei havaittu",
+      "fr": "Intel&reg; AMT non détecté",
+      "hi": "इंटेल एएमटी का पता नहीं चला",
+      "ja": "Intel&reg; AMTが検出されません",
+      "ko": "인텔 AMT가 감지되지 않습니다.",
+      "nl": "Intel&reg; AMT niet gedetecteerd",
+      "pt": "Intel&reg; AMT não detectado",
+      "ru": "Intel&reg; AMT не обнаружен",
+      "tr": "Intel&reg; AMT algılanmadı",
+      "zh-chs": "未检测到英特尔AMT",
+      "zh-cht": "未檢測到Intel&reg; AMT",
+      "xloc": [
+        "default.handlebars->27->165"
+      ]
+    },
+    {
       "cs": "Pouze Intel® AMT",
       "de": "Nur Intel&reg; AMT",
       "en": "Intel&reg; AMT only",
@@ -16629,6 +16571,25 @@
         "default-mobile.handlebars->9->392",
         "default.handlebars->27->1255",
         "default.handlebars->27->1290"
+      ]
+    },
+    {
+      "cs": "Je třeba, aby Intel&reg; AMT bylo nastaveno s důvěryhodným FQDN v MEBx nebo bude třeba drátová LAN síť:",
+      "de": "Intel&reg; AMT benötigt einen gesetzten Trusted FQDN im MEBx oder eine drahtgebundene Verbindung zum LAN:",
+      "en": "Intel&reg; AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:",
+      "es": "Intel&reg; AMT deberá configurarse con un FQDN de confianza en MEBx o tener una LAN con cable en la red:",
+      "fr": "Intel&reg; AMT devra être configuré avec un FQDN approuvé dans MEBx ou avoir un LAN câblé sur le réseau:",
+      "hi": "इंटेल एएमटी को एमईबीएक्स में एक विश्वसनीय एफक्यूडीएन के साथ सेट करने की आवश्यकता होगी या नेटवर्क पर एक वायर्ड लैन होगा:",
+      "ja": "Intel&reg; AMTは、MEBxで信頼できるFQDNを使用して設定するか、ネットワーク上に有線LANが必要です。",
+      "ko": "Intel&reg; AMT는 MEBx에서 Trusted FQDN으로 설정하거나 네트워크에 유선 LAN이 있어야합니다.",
+      "nl": "Intel&reg; AMT moet worden ingesteld met een vertrouwd FQDN in MEBx of een bekabeld LAN op het netwerk hebben:",
+      "pt": "A Intel&reg; AMT precisará ser configurada com um FQDN confiável na MEBx ou ter uma LAN com fio na rede:",
+      "ru": "Intel&reg; AMT необходимо установить с доверенным FQDN в MEBx или иметь кабельное подключение к локальной сети:",
+      "tr": "Intel&reg; AMT'nin MEBx'te Güvenilir FQDN ile ayarlanması veya ağda kablolu LAN'a sahip olması gerekir:",
+      "zh-chs": "英特尔AMT将需要在MEBx中设置受信任的FQDN，或者在有线的网络上：",
+      "zh-cht": "Intel&reg; AMT將需要在MEBx中設置受信任的FQDN，或者在有線的網絡上：",
+      "xloc": [
+        "default.handlebars->27->297"
       ]
     },
     {
@@ -24345,45 +24306,6 @@
       ]
     },
     {
-      "cs": "Proveďte na strojích ze skupiny „{0}“ aktivaci Intel AMT v režimu řízeném správcem (ACM) a to tak, že si na ně stáhněte nástroj MeshCMD a spustíte s parametry jako:",
-      "de": "Aktivierung von Intel AMT im Admin Control Mode (ACM) in Gruppe \\\"{0}\\\" durchführen durch Herunterladen des MeshCMD-Werkzeugs und Ausführen wie folgt:",
-      "en": "Perform Intel AMT admin control mode (ACM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
-      "es": "Realice la activación del Intel&reg; AMT Modo de Control de Administración (ACM) para agrupar \\\"{0}\\\" descargando la herramienta MeshCMD y ejecutándola así:",
-      "fr": "Effectuez l'activation du mode de contrôle d'administration (ACM) Intel AMT pour regrouper \\\"{0}\\\" en téléchargeant l'outil MeshCMD et en l'exécutant comme suit:",
-      "hi": "Intel AMT एडमिन कंट्रोल मोड (ACM) एक्टिवेशन को ग्रुप \\\"{0}\\\" पर करके, MeshCMD टूल डाउनलोड करके इसे इस तरह से चलाएं:",
-      "ja": "MeshCMDツールをダウンロードして次のように実行することにより、グループ\\\"{0}\\\"にIntel AMT管理制御モード（ACM）アクティベーションを実行します。",
-      "ko": "MeshCMD 도구를 다운로드하고 다음과 같이 실행하여 \\\"{0}\\\"그룹에 대한 Intel AMT 관리자 제어 모드 (ACM) 활성화를 수행하십시오 :",
-      "nl": "Voer Intel AMT admin control mode (ACM) activering uit naar groep \\\"{0}\\\" door het hulpprogramma MeshCMD te downloaden en als volgt uit te voeren:",
-      "pt": "Execute a ativação do modo de controle de administração Intel AMT (ACM) para agrupar \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
-      "ru": "Выполнить активацию Intel AMT в режиме управления администратора (ACM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
-      "tr": "MeshCMD aracını indirip aşağıdaki gibi çalıştırarak \\\"{0}\\\" grubuna Intel AMT yönetici kontrol modu (ACM) etkinleştirmesini gerçekleştirin:",
-      "zh-chs": "通过下载MeshCMD工具并像下面这样运行，将“ {0} ”组以英特尔AMT管理员控制模式（ACM）激活：",
-      "zh-cht": "通過下載MeshCMD工具並像下面這樣運行，將“ {0} ”群以Intel AMT管理員控制模式（ACM）啟動：",
-      "xloc": [
-        "default.handlebars->27->296"
-      ]
-    },
-    {
-      "cs": "Aktivovat Intel AMT v režimu řízeném správcem (ACM).",
-      "de": "Aktivierung von Intel AMT im Admin Control Mode (ACM) durchführen.",
-      "en": "Perform Intel AMT admin control mode (ACM) activation.",
-      "es": "Realice la activación del Intel&reg; AMT Modo de Control de Administración (ACM).",
-      "fr": "Effectuez l'activation du mode de contrôle administrateur (ACM) Intel AMT.",
-      "hi": "Intel AMT व्यवस्थापक नियंत्रण मोड (ACM) सक्रियण करें।",
-      "ja": "Intel AMT管理制御モード（ACM）アクティベーションを実行します。",
-      "ko": "Intel AMT 관리자 제어 모드 (ACM) 활성화를 수행하십시오.",
-      "nl": "Voer Intel AMT admin control mode (ACM) activering uit.",
-      "pt": "Execute a ativação do modo de controle de administração Intel AMT (ACM).",
-      "ru": "Выполнить активацию Intel AMT в режиме управления администратора (ACM).",
-      "tr": "Intel AMT yönetici kontrol modu (ACM) etkinleştirmesini gerçekleştirin.",
-      "zh-chs": "执行英特尔AMT管理员控制模式（ACM）激活。",
-      "zh-cht": "執行Intel AMT管理員控制模式（ACM）啟動。",
-      "xloc": [
-        "default.handlebars->27->1338",
-        "default.handlebars->27->277"
-      ]
-    },
-    {
       "cs": "Proveďte na strojích ze skupiny „{0}“ aktivaci Intel AMT v režimu řízeném klientem (CCM) a to tak, že si na ně stáhnete nástroj MeshCMD a spustíte ho s parametry jako:",
       "de": "Aktivierung von Intel AMT im Client Control Mode (CCM) in Gruppe \\\"{0}\\\" durchführen durch Herunterladen des MeshCMD-Werkzeugs und Ausführen wie folgt:",
       "en": "Perform Intel AMT client control mode (CCM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
@@ -24397,26 +24319,71 @@
       "ru": "Выполнить активацию Intel AMT в режиме управления клиента (CCM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
       "tr": "MeshCMD aracını indirip aşağıdaki gibi çalıştırarak \\\"{0}\\\" grubuna Intel AMT istemci kontrol modu (CCM) etkinleştirmesini gerçekleştirin:",
       "zh-chs": "通过下载MeshCMD工具并像下面这样运行，将“ {0} ”组以英特尔AMT客户端控制模式（CCM）激活：",
-      "zh-cht": "通過下載MeshCMD工具並像下面這樣運行，將“ {0} ”群以Intel AMT客戶端控制模式（CCM）啟動：",
+      "zh-cht": "通過下載MeshCMD工具並像下面這樣運行，將“ {0} ”群以Intel AMT客戶端控制模式（CCM）啟動："
+    },
+    {
+      "cs": "Aktivovat Intel&reg AMT v režimu řízeném správcem (ACM).",
+      "de": "Aktivierung von Intel&reg AMT im Admin Control Mode (ACM) durchführen.",
+      "en": "Perform Intel&reg AMT admin control mode (ACM) activation.",
+      "es": "Realice la activación del Intel&reg; AMT Modo de Control de Administración (ACM).",
+      "fr": "Effectuez l'activation du mode de contrôle administrateur (ACM) Intel&reg AMT.",
+      "hi": "Intel&reg AMT व्यवस्थापक नियंत्रण मोड (ACM) सक्रियण करें।",
+      "ja": "Intel&reg AMT管理制御モード（ACM）アクティベーションを実行します。",
+      "ko": "Intel&reg AMT 관리자 제어 모드 (ACM) 활성화를 수행하십시오.",
+      "nl": "Voer Intel&reg AMT admin control mode (ACM) activering uit.",
+      "pt": "Execute a ativação do modo de controle de administração Intel&reg AMT (ACM).",
+      "ru": "Выполнить активацию Intel&reg AMT в режиме управления администратора (ACM).",
+      "tr": "Intel&reg AMT yönetici kontrol modu (ACM) etkinleştirmesini gerçekleştirin.",
+      "zh-chs": "执行英特尔AMT管理员控制模式（ACM）激活。",
+      "zh-cht": "執行Intel&reg AMT管理員控制模式（ACM）啟動。"
+    },
+    {
+      "cs": "Proveďte na strojích ze skupiny „{0}“ aktivaci Intel&reg; AMT v režimu řízeném správcem (ACM) a to tak, že si na ně stáhněte nástroj MeshCMD a spustíte s parametry jako:",
+      "de": "Aktivierung von Intel&reg; AMT im Admin Control Mode (ACM) in Gruppe \\\"{0}\\\" durchführen durch Herunterladen des MeshCMD-Werkzeugs und Ausführen wie folgt:",
+      "en": "Perform Intel&reg; AMT admin control mode (ACM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
+      "es": "Realice la activación del Intel&reg; AMT Modo de Control de Administración (ACM) para agrupar \\\"{0}\\\" descargando la herramienta MeshCMD y ejecutándola así:",
+      "fr": "Effectuez l'activation du mode de contrôle d'administration (ACM) Intel&reg; AMT pour regrouper \\\"{0}\\\" en téléchargeant l'outil MeshCMD et en l'exécutant comme suit:",
+      "hi": "Intel&reg; AMT एडमिन कंट्रोल मोड (ACM) एक्टिवेशन को ग्रुप \\\"{0}\\\" पर करके, MeshCMD टूल डाउनलोड करके इसे इस तरह से चलाएं:",
+      "ja": "MeshCMDツールをダウンロードして次のように実行することにより、グループ\\\"{0}\\\"にIntel&reg; AMT管理制御モード（ACM）アクティベーションを実行します。",
+      "ko": "MeshCMD 도구를 다운로드하고 다음과 같이 실행하여 \\\"{0}\\\"그룹에 대한 Intel&reg; AMT 관리자 제어 모드 (ACM) 활성화를 수행하십시오 :",
+      "nl": "Voer Intel&reg; AMT admin control mode (ACM) activering uit naar groep \\\"{0}\\\" door het hulpprogramma MeshCMD te downloaden en als volgt uit te voeren:",
+      "pt": "Execute a ativação do modo de controle de administração Intel&reg; AMT (ACM) para agrupar \\\"{0}\\\" baixando a ferramenta MeshCMD e executando-a assim:",
+      "ru": "Выполнить активацию Intel&reg; AMT в режиме управления администратора (ACM) для группы \\\"{0}\\\",скачав инструмент MeshCMD и запустив его следующим образом:",
+      "tr": "MeshCMD aracını indirip aşağıdaki gibi çalıştırarak \\\"{0}\\\" grubuna Intel&reg; AMT yönetici kontrol modu (ACM) etkinleştirmesini gerçekleştirin:",
+      "zh-chs": "通过下载MeshCMD工具并像下面这样运行，将“ {0} ”组以英特尔AMT管理员控制模式（ACM）激活：",
+      "zh-cht": "通過下載MeshCMD工具並像下面這樣運行，將“ {0} ”群以Intel&reg; AMT管理員控制模式（ACM）啟動：",
+      "xloc": [
+        "default.handlebars->27->296"
+      ]
+    },
+    {
+      "en": "Perform Intel&reg; AMT admin control mode (ACM) activation.",
+      "xloc": [
+        "default.handlebars->27->1338",
+        "default.handlebars->27->277"
+      ]
+    },
+    {
+      "en": "Perform Intel&reg; AMT client control mode (CCM) activation to group \\\"{0}\\\" by downloading the MeshCMD tool and running it like this:",
       "xloc": [
         "default.handlebars->27->294"
       ]
     },
     {
-      "cs": "Aktivovat Intel AMT v režimu řízeném klientem (CCM).",
-      "de": "Aktivierung von Intel AMT im Client Control Mode (CCM) durchführen.",
-      "en": "Perform Intel AMT client control mode (CCM) activation.",
+      "cs": "Aktivovat Intel&reg; AMT v režimu řízeném klientem (CCM).",
+      "de": "Aktivierung von Intel&reg; AMT im Client Control Mode (CCM) durchführen.",
+      "en": "Perform Intel&reg; AMT client control mode (CCM) activation.",
       "es": "Realice la activación del Intel&reg; AMT Modo de Control de Cliente (CCM).",
-      "fr": "Effectuez l'activation du mode de contrôle client Intel AMT (CCM).",
-      "hi": "Intel AMT क्लाइंट कंट्रोल मोड (CCM) सक्रियण करें।",
-      "ja": "Intel AMTクライアント制御モード（CCM）アクティベーションを実行します。",
-      "ko": "Intel AMT 클라이언트 제어 모드 (CCM) 활성화를 수행하십시오.",
-      "nl": "Voer Intel AMT client control mode (CCM) activering uit.",
-      "pt": "Execute a ativação do modo de controle do cliente Intel AMT (CCM).",
-      "ru": "Выполнить активацию Intel AMT в режиме управления клиента (CCM).",
-      "tr": "Intel AMT istemci kontrol modu (CCM) etkinleştirmesini gerçekleştirin.",
+      "fr": "Effectuez l'activation du mode de contrôle client Intel&reg; AMT (CCM).",
+      "hi": "Intel&reg; AMT क्लाइंट कंट्रोल मोड (CCM) सक्रियण करें।",
+      "ja": "Intel&reg; AMTクライアント制御モード（CCM）アクティベーションを実行します。",
+      "ko": "Intel&reg; AMT 클라이언트 제어 모드 (CCM) 활성화를 수행하십시오.",
+      "nl": "Voer Intel AMT&reg; client control mode (CCM) activering uit.",
+      "pt": "Execute a ativação do modo de controle do cliente Intel&reg; AMT (CCM).",
+      "ru": "Выполнить активацию Intel&reg; AMT в режиме управления клиента (CCM).",
+      "tr": "Intel&reg; AMT istemci kontrol modu (CCM) etkinleştirmesini gerçekleştirin.",
       "zh-chs": "执行英特尔AMT客户端控制模式（CCM）激活。",
-      "zh-cht": "執行Intel AMT客戶端控制模式（CCM）啟動。",
+      "zh-cht": "執行Intel&reg; AMT客戶端控制模式（CCM）啟動。",
       "xloc": [
         "default.handlebars->27->1336",
         "default.handlebars->27->275"
@@ -28402,9 +28369,21 @@
       ]
     },
     {
+      "en": "Send token to registed email address?",
+      "xloc": [
+        "login-mobile.handlebars->5->24"
+      ]
+    },
+    {
+      "en": "Send token to registed phone number?",
+      "xloc": [
+        "login-mobile.handlebars->5->26"
+      ]
+    },
+    {
       "cs": "Odeslat token na zaregistrovanou e-mailovou adresu?",
       "de": "Token an registrierte E-Mail-Adresse senden?",
-      "en": "Send token to registed email address?",
+      "en": "Send token to registered email address?",
       "es": "¿Enviar token a la dirección de correo electrónico registrada?",
       "fr": "Envoyer un jeton à une adresse e-mail enregistrée?",
       "hi": "प्राप्त ईमेल पते पर टोकन भेजें?",
@@ -28417,13 +28396,12 @@
       "zh-chs": "将保安编码发送到注册的电邮地址？",
       "zh-cht": "將保安編碼發送到註冊的電郵地址？",
       "xloc": [
-        "login-mobile.handlebars->5->24",
         "login.handlebars->5->24",
         "login2.handlebars->7->25"
       ]
     },
     {
-      "en": "Send token to registed phone number?",
+      "en": "Send token to registered phone number?",
       "es": "¿Enviar token al número de teléfono registrado?",
       "fr": "Envoyer un jeton au numéro de téléphone enregistré?",
       "hi": "विनियमित फोन नंबर पर टोकन भेजें?",
@@ -28434,7 +28412,6 @@
       "zh-chs": "将保安编码发送到注册电话号码？",
       "zh-cht": "將保安編碼發送到註冊電話號碼？",
       "xloc": [
-        "login-mobile.handlebars->5->26",
         "login.handlebars->5->26",
         "login2.handlebars->7->27"
       ]
@@ -32048,18 +32025,18 @@
       ]
     },
     {
-      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT",
-      "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel AMT",
-      "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT",
-      "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, cargue el siguiente certificado como certificado raíz de confianza dentro de Intel AMT",
-      "fr": "Pour ajouter un nouveau périphérique Intel&reg; AMT au groupe de périphériques \\\"{0}\\\" avec CIRA, chargez le certificat suivant en tant que racine de confiance dans Intel AMT",
+      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel&reg; AMT",
+      "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel&reg; AMT",
+      "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT",
+      "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, cargue el siguiente certificado como certificado raíz de confianza dentro de Intel&reg; AMT",
+      "fr": "Pour ajouter un nouveau périphérique Intel&reg; AMT au groupe de périphériques \\\"{0}\\\" avec CIRA, chargez le certificat suivant en tant que racine de confiance dans Intel&reg; AMT",
       "hi": "CIRA के साथ डिवाइस समूह \\\"{0} \\\" में एक नया Intel&reg; AMT उपकरण जोड़ने के लिए, निम्नलिखित प्रमाणपत्र को Intel AMT के रूप में विश्वसनीय रूट के रूप में लोड करें",
-      "ja": "新しいIntel&reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel AMT内で信頼されたルートとして次の証明書をロード",
+      "ja": "新しいIntel&reg;を追加するにはAMTデバイスからCIRAを使用したデバイスグループ\\\"{0}\\\"に、Intel&reg; AMT内で信頼されたルートとして次の証明書をロード",
       "ko": "CIRA를 사용하여 장치 그룹 \\\"{0} \\\"에 새 Intel&reg; AMT 장치를 추가하려면, Intel AMT 안에 있는 신뢰할 수 있는 루트로서 다음 인증서를로드하십시오.",
-      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT",
-      "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT",
-      "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Intel AMT",
-      "tr": "CIRA ile \\\"{0}\\\" cihaz grubuna yeni bir Intel&reg; AMT cihazı eklemek için aşağıdaki sertifikayı Intel AMT içinde güvenilir kök olarak yükleyin",
+      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel&reg; AMT",
+      "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel&reg; AMT",
+      "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Intel&reg; AMT",
+      "tr": "CIRA ile \\\"{0}\\\" cihaz grubuna yeni bir Intel&reg; AMT cihazı eklemek için aşağıdaki sertifikayı Intel&reg; AMT içinde güvenilir kök olarak yükleyin",
       "zh-chs": "要将新的英特尔&reg;AMT设备添加到具有CIRA的设备组“ {0} ”，请在英特尔AMT中加载以下证书作为可信赖的根凭证",
       "zh-cht": "要將新的Intel&reg; AMT裝置新增到具有CIRA的裝置群“ {0} ”，請在Intel AMT中加載以下憑證作為可信賴的根憑證",
       "xloc": [
@@ -32067,17 +32044,17 @@
       ]
     },
     {
-      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
-      "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel AMT, authentifizieren Sie sich mittels eines Clientzertifikats mit dem folgenden Common Name und verbinden Sie sich zu folgendem Server.",
-      "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.",
-      "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, cargue el siguiente certificado como certificado raíz de confianza dentro de Intel AMT, autentíquese utilizando un certificado de cliente con el siguiente nombre común y conéctese al siguiente servidor.",
-      "fr": "Pour ajouter un nouveau périphérique Intel&reg; AMT au groupe de périphériques \\\"{0}\\\" avec CIRA, chargez le certificat suivant en tant que racine de confiance dans Intel AMT, authentifiez-vous à l'aide d'un certificat client avec le nom commun suivant et connectez-vous au serveur suivant.",
+      "cs": "Pro přidání nového Intel® AMT zařízení do skupiny „{0}“ s CIRA, nahrajte následující certifikát mezi důvěryhodné kořenové v rámci Intel&reg; AMT, tímto klientským certifikátem se pak bude ověřovat s následujícím běžným názvem a připojí se k následujícímu serveru.",
+      "de": "Um ein neues Intel&reg;-AMT-Gerät zur Gerätegruppe \\\"{0}\\\" mit CIRA hinzuzufügen, laden Sie das folgende Zertifikat als bekanntes Stammzertifikat in Intel&reg; AMT, authentifizieren Sie sich mittels eines Clientzertifikats mit dem folgenden Common Name und verbinden Sie sich zu folgendem Server.",
+      "en": "To add a new Intel&reg; AMT device to device group \\\"{0}\\\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT, authenticate using a client certificate with the following common name and connect to the following server.",
+      "es": "Para agregar un nuevo dispositivo Intel&reg; AMT al grupo de dispositivos \\\"{0}\\\" con CIRA, cargue el siguiente certificado como certificado raíz de confianza dentro de Intel&reg; AMT, autentíquese utilizando un certificado de cliente con el siguiente nombre común y conéctese al siguiente servidor.",
+      "fr": "Pour ajouter un nouveau périphérique Intel&reg; AMT au groupe de périphériques \\\"{0}\\\" avec CIRA, chargez le certificat suivant en tant que racine de confiance dans Intel&reg; AMT, authentifiez-vous à l'aide d'un certificat client avec le nom commun suivant et connectez-vous au serveur suivant.",
       "hi": "CIRA के साथ डिवाइस ग्रुप \\\"{0} \\\" में एक नया इंटेल&reg; एएमटी डिवाइस जोड़ने के लिए, इंटेल एएमटी के भीतर विश्वसनीय रूट के रूप में निम्नलिखित प्रमाण पत्र को लोड करें, निम्नलिखित सामान्य नाम के साथ एक क्लाइंट प्रमाण पत्र का उपयोग करके प्रमाणित करें और निम्न सर्वर से कनेक्ट करें।",
       "ja": "新しいIntel&reg;を追加するにはCIRAを使用してデバイスグループ\\\"{0}\\\"へのAMTデバイス、Intel AMT内の信頼されたルートとして次の証明書を読み込み、次の共通名を持つクライアント証明書を使用して認証し、次のサーバーに接続します。",
       "ko": "CIRA를 사용하여 장치 그룹 \\\"{0} \\\"에 새 Intel&reg; AMT 장치를 추가하려면, Intel AMT 내에서 신뢰할 수 있는 루트로서 다음 인증서를 로드하고, 다음 일반 이름의 클라이언트 인증서를 사용하여 인증 한 후 다음 서버에 연결하십시오.",
-      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server.",
-      "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel AMT, autentique usando um certificado de cliente com o seguinte nome comum e conecte-se ao servidor a seguir.",
-      "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Intel AMT, выполните аутентификацию с использованием сертификата клиента со следующим общим именем и подключитесь к серверу.",
+      "nl": "Om een nieuw Intel&reg; AMT-apparaat toe te voegen aan apparaatgroep \\\"{0}\\\" met CIRA, laadt u het volgende certificaat als vertrouwde root in Intel&reg; AMT, verifieert u met een clientcertificaat met de volgende gemeenschappelijke naam en maakt u verbinding met de volgende server.",
+      "pt": "Para adicionar um novo Intel&reg; Dispositivo AMT para grupo de dispositivos \\\"{0}\\\" com CIRA, carregue o seguinte certificado como raiz confiável no Intel&reg; AMT, autentique usando um certificado de cliente com o seguinte nome comum e conecte-se ao servidor a seguir.",
+      "ru": "Чтобы добавить новое устройство Intel&reg; AMT в группу устройств \\\"{0}\\\" с CIRA, загрузите следующий сертификат в качестве доверенного в Inte&reg;l AMT, выполните аутентификацию с использованием сертификата клиента со следующим общим именем и подключитесь к серверу.",
       "tr": "CIRA ile \\\"{0}\\\" cihaz grubuna yeni bir Intel&reg; AMT cihazı eklemek için, aşağıdaki sertifikayı Intel AMT içinde güvenilir kök olarak yükleyin, aşağıdaki ortak ada sahip bir istemci sertifikası kullanarak kimlik doğrulaması yapın ve aşağıdaki sunucuya bağlanın.",
       "zh-chs": "要将新的英特尔&reg;AMT设备添加到具有CIRA的设备组“ {0} ”，请在英特尔AMT中加载以下证书作为可信赖的根凭证，使用具有以下通用名称的客户端证书进行身份验证并连接到以下服务器。",
       "zh-cht": "要將新的Intel&reg; AMT裝置新增到具有CIRA的裝置群“ {0} ”，請在Intel AMT中將以下憑證作為受信任的根加載，使用具有以下一般名稱的客戶端憑證進行身份驗證並連接到以下伺服器。",
