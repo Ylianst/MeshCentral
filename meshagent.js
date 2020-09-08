@@ -1164,7 +1164,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'smbios':
                     {
-                        // SMBIOS information should never be saved when NeDB is in use.
+                        // SMBIOS information must never be saved when NeDB is in use. NeDB will currupt that database.
+                        if (db.SetSMBIOS == null) break;
 
                         // See if we need to save SMBIOS information
                         if (domain.smbios === true) {
