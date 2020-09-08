@@ -724,8 +724,9 @@ module.exports.CreateDB = function (parent, func) {
         obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
         obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
-        // Setup the SMBIOS collection
-        obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true, corruptAlertThreshold: 1 });
+        // Setup the SMBIOS collection, for NeDB we don't setup SMBIOS since NeDB will corrupt the database. Remove any existing ones.
+        //obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true, corruptAlertThreshold: 1 });
+        parent.fs.unlink(parent.getConfigFilePath('meshcentral-smbios.db'), function () { });
 
         // Setup the server stats collection and setup indexes
         obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
@@ -1214,10 +1215,12 @@ module.exports.CreateDB = function (parent, func) {
             obj.removeAllPowerEventsForNode = function (nodeid) { obj.powerfile.remove({ nodeid: nodeid }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
-            obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}, func); };
-            obj.SetSMBIOS = function (smbios, func) { obj.smbiosfile.update({ _id: smbios._id }, smbios, { upsert: true }, func); };
-            obj.RemoveSMBIOS = function (id) { obj.smbiosfile.remove({ _id: id }); };
-            obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }, func); };
+            if (obj.smbiosfile != null) {
+                obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}, func); };
+                obj.SetSMBIOS = function (smbios, func) { obj.smbiosfile.update({ _id: smbios._id }, smbios, { upsert: true }, func); };
+                obj.RemoveSMBIOS = function (id) { obj.smbiosfile.remove({ _id: id }); };
+                obj.GetSMBIOS = function (id, func) { obj.smbiosfile.find({ _id: id }, func); };
+            }
 
             // Database actions on the Server Stats collection
             obj.SetServerStats = function (data, func) { obj.serverstatsfile.insert(data, func); };
@@ -1248,12 +1251,11 @@ module.exports.CreateDB = function (parent, func) {
 
             // Get database information
             obj.getDbStats = function (func) {
-                obj.stats = { c: 6 };
+                obj.stats = { c: 5 };
                 obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } })
                 obj.file.count({}, function (err, count) { obj.stats.meshcentral = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
                 obj.eventsfile.count({}, function (err, count) { obj.stats.events = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
                 obj.powerfile.count({}, function (err, count) { obj.stats.power = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.smbiosfile.count({}, function (err, count) { obj.stats.smbios = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
                 obj.serverstatsfile.count({}, function (err, count) { obj.stats.serverstats = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
             }
 
