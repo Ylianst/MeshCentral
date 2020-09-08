@@ -1165,7 +1165,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'smbios':
                     {
                         // See if we need to save SMBIOS information
-                        if (domain.smbios !== false) {
+                        if (domain.smbios === true) {
                             // Store the RAW SMBios table of this computer
                             // Perform sanity checks before storing
                             try {
