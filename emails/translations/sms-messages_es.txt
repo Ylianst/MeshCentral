@@ -1,2 +1,2 @@
-El código de verificación [[0]] es: [[1]]
-[[0]] token de acceso es: [[1]]
+El código de verificación de [[0]] es: [[1]]
+El token de acceso de [[0]] es: [[1]]

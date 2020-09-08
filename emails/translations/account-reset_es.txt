@@ -1,6 +1,6 @@
-[[[SERVERNAME]]] - Resetear Cuenta
+[[[SERVERNAME]]] - Restablecimiento de Cuenta
 Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está solicitando un restablecimiento de contraseña de cuenta. Navegue al siguiente enlace para completar el proceso:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
-Si Ud. no inicio este proceso, por favor ignore este email
+Si Ud. no inicio este requerimiento, por favor ignore este correo.
