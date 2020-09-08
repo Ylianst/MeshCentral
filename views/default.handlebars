@@ -547,7 +547,7 @@
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                             <input type="button" id="autoconnectbutton1" value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false" style="display:none" />
                             <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                            <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                            <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                             <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
                             &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
                         </div>
@@ -652,7 +652,7 @@
                                     <div id="idx_termFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
                                     <input type="button" id="autoconnectbutton2" value="AutoConnect" onclick=autoConnectTerminal(event) onkeypress="return false" onkeydown="return false" style="display:none" />
                                     <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
-                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                                    <span id="connectbutton2hspan">&nbsp;<input type="button" id="connectbutton2h" value="HW Connect" title="Connect using Intel&reg; AMT hardware KVM" onclick=connectTerminal(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                                     <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
                                     &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span>
                                 </div>
@@ -2826,14 +2826,14 @@
                                 // Show the notification
                                 if (n & 2) {
                                     if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: "Agent connected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: "Intel AMT detected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: "Intel AMT CIRA connected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: "Intel&reg; AMT detected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: "Intel&reg; AMT CIRA connected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 16) == 0) && ((message.event.conn & 16) != 0)) { addNotification({ text: "MQTT connected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                 }
                                 if (n & 4) {
                                     if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { addNotification({ text: "Agent disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: "Intel AMT not detected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: "Intel AMT CIRA disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: "Intel&reg; AMT not detected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: "Intel&reg; AMT CIRA disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                     if (((node.conn & 16) != 0) && ((message.event.conn & 16) == 0)) { addNotification({ text: "MQTT disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
                                 }
 
@@ -3912,9 +3912,9 @@
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
                 }
                 if (mesh.amt && (mesh.amt.type == 2)) { // CCM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel AMT client control mode (CCM) activation." + '" onclick=\'return showCcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT client control mode (CCM) activation." + '" onclick=\'return showCcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
                 } else if (mesh.amt && (mesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel AMT admin control mode (ACM) activation." + '" onclick=\'return showAcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT admin control mode (ACM) activation." + '" onclick=\'return showAcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
                 }
             }
             if (mesh.mtype == 2) {
@@ -3952,7 +3952,7 @@
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
                 url = 'ws://' + servername + portStr + domainUrl;
             }
-            var x = format("Perform Intel AMT client control mode (CCM) activation to group \"{0}\" by downloading the MeshCMD tool and running it like this:", EscapeHtml(mesh.name)) + '<br /><br />';
+            var x = format("Perform Intel&reg; AMT client control mode (CCM) activation to group \"{0}\" by downloading the MeshCMD tool and running it like this:", EscapeHtml(mesh.name)) + '<br /><br />';
             x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtccm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
             setDialogMode(2, "Intel&reg; AMT activation", 9, null, x);
             Q('idx_dlgOkButton').focus();
@@ -3972,10 +3972,10 @@
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
                 url = 'ws://' + servername + portStr + domainUrl;
             }
-            var x = format("Perform Intel AMT admin control mode (ACM) activation to group \"{0}\" by downloading the MeshCMD tool and running it like this:", EscapeHtml(mesh.name)) + '<br /><br />';
+            var x = format("Perform Intel&reg; AMT admin control mode (ACM) activation to group \"{0}\" by downloading the MeshCMD tool and running it like this:", EscapeHtml(mesh.name)) + '<br /><br />';
             x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtacm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
             if (serverinfo.amtAcmFqdn != null) {
-                x += ('<div style=margin-top:8px>' + "Intel AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
+                x += ('<div style=margin-top:8px>' + "Intel&reg; AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
             }
             setDialogMode(2, "Intel&reg; AMT activation", 9, null, x);
             Q('idx_dlgOkButton').focus();
@@ -3985,7 +3985,7 @@
         // Display the Intel AMT scanning dialog box
         function addAmtScanToMesh(meshid) {
             if (xxdialogMode) return false;
-            var x = "Enter a range of IP addresses to scan for Intel AMT devices." + '<br /><br />';
+            var x = "Enter a range of IP addresses to scan for Intel&reg; AMT devices." + '<br /><br />';
             var amtscanoptions = decodeURIComponent('{{{amtscanoptions}}}').split(',');
             if (amtscanoptions != '') {
                 x += '<datalist id=iprangelist>';
@@ -4067,7 +4067,7 @@
             x += '</div>';
 
             // Setup CIRA with user/pass authentication (Somewhat difficult)
-            x += '<div id=dlgAddCira1 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel AMT", EscapeHtml(mesh.name));
+            x += '<div id=dlgAddCira1 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT", EscapeHtml(mesh.name));
             if (serverinfo.mpspass) { x += (" and authenticate to the server using this username and password." + '<br /><br />'); } else { x += (" and authenticate to the server using this username and any password." + '<br /><br />'); }
             x += addHtmlValue("Root Certificate", '<a href="' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '" download>' + "Root Certificate File" + '</a>');
             x += addHtmlValue("Username", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
@@ -4077,7 +4077,7 @@
 
             // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
             if ((features & 16) == 0) {
-                x += '<div id=dlgAddCira2 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel AMT, authenticate using a client certificate with the following common name and connect to the following server.", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += '<div id=dlgAddCira2 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT, authenticate using a client certificate with the following common name and connect to the following server.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlValue("Root Certificate", '<a href="' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '" download>' + "Root Certificate File" + '</a>');
                 x += addHtmlValue("Organization", '<input style=width:230px readonly value="' + meshidx + '" />');
                 if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
@@ -4404,7 +4404,7 @@
                 uncheckAllDevices();
             } else if (op == 101) {
                 // Group delete, ask for confirmation
-                var x = "Confirm delete selected devices(s)?" + '<br /><br />';
+                var x = "Confirm delete selected device(s)?" + '<br /><br />';
                 x += '<label><input id=d2check type=checkbox onchange=d2groupActionFunctionDelCheck() />' + "Confirm" + '</label>';
                 setDialogMode(2, "Delete Nodes", 3, d2groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
@@ -5558,11 +5558,11 @@
                         else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
                         else {
                             str += provisioningStates[node.intelamt.state];
-                            if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="' + "Intel AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="' + "Intel AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
+                            if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { str += ' <span title="' + "Intel&reg; AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str += ' <span title="' + "Intel&reg; AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
                             str += (', v' + EscapeHtml(node.intelamt.ver));
                         }
 
-                    if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
+                    if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel&reg; AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
@@ -8005,9 +8005,9 @@
             var x = '';
             if ((p13clipboard != null) && (p13clipboard.length > 0)) {
                 if (p13clipboardCut == 0) {
-                    if (p13clipboard.length > 1) { x = format("Confirm copy of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm copy of 1 entrie to this location?"); }
+                    if (p13clipboard.length > 1) { x = format("Confirm copy of {0} entries to this location?", p13clipboard.length); } else { x = format("Confirm copy of 1 entrie to this location?"); }
                 } else {
-                    if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries's to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
+                    if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
                 }
             }
             setDialogMode(2, "Paste", 3, p13pasteFileEx, x);
@@ -9359,9 +9359,9 @@
                     x += '<a href=# onclick=\'return addCiraDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install CIRA" + '</a>';
                     x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
                     if (currentMesh.amt && (currentMesh.amt.type == 2)) { // CCM activation
-                        x += '<a href=# onclick=\'return showCcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel AMT client control mode (CCM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
+                        x += '<a href=# onclick=\'return showCcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT client control mode (CCM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
                     } else if (currentMesh.amt && (currentMesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                        x += '<a href=# onclick=\'return showAcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel AMT admin control mode (ACM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
+                        x += '<a href=# onclick=\'return showAcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT admin control mode (ACM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
                     }
                 }
                 if (currentMesh.mtype == 2) {
@@ -10132,7 +10132,7 @@
             });
             window.meshConnChart = new Chart(document.getElementById('meshConnChart').getContext('2d'), {
                 type: 'doughnut',
-                data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["Not Connected", "Agent", "Intel AMT", "Agent + Intel AMT"] },
+                data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["Not Connected", "Agent", "Intel&reg; AMT", "Agent + Intel&reg; AMT"] },
                 options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
         }
@@ -10203,7 +10203,7 @@
             if (showConn) {
                 count = 0;
                 var xconnectivityStates = [];
-                for (var i = 0; i < 4; i++) { xconnectivityStates.push([["Not Connected", "Agent", "Intel AMT", "Agent + Intel AMT"][i], connectivityStates[i]]); }
+                for (var i = 0; i < 4; i++) { xconnectivityStates.push([["Not Connected", "Agent", "Intel&reg; AMT", "Agent + Intel&reg; AMT"][i], connectivityStates[i]]); }
                 xconnectivityStates.sort(function(a, b){ return -(a[1]-b[1]) });
                 x += '<table style="margin-top:10px;color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Connectivity" + '</th><th scope=col style=text-align:left></th></tr>';
                 for (var i = 0; i < 4; i++) { if (xconnectivityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><divclass=m2></div><div>&nbsp;' + xconnectivityStates[i][0] + '<div></div></div></td><td><div style=float:right>' + xconnectivityStates[i][1] + ' </div><div></div></td></tr>'; } }
@@ -11352,7 +11352,7 @@
             var op = Q('d50groupop').value;
             if (op == 1) {
                 // Delete user groups, ask for confirmation
-                var x = "Confirm delete selected user groups(s)?" + '<br /><br />';
+                var x = "Confirm delete selected user group(s)?" + '<br /><br />';
                 x += '<label><input id=d3check type=checkbox onchange=p50usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
                 setDialogMode(2, "Delete User Groups", 3, p50groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
@@ -12250,8 +12250,8 @@
                 if (rec.protocol == 1) { protocolStr = "Terminal"; }
                 if (rec.protocol == 2) { protocolStr = "Desktop"; }
                 if (rec.protocol == 5) { protocolStr = "Files"; }
-                if (rec.protocol == 100) { protocolStr = "Intel AMT WSMAN"; }
-                if (rec.protocol == 101) { protocolStr = "Intel AMT Redirection"; }
+                if (rec.protocol == 100) { protocolStr = "Intel&reg; AMT WSMAN"; }
+                if (rec.protocol == 101) { protocolStr = "Intel&reg; AMT Redirection"; }
                 x += addHtmlValue4("Protocol", protocolStr);
             }
             x += addHtmlValue4("Status", (rec.present == 1)?"Present on server":"Not on server");
@@ -12773,7 +12773,7 @@
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
             //x += '<div><label><input type=checkbox id=p41c8 ' + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + '>' + "Traffic Relay 2 Data" + '</label></div>';
-            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel AMT" + '</b></div>';
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel&reg; AMT" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c9 ' + ((serverTraceSources.indexOf('webrelay') >= 0) ? 'checked' : '') + '>' + "Connection Relay" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c10 ' + ((serverTraceSources.indexOf('mps') >= 0) ? 'checked' : '') + '>' + "CIRA Server" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c11 ' + ((serverTraceSources.indexOf('mpscmd') >= 0) ? 'checked' : '') + '>' + "CIRA Server Commands" + '</label></div>';
