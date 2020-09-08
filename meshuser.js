@@ -1197,7 +1197,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'autobackup': {
-                            var backupResult = parent.db.performBackup();
+                            var backupResult = parent.db.performBackup(function (msg) {
+                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: command.tag })); } catch (ex) { }
+                            });
                             if (backupResult == 0) { r = 'Starting auto-backup...'; } else { r = 'Backup alreay in progress.'; }
                             break;
                         }

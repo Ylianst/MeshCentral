@@ -1315,7 +1315,7 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     obj.performingBackup = false;
-    obj.performBackup = function () {
+    obj.performBackup = function (func) {
         try {
             if (obj.performingBackup) return 1;
             obj.performingBackup = true;
@@ -1355,10 +1355,10 @@ module.exports.CreateDB = function (parent, func) {
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
                         }
-                        output.on('close', function () { obj.performingBackup = false; obj.performCloudBackup(newAutoBackupPath + '.zip'); setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000); });
+                        output.on('close', function () { obj.performingBackup = false; if (func) { func('Auto-backup completed.'); } obj.performCloudBackup(newAutoBackupPath + '.zip', func); setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000); });
                         output.on('end', function () { });
-                        archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
-                        archive.on('error', function (err) { console.log('Backup error: ' + err); });
+                        archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
+                        archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                         archive.pipe(output);
                         archive.file(newBackupPath + '.archive', { name: newBackupFile + '.archive' });
                         archive.directory(parent.datapath, 'meshcentral-data');
@@ -1376,10 +1376,10 @@ module.exports.CreateDB = function (parent, func) {
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });
                 }
-                output.on('close', function () { obj.performingBackup = false; obj.performCloudBackup(newAutoBackupPath + '.zip'); });
+                output.on('close', function () { obj.performingBackup = false; if (func) { func('Auto-backup completed.'); } obj.performCloudBackup(newAutoBackupPath + '.zip', func); });
                 output.on('end', function () { });
-                archive.on('warning', function (err) { console.log('Backup warning: ' + err); });
-                archive.on('error', function (err) { console.log('Backup error: ' + err); });
+                archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
+                archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
                 archive.pipe(output);
                 archive.directory(parent.datapath, 'meshcentral-data');
                 archive.finalize();
@@ -1411,10 +1411,11 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Perform cloud backup
-    obj.performCloudBackup = function (filename) {
+    obj.performCloudBackup = function (filename, func) {
         if (typeof parent.config.settings.autobackup.googledrive != 'object') return;
         obj.Get('GoogleDriveBackup', function (err, docs) {
             if ((err != null) || (docs.length != 1) || (docs[0].state != 3)) return;
+            if (func) { func('Attempting Google Drive upload...'); }
             const {google} = require('googleapis');
             const oAuth2Client = new google.auth.OAuth2(docs[0].clientid, docs[0].clientsecret, "urn:ietf:wg:oauth:2.0:oob");
             oAuth2Client.on('tokens', function(tokens) { if (tokens.refresh_token) { docs[0].token = tokens.refresh_token; parent.db.Set(docs[0]); } }); // Update the token in the database
@@ -1430,7 +1431,11 @@ module.exports.CreateDB = function (parent, func) {
                         q: 'trashed = false and \'' + folderid + '\' in parents',
                         fields: 'nextPageToken, files(id, name, size, createdTime)',
                     }, function (err, res) {
-                        if (err) { console.log('GoogleDrive (files.list) error: ' + err); return; }
+                        if (err) {
+                            console.log('GoogleDrive (files.list) error: ' + err);
+                            if (func) { func('GoogleDrive (files.list) error: ' + err); }
+                            return;
+                        }
                         // Delete any old files if more than 10 files are present in the backup folder.
                         res.data.files.sort(createdTimeSort);
                         while (res.data.files.length >= parent.config.settings.autobackup.googledrive.maxfiles) { drive.files.delete({ fileId: res.data.files.shift().id }, function (err, res) { }); }
@@ -1438,13 +1443,20 @@ module.exports.CreateDB = function (parent, func) {
                 }
 
                 //console.log('Uploading...');
+                if (func) { func('Uploading to Google Drive...'); }
+
                 // Upload the backup
                 drive.files.create({
                     requestBody: { name: require('path').basename(filename), mimeType: 'text/plain', parents: [folderid] },
                     media: { mimeType: 'application/zip', body: require('fs').createReadStream(filename) },
                 }, function (err, res) {
-                    if (err) { console.log('GoogleDrive (files.create) error: ' + err); return; }
+                    if (err) {
+                        console.log('GoogleDrive (files.create) error: ' + err);
+                        if (func) { func('GoogleDrive (files.create) error: ' + err); }
+                        return;
+                    }
                     //console.log('Upload done.');
+                    if (func) { func('Google Drive upload completed.'); }
                 });
             }
 
@@ -1457,11 +1469,19 @@ module.exports.CreateDB = function (parent, func) {
                 q: 'mimeType = \'application/vnd.google-apps.folder\' and name=\'' + folderName + '\' and trashed = false',
                 fields: 'nextPageToken, files(id, name)',
             }, function (err, res) {
-                if (err) { console.log('GoogleDrive error: ' + err); return; }
+                if (err) {
+                    console.log('GoogleDrive error: ' + err);
+                    if (func) { func('GoogleDrive error: ' + err); }
+                    return;
+                }
                 if (res.data.files.length == 0) {
                     // Create a folder
                     drive.files.create({ resource: { 'name': folderName, 'mimeType': 'application/vnd.google-apps.folder' }, fields: 'id' }, function (err, file) {
-                        if (err) { console.log('GoogleDrive (folder.create) error: ' + err); return; }
+                        if (err) {
+                            console.log('GoogleDrive (folder.create) error: ' + err);
+                            if (func) { func('GoogleDrive (folder.create) error: ' + err); }
+                            return;
+                        }
                         useGoogleDrive(file.data.id);
                     });
                 } else { useGoogleDrive(res.data.files[0].id); }
