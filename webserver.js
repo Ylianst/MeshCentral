@@ -5606,7 +5606,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Perform user pre-validation
         if ((user == null) || (nodeid == null)) { func(null, 0, false); return; } // Invalid user
         if (typeof user == 'string') { user = obj.users[user]; }
-        if ((user == null) || (user.links == null)) { func(null, 0, false); return; } // No rights
+        if (user == null) { func(null, 0, false); return; } // No rights
 
         // Perform node pre-validation
         if (obj.common.validateString(nodeid, 0, 128) == false) { func(null, 0, false); return; } // Invalid nodeid
@@ -5622,6 +5622,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (nodes[0].domain == user.domain)) {
                 func(nodes[0], 0xFFFFFFFF, true); return;
             }
+
+            // If no links, stop here.
+            if (user.links == null) { func(null, 0, false); return; }
 
             // Check device link
             var rights = 0, visible = false, r = user.links[nodeid];
@@ -5668,7 +5671,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Returns a list of all meshes that this user has some rights too
     obj.GetAllMeshWithRights = function (user, rights) {
         if (typeof user == 'string') { user = obj.users[user]; }
-        if ((user == null) || (user.links == null)) { return []; }
+        if (user == null) { return []; }
 
         var r = [];
         if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) {
@@ -5677,6 +5680,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]); } }
             return r;
         }
+        if (user.links == null) { return []; }
         for (var i in user.links) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
@@ -5705,7 +5709,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Returns a list of all mesh id's that this user has some rights too
     obj.GetAllMeshIdWithRights = function (user, rights) {
         if (typeof user == 'string') { user = obj.users[user]; }
-        if ((user == null) || (user.links == null)) { return []; }
+        if (user == null) { return []; }
         var r = [];
         if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) {
             // This is a super user that can see all device groups for a given domain
@@ -5713,6 +5717,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]._id); } }
             return r;
         }
+        if (user.links == null) { return []; }
         for (var i in user.links) {
             if (i.startsWith('mesh/')) {
                 // Grant access to a device group thru a direct link
@@ -5742,7 +5747,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.GetMeshRights = function (user, mesh) {
         if ((user == null) || (mesh == null)) { return 0; }
         if (typeof user == 'string') { user = obj.users[user]; }
-        if ((user == null) || (user.links == null)) { return 0; }
+        if (user == null) { return 0; }
         var r, meshid;
         if (typeof mesh == 'string') {
             meshid = mesh;
@@ -5754,6 +5759,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return 0xFFFFFFFF; }
 
         // Check direct user to device group permissions
+        if (user.links == null) return 0;
         var rights = 0;
         r = user.links[meshid];
         if (r != null) {
@@ -5786,7 +5792,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.IsMeshViewable = function (user, mesh) {
         if ((user == null) || (mesh == null)) { return false; }
         if (typeof user == 'string') { user = obj.users[user]; }
-        if ((user == null) || (user.links == null)) { return false; }
+        if (user == null) { return false; }
         var meshid;
         if (typeof mesh == 'string') {
             meshid = mesh;
@@ -5798,6 +5804,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
 
         // Check direct user to device group permissions
+        if (user.links == null) { return false; }
         if (user.links[meshid] != null) { return true; } // If the user has a direct link, stop here.
 
         // Check if we are part of any user groups that would give this user visibility to this device group.
