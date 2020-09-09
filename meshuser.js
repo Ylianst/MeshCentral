@@ -3419,14 +3419,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
 
                             // Delete this node including network interface information, events and timeline
-                            db.Remove(node._id);                            // Remove node with that id
-                            db.Remove('if' + node._id);                     // Remove interface information
-                            db.Remove('nt' + node._id);                     // Remove notes
-                            db.Remove('lc' + node._id);                     // Remove last connect time
-                            db.Remove('si' + node._id);                     // Remove system information
-                            db.RemoveSMBIOS(node._id);                      // Remove SMBios data
-                            db.RemoveAllNodeEvents(node._id);               // Remove all events for this node
-                            db.removeAllPowerEventsForNode(node._id);       // Remove all power events for this node
+                            db.Remove(node._id);                                 // Remove node with that id
+                            db.Remove('if' + node._id);                          // Remove interface information
+                            db.Remove('nt' + node._id);                          // Remove notes
+                            db.Remove('lc' + node._id);                          // Remove last connect time
+                            db.Remove('si' + node._id);                          // Remove system information
+                            if (db.RemoveSMBIOS) { db.RemoveSMBIOS(node._id); }  // Remove SMBios data
+                            db.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
+                            db.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
                             db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
                                 if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
                                 db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link

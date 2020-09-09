@@ -63,14 +63,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // If this is a temporary or recovery agent, or all devices in this group are temporary, remove the agent (0x20 = Temporary, 0x40 = Recovery)
         if (((obj.agentInfo) && (obj.agentInfo.capabilities) && ((obj.agentInfo.capabilities & 0x20) || (obj.agentInfo.capabilities & 0x40))) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
             // Delete this node including network interface information and events
-            db.Remove(obj.dbNodeKey);                       // Remove node with that id
-            db.Remove('if' + obj.dbNodeKey);                // Remove interface information
-            db.Remove('nt' + obj.dbNodeKey);                // Remove notes
-            db.Remove('lc' + obj.dbNodeKey);                // Remove last connect time
-            db.Remove('si' + obj.dbNodeKey);                // Remove system information
-            db.RemoveSMBIOS(obj.dbNodeKey);                 // Remove SMBios data
-            db.RemoveAllNodeEvents(obj.dbNodeKey);          // Remove all events for this node
-            db.removeAllPowerEventsForNode(obj.dbNodeKey);  // Remove all power events for this node
+            db.Remove(obj.dbNodeKey);                                 // Remove node with that id
+            db.Remove('if' + obj.dbNodeKey);                          // Remove interface information
+            db.Remove('nt' + obj.dbNodeKey);                          // Remove notes
+            db.Remove('lc' + obj.dbNodeKey);                          // Remove last connect time
+            db.Remove('si' + obj.dbNodeKey);                          // Remove system information
+            if (db.RemoveSMBIOS) { db.RemoveSMBIOS(obj.dbNodeKey); }  // Remove SMBios data
+            db.RemoveAllNodeEvents(obj.dbNodeKey);                    // Remove all events for this node
+            db.removeAllPowerEventsForNode(obj.dbNodeKey);            // Remove all power events for this node
 
             // Event node deletion
             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'removenode', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
