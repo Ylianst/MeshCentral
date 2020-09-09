@@ -1,2 +1,2 @@
-[[0]] verification code is: [[1]]
-[[0]] access token is: [[1]]
+[[0]] código de verificação é: [[1]]
+[[0]] token de acesso é: [[1]]

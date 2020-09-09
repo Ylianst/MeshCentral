@@ -1,4 +1,4 @@
 [[[SERVERNAME]]] - Tilille Kirjautuminen
-Your login token is: [[[TOKEN]]]
+Kirjautumistunnuksesi on: [[[TOKEN]]]
 ~
-This token can only be used once and is valid for 5 minutes.
+Tätä tunnusta voidaan käyttää vain kerran ja se on voimassa 5 minuuttia.

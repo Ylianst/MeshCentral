@@ -1583,8 +1583,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
 
                                     // Notify mesh change
-                                    change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
-                                    var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: deluserdomain.id, invite: mesh.invite };
+                                    change = 'Removed user ' + deluser.name + ' from device group ' + mesh.name;
+                                    var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msgid: 72, msgArgs: [deluser.name, mesh.name], msg: change, domain: deluserdomain.id, invite: mesh.invite };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [deluser._id, user._id]), obj, event);
                                 }
@@ -1755,9 +1755,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         var event, targets = ['*', 'server-users'];
                                         if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
                                         if (newuser.email == null) {
-                                            event = { etype: 'user', userid: newuser._id, username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + newuser.name, domain: domain.id };
+                                            event = { etype: 'user', userid: newuser._id, username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 64, msgArgs: [newuser.name], msg: 'Account created, username is ' + newuser.name, domain: domain.id };
                                         } else {
-                                            event = { etype: 'user', userid: newuser._id, username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + newuser.email, domain: domain.id };
+                                            event = { etype: 'user', userid: newuser._id, username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 65, msgArgs: [newuser.email], msg: 'Account created, email is ' + newuser.email, domain: domain.id };
                                         }
                                         if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                         parent.parent.DispatchEvent(targets, obj, event);
@@ -1859,7 +1859,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         db.Set(ugroup);
 
                                         // Notify user group change
-                                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + newuser.name + ' to user group ' + ugroup.name, addUserDomain: newuserdomain.id };
+                                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 80, msgArgs: [newuser.name, ugroup.name], msg: 'Added user ' + newuser.name + ' to user group ' + ugroup.name, addUserDomain: newuserdomain.id };
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                                         parent.parent.DispatchEvent(['*', ugroup._id, user._id, newuser._id], obj, event);
                                     }
@@ -1878,9 +1878,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     var event, targets = ['*', 'server-users'];
                                     if (newuser.groups) { for (var i in newuser.groups) { targets.push('server-users:' + i); } }
                                     if (command.email == null) {
-                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, username is ' + command.username, domain: newuserdomain.id };
+                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 64, msgArgs: [command.username], msg: 'Account created, username is ' + command.username, domain: newuserdomain.id };
                                     } else {
-                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msg: 'Account created, email is ' + command.email.toLowerCase(), domain: newuserdomain.id };
+                                        event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 65, msgArgs: [command.email.toLowerCase()], msg: 'Account created, email is ' + command.email.toLowerCase(), domain: newuserdomain.id };
                                     }
                                     if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                                     parent.parent.DispatchEvent(targets, obj, event);
@@ -1991,7 +1991,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             var targets = ['*', 'server-users', user._id, chguser._id];
                             if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Account changed: ' + chguser.name, domain: edituserdomain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: edituserdomain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         }
@@ -2084,7 +2084,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                             // Notify user change
                                             var targets = ['*', 'server-users', user._id, xuser._id];
-                                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msg: 'User group membership changed: ' + xuser.name, domain: ugrpdomain.id };
+                                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msgid: 67, msgArgs: [xuser.name], msg: 'User group membership changed: ' + xuser.name, domain: ugrpdomain.id };
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             //parent.parent.DispatchEvent(targets, obj, event);
                                             pendingDispatchEvents.push([targets, obj, event]);
@@ -2097,7 +2097,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             db.Set(xmesh);
 
                                             // Notify mesh change
-                                            var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Added group ' + ugrp.name + ' to mesh ' + xmesh.name, domain: ugrpdomain.id, invite: mesh.invite };
+                                            var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msgid: 68, msgArgs: [ugrp.name, xmesh.name], msg: 'Added user group ' + ugrp.name + ' to device group ' + xmesh.name, domain: ugrpdomain.id, invite: mesh.invite };
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                             //parent.parent.DispatchEvent(['*', xmesh._id, user._id], obj, event);
                                             pendingDispatchEvents.push([parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event]);
@@ -2112,7 +2112,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (db.changeStream == false) { parent.userGroups[ugrpid] = ugrp; }
 
                         // Event the device group creation
-                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrpid, name: ugrp.name, desc: ugrp.desc, action: 'createusergroup', links: ugrp.links, msg: 'User group created: ' + ugrp.name, ugrpdomain: domain.id };
+                        var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrpid, name: ugrp.name, desc: ugrp.desc, action: 'createusergroup', links: ugrp.links, msgid: 69, msgArgv: [ugrp.name], msg: 'User group created: ' + ugrp.name, ugrpdomain: domain.id };
                         parent.parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                         // Event any pending events, these must be sent out after the group creation event is displatched.
@@ -2167,7 +2167,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                         // Notify user change
                                         var targets = ['*', 'server-users', user._id, xuser._id];
-                                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msg: 'User group membership changed: ' + xuser.name, delGroupDomain: domain.id };
+                                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msgid: 67, msgArgs: [xuser.name], msg: 'User group membership changed: ' + xuser.name, delGroupDomain: domain.id };
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                         parent.parent.DispatchEvent(targets, obj, event);
                                     }
@@ -2178,7 +2178,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         db.Set(xmesh);
 
                                         // Notify mesh change
-                                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msg: 'Removed group ' + group.name + ' from mesh ' + xmesh.name, domain: delGroupDomain.id };
+                                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msgid: 70, msgArgs: [group.name, xmesh.name], msg: 'Removed user group ' + group.name + ' from device group ' + xmesh.name, domain: delGroupDomain.id };
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event);
                                     }
@@ -2267,7 +2267,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, chguser._id];
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'User group membership changed: ' + chguser.name, domain: addUserDomain.id };
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: addUserDomain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2285,7 +2285,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(group);
 
                             // Notify user group change
-                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Added user ' + chguser.name + ' to user group ' + group.name, addUserDomain: domain.id };
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 71, msgArgs: [chguser.name, group.name], msg: 'Added user ' + chguser.name + ' to user group ' + group.name, addUserDomain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id, chguserid], obj, event);
                         }
@@ -2334,7 +2334,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Notify user change
                             var targets = ['*', 'server-users', user._id, chguser._id];
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'User group membership changed: ' + chguser.name, domain: removeUserDomain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: removeUserDomain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2353,7 +2353,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Notify user group change
                                 if (change) {
-                                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
+                                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 72, msgArgs: [chguser.name, group.name], msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                                     parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
                                 }
@@ -2395,7 +2395,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Notify change
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Mesh notification change.', domain: domain.id };
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 73, msg: 'Device group notification changed', domain: domain.id };
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2452,7 +2452,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                             var targets = ['*', 'server-users'];
                                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Account password changed: ' + user.name, domain: domain.id };
+                                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 74, msgArgs: [user.name], msg: 'Account password changed: ' + user.name, domain: domain.id };
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2511,7 +2511,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 var targets = ['*', 'server-users', user._id, chguser._id];
                                 if (chguser.groups) { for (var i in chguser.groups) { targets.push('server-users:' + i); } }
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msg: 'Changed account credentials.', domain: domain.id };
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 75, msg: 'Changed account credentials', domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2674,7 +2674,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent(targets, obj, event);
 
                         // Event the device group creation
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msg: 'Device group created: ' + command.meshname, domain: domain.id, creation: mesh.creation, creatorid: mesh.creatorid, creatorname: mesh.creatorname };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msgid: 76, msgArgs: [command.meshname], msg: 'Device group created: ' + command.meshname, domain: domain.id, creation: mesh.creation, creatorid: mesh.creatorid, creatorname: mesh.creatorname };
                         parent.parent.DispatchEvent(['*', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                         // Log in the auth log
@@ -2721,7 +2721,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (err != null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deletemesh', responseid: command.responseid, result: err })); } catch (ex) { } } return; }
 
                     // Fire the removal event first, because after this, the event will not route
-                    var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msg: 'Device group deleted: ' + command.meshname, domain: domain.id };
+                    var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msgid: 77, msgArgs: [command.meshname], msg: 'Device group deleted: ' + command.meshname, domain: domain.id };
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid), obj, event); // Even if DB change stream is active, this event need to be acted on.
 
                     // Remove all user links to this mesh
@@ -2735,7 +2735,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, xuser._id];
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msg: 'Device group membership changed: ' + xuser.name, domain: domain.id };
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msgid: 78, msgArgs: [xuser.name], msg: 'Device group membership changed: ' + xuser.name, domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -2747,7 +2747,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', user._id, xgroup._id];
-                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: xgroup._id, name: xgroup.name, desc: xgroup.desc, action: 'usergroupchange', links: xgroup.links, msg: 'User group changed: ' + xgroup.name, domain: domain.id };
+                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: xgroup._id, name: xgroup.name, desc: xgroup.desc, action: 'usergroupchange', links: xgroup.links, msgid: 79, msgArgs: [xgroup.name], msg: 'User group changed: ' + xgroup.name, domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -2936,13 +2936,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (newuserid.startsWith('user/')) {
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, newuser._id];
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(newuser), action: 'accountchange', msg: 'Device group membership changed: ' + newuser.name, domain: domain.id };
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(newuser), action: 'accountchange', msgid: 78, msgArgs: [newuser.name], msg: 'Device group membership changed: ' + newuser.name, domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             } else if (newuserid.startsWith('ugrp/')) {
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', user._id, newuser._id];
-                                var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, desc: newuser.desc, action: 'usergroupchange', links: newuser.links, msg: 'User group changed: ' + newuser.name, domain: domain.id };
+                                var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, desc: newuser.desc, action: 'usergroupchange', links: newuser.links, msgid: 79, msgArgs: [newuser.name], msg: 'User group changed: ' + newuser.name, domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -2952,12 +2952,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Remove userid from the mesh
                                 delete mesh.links[newuserid];
                                 db.Set(mesh);
-                                event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + newuser.name + ' from mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
+                                event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + newuser.name + ' from device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                             } else {
                                 // Add userid to the mesh
                                 mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
                                 db.Set(mesh);
-                                event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to mesh ' + mesh.name, domain: domain.id, invite: mesh.invite };
+                                event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                             }
 
                             // Notify mesh change
@@ -3075,7 +3075,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Notify user change
                                 var targets = ['*', 'server-users', newuserid];
-                                var event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msg: (command.rights == 0) ? ('Removed user device rights for ' + newuser.name) : ('Changed user device rights for ' + newuser.name), domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
+                                var event;
+                                if (command.rights == 0) {
+                                    event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msgid: 81, msgArgs: [newuser.name], msg: 'Removed user device rights for ' + newuser.name, domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
+                                } else {
+                                    event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msgid: 82, msgArgs: [newuser.name], msg: 'Changed user device rights for ' + newuser.name, domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             } else if (newuserid.startsWith('ugrp/')) {
@@ -3083,7 +3088,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', newuser._id];
-                                var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, action: 'usergroupchange', links: newuser.links, msg: 'User group changed: ' + newuser.name, domain: domain.id };
+                                var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, action: 'usergroupchange', links: newuser.links, msgid: 79, msgArgs: [newuser.name], msg: 'User group changed: ' + newuser.name, domain: domain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -3096,7 +3101,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(parent.cleanDevice(node));
 
                         // Event the node change
-                        var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
+                        var event;
+                        if (command.rights == 0) {
+                            event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msgid: 81, msgArgs: [node.name], msg: 'Removed user device rights for ' + node.name, node: parent.CloneSafeNode(node) }
+                        } else {
+                            event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msgid: 82, msgArgs: [node.name], msg: 'Changed user device rights for ' + node.name, node: parent.CloneSafeNode(node) }
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(dispatchTargets, obj, event);
                     }
@@ -3172,13 +3182,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (deluserid.startsWith('user/')) {
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, deluser._id];
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(deluser), action: 'accountchange', msg: 'Device group membership changed: ' + deluser.name, domain: xdomain.id };
+                                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(deluser), action: 'accountchange', msgid: 78, msgArgs: [deluser.name], msg: 'Device group membership changed: ' + deluser.name, domain: xdomain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             } else if (deluserid.startsWith('ugrp/')) {
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', user._id, deluser._id];
-                                var event = { etype: 'ugrp', username: user.name, ugrpid: deluser._id, name: deluser.name, desc: deluser.desc, action: 'usergroupchange', links: deluser.links, msg: 'User group changed: ' + deluser.name, domain: xdomain.id };
+                                var event = { etype: 'ugrp', username: user.name, ugrpid: deluser._id, name: deluser.name, desc: deluser.desc, action: 'usergroupchange', links: deluser.links, msgid: 79, msgArgs: [deluser.name], msg: 'User group changed: ' + deluser.name, domain: xdomain.id };
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -3193,9 +3203,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Notify mesh change
                         var event;
                         if (deluser != null) {
-                            event = { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + deluser.name + ' from group ' + mesh.name, domain: xdomain.id, invite: mesh.invite };
+                            event = { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msgid: 83, msgArgs: [deluser.name, mesh.name], msg: 'Removed user ' + deluser.name + ' from device group ' + mesh.name, domain: xdomain.id, invite: mesh.invite };
                         } else {
-                            event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from group ' + mesh.name, domain: xdomain.id, invite: mesh.invite };
+                            event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msgid: 83, msgArgs: [(deluserid.split('/')[2]), mesh.name], msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from device group ' + mesh.name, domain: xdomain.id, invite: mesh.invite };
                         }
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, command.userid]), obj, event);
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removemeshuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -3282,7 +3292,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Set(device);
 
                             // Event the new node
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msg: 'Added device ' + command.devicename + ' to mesh ' + mesh.name, domain: domain.id });
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
                         });
                     }
                     break;
@@ -3389,7 +3399,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Event the node change
                             var newMesh = parent.meshes[command.meshid];
-                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msgid: 85, msgArgs: [node.name, newMesh.name], msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
 
@@ -3435,7 +3445,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                             // Notify user change
                                             var targets = ['*', 'server-users', cuser._id];
-                                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
+                                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             parent.parent.DispatchEvent(targets, obj, event);
                                         }
@@ -3444,7 +3454,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
 
                             // Event node deletion
-                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msg: 'Removed device ' + node.name + ' from group ' + parent.meshes[node.meshid].name, domain: domain.id };
+                            var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msgid: 87, msgArgs: [node.name, parent.meshes[node.meshid].name], msg: 'Removed device ' + node.name + ' from device group ' + parent.meshes[node.meshid].name, domain: domain.id };
                             // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
                             //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
@@ -3963,7 +3973,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Notify change
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: command.enabled ? "Enabled email two-factor authentication." :"Disabled email two-factor authentication.", domain: domain.id };
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: command.enabled ? 88 : 89, msg: command.enabled ? "Enabled email two-factor authentication." :"Disabled email two-factor authentication.", domain: domain.id };
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
@@ -4005,7 +4015,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Notify change
                             var targets = ['*', 'server-users', user._id];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added authentication application.', domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 90, msg: 'Added authentication application', domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         } else {
@@ -4030,7 +4040,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Notify change
                             var targets = ['*', 'server-users', user._id];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed authentication application.', domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 91, msg: 'Removed authentication application', domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         } else {
@@ -4045,7 +4055,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported == false) break;
 
-                    var actionTaken = false, actionText = null;
+                    var actionTaken = false, actionText = null, actionId = 0;
                     if ((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 1024) == 0)) { // Don't allow generation of tokens if the account is settings locked
                         // Perform a sub-action
                         if (command.subaction == 1) { // Generate a new set of tokens
@@ -4054,11 +4064,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             user.otpkeys = { keys: [] };
                             for (var i = 0; i < 10; i++) { user.otpkeys.keys[i] = { p: randomNumbers[i], u: true } }
                             actionTaken = true;
-                            actionText = 'New 2FA backup codes generated.';
+                            actionId = 92;
+                            actionText = "New 2FA backup codes generated";
                         } else if (command.subaction == 2) { // Clear all tokens
                             actionTaken = (user.otpkeys != null);
                             delete user.otpkeys;
-                            if (actionTaken) { actionText = '2FA backup codes cleared.'; }
+                            if (actionTaken) {
+                                actionId = 93;
+                                actionText = "2FA backup codes cleared";
+                            }
                         }
 
                         // Save the changed user
@@ -4074,7 +4088,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (actionText != null) {
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: actionText, domain: domain.id };
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: actionId, msg: actionText, domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
@@ -4112,7 +4126,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Notify change
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed security key.', domain: domain.id };
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 94, msg: 'Removed security key', domain: domain.id };
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
@@ -4162,7 +4176,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Notify change TODO: Should be done on all sessions/servers for this user.
                             var targets = ['*', 'server-users', user._id];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id };
+                            var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 95, msg: 'Added security key', domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         } else {
@@ -4216,7 +4230,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Notify change
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Added security key.', domain: domain.id };
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 95, msg: 'Added security key', domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     } else {
@@ -4260,7 +4274,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 db.SetUser(user);
 
                 // Event the change
-                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Verified phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 96, msgArgs: [user.name], msg: 'Verified phone number of user ' + EscapeHtml(user.name), domain: domain.id };
                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                 parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
@@ -4275,7 +4289,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 db.SetUser(user);
 
                 // Event the change
-                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+                var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                 parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 

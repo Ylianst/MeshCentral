@@ -10620,7 +10620,41 @@
             60: "Removed user device rights for {0}",
             61: "Changed user device rights for {0}",
             62: "Removed user {0} from user group {1}", 
-            63: "Account removed"
+            63: "Account removed",
+            64: "Account created, username is {0}",
+            65: "Account created, email is {0}",
+            66: "Account changed: {0}",
+            67: "User group membership changed: {0}",
+            68: "Added user group {0} to device group {1}",
+            69: "User group created: {0}",
+            70: "Removed user group {0} from device group {1}",
+            71: "Added user {0} to user group {1}",
+            72: "Removed user {0} from user group {1}",
+            73: "Device group notification changed",
+            74: "Account password changed: {0}",
+            75: "Changed account credentials",
+            76: "Device group created: {0}",
+            77: "Device group deleted: {0}",
+            78: "Device group membership changed: {0}",
+            79: "User group changed: {0}",
+            80: "Added user {0} to user group {1}",
+            81: "Removed user device rights for {0}",
+            82: "Changed user device rights for {0}",
+            83: "Removed user {0} from device group {1}",
+            84: "Added device {0} to device group {1}",
+            85: "Moved device {0} to group {1}",
+            86: "Removed user device rights for {0}",
+            87: "Removed device {0} from device group {1}",
+            88: "Enabled email two-factor authentication",
+            89: "Disabled email two-factor authentication",
+            90: "Added authentication application",
+            91: "Removed authentication application",
+            92: "New 2FA backup codes generated",
+            93: "2FA backup codes cleared",
+            94: "Removed security key",
+            95: "Added security key",
+            96: "Verified phone number of user {0}",
+            97: "Removed phone number of user {0}"
         };
 
         // Highlights the device being hovered
@@ -10654,7 +10688,7 @@
                     } else {
                         msg = eventsMessageId[event.msgid];
                         if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
-                        msg = 'x' + EscapeHtml(msg).split('(R)').join('&reg;');
+                        msg = EscapeHtml(msg).split('(R)').join('&reg;');
                     }
                     if (event.nodeid) {
                         var node = getNodeFromId(event.nodeid);

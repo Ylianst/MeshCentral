@@ -1,4 +1,4 @@
-[[[SERVERNAME]]] - Account Login
-Your login token is: [[[TOKEN]]]
+[[[SERVERNAME]]] - Login da conta
+Seu token de login é: [[[TOKEN]]]
 ~
-This token can only be used once and is valid for 5 minutes.
+Este token só pode ser usado uma vez e é válido por 5 minutos.
