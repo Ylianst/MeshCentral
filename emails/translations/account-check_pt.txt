@@ -1,6 +1,6 @@
-[[[SERVERNAME]]] - Email Verification
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+[[[SERVERNAME]]] - Verificação de Email
+Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está realizando uma verificação de e-mail. Acesse o seguinte link para concluir o processo:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
 ~
-If you did not initiate this request, please ignore this mail.
+Se você não iniciou esta solicitação, ignore este e-mail.
