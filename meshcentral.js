@@ -1645,7 +1645,7 @@ function CreateMeshCentralServer(config, args) {
         // If the database is not setup, exit now.
         if (!obj.db) return;
 
-        // Send event to syslog is needed
+        // Send event to syslog if needed
         if (obj.syslog && event.msg) { obj.syslog.log(obj.syslog.LOG_INFO, event.msg); }
         if (obj.syslogjson) { obj.syslogjson.log(obj.syslogjson.LOG_INFO, JSON.stringify(event)); }
 
