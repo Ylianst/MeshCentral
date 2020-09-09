@@ -282,11 +282,11 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                     // Log the connection
                     if (sessionUser != null) {
-                        var msg = 'Started relay session';
-                        if (obj.req.query.p == 1) { msg = 'Started terminal session'; }
-                        else if (obj.req.query.p == 2) { msg = 'Started desktop session'; }
-                        else if (obj.req.query.p == 5) { msg = 'Started file management session'; }
-                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msg: msg + ' \"' + obj.id + '\" from ' + obj.peer.req.clientIp + ' to ' + req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
+                        var msg = 'Started relay session', msgid = 13;
+                        if (obj.req.query.p == 1) { msg = 'Started terminal session'; msgid = 14; }
+                        else if (obj.req.query.p == 2) { msg = 'Started desktop session'; msgid = 15; }
+                        else if (obj.req.query.p == 5) { msg = 'Started file management session'; msgid = 16; }
+                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msgid: msgid, msgArgs: [obj.id, obj.peer.req.clientIp, req.clientIp], msg: msg + ' \"' + obj.id + '\" from ' + obj.peer.req.clientIp + ' to ' + req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
                         parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
                     }
                 } else {
@@ -388,15 +388,15 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
 
                     // Log the disconnection
                     if (ws.time) {
-                        var msg = 'Ended relay session';
-                        if (obj.req.query.p == 1) { msg = 'Ended terminal session'; }
-                        else if (obj.req.query.p == 2) { msg = 'Ended desktop session'; }
-                        else if (obj.req.query.p == 5) { msg = 'Ended file management session'; }
+                        var msg = 'Ended relay session', msgid = 9;
+                        if (obj.req.query.p == 1) { msg = 'Ended terminal session', msgid = 10; }
+                        else if (obj.req.query.p == 2) { msg = 'Ended desktop session', msgid = 11; }
+                        else if (obj.req.query.p == 5) { msg = 'Ended file management session', msgid = 12; }
                         if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             parent.parent.DispatchEvent(['*', user._id], obj, event);
                         } else if (peer.user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: peer.user._id, username: peer.user.name, msgid: msgid, msgArgs: [obj.id, obj.req.clientIp, obj.peer.req.clientIp, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + obj.id + '\" from ' + obj.req.clientIp + ' to ' + obj.peer.req.clientIp + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: obj.req.query.p, nodeid: obj.req.query.nodeid };
                             parent.parent.DispatchEvent(['*', peer.user._id], obj, event);
                         }
                     }

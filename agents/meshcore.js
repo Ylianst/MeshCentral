@@ -366,6 +366,19 @@ function createMeshCore(agent) {
             if (state.userid) { msg.userid = state.userid; }
             if (state.username) { msg.username = state.username; }
             if (state.sessionid) { msg.sessionid = state.sessionid; }
+            if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
+        }
+        mesh.SendCommand(msg);
+    }
+
+    // Add to the server event log, use internationalized events
+    function MeshServerLogEx(id, args, msg, state) {
+        var msg = { action: 'log', msgid: id, msgArgs: args, msg: msg };
+        if (state) {
+            if (state.userid) { msg.userid = state.userid; }
+            if (state.username) { msg.username = state.username; }
+            if (state.sessionid) { msg.sessionid = state.sessionid; }
+            if (state.remoteaddr) { msg.remoteaddr = state.remoteaddr; }
         }
         mesh.SendCommand(msg);
     }
@@ -725,7 +738,7 @@ function createMeshCore(agent) {
                     switch (data.type) {
                         case 'console': { // Process a console command
                             if (data.value && data.sessionid) {
-                                MeshServerLog("Processing console command: " + data.value, data);
+                                MeshServerLogEx(17, [data.value], "Processing console command: " + data.value, data);
                                 var args = splitArgs(data.value);
                                 processConsoleCommand(args[0].toLowerCase(), parseArgs(args), data.rights, data.sessionid);
                             }
@@ -776,7 +789,7 @@ function createMeshCore(agent) {
                         case 'messagebox': {
                             // Display a message box
                             if (data.title && data.msg) {
-                                MeshServerLog("Displaying message box, title=" + data.title + ", message=" + data.msg, data);
+                                MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
                                 data.msg = data.msg.split('\r').join('\\r').split('\n').join('\\n');
                                 try { require('message-box').create(data.title, data.msg, 120); } catch (ex) { }
                             }
@@ -794,7 +807,7 @@ function createMeshCore(agent) {
                         case 'pskill': {
                             // Kill a process
                             if (data.value) {
-                                MeshServerLog("Killing process " + data.value, data);
+                                MeshServerLogEx(19, [data.value], "Killing process " + data.value, data);
                                 try { process.kill(data.value); } catch (e) { sendConsoleText("pskill: " + JSON.stringify(e)); }
                             }
                             break;
@@ -867,7 +880,7 @@ function createMeshCore(agent) {
                             }
                         case 'openUrl': {
                             // Open a local web browser and return success/fail
-                            MeshServerLog("Opening: " + data.url, data);
+                            MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
                             sendConsoleText("OpenURL: " + data.url);
                             if (data.url) { mesh.SendCommand({ action: 'msg', type: 'openUrl', url: data.url, sessionid: data.sessionid, success: (openUserDesktopUrl(data.url) != null) }); }
                             break;
@@ -878,14 +891,14 @@ function createMeshCore(agent) {
                             if (require('MeshAgent').isService) {
                                 require('clipboard').dispatchRead().then(function (str) {
                                     if (str) {
-                                        MeshServerLog("Getting clipboard content, " + str.length + " byte(s)", data);
+                                        MeshServerLogEx(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data);
                                         mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
                                     }
                                 });
                             } else {
                                 require("clipboard").read().then(function (str) {
                                     if (str) {
-                                        MeshServerLog("Getting clipboard content, " + str.length + " byte(s)", data);
+                                        MeshServerLogEx(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data);
                                         mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
                                     }
                                 });
@@ -896,7 +909,7 @@ function createMeshCore(agent) {
                             // Set the load clipboard to a user value
                             //sendConsoleText('setClip: ' + JSON.stringify(data));
                             if (typeof data.data == 'string') {
-                                MeshServerLog("Setting clipboard content, " + data.data.length + " byte(s)", data);
+                                MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
                                 if (require('MeshAgent').isService) { require('clipboard').dispatchWrite(data.data); } else { require("clipboard")(data.data); } // Set the clipboard
                                 mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                             }
@@ -919,7 +932,7 @@ function createMeshCore(agent) {
                 }
                 case 'acmactivate': {
                     if (amt != null) {
-                        MeshServerLog("Attempting Intel AMT ACM mode activation", data);
+                        MeshServerLogEx(23, null, "Attempting Intel AMT ACM mode activation", data);
                         amt.setAcmResponse(data);
                     }
                     break;
@@ -932,7 +945,7 @@ function createMeshCore(agent) {
                 }
                 case 'runcommands': {
                     if (mesh.cmdchild != null) { sendConsoleText("Run commands can't execute, already busy."); break; }
-                    MeshServerLog("Running commands", data);
+                    MeshServerLogEx(24, null, "Running commands", data);
                     sendConsoleText("Run commands: " + data.cmds);
                     if (process.platform == 'win32') {
                         if (data.type == 1) {
@@ -978,7 +991,7 @@ function createMeshCore(agent) {
                         var forced = 0;
                         if (data.forced == 1) { forced = 1; }
                         data.actiontype = parseInt(data.actiontype);
-                        MeshServerLog("Performing power action=" + data.actiontype + ", forced=" + forced, data);
+                        MeshServerLogEx(25, [data.actiontype, forced], "Performing power action=" + data.actiontype + ", forced=" + forced, data);
                         sendConsoleText("Performing power action=" + data.actiontype + ", forced=" + forced + '.');
                         var r = mesh.ExecPowerState(data.actiontype, forced);
                         sendConsoleText("ExecPowerState returned code: " + r);
@@ -993,7 +1006,7 @@ function createMeshCore(agent) {
                 case 'toast': {
                     // Display a toast message
                     if (data.title && data.msg) {
-                        MeshServerLog("Displaying toast message, title=" + data.title + ", message=" + data.msg, data);
+                        MeshServerLogEx(26, [data.title, data.msg], "Displaying toast message, title=" + data.title + ", message=" + data.msg, data);
                         data.msg = data.msg.split('\r').join('\\r').split('\n').join('\\n');
                         try { require('toaster').Toast(data.title, data.msg); } catch (ex) { }
                     }
@@ -1002,7 +1015,7 @@ function createMeshCore(agent) {
                 case 'openUrl': {
                     // Open a local web browser and return success/fail
                     //sendConsoleText('OpenURL: ' + data.url);
-                    MeshServerLog("Opening: " + data.url, data);
+                    MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
                     if (data.url) { mesh.SendCommand({ action: 'openUrl', url: data.url, sessionid: data.sessionid, success: (openUserDesktopUrl(data.url) != null) }); }
                     break;
                 }
@@ -1428,7 +1441,7 @@ function createMeshCore(agent) {
                             function ()
                             {
                                 // Success
-                                MeshServerLog("Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+                                MeshServerLogEx(27, null, "Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
                                 this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
                                 this.retPromise._consent = null;
                                 this.retPromise._res();
@@ -1436,7 +1449,7 @@ function createMeshCore(agent) {
                             function (e)
                             {
                                 // Denied
-                                MeshServerLog("Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+                                MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
                                 this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                                 this.retPromise._rej(e.toString());
                             });
@@ -1742,7 +1755,7 @@ function createMeshCore(agent) {
                                     this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.users.join(', ')).replace('{1}', this.httprequest.desktop.kvm.rusers.join(', ')), require('MeshAgent')._tsid);
                                     this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                                     this.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                        MeshServerLog("Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                        MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
                                         for (var i in this.httprequest.desktop.kvm._pipedStreams) {
                                             this.httprequest.desktop.kvm._pipedStreams[i].end();
                                         }
@@ -1795,7 +1808,7 @@ function createMeshCore(agent) {
                             {
                                 // Success
                                 this.ws._consentpromise = null;
-                                MeshServerLog("Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                MeshServerLogEx(30, null, "Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
                                     // User Notifications is required
@@ -1814,17 +1827,17 @@ function createMeshCore(agent) {
                                     }
                                     try {
                                         this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.users.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.rusers.join(', ')), require('MeshAgent')._tsid);
-                                        MeshServerLog("Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                        MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                     }
                                     catch (xx) {
                                         if (process.platform != 'darwin') {
-                                            MeshServerLog("Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                            MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                         }
                                     }
                                     if (this.ws.httprequest.desktop.kvm.connectionBar) {
                                         this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
                                         this.ws.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                            MeshServerLog("Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                            MeshServerLogEx(33, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
                                             for (var i in this.httprequest.desktop.kvm._pipedStreams) {
                                                 this.httprequest.desktop.kvm._pipedStreams[i].end();
                                             }
@@ -1839,14 +1852,14 @@ function createMeshCore(agent) {
                             {
                                 // User Consent Denied/Failed
                                 this.ws._consentpromise = null;
-                                MeshServerLog("Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                             });
                     } else {
                         // User Consent Prompt is not required
                         if (this.httprequest.consent && (this.httprequest.consent & 1)) {
                             // User Notifications is required
-                            MeshServerLog("Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                            MeshServerLogEx(35, null, "Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                             var notifyMessage = this.httprequest.realname + " started a remote desktop session.", notifyTitle = "MeshCentral";
                             if (this.httprequest.soptions != null) {
                                 if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
@@ -1854,7 +1867,7 @@ function createMeshCore(agent) {
                             }
                             try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
                         } else {
-                            MeshServerLog("Started remote desktop without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                            MeshServerLogEx(36, null, "Started remote desktop without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
                         if (this.httprequest.consent && (this.httprequest.consent & 0x40)) {
                             // Connection Bar is required
@@ -1864,15 +1877,15 @@ function createMeshCore(agent) {
                             }
                             try {
                                 this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid);
-                                MeshServerLog("Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                MeshServerLogEx(37, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
                             }
                             catch (xx) {
-                                MeshServerLog("Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                MeshServerLogEx(38, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
                             }
                             if (this.httprequest.desktop.kvm.connectionBar) {
                                 this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                                 this.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                    MeshServerLog("Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                                    MeshServerLogEx(39, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
                                     for (var i in this.httprequest.desktop.kvm._pipedStreams) {
                                         this.httprequest.desktop.kvm._pipedStreams[i].end();
                                     }
@@ -1937,7 +1950,7 @@ function createMeshCore(agent) {
                             {
                                 // Success
                                 this.ws._consentpromise = null;
-                                MeshServerLog("Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                MeshServerLogEx(40, null, "Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
                                 if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
                                     // User Notifications is required
@@ -1954,14 +1967,14 @@ function createMeshCore(agent) {
                             {
                                 // User Consent Denied/Failed
                                 this.ws._consentpromise = null;
-                                MeshServerLog("Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+                                MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
                                 this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                             });
                     } else {
                         // User Consent Prompt is not required
                         if (this.httprequest.consent && (this.httprequest.consent & 4)) {
                             // User Notifications is required
-                            MeshServerLog("Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                            MeshServerLogEx(42, null, "Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                             var notifyMessage = this.httprequest.realname + " started a remote file session.", notifyTitle = "MeshCentral";
                             if (this.httprequest.soptions != null) {
                                 if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
@@ -1969,7 +1982,7 @@ function createMeshCore(agent) {
                             }
                             try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
                         } else {
-                            MeshServerLog("Started remote files without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                            MeshServerLogEx(43, null, "Started remote files without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
                         this.resume();
                     }
@@ -2031,7 +2044,7 @@ function createMeshCore(agent) {
                     case 'mkdir': {
                         // Create a new empty folder
                         fs.mkdirSync(cmd.path);
-                        MeshServerLog("Create folder: \"" + cmd.path + "\"", this.httprequest);
+                        MeshServerLogEx(44, [cmd.path], "Create folder: \"" + cmd.path + "\"", this.httprequest);
                         break;
                     }
                     case 'rm': {
@@ -2040,9 +2053,13 @@ function createMeshCore(agent) {
                             var p = obj.path.join(cmd.path, cmd.delfiles[i]), delcount = 0;
                             try { delcount = deleteFolderRecursive(p, cmd.rec); } catch (e) { }
                             if ((delcount == 1) && !cmd.rec) {
-                                MeshServerLog("Delete: \"" + p + "\"", this.httprequest);
+                                MeshServerLogEx(45, [p], "Delete: \"" + p + "\"", this.httprequest);
                             } else {
-                                MeshServerLog((cmd.rec ? "Delete recursive: \"" : "Delete: \"") + p + "\", " + delcount + " element(s) removed", this.httprequest);
+                                if (cmd.rec) {
+                                    MeshServerLogEx(46, [p, delcount], "Delete recursive: \"" + p + "\", " + delcount + " element(s) removed", this.httprequest);
+                                } else {
+                                    MeshServerLogEx(47, [p, delcount], "Delete: \"" + p + "\", " + delcount + " element(s) removed", this.httprequest);
+                                }
                             }
                         }
                         break;
@@ -2062,7 +2079,7 @@ function createMeshCore(agent) {
                         // Rename a file or folder
                         var oldfullpath = obj.path.join(cmd.path, cmd.oldname);
                         var newfullpath = obj.path.join(cmd.path, cmd.newname);
-                        MeshServerLog('Rename: \"' + oldfullpath + '\" to \"' + cmd.newname + '\"', this.httprequest);
+                        MeshServerLogEx(48, [oldfullpath, cmd.newname], 'Rename: \"' + oldfullpath + '\" to \"' + cmd.newname + '\"', this.httprequest);
                         try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
                         break;
                     }
@@ -2077,7 +2094,7 @@ function createMeshCore(agent) {
                                     if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
                                 }
                             }
-                            MeshServerLog('Download: \"' + cmd.path + '\"', this.httprequest);
+                            MeshServerLogEx(49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
                             if ((cmd.path == null) || (this.filedownload != null)) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
                             this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
                             try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
@@ -2124,7 +2141,7 @@ function createMeshCore(agent) {
                         if (cmd.path == undefined) break;
                         var filepath = cmd.name ? obj.path.join(cmd.path, cmd.name) : cmd.path;
                         this.httprequest.uploadFilePath = filepath;
-                        MeshServerLog('Upload: \"' + filepath + '\"', this.httprequest);
+                        MeshServerLogEx(50, [filepath], 'Upload: \"' + filepath + '\"', this.httprequest);
                         try { this.httprequest.uploadFile = fs.openSync(filepath, 'wbN'); } catch (e) { this.write(Buffer.from(JSON.stringify({ action: 'uploaderror', reqid: cmd.reqid }))); break; }
                         this.httprequest.uploadFileid = cmd.reqid;
                         if (this.httprequest.uploadFile) { this.write(Buffer.from(JSON.stringify({ action: 'uploadstart', reqid: this.httprequest.uploadFileid }))); }
@@ -2157,7 +2174,7 @@ function createMeshCore(agent) {
                         // Copy a bunch of files from scpath to dspath
                         for (var i in cmd.names) {
                             var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
-                            MeshServerLog('Copy: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
+                            MeshServerLogEx(51, [sc, ds], 'Copy: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
                             if (sc != ds) { try { fs.copyFileSync(sc, ds); } catch (e) { } }
                         }
                         break;
@@ -2166,7 +2183,7 @@ function createMeshCore(agent) {
                         // Move a bunch of files from scpath to dspath
                         for (var i in cmd.names) {
                             var sc = obj.path.join(cmd.scpath, cmd.names[i]), ds = obj.path.join(cmd.dspath, cmd.names[i]);
-                            MeshServerLog('Move: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
+                            MeshServerLogEx(52, [sc, ds], 'Move: \"' + sc + '\" to \"' + ds + '\"', this.httprequest);
                             if (sc != ds) { try { fs.copyFileSync(sc, ds); fs.unlinkSync(sc); } catch (e) { } }
                         }
                         break;
@@ -2279,7 +2296,7 @@ function createMeshCore(agent) {
                     // Lock the current user out of the desktop
                     try {
                         if (process.platform == 'win32') {
-                            MeshServerLog("Locking remote user out of desktop", ws.httprequest);
+                            MeshServerLogEx(53, null, "Locking remote user out of desktop", ws.httprequest);
                             var child = require('child_process');
                             child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
                         }

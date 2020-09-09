@@ -130,7 +130,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // Log joining the multiplex session
             if (obj.startTime != null) {
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Joined desktop multiplex session", protocol: 2 };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 4, msg: "Joined desktop multiplex session", protocol: 2 };
                 parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
             }
 
@@ -157,7 +157,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
         // Log multiplex session start
         if ((obj.agent != null) && (obj.viewers.length > 0) && (obj.startTime == null)) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.viewers[0].user._id, username: obj.viewers[0].user.name, msg: "Started desktop multiplex session", protocol: 2 };
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: obj.viewers[0].user._id, username: obj.viewers[0].user.name, msgid: 6, msg: "Started desktop multiplex session", protocol: 2 };
             parent.parent.DispatchEvent(['*', obj.nodeid, obj.viewers[0].user._id, obj.meshid], obj, event);
             obj.startTime = Date.now();
         }
@@ -206,7 +206,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
             // Log leaving the multiplex session
             if (obj.startTime != null) {
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msg: "Left the desktop multiplex session", protocol: 2 };
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, userid: peer.user._id, username: peer.user.name, msgid: 5, msg: "Left the desktop multiplex session", protocol: 2 };
                 parent.parent.DispatchEvent(['*', obj.nodeid, peer.user._id, obj.meshid], obj, event);
             }
 
@@ -243,7 +243,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
                 // Add a event entry about this recording
                 var basefile = parent.parent.path.basename(filename);
-                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msg: "Finished recording session" + (obj.sessionLength ? (', ' + obj.sessionLength + ' second(s)') : ''), filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
+                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: obj.nodeid, msgid: 7, mshArgs: [obj.sessionLength], msg: "Finished recording session" + (obj.sessionLength ? (', ' + obj.sessionLength + ' second(s)') : ''), filename: basefile, size: obj.recordingFileSize, protocol: 2, icon: obj.icon, name: obj.name, meshid: obj.meshid, userids: obj.userIds, multiplex: true };
                 var mesh = parent.meshes[obj.meshid];
                 if (mesh != null) { event.meshname = mesh.name; }
                 if (obj.sessionStart) { event.startTime = obj.sessionStart; event.lengthTime = obj.sessionLength; }
@@ -255,7 +255,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
 
         // Log end of multiplex session
         if (obj.startTime != null) {
-            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msg: "Closed desktop multiplex session" + ', ' + Math.floor((Date.now() - obj.startTime) / 1000) + ' second(s)', protocol: 2 };
+            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, nodeid: obj.nodeid, msgid: 8, msgArgs: [Math.floor((Date.now() - obj.startTime) / 1000)], msg: "Closed desktop multiplex session" + ', ' + Math.floor((Date.now() - obj.startTime) / 1000) + ' second(s)', protocol: 2 };
             parent.parent.DispatchEvent(['*', obj.nodeid, obj.meshid], obj, event);
             obj.startTime = null;
         }

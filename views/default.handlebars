@@ -10556,6 +10556,73 @@
         // MY EVENTS
         //
 
+        // Events
+        var eventsMessageId = {
+            1: "Account login",
+            2: "Account logout",
+            3: "Changed language from {1} to {2}",
+            4: "Joined desktop multiplex session",
+            5: "Left the desktop multiplex session",
+            6: "Started desktop multiplex session",
+            7: "Finished recording session, {0} second(s)",
+            8: "Closed desktop multiplex session, {0} second(s)",
+            9: "Ended relay session \"{0}\" from {1} to {2}, {3} second(s)",
+            10: "Ended terminal session \"{0}\" from {1} to {2}, {3} second(s)",
+            11: "Ended desktop session \"{0}\" from {1} to {2}, {3} second(s)",
+            12: "Ended file management session \"{0}\" from {1} to {2}, {3} second(s)",
+            13: "Started relay session \"{0}\" from {1} to {2}",
+            14: "Started terminal session \"{0}\" from {1} to {2}",
+            15: "Started desktop session \"{0}\" from {1} to {2}",
+            16: "Started file management session \"{0}\" from {1} to {2}",
+            17: "Processing console command: \"{0}\"",
+            18: "Displaying message box, title=\"{0}\", message=\"{1}\"",
+            19: "Killing process {0}",
+            20: "Opening: {0}",
+            21: "Getting clipboard content, {0} byte(s)",
+            22: "Setting clipboard content, {0} byte(s)",
+            23: "Attempting Intel(R) AMT ACM mode activation",
+            24: "Running commands",
+            25: "Performing power action={0}, forced={1}",
+            26: "Displaying toast message, title=\"{0}\", message=\"{1}\"",
+            27: "Local user accepted remote terminal request",
+            28: "Local user rejected remote terminal request",
+            29: "Remote Desktop Connection forcefully closed by local user",
+            30: "Starting remote desktop after local user accepted",
+            31: "Remote Desktop Connection Bar Activated/Updated",
+            32: "Remote Desktop Connection Bar Failed or Not Supported",
+            33: "Remote Desktop Connection forcefully closed by local user",
+            34: "Failed to start remote desktop after local user rejected",
+            35: "Started remote desktop with toast notification",
+            36: "Started remote desktop without notification",
+            37: "Remote Desktop Connection Bar Activated/Updated",
+            38: "Remote Desktop Connection Bar Failed or not Supported",
+            39: "Remote Desktop Connection forcefully closed by local user",
+            40: "Starting remote files after local user accepted",
+            41: "Failed to start remote files after local user rejected",
+            42: "Started remote files with toast notification",
+            43: "Started remote files without notification",
+            44: "Create folder: \"{0}\"",
+            45: "Delete: \"{0}\"",
+            46: "Delete recursive: \"{0}\", {1} element(s) removed",
+            47: "Delete: \"{0}\", {1} element(s) removed",
+            48: "Rename: \"{0}\" to \"{1}\"",
+            49: "Download: \"{0}\"",
+            50: "Upload: \"{0}\"",
+            51: "Copy: \"{0}\" to \"{1}\"",
+            52: "Move: \"{0}\" to \"{1}\"",
+            53: "Locking remote user out of desktop",
+            54: "Agent closed session with {0}% agent to server compression. Sent: {1}, Compressed: {2}",
+            55: "Created device group: {0}",
+            56: "Device group undeleted: {0}",
+            57: "Added device {0} to device group {1}",
+            58: "Device requested Intel(R) AMT ACM activation, FQDN: {0}",
+            59: "Changed device {0} from group {1}: {2}",
+            60: "Removed user device rights for {0}",
+            61: "Changed user device rights for {0}",
+            62: "Removed user {0} from user group {1}", 
+            63: "Account removed"
+        };
+
         // Highlights the device being hovered
         function eventMouseHover(e, over) {
             e.children[1].classList.remove('g1s');
@@ -10581,7 +10648,14 @@
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
 
-                    var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                    var msg;
+                    if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
+                        msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                    } else {
+                        msg = eventsMessageId[event.msgid];
+                        if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
+                        msg = 'x' + EscapeHtml(msg).split('(R)').join('&reg;');
+                    }
                     if (event.nodeid) {
                         var node = getNodeFromId(event.nodeid);
                         if (node != null) {
@@ -10596,6 +10670,7 @@
                             msg = EscapeHtml(event.username) + ' &rarr; ' + msg;
                         }
                     }
+                    if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
                     x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }

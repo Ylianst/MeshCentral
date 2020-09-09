@@ -576,7 +576,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (adminUser.links == null) adminUser.links = {};
                 adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
                 db.SetUser(adminUser);
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [adminUser._id, obj.dbNodeKey]), obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msg: 'Mesh created: ' + obj.meshid, domain: domain.id });
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [adminUser._id, obj.dbNodeKey]), obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msgid: 55, msgArgs: [obj.meshid], msg: "Created device group: " + obj.meshid, domain: domain.id });
             }
         } else {
             if ((mesh != null) && (mesh.deleted != null) && (mesh.links)) {
@@ -597,7 +597,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
 
                 // Send out an event indicating this mesh was "created"
-                parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', links: mesh.links, msg: 'Mesh undeleted: ' + mesh._id, domain: domain.id });
+                parent.parent.DispatchEvent(ids, obj, { etype: 'mesh', meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'createmesh', links: mesh.links, msgid: 56, msgArgs: [mesh._id], msg: "Device group undeleted: " + mesh._id, domain: domain.id });
 
                 // Mark the mesh as active
                 delete mesh.deleted;
@@ -813,7 +813,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // This is a temporary agent, don't log.
             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
         } else {
-            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'addnode', node: device, msg: ('Added device ' + obj.agentInfo.computerName + ' to mesh ' + mesh.name), domain: domain.id });
+            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'addnode', node: device, msgid: 57, msgArgs: [obj.agentInfo.computerName, mesh.name], msg: ('Added device ' + obj.agentInfo.computerName + ' to device group ' + mesh.name), domain: domain.id });
         }
 
         completeAgentConnection3(device, mesh);
@@ -1250,6 +1250,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Log a value in the event log
                         if ((typeof command.msg == 'string') && (command.msg.length < 4096)) {
                             var event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.msg };
+                            if (typeof command.msgid == 'number') { event.msgid = command.msgid; }
+                            if (Array.isArray(command.msgArgs)) { event.msgArgs = command.msgArgs; }
+                            if (typeof command.remoteaddr == 'string') { event.remoteaddr = command.remoteaddr; }
                             var targets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
                             if (typeof command.userid == 'string') {
                                 var loguser = parent.users[command.userid];
@@ -1292,7 +1295,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         var signResponse = parent.parent.certificateOperations.signAcmRequest(domain, command, 'admin', amtpassword, obj.remoteaddrport, obj.dbNodeKey, obj.dbMeshKey, obj.agentInfo.computerName, obj.agentInfo.agentId); // TODO: Place account credentials!!!
                         if ((signResponse != null) && (signResponse.error == null)) {
                             // Log this activation event
-                            var event = { etype: 'node', action: 'amtactivate', nodeid: obj.dbNodeKey, domain: domain.id, msg: 'Device requested Intel AMT ACM activation, FQDN: ' + command.fqdn, ip: obj.remoteaddrport };
+                            var event = { etype: 'node', action: 'amtactivate', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 58, msgArgs: [command.fqdn], msg: 'Device requested Intel(R) AMT ACM activation, FQDN: ' + command.fqdn, ip: obj.remoteaddrport };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
 
@@ -1423,7 +1426,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     //console.log(command);
 
                     // Event the session closed compression data.
-                    var event = { etype: 'node', action: 'sessioncompression', nodeid: obj.dbNodeKey, domain: domain.id, sent: command.sent, sentActual: command.sentActual, msg: 'Agent closed session with ' + command.sentRatio + '% agent to server compression. Sent: ' + command.sent + ', Compressed: ' + command.sentActual + '.' };
+                    var event = { etype: 'node', action: 'sessioncompression', nodeid: obj.dbNodeKey, domain: domain.id, sent: command.sent, sentActual: command.sentActual, msgid: 54, msgArgs: [command.sentRatio, command.sent, command.sentActual], msg: 'Agent closed session with ' + command.sentRatio + '% agent to server compression. Sent: ' + command.sent + ', Compressed: ' + command.sentActual + '.' };
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
                     break;
                 }
@@ -1571,7 +1574,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     db.Set(device);
 
                     // Event the node change
-                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', ') };
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msgid: 59, msgArgs: [device.name, mesh.name, changes.join(', ')], msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', ') };
                     if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);

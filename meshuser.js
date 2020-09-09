@@ -66,6 +66,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const SITERIGHT_ALLEVENTS           = 0x00000800;
     const SITERIGHT_ADMIN               = 0xFFFFFFFF;
 
+    // Events
+    /*
+    var eventsMessageId = {
+        1: "Account login",
+        2: "Account logout",
+        3: "Changed language from {1} to {2}",
+        4: "Joined desktop multiplex session",
+        5: "Left the desktop multiplex session",
+        6: "Started desktop multiplex session",
+        7: "Finished recording session, {0} second(s)",
+        8: "Closed desktop multiplex session, {0} second(s)"
+    };
+    */
+
     var obj = {};
     obj.user = user;
     obj.domain = domain;
@@ -135,7 +149,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (ws.domainid) { delete ws.domainid; }
         if (ws.sessionId) { delete ws.sessionId; }
         if (ws.HandleEvent) { delete ws.HandleEvent; }
-        ws.removeAllListeners(["message", "close", "error"]);
+        ws.removeAllListeners(['message', 'close', 'error']);
     };
 
     // Convert a mesh path array into a real path on the server side
@@ -1408,9 +1422,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.db.SetUser(user);
 
                     // Event the change
-                    var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id };
+                    var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, msgid: 2, msgArgs: [(oldlang ? oldlang : 'default'), (user.lang ? user.lang : 'default')] };
                     if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                    message.msg = 'Changed language of user ' + user.name + ' from ' + (oldlang ? oldlang : 'default') + ' to ' + (user.lang ? user.lang : 'default');
+                    message.msg = 'Changed language from ' + (oldlang ? oldlang : 'default') + ' to ' + (user.lang ? user.lang : 'default');
 
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
@@ -1585,7 +1599,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     db.Set(parent.cleanDevice(node));
 
                                     // Event the node change
-                                    var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: deluserdomain.id, msg: (command.rights == 0) ? ('Removed user device rights for ' + node.name) : ('Changed user device rights for ' + node.name), node: parent.CloneSafeNode(node) }
+                                    var event;
+                                    if (command.rights == 0) {
+                                        event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: deluserdomain.id, msgid: 60, msgArgs: [node.name], msg: 'Removed user device rights for ' + node.name, node: parent.CloneSafeNode(node) }
+                                    } else {
+                                        event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: deluserdomain.id, msgid: 61, msgArgs: [node.name], msg: 'Changed user device rights for ' + node.name, node: parent.CloneSafeNode(node) }
+                                    }
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
                                 });
@@ -1598,7 +1617,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                     // Notify user group change
                                     change = 'Removed user ' + deluser.name + ' from user group ' + ugroup.name;
-                                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Removed user ' + deluser.name + ' from user group ' + ugroup.name, addUserDomain: deluserdomain.id };
+                                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 62, msgArgs: [deluser.name, ugroup.name], msg: 'Removed user ' + deluser.name + ' from user group ' + ugroup.name, addUserDomain: deluserdomain.id };
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                                     parent.parent.DispatchEvent(['*', ugroup._id, user._id, deluser._id], obj, event);
                                 }
@@ -1620,7 +1639,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     var targets = ['*', 'server-users'];
                     if (deluser.groups) { for (var i in deluser.groups) { targets.push('server-users:' + i); } }
-                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: deluserdomain.id });
+                    parent.parent.DispatchEvent(targets, obj, { etype: 'user', userid: deluserid, username: deluser.name, action: 'accountremove', msgid: 63, msg: 'Account removed', domain: deluserdomain.id });
                     parent.parent.DispatchEvent([deluserid], obj, 'close');
 
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'deleteuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }

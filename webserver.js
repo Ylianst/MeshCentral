@@ -679,7 +679,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Destroy the user's session to log them out will be re-created next request
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
-            if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msg: 'Account logout', domain: domain.id }); }
+            if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msgid: 2, msg: 'Account logout', domain: domain.id }); }
         }
         req.session = null;
         if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key); } else { res.redirect(domain.url); }
@@ -1059,7 +1059,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Notify account login
         var targets = ['*', 'server-users'];
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-        obj.parent.DispatchEvent(targets, obj, { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msg: 'Account login', domain: domain.id });
+        obj.parent.DispatchEvent(targets, obj, { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 1, msg: 'Account login', domain: domain.id });
 
         // Regenerate session when signing in to prevent fixation
         //req.session.regenerate(function () {
