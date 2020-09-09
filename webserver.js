@@ -2330,6 +2330,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.urlswitching === false) { features += 0x10000000; } // Disables the URL switching feature
             if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
             if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
+            if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
