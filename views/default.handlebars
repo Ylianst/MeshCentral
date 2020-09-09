@@ -8272,7 +8272,14 @@
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
 
-                    var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                    var msg;
+                    if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
+                        msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                    } else {
+                        msg = eventsMessageId[event.msgid];
+                        if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
+                        msg = EscapeHtml(msg).split('(R)').join('&reg;');
+                    }
                     if (event.username) {
                         if ((userinfo.siteadmin & 2) && (event.userid)) {
                             msg = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(event.userid) + '");haltEvent(event);\'>' + EscapeHtml(event.username) + '</a> &rarr; ' + msg;
@@ -12243,7 +12250,14 @@
                     if (event.etype == 'user') icon = 'm2';
                     if (event.etype == 'server') icon = 'si3';
 
-                    var msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                    var msg;
+                    if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
+                        msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
+                    } else {
+                        msg = eventsMessageId[event.msgid];
+                        if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
+                        msg = EscapeHtml(msg).split('(R)').join('&reg;');
+                    }
                     if (event.nodeid) {
                         var node = getNodeFromId(event.nodeid);
                         if (node != null) {
