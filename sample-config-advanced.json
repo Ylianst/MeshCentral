@@ -92,6 +92,13 @@
       "_googleDrive": {
         "folderName": "MeshCentral-Backups",
         "maxFiles": 10
+      },
+      "webdav": {
+        "url": "https://server/remote.php/dav/files/xxxxx@server.com/",
+        "username": "user",
+        "password": "pass",
+        "folderName": "MeshCentral-Backups",
+        "maxFiles": 10
       }
     },
     "_redirects": {

@@ -1412,81 +1412,152 @@ module.exports.CreateDB = function (parent, func) {
 
     // Perform cloud backup
     obj.performCloudBackup = function (filename, func) {
-        if (typeof parent.config.settings.autobackup.googledrive != 'object') return;
-        obj.Get('GoogleDriveBackup', function (err, docs) {
-            if ((err != null) || (docs.length != 1) || (docs[0].state != 3)) return;
-            if (func) { func('Attempting Google Drive upload...'); }
-            const {google} = require('googleapis');
-            const oAuth2Client = new google.auth.OAuth2(docs[0].clientid, docs[0].clientsecret, "urn:ietf:wg:oauth:2.0:oob");
-            oAuth2Client.on('tokens', function(tokens) { if (tokens.refresh_token) { docs[0].token = tokens.refresh_token; parent.db.Set(docs[0]); } }); // Update the token in the database
-            oAuth2Client.setCredentials(docs[0].token);
-            const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-            const createdTimeSort = function (a, b) { if (a.createdTime > b.createdTime) return 1; if (a.createdTime < b.createdTime) return -1; return 0; }
 
-            // Called once we know our folder id, clean up and upload a backup.
-            var useGoogleDrive = function (folderid) {
-                // List files to see if we need to delete older ones
-                if (typeof parent.config.settings.autobackup.googledrive.maxfiles == 'number') {
-                    drive.files.list({
-                        q: 'trashed = false and \'' + folderid + '\' in parents',
-                        fields: 'nextPageToken, files(id, name, size, createdTime)',
-                    }, function (err, res) {
-                        if (err) {
-                            console.log('GoogleDrive (files.list) error: ' + err);
-                            if (func) { func('GoogleDrive (files.list) error: ' + err); }
-                            return;
-                        }
-                        // Delete any old files if more than 10 files are present in the backup folder.
-                        res.data.files.sort(createdTimeSort);
-                        while (res.data.files.length >= parent.config.settings.autobackup.googledrive.maxfiles) { drive.files.delete({ fileId: res.data.files.shift().id }, function (err, res) { }); }
-                    });
-                }
-
-                //console.log('Uploading...');
-                if (func) { func('Uploading to Google Drive...'); }
-
-                // Upload the backup
-                drive.files.create({
-                    requestBody: { name: require('path').basename(filename), mimeType: 'text/plain', parents: [folderid] },
-                    media: { mimeType: 'application/zip', body: require('fs').createReadStream(filename) },
-                }, function (err, res) {
-                    if (err) {
-                        console.log('GoogleDrive (files.create) error: ' + err);
-                        if (func) { func('GoogleDrive (files.create) error: ' + err); }
-                        return;
-                    }
-                    //console.log('Upload done.');
-                    if (func) { func('Google Drive upload completed.'); }
-                });
-            }
+        // WebDAV Backup
+        if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.webdav == 'object')) {
+            const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
 
             // Fetch the folder name
-            var folderName = 'MeshCentral-Backups';
-            if (typeof parent.config.settings.autobackup.googledrive.foldername == 'string') { folderName = parent.config.settings.autobackup.googledrive.foldername; }
+            var webdavfolderName = 'MeshCentral-Backups';
+            if (typeof parent.config.settings.autobackup.webdav.foldername == 'string') { webdavfolderName = parent.config.settings.autobackup.webdav.foldername; }
 
-            // Find our backup folder, create one if needed.
-            drive.files.list({
-                q: 'mimeType = \'application/vnd.google-apps.folder\' and name=\'' + folderName + '\' and trashed = false',
-                fields: 'nextPageToken, files(id, name)',
-            }, function (err, res) {
-                if (err) {
-                    console.log('GoogleDrive error: ' + err);
-                    if (func) { func('GoogleDrive error: ' + err); }
-                    return;
+            // Clean up our WebDAV folder
+            function performWebDavCleanup(client) {
+                if ((typeof parent.config.settings.autobackup.webdav.maxfiles == 'number') && (parent.config.settings.autobackup.webdav.maxfiles > 1)) {
+                    var directoryItems = client.getDirectoryContents(webdavfolderName);
+                    directoryItems.then(
+                        function (files) {
+                            for (var i in files) { files[i].xdate = new Date(files[i].lastmod); }
+                            files.sort(xdateTimeSort);
+                            while (files.length >= parent.config.settings.autobackup.webdav.maxfiles) {
+                                client.deleteFile(files.shift().filename).then(function (state) {
+                                    if (func) { func('WebDAV file deleted.'); }
+                                }).catch(function (err) {
+                                    if (func) { func('WebDAV (deleteFile) error: ' + err); }
+                                });
+                            }
+                        }
+                    ).catch(function (err) {
+                        if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+                    });
                 }
-                if (res.data.files.length == 0) {
-                    // Create a folder
-                    drive.files.create({ resource: { 'name': folderName, 'mimeType': 'application/vnd.google-apps.folder' }, fields: 'id' }, function (err, file) {
+            }
+
+            // Upload to the WebDAV folder
+            function performWebDavUpload(client, filepath) {
+                var fileStream = require('fs').createReadStream(filepath);
+                fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
+                fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
+                fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath)));
+                if (func) { func('Uploading using WebDAV...'); }
+            }
+
+            if (func) { func('Attempting WebDAV upload...'); }
+            const { createClient } = require('webdav');
+            const client = createClient(parent.config.settings.autobackup.webdav.url, { username: parent.config.settings.autobackup.webdav.username, password: parent.config.settings.autobackup.webdav.password });
+            var directoryItems = client.getDirectoryContents('/');
+            directoryItems.then(
+                function (files) {
+                    var folderFound = false;
+                    for (var i in files) { if ((files[i].basename == webdavfolderName) && (files[i].type == 'directory')) { folderFound = true; } }
+                    if (folderFound == false) {
+                        client.createDirectory(webdavfolderName).then(function (a) {
+                            if (a.statusText == 'Created') {
+                                if (func) { func('WebDAV folder created'); }
+                                performWebDavUpload(client, filename);
+                            } else {
+                                if (func) { func('WebDAV (createDirectory) status: ' + a.statusText); }
+                            }
+                        }).catch(function (err) {
+                            if (func) { func('WebDAV (createDirectory) error: ' + err); }
+                        });
+                    } else {
+                        performWebDavCleanup(client);
+                        performWebDavUpload(client, filename);
+                    }
+                }
+            ).catch(function (err) {
+                if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+            });
+        }
+
+        // Google Drive Backup
+        if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.googledrive == 'object')) {
+            obj.Get('GoogleDriveBackup', function (err, docs) {
+                if ((err != null) || (docs.length != 1) || (docs[0].state != 3)) return;
+                if (func) { func('Attempting Google Drive upload...'); }
+                const {google} = require('googleapis');
+                const oAuth2Client = new google.auth.OAuth2(docs[0].clientid, docs[0].clientsecret, "urn:ietf:wg:oauth:2.0:oob");
+                oAuth2Client.on('tokens', function (tokens) { if (tokens.refresh_token) { docs[0].token = tokens.refresh_token; parent.db.Set(docs[0]); } }); // Update the token in the database
+                oAuth2Client.setCredentials(docs[0].token);
+                const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+                const createdTimeSort = function (a, b) { if (a.createdTime > b.createdTime) return 1; if (a.createdTime < b.createdTime) return -1; return 0; }
+
+                // Called once we know our folder id, clean up and upload a backup.
+                var useGoogleDrive = function (folderid) {
+                    // List files to see if we need to delete older ones
+                    if (typeof parent.config.settings.autobackup.googledrive.maxfiles == 'number') {
+                        drive.files.list({
+                            q: 'trashed = false and \'' + folderid + '\' in parents',
+                            fields: 'nextPageToken, files(id, name, size, createdTime)',
+                        }, function (err, res) {
+                            if (err) {
+                                console.log('GoogleDrive (files.list) error: ' + err);
+                                if (func) { func('GoogleDrive (files.list) error: ' + err); }
+                                return;
+                            }
+                            // Delete any old files if more than 10 files are present in the backup folder.
+                            res.data.files.sort(createdTimeSort);
+                            while (res.data.files.length >= parent.config.settings.autobackup.googledrive.maxfiles) { drive.files.delete({ fileId: res.data.files.shift().id }, function (err, res) { }); }
+                        });
+                    }
+
+                    //console.log('Uploading...');
+                    if (func) { func('Uploading to Google Drive...'); }
+
+                    // Upload the backup
+                    drive.files.create({
+                        requestBody: { name: require('path').basename(filename), mimeType: 'text/plain', parents: [folderid] },
+                        media: { mimeType: 'application/zip', body: require('fs').createReadStream(filename) },
+                    }, function (err, res) {
                         if (err) {
-                            console.log('GoogleDrive (folder.create) error: ' + err);
-                            if (func) { func('GoogleDrive (folder.create) error: ' + err); }
+                            console.log('GoogleDrive (files.create) error: ' + err);
+                            if (func) { func('GoogleDrive (files.create) error: ' + err); }
                             return;
                         }
-                        useGoogleDrive(file.data.id);
+                        //console.log('Upload done.');
+                        if (func) { func('Google Drive upload completed.'); }
                     });
-                } else { useGoogleDrive(res.data.files[0].id); }
+                }
+
+                // Fetch the folder name
+                var folderName = 'MeshCentral-Backups';
+                if (typeof parent.config.settings.autobackup.googledrive.foldername == 'string') { folderName = parent.config.settings.autobackup.googledrive.foldername; }
+
+                // Find our backup folder, create one if needed.
+                drive.files.list({
+                    q: 'mimeType = \'application/vnd.google-apps.folder\' and name=\'' + folderName + '\' and trashed = false',
+                    fields: 'nextPageToken, files(id, name)',
+                }, function (err, res) {
+                    if (err) {
+                        console.log('GoogleDrive error: ' + err);
+                        if (func) { func('GoogleDrive error: ' + err); }
+                        return;
+                    }
+                    if (res.data.files.length == 0) {
+                        // Create a folder
+                        drive.files.create({ resource: { 'name': folderName, 'mimeType': 'application/vnd.google-apps.folder' }, fields: 'id' }, function (err, file) {
+                            if (err) {
+                                console.log('GoogleDrive (folder.create) error: ' + err);
+                                if (func) { func('GoogleDrive (folder.create) error: ' + err); }
+                                return;
+                            }
+                            useGoogleDrive(file.data.id);
+                        });
+                    } else { useGoogleDrive(res.data.files[0].id); }
+                });
             });
-        });
+        }
     }
 
     function padNumber(number, digits) { return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number; }

@@ -2725,7 +2725,24 @@ function mainStart() {
         // Setup encrypted zip support if needed
         if (config.settings.autobackup && config.settings.autobackup.zippassword) {
             modules.push('archiver-zip-encrypted');
-            if (typeof config.settings.autobackup.googledrive == 'object') { if (nodeVersion >= 8) { modules.push('googleapis'); } else { delete config.settings.autobackup.googledrive; } } // Enable Google Drive Support
+            // Enable Google Drive Support
+            if (typeof config.settings.autobackup.googledrive == 'object') {
+                if (nodeVersion >= 8) {
+                    modules.push('googleapis');
+                } else {
+                    addServerWarning("Google Drive requires Node v8.x or higher.", !args.launch);
+                    delete config.settings.autobackup.googledrive;
+                }
+            }
+            // Enable WebDAV Support
+            if (typeof config.settings.autobackup.webdav == 'object') {
+                if (nodeVersion >= 10) {
+                    if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", !args.launch); } else { modules.push('webdav'); }
+                } else {
+                    addServerWarning("WebDAV requires Node v10.x or higher.", !args.launch);
+                    delete config.settings.autobackup.webdav;
+                }
+            }
         }
 
         // Setup common password blocking
