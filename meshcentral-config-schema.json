@@ -115,6 +115,17 @@
                 "folderName": { "type": "integer", "default": "MeshCentral-Backups", "description": "The name of the folder to create in the Google Drive account." },
                 "maxFiles": { "type": "string", "default": null, "description": "The maximum number of files to keep in the Google Drive folder, older files will be removed if needed." }
               }
+            },
+            "webDAV": {
+              "type": "object",
+              "description": "Enabled automated upload of the server backups to a WebDAV account.",
+              "properties": {
+                "url": { "type": "string", "description": "WebDAV account URL." },
+                "username": { "type": "string", "description": "WebDAV account username." },
+                "password": { "type": "string", "description": "WebDAV account password." },
+                "folderName": { "type": "integer", "default": "MeshCentral-Backups", "description": "The name of the folder to create in the WebDAV account." },
+                "maxFiles": { "type": "string", "default": null, "description": "The maximum number of files to keep in the WebDAV folder, older files will be removed if needed." }
+              }
             }
           }
         },
