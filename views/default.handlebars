@@ -6014,9 +6014,11 @@
 
         function showShareDevice() {
             if (xxdialogMode) return;
-            var x = "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour." + '<br /><br />';
+            var y = '', x = "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour." + '<br /><br />';
             x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
-            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px><option value=1>' + "1 minute" + '</option><option value=5>' + "5 minutes" + '</option><option value=10>' + "10 minutes" + '</option><option value=15>' + "15 minutes" + '</option><option value=30>' + "30 minutes" + '</option><option value=45>' + "45 minutes" + '</option><option value=60>' + "1 hour" + '</option></select>');
+            var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
+            for (var i in options) { if (serverinfo.maxGuestSessionSharingTime >= i) { y += '<option value=' + i + '>' + options[i] + '</option>'; } }
+            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
             x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=73>' + "Prompt for consent" + '</option><option value=65>' + "Notify Only" + '</option></select>');
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
             showShareDeviceValidate();

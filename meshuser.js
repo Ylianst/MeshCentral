@@ -418,6 +418,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Build server information object
             var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now() };
+            serverinfo.maxGuestSessionSharingTime = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
@@ -4467,10 +4468,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'createDeviceShareLink': {
+                var maxExpireMinutes = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
+                console.log(maxExpireMinutes);
                 var err = null;
                 if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the meshid
                 else if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
-                else if (common.validateInt(command.expire, 1, 60) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
+                else if (common.validateInt(command.expire, 1, maxExpireMinutes) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
                 else {
                     if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
