@@ -376,7 +376,7 @@
             }
 
             if (features & 0x200000) { // Email is username
-                QH('loginusername', "Email:");
+                Q('username').placeholder = "Email";
                 QH('resetAccountSpan', "Forgot password?");
                 QV('nuUserRow', false);
             }
