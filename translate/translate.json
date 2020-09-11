@@ -13471,6 +13471,7 @@
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->5->43",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
+        "login2.handlebars->7->22",
         "login2.handlebars->7->44",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
@@ -13787,7 +13788,6 @@
         "login.handlebars->5->21",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
-        "login2.handlebars->7->22",
         "login2.handlebars->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail"
       ]
     },
