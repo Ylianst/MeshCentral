@@ -1282,6 +1282,7 @@
     },
     {
       "en": "12 hours",
+      "nl": "12 uur",
       "xloc": [
         "default.handlebars->27->723"
       ]
@@ -1330,18 +1331,21 @@
     },
     {
       "en": "16 hours",
+      "nl": "16 uur",
       "xloc": [
         "default.handlebars->27->724"
       ]
     },
     {
       "en": "2 days",
+      "nl": "2 dagen",
       "xloc": [
         "default.handlebars->27->726"
       ]
     },
     {
       "en": "2 hours",
+      "nl": "2 uur",
       "xloc": [
         "default.handlebars->27->720"
       ]
@@ -1432,6 +1436,7 @@
     },
     {
       "en": "24 hours",
+      "nl": "24 uur",
       "xloc": [
         "default.handlebars->27->725"
       ]
@@ -1683,12 +1688,14 @@
     },
     {
       "en": "4 days",
+      "nl": "4 dagen",
       "xloc": [
         "default.handlebars->27->727"
       ]
     },
     {
       "en": "4 hours",
+      "nl": "4 uur",
       "xloc": [
         "default.handlebars->27->721"
       ]
@@ -1924,6 +1931,7 @@
     },
     {
       "en": "60 minutes",
+      "nl": "60 minuten",
       "xloc": [
         "default.handlebars->27->719"
       ]
@@ -7867,6 +7875,7 @@
     },
     {
       "en": "Command",
+      "nl": "Opdracht",
       "xloc": [
         "default.handlebars->27->410"
       ]
@@ -34255,6 +34264,7 @@
     },
     {
       "en": "Stop process #{0} \\\"{1}\\\"?",
+      "nl": "Stop proces #{0} \\\"{1}\\\"?",
       "xloc": [
         "default-mobile.handlebars->9->290",
         "default.handlebars->27->853",
