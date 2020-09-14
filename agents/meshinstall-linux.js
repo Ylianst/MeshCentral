@@ -55,15 +55,41 @@ if (msh.InstallFlags == null) {
     msh.InstallFlags = parseInt(msh.InstallFlags.toString());
 }
 
-if ((msh.InstallFlags & 1) == 1) { buttons.unshift('Connect'); }
-if ((msh.InstallFlags & 2) == 2) {
+if (process.argv.includes('-mesh')) {
+    console.log(JSON.stringify(msh, null, 2));
+    process.exit();
+}
+
+if ((msh.InstallFlags & 1) == 1) {
+    buttons.unshift('Connect');
+    if (process.argv.includes('-connect')) {
+        global._child = require('child_process').execFile(process.execPath,
+            [process.execPath.split('/').pop(), '--no-embedded=1', '--disableUpdate=1',
+                '--MeshName="' + msh.MeshName + '"', '--MeshType="' + msh.MeshType + '"',
+                '--MeshID="' + msh.MeshID + '"',
+                '--ServerID="' + msh.ServerID + '"',
+                '--MeshServer="' + msh.MeshServer + '"',
+                '--AgentCapabilities="0x00000020"']);
+
+        global._child.stdout.on('data', function (c) { });
+        global._child.stderr.on('data', function (c) { });
+        global._child.on('exit', function (code) { process.exit(code); });
+
+        console.log("\nConnecting to: " + msh.MeshServer);
+        console.log("Device Group: " + msh.MeshName);
+        console.log('\nPress Ctrl-C to exit\n');
+        skip = true;
+    }
+}
+
+if ((!skip) && ((msh.InstallFlags & 2) == 2)) {
     if (!require('user-sessions').isRoot()) {
         console.log('\n' + "Elevated permissions is required to install/uninstall the agent.");
         console.log("Please try again with sudo.");
         process.exit();
     }
     if (s) {
-        if (process.platform == 'darwin' || require('message-box').kdialog) {
+        if ((process.platform == 'darwin') || require('message-box').kdialog) {
             buttons.unshift("Setup");
         } else {
             buttons.unshift("Uninstall");
@@ -74,8 +100,8 @@ if ((msh.InstallFlags & 2) == 2) {
     }
 }
 
-if (process.platform != 'darwin') {
-    if (!require('message-box').kdialog && (require('message-box').zenity == null || (!require('message-box').zenity.extra))) {
+if (!skip) {
+    if (process.platform != 'darwin') {
         if (process.argv.includes('-install') || process.argv.includes('-update')) {
             var p = [];
             for (var i = 0; i < process.argv.length; ++i) {
@@ -90,47 +116,32 @@ if (process.platform != 'darwin') {
             _uninstall();
             process.exit();
         }
-        else if (process.argv.includes('-connect')) {
-            global._child = require('child_process').execFile(process.execPath,
-                    [process.execPath.split('/').pop(), '--no-embedded=1', '--disableUpdate=1',
-                '--MeshName="' + msh.MeshName + '"', '--MeshType="' + msh.MeshType + '"',
-                '--MeshID="' + msh.MeshID + '"',
-                '--ServerID="' + msh.ServerID + '"',
-                '--MeshServer="' + msh.MeshServer + '"',
-                '--AgentCapabilities="0x00000020"']);
-            
-            global._child.stdout.on('data', function (c) { });
-            global._child.stderr.on('data', function (c) { });
-            global._child.on('exit', function (code) { process.exit(code); });
-            
-            console.log("\nConnecting to: " + msh.MeshServer);
-            console.log("Device Group: " + msh.MeshName);
-            console.log('\nPress Ctrl-c to exit\n');
-            skip = true;
-        } else {
-            console.log('\n' + "The graphical version of this installer cannot run on this system.");
-            console.log("Try installing/updating Zenity, and run again." + '\n');
-            console.log("You can also run the text version from the command line with the following command(s): ");
-            if ((msh.InstallFlags & 1) == 1) {
-                console.log('./' + process.execPath.split('/').pop() + ' -connect');
-            }
-            if ((msh.InstallFlags & 2) == 2) {
-                if (s) {
-                    console.log('./' + process.execPath.split('/').pop() + ' -update');
-                    console.log('./' + process.execPath.split('/').pop() + ' -uninstall');
+        else {
+            if (!require('message-box').kdialog && ((require('message-box').zenity == null) || (!require('message-box').zenity.extra))) {
+                console.log('\n' + "The graphical version of this installer cannot run on this system.");
+                console.log("Try installing/updating Zenity, and run again." + '\n');
+                console.log("You can also run the text version from the command line with the following command(s): ");
+                if ((msh.InstallFlags & 1) == 1) {
+                    console.log('./' + process.execPath.split('/').pop() + ' -connect');
                 }
-                else {
-                    console.log('./' + process.execPath.split('/').pop() + ' -install');
-                    console.log('./' + process.execPath.split('/').pop() + ' -install --installPath="/alternate/path"');
+                if ((msh.InstallFlags & 2) == 2) {
+                    if (s) {
+                        console.log('./' + process.execPath.split('/').pop() + ' -update');
+                        console.log('./' + process.execPath.split('/').pop() + ' -uninstall');
+                    }
+                    else {
+                        console.log('./' + process.execPath.split('/').pop() + ' -install');
+                        console.log('./' + process.execPath.split('/').pop() + ' -install --installPath="/alternate/path"');
+                    }
                 }
+                console.log('');
+                process.exit();
             }
-            console.log('');
-            process.exit();
         }
     }
-}
-else {
-    if (!require('user-sessions').isRoot()) { console.log('\n' + "This utility requires elevated permissions. Please try again with sudo."); process.exit(); }
+    else {
+        if (!require('user-sessions').isRoot()) { console.log('\n' + "This utility requires elevated permissions. Please try again with sudo."); process.exit(); }
+    }
 }
 
 

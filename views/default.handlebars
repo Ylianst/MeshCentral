@@ -4170,8 +4170,9 @@
             if (serverinfo.https == true) { portStr = (serverinfo.port == 443)?'':(':' + serverinfo.port); } else { portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port); }
 
             // Add Linux/macOS binary installer option
-            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 16 : 'Apple OSX x86-64', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64' };
-            for (var i in binaryInstallAgents) { moreoptions += '<option value=' + i + '>' + binaryInstallAgents[i] + '</option>' }
+            var binaryInstallAgentsOrder = [ 6, 5 ,16 ,25 ,26 ,28 ,30 ];
+            var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 16 : 'Apple OSX x86-64', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64' };
+            for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
             x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
             x += '</div>';
@@ -4216,7 +4217,7 @@
             // Linux binary installer
             x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk href="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" download onclick="setDialogMode(0)">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2] + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
+            x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
             x += '</div>';
 
             setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
