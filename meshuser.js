@@ -4468,9 +4468,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'createDeviceShareLink': {
-                var maxExpireMinutes = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
-                console.log(maxExpireMinutes);
-                var err = null;
+                var err = null, maxExpireMinutes = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
                 if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the meshid
                 else if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
                 else if (common.validateInt(command.expire, 1, maxExpireMinutes) == false) { err = 'Invalid expire time'; } // Check the expire time in hours

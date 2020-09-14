@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var s = null, msh = {}, buttons = ['Cancel'], skip = false;
+// The folloing line just below with 'msh=' needs to stay exactly like this since MeshCentral will replace it with the correct settings.
+var msh = {};
+var s = null, buttons = ['Cancel'], skip = false;
 try { s = require('service-manager').manager.getService('meshagent'); } catch (e) { }
 
 function _install(parms) {
