@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv=X-UA-Compatible content="IE=edge" />
+    <meta content="text/html;charset=utf-8" http-equiv=Content-Type />
+    <meta name=viewport content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name=apple-mobile-web-app-capable content=yes />
+    <meta name=format-detection content="telephone=no" />
+    <link type=text/css href="/styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    <title id="topTitle">{{{title1}}}</title>
+    <style>
+        body {
+            background-color: cadetblue;
+            background: linear-gradient(to bottom right, #369, #036);
+            height: 100%;
+            overflow: hidden;
+        }
+
+        a:link { color: #c8c8c8; }
+        a:visited { color: #c8c8c8; }
+        a:hover { color: #c8c8c8; }
+        a:active { color: #c8c8c8; }
+    </style>
+</head>
+<body>
+    <img style="position:absolute;left:0;bottom:0;z-index:-1;height:60%;opacity:0.1" src="../../images/login/back.png" />
+    <table id="centralTable" class="container" style="height:100%;z-index:1">
+        <tr>
+            <td style="width:100%;text-align:center;color:#c8c8c8;font-size:larger">
+                <h1 id="mainTitle"></h1>
+                <p style=margin-left:20px id="mainMessage"></p>
+            </td>
+        </tr>
+        <tr style="height:20px">
+            <td>
+                <div>
+                    <div id="flink" style="margin-left:4px">{{{footer}}}</div>
+                    <div id="flink" style="float:right;margin-right:4px">{{{rootCertLink}}}&nbsp;<a href=../../terms>Terms &amp; Privacy</a></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <script>
+        var titleid = parseInt('{{{titleid}}}');
+        var msgid = parseInt('{{{msgid}}}');
+        var domainurl = decodeURIComponent('{{{domainurl}}}');
+        var arg1 = decodeURIComponent('{{{arg1}}}');
+        var arg2 = decodeURIComponent('{{{arg2}}}');
+
+        var title = '';
+        if (titleid == 1) { title = "Account Verification"; }
+        QH('topTitle', Q('topTitle').innerText + ' - ' + title);
+        QH('mainTitle', title);
+
+        var msg = '';
+        switch (msgid) {
+            case 1: { msg = "ERROR: Invalid domain."; break; }
+            case 2: { msg = "ERROR: Invalid username \"{0}\"."; break; }
+            case 3: { msg = format("ERROR: Invalid e-mail \"{0}\" for user \"{1}\".", arg1, arg2); break; }
+            case 4: { msg = format("E-mail \"{0}\" for user \"{1}\" already verified.", arg1, arg2); break; }
+            case 5: { msg = format("E-mail \"{0}\" already in use on a different account. Change the email address and try again.", arg1); break; }
+            case 6: { msg = format("Verified email {0} for user account {1}.", '<b>' + arg1 + '</b>', '<b>' + arg2 + '</b>'); break; }
+            case 7: { msg = format("E-mail \"{0}\" for user \"{1}\" not verified.", arg1, arg2); break; }
+            case 8: {
+                msg = '<div>' + format("Password for account {0} has been reset to:", '<b>' + arg1 + '</b>') + '</div><div style=padding:14px;font-size:18px><b>' + arg2 + '</b></div>';
+                msg += "Login and go to the \"My Account\" tab to update your password.";
+                break;
+            }
+            case 9: { msg = "ERROR: Invalid account check."; break; }
+            case 10: { msg = "ERROR: Invalid account check, verification url is only valid for 30 minutes."; break; }
+        }
+        QH('mainMessage', msg + '<br /><br /><a href="' + domainurl + '">' + "Go to login page" + '</a>.');
+
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+
+    </script>
+</body>
+</html>
