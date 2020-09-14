@@ -573,6 +573,7 @@
     <Content Include="views\login-mobile.handlebars" />
     <Content Include="views\login.handlebars" />
     <Content Include="views\message.handlebars" />
+    <Content Include="views\message2.handlebars" />
     <Content Include="views\messenger.handlebars" />
     <Content Include="views\mstsc.handlebars" />
     <Content Include="views\player.handlebars" />
