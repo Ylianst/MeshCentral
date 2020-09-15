@@ -4400,7 +4400,8 @@
       "xloc": [
         "default-mobile.handlebars->9->117",
         "default-mobile.handlebars->9->296",
-        "default-mobile.handlebars->9->298"
+        "default-mobile.handlebars->9->298",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->1"
       ]
     },
     {
@@ -11004,6 +11005,12 @@
       "xloc": [
         "default-mobile.handlebars->9->265",
         "default.handlebars->27->742"
+      ]
+    },
+    {
+      "en": "Device Filter",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
       ]
     },
     {
@@ -18547,7 +18554,10 @@
       "ru": "Intel® AMT",
       "tr": "Intel® AMT",
       "zh-chs": "英特尔®AMT",
-      "zh-cht": "Intel® AMT"
+      "zh-cht": "Intel® AMT",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->9"
+      ]
     },
     {
       "cs": "Intel® AMT –",
@@ -25535,7 +25545,7 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->5",
         "default.handlebars->27->555",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->7->1"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9->1"
       ]
     },
     {
@@ -25678,7 +25688,8 @@
       "zh-cht": "線上",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9->1"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->11->1",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->3"
       ]
     },
     {
@@ -25740,7 +25751,7 @@
       "zh-chs": "仅显示在线设备",
       "zh-cht": "只顯示在線裝置",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->11"
       ]
     },
     {
@@ -32077,7 +32088,8 @@
       "zh-cht": "節",
       "xloc": [
         "default-mobile.handlebars->9->176",
-        "default.handlebars->27->260"
+        "default.handlebars->27->260",
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
       ]
     },
     {
@@ -32578,7 +32590,7 @@
       "zh-chs": "显示设备操作系统名称",
       "zh-cht": "顯示裝置操作系統名稱",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->7"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->9"
       ]
     },
     {
@@ -33889,6 +33901,12 @@
       "zh-cht": "穩定版",
       "xloc": [
         "default.handlebars->27->112"
+      ]
+    },
+    {
+      "en": "Starred",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->7"
       ]
     },
     {

@@ -237,8 +237,15 @@
                             &nbsp;&nbsp;<input type="button" id="SelectAllButton" onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                            <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
+                                <option value=0>All</option>
+                                <option value=1>Online</option>
+                                <option value=2>Sessions</option>
+                                <option value=3>Starred</option>
+                                <option value=4>Intel&reg; AMT</option>
+                            </select>
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
-                            <label><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                            <label style="display:none"><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
                             <span id="devsCustomUIBar"></span>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
@@ -1369,7 +1376,7 @@
             Q('KvmSearchInput').value = Q('SearchInput').value = getstore('_search', '');
             showRealNames = (getstore('showRealNames', 0) == 1);
             Q('RealNameCheckBox').checked = showRealNames;
-            Q('OnlineCheckBox').checked = (getstore('onlineOnly', 0) == 1);
+            Q('DevFilterSelect').value = getstore('devFilterSelect', 0);
             Q('viewselect').value = getstore('deviceView', 1);
             Q('DeskControl').checked = (getstore('DeskControl', 1) == 1);
             QV('accountChangeEmailAddressSpan', (features & 0x200000) == 0);
@@ -2514,7 +2521,7 @@
                                     if ((webstate.footerBar != null) && (webstate.footerBar != oldFooterBar)) { footerBar = (webstate.footerBar == '1'); QS('container')['grid-template-rows'] = null; QS('container')['-ms-grid-rows'] = null; adjustPanels(); }
                                     if ((webstate.stars != null) && (webstate.stars != JSON.stringify(stars))) {
                                         stars = JSON.parse(webstate.stars);
-                                        if (Q('SearchInput').value == '*') { mainUpdate(5); } else { mainUpdate(4); }
+                                        if (Q('DevFilterSelect').value == 3) { mainUpdate(5); } else { mainUpdate(4); }
                                         if (currentNode) { refreshDevice(currentNode._id); }
                                     }
                                 }
@@ -2940,6 +2947,8 @@
                             if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
                             if (xxdialogTag == ('MESSAGES-' + message.event.nodeid)) { showDeviceMessages(message.event.nodeid, true); }
 
+                            // If we are filtering on sessions, update the visible devices
+                            if (Q('DevFilterSelect').value == 2) { mainUpdate(1); }
                             break;
                         }
                         case 'stopped': { // Server is stopping.
@@ -3134,7 +3143,7 @@
         }
 
         function onOnlineCheckBox(e) {
-            putstore('onlineOnly', Q('OnlineCheckBox').checked ? 1 : 0);
+            putstore('devFilterSelect', Q('DevFilterSelect').value);
             onDeviceSearchChanged(e);
         }
 
@@ -3564,7 +3573,7 @@
 
                 // If there is nothing to display, explain the problem
                 var viewNothing = false;
-                if ((r == '') && (nodes.length > 0) && (Q('SearchInput').value != '')) {
+                if ((r == '') && (nodes.length > 0) && ((Q('SearchInput').value != '') || (Q('DevFilterSelect').value != 0))) {
                     viewNothing = true;
                     if (sort == 3) {
                         r = '<div style="margin:30px">' + "No devices are included in any groups, click on a device's \"Groups\" to add to a group." + '</div>';
@@ -3576,7 +3585,7 @@
                 if ((view == 1) && (c == 2)) r += '<td><div style=width:301px></div></td>'; // Adds device padding
 
                 // Display all empty device groups, we need to do this because users can add devices to these at any time.
-                if ((sort == 0) && (Q('SearchInput').value == '') && (view < 3)) {
+                if ((sort == 0) && ((Q('SearchInput').value == '') && (Q('DevFilterSelect').value == 0)) && (view < 3)) {
                     var deviceHeaderId2 = deviceHeaderId, sortedMeshes = [];
                     for (var i in meshes) { sortedMeshes.push(meshes[i]); }
                     sortedMeshes.sort(nameSort);
@@ -4587,9 +4596,6 @@
                     nodes[d].v = false;
                     if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { nodes[d].v = true; } } }
                 }
-            } else if (x == '*') {
-                // Star filter
-                for (var d in nodes) { nodes[d].v = (stars[nodes[d]._id] == 1); }
             } else {
                 // Device name search
                 try {
@@ -4610,9 +4616,12 @@
                 } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
             }
 
-            // Check power state
-            var onlineOnly = Q('OnlineCheckBox').checked;
-            if (onlineOnly) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } }
+            // Check filter dropdown
+            var devFilter = Q('DevFilterSelect').value;
+            if (devFilter == 1) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } } // Online
+            if (devFilter == 2) { for (var d in nodes) { if (nodes[d].sessions == null) { nodes[d].v = false; } } } // Sessions
+            if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
+            if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
         }
 
         var contextelement = null;
@@ -4723,7 +4732,7 @@
                 var starcount = Object.keys(stars).length;
                 for (var i in selectedDevices) { if ((starcount < 20) && (stars[selectedDevices[i]] == null)) { stars[selectedDevices[i]] = 1; starcount++; } }
                 putstore('stars', JSON.stringify(stars));
-                if (Q('SearchInput').value == '*') { mainUpdate(5); } else { mainUpdate(4); }
+                if (Q('DevFilterSelect').value == 3) { mainUpdate(5); } else { mainUpdate(4); }
             }
         }
 
