@@ -117,7 +117,8 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
             if (!body) return null;
             if (body.childNodes.length > 0) {
                 t = body.childNodes[0].localName;
-                if (t.indexOf("_OUTPUT") == t.length - 7) { t = t.substring(0, t.length - 7); }
+                var x = t.indexOf('_OUTPUT');
+                if ((x != -1) && (x == (t.length - 7))) { t = t.substring(0, t.length - 7); }
                 r.Header['Method'] = t;
                 r.Body = _ParseWsmanRec(body.childNodes[0]);
 		    }
