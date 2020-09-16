@@ -4728,6 +4728,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'twoFactorCookie': {
+                // Generate a two-factor cookie
+                if (((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
+                    var maxCookieAge = domain.twofactorcookiedurationdays;
+                    if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
+                    const twoFactorCookie = parent.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, parent.parent.loginCookieEncryptionKey);
+                    try { ws.send(JSON.stringify({ action: 'twoFactorCookie', cookie: twoFactorCookie })); } catch (ex) { }
+                }
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
