@@ -17,7 +17,7 @@ Windows의 경우, 다음 링크로 이동하여 과정을 완료하십시오.
 ~<area-osx>
 Apple OSX인 경우, 다음 링크로 이동하여 과정을 완료하십시오.
 ~
-~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>
