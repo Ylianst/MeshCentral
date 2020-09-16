@@ -723,6 +723,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var otpsms = (parent.smsserver != null);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
 
+        // Check 2FA login cookie
+        if (token.startsWith('cookie=')) {
+            var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(token.substring(7)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
+            if ((twoFactorCookie != null) && ((obj.args.cookieipcheck === false) || (twoFactorCookie.ip == null) || (twoFactorCookie.ip === req.clientIp)) && (twoFactorCookie.userid == user._id)) { func(true); return; }
+        }
+
         // Check email key
         if ((otpemail) && (user.otpekey != null) && (user.otpekey.d != null) && (user.otpekey.k === token)) {
             var deltaTime = (Date.now() - user.otpekey.d);
@@ -959,7 +965,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
                                 var maxCookieAge = domain.twofactorcookiedurationdays;
                                 if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
-                                console.log('maxCookieAge', maxCookieAge);
                                 const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
                                 res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: 'strict', secure: true });
                             }
@@ -1660,7 +1665,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         if (req.query.ws != null) {
             // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
-            var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
+            var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
             if ((rcookie != null) && (rcookie.domainid == domain.id) && (rcookie.nodeid != null) && (rcookie.tcpport != null)) {
                 render(req, res, getRenderPage('mstsc', req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27') }, req, domain)); return;
             }
@@ -1671,7 +1676,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // If there is a login token, use that
         if (req.query.login != null) {
-            var ucookie = parent.decodeCookie(req.query.login, parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
+            var ucookie = parent.decodeCookie(req.query.login, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
             if ((ucookie != null) && (ucookie.a === 3) && (typeof ucookie.u == 'string')) { user = obj.users[ucookie.u]; }
         }
 
@@ -5206,6 +5211,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((req.query.user != null) && (req.query.pass != null)) {
                 // A user/pass is provided in URL arguments
                 obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid) {
+
+                    // See if we support two-factor trusted cookies
+                    var twoFactorCookieDays = 30;
+                    if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
+
                     var user = obj.users[userid];
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
@@ -5221,7 +5231,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     parent.debug('web', 'Sending 2FA email to: ' + user.email);
                                     parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                                     // Ask for a login token & confirm email was sent
-                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                 } else if ((req.query.token == '**sms**') && (sms2fa == true)) {
                                     // Cause a token to be sent to the user's phone number
                                     user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
@@ -5229,18 +5239,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
                                     parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
                                     // Ask for a login token & confirm sms was sent
-                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true })); ws.close(); } catch (e) { }
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                 } else {
                                     // Ask for a login token
                                     parent.debug('web', 'Asking for login token');
-                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                 }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, req.query.token, null, function (result) {
                                     if (result == false) {
                                         // Failed, ask for a login token again
                                         parent.debug('web', 'Invalid login token, asking again');
-                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
+                                        try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                     } else {
                                         // We are authenticated with 2nd factor.
                                         // Check email verification
@@ -5280,8 +5290,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 return;
             } else if ((req.query.auth != null) && (req.query.auth != '')) {
                 // This is a encrypted cookie authentication
-                var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
-                if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 240); } // Try the server key
+                var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
+                if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 60); } // Try the server key
                 if ((obj.args.cookieipcheck !== false) && (cookie != null) && (cookie.ip != null) && (cookie.ip != req.clientIp && (cookie.ip != req.clientIp))) { // If the cookie if binded to an IP address, check here.
                     parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.clientIp) + '\".');
                     cookie = null;
@@ -5306,11 +5316,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if ((err == null) && (user)) {
                         // Check if a 2nd factor is needed
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
+
+                            // See if we support two-factor trusted cookies
+                            var twoFactorCookieDays = 30;
+                            if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
+
                             // Figure out if email 2FA is allowed
                             var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.otpekey != null));
                             var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                             if (s.length != 3) {
-                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa })); ws.close(); } catch (e) { }
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                             } else {
                                 checkUserOneTimePassword(req, domain, user, s[2], null, function (result) {
                                     if (result == false) {
@@ -5321,7 +5336,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             parent.debug('web', 'Sending 2FA email to: ' + user.email);
                                             parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
                                             // Ask for a login token & confirm email was sent
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else if ((s[2] == '**sms**') && (sms2fa == true)) {
                                             // Cause a token to be sent to the user's phone number
                                             user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
@@ -5329,7 +5344,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
                                             parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
                                             // Ask for a login token & confirm sms was sent
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', sms2fa: sms2fa, sms2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else {
                                             // Ask for a login token
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa })); ws.close(); } catch (e) { }
@@ -5338,7 +5353,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         // We are authenticated with 2nd factor.
                                         // Check email verification
                                         if (emailcheck && (user.email != null) && (user.emailVerified !== true)) {
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else {
                                             func(ws, req, domain, user);
                                         }
