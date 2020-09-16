@@ -1086,6 +1086,14 @@
                     }
                     break;
                 }
+                case 'lastconnect': {
+                    var node = getNodeFromId(message.nodeid);
+                    if (node != null) {
+                        node.lastconnect = message.time;
+                        node.lastaddr = message.addr;
+                    }
+                    break;
+                }
                 case 'getnetworkinfo': {
                     if (currentNode._id != message.nodeid) return;
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
@@ -2655,6 +2663,7 @@
                     QH('p10html2', '');
                     powerTimelineReq = currentNode._id;
                     meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
+                    meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
                     QH('p10detailshtml', '');
@@ -4424,6 +4433,7 @@
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
         function getUserName(userid) { if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
+        function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
 
     </script>
 </body>
