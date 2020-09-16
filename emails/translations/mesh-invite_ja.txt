@@ -17,7 +17,7 @@ Windowsの場合、次のリンクに移動してプロセスを完了します�
 ~<area-osx>
 Apple OSXの場合、次のリンクに移動してプロセスを完了します。
 ~
-~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>

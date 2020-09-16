@@ -17,7 +17,7 @@
 ~<area-osx>
 Для Apple OSX перейдите по следующей ссылке, чтобы завершить процесс:
 ~
-~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>

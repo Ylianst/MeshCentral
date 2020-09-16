@@ -17,7 +17,7 @@ Windows için, işlemi tamamlamak için aşağıdaki bağlantıya gidin:
 ~<area-osx>
 Apple OSX için, işlemi tamamlamak için aşağıdaki bağlantıya gidin:
 ~
-~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>

@@ -17,7 +17,7 @@ Nagivieren Sie unter Windows den folgenden Link, um den Vorgang abzuschließen:
 ~<area-osx>
 Nagivieren Sie unter Apple OSX den folgenden Link, um den Vorgang abzuschließen:
 ~
-~[[[SERVERURL]]]/meshagents?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-osx>
 ~<area-linux>
