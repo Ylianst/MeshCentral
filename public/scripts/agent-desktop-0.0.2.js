@@ -100,7 +100,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.send = function (x) {
-        if (obj.debugmode > 1) { console.log("KSend(" + x.length + "): " + rstr2hex(x)); }
+        if (obj.debugmode > 2) { console.log("KSend(" + x.length + "): " + rstr2hex(x)); }
         if (obj.parent != null) { obj.parent.send(x); }
     }
 
@@ -156,13 +156,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.SendUnPause = function () {
-        //obj.Debug("SendUnPause");
+        if (obj.debugmode > 1) { console.log("SendUnPause"); }
         //obj.xxStateChange(3);
         obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x00));
     }
 
     obj.SendPause = function () {
-        //obj.Debug("SendPause");
+        if (obj.debugmode > 1) { console.log("SendPause"); }
         //obj.xxStateChange(2);
         obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
     }
@@ -196,7 +196,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.ProcessBinaryCommand = function (cmd, cmdsize, view) {
         var X, Y;
         if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
-        //console.log('CMD', cmd, cmdsize, X, Y);
+        if (obj.debugmode > 2) { console.log('CMD', cmd, cmdsize, X, Y); }
 
         // Record the command if needed
         if (obj.recordedData != null) {
@@ -250,7 +250,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 break;
             case 17: // MNG_KVM_MESSAGE
                 var str = String.fromCharCode.apply(null, data.slice(4));
-                obj.Debug("Got KVM Message: " + str);
+                console.log("Got KVM Message: " + str);
                 if (obj.onMessage != null) obj.onMessage(str, obj);
                 break;
             case 65: // Alert
@@ -502,7 +502,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             if (obj.onScreenSizeChange != null) obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId);
         }
         obj.FirstDraw = false;
-        //obj.Debug("onResize: " + obj.ScreenWidth + " x " + obj.ScreenHeight);
+        if (obj.debugmode > 1) { console.log("onResize: " + obj.ScreenWidth + " x " + obj.ScreenHeight); }
     }
 
     obj.xxMouseInputGrab = false;

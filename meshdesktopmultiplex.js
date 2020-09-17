@@ -486,7 +486,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                     var cmd = Buffer.alloc(10);
                     cmd.writeUInt16BE(5, 0); // Command 5, compression
                     cmd.writeUInt16BE(10, 2); // Command size, 10 bytes long
-                    cmd[4] = 1; // Image type, 1 = JPEN
+                    cmd[4] = 1; // Image type, 1 = JPEG
                     cmd[5] = obj.imageCompression; // Image compression level
                     cmd.writeUInt16BE(obj.imageScaling, 6); // Scaling level
                     cmd.writeUInt16BE(obj.imageFrameRate, 8); // Frame rate timer
