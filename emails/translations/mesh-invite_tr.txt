@@ -11,7 +11,7 @@ Mesaj: [[[MSG]]]
 ~<area-windows>
 Windows için, işlemi tamamlamak için aşağıdaki bağlantıya gidin:
 ~
-~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-windows>
 ~<area-osx>

@@ -11,7 +11,7 @@ Bericht: [[[MSG]]]
 ~<area-windows>
 Voor Windows, ga je naar de volgende link om het proces te voltooien:
 ~
-~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-windows>
 ~<area-osx>

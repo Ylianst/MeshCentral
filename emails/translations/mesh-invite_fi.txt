@@ -11,7 +11,7 @@ Viesti: [[[MSG]]]
 ~<area-windows>
 Jos kyseessä on Windows, suorita prosessi loppuun avaamalla seuraava linkki:
 ~
-~[[[SERVERURL]]]/meshagents?id=3&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
+~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
 ~</area-windows>
 ~<area-osx>
