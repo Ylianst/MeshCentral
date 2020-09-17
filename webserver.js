@@ -4265,19 +4265,92 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain == null) return;
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
             if ((req.session == null) || (req.session.userid == null)) { res.sendStatus(404); return; }
+            var user = null, coreDumpsAllowed = false;
+            if (typeof req.session.userid == 'string') { user = obj.users[req.session.userid]; }
+            if (user == null) { res.sendStatus(404); return; }
+
+            // Check if this user has access to agent core dumps
+            if ((obj.parent.config.settings.agentcoredump === true) && ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0)))) {
+                coreDumpsAllowed = true;
+
+                if ((req.query.dldump != null) && obj.common.IsFilenameValid(req.query.dldump)) {
+                    // Download a dump file
+                    var dumpFile = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', req.query.dldump);
+                    if (obj.fs.existsSync(dumpFile)) {
+                        res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="' + req.query.dldump + '' });
+                        res.sendFile(dumpFile); return;
+                    } else {
+                        res.sendStatus(404); return;
+                    }
+                }
+
+                if ((req.query.deldump != null) && obj.common.IsFilenameValid(req.query.deldump)) {
+                    // Delete a dump file
+                    try { obj.fs.unlinkSync(obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', req.query.deldump)); } catch (ex) { console.log(ex); }
+                }
+
+                if ((req.query.dumps != null) || (req.query.deldump != null)) {
+                    // Send list of agent core dumps
+                    var response = '<html><head><title>Mesh Agents Core Dumps</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
+                    response += '<tr style="background-color:lightgray"><th>ID</th><th>Upload Date</th><th>Description</th><th>Current</th><th>Dump</th><th>Size</th><th>Agent</th><th>Agent SHA384</th><th>NodeID</th><th></th></tr>';
+
+                    var coreDumpPath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps');
+                    if (obj.fs.existsSync(coreDumpPath)) {
+                        var files = obj.fs.readdirSync(coreDumpPath);
+                        var coredumps = [];
+                        for (var i in files) {
+                            var file = files[i];
+                            if (file.endsWith('.dmp')) {
+                                var fileSplit = file.substring(0, file.length - 4).split('-');
+                                if (fileSplit.length == 3) {
+                                    var agentid = parseInt(fileSplit[0]);
+                                    if ((isNaN(agentid) == false) && (obj.parent.meshAgentBinaries[agentid] != null)) {
+                                        var agentinfo = obj.parent.meshAgentBinaries[agentid];
+                                        var filestats = obj.fs.statSync(obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', file));
+                                        coredumps.push({
+                                            fileSplit: fileSplit,
+                                            agentinfo: agentinfo,
+                                            filestats: filestats,
+                                            currentAgent: agentinfo.hashhex.startsWith(fileSplit[1].toLowerCase()),
+                                            downloadUrl: req.originalUrl.split('?')[0] + '?dldump=' + file + (req.query.key ? ('&key=' + req.query.key) : ''),
+                                            deleteUrl: req.originalUrl.split('?')[0] + '?deldump=' + file + (req.query.key ? ('&key=' + req.query.key) : ''),
+                                            agentUrl: req.originalUrl.split('?')[0] + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : ''),
+                                            time: new Date(filestats.ctime)
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        coredumps.sort(function (a, b) { if (a.time > b.time) return -1; if (a.time < b.time) return 1; return 0; });
+                        for (var i in coredumps) {
+                            var d = coredumps[i];
+                            response += '<tr><td>' + d.agentinfo.id + '</td><td>' + d.time.toDateString().split(' ').join('&nbsp;') + '</td><td>' + d.agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
+                            response += '<td style=text-align:center>' + d.currentAgent + '</td><td><a download href="' + d.downloadUrl + '">Download</a></td><td style=text-align:right>' + d.filestats.size + '</td>';
+                            if (d.currentAgent) { response += '<td><a download href="' + d.agentUrl + '">Download</a></td>'; } else { response += '<td></td>'; }
+                            response += '<td>' + d.fileSplit[1].toLowerCase() + '</td><td>' + d.fileSplit[2] + '</td><td><a href="' + d.deleteUrl + '">Delete</a></td></tr>';
+                        }
+                    }
+                    response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + req.query.key) : '') + '">Mesh Agents</a></body></html>';
+                    res.send(response);
+                    return;
+                }
+            }
 
             // Send a list of available mesh agents
-            var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body><table>';
+            var response = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
             response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th><th>MeshCmd</th></tr>';
+            var originalUrl = req.originalUrl.split('?')[0];
             for (var agentid in obj.parent.meshAgentBinaries) {
+                if (agentid >= 10000) continue;
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
-                var originalUrl = req.originalUrl.split('?')[0];
-                response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc + '</td>';
+                response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
                 response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname + '</a></td>';
                 response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hashhex + '</td>';
                 response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
-            response += '</table></body></html>';
+            response += '</table>';
+            if (coreDumpsAllowed) { response += '<a href="' + originalUrl + '?dumps=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">MeshAgent Crash Dumps</a>'; }
+            response += '</body></html>';
             res.send(response);
         }
     };
