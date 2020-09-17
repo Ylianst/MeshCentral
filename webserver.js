@@ -724,7 +724,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
 
         // Check 2FA login cookie
-        if (token.startsWith('cookie=')) {
+        if ((token != null) && (token.startsWith('cookie='))) {
             var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(token.substring(7)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
             if ((twoFactorCookie != null) && ((obj.args.cookieipcheck === false) || (twoFactorCookie.ip == null) || (twoFactorCookie.ip === req.clientIp)) && (twoFactorCookie.userid == user._id)) { func(true); return; }
         }
