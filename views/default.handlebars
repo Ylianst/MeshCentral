@@ -1298,6 +1298,7 @@
 
             // Fetch URL arguments & do sanitation
             urlargs = parseUriArgs();
+            if (urlargs.key != null) { urlargs.key = "" + urlargs.key; }
             if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
             if (urlargs.locale && (isAlphaNumeric(urlargs.locale) == false)) { delete urlargs.locale; }
             delete urlargs.viewmode;
@@ -6366,7 +6367,7 @@
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
             var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-            var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}';
+            var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key?('&key=' + urlargs.key):'');
             //x += addHtmlValue("Launch", '<a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">Start MeshCentral Router</a>');
             //x += '<br /><div style=width:100%><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">' + "Start MeshCentral Router" + '</a>' + ", for this link to work you must download MeshCentral Router run it and click the install button." + '</div>';
             x += '<br /><div>' + "Run MeshCentral Router and click \"install\" to make it launchable from the browser." + '</div>';
