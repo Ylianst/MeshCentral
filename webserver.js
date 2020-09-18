@@ -4804,10 +4804,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
             obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
             obj.app.ws(url + 'control.ashx', function (ws, req) {
-                PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) {
-                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
-                    obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user);
-                });
+                const domain = getDomain(req);
+                if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
+                PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user); });
             });
             obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
             obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
