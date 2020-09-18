@@ -2120,6 +2120,7 @@ function startRouter() {
             url += '?user=' + settings.username + '&pass=' + settings.password;
         }
         if (settings.emailtoken) { url += '&token=**email**'; } else if (settings.token != null) { url += '&token=' + settings.token; }
+        if (settings.loginkey) { url += '&key=' + settings.loginkey; }
         options = http.parseUri(url);
     } catch (e) { console.log("Unable to parse \"serverUrl\"."); process.exit(1); return; }
     options.checkServerIdentity = onVerifyServer;
