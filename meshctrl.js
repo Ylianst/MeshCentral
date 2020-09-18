@@ -51,6 +51,7 @@ if (args['_'].length == 0) {
     console.log("  DeviceToast               - Display a toast notification on a remote device.");
     console.log("\r\nSupported login arguments:");
     console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
+    console.log("                            - Use wss://localhost:443?key=xxx if login key is required.");
     console.log("  --loginuser [username]    - Login username, admin is default.");
     console.log("  --loginpass [password]    - Login password.");
     console.log("  --token [number]          - 2nd factor authentication token.");
@@ -789,8 +790,11 @@ function serverConnect() {
         url = args.url;
         if (url.length < 5) { console.log("Invalid url."); process.exit(); return; }
         if ((url.startsWith('wss://') == false) && (url.startsWith('ws://') == false)) { console.log("Invalid url."); process.exit(); return; }
+        var i = url.indexOf('?key='), loginKey = null;
+        if (i >= 0) { loginKey = url.substring(i + 5); url = url.substring(0, i); }
         if (url.endsWith('/') == false) { url += '/'; }
         url += 'control.ashx';
+        if (loginKey != null) { url += '?key=' + loginKey; }
     }
 
     // TODO: checkServerIdentity does not work???
