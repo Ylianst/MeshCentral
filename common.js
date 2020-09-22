@@ -96,7 +96,7 @@ module.exports.data2blob = function (data) {
 };
 
 // Generate random numbers
-module.exports.random = function (max) { return Math.floor(Math.random() * max); };
+module.exports.random = function (max) { require('crypto').randomInt(0, max); };
 
 // Split a comma seperated string, ignoring commas in quotes.
 module.exports.quoteSplit = function (str) {
@@ -187,13 +187,6 @@ module.exports.checkPasswordRequirements = function(password, requirements) {
 // Limits the number of tasks running to a fixed limit placing the rest in a pending queue.
 // This is useful to limit the number of agents upgrading at the same time, to not swamp 
 // the network with traffic.
-
-// taskLimiterQueue.launch(somethingToDo, argument, priority);
-//
-// function somethingToDo(argument, taskid, taskLimiterQueue) {
-//     setTimeout(function () { taskLimiterQueue.completed(taskid); }, Math.random() * 2000);
-// }
-
 module.exports.createTaskLimiterQueue = function (maxTasks, maxTaskTime, cleaningInterval) {
     var obj = { maxTasks: maxTasks, maxTaskTime: (maxTaskTime * 1000), nextTaskId: 0, currentCount: 0, current: {}, pending: [[], [], []], timer: null };
 

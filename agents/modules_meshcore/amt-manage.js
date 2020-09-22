@@ -560,14 +560,15 @@ function AmtManager(agent, db, isdebug) {
     // Activate Intel AMT to CCM
     //
 
-    function makePass(length) {
-        var text = "", possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for (var i = 0; i < length; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)); }
+    obj.makePass = function(length) {
+        var buf = Buffer.alloc(length), text = "", possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        buf.randomFill(); // Fills buffer with secure random from OpenSSL.
+        for (var i = 0; i < length; i++) { text += possible.charAt(buf[i] % possible.length); }
         return text;
     }
 
     obj.activeToCCM = function (adminpass) {
-        if ((adminpass == null) || (adminpass == '')) { adminpass = 'P@0s' + makePass(23); }
+        if ((adminpass == null) || (adminpass == '')) { adminpass = 'P@0s' + obj.makePass(23); }
         intelAmtAdminPass = adminpass;
         if (osamtstack != null) {
             osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activeToCCMEx2, adminpass);

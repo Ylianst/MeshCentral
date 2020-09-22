@@ -2301,27 +2301,23 @@
                         if (message.trustedCert == true) {
                             // Trusted certificate, use HTTPS port.
                             var rdpurl = window.location.origin + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
-                            var newWindow = window.open(rdpurl, '_blank');
-                            newWindow.opener = null;
+                            safeNewWindow(rdpurl, '_blank');
                         } else {
                             // Not a trusted certificate, use HTTP port.
                             var basicPort = ('{{{serverRedirPort}}}'.toLowerCase() == '') ? '{{{serverPublicPort}}}' : '{{{serverRedirPort}}}';
                             var rdpurl = 'http://' + window.location.hostname + ':' + basicPort  + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
-                            var newWindow = window.open(rdpurl, '_blank');
-                            newWindow.opener = null;
+                            safeNewWindow(rdpurl, '_blank');
                         }
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + 'meshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
-                        var newWindow = window.open(vncurl, 'mcnovnc/' + message.nodeid);
-                        newWindow.opener = null;
+                        safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
                     } else if (message.tag == 'mstsc') {
                         var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
-                        var newWindow = window.open(rdpurl, 'mcmstsc/' + message.nodeid);
-                        newWindow.opener = null;
+                        safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
                     }
                     break;
                 }
@@ -3014,7 +3010,7 @@
                     if (message.consent & 64) { y.push("Privacy bar"); }
                     if (y.length == 0) { y.push("None"); }
                     x += addHtmlValue("User Consent", y.join(', '));
-                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink target="_blank" style=cursor:pointer>' + "Remote Desktop Link" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + "Remote Desktop Link" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
                 }
@@ -4133,7 +4129,7 @@
             x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
             x += addHtmlValue("Installation Type", '<select id=d2agentInviteType style=width:236px onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
-            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
             if (features & 64) { Q('d2InviteType').focus(); d2ChangedInviteType(); } else { Q('d2inviteExpire').focus(); validateAgentInvite(); }
             d2RequestInvitationLink();
@@ -4710,7 +4706,7 @@
                 var panel = [0, 10, 12, 11, 13, 16, 17, 15, 19][action]; // (invalid), General, Desktop, Terminal, Files, Events, Console, Plugin
                 if (event && (event.shiftKey == true)) {
                     // Open the device in a different tab
-                    window.open(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=' + panel + '&hide=16', 'meshcentral:' + nodeid);
+                    safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=' + panel + '&hide=16', 'meshcentral:' + nodeid);
                 } else {
                     // Go to the right panel
                     gotoDevice(nodeid, panel);
@@ -4810,7 +4806,7 @@
 
         function cmdeskplayeraction(action) {
             if (xxdialogMode) return;
-            window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
+            safeNewWindow(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer');
         }
 
         function p13deletefileCm(b, file) {
@@ -5471,7 +5467,7 @@
 
             if (event && (event.shiftKey == true)) {
                 // Open the device in a different tab
-                window.open(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16', 'meshcentral:' + nodeid);
+                safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16', 'meshcentral:' + nodeid);
                 return;
             }
 
@@ -5972,9 +5968,9 @@
             var url = '/messenger?id=meshmessenger/' + encodeURIComponentEx(currentNode._id) + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + currentNode.name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
             if (e && (e.shiftKey == true)) {
-                window.open(url, 'meshmessenger:' + currentNode._id);
+                safeNewWindow(url, 'meshmessenger:' + currentNode._id);
             } else {
-                window.open(url, 'meshmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
+                safeNewWindow(url, 'meshmessenger:' + currentNode._id, 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=400,height=560');
             }
             meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
         }
@@ -6386,7 +6382,7 @@
             var node = getNodeFromId(nodeid);
             if (node == null) return;
             if ([1, 2, 3, 4, 21, 22].indexOf(node.agent.id) >= 0) { url += '&os=win'; } else { url += '&os=linux'; }
-            window.open(url, 'xterm:' + nodeid);
+            safeNewWindow(url, 'xterm:' + nodeid);
             return false;
         }
 
@@ -10060,7 +10056,7 @@
             if (meshrights & 1) {
                 // We can edit the mesh invite codes
                 var x = "When enabled, invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
-                x += '<div style=width:100%;text-align:center><a target=_blank href="' + url + '">' + url + '</a></div><br />';
+                x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
                 x += '<div style=margin-bottom:5px><label><input id=agentJoinCheck type=checkbox onclick=p20editmeshInviteCodeValidate() />' + "Enable Invite Codes" + '</label></div>';
                 x += addHtmlValue("Invite Codes", '<input id=agentInviteCode style=width:236px onkeyup=p20editmeshInviteCodeValidate() placeholder="code1, code2, code3" />');
                 x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
@@ -10074,7 +10070,7 @@
             } else {
                 // View codes only
                 var x = "Invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
-                x += '<div style=width:100%;text-align:center><a target=_blank href="' + url + '">' + url + '</a></div><br />';
+                x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
                 x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
                 x += addHtmlValue("Installation Type", ["Background and interactive", "Background only", "Interactive only"][currentMesh.invite.flags & 3]);
                 setDialogMode(2, "Invite Codes", 1, null, x);
@@ -11057,7 +11053,7 @@
             haltEvent(e);
             var url = '/messenger?id=meshmessenger/' + userid + '/' + encodeURIComponentEx(userinfo._id) + '&title=' + name;
             if ((authCookie != null) && (authCookie != '')) { url += '&auth=' + authCookie; }
-            window.open(url, 'meshmessenger:' + userid);
+            safeNewWindow(url, 'meshmessenger:' + userid);
             meshserver.send({ action: 'meshmessenger', userid: decodeURIComponent(userid) });
             return false;
         }
@@ -12408,7 +12404,7 @@
         }
 
         function refreshRecodings() { meshserver.send({ action: 'recordings', limit: 1000 }); }
-        function openRecodringPlayer() { if (!xxdialogMode) window.open(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer'); }
+        function openRecodringPlayer() { if (!xxdialogMode) safeNewWindow(window.location.origin + '{{{domainurl}}}player.htm', 'meshcentral-deskplayer'); }
         function p52updateInfo() {
             var elements = document.getElementsByClassName('RecordingCheckbox'), checkcount = 0;
             for (var i=0;i<elements.length;i++) { if (elements[i].checked === true) { checkcount++; } }
@@ -12582,7 +12578,7 @@
                 else gotoDevice(n.nodeid, 10); // General
             } else {
                 if ((n.tag != null) && n.tag.startsWith('meshmessenger/')) {
-                    window.open('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
+                    safeNewWindow('/messenger?id=' + n.tag + '&title=' + encodeURIComponentEx(n.username), n.tag.split('/')[2]);
                     notificationDelete(id);
                 }
             }
@@ -13007,15 +13003,15 @@
             if (event && (event.shiftKey == true) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
-                    if (currentNode) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
+                    if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
-                    if (currentMesh) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
+                    if (currentMesh) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentMesh._id); }
                 } else if ((x >= 30) && (x <= 39)) {
-                    if (currentUser) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
+                    if (currentUser) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotouser=' + ((serverinfo.crossDomain)?currentUser._id:currentUser._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUser._id); }
                 } else if ((x >= 50) && (x <= 59)) {
-                    if (currentUserGroup) { window.open(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
+                    if (currentUserGroup) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotougrp=' + ((serverinfo.crossDomain)?currentUserGroup._id:currentUserGroup._id.split('/')[2]) + '&viewmode=' + x + '&hide=16', 'meshcentral:' + currentUserGroup._id); }
                 } else { // if (x < 10))
-                    window.open(window.location.origin + '{{{domainurl}}}' + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
+                    safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?viewmode=' + x + '&hide=0', 'meshcentral:' + x);
                 }
                 return;
             }
@@ -13542,6 +13538,8 @@
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g,'%27'); };
         function getUserName(userid) {  if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
+        function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
+
     </script>
 </body>
 </html>
