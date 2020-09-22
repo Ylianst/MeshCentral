@@ -3067,7 +3067,7 @@ function createMeshCore(agent) {
                     if (args['_'].length < 1) {
                         response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
                     } else {
-                        response = JSON.stringify(mesh.eval(args['_'][0]));
+                        response = JSON.stringify(mesh.eval(args['_'][0])); // This can only be run by trusted administrator.
                     }
                     break;
                 }

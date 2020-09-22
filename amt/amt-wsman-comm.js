@@ -17,12 +17,6 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     obj.noncecounter = 1;
     obj.authcounter = 0;
 
-    obj.Address = '/wsman';
-    obj.challengeParams = null;
-    obj.noncecounter = 1;
-    obj.authcounter = 0;
-    obj.cnonce = Math.random().toString(36).substring(7); // Generate a random client nonce
-
     obj.net = require('net');
     obj.tls = require('tls');
     obj.crypto = require('crypto');
@@ -31,6 +25,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     obj.socketState = 0;
     obj.kerberosDone = 0;
     obj.amtVersion = null;
+
+    obj.Address = '/wsman';
+    obj.challengeParams = null;
+    obj.noncecounter = 1;
+    obj.authcounter = 0;
+    obj.cnonce = obj.crypto.randomBytes(16).toString('hex'); // Generate a random client nonce
 
     obj.host = host;
     obj.port = port;
