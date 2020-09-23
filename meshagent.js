@@ -1474,13 +1474,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (obj.agentInfo.capabilities & 0x40) return;
         if ((command == null) || (command == null)) return; // Safety, should never happen.
 
+        // If the device is pending a change, hold.
+        if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentCoreInfo(command); }, 100); return; }
+        obj.deviceChanging = true;
+
         // Check that the mesh exists
         const mesh = parent.meshes[obj.dbMeshKey];
-        if (mesh == null) return;
+        if (mesh == null) { delete obj.deviceChanging; return; }
 
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
-            if ((nodes == null) || (nodes.length != 1)) return;
+            if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
             const device = nodes[0];
             if (device.agent) {
                 var changes = [], change = 0, log = 0;
@@ -1538,6 +1542,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
+
+                // Device change is done.
+                delete obj.deviceChanging;
             }
         });
     }
@@ -1551,9 +1558,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         const mesh = parent.meshes[obj.dbMeshKey];
         if (mesh == null) return;
 
+        // If the device is pending a change, hold.
+        if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentLocationInfo(command); }, 100); return; }
+        obj.deviceChanging = true;
+
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) {
-            if ((nodes == null) || (nodes.length != 1)) { return; }
+            if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
             const device = nodes[0];
             if (device.agent) {
                 var changes = [], change = 0;
@@ -1580,27 +1591,87 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
             }
+
+            // Done changing the device
+            delete obj.deviceChanging;
         });
     }
 
     // Update the mesh agent tab in the database
     function ChangeAgentTag(tag) {
         if (obj.agentInfo.capabilities & 0x40) return;
-        if (tag.length == 0) { tag = null; }
+        if ((tag != null) && (tag.length == 0)) { tag = null; }
+
+        // If the device is pending a change, hold.
+        if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentCoreInfo(command); }, 100); return; }
+        obj.deviceChanging = true;
+
         // Get the node and change it if needed
         db.Get(obj.dbNodeKey, function (err, nodes) {
-            if ((nodes == null) || (nodes.length != 1)) return;
+            if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
             const device = nodes[0];
             if (device.agent) {
-                if (device.agent.tag != tag) {
+                // Parse the agent tag
+                var agentTag = null, serverName = null, serverDesc = null, serverTags = null;
+                if (tag != null) {
+                    var taglines = tag.split('\r\n').join('\n').split('\r').join('\n').split('\n');
+                    for (var i in taglines) {
+                        var tagline = taglines[i].trim();
+                        if (tagline.length > 0) {
+                            if (tagline.startsWith('~')) {
+                                if (tagline.startsWith('~ServerName:') && (tagline.length > 12) && (serverName == null)) { serverName = tagline.substring(12).trim(); }
+                                if (tagline.startsWith('~ServerDesc:') && (tagline.length > 12) && (serverDesc == null)) { serverDesc = tagline.substring(12).trim(); }
+                                if (tagline.startsWith('~ServerTags:') && (tagline.length > 12) && (serverTags == null)) { serverTags = tagline.substring(12).split(','); for (var j in serverTags) { serverTags[j] = serverTags[j].trim(); } }
+                            } else { if (agentTag == null) { agentTag = tagline; } }
+                        }
+                    }
+                }
+
+                // Set the agent tag
+                var changes = false;
+                if (device.agent.tag != agentTag) { device.agent.tag = agentTag; if ((device.agent.tag == null) || (device.agent.tag == '')) { delete device.agent.tag; } changes = true; }
+                if (domain.agenttag != null) {
+                    // Set the device's server name
+                    if ((serverName != null) && (domain.agenttag.servername === 1) && (device.name != serverName)) { device.name = serverName; changes = true; }
+
+                    // Set the device's server description
+                    if ((serverDesc != null) && (domain.agenttag.serverdesc === 1) && (device.desc != serverDesc)) { device.desc = serverDesc; changes = true; }
+
+                    // Set the device's server description if there is no description
+                    if ((serverDesc != null) && (domain.agenttag.serverdesc === 2) && (device.desc != serverDesc) && ((device.desc == null) || (device.desc == ''))) { device.desc = serverDesc; changes = true; }
+
+                    if ((serverTags != null) && (domain.agenttag.servertags != null) && (domain.agenttag.servertags != 0)) {
+                        // Sort the tags
+                        serverTags.sort();
+
+                        // Stringify the tags
+                        var st2 = '', st1 = serverTags.join(',');
+                        if (device.tags != null) { st2 = device.tags.join(','); }
+
+                        // Set the device's server tags
+                        if ((domain.agenttag.servertags === 1) && (st1 != st2)) { device.tags = serverTags; changes = true; }
+
+                        // Set the device's server tags if there are not tags
+                        if ((domain.agenttag.servertags === 2) && (st2 == '')) { device.tags = serverTags; changes = true; }
+
+                        // Append to device's server tags
+                        if ((domain.agenttag.servertags === 3) && (st1 != st2)) {
+                            if (device.tags == null) { device.tags = []; }
+                            for (var i in serverTags) { if (device.tags.indexOf(serverTags[i]) == -1) { device.tags.push(serverTags[i]); } }
+                            device.tags.sort();
+                            changes = true;
+                        }
+                    }
+                }
+
+                if (changes == true) {
                     // Do some clean up if needed, these values should not be in the database.
                     if (device.conn != null) { delete device.conn; }
                     if (device.pwr != null) { delete device.pwr; }
                     if (device.agct != null) { delete device.agct; }
                     if (device.cict != null) { delete device.cict; }
 
-                    // Set the new tag
-                    device.agent.tag = tag;
+                    // Update the device
                     db.Set(device);
 
                     // Event the node change
@@ -1609,6 +1680,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
             }
+
+            // Done changing the device
+            delete obj.deviceChanging;
         });
     }
 
