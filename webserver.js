@@ -4662,7 +4662,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.use(function (req, res, next) {
             // Set the real IP address of the request
             // If a trusted reverse-proxy is sending us the remote IP address, use it.
-            const ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip;
+            var ipex = '0.0.0.0';
+            if (typeof req.ip == 'string') { ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip; }
             if (
                 (obj.args.trustedproxy === true) ||
                 ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
@@ -4735,7 +4736,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.agentapp.use(function (req, res, next) {
                 // Set the real IP address of the request
                 // If a trusted reverse-proxy is sending us the remote IP address, use it.
-                const ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip;
+                var ipex = '0.0.0.0';
+                if (typeof req.ip == 'string') { ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip; }
                 if (
                     (obj.args.trustedproxy === true) ||
                     ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||

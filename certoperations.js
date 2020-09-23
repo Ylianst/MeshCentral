@@ -307,7 +307,7 @@ module.exports.CertificateOperations = function (parent) {
         var keys = obj.pki.rsa.generateKeyPair({ bits: (strong == true) ? 3072 : 2048, e: 0x10001 });
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
-        cert.serialNumber = require('crypto').randomBytes(4).readUInt32BE(0);
+        cert.serialNumber = '' + require('crypto').randomBytes(4).readUInt32BE(0);
         cert.validity.notBefore = new Date(2018, 0, 1);
         cert.validity.notAfter = new Date(2049, 11, 31);
         if (addThumbPrintToName === true) { commonName += '-' + obj.pki.getPublicKeyFingerprint(cert.publicKey, { encoding: 'hex' }).substring(0, 6); }
@@ -329,7 +329,7 @@ module.exports.CertificateOperations = function (parent) {
         var keys = obj.pki.rsa.generateKeyPair({ bits: (strong == true) ? 3072 : 2048, e: 0x10001 });
         var cert = obj.pki.createCertificate();
         cert.publicKey = keys.publicKey;
-        cert.serialNumber = require('crypto').randomBytes(4).readUInt32BE(0);
+        cert.serialNumber = '' + require('crypto').randomBytes(4).readUInt32BE(0);
         cert.validity.notBefore = new Date(2018, 0, 1);
         cert.validity.notAfter = new Date(2049, 11, 31);
         if (addThumbPrintToName === true) { commonName += "-" + obj.pki.getPublicKeyFingerprint(cert.publicKey, { encoding: 'hex' }).substring(0, 6); }
