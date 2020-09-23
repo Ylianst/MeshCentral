@@ -397,6 +397,14 @@ module.exports.CertificateOperations = function (parent) {
         return false;
     }
 
+    // Return true if the certificate is valid
+    obj.checkCertificate = function (pem, key) {
+        var cert = null;
+        try { cert = obj.pki.certificateFromPem(pem); } catch (ex) { return false; } // Unable to decode certificate
+        if (cert.serialNumber == '') return false; // Empty serial number is not allowed.
+        return true;
+    }
+
     // Returns the web server TLS certificate and private key, if not present, create demonstration ones.
     obj.GetMeshServerCertificate = function (args, config, func) {
         var i = 0;
@@ -426,11 +434,11 @@ module.exports.CertificateOperations = function (parent) {
             // This option is required for newer versions of Intel AMT for CIRA/WS-EVENTS.
             var xroot = obj.pki.certificateFromPem(rootCertificate);
             var xext = xroot.getExtension('keyUsage');
-            if ((xext == null) || (xext.keyCertSign !== true)) {
+            if ((xext == null) || (xext.keyCertSign !== true) || (xroot.serialNumber == '')) {
                 // We need to fix this certificate
-                console.log("Fixing root certificate to add signing key usage...");
                 obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-public-backup.crt'), rootCertificate);
-                xroot.setExtensions([{ name: 'basicConstraints', cA: true }, { name: 'subjectKeyIdentifier' }, { name: 'keyUsage', keyCertSign: true }]);
+                if (xroot.serialNumber == '') { console.log("Fixing root certificate to add serial number..."); xroot.serialNumber = '' + require('crypto').randomBytes(4).readUInt32BE(0); }
+                if ((xext == null) || (xext.keyCertSign !== true)) { console.log("Fixing root certificate to add signing key usage..."); xroot.setExtensions([{ name: 'basicConstraints', cA: true }, { name: 'subjectKeyIdentifier' }, { name: 'keyUsage', keyCertSign: true }]); }
                 var xrootPrivateKey = obj.pki.privateKeyFromPem(rootPrivateKey);
                 xroot.sign(xrootPrivateKey, obj.forge.md.sha384.create());
                 r.root.cert = obj.pki.certificateToPem(xroot);
@@ -441,42 +449,45 @@ module.exports.CertificateOperations = function (parent) {
         // If web certificate exist, load it as default. This is useful for agent-only port. Load both certificate and private key
         if (obj.fileExists('webserver-cert-public.crt') && obj.fileExists('webserver-cert-private.key')) {
             r.webdefault = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
+            if (obj.checkCertificate(r.webdefault.cert, r.webdefault.key) == false) { delete r.webdefault; }
         }
 
         if (args.tlsoffload) {
             // If the web certificate already exist, load it. Load just the certificate since we are in TLS offload situation
             if (obj.fileExists('webserver-cert-public.crt')) {
                 r.web = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8') };
-                rcount++;
+                if (obj.checkCertificate(r.web.cert, null) == false) { delete r.web; } else { rcount++; }
             }
         } else {
             // If the web certificate already exist, load it. Load both certificate and private key
             if (obj.fileExists('webserver-cert-public.crt') && obj.fileExists('webserver-cert-private.key')) {
                 r.web = { cert: obj.fileLoad('webserver-cert-public.crt', 'utf8'), key: obj.fileLoad('webserver-cert-private.key', 'utf8') };
-                rcount++;
+                if (obj.checkCertificate(r.web.cert, r.web.key) == false) { delete r.web; } else { rcount++; }
             }
         }
 
         // If the mps certificate already exist, load it
         if (obj.fileExists('mpsserver-cert-public.crt') && obj.fileExists('mpsserver-cert-private.key')) {
             r.mps = { cert: obj.fileLoad('mpsserver-cert-public.crt', 'utf8'), key: obj.fileLoad('mpsserver-cert-private.key', 'utf8') };
-            rcount++;
+            if (obj.checkCertificate(r.mps.cert, r.mps.key) == false) { delete r.mps; } else { rcount++; }
         }
 
         // If the agent certificate already exist, load it
         if (obj.fileExists("agentserver-cert-public.crt") && obj.fileExists("agentserver-cert-private.key")) {
             r.agent = { cert: obj.fileLoad("agentserver-cert-public.crt", 'utf8'), key: obj.fileLoad("agentserver-cert-private.key", 'utf8') };
-            rcount++;
+            if (obj.checkCertificate(r.agent.cert, r.agent.key) == false) { delete r.agent; } else { rcount++; }
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
         if (obj.fileExists('swarmserver-cert-public.crt') && obj.fileExists('swarmserver-cert-private.key')) {
             r.swarmserver = { cert: obj.fileLoad('swarmserver-cert-public.crt', 'utf8'), key: obj.fileLoad('swarmserver-cert-private.key', 'utf8') };
+            if (obj.checkCertificate(r.swarmserver.cert, r.swarmserver.key) == false) { delete r.swarmserver; }
         }
 
         // If the swarm server root certificate exist, load it (This is an optional certificate)
         if (obj.fileExists('swarmserverroot-cert-public.crt')) {
             r.swarmserverroot = { cert: obj.fileLoad('swarmserverroot-cert-public.crt', 'utf8') };
+            if (obj.checkCertificate(r.swarmserverroot.cert, null) == false) { delete r.swarmserverroot; }
         }
 
         // If CA certificates are present, load them
