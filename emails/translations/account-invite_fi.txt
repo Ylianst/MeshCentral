@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Tili kutsu
-Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/), voit käyttää sitä nyt käyttäjätunnuksella "[[[ACCOUNTNAME]]]" and salasanalla "[[[PASSWORD]]]".
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
 ~
 Ystävällisin terveisin,
 ~[[[USERNAME]]]

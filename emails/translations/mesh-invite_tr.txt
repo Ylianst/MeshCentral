@@ -2,7 +2,7 @@
 ~<area-name>
 Merhaba [[[NAME]]],
 ~</area-name>
-[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
 ~<area-msg>
 ~
 Mesaj: [[[MSG]]]
@@ -27,7 +27,7 @@ Linux için, aracıyı yüklemek için aşağıdakileri kesip bir terminale yap�
 ~
 ~</area-linux>
 ~<area-link>
-Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]] adresine gidin ve talimatları takip edin.
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
 ~</area-link>
 Bu isteği siz başlatmadıysanız, lütfen bu postayı dikkate almayın.
 ~

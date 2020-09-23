@@ -118,17 +118,13 @@ function isSafeString2(str) { return ((typeof str == 'string') && (str.indexOf('
 function parseUriArgs() {
     var href = window.document.location.href;
     if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
-    var name, r = {}, parsedUri = href.split(/[\?&|\=]/);
+    var name, r = {}, parsedUri = href.split(/[\?&|]/);
     parsedUri.splice(0, 1);
-    for (x in parsedUri) {
-        switch (x % 2) {
-            case 0: { name = decodeURIComponent(parsedUri[x]); break; }
-            case 1: {
-                r[name] = decodeURIComponent(parsedUri[x]);
-                if (!isSafeString2(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
-                break;
-            } default: { break; }
-        }
+    for (var j in parsedUri) {
+        var arg = parsedUri[j], i = arg.indexOf('=');
+        name = arg.substring(0, i);
+        r[name] = arg.substring(i + 1);
+        if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
     }
     return r;
 }

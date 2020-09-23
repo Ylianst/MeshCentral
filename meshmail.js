@@ -148,7 +148,7 @@ module.exports.CreateMeshMail = function (parent) {
     };
 
     // Send account login mail / 2 factor token
-    obj.sendAccountLoginMail = function (domain, email, token, language) {
+    obj.sendAccountLoginMail = function (domain, email, token, language, loginkey) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending login token to " + email);
@@ -166,6 +166,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Set all the options.
                 var options = { email: email, servername: domain.title ? domain.title : 'MeshCentral', token: token };
+                if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -175,7 +176,7 @@ module.exports.CreateMeshMail = function (parent) {
     };
 
     // Send account invitation mail
-    obj.sendAccountInviteMail = function (domain, username, accountname, email, password, language) {
+    obj.sendAccountInviteMail = function (domain, username, accountname, email, password, language, loginkey) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending account invitation to " + email);
@@ -193,6 +194,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Set all the options.
                 var options = { username: username, accountname: accountname, email: email, servername: domain.title ? domain.title : 'MeshCentral', password: password };
+                if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
@@ -202,7 +204,7 @@ module.exports.CreateMeshMail = function (parent) {
     };
 
     // Send account check mail
-    obj.sendAccountCheckMail = function (domain, username, email, language) {
+    obj.sendAccountCheckMail = function (domain, username, email, language, loginkey) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending email verification to " + email);
@@ -220,6 +222,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Set all the options.
                 var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
+                if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username.toLowerCase(), e: email, a: 1 }, obj.mailCookieEncryptionKey);
 
                 // Send the email
@@ -230,7 +233,7 @@ module.exports.CreateMeshMail = function (parent) {
     };
 
     // Send account reset mail
-    obj.sendAccountResetMail = function (domain, username, email, language) {
+    obj.sendAccountResetMail = function (domain, username, email, language, loginkey) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending account password reset to " + email);
@@ -248,6 +251,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Set all the options.
                 var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
+                if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username, e: email, a: 2 }, obj.mailCookieEncryptionKey);
 
                 // Send the email
@@ -258,7 +262,7 @@ module.exports.CreateMeshMail = function (parent) {
     };
 
     // Send agent invite mail
-    obj.sendAgentInviteMail = function (domain, username, email, meshid, name, os, msg, flags, expirehours, language) {
+    obj.sendAgentInviteMail = function (domain, username, email, meshid, name, os, msg, flags, expirehours, language, loginkey) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending agent install invitation to " + email);
@@ -276,6 +280,7 @@ module.exports.CreateMeshMail = function (parent) {
 
                 // Set all the template replacement options and generate the final email text (both in txt and html formats).
                 var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral' };
+                if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.windows = ((os == 0) || (os == 1)) ? 1 : 0;
                 options.linux = ((os == 0) || (os == 2)) ? 1 : 0;
                 options.osx = ((os == 0) || (os == 3)) ? 1 : 0;

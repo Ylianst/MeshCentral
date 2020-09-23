@@ -48,6 +48,7 @@
         var domainurl = decodeURIComponent('{{{domainurl}}}');
         var arg1 = decodeURIComponent('{{{arg1}}}');
         var arg2 = decodeURIComponent('{{{arg2}}}');
+        var urlargs = parseUriArgs();
 
         var title = '';
         if (titleid == 1) { title = "Account Verification"; }
@@ -61,20 +62,34 @@
             case 3: { msg = format("ERROR: Invalid e-mail \"{0}\" for user \"{1}\".", arg1, arg2); break; }
             case 4: { msg = format("E-mail \"{0}\" for user \"{1}\" already verified.", arg1, arg2); break; }
             case 5: { msg = format("E-mail \"{0}\" already in use on a different account. Change the email address and try again.", arg1); break; }
-            case 6: { msg = format("Verified email {0} for user account {1}.", '<b>' + arg1 + '</b>', '<b>' + arg2 + '</b>'); break; }
+            case 6: { msg = format("Verified email {0} for user account {1}.", '<b style=color:white>' + arg1 + '</b>', '<b style=color:white>' + arg2 + '</b>'); break; }
             case 7: { msg = format("E-mail \"{0}\" for user \"{1}\" not verified.", arg1, arg2); break; }
             case 8: {
-                msg = '<div>' + format("Password for account {0} has been reset to:", '<b>' + arg1 + '</b>') + '</div><div style=padding:14px;font-size:18px><b>' + arg2 + '</b></div>';
+                msg = '<div>' + format("Password for account {0} has been reset to:", '<b style=color:white>' + arg1 + '</b>') + '</div><div style=padding:14px;font-size:18px><b style=color:white>' + arg2 + '</b></div>';
                 msg += "Login and go to the \"My Account\" tab to update your password.";
                 break;
             }
             case 9: { msg = "ERROR: Invalid account check."; break; }
             case 10: { msg = "ERROR: Invalid account check, verification url is only valid for 30 minutes."; break; }
         }
-        QH('mainMessage', msg + '<br /><br /><a href="' + domainurl + '">' + "Go to login page" + '</a>.');
+        QH('mainMessage', msg + '<br /><br /><a href="' + domainurl + (urlargs.key ? ('?key=' + urlargs.key) : '') + '">' + "Go to login page" + '</a>.');
 
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 
+        // Parse URL arguments, only keep safe values
+        function parseUriArgs() {
+            var href = window.document.location.href;
+            if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
+            var name, r = {}, parsedUri = href.split(/[\?&|]/);
+            parsedUri.splice(0, 1);
+            for (var j in parsedUri) {
+                var arg = parsedUri[j], i = arg.indexOf('=');
+                name = arg.substring(0, i);
+                r[name] = arg.substring(i + 1);
+                if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+            }
+            return r;
+        }
     </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Hesap Davetiyesi
-[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusunda sizin için bir hesap oluşturuldu, şimdi "[[[ACCOUNTNAME]]]" kullanıcı adı ve "[[[PASSWORD]]]" ile bu hesaba erişebilirsiniz.
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
 ~
 Saygılarımla,
 ~[[[USERNAME]]]

@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Pozvánka na účet
-Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[[SERVERURL]]] /), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[[ACCOUNTNAME]]]“ “a hesla„ [[[HESLO]] ]] ".
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
 ~
 S pozdravem,
 ~[[[USERNAME]]]

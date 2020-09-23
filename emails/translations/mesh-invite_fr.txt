@@ -2,7 +2,7 @@
 ~<area-name>
 Bonjour [[[NAME]]],
 ~</area-name>
-L'utilisateur [[[USERNAME]]] sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/) vous demande d'installer un logiciel pour démarrer la session de contrôle à distance.
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
 ~<area-msg>
 ~
 Message: [[[MSG]]]
@@ -27,7 +27,7 @@ Pour Linux, copiez et collez les éléments suivants dans un terminal pour insta
 ~
 ~</area-linux>
 ~<area-link>
-Pour installer le logiciel, accédez à [[[SERVERURL]]][[[LINKURL]]] et suivez les instructions.
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
 ~</area-link>
 Si vous n'avez pas initié cette demande, veuillez ignorer ce courrier.
 ~

@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - ईमेल सत्यापन
-हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] ई-मेल सत्यापन कर रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:
+Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
 ~
-~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~
 यदि आपने यह अनुरोध आरंभ नहीं किया है, तो कृपया इस मेल को अनदेखा करें।

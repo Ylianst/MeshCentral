@@ -2,7 +2,7 @@
 ~<area-name>
 안녕하세요, [[[NAME]]]님.
 ~</area-name>
-[[[SERVERNAME]]] ([[[SERVERURL]]]/) 서버의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해서는 소프트웨어 설치가 요구됩니다.
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
 ~<area-msg>
 ~
 메시지: [[[MSG]]]
@@ -28,7 +28,7 @@ Linux의 경우, 다음을 잘라내어 터미널에 붙여 넣어 에이전트�
 ~
 ~</area-linux>
 ~<area-link>
-소프트웨어를 설치하려면, 다음에 접속하여 지시에 따르십시오 : [[[SERVERURL]]][[[LINKURL]]]
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
 ~</area-link>
 이 요청을 시작하지 않은 경우, 이 메일을 무시하십시오.
 ~

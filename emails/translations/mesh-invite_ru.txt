@@ -2,7 +2,7 @@
 ~<area-name>
 Здравствуйте, [[[NAME]]],
 ~</area-name>
-Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
 ~<area-msg>
 ~
 Сообщение: [[[MSG]]]
@@ -27,7 +27,7 @@
 ~
 ~</area-linux>
 ~<area-link>
-Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]] и следуйте инструкциям.
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
 ~</area-link>
 Если вы не инициировали этот запрос, игнорируйте это письмо.
 ~
