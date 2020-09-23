@@ -196,6 +196,16 @@
           "ldapOptions": { "type": "object", "description": "LDAP options passed to ldapauth-fork" },
           "agentInviteCodes": { "type": "boolean", "default": false, "description": "Enabled a feature where you can set one or more invitation codes in a device group. You can then give a invitation link to users who can use it to download the agent." },
           "agentNoProxy": { "type": "boolean", "default": false, "description": "When enabled, all newly installed MeshAgents will be instructed to no use a HTTP/HTTPS proxy even if one is configured on the remote system" },
+          "agentTag": {
+            "type": "object",
+            "description": "This section is used to indicate if parts of the meshagent.tag file should be used to set server-side device properties.",
+            "additionalProperties": false,
+            "properties": {
+              "ServerName": { "type": "integer", "default": 0, "description": "Action taken if one of the lines in meshagent.tag contains ~ServerName:name. 0=Ignore, 1=Set." },
+              "ServerDesc": { "type": "integer", "default": 0, "description": "Action taken if one of the lines in meshagent.tag contains ~ServerDesc:desc. 0=Ignore, 1=Set, 2=SetIfEmpty." },
+              "ServerTags": { "type": "integer", "default": 0, "description": "Action taken if one of the lines in meshagent.tag contains ~ServerTags:tag1,tag2,tag3. 0=Ignore, 1=Set, 2=SetIfEmpty, 3=Append." }
+            }
+          },
           "geoLocation": { "type": "boolean", "default": false, "description": "Enables the geo-location feature and device location map in the user interface, this feature is not being worked on." },
           "novnc": { "type": "boolean", "default": true, "description": "When enabled, activates the built-in web-based noVNC client." },
           "mstsc": { "type": "boolean", "default": false, "description": "When enabled, activates the built-in web-based RDP client." },
@@ -204,7 +214,7 @@
           "customUI": { "type": "object" },
           "consentMessages": {
             "type": "object",
-            "description": "This section is user to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
+            "description": "This section is used to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
             "additionalProperties": false,
             "properties": {
               "Title": { "type": "string" },
