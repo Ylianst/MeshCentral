@@ -4688,10 +4688,7 @@
       "ru": "Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]] /), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
       "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD] ]]”。",
-      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。",
-      "xloc": [
-        "account-invite.txt"
-      ]
+      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。"
     },
     {
       "cs": "Účet byl pro vás vytvořen na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/), nyní k němu máte přístup pomocí uživatelského jména \\\"[[[ACCOUNTNAME]]]\\\" a hesla \\\"[[[PASSWORD]]]\\\".",
@@ -4709,6 +4706,12 @@
       "tr": "[[[SERVERNAME]] ([[[SERVERURL]]]/) sunucusunda sizin için bir hesap oluşturuldu, şimdi \\\"[[[ACCOUNTNAME]]]\\\" en wachtwoord \\\"[[[PASSWORD]]]\\\".",
       "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/ 上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]] 和密码 “[[[PASSWORD]]]”。",
       "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]] ” en wachtwoord “[[[PASSWORD]]]”。"
+    },
+    {
+      "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
+      "xloc": [
+        "account-invite.txt"
+      ]
     },
     {
       "cs": "Android APK",
@@ -16938,10 +16941,7 @@
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
       "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在执行电邮验证。导航至以下连结以完成该过程：",
-      "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在執行電郵驗證。導航至以下鏈結以完成該過程：",
-      "xloc": [
-        "account-check.txt"
-      ]
+      "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在執行電郵驗證。導航至以下鏈結以完成該過程："
     },
     {
       "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]])) požaduje obnovení hesla k účtu. Chcete-li proces dokončit, přejděte na následující odkaz:",
@@ -16958,7 +16958,16 @@
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) bir hesap şifresi sıfırlama istiyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
       "zh-chs": "[[[USERNAME]]，您好：[[[SERVERNAME]]]（[[[SERVERURL]]]）正在请求重置帐户密码。导航至以下连结以完成该过程：",
-      "zh-cht": "[[[USERNAME]]，你好，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在請求重設帳戶密碼。導航至以下鏈結以完成該過程：",
+      "zh-cht": "[[[USERNAME]]，你好，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在請求重設帳戶密碼。導航至以下鏈結以完成該過程："
+    },
+    {
+      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:",
+      "xloc": [
+        "account-check.txt"
+      ]
+    },
+    {
+      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:",
       "xloc": [
         "account-reset.txt"
       ]
@@ -35817,7 +35826,10 @@
       "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]] и следуйте инструкциям.",
       "tr": "Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]] adresine gidin ve talimatları takip edin.",
       "zh-chs": "要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]]，然后按照说明进行操作。",
-      "zh-cht": "要安裝軟體，請導航至[[[SERVERURL]]] [[[LINKURL]]]，然後按照說明進行操作。",
+      "zh-cht": "要安裝軟體，請導航至[[[SERVERURL]]] [[[LINKURL]]]，然後按照說明進行操作。"
+    },
+    {
+      "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -37885,7 +37897,10 @@
       "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
       "zh-chs": "服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。",
-      "zh-cht": "伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。",
+      "zh-cht": "伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。"
+    },
+    {
+      "en": "User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.",
       "xloc": [
         "mesh-invite.txt"
       ]

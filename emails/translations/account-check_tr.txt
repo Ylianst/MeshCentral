@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - E-posta Doğrulaması
-Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:
+Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
 ~
-~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~
 Bu isteği siz başlatmadıysanız, lütfen bu postayı dikkate almayın.

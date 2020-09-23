@@ -2,7 +2,7 @@
 ~<area-name>
 [[[NAME]]]様
 ~</area-name>
-サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
 ~<area-msg>
 ~
 メッセージ：[[[MSG]]]
@@ -27,7 +27,7 @@ Linuxの場合は、ターミナルで以下をカットアンドペーストし
 ~
 ~</area-linux>
 ~<area-link>
-ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]]に移動し、指示に従います。
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
 ~</area-link>
 このリクエストを開始していない場合は、このメールを無視してください。
 ~

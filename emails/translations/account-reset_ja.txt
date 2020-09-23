@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - アカウントのリセット
-こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。
+Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
 ~
-~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~
 このリクエストを開始していない場合は、このメールを無視してください。

@@ -2,7 +2,7 @@
 ~<area-name>
 您好[[[NAME]]]，
 ~</area-name>
-服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。
+User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
 ~<area-msg>
 ~
 消息：[[[MSG]]]
@@ -27,7 +27,7 @@
 ~
 ~</area-linux>
 ~<area-link>
-要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]]，然后按照说明进行操作。
+To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
 ~</area-link>
 如果您没有发起此请求，请不理此邮件。
 ~

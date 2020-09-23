@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Convite para conta
-Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /), você pode acessá-la agora com o nome de usuário "[[[ACCOUNTNAME]]]" e a senha "[[[PASSWORD] ]] ".
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
 ~
 Cumprimentos,
 ~[[[USERNAME]]]

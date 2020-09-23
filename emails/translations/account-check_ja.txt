@@ -1,6 +1,6 @@
 [[[SERVERNAME]]] - メールの確認
-こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。
+Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
 ~
-~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]]
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~
 このリクエストを開始していない場合は、このメールを無視してください。

@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - खाता निमंत्रण
-सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]] /) पर आपके लिए एक खाता बनाया गया था, आप इसे अब उपयोगकर्ता नाम "[[[ACCOUNTNAME]]]]" और पासवर्ड "[[[PASSWORD]]]" के साथ एक्सेस कर सकते हैं।।
+An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
 ~
 सादर,
 ~[[[USERNAME]]]

@@ -914,7 +914,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                         obj.db.SetUser(user);
                         parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                        parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
+                        parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                         req.session.messageid = 2; // "Email sent" message
                         req.session.loginmode = '4';
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1239,7 +1239,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     obj.db.SetUser(user);
 
                                     // Send the verification email
-                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, obj.getLanguageCodes(req)); }
+                                    if ((obj.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, obj.getLanguageCodes(req), req.query.key); }
                                 }, 0);
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
                                 if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
@@ -1413,7 +1413,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Send email to perform recovery.
                                     delete req.session.tokenemail;
                                     if (obj.parent.mailserver != null) {
-                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req));
+                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req), req.query.key);
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
@@ -1433,7 +1433,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // No second factor, send email to perform recovery.
                             if (obj.parent.mailserver != null) {
-                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req));
+                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req), req.query.key);
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
@@ -1517,7 +1517,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     }
 
                     // Send the verification email
-                    obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, obj.getLanguageCodes(req));
+                    obj.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, obj.getLanguageCodes(req), req.query.key);
 
                     // Send the response
                     req.session.messageid = 2; // Email sent.
@@ -5308,7 +5308,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                     obj.db.SetUser(user);
                                     parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                    parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
+                                    parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                                     // Ask for a login token & confirm email was sent
                                     try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                 } else if ((req.query.token == '**sms**') && (sms2fa == true)) {
@@ -5413,7 +5413,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                             user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
                                             obj.db.SetUser(user);
                                             parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                                            parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req));
+                                            parent.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
                                             // Ask for a login token & confirm email was sent
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, email2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else if ((s[2] == '**sms**') && (sms2fa == true)) {
