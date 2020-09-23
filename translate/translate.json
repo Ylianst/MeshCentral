@@ -4683,7 +4683,6 @@
       "hi": "सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]] /) पर आपके लिए एक खाता बनाया गया था, आप इसे अब उपयोगकर्ता नाम \"[[[ACCOUNTNAME]]]]\" और पासवर्ड \"[[[PASSWORD]]]\" के साथ एक्सेस कर सकते हैं।।",
       "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]] /）にアカウントが作成されました。ユーザー名 \"[[[ACCOUNTNAME]]]\"とパスワード \"[[[PASSWORD] ]] \"。",
       "ko": "당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/), 이제 당신은 다음 이름으로 접근 가능합니다 : \"[[[ACCOUNTNAME]]]\" 그리고 비밀번호는 다음과 같습니다 : \"[[[PASSWORD]]]\".",
-      "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
       "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e a senha \"[[[PASSWORD] ]] \".",
       "ru": "Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]] /), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
@@ -4700,7 +4699,6 @@
       "hi": "सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]]/) पर आपके लिए एक खाता बनाया गया था, अब आप इसे उपयोगकर्ता नाम \\\"[[ACCOUNTNAME]]] \\\" en wachchwoord \\\"[[PASSWORD]]]\\\"।",
       "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）にアカウントが作成されました。ユーザー名 \\\"[[[ACCOUNTNAME]]]\\\" とパスワード \\\"[[[PASSWORD]]]\\\"。",
       "ko": "당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/), 이제 당신은 다음 이름으로 접근이 가능합니다 : \\\"[[[ACCOUNTNAME]]]\\\" 그리고 비밀번호는 다음과 같습니다 : \\\"[[[PASSWORD]]]\\\".",
-      "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/), Je kan inloggen met de gebruikersnaam \\\"[[[ACCOUNTNAME]]]\\\" and password \\\"[[[PASSWORD]]]\\\".",
       "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /), você pode acessá-la agora com o nome de usuário \\\"[[[ACCOUNTNAME]]] \\\" en wachtwoord \\\"[[ [SENHA]]]\\\".",
       "ru": "Для вас была создана учетная запись на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/), теперь вы можете получить к ней доступ с помощью имени пользователя \\\"[[[ACCOUNTNAME]]]\\\" и пароля \\\"[[[PASSWORD]]]\\\".",
       "tr": "[[[SERVERNAME]] ([[[SERVERURL]]]/) sunucusunda sizin için bir hesap oluşturuldu, şimdi \\\"[[[ACCOUNTNAME]]]\\\" en wachtwoord \\\"[[[PASSWORD]]]\\\".",
@@ -4709,6 +4707,7 @@
     },
     {
       "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
+      "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
       "xloc": [
         "account-invite.txt"
       ]
@@ -11012,6 +11011,7 @@
     },
     {
       "en": "Device Filter",
+      "nl": "Apparaat filter",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar"
       ]
@@ -16953,7 +16953,6 @@
       "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] से खाता पासवर्ड रीसेट करने का अनुरोध किया जा रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
       "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。",
       "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]])은 계정 비밀번호 초기화를 위해 요구됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
-      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:",
       "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está solicitando uma redefinição de senha de conta. Acesse o seguinte link para concluir o processo:",
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) bir hesap şifresi sıfırlama istiyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
@@ -16962,12 +16961,14 @@
     },
     {
       "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:",
+      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) voert een e-mailverificatie uit. Ga naar de volgende link om het proces te voltooien:",
       "xloc": [
         "account-check.txt"
       ]
     },
     {
       "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:",
+      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:",
       "xloc": [
         "account-reset.txt"
       ]
@@ -33914,6 +33915,7 @@
     },
     {
       "en": "Starred",
+      "nl": "Gemarkeerd",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->7"
       ]
@@ -35821,7 +35823,6 @@
       "hi": "सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]] [[[LINKURL]]] पर जाएँ और निर्देशों का पालन करें।",
       "ja": "ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]]に移動し、指示に従います。",
       "ko": "소프트웨어를 설치하려면, 다음에 접속하여 지시에 따르십시오 : [[[SERVERURL]]][[[LINKURL]]]",
-      "nl": "Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]] en volgt u de instructies.",
       "pt": "Para instalar o software, navegue até [[[SERVERURL]]] [[[LINKURL]]] e siga as instruções.",
       "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]] и следуйте инструкциям.",
       "tr": "Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]] adresine gidin ve talimatları takip edin.",
@@ -35830,6 +35831,7 @@
     },
     {
       "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.",
+      "nl": "Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] en volgt u de instructies.",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -37892,7 +37894,6 @@
       "hi": "उपयोगकर्ता [[[USERNAME]]] सर्वर पर [[[SERVERNAME]]] ([[[SERVERURL]]]/) आपसे रिमोट कंट्रोल सेशन शुरू करने के लिए सॉफ़्टवेयर स्थापित करने का अनुरोध कर रहा है।",
       "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。",
       "ko": "[[[SERVERNAME]]] ([[[SERVERURL]]]/) 서버의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해서는 소프트웨어 설치가 요구됩니다.",
-      "nl": "Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]]/) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.",
       "pt": "O usuário [[[USERNAME]]] no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /) está solicitando a instalação do software para iniciar a sessão de controle remoto.",
       "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
       "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
@@ -37901,6 +37902,7 @@
     },
     {
       "en": "User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.",
+      "nl": "Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.",
       "xloc": [
         "mesh-invite.txt"
       ]
