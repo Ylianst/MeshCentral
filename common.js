@@ -96,7 +96,7 @@ module.exports.data2blob = function (data) {
 };
 
 // Generate random numbers
-module.exports.random = function (max) { require('crypto').randomInt(0, max); };
+module.exports.random = function (max) { (require('crypto').randomBytes(4).readUInt32BE(0) % max); };
 
 // Split a comma seperated string, ignoring commas in quotes.
 module.exports.quoteSplit = function (str) {

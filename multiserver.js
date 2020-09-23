@@ -172,7 +172,7 @@ module.exports.CreateMultiServer = function (parent, args) {
 
         // Get the next retry time in milliseconds
         function getConnectRetryTime() {
-            if (obj.retryBackoff < 30000) { obj.retryBackoff += require('crypto').randomInt(1000, 4000); }
+            if (obj.retryBackoff < 30000) { obj.retryBackoff += ((require('crypto').randomBytes(4).readUInt32BE(0) % 3000) + 1000); }
             return obj.retryBackoff;
         }
 
