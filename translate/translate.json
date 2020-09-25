@@ -18566,7 +18566,7 @@
       "zh-chs": "英特尔®AMT",
       "zh-cht": "Intel® AMT",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->9"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->11"
       ]
     },
     {
@@ -25599,6 +25599,12 @@
       ]
     },
     {
+      "en": "Offline",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
+      ]
+    },
+    {
       "cs": "Nepřipojení uživatelé",
       "de": "Benutzer offline",
       "en": "Offline Users",
@@ -32099,7 +32105,7 @@
       "xloc": [
         "default-mobile.handlebars->9->176",
         "default.handlebars->27->260",
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->7"
       ]
     },
     {
@@ -33917,7 +33923,7 @@
       "en": "Starred",
       "nl": "Gemarkeerd",
       "xloc": [
-        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->7"
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->9"
       ]
     },
     {
