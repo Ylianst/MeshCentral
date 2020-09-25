@@ -13546,11 +13546,13 @@
         "login-mobile.handlebars->5->42",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
         "login.handlebars->5->43",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
         "login2.handlebars->7->22",
         "login2.handlebars->7->44",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
+        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2farow2->1->3",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2farow->1->3"
       ]
     },
@@ -21235,6 +21237,7 @@
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->5->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->7->1->4->3",
         "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->6->1",
+        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2->1->1"
       ]
     },
@@ -21300,8 +21303,7 @@
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resettokenpanel->1->5->1->2->1->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->1",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->1",
-        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->1"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->1"
       ]
     },
     {
@@ -21388,8 +21390,7 @@
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resettokenpanel->1->5->1->0->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->0->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1",
-        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1"
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1"
       ]
     },
     {
@@ -30335,7 +30336,9 @@
         "default.handlebars->27->1905",
         "default.handlebars->27->1910",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
+        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2farow2->1->3",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2farow->1->3"
       ]
     },
@@ -36193,6 +36196,8 @@
       "zh-chs": "代币",
       "zh-cht": "代幣",
       "xloc": [
+        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
+        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->0->1"
       ]
@@ -37429,7 +37434,9 @@
       "zh-cht": "使用安全密鑰",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
+        "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2farow2->1->3",
         "login2.handlebars->centralTable->1->0->logincell->tokenpanel->1->7->1->2farow->1->3"
       ]
     },
