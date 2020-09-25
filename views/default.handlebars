@@ -240,6 +240,7 @@
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
                                 <option value=1>Online</option>
+                                <option value=5>Offline</option>
                                 <option value=2>Sessions</option>
                                 <option value=3>Starred</option>
                                 <option value=4>Intel&reg; AMT</option>
@@ -4619,6 +4620,7 @@
             if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
             if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
+            if (devFilter == 5) { for (var d in nodes) { if ((nodes[d].conn != null) && (nodes[d].conn != 0)) { nodes[d].v = false; } } } // Offline
         }
 
         var contextelement = null;
