@@ -16641,6 +16641,12 @@
       ]
     },
     {
+      "en": "Group-Tags",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->9"
+      ]
+    },
+    {
       "cs": "Skupina1, Skupina2, Skupina3",
       "de": "Gruppe1, Gruppe2, Gruppe3",
       "en": "Group1, Group2, Group3",
