@@ -2637,7 +2637,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (user.emailVerified !== true) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Email verification required'; } // User must verify it's email first.
 
                         // Create mesh
-                        else if (common.validateString(command.meshname, 1, 64) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
+                        else if (common.validateString(command.meshname, 1, 128) == false) { err = 'Invalid group name'; } // Meshname is between 1 and 64 characters
                         else if ((command.desc != null) && (common.validateString(command.desc, 0, 1024) == false)) { err = 'Invalid group description'; } // Mesh description is between 0 and 1024 characters
                         else if ((command.meshtype != 1) && (command.meshtype != 2)) { err = 'Invalid group type'; }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -2811,7 +2811,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_EDITMESH) == 0) return;
                     if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
 
-                    if ((common.validateString(command.meshname, 1, 64) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
+                    if ((common.validateString(command.meshname, 1, 128) == true) && (command.meshname != mesh.name)) { change = 'Group name changed from "' + mesh.name + '" to "' + command.meshname + '"'; mesh.name = command.meshname; }
                     if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != mesh.desc)) { if (change != '') change += ' and description changed'; else change += 'Group "' + mesh.name + '" description changed'; mesh.desc = command.desc; }
                     if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Group "' + mesh.name + '" flags changed'; mesh.flags = command.flags; }
                     if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Group "' + mesh.name + '" consent changed'; mesh.consent = command.consent; }

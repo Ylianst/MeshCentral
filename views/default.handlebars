@@ -9080,7 +9080,7 @@
 
             // We are allowed, let's prompt to information
             var x = "Create a new device group using the options below." + '<br /><br />';
-            x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=64 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
             x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option></select></div>');
             x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "New Device Group", 3, account_createMeshEx, x);
@@ -9531,7 +9531,7 @@
 
         function p20editmesh(focus) {
             if (xxdialogMode) return;
-            var x = addHtmlValue("Name", '<input id=dp20meshname style=width:230px maxlength=32 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate(event) />');
+            var x = addHtmlValue("Name", '<input id=dp20meshname style=width:230px maxlength=128 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate(event) />');
             x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp20meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "Edit Device Group", 3, p20editmeshEx, x);
             Q('dp20meshname').value = currentMesh.name;
