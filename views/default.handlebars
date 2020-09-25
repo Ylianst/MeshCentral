@@ -278,6 +278,7 @@
                                     <option>Power</option>
                                     <option>Device</option>
                                     <option>Tags</option>
+                                    <option>Group-Tags</option>
                                 </select>
                                 &nbsp;
                             </div>
@@ -3497,8 +3498,8 @@
 
                         var collapseName = node.meshid;
                         if (sort == 1) { collapseName = ('pwr:' + (node.pwr?node.pwr:0)); }
-                        else if (sort == 3) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
-                        var collapsed = (sort != 3) & CollapsedGroups[collapseName];
+                        else if ((sort == 3) || (sort == 4)) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
+                        var collapsed = (sort != 3) & (sort != 4) & CollapsedGroups[collapseName];
                         r += '<tr name=DevxCol' + collapseName + (collapsed?' style=display:none':'') + '><td style=position:relative><div id=devs cmenu=devsContentMenu class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                         r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox></div>';
                         r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
@@ -3521,10 +3522,11 @@
                     }
 
                     // If we are displaying devices by tags, put the device in the right tag group.
-                    if ((sort == 3) && (r != '')) {
+                    if (((sort == 3) || (sort == 4)) && (r != '')) {
                         if (node.tags) {
                             for (var j in node.tags) {
                                 var tag = node.tags[j];
+                                if (sort == 4) { tag = mesh2.name + ' - ' + node.tags[j]; }
                                 var collapsed = CollapsedGroups['tag:' + tag];
                                 var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
@@ -3545,7 +3547,7 @@
                 QE('autoConnectDesktopCheckbox', kvmDivs.length < 32);
 
                 // If displaying devices by groups, sort the group names and display the devices.
-                if (sort == 3) {
+                if ((sort == 3) || (sort == 4)) {
                     var groupNames = [], tagDeviceHeaderId = 0;
                     for (var i in groups) { groupNames.push(i); }
                     groupNames.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
