@@ -180,9 +180,9 @@
                                 <td>
                                     <hr />
                                     <div>
-                                        <img id=securityKeyButton src="images/login/2fa-key-48.png" title="Use Security Key" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSecurityKey()" />
-                                        <img id=smsKeyButton src="images/login/2fa-sms-48.png" title="SMS" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSMSToken()" />
-                                        <img id=emailKeyButton src="images/login/2fa-mail-48.png" title="Email" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useEmailToken()" />
+                                        <img id=securityKeyButton src="images/login/2fa-key-48.png" title="Use Security Key" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSecurityKey(1)" />
+                                        <img id=smsKeyButton src="images/login/2fa-sms-48.png" title="SMS" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSMSToken(1)" />
+                                        <img id=emailKeyButton src="images/login/2fa-mail-48.png" title="Email" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useEmailToken(1)" />
                                     </div>
                                 </td>
                             </tr>
@@ -195,17 +195,28 @@
                     <form method=post>
                         <input type=hidden name=action value=resetaccount />
                         <div id=message5></div>
-                        <table>
+                        <table style="width:100%">
                             <tr>
-                                <td align=right width=100>Login token:</td>
                                 <td>
-                                    <input id=resetTokenInput type=text name=token maxlength=50 onchange=resetCheckToken(event) onkeyup=resetCheckToken(event) onkeydown=resetCheckToken(event) />
+                                    <input id=resetTokenInput autocomplete="one-time-code" title="Token" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" placeholder="Token" type=text maxlength=50 name=token onchange=resetCheckToken(event) onpaste=resetCheckToken(event) onkeyup=resetCheckToken(event) onkeydown=resetCheckToken(event) /><br />
                                     <input id=resetHwtokenInput type=text name=hwtoken style="display:none" />
                                 </td>
                             </tr>
                             <tr>
+                                <td>
+                                    <div>
+                                        <input id=resetTokenOkButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" type=submit value="Log In" disabled="disabled" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="2farow2">
                                 <td colspan=2>
-                                    <div style=float:right><input id=resetTokenOkButton type=submit value="Login" disabled="disabled" /></div>
+                                    <hr />
+                                    <div>
+                                        <img id=securityKeyButton2 src="images/login/2fa-key-48.png" title="Use Security Key" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSecurityKey(2)" />
+                                        <img id=smsKeyButton2 src="images/login/2fa-sms-48.png" title="SMS" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useSMSToken(2)" />
+                                        <img id=emailKeyButton2 src="images/login/2fa-mail-48.png" title="Email" loading="lazy" width="48" height="48" style="display:none;margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:#FFF" onclick="useEmailToken(2)" />
+                                    </div>
                                 </td>
                             </tr>
                         </table>
@@ -429,6 +440,18 @@
 
             if (loginMode == '5') {
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
+                var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
+                var emailkey = otpemail && (messageid != 2) && (messageid != 4);
+                var smskey = otpsms && (messageid != 2) && (messageid != 4);
+                QV('securityKeyButton2', twofakey);
+                QV('emailKeyButton2', emailkey);
+                QV('smsKeyButton2', smskey);
+                QV('2farow2', twofakey || emailkey || smskey);
+            }
+
+            /*
+            if (loginMode == '5') {
+                try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                     if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
 
@@ -457,10 +480,11 @@
                     );
                 }
             }
+            */
         }
 
         // Use a hardware security key
-        function useSecurityKey() {
+        function useSecurityKey(panelAction) {
             if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                 if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
 
@@ -481,35 +505,53 @@
                             signature: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.signature))),
                             authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(rawAssertion.response.authenticatorData))),
                         };
-                        Q('hwtokenInput').value = JSON.stringify(assertion);
-                        QE('tokenOkButton', true);
-                        Q('tokenOkButton').click();
+                        if (panelAction == 1) {
+                            Q('hwtokenInput').value = JSON.stringify(assertion);
+                            QE('tokenOkButton', true);
+                            Q('tokenOkButton').click();
+                        } else if (panelAction == 2) {
+                            Q('resetHwtokenInput').value = JSON.stringify(assertion);
+                            QE('resetTokenOkButton', true);
+                            Q('resetTokenOkButton').click();
+                        }
                     },
                     function (error) { console.log('credentials-get error', error); }
                 );
             }
         }
 
-        function useEmailToken() {
+        function useEmailToken(panelAction) {
             if (otpemail != true) return;
             setDialogMode(1, "Secure Login", 3, useEmailKeyEx, "Send token to registered email address?");
         }
 
-        function useEmailKeyEx() {
-            Q('hwtokenInput').value = '**email**';
-            QE('tokenOkButton', true);
-            Q('tokenOkButton').click();
+        function useEmailKeyEx(b, panelAction) {
+            if (panelAction == 1) {
+                Q('hwtokenInput').value = '**email**';
+                QE('tokenOkButton', true);
+                Q('tokenOkButton').click();
+            } else if (panelAction == 2) {
+                Q('resetHwtokenInput').value = '**email**';
+                QE('resetTokenOkButton', true);
+                Q('resetTokenOkButton').click();
+            }
         }
 
-        function useSMSToken() {
+        function useSMSToken(panelAction) {
             if (otpsms != true) return;
             setDialogMode(1, "Secure Login", 3, useSMSTokenEx, "Send token to registered phone number?");
         }
 
-        function useSMSTokenEx() {
-            Q('hwtokenInput').value = '**sms**';
-            QE('tokenOkButton', true);
-            Q('tokenOkButton').click();
+        function useSMSTokenEx(b, panelAction) {
+            if (panelAction == 1) {
+                Q('hwtokenInput').value = '**sms**';
+                QE('tokenOkButton', true);
+                Q('tokenOkButton').click();
+            } else if (panelAction == 2) {
+                Q('resetHwtokenInput').value = '**sms**';
+                QE('resetTokenOkButton', true);
+                Q('resetTokenOkButton').click();
+            }
         }
 
         function showPassHint(e) {
