@@ -1603,11 +1603,16 @@ function CreateMeshCentralServer(config, args) {
                             // An entry's fileName implicitly requires its parent directories to exist.
                             zipfile.readEntry();
                         } else {
-                            // file entry
+                            // File entry
                             zipfile.openReadStream(entry, function (err, readStream) {
                                 if (err) throw err;
                                 readStream.on('end', function () { zipfile.readEntry(); });
-                                // console.log('Extracting:', obj.getConfigFilePath(entry.fileName));
+                                var directory = obj.path.dirname(entry.fileName);
+                                if (directory != '.') {
+                                    directory = obj.getConfigFilePath(directory)
+                                    if (obj.fs.existsSync(directory) == false) { obj.fs.mkdirSync(directory); }
+                                }
+                                //console.log('Extracting:', obj.getConfigFilePath(entry.fileName));
                                 readStream.pipe(obj.fs.createWriteStream(obj.getConfigFilePath(entry.fileName)));
                             });
                         }

@@ -9221,7 +9221,7 @@
             var x = "Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing." + '<br /><br />';
             x += '<form action="/restoreserver.ashx" enctype="multipart/form-data" method="post"><div>';
             x += '<input type=hidden name=auth value=' + authCookie + '>';
-            x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
+            x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()><br /><br />';
             x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=' + "OK" + ' style=float:right;width:80px onclick=dialogclose(1)>';
             x += '</div><br /><br /></form>';

@@ -4032,13 +4032,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Pipe archive data to the file 
         archive.pipe(res);
 
-        // Append all of the files for this backup
-        var backupList = ['config.json', 'meshcentral.db', 'agentserver-cert-private.key', 'agentserver-cert-public.crt', 'mpsserver-cert-private.key', 'mpsserver-cert-public.crt', 'data/root-cert-private.key', 'root-cert-public.crt', 'webserver-cert-private.key', 'webserver-cert-public.crt'];
-        for (var i in backupList) {
-            var filename = backupList[i];
-            var filepath = obj.path.join(obj.parent.datapath, filename);
-            if (obj.fs.existsSync(filepath)) { archive.file(filepath, { name: filename }); }
-        }
+        // Append files from a glob pattern
+        archive.directory(obj.parent.datapath, false);
 
         // Finalize the archive (ie we are done appending files but streams have to finish yet) 
         archive.finalize();
@@ -4067,7 +4062,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             const user = obj.users[req.session.userid];
             if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
 
-            res.send('Server must be restarted, <a href="' + domain.url + '">click here to login</a>.');
+            res.set('Content-Type', 'text/html');
+            res.end('<html><body>Server must be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
             parent.Stop(files.datafile[0].path);
         });
     }
