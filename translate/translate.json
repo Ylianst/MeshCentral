@@ -31786,7 +31786,7 @@
       "zh-chs": "服务器统计",
       "zh-cht": "伺服器統計",
       "xloc": [
-        "default.handlebars->container->column_l->p6->p6info->6"
+        "default.handlebars->container->column_l->p6->p6info->5"
       ]
     },
     {

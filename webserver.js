@@ -2370,8 +2370,41 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var customui = '';
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+                // Server features
+                var serverFeatures = 63;
+                if (domain.myserver) {
+                    if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Allow server backups
+                    if (domain.myserver.restore !== true) { serverFeatures -= 2; } // Allow server restore
+                    if (domain.myserver.upgrade !== true) { serverFeatures -= 4; } // Allow server upgrade
+                    if (domain.myserver.errorlog !== true) { serverFeatures -= 8; } // Allow show server crash log
+                    if (domain.myserver.console !== true) { serverFeatures -= 16; } // Allow server console
+                    if (domain.myserver.trace !== true) { serverFeatures -= 32; } // Allow server tracing
+                }
+
                 // Refresh the session
-                render(req, res, getRenderPage('default', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: authRelayCookie, viewmode: viewmode, currentNode: currentNode, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), domain: domain.id, debuglevel: parent.debugLevel, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, noServerBackup: (args.noserverbackup == 1 ? 1 : 0), features: features, sessiontime: args.sessiontime, mpspass: args.mpspass, passRequirements: passRequirements, customui: customui, webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'), footer: (domain.footer == null) ? '' : domain.footer, webstate: encodeURIComponent(webstate).replace(/'/g, '%27'), amtscanoptions: amtscanoptions, pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports() }, req, domain));
+                render(req, res, getRenderPage('default', req, domain), getRenderArgs({
+                    authCookie: authCookie,
+                    authRelayCookie: authRelayCookie,
+                    viewmode: viewmode,
+                    currentNode: currentNode,
+                    logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'),
+                    domain: domain.id,
+                    debuglevel: parent.debugLevel,
+                    serverDnsName: obj.getWebServerName(domain),
+                    serverRedirPort: args.redirport,
+                    serverPublicPort: httpsPort,
+                    serverfeatures: serverFeatures,
+                    features: features,
+                    sessiontime: args.sessiontime,
+                    mpspass: args.mpspass,
+                    passRequirements: passRequirements,
+                    customui: customui,
+                    webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
+                    footer: (domain.footer == null) ? '' : domain.footer,
+                    webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
+                    amtscanoptions: amtscanoptions,
+                    pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports()
+                }, req, domain));
             });
         } else {
             // Send back the login application
@@ -4016,7 +4049,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((!req.session) || (req.session == null) || (!req.session.userid) || (obj.parent.args.noserverbackup == 1)) { res.sendStatus(401); return; }
+        if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
+        if ((domain.myserver != null) && (domain.myserver.backup !== true)) { res.sendStatus(401); return; }
+
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
@@ -4044,7 +4079,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (obj.parent.args.noserverbackup == 1) { res.sendStatus(401); return; }
+        if ((domain.myserver != null) && (domain.myserver.restore !== true)) { res.sendStatus(401); return; }
+
         var authUserid = null;
         if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
         const multiparty = require('multiparty');
@@ -4769,8 +4805,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url, handleRootRequest);
             obj.app.post(url, handleRootPostRequest);
             obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
-            obj.app.get(url + 'backup.zip', handleBackupRequest);
-            obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest);
+            if ((domain.myserver == null) || (domain.myserver.backup === true)) { obj.app.get(url + 'backup.zip', handleBackupRequest); }
+            if ((domain.myserver == null) || (domain.myserver.restore === true)) { obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest); }
             obj.app.get(url + 'terms', handleTermsRequest);
             obj.app.get(url + 'xterm', handleXTermRequest);
             obj.app.post(url + 'login', handleLoginRequest);

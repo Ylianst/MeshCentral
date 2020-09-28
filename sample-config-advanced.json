@@ -140,6 +140,14 @@
       "_hide": 4,
       "_footer": "<a href='https://twitter.com/mytwitter'>Twitter</a>",
       "_certUrl": "https://192.168.2.106:443/",
+      "myServer": {
+        "Backup": false,
+        "Restore": false,
+        "Upgrade": false,
+        "ErrorLog": false,
+        "Console": false,
+        "Trace": false
+      },
       "_passwordRequirements": {
         "min": 8,
         "max": 128,
