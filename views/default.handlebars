@@ -3527,7 +3527,7 @@
                         if (node.tags) {
                             for (var j in node.tags) {
                                 var tag = node.tags[j];
-                                if (sort == 4) { tag = mesh2.name + ' - ' + node.tags[j]; }
+                                if (sort == 4) { if (mesh2) { tag = mesh2.name + ' - ' + node.tags[j]; } else { tag = '**INDV*~*DEVS** - ' + node.tags[j]; } }
                                 var collapsed = CollapsedGroups['tag:' + tag];
                                 var r2 = r.replace('**xx**xx*TaG*xx**xx**', encodeURIComponentEx(tag) + (collapsed?' style=display:none':''));
                                 if (groups[tag] == null) { groups[tag] = r2; groupCount[tag] = 1; } else { groups[tag] += r2; groupCount[tag] += 1; }
@@ -3558,12 +3558,12 @@
                             r += '<tr><td colspan=4><div class=DevSt style=width:100%;padding-top:4px>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
                             r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '",2)></img>'; // Collapse action
-                            r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + EscapeHtml(i).split('|').join(' &rarr; ') + '</span></div>' + groups[i];
+                            r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + EscapeHtml(i).split('|').join(' &rarr; ').split('**INDV*~*DEVS**').join('<i>' + "Individual Devices" + '</i>') + '</span></div>' + groups[i];
                         } else {
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + format(((groupCount[i] > 1) ? '{0} nodes' : '{0} node'), groupCount[i]) + '</span>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
                             r += '<img class=collapseImage id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true)?'1':'2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '")></img>'; // Collapse action
-                            r += '<span>' + EscapeHtml(i).split('|').join(' &rarr; ') + '</span></div>';
+                            r += '<span>' + EscapeHtml(i).split('|').join(' &rarr; ').split('**INDV*~*DEVS**').join('<i>' + "Individual Devices" + '</i>') + '</span></div>';
                             r += '<div id=DevxCol' + tagDeviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; // Open collapse div
                             r += groups[i];
                             r += '</div>';
