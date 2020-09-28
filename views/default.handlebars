@@ -474,8 +474,9 @@
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
                             <div id="p2ServerActionsErrors"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
                         </div>
+                        <br />
                     </div>
-                    <br /><strong>Server Statistics</strong><br /><br />
+                    <strong>Server Statistics</strong><br /><br />
                     <div id="serverStats">
                         <div id="serverCpuChartView" style="display:none">
                             <div class="chartViewCanvas"><canvas id="serverCpuChart"></canvas></div>
@@ -1809,10 +1810,9 @@
         }
 
         function updateSiteAdmin() {
-            var noServerBackup = '{{{noServerBackup}}}';
+            var serverFeatures = parseInt('{{{serverfeatures}}}');
             var siteRights = userinfo.siteadmin;
             var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0));
-            if (noServerBackup == 1) { siteRights &= 0xFFFFFFFA; } // If not server backups allowed, remove server backup and restore permissions
 
             // Update account actions
             QV('p2AccountSecurity', ((features & 4) == 0) && (serverinfo.domainauth == false) && ((features & 4096) != 0) && (accountSettingsLocked == false)); // Hide Account Security if in single user mode or domain authentication, 2 factor auth not supported.
@@ -1823,12 +1823,13 @@
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('p2AccountImage', !accountSettingsLocked)
-            QV('p2ServerActions', siteRights & 21);
+            QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 15) != 0));
             QV('LeftMenuMyServer', siteRights & 21); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
-            QV('p2ServerActionsBackup', siteRights & 1);
-            QV('p2ServerActionsRestore', siteRights & 4);
-            QV('p2ServerActionsVersion', siteRights & 16);
+            QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
+            QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
+            QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
+            QV('p2ServerActionsErrors', (siteRights & 16) && ((serverFeatures & 8) != 0));
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
@@ -1847,8 +1848,8 @@
                 if (xxcurrentView == 4 || ((xxcurrentView >= 30) && (xxcurrentView < 40))) { setDialogMode(0); go(1); currentUser = null; }
             }
             meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
-            QV('ServerConsole', userinfo.siteadmin === 0xFFFFFFFF);
-            QV('ServerTrace', userinfo.siteadmin === 0xFFFFFFFF);
+            QV('ServerConsole', (userinfo.siteadmin === 0xFFFFFFFF) && ((serverFeatures & 16) != 0));
+            QV('ServerTrace', (userinfo.siteadmin === 0xFFFFFFFF) && ((serverFeatures & 32) != 0));
             if ((xxcurrentView == 115) && (userinfo.siteadmin != 0xFFFFFFFF)) { go(6); }
             if ((xxcurrentView == 6) && ((userinfo.siteadmin & 21) == 0)) { go(1); }
 

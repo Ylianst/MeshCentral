@@ -444,8 +444,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             try { ws.send(JSON.stringify({ action: 'userinfo', userinfo: parent.CloneSafeUser(parent.users[user._id]) })); } catch (ex) { }
 
             if (user.siteadmin === SITERIGHT_ADMIN) {
-                // Send server tracing information
-                try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
+                // Check if tracing is allowed for this domain
+                if ((domain.myserver == null) || (domain.myserver.trace === true)) {
+                    // Send server tracing information
+                    try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
+                }
 
                 // Send any server warnings if any
                 var serverWarnings = parent.parent.getServerWarnings();
@@ -806,6 +809,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // This is a server console message, only process this if full administrator
                     if (user.siteadmin != SITERIGHT_ADMIN) break;
+
+                    // Only accept is the console is allowed for this domain
+                    if ((domain.myserver != null) && (domain.myserver.console !== true)) break;
 
                     var r = '';
                     var cmdargs = splitArgs(command.value);
@@ -2600,6 +2606,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Check the server version
                     if ((user.siteadmin & 16) == 0) break;
+                    if ((domain.myserver != null) && (domain.myserver.upgrade !== true)) break;
                     //parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
                     parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
                     break;
@@ -2608,6 +2615,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Perform server update
                     if ((user.siteadmin & 16) == 0) break;
+                    if ((domain.myserver != null) && (domain.myserver.upgrade !== true)) break;
                     if ((command.version != null) && (typeof command.version != 'string')) break;
                     parent.parent.performServerUpdate(command.version);
                     break;
@@ -2616,6 +2624,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Load the server error log
                     if ((user.siteadmin & 16) == 0) break;
+                    if ((domain.myserver != null) && (domain.myserver.errorlog !== true)) break;
                     fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
                     break;
                 }
@@ -4512,6 +4521,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'traceinfo': {
+                // Only accept is the tracing is allowed for this domain
+                if ((domain.myserver != null) && (domain.myserver.trace !== true)) break;
+
                 if ((user.siteadmin === SITERIGHT_ADMIN) && (typeof command.traceSources == 'object')) {
                     parent.parent.debugRemoteSources = command.traceSources;
                     parent.parent.DispatchEvent(['*'], obj, { action: 'traceinfo', userid: user._id, username: user.name, traceSources: command.traceSources, nolog: 1, domain: domain.id });

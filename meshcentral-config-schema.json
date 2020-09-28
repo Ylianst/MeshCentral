@@ -170,7 +170,23 @@
           "welcomePicture": { "type": "string", "description": "Name of the PNG or JPEG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the file name here." },
           "hide": { "type": "integer" },
           "footer": { "type": "string" },
-          "certUrl": { "type": "string", "format": "uri", "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral." },
+          "certUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral."
+          },
+          "myServer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab." },
+              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab." },
+              "Upgrade": { "type": "boolean", "default": true, "description": "Allows administrators to update the server from the My Server tab." },
+              "ShowLog": { "type": "boolean", "default": true, "description": "Allows administrators to see the server crash log the server from the My Server tab." },
+              "Console": { "type": "boolean", "default": true, "description": "Allows administrators to access the server console from the My Server tab." },
+              "Trace": { "type": "boolean", "default": true, "description": "Allows administrators to access the server trace tab from from the My Server tab." }
+            }
+          },
           "passwordRequirements": {
             "type": "object",
             "properties": {
