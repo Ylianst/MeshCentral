@@ -522,7 +522,7 @@
 
         function useEmailToken(panelAction) {
             if (otpemail != true) return;
-            setDialogMode(1, "Secure Login", 3, useEmailKeyEx, "Send token to registered email address?");
+            setDialogMode(1, "Secure Login", 3, useEmailKeyEx, "Send token to registered email address?", panelAction);
         }
 
         function useEmailKeyEx(b, panelAction) {
@@ -539,18 +539,21 @@
 
         function useSMSToken(panelAction) {
             if (otpsms != true) return;
-            setDialogMode(1, "Secure Login", 3, useSMSTokenEx, "Send token to registered phone number?");
+            setDialogMode(1, "Secure Login", 3, useSMSTokenEx, "Send token to registered phone number?", panelAction);
         }
 
         function useSMSTokenEx(b, panelAction) {
+            console.log('a1', panelAction);
             if (panelAction == 1) {
                 Q('hwtokenInput').value = '**sms**';
                 QE('tokenOkButton', true);
                 Q('tokenOkButton').click();
+                console.log('a2');
             } else if (panelAction == 2) {
                 Q('resetHwtokenInput').value = '**sms**';
                 QE('resetTokenOkButton', true);
                 Q('resetTokenOkButton').click();
+                console.log('a3');
             }
         }
 
