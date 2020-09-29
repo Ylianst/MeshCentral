@@ -16,6 +16,7 @@ var agents = {
     'meshagent_arm-linaro': 24,
     'meshagent_armhf': 25,
     'meshagent_arm64': 26,
+    'meshagent_armhf2': 27,
     'meshagent_mips24kc': 28,
     'meshagent_freebsd_x86-64': 30
 }
