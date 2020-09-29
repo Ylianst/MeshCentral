@@ -946,11 +946,23 @@ function createMeshCore(agent) {
                 case 'runcommands': {
                     if (mesh.cmdchild != null) { sendConsoleText("Run commands can't execute, already busy."); break; }
                     MeshServerLogEx(24, null, "Running commands", data);
-                    sendConsoleText("Run commands: " + data.cmds);
+                    sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
+
+                    // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
+                    var options = {};
+                    if (data.runAsUser > 0) {
+                        try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
+                        options.type = require('child_process').SpawnTypes.TERM;
+                    }
+                    if (data.runAsUser == 2) {
+                        if (options.uid == null) break;
+                        if (((require('user-sessions').minUid != null) && (options.uid < require('user-sessions').minUid()))) break; // This command can only run as user.
+                    }
+
                     if (process.platform == 'win32') {
                         if (data.type == 1) {
                             // Windows command shell
-                            mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd']);
+                            mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd'], options);
                             mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
                             mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
                             mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
@@ -958,7 +970,7 @@ function createMeshCore(agent) {
                             mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                         } else if (data.type == 2) {
                             // Windows Powershell
-                            mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-']);
+                            mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], options);
                             mesh.cmdchild.descriptorMetadata = 'UserCommandsPowerShell';
                             mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
                             mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
@@ -967,7 +979,7 @@ function createMeshCore(agent) {
                         }
                     } else if (data.type == 3) {
                         // Linux shell
-                        mesh.cmdchild = require('child_process').execFile('/bin/sh', ['sh']);
+                        mesh.cmdchild = require('child_process').execFile('/bin/sh', ['sh'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
                         mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
                         mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });

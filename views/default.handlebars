@@ -4452,13 +4452,14 @@
                     if (n.agent) { if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
                 }
                 if ((wintype == true) || (linuxtype == true)) {
-                    var x = "Run commands on selected devices." + '<br /><br />';
+                    var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
-                        x += '<select id=d2cmdtype style=width:100%>';
+                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px>';
                         x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
                         if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
                         x += '</select>';
                     }
+                    x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0>' + "Run as agent" + '</option><option value=1>' + "Run as user, agent if no user" + '</option><option value=2>' + "Must run as user" + '</option></select>';
                     x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
                     setDialogMode(2, "Run Commands", 3, d2groupActionFunctionRunCommands, x);
                     Q('d2runcmd').focus();
@@ -4549,7 +4550,7 @@
         function d2groupActionFunctionRunCommands() {
             var type = 3;
             try { type = parseInt(Q('d2cmdtype').value); } catch (ex) { }
-            meshserver.send({ action: 'runcommands', nodeids: getCheckedDevices(), type: type, cmds: Q('d2runcmd').value }); uncheckAllDevices();
+            meshserver.send({ action: 'runcommands', nodeids: getCheckedDevices(), type: type, cmds: Q('d2runcmd').value, runAsUser: parseInt(Q('d2cmduser').value) }); uncheckAllDevices();
         }
 
         function onSortSelectChange(skipsave) {

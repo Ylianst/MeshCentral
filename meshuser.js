@@ -3534,6 +3534,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     if (typeof command.type != 'number') break; // Check command type
                     if (typeof command.cmds != 'string') break; // Check commands
+                    if (typeof command.runAsUser != 'number') { command.runAsUser = 0; } // Check runAsUser
 
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i], err = null;
@@ -3580,7 +3581,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
                                 if (commandsOk == true) {
                                     // Send the commands to the agent
-                                    try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds })); } catch (ex) { }
+                                    try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser })); } catch (ex) { }
                                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
                                 } else {
                                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }

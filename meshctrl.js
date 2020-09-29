@@ -557,6 +557,8 @@ if (args['_'].length == 0) {
                         console.log("  --run \"[command]\"    - Shell command to execute on the remote device.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --powershell           - Run in Windows PowerShell.");
+                        console.log("  --runasuser            - Attempt to run the command as logged in user.");
+                        console.log("  --runasuseronly        - Only run the command as the logged in user.");
                         break;
                     }
                     case 'shell': {
@@ -1031,7 +1033,9 @@ function serverConnect() {
                 break;
             }
             case 'runcommand': {
-                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl' }));
+                var runAsUser = 0;
+                if (args.runasuser) { runAsUser = 1; } else if (args.runasuseronly) { runAsUser = 2; }
+                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser }));
                 break;
             }
             case 'shell':
