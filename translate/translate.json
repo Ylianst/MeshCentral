@@ -26069,6 +26069,7 @@
       "zh-cht": "其他設定",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->1",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->1"
       ]
     },
@@ -34590,6 +34591,12 @@
       "zh-cht": "斯瓦希里文",
       "xloc": [
         "default.handlebars->27->1201"
+      ]
+    },
+    {
+      "en": "Swap Mouse Buttons",
+      "xloc": [
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1"
       ]
     },
     {
