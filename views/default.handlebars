@@ -9321,6 +9321,7 @@
                 if (currentMesh.flags) {
                     if (currentMesh.flags & 1) { meshFeatures.push("Auto-Remove"); }
                     if (currentMesh.flags & 2) { meshFeatures.push("Hostname Sync"); }
+                    if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.flags & 4)) { meshFeatures.push("Record Sessions"); }
                 }
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
@@ -9620,6 +9621,7 @@
             var flags = (currentMesh.flags)?currentMesh.flags:0;
             var x = '<div><label><input type=checkbox id=d20flag1 ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag2 ' + ((flags & 2) ? 'checked' : '') + '>' + "Sync server device name to hostname" + '</label><br></div>';
+            if (serverinfo.devGroupSessionRecording == 1) { x += '<div><label><input type=checkbox id=d20flag4 ' + ((flags & 4) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>'; }
             setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
         }
 
@@ -9627,6 +9629,7 @@
             var flags = 0;
             if (Q('d20flag1').checked) { flags += 1; }
             if (Q('d20flag2').checked) { flags += 2; }
+            if (serverinfo.devGroupSessionRecording == 1) { if (Q('d20flag4').checked) { flags += 4; } }
             meshserver.send({ action: 'editmesh', meshid: currentMesh._id, flags: flags });
         }
 

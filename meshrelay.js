@@ -232,7 +232,18 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
                         parent.db.Get(obj.req.query.nodeid, function (err, nodes) {
                             var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
                             if ((nodes != null) && (nodes.length == 1)) { node = nodes[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); }
-                            
+
+                            // Check again if we need to do recording
+                            if (domain.sessionrecording.onlyselecteddevicegroups === true) {
+                                var mesh = parent.meshes[node.meshid];
+                                if ((mesh.flags == null) || ((mesh.flags & 4) == 0)) {
+                                    // Do not record the session, just send session start
+                                    try { ws.send('c'); } catch (ex) { } // Send connect to both peers
+                                    try { relayinfo.peer1.ws.send('c'); } catch (ex) { }
+                                    return;
+                                }
+                            }
+
                             // Get the username and make it acceptable as a filename
                             if (sessionUser._id) { xusername = '-' + parent.common.makeFilename(sessionUser._id.split('/')[2]); }
 

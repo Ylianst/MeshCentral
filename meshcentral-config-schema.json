@@ -309,6 +309,7 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+              "onlySelectedDeviceGroups": { "type": "boolean", "default": false, "description": "When enabled, only device groups with the session recording feature turned on will be recorded. When false, all devices are recorded." },
               "filepath": { "type": "string" },
               "index": { "type": "boolean", "default": false },
               "maxRecordings": { "type": "integer" },

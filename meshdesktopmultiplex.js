@@ -683,6 +683,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
     function recordingSetup(domain, func) {
         // Setup session recording
         if ((domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf(2) >= 0))))) {
+
+            // Check again to make sure we need to start recording
+            if (domain.sessionrecording.onlyselecteddevicegroups === true) {
+                var mesh = parent.meshes[obj.meshid];
+                if ((mesh.flags == null) || ((mesh.flags & 4) == 0)) { func(false); return; } // Do not record the session
+            }
+
             var now = new Date(Date.now());
             var recFilename = 'desktopSession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + parent.common.zeroPad(now.getUTCMonth(), 2) + '-' + parent.common.zeroPad(now.getUTCDate(), 2) + '-' + parent.common.zeroPad(now.getUTCHours(), 2) + '-' + parent.common.zeroPad(now.getUTCMinutes(), 2) + '-' + parent.common.zeroPad(now.getUTCSeconds(), 2) + '-' + obj.nodeid.split('/')[2] + '.mcrec'
             var recFullFilename = null;

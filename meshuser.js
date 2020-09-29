@@ -421,6 +421,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.maxGuestSessionSharingTime = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
+            if ((domain.sessionrecording) && (domain.sessionrecording.onlyselecteddevicegroups === true)) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording
             if ((parent.parent.config.domains[domain.id].amtacmactivation != null) && (parent.parent.config.domains[domain.id].amtacmactivation.acmmatch != null)) {
                 var matchingDomains = [];
                 for (var i in parent.parent.config.domains[domain.id].amtacmactivation.acmmatch) {
