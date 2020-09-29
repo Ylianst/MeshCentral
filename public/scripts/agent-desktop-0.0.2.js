@@ -43,6 +43,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.CompressionLevel = 50;
     obj.ScalingLevel = 1024;
     obj.FrameRateTimer = 100;
+    obj.SwapMouse = false;
     obj.FirstDraw = false;
 
     obj.ScreenWidth = 960;
@@ -465,6 +466,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 }
                 else if (Action == obj.KeyAction.SCROLL) {
                     if (event.detail) { Delta = (-1 * (event.detail * 120)); } else if (event.wheelDelta) { Delta = (event.wheelDelta * 3); }
+                }
+
+                // Swap mouse buttons if needed
+                if (obj.SwapMouse === true) {
+                    if (Button == obj.MouseButton.LEFT) { Button = obj.MouseButton.RIGHT; }
+                    else if (Button == obj.MouseButton.RIGHT) { Button = obj.MouseButton.LEFT; }
                 }
 
                 var MouseMsg = "";
