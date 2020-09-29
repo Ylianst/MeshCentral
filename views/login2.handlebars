@@ -543,17 +543,14 @@
         }
 
         function useSMSTokenEx(b, panelAction) {
-            console.log('a1', panelAction);
             if (panelAction == 1) {
                 Q('hwtokenInput').value = '**sms**';
                 QE('tokenOkButton', true);
                 Q('tokenOkButton').click();
-                console.log('a2');
             } else if (panelAction == 2) {
                 Q('resetHwtokenInput').value = '**sms**';
                 QE('resetTokenOkButton', true);
                 Q('resetTokenOkButton').click();
-                console.log('a3');
             }
         }
 
