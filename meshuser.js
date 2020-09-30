@@ -213,6 +213,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
                         if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
                         if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
+
+                        // Check if we need to add consent flags because of a user group link
+                        if ((user.links != null) && (user.links[mesh._id] == null) && (user.links[node._id] == null)) {
+                            // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
+                            for (var i in user.links) {
+                                var ugrp = parent.userGroups[i];
+                                if ((ugrp != null) && (ugrp.consent != null) && (ugrp.links != null) && ((ugrp.links[mesh._id] != null) || (ugrp.links[node._id] != null))) {
+                                    command.consent |= ugrp.consent; // Add user group consent flags
+                                }
+                            }
+                        }
+
                         command.username = user.name;       // Add user name
                         command.realname = user.realname;   // Add real name
                         command.userid = user._id;          // Add user id
@@ -240,6 +252,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (typeof mesh.consent == 'number') { command.consent |= mesh.consent; } // Add device group user consent
                             if (typeof node.consent == 'number') { command.consent |= node.consent; } // Add node user consent
                             if (typeof user.consent == 'number') { command.consent |= user.consent; } // Add user consent
+
+                            // Check if we need to add consent flags because of a user group link
+                            if ((user.links != null) && (user.links[mesh._id] == null) && (user.links[node._id] == null)) {
+                                // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
+                                for (var i in user.links) {
+                                    var ugrp = parent.userGroups[i];
+                                    if ((ugrp != null) && (ugrp.consent != null) && (ugrp.links != null) && ((ugrp.links[mesh._id] != null) || (ugrp.links[node._id] != null))) {
+                                        command.consent |= ugrp.consent; // Add user group consent flags
+                                    }
+                                }
+                            }
+
                             command.username = user.name;           // Add user name
                             command.realname = user.realname;       // Add real name
                             command.userid = user._id;              // Add user id
@@ -605,6 +629,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Request a list of all nodes
                     db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, docs) {
                         if (docs == null) { docs = []; }
+                        parent.common.unEscapeAllLinksFieldName(docs);
+
                         var r = {};
                         for (i in docs) {
                             // Check device links, if a link points to an unknown user, remove it.
@@ -2224,9 +2250,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (group != null) {
                         if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
+                        if ((typeof command.consent == 'number') && (command.consent != group.consent)) { if (change != '') change += ' and consent changed'; else change += 'User group "' + group.name + '" consent changed'; group.consent = command.consent; }
                         if (change != '') {
                             db.Set(group);
-                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msg: change, domain: domain.id };
+                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, consent: group.consent, action: 'usergroupchange', links: group.links, msg: change, domain: domain.id };
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
                         }

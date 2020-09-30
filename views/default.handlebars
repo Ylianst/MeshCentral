@@ -2594,6 +2594,7 @@
                                 ugroup.name = message.event.name;
                                 if (message.event.desc) { ugroup.desc = message.event.desc; } else { delete ugroup.desc; }
                                 if (message.event.links) { ugroup.links = message.event.links; } else { delete ugroup.links; }
+                                if (message.event.consent) { ugroup.consent = message.event.consent; } else { delete ugroup.consent; }
                             }
                             mainUpdate(4096 + 8192 + 16384);
 
@@ -9573,6 +9574,7 @@
             if (editType == 1) { consent = (currentMesh.consent) ? currentMesh.consent : 0; title = "Edit Device Group User Consent"; }
             if (editType == 2) { consent = (currentUser.consent) ? currentUser.consent : 0; title = "Edit User Consent"; }
             if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
+            if (editType == 4) { consent = (currentUserGroup.consent) ? currentUserGroup.consent : 0; title = "Edit User Group User Consent"; }
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
@@ -9614,6 +9616,7 @@
             if (editType == 1) { meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent }); }
             if (editType == 2) { meshserver.send({ action: 'edituser', id: currentUser._id, consent: consent }); }
             if (editType == 3) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, consent: consent }); }
+            if (editType == 4) { meshserver.send({ action: 'editusergroup', ugrpid: currentUserGroup._id, consent: consent }); }
         }
 
         function p20editmeshfeatures() {
@@ -11586,6 +11589,23 @@
             } else {
                 x += addDeviceAttribute("Description", desc);
             }
+
+            // Display user consent flags for this user group
+            {
+                var consentOptionsStr = [], consent = 0;
+                if (group.consent) { consent = group.consent; }
+                if (serverinfo.consent) { consent |= serverinfo.consent; }
+                if ((consent & 0x0040) && (consent & 0x0008)) { consentOptionsStr.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { consentOptionsStr.push("Desktop Toolbar"); } else if (consent & 0x0008) { consentOptionsStr.push("Desktop Prompt"); } else { if (consent & 0x0001) { consentOptionsStr.push("Desktop Notify"); } }
+                if (consent & 0x0010) { consentOptionsStr.push("Terminal Prompt"); } else { if (consent & 0x0002) { consentOptionsStr.push("Terminal Notify"); } }
+                if (consent & 0x0020) { consentOptionsStr.push("Files Prompt"); } else { if (consent & 0x0004) { consentOptionsStr.push("Files Notify"); } }
+                if (consent == 7) { consentOptionsStr = ["Always Notify"]; }
+                if ((consent & 56) == 56) { consentOptionsStr = ["Always Prompt"]; }
+
+                consentOptionsStr = consentOptionsStr.join(', ');
+                if (consentOptionsStr == '') { consentOptionsStr = '<i>' + "None" + '</i>'; }
+                x += addDeviceAttribute("User Consent", addLinkConditional(consentOptionsStr, 'p20editmeshconsent(4)', true));
+            }
+
             x += addDeviceAttribute("Users", usercount);
             x += addDeviceAttribute("Device Groups", meshcount);
             x += addDeviceAttribute("Devices", devicecount);
