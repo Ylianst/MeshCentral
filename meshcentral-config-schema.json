@@ -90,7 +90,7 @@
         "mpsAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
         "mpsAliasHost": { "type": "string" },
         "mpsTlsOffload": { "type": "boolean", "default": false },
-        "no2FactorAuth": { "type": "boolean" },
+        "no2FactorAuth": { "type": "boolean", "default": false },
         "log": { "type": "string" },
         "syslog": { "type": "string" },
         "syslogauth": { "type": "string" },
@@ -168,8 +168,8 @@
           "newAccountsRights": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "welcomeText": { "type": "string", "description": "Text that will be shown on the login screen." },
           "welcomePicture": { "type": "string", "description": "Name of the PNG or JPEG file that will be shown on the login screen. Put this file in the meshcentral-data folder and place the file name here." },
-          "hide": { "type": "integer" },
-          "footer": { "type": "string" },
+          "hide": { "type": "integer", "default": 0 },
+          "footer": { "type": "string", "default": null },
           "certUrl": {
             "type": "string",
             "format": "uri",
@@ -203,6 +203,7 @@
               "banCommonPasswords": { "type": "boolean", "description": "Uses WildLeek to block use of the 10000 most commonly used passwords." }
             }
           },
+          "twoFactorCookieDurationDays": { "type": "integer", "default": 30, "description": "Number of days that a user is allowed to remember this device for when completing 2FA. Set this to 0 to remove this option." },
           "auth": { "type": "string", "default": null, "enum": [null, "sspi", "ldap"], "description": "Type of user authentication to use, this can be SSPI on Windows or LDAP. If not set, username/password is used." },
           "ldapUserKey": { "type": "string" },
           "ldapUserName": { "type": "string" },
