@@ -2373,12 +2373,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Server features
                 var serverFeatures = 63;
                 if (domain.myserver) {
-                    if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Allow server backups
-                    if (domain.myserver.restore !== true) { serverFeatures -= 2; } // Allow server restore
-                    if (domain.myserver.upgrade !== true) { serverFeatures -= 4; } // Allow server upgrade
-                    if (domain.myserver.errorlog !== true) { serverFeatures -= 8; } // Allow show server crash log
-                    if (domain.myserver.console !== true) { serverFeatures -= 16; } // Allow server console
-                    if (domain.myserver.trace !== true) { serverFeatures -= 32; } // Allow server tracing
+                    if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Disallow simple server backups
+                    if (domain.myserver.restore !== true) { serverFeatures -= 2; } // Disallow simple server restore
+                    if (domain.myserver.upgrade !== true) { serverFeatures -= 4; } // Disallow server upgrade
+                    if (domain.myserver.errorlog !== true) { serverFeatures -= 8; } // Disallow show server crash log
+                    if (domain.myserver.console !== true) { serverFeatures -= 16; } // Disallow server console
+                    if (domain.myserver.trace !== true) { serverFeatures -= 32; } // Disallow server tracing
+                }
+                if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
+                    if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
+                    if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
                 }
 
                 // Refresh the session
