@@ -3344,23 +3344,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Setup session recording if needed
             if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf((req.query.p == 2) ? 101 : 100) >= 0)))) { // TODO 100
-                var now = new Date(Date.now());
-                var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + obj.common.zeroPad(now.getUTCMonth(), 2) + '-' + obj.common.zeroPad(now.getUTCDate(), 2) + '-' + obj.common.zeroPad(now.getUTCHours(), 2) + '-' + obj.common.zeroPad(now.getUTCMinutes(), 2) + '-' + obj.common.zeroPad(now.getUTCSeconds(), 2) + '-' + getRandomPassword() + '.mcrec'
-                var recFullFilename = null;
-                if (domain.sessionrecording.filepath) {
-                    try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
-                    recFullFilename = obj.path.join(domain.sessionrecording.filepath, recFilename);
-                } else {
-                    try { obj.fs.mkdirSync(parent.recordpath); } catch (e) { }
-                    recFullFilename = obj.path.join(parent.recordpath, recFilename);
+                // Check again if we need to do recording
+                var record = true;
+                if (domain.sessionrecording.onlyselecteddevicegroups === true) {
+                    var mesh = obj.meshes[node.meshid];
+                    if ((mesh.flags == null) || ((mesh.flags & 4) == 0)) { record = false; } // Do not record the session
                 }
-                var fd = obj.fs.openSync(recFullFilename, 'w');
-                if (fd != null) {
-                    // Write the recording file header
-                    var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: req.clientIp, nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
-                    recordingEntry(fd, 1, 0, firstBlock, function () { });
-                    ws.logfile = { fd: fd, lock: false };
-                    if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
+
+                if (record == true) {
+                    var now = new Date(Date.now());
+                    var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + obj.common.zeroPad(now.getUTCMonth(), 2) + '-' + obj.common.zeroPad(now.getUTCDate(), 2) + '-' + obj.common.zeroPad(now.getUTCHours(), 2) + '-' + obj.common.zeroPad(now.getUTCMinutes(), 2) + '-' + obj.common.zeroPad(now.getUTCSeconds(), 2) + '-' + getRandomPassword() + '.mcrec'
+                    var recFullFilename = null;
+                    if (domain.sessionrecording.filepath) {
+                        try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
+                        recFullFilename = obj.path.join(domain.sessionrecording.filepath, recFilename);
+                    } else {
+                        try { obj.fs.mkdirSync(parent.recordpath); } catch (e) { }
+                        recFullFilename = obj.path.join(parent.recordpath, recFilename);
+                    }
+                    var fd = obj.fs.openSync(recFullFilename, 'w');
+                    if (fd != null) {
+                        // Write the recording file header
+                        var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: req.clientIp, nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
+                        recordingEntry(fd, 1, 0, firstBlock, function () { });
+                        ws.logfile = { fd: fd, lock: false };
+                        if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
+                    }
                 }
             }
 
