@@ -161,6 +161,7 @@
         "oldPasswordBan": 5,
         "banCommonPasswords": false
       },
+      "_twoFactorCookieDurationDays": 30,
       "_agentInviteCodes": true,
       "_agentNoProxy": true,
       "_geoLocation": true,
