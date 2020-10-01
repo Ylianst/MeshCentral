@@ -1382,6 +1382,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (command.type == 'kvm') { obj.sessions.kvm = command.value; }
                         else if (command.type == 'terminal') { obj.sessions.terminal = command.value; }
                         else if (command.type == 'files') { obj.sessions.files = command.value; }
+                        else if (command.type == 'help') { obj.sessions.help = command.value; }
                         else if (command.type == 'tcp') { obj.sessions.tcp = command.value; }
                         else if (command.type == 'udp') { obj.sessions.udp = command.value; }
                         else if (command.type == 'msg') { obj.sessions.msg = command.value; }

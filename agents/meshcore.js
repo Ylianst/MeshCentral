@@ -138,7 +138,7 @@ function createMeshCore(agent) {
     obj.DAIPC = require('net').createServer();
     if (process.platform != 'win32') { try { require('fs').unlinkSync(process.cwd() + '/DAIPC'); } catch (e) { } }
     obj.DAIPC.IPCPATH = process.platform == 'win32' ? ('\\\\.\\pipe\\' + require('_agentNodeId')() + '-DAIPC') : (process.cwd() + '/DAIPC');
-    try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH }); } catch (e) { }
+    try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true }); } catch (e) { }
     obj.DAIPC.on('connection', function (c) {
         c._send = function (j) {
             var data = JSON.stringify(j);
@@ -166,6 +166,19 @@ function createMeshCore(agent) {
 
             try {
                 switch (data.cmd) {
+                    case 'requesthelp':
+                        if (this._registered == null) return;
+                        sendConsoleText('Request Help (' + this._registered + '): ' + data.value);
+                        var help = {};
+                        help[this._registered] = data.value;
+                        try { mesh.SendCommand({ action: 'sessions', type: 'help', value: help }); } catch (e) { }
+                        MeshServerLogEx(98, [this._registered, data.value], "Help Requested, user: " + this._registered + ", details: " + data.value, null);
+                        break;
+                    case 'cancelhelp':
+                        if (this._registered == null) return;
+                        sendConsoleText('Cancel Help (' + this._registered + ')');
+                        try { mesh.SendCommand({ action: 'sessions', type: 'help', value: {} }); } catch (e) { }
+                        break;
                     case 'register':
                         if (typeof data.value == 'string') {
                             this._registered = data.value;
