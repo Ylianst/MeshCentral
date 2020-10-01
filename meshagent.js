@@ -1378,12 +1378,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'sessions': {
                     // This is a list of sessions provided by the agent
                     if (obj.sessions == null) { obj.sessions = {}; }
-                    if (command.type == 'kvm') { obj.sessions.kvm = command.value; }
-                    else if (command.type == 'terminal') { obj.sessions.terminal = command.value; }
-                    else if (command.type == 'files') { obj.sessions.files = command.value; }
-                    else if (command.type == 'tcp') { obj.sessions.tcp = command.value; }
-                    else if (command.type == 'udp') { obj.sessions.udp = command.value; }
-                    else if (command.type == 'msg') { obj.sessions.msg = command.value; }
+                    if (typeof command.value != null) {
+                        if (command.type == 'kvm') { obj.sessions.kvm = command.value; }
+                        else if (command.type == 'terminal') { obj.sessions.terminal = command.value; }
+                        else if (command.type == 'files') { obj.sessions.files = command.value; }
+                        else if (command.type == 'tcp') { obj.sessions.tcp = command.value; }
+                        else if (command.type == 'udp') { obj.sessions.udp = command.value; }
+                        else if (command.type == 'msg') { obj.sessions.msg = command.value; }
+                        else if (command.type == 'app') { obj.sessions.app = command.value; }
+                    }
                     obj.updateSessions();
                     break;
                 }

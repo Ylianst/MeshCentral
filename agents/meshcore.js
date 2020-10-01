@@ -149,7 +149,11 @@ function createMeshCore(agent) {
         };
         this._daipc = c;
         c.parent = this;
-        c.on('end', function () { this.end(); this.parent._daipc = null; }); // TODO: Must call end() on self to close the named pipe correctly.
+        c.on('end', function () {
+            this.end(); // TODO: Must call end() on self to close the named pipe correctly.
+            this.parent._daipc = null;
+            if (this._registered != null) { try { mesh.SendCommand({ action: 'sessions', type: 'app', value: {} }); } catch (e) { } }
+        }); 
         c.on('data', function (chunk) {
             if (chunk.length < 4) { this.unshift(chunk); return; }
             var len = chunk.readUInt32LE(0);
@@ -162,6 +166,15 @@ function createMeshCore(agent) {
 
             try {
                 switch (data.cmd) {
+                    case 'register':
+                        if (typeof data.value == 'string') {
+                            this._registered = data.value;
+                            var apps = {};
+                            apps[data.value] = 1;
+                            try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
+                            this._send({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
+                        }
+                        break;
                     case 'query':
                         switch (data.value) {
                             case 'connection':
@@ -3571,6 +3584,16 @@ function createMeshCore(agent) {
             if (Object.keys(tunnelUserCount.msg).length > 0) {
                 try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (e) { }
             }
+        }
+
+        // Send update to the registered application
+        if ((obj.DAIPC._daipc != null) && (obj.DAIPC._daipc._registered != null)) {
+            if (state == 1) {
+                var apps = {};
+                apps[obj.DAIPC._daipc._registered] = 1;
+                try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
+            }
+            obj.DAIPC._daipc._send({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
         }
     }
 

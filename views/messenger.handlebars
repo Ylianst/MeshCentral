@@ -46,7 +46,7 @@
             var userInputFocus = 0;
             var socket = null;                  // Websocket object
             var state = 0;                      // Connection state. 0 = Disconnected, 1 = Connecting, 2 = Connected.
-            var args = parseUriArgs();
+            var args = XparseUriArgs();
             if (args.key && (isAlphaNumeric(args.key) == false)) { delete args.key; }
             if (args.locale && (isAlphaNumeric(args.locale) == false)) { delete args.locale; }
 
@@ -654,6 +654,23 @@
                 for (var i = 0; i < 3; i++) { if (webrtcSessions[i]) { webrtcSessions[i].close(); delete webrtcSessions[i]; } }
                 if (webchannel != null) { try { webchannel.close(); } catch (e) { } webchannel = null; }
                 if (socket != null) { try { socket.close(); } catch (e) { } socket = null; }
+            }
+
+            function isSafeString3(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf(':') == -1)) };
+
+            // Parse URL arguments, only keep safe values
+            function XparseUriArgs() {
+                var href = window.document.location.href;
+                if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
+                var name, r = {}, parsedUri = href.split(/[\?&|]/);
+                parsedUri.splice(0, 1);
+                for (var j in parsedUri) {
+                    var arg = parsedUri[j], i = arg.indexOf('=');
+                    name = arg.substring(0, i);
+                    r[name] = arg.substring(i + 1);
+                    if (!isSafeString3(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+                }
+                return r;
             }
 
         </script>
