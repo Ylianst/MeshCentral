@@ -244,6 +244,7 @@
                                 <option value=2>Sessions</option>
                                 <option value=3>Starred</option>
                                 <option value=4>Intel&reg; AMT</option>
+                                <option value=6>Help</option>
                             </select>
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                             <label style="display:none"><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
@@ -511,6 +512,7 @@
                                     <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event) class=deviceNotifyDotSub></div>
                                     <img id="p10deviceStar" class=deviceNotifyDotSub src=images/icon-star-notify-16.png width=16 height=16>
                                     <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>
+                                    <img id="p10deviceHelp" onclick=showDeviceHelpRequests(null,null,event) class=deviceNotifyDotSub src=images/icon-help-notify-16.png width=16 height=16>
                                 </div>
                                 <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
@@ -2496,7 +2498,18 @@
                         mainUpdate(32);
                     }
                     if (message.event.noact) break; // Take no action on this event
+
                     switch (message.event.action) {
+                        case 'agentlog': {
+                            if (message.event.msgid == 98) {
+                                // This is a agent help request, popup a notification.
+                                if (GetNodeRights(message.event.nodeid) > 0) {
+                                    var n = getNodeFromId(message.event.nodeid);
+                                    addNotification({ text: format("Help requested from {0}: {1}", message.event.msgArgs[0], message.event.msgArgs[1]), title: n.name, icon: n.icon, nodeid: message.event.nodeid });
+                                }
+                            }
+                            break;
+                        }
                         case 'recording': {
                             if (p52recordings != null) { p52recordings.unshift(message.event); message.event.present = 1; updateRecordings(); }
                             break;
@@ -2953,9 +2966,10 @@
                             // If we are looking at the sessions dialog box for this device now, update it
                             if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
                             if (xxdialogTag == ('MESSAGES-' + message.event.nodeid)) { showDeviceMessages(message.event.nodeid, true); }
+                            if (xxdialogTag == ('HELPREQ-' + message.event.nodeid)) { showDeviceHelpRequests(message.event.nodeid, true); }
 
-                            // If we are filtering on sessions, update the visible devices
-                            if (Q('DevFilterSelect').value == 2) { mainUpdate(1); }
+                            // If we are filtering on sessions or help, update the visible devices
+                            if ((Q('DevFilterSelect').value == 2) || (Q('DevFilterSelect').value == 6)) { mainUpdate(1); }
                             break;
                         }
                         case 'stopped': { // Server is stopping.
@@ -3459,6 +3473,15 @@
                             }
                         }
 
+                        // Help is required
+                        if (node.sessions.help != null) {
+                            if (view == 2) {
+                                devNotifySub += '<img onclick=showDeviceHelpRequests(\'' + node._id + '\',null,event) class=deviceNotifySmallDotSub src=images/icon-help-notify-10.png width=10 height=10>';
+                            } else {
+                                devNotifySub += '<img onclick=showDeviceHelpRequests(\'' + node._id + '\',null,event) class=deviceNotifyDotSub src=images/icon-help-notify-16.png width=16 height=16>';
+                            }
+                        }
+
                         // Battery state
                         if ((node.sessions.battery != null) && (view == 1)) {
                             var bat = node.sessions.battery;
@@ -3730,6 +3753,18 @@
                 }
             }
             oldviewmode = view;
+        }
+
+        // Show device help requests
+        function showDeviceHelpRequests(nodeid, force, e) {
+            if (e) haltEvent(e);
+            if (xxdialogMode && !force) return false;
+            var node = null, x = '';
+            if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
+            if ((node == null) || (node.sessions == null)) { setDialogMode(0); return false; }
+            if (node.sessions.help != null) { for (var j in node.sessions.help) { x += '<div style=margin-bottom:6px><b>' + EscapeHtml(j) + '</b></div><div style=margin-bottom:6px>' + EscapeHtml(node.sessions.help[j]) + '</div>'; } }
+            if (x != '') { setDialogMode(2, "Help Requests" + ' - ' + EscapeHtml(node.name), 1, null, x, 'HELPREQ-' + node._id); } else { setDialogMode(0); }
+            return false;
         }
 
         // Show currently active sessions on this device
@@ -4634,6 +4669,7 @@
             if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
             if (devFilter == 5) { for (var d in nodes) { if ((nodes[d].conn != null) && (nodes[d].conn != 0)) { nodes[d].v = false; } } } // Offline
+            if (devFilter == 6) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || (n.sessions.help == null)) { n.v = false; } } } // Sessions
         }
 
         var contextelement = null;
@@ -5498,6 +5534,7 @@
                 // Device Notification
                 QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
+                QV('p10deviceHelp', (currentNode.sessions != null) && (currentNode.sessions.help != null))
                 if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
 
                 // Device Battery
@@ -10699,7 +10736,8 @@
             94: "Removed security key",
             95: "Added security key",
             96: "Verified phone number of user {0}",
-            97: "Removed phone number of user {0}"
+            97: "Removed phone number of user {0}",
+            98: "Help Requested, user: {0}, details: {1}"
         };
 
         // Highlights the device being hovered

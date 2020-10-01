@@ -570,6 +570,7 @@
                             <img id="p10deviceStar" class=deviceNotifyLargeDotSub src=images/icon-star-notify-40.png width=35 height=35>
                             <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event) class=deviceNotifyLargeDotSub></div>
                             <img id="p10deviceNotify" onclick=showDeviceSessions() class=deviceNotifyLargeDotSub src=images/icon-relay-notify-40.png width=35 height=35>
+                            <img id="p10deviceHelp" onclick=showDeviceHelpRequests(null,null,event) class=deviceNotifyLargeDotSub src=images/icon-help-notify-40.png width=35 height=35>
                         </div>
                         <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                         <div id=p10html style="margin-left:8px;margin-right:8px"></div>
@@ -1488,6 +1489,8 @@
 
                             // If we are looking at the sessions dialog box for this device now, update it
                             //if (xxdialogTag == ('SESSIONS-' + message.event.nodeid)) { showDeviceSessions(message.event.nodeid, true); }
+                            //if (xxdialogTag == ('MESSAGES-' + message.event.nodeid)) { showDeviceMessages(message.event.nodeid, true); }
+                            if (xxdialogTag == ('HELPREQ-' + message.event.nodeid)) { showDeviceHelpRequests(message.event.nodeid, true); }
 
                             break;
                         }
@@ -2319,6 +2322,11 @@
                             devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>';
                         }
 
+                        // Help is required
+                        if (node.sessions.help != null) {
+                            devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-help-notify-16.png width=16 height=16>';
+                        }
+
                         // Battery state
                         if (node.sessions.battery != null) {
                             var bat = node.sessions.battery;
@@ -2351,6 +2359,18 @@
                     devdivs[i].innerHTML = ''; // Hide
                 }
             }
+        }
+
+        // Show device help requests
+        function showDeviceHelpRequests(nodeid, force, e) {
+            if (e) haltEvent(e);
+            if (xxdialogMode && !force) return false;
+            var node = null, x = '';
+            if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
+            if ((node == null) || (node.sessions == null)) { setDialogMode(0); return false; }
+            if (node.sessions.help != null) { for (var j in node.sessions.help) { x += '<div style=margin-bottom:6px><b>' + EscapeHtml(j) + '</b></div><div style=margin-bottom:6px>' + EscapeHtml(node.sessions.help[j]) + '</div>'; } }
+            if (x != '') { setDialogMode(2, "Help Requests" + ' - ' + EscapeHtml(node.name), 1, null, x, 'HELPREQ-' + node._id); } else { setDialogMode(0); }
+            return false;
         }
 
         // Show currently active sessions on this device
@@ -2485,6 +2505,7 @@
                 // Setup session notification
                 QV('p10deviceNotify', (currentNode.sessions != null) && ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
+                QV('p10deviceHelp', (currentNode.sessions != null) && (currentNode.sessions.help != null))
                 if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
 
                 // Device Battery
