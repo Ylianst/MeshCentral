@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listusersofusergroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -24,6 +24,7 @@ if (args['_'].length == 0) {
     console.log("  ListDevices               - List devices.");
     console.log("  ListDeviceGroups          - List device groups.");
     console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
+    console.log("  ListUsersOfUserGroup      - List the users in a user group.");
     console.log("  DeviceInfo                - Show information about a device.");
     console.log("  Config                    - Perform operation on config.json file.");
     console.log("  AddUser                   - Create a new user account.");
@@ -80,6 +81,12 @@ if (args['_'].length == 0) {
             else { ok = true; }
             break;
         }
+        case 'listusersofusergroup': {
+            if (args.groupid == null) { console.log(winRemoveSingleQuotes("User group id missing, use --groupid '[id]'")); }
+            else { ok = true; }
+            break;
+        }
+
         case 'deviceinfo': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
@@ -331,6 +338,17 @@ if (args['_'].length == 0) {
                         }
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --json                 - Show result as JSON.");
+                        break;
+                    }
+                    case 'listusersofusergroup': {
+                        console.log("List users that are part of a user group, Example usage:\r\n");
+                        console.log("  MeshCtrl ListUserOfUserGroup ");
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [groupid]         - Device group identifier.");
+                        } else {
+                            console.log("  --id '[groupid]'       - Device group identifier.");
+                        }
                         break;
                     }
                     case 'adduser': {
@@ -853,6 +871,7 @@ function serverConnect() {
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users', responseid: 'meshctrl' })); break; }
             case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount', responseid: 'meshctrl' })); }
+            case 'listusersofusergroup':
             case 'listusergroups': { ws.send(JSON.stringify({ action: 'usergroups', responseid: 'meshctrl' })); }
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
             case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
@@ -1174,16 +1193,30 @@ function serverConnect() {
                 break;
             }
             case 'usergroups': { // LIST USER GROUPS
-                if (args.json) {
-                    console.log(JSON.stringify(data.ugroups, ' ', 2));
-                } else {
-                    for (var i in data.ugroups) {
-                        var x = i + ', ' + data.ugroups[i].name;
-                        if (data.ugroups[i].desc && (data.ugroups[i].desc != '')) { x += ', ' + data.ugroups[i].desc; }
-                        console.log(x);
+                if (settings.cmd == 'listusergroups') {
+                    if (args.json) {
+                        console.log(JSON.stringify(data.ugroups, ' ', 2));
+                    } else {
+                        for (var i in data.ugroups) {
+                            var x = i + ', ' + data.ugroups[i].name;
+                            if (data.ugroups[i].desc && (data.ugroups[i].desc != '')) { x += ', ' + data.ugroups[i].desc; }
+                            console.log(x);
+                        }
                     }
+                    process.exit();
+                } else if (settings.cmd == 'listusersofusergroup') {
+                    var ugrpid = args.groupid;
+                    if ((args.domain != null) && (userid.indexOf('/') < 0)) { ugrpid = 'ugrp/' + args.domain + '/' + ugrpid; }
+                    var ugroup = data.ugroups[ugrpid];
+                    if (ugroup == null) {
+                        console.log('User group not found.');
+                    } else {
+                        var usercount = 0;
+                        if (ugroup.links) { for (var i in ugroup.links) { if (i.startsWith('user/')) { usercount++; console.log(i); } } }
+                        if (usercount == 0) { console.log('No users in this user group.'); }
+                    }
+                    process.exit();
                 }
-                process.exit();
                 break;
             }
             case 'users': { // LISTUSERS
