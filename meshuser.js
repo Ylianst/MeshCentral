@@ -2360,6 +2360,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Check if the user exists
+                    if (command.userid.startsWith('user/') == false) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid.toLowerCase(); }
                     var chguser = parent.users[command.userid];
                     if (chguser != null) {
                         var change = false;
@@ -2395,6 +2396,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
                     }
+
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removeuserfromusergroup', responseid: command.responseid, result: 'ok', added: addedCount, failed: failCount })); } catch (ex) { } }
 
                     break;
                 }
