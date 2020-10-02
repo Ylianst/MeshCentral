@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listusersofusergroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast'];
+const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listusersofusergroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addusertousergroup', 'removeuserfromusergroup', 'removeallusersfromusergroup'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -15,51 +15,56 @@ if (args['_'].length == 0) {
     console.log("Information at: https://meshcommander.com/meshcentral");
     console.log("No action specified, use MeshCtrl like this:\r\n\r\n  meshctrl [action] [arguments]\r\n");
     console.log("Supported actions:");
-    console.log("  Help [action]             - Get help on an action.");
-    console.log("  ServerInfo                - Show server information.");
-    console.log("  UserInfo                  - Show user information.");
-    console.log("  ListUsers                 - List user accounts.");
-    console.log("  ListUserSessions          - List online users.");
-    console.log("  ListUserGroups            - List user groups.");
-    console.log("  ListDevices               - List devices.");
-    console.log("  ListDeviceGroups          - List device groups.");
-    console.log("  ListUsersOfDeviceGroup    - List the users in a device group.");
-    console.log("  ListUsersOfUserGroup      - List the users in a user group.");
-    console.log("  DeviceInfo                - Show information about a device.");
-    console.log("  Config                    - Perform operation on config.json file.");
-    console.log("  AddUser                   - Create a new user account.");
-    console.log("  RemoveUser                - Delete a user account.");
-    console.log("  AddUserGroup              - Create a new user group.");
-    console.log("  RemoveUserGroup           - Delete a user group.");
-    console.log("  AddDeviceGroup            - Create a new device group.");
-    console.log("  RemoveDeviceGroup         - Delete a device group.");
-    console.log("  EditDeviceGroup           - Change a device group values.");
-    console.log("  MoveToDeviceGroup         - Move a device to a different device group.");
-    console.log("  AddUserToDeviceGroup      - Add a user to a device group.");
-    console.log("  RemoveUserFromDeviceGroup - Remove a user from a device group.");
-    console.log("  AddUserToDevice           - Add a user to a device.");
-    console.log("  RemoveUserFromDevice      - Remove a user from a device.");
-    console.log("  SendInviteEmail           - Send an agent install invitation email.");
-    console.log("  GenerateInviteLink        - Create an invitation link.");
-    console.log("  Broadcast                 - Display a message to all online users.");
-    console.log("  ShowEvents                - Display real-time server events in JSON format.");
-    console.log("  RunCommand                - Run a shell command on a remote device.");
-    console.log("  Shell                     - Access command shell of a remote device.");
-    console.log("  Upload                    - Upload a file to a remote device.");
-    console.log("  Download                  - Download a file from a remote device.");
-    console.log("  DeviceOpenUrl             - Open a URL on a remote device.");
-    console.log("  DeviceMessage             - Open a message box on a remote device.");
-    console.log("  DeviceToast               - Display a toast notification on a remote device.");
+    console.log("  Help [action]               - Get help on an action.");
+    console.log("  ServerInfo                  - Show server information.");
+    console.log("  UserInfo                    - Show user information.");
+    console.log("  ListUsers                   - List user accounts.");
+    console.log("  ListUserSessions            - List online users.");
+    console.log("  ListUserGroups              - List user groups.");
+    console.log("  ListDevices                 - List devices.");
+    console.log("  ListDeviceGroups            - List device groups.");
+    console.log("  ListUsersOfDeviceGroup      - List the users in a device group.");
+    console.log("  ListUsersOfUserGroup        - List the users in a user group.");
+    console.log("  DeviceInfo                  - Show information about a device.");
+    console.log("  Config                      - Perform operation on config.json file.");
+    console.log("  AddUser                     - Create a new user account.");
+    console.log("  RemoveUser                  - Delete a user account.");
+    console.log("  AddUserGroup                - Create a new user group.");
+    console.log("  RemoveUserGroup             - Delete a user group.");
+
+    console.log("  AddUserToUserGroup          - Add a user to an existing user group.");
+    console.log("  RemoveUserFromUserGroup     - Remove a user from a user group.");
+    console.log("  RemoveAllUsersFromUserGroup - Remove all users from a user group.");
+
+    console.log("  AddDeviceGroup              - Create a new device group.");
+    console.log("  RemoveDeviceGroup           - Delete a device group.");
+    console.log("  EditDeviceGroup             - Change a device group values.");
+    console.log("  MoveToDeviceGroup           - Move a device to a different device group.");
+    console.log("  AddUserToDeviceGroup        - Add a user to a device group.");
+    console.log("  RemoveUserFromDeviceGroup   - Remove a user from a device group.");
+    console.log("  AddUserToDevice             - Add a user to a device.");
+    console.log("  RemoveUserFromDevice        - Remove a user from a device.");
+    console.log("  SendInviteEmail             - Send an agent install invitation email.");
+    console.log("  GenerateInviteLink          - Create an invitation link.");
+    console.log("  Broadcast                   - Display a message to all online users.");
+    console.log("  ShowEvents                  - Display real-time server events in JSON format.");
+    console.log("  RunCommand                  - Run a shell command on a remote device.");
+    console.log("  Shell                       - Access command shell of a remote device.");
+    console.log("  Upload                      - Upload a file to a remote device.");
+    console.log("  Download                    - Download a file from a remote device.");
+    console.log("  DeviceOpenUrl               - Open a URL on a remote device.");
+    console.log("  DeviceMessage               - Open a message box on a remote device.");
+    console.log("  DeviceToast                 - Display a toast notification on a remote device.");
     console.log("\r\nSupported login arguments:");
-    console.log("  --url [wss://server]      - Server url, wss://localhost:443 is default.");
-    console.log("                            - Use wss://localhost:443?key=xxx if login key is required.");
-    console.log("  --loginuser [username]    - Login username, admin is default.");
-    console.log("  --loginpass [password]    - Login password.");
-    console.log("  --token [number]          - 2nd factor authentication token.");
-    console.log("  --loginkey [hex]          - Server login key in hex.");
-    console.log("  --loginkeyfile [file]     - File containing server login key in hex.");
-    console.log("  --logindomain [domainid]  - Domain id, default is empty, only used with loginkey.");
-    console.log("  --proxy [http://proxy:1]  - Specify an HTTP proxy.");
+    console.log("  --url [wss://server]        - Server url, wss://localhost:443 is default.");
+    console.log("                              - Use wss://localhost:443?key=xxx if login key is required.");
+    console.log("  --loginuser [username]      - Login username, admin is default.");
+    console.log("  --loginpass [password]      - Login password.");
+    console.log("  --token [number]            - 2nd factor authentication token.");
+    console.log("  --loginkey [hex]            - Server login key in hex.");
+    console.log("  --loginkeyfile [file]       - File containing server login key in hex.");
+    console.log("  --logindomain [domainid]    - Domain id, default is empty, only used with loginkey.");
+    console.log("  --proxy [http://proxy:1]    - Specify an HTTP proxy.");
     return;
 } else {
     settings.cmd = args['_'][0].toLowerCase();
@@ -160,6 +165,23 @@ if (args['_'].length == 0) {
         }
         case 'removeusergroup': {
             if (args.groupid == null) { console.log(winRemoveSingleQuotes("Remove user group id missing, use --groupid '[id]'")); }
+            else { ok = true; }
+            break;
+        }
+        case 'addusertousergroup': {
+            if (args.groupid == null) { console.log(winRemoveSingleQuotes("Group id missing, use --groupid '[id]'")); }
+            if (args.userid == null) { console.log(winRemoveSingleQuotes("User id missing, use --userid '[id]'")); }
+            else { ok = true; }
+            break;
+        }
+        case 'removeuserfromusergroup': {
+            if (args.groupid == null) { console.log(winRemoveSingleQuotes("Group id missing, use --groupid '[id]'")); }
+            if (args.userid == null) { console.log(winRemoveSingleQuotes("User id missing, use --userid '[id]'")); }
+            else { ok = true; }
+            break;
+        }
+        case 'removeallusersfromusergroup': {
+            if (args.groupid == null) { console.log(winRemoveSingleQuotes("Group id missing, use --groupid '[id]'")); }
             else { ok = true; }
             break;
         }
@@ -377,6 +399,61 @@ if (args['_'].length == 0) {
                         console.log("  MeshCtrl RemoveUser --userid accountid");
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --userid [id]          - Account identifier.");
+                        break;
+                    }
+                    case 'addusergroup': {
+                        console.log("Create a new user group, Example usages:\r\n");
+                        console.log("  MeshCtrl AddUserGroup --name \"Test Group\"");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --name [name]          - Name of the user group.");
+                        break;
+                    }
+                    case 'removeusergroup': {
+                        console.log("Remove a user group, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveUserGroup --groupid 'ugrp//abcdf'"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --groupid [groupid]   - User group identifier.");
+                        } else {
+                            console.log("  --groupid '[groupid]' - User group identifier.");
+                        }
+                        break;
+                    }
+                    case 'addusertousergroup': {
+                        console.log("Add a user to a user group, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AddUserToUserGroup --userid 'user//abcdef' --groupid 'ugrp//abcdf'"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --userid [userid]     - User identifier.");
+                            console.log("  --groupid [groupid]   - User group identifier.");
+                        } else {
+                            console.log("  --userid '[userid]'   - User identifier.");
+                            console.log("  --groupid '[groupid]' - User group identifier.");
+                        }
+                        break;
+                    }
+                    case 'removeuserfromusergroup': {
+                        console.log("Remove a user from a user group, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveUserFromUserGroup --userid 'user//abcdef' --groupid 'ugrp//abcdf'"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --userid [userid]     - User identifier.");
+                            console.log("  --groupid [groupid]   - User group identifier.");
+                        } else {
+                            console.log("  --userid '[userid]'   - User identifier.");
+                            console.log("  --groupid '[groupid]' - User group identifier.");
+                        }
+                        break;
+                    }
+                    case 'removeallusersfromusergroup': {
+                        console.log("Remove all users from a user group, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveAllUsersFromUserGroup --groupid 'ugrp//abcdf'"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --groupid [groupid]   - User group identifier.");
+                        } else {
+                            console.log("  --groupid '[groupid]' - User group identifier.");
+                        }
                         break;
                     }
                     case 'adddevicegroup': {
@@ -870,9 +947,10 @@ function serverConnect() {
             case 'serverinfo': { break; }
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users', responseid: 'meshctrl' })); break; }
-            case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount', responseid: 'meshctrl' })); }
+            case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount', responseid: 'meshctrl' })); break; }
             case 'listusersofusergroup':
-            case 'listusergroups': { ws.send(JSON.stringify({ action: 'usergroups', responseid: 'meshctrl' })); }
+            case 'removeallusersfromusergroup':
+            case 'listusergroups': { ws.send(JSON.stringify({ action: 'usergroups', responseid: 'meshctrl' })); break; }
             case 'listdevicegroups': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
             case 'listusersofdevicegroup': { ws.send(JSON.stringify({ action: 'meshes', responseid: 'meshctrl' })); break; }
             case 'listdevices': {
@@ -920,6 +998,22 @@ function serverConnect() {
                 var ugrpid = args.groupid;
                 if ((args.domain != null) && (userid.indexOf('/') < 0)) { ugrpid = 'ugrp/' + args.domain + '/' + ugrpid; }
                 ws.send(JSON.stringify({ action: 'deleteusergroup', ugrpid: ugrpid, responseid: 'meshctrl' }));
+                break;
+            }
+            case 'addusertousergroup': {
+                var ugrpid = args.groupid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { ugrpid = 'ugrp/' + args.domain + '/' + ugrpid; }
+                var userid = args.userid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { userid = 'user/' + args.domain + '/' + userid; }
+                ws.send(JSON.stringify({ action: 'addusertousergroup', ugrpid: ugrpid, usernames: [userid], responseid: 'meshctrl' }));
+                break;
+            }
+            case 'removeuserfromusergroup': {
+                var ugrpid = args.groupid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { ugrpid = 'ugrp/' + args.domain + '/' + ugrpid; }
+                var userid = args.userid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { userid = 'user/' + args.domain + '/' + userid; }
+                ws.send(JSON.stringify({ action: 'removeuserfromusergroup', ugrpid: ugrpid, userid: userid, responseid: 'meshctrl' }));
                 break;
             }
             case 'adddevicegroup': {
@@ -1167,7 +1261,10 @@ function serverConnect() {
             case 'createusergroup': //
             case 'deleteusergroup': //
             case 'runcommands':
+            case 'addusertousergroup':
+            case 'removeuserfromusergroup':
             case 'userbroadcast': { // BROADCAST
+                if ((settings.multiresponse != null) && (settings.multiresponse > 1)) { settings.multiresponse--; break; }
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
                     else if (data.userid) { console.log(data.result, data.userid); }
@@ -1216,6 +1313,27 @@ function serverConnect() {
                         if (usercount == 0) { console.log('No users in this user group.'); }
                     }
                     process.exit();
+                } else if (settings.cmd == 'removeallusersfromusergroup') {
+                    var ugrpid = args.groupid, exit = false;
+                    if ((args.domain != null) && (userid.indexOf('/') < 0)) { ugrpid = 'ugrp/' + args.domain + '/' + ugrpid; }
+                    var ugroup = data.ugroups[ugrpid];
+                    if (ugroup == null) {
+                        console.log('User group not found.');
+                        exit = true;
+                    } else {
+                        var usercount = 0;
+                        if (ugroup.links) {
+                            for (var i in ugroup.links) {
+                                if (i.startsWith('user/')) {
+                                    usercount++;
+                                    ws.send(JSON.stringify({ action: 'removeuserfromusergroup', ugrpid: ugrpid, userid: i, responseid: 'meshctrl' }));
+                                    console.log('Removing ' + i);
+                                }
+                            }
+                        }
+                        if (usercount == 0) { console.log('No users in this user group.'); exit = true; } else { settings.multiresponse = usercount; }
+                    }
+                    if (exit) { process.exit(); }
                 }
                 break;
             }
