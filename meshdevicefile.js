@@ -204,9 +204,9 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                 if ((cmd == null) || (typeof cmd.op == 'string')) {
                     if (cmd.op == 'ok') {
                         if (typeof cmd.size == 'number') {
-                            this.res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + require('path').basename(this.file) + '"', 'Content-Length': cmd.size });
+                            this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + require('path').basename(this.file) + '"', 'Content-Length': cmd.size });
                         } else {
-                            this.res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + require('path').basename(this.file) + '"' });
+                            this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + require('path').basename(this.file) + '"' });
                         }
                     } else {
                         try { this.res.sendStatus(401); } catch (ex) { }
