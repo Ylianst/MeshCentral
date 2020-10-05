@@ -4162,6 +4162,8 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '</div>';
             setDialogMode(2, "Add User to Device Group", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -4188,6 +4190,8 @@
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
+            QE('p20commands', nc);
+            QE('p20resetoff', nc);
         }
 
         function p20showAddMeshUserDialogEx() {
@@ -4209,6 +4213,8 @@
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
                 if (Q('p20chatnotify').checked == true) meshadmin += 16384;
                 if (Q('p20uninstall').checked == true) meshadmin += 32768;
+                if (Q('p20commands').checked == true) meshadmin += 131072;
+                if (Q('p20resetoff').checked == true) meshadmin += 262144;
             }
             var users = Q('dp20username').value.split(','), users2 = [];
             for (var i in users) { users2.push(users[i].trim()); }
@@ -4236,6 +4242,8 @@
                 if ((meshrights & 8192) != 0) r.push("Self Events Only");
                 if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                 if ((meshrights & 32768) != 0) r.push("Uninstall");
+                if ((meshrights & 131072) != 0) r.push("Commands");
+                if ((meshrights & 262144) != 0) r.push("Reset/Off");
             }
             if (r.length == 0) { r.push("No Rights"); }
             var buttons = 1, uname = userid.split('/')[2];

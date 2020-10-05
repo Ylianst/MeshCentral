@@ -2631,7 +2631,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
 
                         // Create the notification message
-                        routeCommandToNode({ "action": "openUrl", "nodeid": command.nodeid, "userid": user._id, "username": user.name, "url": url });
+                        routeCommandToNode({ 'action': 'openUrl', 'nodeid': command.nodeid, 'userid': user._id, 'username': user.name, 'url': url });
                     });
                     break;
                 }

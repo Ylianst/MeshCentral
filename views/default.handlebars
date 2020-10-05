@@ -6039,8 +6039,14 @@
 
         function deviceUrlFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll></input>');
+            setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
             Q('d2devurl').focus();
+            deviceUrlFunctionValidate();
+        }
+
+        function deviceUrlFunctionValidate() {
+            var x = Q('d2devurl').value.toLowerCase();
+            QE('idx_dlgOkButton', ((x.startsWith('http://') && (x.length > 7)) || (x.startsWith('https://') && (x.length > 8))));
         }
 
         function deviceUrlFunctionEx() {
