@@ -2486,7 +2486,7 @@ function createMeshCore(agent) {
 
     // Open a web browser to a specified URL on current user's desktop
     function openUserDesktopUrl(url) {
-        if ((url.toLowerCase().startsWith('http://') == false) || (url.toLowerCase().startsWith('https://') == false)) { return null; }
+        if ((url.toLowerCase().startsWith('http://') == false) && (url.toLowerCase().startsWith('https://') == false)) { return null; }
         var child = null;
         try {
             switch (process.platform) {
