@@ -6,7 +6,7 @@
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon"/>
+    <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon" />
     <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
@@ -471,7 +471,7 @@
                         <div style="margin-left:25px">
                             <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
                             <div id="p2ServerActionsRestore"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
-                            <div id="p2ServerActionsGoogleBackup"  style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
+                            <div id="p2ServerActionsGoogleBackup" style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
                             <div id="p2ServerActionsErrors"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
                         </div>
@@ -1358,7 +1358,7 @@
             // Setup logout control
             var logoutControl = '';
             if (logoutControls)
-            if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
+                if (logoutControls.name != null) { logoutControl = format("Welcome {0}.", logoutControls.name); }
             if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" style="color:white">' + "Logout" + '</a>'); }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
 
@@ -1528,7 +1528,7 @@
             var x = '', dialog = customui.dialogs[name], buttons = 3;
             if (typeof dialog.text == 'string') { x += '<div style=margin-bottom:8px>' + dialog.text + '</div>'; }
             if (typeof dialog.buttons == 'number') { buttons = dialog.buttons; }
-            if (typeof dialog.elements == 'object') { 
+            if (typeof dialog.elements == 'object') {
                 for (var i in dialog.elements) {
                     var elem = dialog.elements[i];
                     if (elem.type == 'text') { x += addHtmlValue(elem.name, '<input id=cui:' + i + ' style=width:230px autocomplete=off />'); }
@@ -1553,7 +1553,7 @@
         function showCustomUiDialogEx(b, t) {
             if (b != 1) return;
             var dialog = customui.dialogs[t.element];
-            if (typeof dialog.elements == 'object') { 
+            if (typeof dialog.elements == 'object') {
                 for (var i in dialog.elements) {
                     var elem = dialog.elements[i];
                     if (elem.type == 'text') { t.values[i] = Q('cui:' + i).value; }
@@ -2205,7 +2205,7 @@
                             }
                         }
                         x += addHtmlValue2("Last interfaces update", printDateTime(new Date(message.updateTime)));
-                        
+
                         if (message.netif != null) {
                             // Old style
                             for (var i in message.netif) {
@@ -3610,7 +3610,7 @@
                     if (sort == 3) {
                         r = '<div style="margin:30px">' + "No devices are included in any groups, click on a device's \"Groups\" to add to a group." + '</div>';
                     } else {
-                        r = '<div style="margin:30px">' + "No devices matching this search." + '</div>';
+                        r = '<div style="margin:30px">' + "No devices matching this search." + ' <a onclick=clearDeviceSearch()>' + "Clear search filter" + '</a></div>';
                     }
                 }
 
@@ -3626,7 +3626,7 @@
                         if (displayedMeshes[mesh._id] == null) {
                             if ((current != '') && (r != '')) { r += '</tr></table>'; }
                             r += '<table style=width:100%;padding-top:4px cellpadding=0 cellspacing=0><tr><td colspan=3 class=DevSt>';
-                                
+
                             // Collapsing header & start collapsing area
                             deviceHeaderId2++;
                             var collapsed = CollapsedGroups[mesh._id];
@@ -4489,7 +4489,7 @@
             } else if (op == 106) {
                 // Run commands
                 var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { 
+                for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
                     if (n.agent) { if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
                 }
@@ -4606,6 +4606,7 @@
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
         function onSearchFocus(x) { searchFocus = x; }
+        function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(1); }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
         function onUserSearchFocus(x) { userSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
@@ -5547,7 +5548,7 @@
                 QV('p10deviceBattery', false);
                 if ((currentNode.sessions != null) && (currentNode.sessions.battery != null)) {
                     var bat = currentNode.sessions.battery;
-                    
+
                     var statestr = '';
                     if (bat.state == 'ac') { statestr = "Device is plugged-in"; }
                     if (bat.state == 'dc') { statestr = "Device is battery powered"; }
@@ -5874,9 +5875,9 @@
                 }
 
                 // Device refresh plugin handler
-                if (pluginHandler != null) { 
+                if (pluginHandler != null) {
                     QH('p19headers', ''); QH('p19pages', '');
-                    pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event); 
+                    pluginHandler.callHook('onDeviceRefreshEnd', nodeid, panel, refresh, event);
                     var lastTab = getstore('_curPluginPage', null);
                     if (lastTab != null && Q('p19ph-' + lastTab) != null) pluginHandler.callPluginPage(lastTab, Q('p19ph-' + lastTab));
                 }
@@ -6623,7 +6624,7 @@
                         ((typeof currentNode.intelamt.sku == 'number') &&
                         ((currentNode.intelamt.sku & 8) != 0))))
                     )
-                );            
+                );
             }
             // Show the right settings
             QV('d7amtkvm', (currentNode.intelamt != null && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
@@ -7659,7 +7660,7 @@
                         xterm.onResize(function (size) {
                             // Despam resize
                             if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
-                            xtermResizeTimer = setTimeout(xTermSendResize, 200); 
+                            xtermResizeTimer = setTimeout(xTermSendResize, 200);
                         });
 
                         // Setup a terminal tunnel to the agent
@@ -8645,7 +8646,7 @@
                     x += '<div class=DevSt style=margin-bottom:3px;margin-left:16px><b>' + sections[i].name + '</b></div><div style=margin-bottom:10px;margin-left:16px>' + sections[i].html + '</div>';
                 } else {
                     x += '<table style=width:100%><tr>';
-                    x += '<td style=width:64px;vertical-align:top><img src=images/details/' + sections[i].img + ' border=0 width=64 /></td>'; // height=12 
+                    x += '<td style=width:64px;vertical-align:top><img src=images/details/' + sections[i].img + ' border=0 width=64 /></td>'; // height=12
                     x += '<td><div class=DevSt style=margin-bottom:3px;margin-left:16px><b>' + sections[i].name + '</b></div><div style=margin-bottom:10px;margin-left:16px>' + sections[i].html + '</div></td>';
                     x += '</tr></table>';
                 }
@@ -8894,7 +8895,7 @@
                 account_managePhoneValidate();
             }
         }
-        
+
         function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3,4})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
         function account_managePhoneValidate(x) { var ok = isPhoneNumber(Q('d2phoneinput').value); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
         function account_managePhoneCodeValidate(x) { var ok = (Q('d2phoneCodeInput').value.length == 6) && Q('d2phoneCodeInput').value.match(/[0-9]/); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
@@ -9404,7 +9405,7 @@
                 x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1));
             }
 
-            if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 1024) == 0)) { 
+            if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 1024) == 0)) {
                 // Display user notification
                 var meshNotify = 0, meshNotifyStr = [];
                 if (userinfo.links && userinfo.links[currentMesh._id] && userinfo.links[currentMesh._id].notify) { meshNotify = userinfo.links[currentMesh._id].notify; }
@@ -10733,7 +10734,7 @@
             59: "Changed device {0} from group {1}: {2}",
             60: "Removed user device rights for {0}",
             61: "Changed user device rights for {0}",
-            62: "Removed user {0} from user group {1}", 
+            62: "Removed user {0} from user group {1}",
             63: "Account removed",
             64: "Account created, username is {0}",
             65: "Account created, email is {0}",
@@ -11056,7 +11057,7 @@
             for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0) && (elements[i].value != eself); }
             p3updateInfo();
         }
-        
+
         // Called to perform a group action on many users
         function p3usersGroupActionFunction() {
             var elements = document.getElementsByClassName('UserCheckbox'), checkcount = 0;
@@ -11307,7 +11308,7 @@
 
         function showCreateNewAccountDialogValidate() {
             var emailok = validateEmail(Q('p4email').value);
-            var nameok = true; 
+            var nameok = true;
             var passok =  (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
 
             if ((features & 0x200000) == 0) {
@@ -11522,11 +11523,11 @@
             // Update current user panel if needed
             if ((currentUserGroup != null) && (xxcurrentView == 51)) { gotoUserGroup(encodeURIComponentEx(currentUserGroup._id), true); }
         }
-        
+
         function addUserGroupHtml(group) {
             var usercount = 0, meshcount = 0, devicecount = 0;
             if (group.links) { for (var i in group.links) { if (i.startsWith('user/')) { usercount++; } if (i.startsWith('mesh/')) { meshcount++; } if (i.startsWith('node/')) { devicecount++; } } }
-            
+
             // Group name, if we are a cross-domain administrator, add the domain.
             var name = EscapeHtml(group.name);
             if ((serverinfo.crossDomain != null)) {
@@ -11558,7 +11559,7 @@
             for (var i=0;i<elements.length;i++) { elements[i].checked = (checkcount == 0) && (elements[i].value != eself); }
             p50updateInfo();
         }
-        
+
         // Called to perform a group action on many users
         function p50usersGroupActionFunction() {
             var elements = document.getElementsByClassName('UserGroupCheckbox'), checkcount = 0;
@@ -11629,7 +11630,7 @@
             if (xxdialogMode && !force) return;
             var group = currentUserGroup = usergroups?usergroups[decodeURIComponent(groupid)]:null;
             if (group == null) { if (xxcurrentView == 51) { setDialogMode(0); go(50); } return; }
-            
+
             // Add user group name
             var gname = EscapeHtml(group.name);
             if (gname.length == 0) { gname = '<i>' + "None" + '</i>'; }
@@ -11846,7 +11847,7 @@
             p51viewuserEx(2, decodeURIComponent(id));
             return false;
         }
-        
+
         function p51viewuserEx(button, userid) {
             if (button != 2) return;
             var uname = userid.split('/')[2];
@@ -11995,7 +11996,7 @@
             if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
                 x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
             }
-            
+
             x += addDeviceAttribute("Server Rights", premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton onclick=\'return showUserAdminDialog(event,"' + userid + '")\' src="images/link5.png" />');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));
@@ -12945,7 +12946,7 @@
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
-                    if (serverTimelineStats[i].first == true) { 
+                    if (serverTimelineStats[i].first == true) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
@@ -13294,25 +13295,25 @@
                     }
                 }
                 var statusMap = {
-                  0: {
-                      'text': 'Disabled',
-                      'color': '858483'
-                  },
-                  1: {
-                      'text': 'Installed',
-                      'color': '00aa00'
-                  }
+                    0: {
+                        'text': 'Disabled',
+                        'color': '858483'
+                    },
+                    1: {
+                        'text': 'Installed',
+                        'color': '00aa00'
+                    }
                 };
                 var statusAvailability = {
-                  0: {
-                      'install': 'Install',
-                      'delete': 'Delete'
-                  },
-                  1: {
-                      'disable': 'Disable',
-                      'upgrade': 'Upgrade',
-                    //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
-                  }
+                    0: {
+                        'install': 'Install',
+                        'delete': 'Delete'
+                    },
+                    1: {
+                        'disable': 'Disable',
+                        'upgrade': 'Upgrade',
+                        //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
+                    }
                 };
                 var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="' + "Version incompatible, please upgrade your MeshCentral installation first" + '" style="cursor: pointer; color:red;"> ! </span> ]';
 
@@ -13484,7 +13485,7 @@
 
             return false;
         }
-        
+
         // Return the user rights for a given node
         function GetNodeRights(node, userid) {
             if (node == null) { return 0; }
@@ -13495,7 +13496,7 @@
 
             // Check direct device rights using device data
             if ((node.links != null) && (node.links[userid] != null)) { r |= node.links[userid].rights; } // TODO: Deal with reverse permissions
-            
+
             // Check direct device rights thru user groups
             if ((node.links != null) && (userinfo.links != null)) {
                 for (var i in node.links) {
@@ -13527,7 +13528,7 @@
 
             // Check direct device visibility using device data
             if ((node.links != null) && (node.links[userid] != null)) { return true; }
-            
+
             // Check direct device visibility thru user groups
             if ((node.links != null) && (userinfo.links != null)) {
                 for (var i in node.links) { if (i.startsWith('ugrp/') && (userinfo.links[i] != null) && (node.links[i].rights != null)) { return true; } }
@@ -13653,7 +13654,7 @@
 
         // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
         // So we do that for all browsers except FireFox
-        function downloadFile(link, name, closeDialog) { 
+        function downloadFile(link, name, closeDialog) {
             var element = document.createElement('a');
             element.setAttribute('href', link);
             element.setAttribute('rel', 'noreferrer noopener');
