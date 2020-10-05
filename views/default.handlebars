@@ -3887,7 +3887,7 @@
         }
         function disconnectAllKvmFunction() { if (xxdialogMode) return false; for (var nodeid in multiDesktop) { multiDesktop[nodeid].Stop(); } multiDesktop = {}; }
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) {} }
-        function onDeviceSearchChanged(e) { if (e.target.id == 'SearchInput') { Q('KvmSearchInput').value = Q('SearchInput').value; } else { Q('SearchInput').value = Q('KvmSearchInput').value; } mainUpdate(5); }
+        function onDeviceSearchChanged(e) { if (e != null) { if (e.target.id == 'SearchInput') { Q('KvmSearchInput').value = Q('SearchInput').value; } else { Q('SearchInput').value = Q('KvmSearchInput').value; } } mainUpdate(5); }
 
         function showMultiDesktopSettings() {
             QV('d7amtkvm', false);
@@ -4606,7 +4606,7 @@
         function deviceSort(a, b) { if (a.namel > b.namel) return 1; if (a.namel < b.namel) return -1; return 0; }
         function deviceHostSort(a, b) { if (a.rnamel > b.rnamel) return 1; if (a.rnamel < b.rnamel) return -1; return 0; }
         function onSearchFocus(x) { searchFocus = x; }
-        function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(1); }
+        function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; Q('DevFilterSelect').value = 0; onOnlineCheckBox(); mainUpdate(1); }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
         function onUserSearchFocus(x) { userSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }

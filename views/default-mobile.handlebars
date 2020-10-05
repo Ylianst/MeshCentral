@@ -2030,6 +2030,7 @@
 
         function clearSearchInput() {
             Q('SearchInput').value = '';
+            Q('OnlineCheckBox').checked = false;
             onSearchInputChanged();
         }
 
@@ -2262,7 +2263,11 @@
             }
 
             if (count == 0) {
-                QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "No devices" + '</span><br /><br />' + "Use the desktop version of this website to add devices." + '</div>');
+                if ((Q('SearchInput').value != '') || (Q('OnlineCheckBox').checked)) {
+                    QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "No devices" + '</span><br /><br />' + "No devices matching this search." + ' <a onclick=clearSearchInput() style=cursor:pointer>' + "Clear search filter" + '</a></div>');
+                } else {
+                    QH('xdevices', '<div style="margin-top:50px;text-align:center"><span style="font-size:30px">' + "No devices" + '</span><br /><br />' + "Use the desktop version of this website to add devices." + '</div>');
+                }
             } else {
                 QH('xdevices', r);
             }
