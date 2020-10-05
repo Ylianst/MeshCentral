@@ -403,7 +403,7 @@ if (args['_'].length == 0) {
                         console.log("Add a user, device or device group to a user group, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl AddToUserGroup --id 'user//abcdef' --groupid 'ugrp//abcdf'"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl AddToUserGroup --id 'node//abcdef' --groupid 'ugrp//abcdf' --rights [rights]"));
-                        console.log(winRemoveSingleQuotes("  MeshCtrl AddToUserGroup --id 'mesh//abcdef' --groupid 'ugrp//abcdf' --rights [rights]a"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AddToUserGroup --id 'mesh//abcdef' --groupid 'ugrp//abcdf' --rights [rights]"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [id]             - Identifier to add.");
@@ -413,7 +413,18 @@ if (args['_'].length == 0) {
                             console.log("  --groupid '[groupid]' - User group identifier.");
                         }
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --rights [number]         - Rights granted for adding device or device group.");
+                        console.log("  --rights [number]     - Rights granted for adding device or device group.");
+                        console.log("                        - 4294967295 for full admin or the sum of the following numbers.");
+                        console.log("          1 = Edit Device Group                2 = Manage Users           ");
+                        console.log("          4 = Manage Computers                 8 = Remote Control         ");
+                        console.log("         16 = Agent Console                   32 = Server Files           ");
+                        console.log("         64 = Wake Device                    128 = Set Notes              ");
+                        console.log("        256 = Remote View Only               512 = No Terminal            ");
+                        console.log("       1024 = No Files                      2048 = No Intel AMT           ");
+                        console.log("       4096 = Desktop Limited Input         8192 = Limit Events           ");
+                        console.log("      16384 = Chat / Notify                32768 = Uninstall Agent        ");
+                        console.log("      65536 = No Remote Desktop           131072 = Remote Commands        ");
+                        console.log("     262144 = Reset / Power off      ");
                         break;
                     }
                     case 'removefromusergroup': {

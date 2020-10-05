@@ -49,6 +49,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_CHATNOTIFY          = 0x00004000;
     const MESHRIGHT_UNINSTALL           = 0x00008000;
     const MESHRIGHT_NODESKTOP           = 0x00010000;
+    const MESHRIGHT_REMOTECOMMAND       = 0x00020000;
+    const MESHRIGHT_RESETOFF            = 0x00040000;
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
