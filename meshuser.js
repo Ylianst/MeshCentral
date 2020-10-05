@@ -472,7 +472,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             if (user.siteadmin === SITERIGHT_ADMIN) {
                 // Check if tracing is allowed for this domain
-                if ((domain.myserver == null) || (domain.myserver.trace === true)) {
+                if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.trace === true))) {
                     // Send server tracing information
                     try { ws.send(JSON.stringify({ action: 'traceinfo', traceSources: parent.parent.debugRemoteSources })); } catch (ex) { }
                 }
@@ -550,6 +550,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'servertimelinestats':
                 {
+                    // Only accept if the "My Server" tab is allowed for this domain
+                    if (domain.myserver === false) break;
+
                     if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
                     if (common.validateInt(command.hours, 0, 24 * 30) == false) return;
                     db.GetServerStats(command.hours, function (err, docs) {
@@ -561,6 +564,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'serverstats':
                 {
+                    // Only accept if the "My Server" tab is allowed for this domain
+                    if (domain.myserver === false) break;
+
                     if ((user.siteadmin & 21) == 0) return; // Only site administrators with "site backup" or "site restore" or "site update" permissions can use this.
                     if (common.validateInt(command.interval, 1000, 1000000) == false) {
                         // Clear the timer
@@ -839,8 +845,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // This is a server console message, only process this if full administrator
                     if (user.siteadmin != SITERIGHT_ADMIN) break;
 
-                    // Only accept is the console is allowed for this domain
-                    if ((domain.myserver != null) && (domain.myserver.console !== true)) break;
+                    // Only accept if the console is allowed for this domain
+                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.console !== true))) break;
 
                     var r = '';
                     var cmdargs = splitArgs(command.value);
@@ -2639,7 +2645,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Check the server version
                     if ((user.siteadmin & 16) == 0) break;
-                    if ((domain.myserver != null) && (domain.myserver.upgrade !== true)) break;
+                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.upgrade !== true))) break;
                     //parent.parent.getLatestServerVersion(function (currentVersion, latestVersion) { try { ws.send(JSON.stringify({ action: 'serverversion', current: currentVersion, latest: latestVersion })); } catch (ex) { } });
                     parent.parent.getServerTags(function (tags, err) { try { ws.send(JSON.stringify({ action: 'serverversion', tags: tags })); } catch (ex) { } });
                     break;
@@ -2648,7 +2654,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Perform server update
                     if ((user.siteadmin & 16) == 0) break;
-                    if ((domain.myserver != null) && (domain.myserver.upgrade !== true)) break;
+                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.upgrade !== true))) break;
                     if ((command.version != null) && (typeof command.version != 'string')) break;
                     parent.parent.performServerUpdate(command.version);
                     break;
@@ -2657,7 +2663,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Load the server error log
                     if ((user.siteadmin & 16) == 0) break;
-                    if ((domain.myserver != null) && (domain.myserver.errorlog !== true)) break;
+                    if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.errorlog !== true))) break;
                     fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { try { ws.send(JSON.stringify({ action: 'servererrors', data: data })); } catch (ex) { } });
                     break;
                 }
@@ -4555,8 +4561,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'traceinfo': {
-                // Only accept is the tracing is allowed for this domain
-                if ((domain.myserver != null) && (domain.myserver.trace !== true)) break;
+                // Only accept if the tracing tab is allowed for this domain
+                if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.trace !== true))) break;
 
                 if ((user.siteadmin === SITERIGHT_ADMIN) && (typeof command.traceSources == 'object')) {
                     parent.parent.debugRemoteSources = command.traceSources;

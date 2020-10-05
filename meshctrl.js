@@ -338,6 +338,7 @@ if (args['_'].length == 0) {
                         console.log("  --group [groupname]    - Filter by group name (or --id).");
                         console.log("  --count                - Only return the device count.");
                         console.log("  --json                 - Show result as JSON.");
+                        console.log("  --csv                  - Show result as comma seperated values.");
                         break;
                     }
                     case 'listusersofdevicegroup': {
@@ -1442,7 +1443,19 @@ function serverConnect() {
                     if ((data.result != null) && (data.result != 'ok')) {
                         console.log(data.result);
                     } else {
-                        if (args.count) {
+                        if (args.csv) {
+                            // Return a flat list
+                            var nodecount = 0;
+                            for (var i in data.nodes) {
+                                var devicesInMesh = data.nodes[i];
+                                for (var j in devicesInMesh) {
+                                    var n = devicesInMesh[j];
+                                    nodecount++;
+                                    console.log('\"' + settings.xmeshes[i]._id.split('/')[2] + '\",\"' + settings.xmeshes[i].name.split('\"').join('') + '\",\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
+                                }
+                            }
+                            if (nodecount == 0) { console.log('None'); }
+                        } else if (args.count) {
                             // Return how many devices are in this group
                             var nodes = [];
                             for (var i in data.nodes) { var devicesInMesh = data.nodes[i]; for (var j in devicesInMesh) { nodes.push(devicesInMesh[j]); } }
@@ -1457,12 +1470,12 @@ function serverConnect() {
                             var nodecount = 0;
                             for (var i in data.nodes) {
                                 var devicesInMesh = data.nodes[i];
-                                if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name + '\"'); }
+                                if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name.split('\"').join('') + '\"'); }
                                 console.log('id, name, icon, conn, pwr, ip\r\n-----------------------------');
                                 for (var j in devicesInMesh) {
                                     var n = devicesInMesh[j];
                                     nodecount++;
-                                    console.log(n._id.split('/')[2] + ', \"' + n.name + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
+                                    console.log('\"' + n._id.split('/')[2] + '\", \"' + n.name.split('\"', '') + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
                                 }
                             }
                             if (nodecount == 0) { console.log('None'); }

@@ -176,7 +176,7 @@
             "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral."
           },
           "myServer": {
-            "type": "object",
+            "type": [ "object", "boolean" ],
             "additionalProperties": false,
             "properties": {
               "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab." },
