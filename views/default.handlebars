@@ -1833,7 +1833,7 @@
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('p2AccountImage', !accountSettingsLocked)
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 15) != 0));
-            QV('LeftMenuMyServer', siteRights & 21); // 16 + 4 + 1
+            QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));

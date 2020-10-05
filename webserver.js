@@ -2371,8 +2371,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
                 // Server features
-                var serverFeatures = 63;
-                if (domain.myserver) {
+                var serverFeatures = 127;
+                if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
+                else if (typeof domain.myserver == 'object') {
                     if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Disallow simple server backups
                     if (domain.myserver.restore !== true) { serverFeatures -= 2; } // Disallow simple server restore
                     if (domain.myserver.upgrade !== true) { serverFeatures -= 4; } // Disallow server upgrade
@@ -4063,7 +4064,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        if ((domain.myserver != null) && (domain.myserver.backup !== true)) { res.sendStatus(401); return; }
+        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.backup !== true))) { res.sendStatus(401); return; }
 
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
@@ -4092,7 +4093,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((domain.myserver != null) && (domain.myserver.restore !== true)) { res.sendStatus(401); return; }
+        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.restore !== true))) { res.sendStatus(401); return; }
 
         var authUserid = null;
         if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
@@ -4818,8 +4819,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url, handleRootRequest);
             obj.app.post(url, handleRootPostRequest);
             obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
-            if ((domain.myserver == null) || (domain.myserver.backup === true)) { obj.app.get(url + 'backup.zip', handleBackupRequest); }
-            if ((domain.myserver == null) || (domain.myserver.restore === true)) { obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest); }
+            if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.backup === true))) { obj.app.get(url + 'backup.zip', handleBackupRequest); }
+            if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.restore === true))) { obj.app.post(url + 'restoreserver.ashx', handleRestoreRequest); }
             obj.app.get(url + 'terms', handleTermsRequest);
             obj.app.get(url + 'xterm', handleXTermRequest);
             obj.app.post(url + 'login', handleLoginRequest);
