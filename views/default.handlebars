@@ -4437,10 +4437,16 @@
                 var node = getNodeFromId(nodeids[i]), rights = GetNodeRights(node);
                 if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions += '<option value=102>' + "Move to device group" + '</option>'; }
                 if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions += '<option value=104>' + "Uninstall Agent" + '</option>'; }
+                if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions += '<option value=100>' + "Wake-up devices" + '</option>'; }
+                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions += '<option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option>'; }
+                if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions += '<option value=106>' + "Run commands" + '</option>'; }
+                if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions += '<option value=108>' + "Device notification" + '</option>'; }
+                if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions += '<option value=107>' + "Edit tags" + '</option>'; }
+                if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions += '<option value=101>' + "Delete devices" + '</option>'; }
             }
 
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select id=d2groupop><option value=100>' + "Wake-up devices" + '</option><option value=106>' + "Run commands" + '</option><option value=4>' + "Sleep devices" + '</option><option value=3>' + "Reset devices" + '</option><option value=2>' + "Power off devices" + '</option><option value=105>' + "Export device information" + '</option>' + '</option><option value=107>' + "Edit tags" + '</option><option value=108>' + "Device notification" + '</option>' + addedOptions + '<option value=101>' + "Delete devices" + '</option></select>');
+            x += addHtmlValue("Operation", '<select id=d2groupop><option value=105>' + "Export device information" + '</option>' + '</option>' + addedOptions + '</select>');
             setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
         }
 
@@ -5725,7 +5731,7 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if ((meshrights & 76) != 0) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
+                x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />';
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((connectivity & 1) && (meshrights & 8)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
@@ -5834,11 +5840,6 @@
                 Q('p14iframe').contentWindow.setConnectionState(online);
                 Q('p14iframe').contentWindow.setFrameHeight('650px');
                 Q('p14iframe').contentWindow.setAuthCallback(updateAmtCredentials);
-
-                // Display "action" button on desktop/terminal/files
-                QV('deskActionsBtn', (meshrights & 72) != 0); // 72 = Wake-up + Remote Control permissions
-                QV('termActionsBtn', (meshrights & 72) != 0);
-                QV('filesActionsBtn', (meshrights & 72) != 0);
 
                 // Request the power timeline
                 if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) {
@@ -5966,6 +5967,8 @@
             if (rights & 8192) str.push("Limit Events");
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
+            if (rights & 131072) str.push("Commands");
+            if (rights & 262144) str.push("Reset/Off");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -5993,6 +5996,8 @@
             if (rights & 8192) str.push("Limit Events");
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
+            if (rights & 131072) str.push("Commands");
+            if (rights & 262144) str.push("Reset/Off");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -6088,16 +6093,18 @@
 
         function deviceActionFunction() {
             if (xxdialogMode) return;
-            var rights = GetNodeRights(currentNode);
+            var rights = GetNodeRights(currentNode), count = 0;
             var x = "Select an operation to perform on this device." + '<br /><br />';
             var y = '<select id=d2deviceop style=float:right;width:250px>';
-            if ((rights & 64) != 0) { y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
-            if ((rights & 8) != 0) { y += '<option value=106>' + "Run Commands" + '</option><option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; } // Remote control permission
-            if ((currentNode.conn & 16) != 0) { y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
-            if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
+            if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
+            if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
+            if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
+            if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
+            if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             y += '</select>';
             x += addHtmlValue("Operation", y);
-            setDialogMode(2, "Device Action", 3, deviceActionFunctionEx, x);
+            if (count == 0) { x = "No actions currently available for this device."; }
+            setDialogMode(2, "Device Action", (count == 0)?1:3, deviceActionFunctionEx, x);
         }
 
         function deviceActionFunctionEx() {
@@ -6634,7 +6641,6 @@
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
-            QV('deskActionsBtn', (browserfullscreen == false));
             QV('deskActionsSettings', (browserfullscreen == false));
             if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
             QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red';
@@ -9775,7 +9781,8 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20settingslock>' + "Lock Account Settings" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -9848,6 +9855,8 @@
                 if (urights & 8192) { Q('p20limitevents').checked = true; }
                 if (urights & 16384) { Q('p20chatnotify').checked = true; }
                 if (urights & 32768) { Q('p20uninstall').checked = true; }
+                if (urights & 131072) { Q('p20commands').checked = true; }
+                if (urights & 262144) { Q('p20resetoff').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -9892,6 +9901,8 @@
                 Q('p20chatnotify').checked = ((devrights & 16384) != 0);
                 Q('p20uninstall').checked = ((devrights & 32768) != 0);
                 Q('p20nodesktop').checked = ((devrights & 65536) != 0);
+                Q('p20commands').checked = ((devrights & 131072) != 0);
+                Q('p20resetoff').checked = ((devrights & 262144) != 0);
                 ok = (nodeid != '');
             }
 
@@ -9969,6 +9980,8 @@
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
+            QE('p20commands', nc);
+            QE('p20resetoff', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -9994,6 +10007,8 @@
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
                 if (Q('p20chatnotify').checked == true) meshadmin += 16384;
                 if (Q('p20uninstall').checked == true) meshadmin += 32768;
+                if (Q('p20commands').checked == true) meshadmin += 131072;
+                if (Q('p20resetoff').checked == true) meshadmin += 262144;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -10075,6 +10090,8 @@
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
                     if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                     if ((meshrights & 32768) != 0) r.push("Uninstall");
+                    if ((meshrights & 131072) != 0) r.push("Commands");
+                    if ((meshrights & 262144) != 0) r.push("Reset/Off");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];

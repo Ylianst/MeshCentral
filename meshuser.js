@@ -3592,7 +3592,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
 
                             // Check we have the rights to run commands on this device
-                            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                            if ((rights & MESHRIGHT_REMOTECOMMAND) == 0) {
                                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
                                 return;
                             }
@@ -3653,7 +3653,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
                             // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+                            if ((rights & MESHRIGHT_RESETOFF) == 0) return;
 
                             // If this device is connected on MQTT, send a power action.
                             if (parent.parent.mqttbroker != null) { parent.parent.mqttbroker.publish(node._id, 'powerAction', ['', '', 'poweroff', 'reset', 'sleep'][command.actiontype]); }
