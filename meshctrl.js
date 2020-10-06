@@ -1486,7 +1486,7 @@ function serverConnect() {
                                 for (var j in devicesInMesh) {
                                     var n = devicesInMesh[j];
                                     nodecount++;
-                                    console.log('\"' + n._id.split('/')[2] + '\", \"' + n.name.split('\"', '') + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
+                                    console.log('\"' + n._id.split('/')[2] + '\", \"' + n.name.split('\"').join('') + '\", ' + (n.icon ? n.icon : 0) + ', ' + (n.conn ? n.conn : 0) + ', ' + (n.pwr ? n.pwr : 0));
                                 }
                             }
                             if (nodecount == 0) { console.log('None'); }
