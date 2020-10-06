@@ -4678,7 +4678,6 @@
     {
       "cs": "Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[[SERVERURL]]] /), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[[ACCOUNTNAME]]]“ “a hesla„ [[[HESLO]] ]] \".",
       "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen \"[[[ACCOUNTNAME]]]\" und dem Passwort \"[[[PASSWORD]]]\" darauf zugreifen.",
-      "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
       "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \"[[[ACCOUNTNAME]]]\" y la contraseña \"[[[PASSWORD]]]\".",
       "fi": "Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/), voit käyttää sitä nyt käyttäjätunnuksella \"[[[ACCOUNTNAME]]]\" and salasanalla \"[[[PASSWORD]]]\".",
       "fr": "Un compte a été créé pour vous sur le serveur [[[[SERVERNAME]]] ([[[SERVERURL]]] /), vous pouvez y accéder maintenant avec le nom d'utilisateur \"[[[ACCOUNTNAME]]]\" et le mot de passe \"[[[PASSWORD]]]\".",
@@ -4694,7 +4693,6 @@
     {
       "cs": "Účet byl pro vás vytvořen na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/), nyní k němu máte přístup pomocí uživatelského jména \\\"[[[ACCOUNTNAME]]]\\\" a hesla \\\"[[[PASSWORD]]]\\\".",
       "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/) wurde ein Konto für Sie erstellt. Sie können jetzt mit dem Benutzernamen \\\"[[[ACCOUNTNAME]]]\\\" und dem Passwort \\\"[[[PASSWORD]]]\\\".",
-      "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/), you can access it now with username \\\"[[[ACCOUNTNAME]]]\\\" en wachtwoord \\\"[[[PASSWORD]]]\\\".",
       "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \\\"[[[ACCOUNTNAME]]]\\\" y la consigna \\\"[[[PASSWORD]]]\\\".",
       "fi": "Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/), voit käyttää sitä nyt käyttäjätunnuksella \\\"[[[ACCOUNTNAME]]]\\\" and salasanalla \\\"[[[PASSWORD]]]\\\".",
       "fr": "Un compte a été créé pour vous sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/), vous pouvez y accéder maintenant avec le nom d'utilisateur \\\"[[[ACCOUNTNAME]]]\\\" et le mot de passe \\\"[[[PASSWORD]]]\\\".",
@@ -7431,6 +7429,7 @@
     },
     {
       "en": "Clear search filter",
+      "nl": "Wis zoekfilter",
       "xloc": [
         "default-mobile.handlebars->9->154",
         "default.handlebars->27->225"
@@ -7895,6 +7894,7 @@
     },
     {
       "en": "Commands",
+      "nl": "Opdrachten",
       "xloc": [
         "default-mobile.handlebars->9->452",
         "default.handlebars->27->1493",
@@ -13502,6 +13502,7 @@
     },
     {
       "en": "Edit User Group User Consent",
+      "nl": "Bewerk groepsgebruikerstoestemming",
       "xloc": [
         "default.handlebars->27->1412"
       ]
@@ -16674,6 +16675,7 @@
     },
     {
       "en": "Group-Tags",
+      "nl": "Groepstags",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSort->sortselect->9"
       ]
@@ -16925,18 +16927,21 @@
     },
     {
       "en": "Help",
+      "nl": "Help",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->13"
       ]
     },
     {
       "en": "Help Requested, user: {0}, details: {1}",
+      "nl": "Hulp verzoek van, user: {0}, details: {1}",
       "xloc": [
         "default.handlebars->27->1680"
       ]
     },
     {
       "en": "Help Requests",
+      "nl": "Hulp verzoeken",
       "xloc": [
         "default-mobile.handlebars->9->161",
         "default.handlebars->27->246"
@@ -16944,6 +16949,7 @@
     },
     {
       "en": "Help requested from {0}: {1}",
+      "nl": "Hulp verzoek van, user: {0}, details: {1}",
       "xloc": [
         "default.handlebars->27->160"
       ]
@@ -16990,41 +16996,21 @@
       ]
     },
     {
-      "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) provádí ověření e-mailem. Chcete-li proces dokončit, přejděte na následující odkaz:",
-      "de": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) führt eine E-Mail-Überprüfung durch. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:",
-      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:",
-      "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) esta realizando una comprobación del correo electrónico. Navegue al siguiente enlace para completar el proceso:",
-      "fi": "Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) tarkistaa sähköpostiosoitetta. Seuraa linkkiä prosessin loppuun saattamiseksi:",
-      "fr": "Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) effectue une vérification par e-mail. Accédez au lien suivant pour terminer le processus:",
-      "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] ई-मेल सत्यापन कर रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
-      "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。",
-      "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]])은 이메일 검증을 위해 실행됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
-      "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) voert een e-mailverificatie uit. Ga naar de volgende link om het proces te voltooien:",
-      "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está realizando uma verificação de e-mail. Acesse o seguinte link para concluir o processo:",
-      "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
-      "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
-      "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在执行电邮验证。导航至以下连结以完成该过程：",
-      "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在執行電郵驗證。導航至以下鏈結以完成該過程："
-    },
-    {
-      "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]])) požaduje obnovení hesla k účtu. Chcete-li proces dokončit, přejděte na následující odkaz:",
-      "de": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) fordert ein Zurücksetzen des Kontokennworts an. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:",
-      "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) is requesting an account password reset. Nagivate to the following link to complete the process:",
-      "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está solicitando un restablecimiento de contraseña de cuenta. Navegue al siguiente enlace para completar el proceso:",
-      "fi": "Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) pyytää tilin salasanan palauttamista. Seuraa linkkiä prosessin loppuun saattamiseksi:",
-      "fr": "Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) demande une réinitialisation du mot de passe du compte. Accédez au lien suivant pour terminer le processus:",
-      "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] से खाता पासवर्ड रीसेट करने का अनुरोध किया जा रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
-      "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]]（[[[SERVERURL]]]）はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。",
-      "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]])은 계정 비밀번호 초기화를 위해 요구됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
-      "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) está solicitando uma redefinição de senha de conta. Acesse o seguinte link para concluir o processo:",
-      "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
-      "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]]) bir hesap şifresi sıfırlama istiyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
-      "zh-chs": "[[[USERNAME]]，您好：[[[SERVERNAME]]]（[[[SERVERURL]]]）正在请求重置帐户密码。导航至以下连结以完成该过程：",
-      "zh-cht": "[[[USERNAME]]，你好，[[[SERVERNAME]]]（[[[SERVERURL]]]）正在請求重設帳戶密碼。導航至以下鏈結以完成該過程："
-    },
-    {
       "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:",
       "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) voert een e-mailverificatie uit. Ga naar de volgende link om het proces te voltooien:",
+      "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) provádí ověření e-mailem. Chcete-li proces dokončit, přejděte na následující odkaz:",
+      "de": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) führt eine E-Mail-Überprüfung durch. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:",
+      "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) esta realizando una comprobación del correo electrónico. Navegue al siguiente enlace para completar el proceso:",
+      "fi": "Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) tarkistaa sähköpostiosoitetta. Seuraa linkkiä prosessin loppuun saattamiseksi:",
+      "fr": "Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) effectue une vérification par e-mail. Accédez au lien suivant pour terminer le processus:",
+      "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) ई-मेल सत्यापन कर रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
+      "ja": "こんにちは[[[USERNAME]]]、[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。",
+      "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]])은 이메일 검증을 위해 실행됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
+      "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está realizando uma verificação de e-mail. Acesse o seguinte link para concluir o processo:",
+      "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
+      "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
+      "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在执行电邮验证。导航至以下连结以完成该过程：",
+      "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在執行電郵驗證。導航至以下鏈結以完成該過程："
       "xloc": [
         "account-check.txt"
       ]
@@ -17032,6 +17018,19 @@
     {
       "en": "Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:",
       "nl": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) vraagt om het opnieuw instellen van het account wachtwoord. Ga naar de volgende link om het proces te voltooien:",
+      "cs": "Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) požaduje obnovení hesla k účtu. Chcete-li proces dokončit, přejděte na následující odkaz:",
+      "de": "Hallo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) fordert ein Zurücksetzen des Kontokennworts an. Klicken Sie auf den folgenden Link, um den Vorgang abzuschließen:",
+      "es": "Hola [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando un restablecimiento de contraseña de cuenta. Navegue al siguiente enlace para completar el proceso:",
+      "fi": "Hei [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) pyytää tilin salasanan palauttamista. Seuraa linkkiä prosessin loppuun saattamiseksi:",
+      "fr": "Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) demande une réinitialisation du mot de passe du compte. Accédez au lien suivant pour terminer le processus:",
+      "hi": "हाय [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) से खाता पासवर्ड रीसेट करने का अनुरोध किया जा रहा है। प्रक्रिया को पूरा करने के लिए निम्नलिखित लिंक को बताएं:",
+      "ja": "こんにちは[[[USERNAME]]]、([[[SERVERURL]]][[[URLARGS1]]]) はアカウントパスワードのリセットをリクエストしています。プロセスを完了するには、次のリンクに移動します。",
+      "ko": "안녕하세요, [[[USERNAME]]]님. [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]])은 계정 비밀번호 초기화를 위해 요구됩니다. 다음 링크로 이동하여 과정을 완료하십시오 :",
+      "pt": "Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando uma redefinição de senha de conta. Acesse o seguinte link para concluir o processo:",
+      "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
+      "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir hesap şifresi sıfırlama istiyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
+      "zh-chs": "[[[USERNAME]]，您好：[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在请求重置帐户密码。导航至以下连结以完成该过程：",
+      "zh-cht": "[[[USERNAME]]，你好，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在請求重設帳戶密碼。導航至以下鏈結以完成該過程："
       "xloc": [
         "account-reset.txt"
       ]
@@ -23434,6 +23433,7 @@
     },
     {
       "en": "Must run as user",
+      "nl": "Moet als gebruiker worden uitgevoerd",
       "xloc": [
         "default.handlebars->27->478",
         "default.handlebars->27->762"
@@ -24600,6 +24600,7 @@
     },
     {
       "en": "No actions currently available for this device.",
+      "nl": "Er zijn momenteel geen acties beschikbaar voor dit apparaat.",
       "xloc": [
         "default-mobile.handlebars->9->269",
         "default.handlebars->27->754"
@@ -25681,6 +25682,7 @@
     },
     {
       "en": "Offline",
+      "nl": "Offline",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5"
       ]
@@ -28309,6 +28311,7 @@
     },
     {
       "en": "Record Sessions",
+      "nl": "Sessies opnemen",
       "xloc": [
         "default.handlebars->27->1328"
       ]
@@ -28335,6 +28338,7 @@
     },
     {
       "en": "Record sessions",
+      "nl": "Sessies opnemen",
       "xloc": [
         "default.handlebars->27->1425"
       ]
@@ -28694,6 +28698,7 @@
     },
     {
       "en": "Remote Commands",
+      "nl": "Externe opdrachten",
       "xloc": [
         "default-mobile.handlebars->9->432",
         "default.handlebars->27->1457"
@@ -29835,6 +29840,7 @@
     },
     {
       "en": "Reset / Power Off",
+      "nl": "Reset / uitschakelen",
       "xloc": [
         "default-mobile.handlebars->9->433",
         "default.handlebars->27->1458"
@@ -29948,6 +29954,7 @@
     },
     {
       "en": "Reset/Off",
+      "nl": "Reset/Uit",
       "xloc": [
         "default-mobile.handlebars->9->453",
         "default.handlebars->27->1494",
@@ -30308,6 +30315,7 @@
     },
     {
       "en": "Run as agent",
+      "nl": "Uitvoeren als agent",
       "xloc": [
         "default.handlebars->27->476",
         "default.handlebars->27->760"
@@ -30315,6 +30323,7 @@
     },
     {
       "en": "Run as user, agent if no user",
+      "nl": "Uitvoeren als gebruiker, agent als er geen gebruiker is",
       "xloc": [
         "default.handlebars->27->477",
         "default.handlebars->27->761"
@@ -34714,6 +34723,7 @@
     },
     {
       "en": "Swap Mouse Buttons",
+      "nl": "Wissel muisknoppen",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->1"
       ]
@@ -35959,24 +35969,23 @@
       ]
     },
     {
-      "cs": "Chcete-li nainstalovat software, přejděte na [[[SERVERURL]]][[[LINKURL]]] a postupujte podle pokynů.",
-      "de": "Navigieren Sie zum Installieren der Software zu [[[SERVERURL]]][[[LINKURL]]] und befolgen Sie die Anweisungen.",
-      "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]] and follow the instructions.",
-      "es": "Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]] y siga las instrucciones.",
-      "fi": "Asenna ohjelmisto siirtymällä kohtaan [[[SERVERURL]]] [[[[LINKURL]]] ja noudattamalla ohjeita.",
-      "fr": "Pour installer le logiciel, accédez à [[[SERVERURL]]][[[LINKURL]]] et suivez les instructions.",
-      "hi": "सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]] [[[LINKURL]]] पर जाएँ और निर्देशों का पालन करें।",
-      "ja": "ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]]に移動し、指示に従います。",
-      "ko": "소프트웨어를 설치하려면, 다음에 접속하여 지시에 따르십시오 : [[[SERVERURL]]][[[LINKURL]]]",
-      "pt": "Para instalar o software, navegue até [[[SERVERURL]]] [[[LINKURL]]] e siga as instruções.",
-      "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]] и следуйте инструкциям.",
-      "tr": "Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]] adresine gidin ve talimatları takip edin.",
-      "zh-chs": "要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]]，然后按照说明进行操作。",
-      "zh-cht": "要安裝軟體，請導航至[[[SERVERURL]]] [[[LINKURL]]]，然後按照說明進行操作。"
     },
     {
       "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.",
       "nl": "Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] en volgt u de instructies.",
+      "cs": "Chcete-li nainstalovat software, přejděte na [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] a postupujte podle pokynů.",
+      "de": "Navigieren Sie zum Installieren der Software zu [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] und befolgen Sie die Anweisungen.",
+            "es": "Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] y siga las instrucciones.",
+      "fi": "Asenna ohjelmisto siirtymällä kohtaan [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] ja noudattamalla ohjeita.",
+      "fr": "Pour installer le logiciel, accédez à [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] et suivez les instructions.",
+      "hi": "सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] पर जाएँ और निर्देशों का पालन करें।",
+      "ja": "ソフトウェアをインストールするには、[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]に移動し、指示に従います。",
+      "ko": "소프트웨어를 설치하려면, 다음에 접속하여 지시에 따르십시오 : [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]",
+      "pt": "Para instalar o software, navegue até [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] e siga as instruções.",
+      "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] и следуйте инструкциям.",
+      "tr": "Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] adresine gidin ve talimatları takip edin.",
+      "zh-chs": "要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]，然后按照说明进行操作。",
+      "zh-cht": "要安裝軟體，請導航至[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]，然後按照說明進行操作。"
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -38035,24 +38044,21 @@
       ]
     },
     {
-      "cs": "Uživatel [[[USERNAME]]] na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/) požaduje instalaci softwaru k zahájení relace vzdáleného řízení.",
-      "de": "Benutzer [[[USERNAME]]] auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/) fordert Sie auf, Software zu installieren, um die Fernsteuerungssitzung zu starten.",
-      "en": "User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/) is requesting you install software to start the remote control session.",
-      "es": "Usuario [[[USERNAME]]] en servitor [[[SERVERNAME]]] ([[[SERVERURL]]]/) solicita que instale el software para iniciar la sesión de control remoto.",
-      "fi": "Käyttäjä[[[USERNAME]]] palvelimella [[[SERVERNAME]]] ([[[SERVERURL]]]/) pyytää sinua asentamaan ohjelmiston etähallintaistunnon käynnistämiseksi.",
-      "fr": "L'utilisateur [[[USERNAME]]] sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/) vous demande d'installer un logiciel pour démarrer la session de contrôle à distance.",
-      "hi": "उपयोगकर्ता [[[USERNAME]]] सर्वर पर [[[SERVERNAME]]] ([[[SERVERURL]]]/) आपसे रिमोट कंट्रोल सेशन शुरू करने के लिए सॉफ़्टवेयर स्थापित करने का अनुरोध कर रहा है।",
-      "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。",
-      "ko": "[[[SERVERNAME]]] ([[[SERVERURL]]]/) 서버의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해서는 소프트웨어 설치가 요구됩니다.",
-      "pt": "O usuário [[[USERNAME]]] no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /) está solicitando a instalação do software para iniciar a sessão de controle remoto.",
-      "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
-      "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
-      "zh-chs": "服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/）上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。",
-      "zh-cht": "伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。"
-    },
-    {
       "en": "User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.",
       "nl": "Gebruiker [[[USERNAME]]] op server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) vraagt u de software te installeren om de sessie voor afstandsbediening te starten.",
+      "cs": "Uživatel [[[USERNAME]]] na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) požaduje instalaci softwaru k zahájení relace vzdáleného řízení.",
+      "de": "Benutzer [[[USERNAME]]] auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) fordert Sie auf, Software zu installieren, um die Fernsteuerungssitzung zu starten.",
+      "es": "Usuario [[[USERNAME]]] en servitor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) solicita que instale el software para iniciar la sesión de control remoto.",
+      "fi": "Käyttäjä[[[USERNAME]]] palvelimella [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) pyytää sinua asentamaan ohjelmiston etähallintaistunnon käynnistämiseksi.",
+      "fr": "L'utilisateur [[[USERNAME]]] sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) vous demande d'installer un logiciel pour démarrer la session de contrôle à distance.",
+      "hi": "उपयोगकर्ता [[[USERNAME]]] सर्वर पर [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) आपसे रिमोट कंट्रोल सेशन शुरू करने के लिए सॉफ़्टवेयर स्थापित करने का अनुरोध कर रहा है।",
+      "ja": "サーバー[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) のユーザー[[[USERNAME]]]が、リモートコントロールセッションを開始するためのソフトウェアのインストールを要求しています。",
+      "ko": "[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 서버의 [[[USERNAME]]] 사용자가 원격 제어 세션을 시작하기 위해서는 소프트웨어 설치가 요구됩니다.",
+      "pt": "O usuário [[[USERNAME]]] no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) está solicitando a instalação do software para iniciar a sessão de controle remoto.",
+      "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
+      "tr": "[[[SERVERNAME]]] [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
+      "zh-chs": "服务器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。",
+      "zh-cht": "伺服器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。"
       "xloc": [
         "mesh-invite.txt"
       ]
