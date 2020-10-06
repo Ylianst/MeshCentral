@@ -2705,6 +2705,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var links = {};
                         links[user._id] = { name: user.name, rights: 4294967295 };
                         mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, creation: Date.now(), creatorid: user._id, creatorname: user.name };
+
+                        // Add flags and consent if present
+                        if (typeof command.flags == 'number') { mesh.flags = command.flags; }
+                        if (typeof command.consent == 'number') { mesh.consent = command.consent; }
+
+                        // Save the new device group
                         db.Set(mesh);
                         parent.meshes[meshid] = mesh;
                         parent.parent.AddEventDispatch([meshid], ws);
@@ -2723,7 +2729,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent(targets, obj, event);
 
                         // Event the device group creation
-                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msgid: 76, msgArgs: [command.meshname], msg: 'Device group created: ' + command.meshname, domain: domain.id, creation: mesh.creation, creatorid: mesh.creatorid, creatorname: mesh.creatorname };
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, action: 'createmesh', links: links, msgid: 76, msgArgs: [command.meshname], msg: 'Device group created: ' + command.meshname, domain: domain.id, creation: mesh.creation, creatorid: mesh.creatorid, creatorname: mesh.creatorname, flags: mesh.flags, consent: mesh.consent };
                         parent.parent.DispatchEvent(['*', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                         // Log in the auth log

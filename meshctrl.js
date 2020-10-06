@@ -458,11 +458,20 @@ if (args['_'].length == 0) {
                         console.log("Add a device group, Example usages:\r\n");
                         console.log("  MeshCtrl AddDeviceGroup --name newgroupname");
                         console.log("  MeshCtrl AddDeviceGroup --name newgroupname --desc description --amtonly");
+                        console.log("  MeshCtrl AddDeviceGroup --name newgroupname --features 1 --consent 7");
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --name [name]          - Name of the new group.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --desc [description]   - New group description.");
                         console.log("  --amtonly              - New group is agent-less, Intel AMT only.");
+                        console.log("  --features [number]    - Set device group features, sum of numbers below.");
+                        console.log("     1 = Auto-Remove                 2 = Hostname Sync");
+                        console.log("     4 = Record Sessions");
+                        console.log("  --consent [number]     - Set device group user consent, sum of numbers below.");
+                        console.log("     1 = Desktop notify user         2 = Terminal notify user   ");
+                        console.log("     4 = Files notify user           8 = Desktop prompt user    ");
+                        console.log("    16 = Terminal prompt user       32 = Files prompt user      ");
+                        console.log("    64 = Desktop Toolbar        ");
                         break;
                     }
                     case 'removedevicegroup': {
@@ -1094,6 +1103,8 @@ function serverConnect() {
                 var op = { action: 'createmesh', meshname: args.name, meshtype: 2, responseid: 'meshctrl' };
                 if (args.desc) { op.desc = args.desc; }
                 if (args.amtonly) { op.meshtype = 1; }
+                if (args.features) { op.flags = parseInt(args.features); }
+                if (args.consent) { op.consent = parseInt(args.consent); }
                 ws.send(JSON.stringify(op));
                 break;
             }
