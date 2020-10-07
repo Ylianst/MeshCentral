@@ -3539,6 +3539,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // - We should get a full list of all MAC's to wake first.
                     // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+
+                    // Event wakeup, this will cause Intel AMT wake operations on this and other servers.
+                    parent.parent.DispatchEvent('*', obj, { action: 'wakedevices', userid: user._id, username: user.name, nodeids: command.nodeids, domain: domain.id, nolog: 1 });
+
+                    // Perform wake-on-lan
                     for (i in command.nodeids) {
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
