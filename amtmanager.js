@@ -1,5 +1,5 @@
 /**
-* @description MeshCentral remote desktop multiplexor
+* @description MeshCentral Intel AMT manager
 * @author Ylian Saint-Hilaire
 * @copyright Intel Corporation 2018-2020
 * @license Apache-2.0
@@ -29,7 +29,7 @@ module.exports.CreateAmtManager = function(parent) {
     // Load the Intel AMT admin accounts
     if ((typeof parent.args.amtmanager == 'object') && (Array.isArray(parent.args.amtmanager.amtadminaccount) == true)) {
         for (var i in parent.args.amtmanager.amtadminaccount) {
-            var c = parent.args.amtmanager.amtadminaccount[i], c2 = { user: "admin" };
+            var c = parent.args.amtmanager.amtadminaccount[i], c2 = { user: 'admin' };
             if (typeof c.user == 'string') { c2.user = c.user; }
             if (typeof c.pass == 'string') { c2.pass = c.pass; obj.amtAdminAccounts.push(c2); }
         }
@@ -107,6 +107,7 @@ module.exports.CreateAmtManager = function(parent) {
         const dev = obj.amtDevices[nodeid];
         if (dev == null) return;
         if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
+        if (dev.polltimer != null) { clearInterval(dev.polltimer); delete dev.polltimer; }
         delete obj.amtDevices[nodeid];
     }
 
@@ -246,6 +247,11 @@ module.exports.CreateAmtManager = function(parent) {
             //console.log(dev.nodeid, dev.name, dev.host, dev.aquired);
             UpdateDevice(dev);
             attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
+
+            // Start power polling
+            var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+            ppfunc.dev = dev;
+            dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
             fetchPowerState(dev);
         } else {
             // We got a bad response
@@ -260,7 +266,7 @@ module.exports.CreateAmtManager = function(parent) {
                 // We are unable to authenticate to this device, clear Intel AMT credentials.
                 ClearDeviceCredentials(dev);
             }
-            console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
+            //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
             removeDevice(dev.nodeid);
         }
     }
@@ -375,7 +381,7 @@ module.exports.CreateAmtManager = function(parent) {
         var wired = null, wireless = null;
         for (var i in responses['AMT_EthernetPortSettings'].responses) {
             var netif = responses['AMT_EthernetPortSettings'].responses[i];
-            if ((netif.MACAddress != null) && (netif.MACAddress != "00-00-00-00-00-00")) {
+            if ((netif.MACAddress != null) && (netif.MACAddress != '00-00-00-00-00-00')) {
                 if (netif.WLANLinkProtectionLevel != null) { wireless = netif; } else { wired = netif; }
             }
         }
@@ -387,7 +393,7 @@ module.exports.CreateAmtManager = function(parent) {
         if (wired != null) {
             var x = {};
             x.family = 'IPv4';
-            x.type = "ethernet";
+            x.type = 'ethernet';
             x.address = wired.IPAddress;
             x.netmask = wired.SubnetMask;
             x.mac = wired.MACAddress.split('-').join(':').toUpperCase();
@@ -398,7 +404,7 @@ module.exports.CreateAmtManager = function(parent) {
         if (wireless != null) {
             var x = {};
             x.family = 'IPv4';
-            x.type = "wireless";
+            x.type = 'wireless';
             x.address = wireless.IPAddress;
             x.netmask = wireless.SubnetMask;
             x.mac = wireless.MACAddress.split('-').join(':').toUpperCase();
