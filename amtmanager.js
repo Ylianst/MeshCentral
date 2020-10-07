@@ -59,6 +59,11 @@ module.exports.CreateAmtManager = function(parent) {
 
         // React to node being removed
         if (event.action == 'removenode') { removeDevice(event.nodeid); }
+
+        // React to node wakeup command, perform Intel AMT wake if possible
+        if ((event.action == 'wakedevices') && (Array.isArray(event.nodeids))) {
+            for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); }
+        }
     }
 
     // Remove a device
@@ -67,6 +72,18 @@ module.exports.CreateAmtManager = function(parent) {
         if (dev == null) return;
         if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
         delete obj.amtDevices[nodeid];
+    }
+
+    // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset
+    function performPowerAction(nodeid, action) {
+        var dev = obj.amtDevices[nodeid];
+        if ((dev == null) || (dev.amtstack == null)) return;
+        try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
+    }
+
+    // Response to Intel AMT power action
+    function performPowerActionResponse(stack, name, responses, status) {
+        //console.log('performPowerActionResponse', status);
     }
 
     // Update information about a device
