@@ -200,6 +200,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
                 obj.socket.on('timeout', obj.xxOnSocketTimeout);
+                obj.socket.on('error', obj.xxOnSocketClosed);
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
                 // Connect with TLS

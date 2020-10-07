@@ -39,6 +39,7 @@ module.exports.CreateAmtManager = function(parent) {
     parent.AddEventDispatch(['*'], obj);
 
     // Handle server events
+    // TODO: Only manage devices with connections to this server. In a multi-server setup, we don't want multiple managers talking to the same device.
     obj.HandleEvent = function (source, event, ids, id) {
         // React to nodes connecting and disconnecting
         if (event.action == 'nodeconnect') {
@@ -64,6 +65,41 @@ module.exports.CreateAmtManager = function(parent) {
         if ((event.action == 'wakedevices') && (Array.isArray(event.nodeids))) {
             for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); }
         }
+
+        // React to changes in a node
+        if (event.action == 'changenode') {
+            if (event.amtchange === 1) {
+                // A change occured in the Intel AMT credentials, we need to reset the connection
+                removeDevice(event.nodeid);
+
+                // Check if the agent is connected
+                var constate = parent.GetConnectivityState(event.nodeid);
+                if (constate == null) return; // No OOB connectivity, exit now.
+
+                if ((constate & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
+                    // We have an OOB connection to Intel AMT, update our information
+                    var dev = obj.amtDevices[event.nodeid];
+                    if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: constate }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = constate; }
+                } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
+                    // We have an agent connection without OOB, check if this agent supports Intel AMT
+                    var agent = parent.webserver.wsagents[event.nodeid];
+                    if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
+                    var dev = obj.amtDevices[event.nodeid];
+                    if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: constate }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = constate; }
+                }
+            } else {
+                var dev = obj.amtDevices[event.nodeid];
+                if (dev != null) {
+                    var amtchange = 0;
+                    if (dev.name != event.node.name) { dev.name = event.node.name; }
+                    if (dev.host != event.node.host) {
+                        dev.host = event.node.host;
+                        // The host has changed, if we are connected to this device locally, we need to reset.
+                        if ((dev.conn & 4) != 0) { removeDevice(dev.nodeid); return; } // We are going to wait for the AMT scanned to find this device again.
+                    }
+                }
+            }
+        }
     }
 
     // Remove a device
@@ -72,6 +108,50 @@ module.exports.CreateAmtManager = function(parent) {
         if (dev == null) return;
         if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
         delete obj.amtDevices[nodeid];
+    }
+
+    // Get the current power state of a device
+    function fetchPowerState(dev) {
+        dev = obj.amtDevices[dev.nodeid];
+        if ((dev == null) || (dev.amtstack == null)) return;
+
+        // Check if the agent is connected
+        var constate = parent.GetConnectivityState(dev.nodeid);
+        if ((constate == null) || (constate.connectivity & 1)) return; // If there is no connectivity or the agent is connected, skip trying to poll power state.
+
+        // Fetch the power state
+        dev.amtstack.BatchEnum(null, ['CIM_ServiceAvailableToElement'], function (stack, name, responses, status) {
+            const dev = stack.dev;
+            if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+
+            if ((status != 200) || (responses['CIM_ServiceAvailableToElement'] == null) || (responses['CIM_ServiceAvailableToElement'].responses == null) || (responses['CIM_ServiceAvailableToElement'].responses.length < 1)) return; // If the polling fails, just skip it.
+            var powerstate = responses['CIM_ServiceAvailableToElement'].responses[0].PowerState;
+            if ((powerstate == 2) && (dev.aquired.majorver > 9)) {
+                // Device is powered on and Intel AMT 10+, poll the OS power state.
+                dev.amtstack.Get('IPS_PowerManagementService', function (stack, name, response, status) {
+                    const dev = stack.dev;
+                    if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+                    if (status != 200) return;
+
+                    // Convert the OS power state
+                    var meshPowerState = -1;
+                    if (response.Body.OSPowerSavingState == 2) { meshPowerState = 1; } // Fully powered (S0);
+                    else if (response.Body.OSPowerSavingState == 3) { meshPowerState = 2; } // Modern standby (We are going to call this S1);
+
+                    // Set OS power state
+                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, meshPowerState); }
+                });
+            } else {
+                // Convert the power state
+                // AMT power: 1 = Other, 2 = On, 3 = Sleep-Light, 4 = Sleep-Deep, 5 = Power Cycle (Off-Soft), 6 = Off-Hard, 7 = Hibernate (Off-Soft), 8 = Off-Soft, 9 = Power Cycle (Off-Hard), 10 = Master Bus Reset, 11 = Diagnostic Interrupt (NMI), 12 = Off-Soft Graceful, 13 = Off-Hard Graceful, 14 = Master Bus Reset Graceful, 15 = Power Cycle (Off- oft Graceful), 16 = Power Cycle (Off - Hard Graceful), 17 = Diagnostic Interrupt (INIT)
+                // Mesh power: 0 = Unknown, 1 = S0 power on, 2 = S1 Sleep, 3 = S2 Sleep, 4 = S3 Sleep, 5 = S4 Hibernate, 6 = S5 Soft-Off, 7 = Present
+                var meshPowerState = -1, powerConversionTable = [-1, -1, 1, 2, 3, 6, 6, 5, 6];
+                if (powerstate < powerConversionTable.length) { meshPowerState = powerConversionTable[powerstate]; } else { powerstate = 6; }
+
+                // Set power state
+                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, meshPowerState); }
+            }
+        });
     }
 
     // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset
@@ -156,16 +236,17 @@ module.exports.CreateAmtManager = function(parent) {
             if (dev.aquired == null) { dev.aquired = {}; }
             dev.aquired.controlMode = responses['IPS_HostBasedSetupService'].response.CurrentControlMode; // 1 = CCM, 2 = ACM
             var verSplit = stack.wsman.comm.amtVersion.split('.');
-            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; }
+            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); }
             dev.aquired.realm = stack.wsman.comm.digestRealm;
             dev.aquired.user = stack.wsman.comm.user;
             dev.aquired.pass = stack.wsman.comm.pass;
             dev.aquired.lastContact = Date.now();
             dev.aquired.tls = stack.wsman.comm.xtls;
-            if (stack.wsman.comm.xtls == 1) { dev.aquired.tlshash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.tlshash; }
+            if (stack.wsman.comm.xtls == 1) { dev.aquired.hash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.hash; }
             //console.log(dev.nodeid, dev.name, dev.host, dev.aquired);
             UpdateDevice(dev);
             attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
+            fetchPowerState(dev);
         } else {
             // We got a bad response
             if ((dev.tlsfail !== true) && (status == 408)) {
@@ -179,7 +260,7 @@ module.exports.CreateAmtManager = function(parent) {
                 // We are unable to authenticate to this device, clear Intel AMT credentials.
                 ClearDeviceCredentials(dev);
             }
-            //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
+            console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
             removeDevice(dev.nodeid);
         }
     }
@@ -206,6 +287,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (dev.aquired.user && (typeof dev.aquired.user == 'string') && (dev.aquired.user != device.intelamt.user)) { change = 1; log = 1; device.intelamt.user = dev.aquired.user; changes.push('AMT user'); }
             if (dev.aquired.pass && (typeof dev.aquired.pass == 'string') && (dev.aquired.pass != device.intelamt.pass)) { change = 1; log = 1; device.intelamt.pass = dev.aquired.pass; changes.push('AMT pass'); }
             if (dev.aquired.realm && (typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
+            if (dev.aquired.hash && (typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
             if (device.intelamt.state != 2) { change = 1; log = 1; device.intelamt.state = 2; changes.push('AMT state'); }
 
             // Update Intel AMT flags if needed
