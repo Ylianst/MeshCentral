@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - подтверждение по электронной почте
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

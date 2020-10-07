@@ -90,6 +90,7 @@
     <Compile Include="agents\tinycore.js" />
     <Compile Include="amt-ider.js" />
     <Compile Include="amtevents.js" />
+    <Compile Include="amtmanager.js" />
     <Compile Include="amtscanner.js" />
     <Compile Include="amtscript.js" />
     <Compile Include="amt\amt-ider-module.js" />

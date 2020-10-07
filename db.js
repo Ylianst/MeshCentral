@@ -1156,11 +1156,11 @@ module.exports.CreateDB = function (parent, func) {
                 if (extrasids == null) {
                     var x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
-                    obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     var x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
-                    obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };

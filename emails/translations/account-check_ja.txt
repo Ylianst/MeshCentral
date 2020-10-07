@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - メールの確認
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+こんにちは[[[USERNAME]]]、[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) は電子メールの検証を実行しています。プロセスを完了するには、次のリンクに移動します。
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

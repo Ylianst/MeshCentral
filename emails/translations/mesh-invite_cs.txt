@@ -2,7 +2,7 @@
 ~<area-name>
 Dobrý den, [[[NAME]]],
 ~</area-name>
-User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
+Uživatel [[[USERNAME]]] na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) požaduje instalaci softwaru k zahájení relace vzdáleného řízení.
 ~<area-msg>
 ~
 Zpráva: [[[MSG]]]
@@ -27,7 +27,7 @@ V případě systému Linux vyjměte a vložte do terminálu a nainstalujte agen
 ~
 ~</area-linux>
 ~<area-link>
-To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
+Chcete-li nainstalovat software, přejděte na [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] a postupujte podle pokynů.
 ~</area-link>
 Pokud jste tento požadavek nezačali, ignorujte tento e-mail.
 ~

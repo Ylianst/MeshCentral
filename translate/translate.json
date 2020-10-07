@@ -4676,36 +4676,19 @@
       ]
     },
     {
-      "cs": "Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[[SERVERURL]]] /), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[[ACCOUNTNAME]]]“ “a hesla„ [[[HESLO]] ]] \".",
-      "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen \"[[[ACCOUNTNAME]]]\" und dem Passwort \"[[[PASSWORD]]]\" darauf zugreifen.",
-      "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \"[[[ACCOUNTNAME]]]\" y la contraseña \"[[[PASSWORD]]]\".",
-      "fi": "Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/), voit käyttää sitä nyt käyttäjätunnuksella \"[[[ACCOUNTNAME]]]\" and salasanalla \"[[[PASSWORD]]]\".",
-      "fr": "Un compte a été créé pour vous sur le serveur [[[[SERVERNAME]]] ([[[SERVERURL]]] /), vous pouvez y accéder maintenant avec le nom d'utilisateur \"[[[ACCOUNTNAME]]]\" et le mot de passe \"[[[PASSWORD]]]\".",
-      "hi": "सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]] /) पर आपके लिए एक खाता बनाया गया था, आप इसे अब उपयोगकर्ता नाम \"[[[ACCOUNTNAME]]]]\" और पासवर्ड \"[[[PASSWORD]]]\" के साथ एक्सेस कर सकते हैं।।",
-      "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]] /）にアカウントが作成されました。ユーザー名 \"[[[ACCOUNTNAME]]]\"とパスワード \"[[[PASSWORD] ]] \"。",
-      "ko": "당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/), 이제 당신은 다음 이름으로 접근 가능합니다 : \"[[[ACCOUNTNAME]]]\" 그리고 비밀번호는 다음과 같습니다 : \"[[[PASSWORD]]]\".",
-      "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e a senha \"[[[PASSWORD] ]] \".",
-      "ru": "Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]] /), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
-      "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]] /) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
-      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD] ]]”。",
-      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。"
-    },
-    {
-      "cs": "Účet byl pro vás vytvořen na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/), nyní k němu máte přístup pomocí uživatelského jména \\\"[[[ACCOUNTNAME]]]\\\" a hesla \\\"[[[PASSWORD]]]\\\".",
-      "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/) wurde ein Konto für Sie erstellt. Sie können jetzt mit dem Benutzernamen \\\"[[[ACCOUNTNAME]]]\\\" und dem Passwort \\\"[[[PASSWORD]]]\\\".",
-      "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/), ahora puede acceder con el usuario \\\"[[[ACCOUNTNAME]]]\\\" y la consigna \\\"[[[PASSWORD]]]\\\".",
-      "fi": "Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/), voit käyttää sitä nyt käyttäjätunnuksella \\\"[[[ACCOUNTNAME]]]\\\" and salasanalla \\\"[[[PASSWORD]]]\\\".",
-      "fr": "Un compte a été créé pour vous sur le serveur [[[SERVERNAME]]] ([[[SERVERURL]]]/), vous pouvez y accéder maintenant avec le nom d'utilisateur \\\"[[[ACCOUNTNAME]]]\\\" et le mot de passe \\\"[[[PASSWORD]]]\\\".",
-      "hi": "सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]]/) पर आपके लिए एक खाता बनाया गया था, अब आप इसे उपयोगकर्ता नाम \\\"[[ACCOUNTNAME]]] \\\" en wachchwoord \\\"[[PASSWORD]]]\\\"।",
-      "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/）にアカウントが作成されました。ユーザー名 \\\"[[[ACCOUNTNAME]]]\\\" とパスワード \\\"[[[PASSWORD]]]\\\"。",
-      "ko": "당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/), 이제 당신은 다음 이름으로 접근이 가능합니다 : \\\"[[[ACCOUNTNAME]]]\\\" 그리고 비밀번호는 다음과 같습니다 : \\\"[[[PASSWORD]]]\\\".",
-      "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]] /), você pode acessá-la agora com o nome de usuário \\\"[[[ACCOUNTNAME]]] \\\" en wachtwoord \\\"[[ [SENHA]]]\\\".",
-      "ru": "Для вас была создана учетная запись на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/), теперь вы можете получить к ней доступ с помощью имени пользователя \\\"[[[ACCOUNTNAME]]]\\\" и пароля \\\"[[[PASSWORD]]]\\\".",
-      "tr": "[[[SERVERNAME]] ([[[SERVERURL]]]/) sunucusunda sizin için bir hesap oluşturuldu, şimdi \\\"[[[ACCOUNTNAME]]]\\\" en wachtwoord \\\"[[[PASSWORD]]]\\\".",
-      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/ 上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]] 和密码 “[[[PASSWORD]]]”。",
-      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]] /上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]] ” en wachtwoord “[[[PASSWORD]]]”。"
-    },
-    {
+      "cs": "Účet pro vás byl vytvořen na serveru [[[SERVERNAME]]] ([[[[SERVERURL]]]/[[[URLARGS1]]]), nyní k němu můžete přistupovat pomocí uživatelského jména „[[[[ACCOUNTNAME]]]“ “a hesla„ [[[HESLO]] ]] \".",
+      "de": "Auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) wurde ein Konto für Sie erstellt, Sie können ab sofort mit dem Benutzernamen \"[[[ACCOUNTNAME]]]\" und dem Passwort \"[[[PASSWORD]]]\" darauf zugreifen.",
+      "es": "Una cuenta ha sido creada en su servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), ahora puede acceder con el usuario \"[[[ACCOUNTNAME]]]\" y la contraseña \"[[[PASSWORD]]]\".",
+      "fi": "Sinulle on luotu tili palvelimelle [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), voit käyttää sitä nyt käyttäjätunnuksella \"[[[ACCOUNTNAME]]]\" and salasanalla \"[[[PASSWORD]]]\".",
+      "fr": "Un compte a été créé pour vous sur le serveur [[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), vous pouvez y accéder maintenant avec le nom d'utilisateur \"[[[ACCOUNTNAME]]]\" et le mot de passe \"[[[PASSWORD]]]\".",
+      "hi": "सर्वर [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) पर आपके लिए एक खाता बनाया गया था, आप इसे अब उपयोगकर्ता नाम \"[[[ACCOUNTNAME]]]]\" और पासवर्ड \"[[[PASSWORD]]]\" के साथ एक्सेस कर सकते हैं।।",
+      "ja": "サーバー[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）にアカウントが作成されました。ユーザー名 \"[[[ACCOUNTNAME]]]\"とパスワード \"[[[PASSWORD] ]] \"。",
+      "ko": "당신을 위해 서버에서 한 계정이 생성되었습니다 : [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), 이제 당신은 다음 이름으로 접근 가능합니다 : \"[[[ACCOUNTNAME]]]\" 그리고 비밀번호는 다음과 같습니다 : \"[[[PASSWORD]]]\".",
+      "pt": "Uma conta foi criada para você no servidor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), você pode acessá-la agora com o nome de usuário \"[[[ACCOUNTNAME]]]\" e a senha \"[[[PASSWORD] ]] \".",
+      "ru": "Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] \".",
+      "tr": "[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusunda sizin için bir hesap oluşturuldu, şimdi \"[[[ACCOUNTNAME]]]\" kullanıcı adı ve \"[[[PASSWORD]]]\" ile bu hesaba erişebilirsiniz.",
+      "zh-chs": "已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD] ]]”。",
+      "zh-cht": "在伺服器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上為你創建了一個帳戶，你現在可以使用用戶名“ [[[ACCOUNTNAME]]]”和密碼“ [[[PASSWORD] ]]”。",
       "en": "An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".",
       "nl": "Er is een account jouw aangemaakt op de server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), Je kan inloggen met de gebruikersnaam \"[[[ACCOUNTNAME]]]\" en wachtwoord \"[[[PASSWORD]]]\".",
       "xloc": [
@@ -17010,7 +16993,7 @@
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
       "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在执行电邮验证。导航至以下连结以完成该过程：",
-      "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在執行電郵驗證。導航至以下鏈結以完成該過程："
+      "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在執行電郵驗證。導航至以下鏈結以完成該過程：",
       "xloc": [
         "account-check.txt"
       ]
@@ -17030,7 +17013,7 @@
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) запрашивает сброс пароля учетной записи. Для завершения процесса перейдите по следующей ссылке:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir hesap şifresi sıfırlama istiyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
       "zh-chs": "[[[USERNAME]]，您好：[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在请求重置帐户密码。导航至以下连结以完成该过程：",
-      "zh-cht": "[[[USERNAME]]，你好，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在請求重設帳戶密碼。導航至以下鏈結以完成該過程："
+      "zh-cht": "[[[USERNAME]]，你好，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在請求重設帳戶密碼。導航至以下鏈結以完成該過程：",
       "xloc": [
         "account-reset.txt"
       ]
@@ -35969,13 +35952,11 @@
       ]
     },
     {
-    },
-    {
       "en": "To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.",
       "nl": "Om de software te installeren, navigeert u naar [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] en volgt u de instructies.",
       "cs": "Chcete-li nainstalovat software, přejděte na [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] a postupujte podle pokynů.",
       "de": "Navigieren Sie zum Installieren der Software zu [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] und befolgen Sie die Anweisungen.",
-            "es": "Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] y siga las instrucciones.",
+      "es": "Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] y siga las instrucciones.",
       "fi": "Asenna ohjelmisto siirtymällä kohtaan [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] ja noudattamalla ohjeita.",
       "fr": "Pour installer le logiciel, accédez à [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] et suivez les instructions.",
       "hi": "सॉफ़्टवेयर को स्थापित करने के लिए, [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] पर जाएँ और निर्देशों का पालन करें।",
@@ -35985,7 +35966,7 @@
       "ru": "Для установки программного обеспечения перейдите к [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] и следуйте инструкциям.",
       "tr": "Yazılımı kurmak için [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] adresine gidin ve talimatları takip edin.",
       "zh-chs": "要安装软件，请导航至[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]，然后按照说明进行操作。",
-      "zh-cht": "要安裝軟體，請導航至[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]，然後按照說明進行操作。"
+      "zh-cht": "要安裝軟體，請導航至[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]，然後按照說明進行操作。",
       "xloc": [
         "mesh-invite.txt"
       ]
@@ -38058,7 +38039,7 @@
       "ru": "Пользователь [[[USERNAME]]] на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) запрашивает установку программного обеспечения для запуска сеанса удаленного управления.",
       "tr": "[[[SERVERNAME]]] [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) sunucusundaki [[[USERNAME]]] uzaktan kontrol oturumunu başlatmak için yazılım yüklemenizi istiyor.",
       "zh-chs": "服务器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用户[[[USERNAME]]]请求您安装软件以启动远程控制。",
-      "zh-cht": "伺服器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。"
+      "zh-cht": "伺服器[[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) 上的用戶[[[USERNAME]]]請求你安裝軟體以啟動遠程控制。",
       "xloc": [
         "mesh-invite.txt"
       ]

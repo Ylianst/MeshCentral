@@ -2,7 +2,7 @@
 ~<area-name>
 Hola [[[NAME]]],
 ~</area-name>
-User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
+Usuario [[[USERNAME]]] en servitor [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) solicita que instale el software para iniciar la sesión de control remoto.
 ~<area-msg>
 ~
 Mensaje: [[[MSG]]]
@@ -27,7 +27,7 @@ Para Linux, copie y pegue lo siguiente en la terminal para instalar el agente:
 ~
 ~</area-linux>
 ~<area-link>
-To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
+Para instalar el software, navega a [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] y siga las instrucciones.
 ~</area-link>
 Si Ud. no inicio este requerimiento, por favor ignore este correo.
 ~
