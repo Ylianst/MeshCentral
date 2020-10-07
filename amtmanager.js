@@ -145,7 +145,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (stack.wsman.comm.xtls == 1) { dev.aquired.tlshash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.tlshash; }
             //console.log(dev.nodeid, dev.name, dev.host, dev.aquired);
             UpdateDevice(dev);
-            //attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
+            attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
         } else {
             // We got a bad response
             if ((dev.tlsfail !== true) && (status == 408)) {
@@ -214,13 +214,68 @@ module.exports.CreateAmtManager = function(parent) {
         if (obj.amtDevices[dev.nodeid] == null) return false; // Device no longer exists, ignore this request.
         const mesh = parent.webserver.meshes[dev.meshid];
         if (mesh == null) { removeDevice(dev.nodeid); return false; }
-        if (mesh.mtype == 1) { // If this is a Intel AMT only device group, pull the hardware inventory for this device
+        if (mesh.mtype == 1) { // If this is a Intel AMT only device group, pull the hardware inventory and network information for this device
             dev.amtstack.BatchEnum('', ['*CIM_ComputerSystemPackage', 'CIM_SystemPackaging', '*CIM_Chassis', 'CIM_Chip', '*CIM_Card', '*CIM_BIOSElement', 'CIM_Processor', 'CIM_PhysicalMemory', 'CIM_MediaAccessDevice', 'CIM_PhysicalPackage'], attemptFetchHardwareInventoryResponse);
+            dev.amtstack.BatchEnum('', ['AMT_EthernetPortSettings'], attemptFetchNetworkResponse);
             return true;
         }
         return false;
     }
 
+    function attemptFetchNetworkResponse(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+        if (status != 200) return;
+
+        //console.log(JSON.stringify(responses, null, 2));
+        if ((responses['AMT_EthernetPortSettings'] == null) || (responses['AMT_EthernetPortSettings'].responses == null)) return;
+
+        // Find the wired and wireless interfaces
+        var wired = null, wireless = null;
+        for (var i in responses['AMT_EthernetPortSettings'].responses) {
+            var netif = responses['AMT_EthernetPortSettings'].responses[i];
+            if ((netif.MACAddress != null) && (netif.MACAddress != "00-00-00-00-00-00")) {
+                if (netif.WLANLinkProtectionLevel != null) { wireless = netif; } else { wired = netif; }
+            }
+        }
+        if ((wired == null) && (wireless == null)) return;
+
+        // Sent by the agent to update agent network interface information
+        var net = { netif2: {} };
+
+        if (wired != null) {
+            var x = {};
+            x.family = 'IPv4';
+            x.type = "ethernet";
+            x.address = wired.IPAddress;
+            x.netmask = wired.SubnetMask;
+            x.mac = wired.MACAddress.split('-').join(':').toUpperCase();
+            x.gateway = wired.DefaultGateway;
+            net.netif2['Ethernet'] = [ x ];
+        }
+
+        if (wireless != null) {
+            var x = {};
+            x.family = 'IPv4';
+            x.type = "wireless";
+            x.address = wireless.IPAddress;
+            x.netmask = wireless.SubnetMask;
+            x.mac = wireless.MACAddress.split('-').join(':').toUpperCase();
+            x.gateway = wireless.DefaultGateway;
+            net.netif2['Wireless'] = [ x ];
+        }
+
+        net.updateTime = Date.now();
+        net._id = 'if' + dev.nodeid;
+        net.type = 'ifinfo';
+        parent.db.Set(net);
+
+        // Event the node interface information change
+        parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, { action: 'ifchange', nodeid: dev.nodeid, domain: dev.nodeid.split('/')[1], nolog: 1 });
+    }
+
+
+    /*
     // http://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     const DMTFCPUStatus = ["Unknown", "Enabled", "Disabled by User", "Disabled By BIOS (POST Error)", "Idle", "Other"];
     const DMTFMemType = ["Unknown", "Other", "DRAM", "Synchronous DRAM", "Cache DRAM", "EDO", "EDRAM", "VRAM", "SRAM", "RAM", "ROM", "Flash", "EEPROM", "FEPROM", "EPROM", "CDRAM", "3DRAM", "SDRAM", "SGRAM", "RDRAM", "DDR", "DDR-2", "BRAM", "FB-DIMM", "DDR3", "FBD2", "DDR4", "LPDDR", "LPDDR2", "LPDDR3", "LPDDR4"];
@@ -236,13 +291,14 @@ module.exports.CreateAmtManager = function(parent) {
         198: "Intel&reg; Core&trade; i7 processor",
         199: "Dual-Core Intel&reg; Celeron&reg; processor"
     };
+    */
 
     function attemptFetchHardwareInventoryResponse(stack, name, responses, status) {
         const dev = stack.dev;
         if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+        if (status != 200) return;
 
-        //console.log(JSON.stringify(responses, null, 2));
-
+        // Extract basic data
         var hw = {}
         hw.PlatformGUID = responses['CIM_ComputerSystemPackage'].response.PlatformGUID;
         hw.Chassis = responses['CIM_Chassis'].response;
@@ -253,8 +309,75 @@ module.exports.CreateAmtManager = function(parent) {
         hw.PhysicalMemory = responses['CIM_PhysicalMemory'].responses;
         hw.MediaAccessDevice = responses['CIM_MediaAccessDevice'].responses;
         hw.PhysicalPackage = responses['CIM_PhysicalPackage'].responses;
-        console.log(JSON.stringify(hw, null, 2));
+
+        // Convert the hardware data into the same structure as we get from Windows
+        var hw2 = { hardware: { windows: {}, identifiers: {} } };
+        hw2.hardware.identifiers.product_uuid = guidToStr(hw.PlatformGUID);
+        if ((hw.PhysicalMemory != null) && (hw.PhysicalMemory.length > 0)) {
+            var memory = [];
+            for (var i in hw.PhysicalMemory) {
+                var m2 = {}, m = hw.PhysicalMemory[i];
+                m2.BankLabel = m.BankLabel;
+                m2.Capacity = m.Capacity;
+                m2.PartNumber = m.PartNumber.trim();
+                m2.SerialNumber = m.SerialNumber.trim();
+                m2.Manufacturer = m.Manufacturer.trim();
+                memory.push(m2);
+            }
+            hw2.hardware.windows.memory = memory;
+        }
+        if ((hw.MediaAccessDevice != null) && (hw.MediaAccessDevice.length > 0)) {
+            var drives = [];
+            for (var i in hw.MediaAccessDevice) {
+                var m2 = {}, m = hw.MediaAccessDevice[i];
+                m2.Caption = m.DeviceID;
+                m2.Size = (m.MaxMediaSize * 1000);
+                drives.push(m2);
+            }
+            hw2.hardware.identifiers.storage_devices = drives;
+        }
+        if (hw.Bios != null) {
+            hw2.hardware.identifiers.bios_vendor = hw.Bios.Manufacturer.trim();
+            hw2.hardware.identifiers.bios_version = hw.Bios.Version;
+            if (hw.Bios.ReleaseDate && hw.Bios.ReleaseDate.Datetime) { hw2.hardware.identifiers.bios_date = hw.Bios.ReleaseDate.Datetime; }
+        }
+        if (hw.PhysicalPackage != null) {
+            hw2.hardware.identifiers.board_name = hw.Card.Model.trim();
+            hw2.hardware.identifiers.board_vendor = hw.Card.Manufacturer.trim();
+            hw2.hardware.identifiers.board_version = hw.Card.Version.trim();
+            hw2.hardware.identifiers.board_serial = hw.Card.SerialNumber.trim();
+        }
+        if ((hw.Chips != null) && (hw.Chips.length > 0)) {
+            for (var i in hw.Chips) {
+                if ((hw.Chips[i].ElementName == 'Managed System Processor Chip') && (hw.Chips[i].Version)) {
+                    hw2.hardware.identifiers.cpu_name = hw.Chips[i].Version;
+                }
+            }
+        }
+
+        // Compute the hash of the document
+        hw2.hash = parent.crypto.createHash('sha384').update(JSON.stringify(hw2)).digest().toString('hex');
+
+        // Fetch system information
+        parent.db.GetHash('si' + dev.nodeid, function (err, results) {
+            var sysinfohash = null;
+            if ((results != null) && (results.length == 1)) { sysinfohash = results[0].hash; }
+            if (sysinfohash != hw2.hash) {
+                // Hardware information has changed, update the database
+                hw2._id = 'si' + dev.nodeid;
+                hw2.domain = dev.nodeid.split('/')[1];
+                hw2.time = Date.now();
+                hw2.type = 'sysinfo';
+                parent.db.Set(hw2);
+
+                // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
+                var event = { etype: 'node', action: 'sysinfohash', nodeid: dev.nodeid, domain: hw2.domain, hash: hw2.hash, nolog: 1 };
+                parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, event);
+            }
+        });
     }
+
+    function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + '-' + g.substring(10, 12) + g.substring(8, 10) + '-' + g.substring(14, 16) + g.substring(12, 14) + '-' + g.substring(16, 20) + '-' + g.substring(20); }
 
     return obj;
 };

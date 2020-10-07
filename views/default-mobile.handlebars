@@ -1467,9 +1467,12 @@
                         }
                         case 'sysinfohash': {
                             // If the sysinfo document has changed and we are looking at it, request an update.
-                            if ((currentNode != null) && (message.event.nodeid == powerTimelineReq)) {
-                                meshserver.send({ action: 'getsysinfo', nodeid: message.event.nodeid });
-                            }
+                            if ((currentNode != null) && (message.event.nodeid == powerTimelineReq)) { meshserver.send({ action: 'getsysinfo', nodeid: message.event.nodeid }); }
+                            break;
+                        }
+                        case 'ifchange': {
+                            // Network interface changed for a device, if we are currently viewing this device, ask for an update.
+                            if (currentNode._id == message.event.nodeid) { meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id }); }
                             break;
                         }
                         case 'devicesessions': {
@@ -3970,7 +3973,8 @@
                         var m = hardware.windows.memory[i];
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.BankLabel) + '</b></div>';
-                        if (m.Capacity) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
+                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
+                        else if (m.Capacity) { x += addDetailItem("Capacity", format("{0} Mb", (m.Capacity / 1024 / 1024)), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
