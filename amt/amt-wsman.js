@@ -21,26 +21,16 @@ limitations under the License.
 */
 
 // Construct a MeshServer object
-function WsmanStackCreateService(CreateWsmanComm, host, port, user, pass, tls, extra, parent, mode)
+//function WsmanStackCreateService(comm, host, port, user, pass, tls, extra, parent, mode)
+function WsmanStackCreateService(comm)
 {
     var obj = {_ObjectID: 'WSMAN'};
     //obj.onDebugMessage = null;          // Set to a function if you want to get debug messages.
     obj.NextMessageId = 1;              // Next message number, used to label WSMAN calls.
     obj.Address = '/wsman';
     obj.xmlParser = require('./amt-xml.js');
-
-    if (arguments.length == 1 && typeof (arguments[0] == 'object'))
-    {
-        var CreateWsmanComm = arguments[0].transport;
-        if (CreateWsmanComm) { obj.comm = new CreateWsmanComm(arguments[0]); }
-    }
-    else
-    {
-        var CreateWsmanComm = arguments[0];
-        if (CreateWsmanComm) { 
-            obj.comm = new CreateWsmanComm(host, port, user, pass, tls, extra, parent, mode);             
-        }
-    }
+    obj.comm = comm;
+    obj.comm.parent = obj;
 
     obj.PerformAjax = function PerformAjax(postdata, callback, tag, pri, namespaces) {
         if (namespaces == null) namespaces = '';

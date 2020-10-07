@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Vérification E-mail
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+Bonjour [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) effectue une vérification par e-mail. Accédez au lien suivant pour terminer le processus:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

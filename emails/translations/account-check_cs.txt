@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Ověření e-mailem
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+Ahoj [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) provádí ověření e-mailem. Chcete-li proces dokončit, přejděte na následující odkaz:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

@@ -1,5 +1,5 @@
 [[[SERVERNAME]]]-電郵驗證
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:
+嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在執行電郵驗證。導航至以下鏈結以完成該過程：
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

@@ -2,7 +2,7 @@
 ~<area-name>
 Hallo [[[NAME]]],
 ~</area-name>
-User [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.
+Benutzer [[[USERNAME]]] auf dem Server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) fordert Sie auf, Software zu installieren, um die Fernsteuerungssitzung zu starten.
 ~<area-msg>
 ~
 Nachricht: [[[MSG]]]
@@ -27,7 +27,7 @@ Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, u
 ~
 ~</area-linux>
 ~<area-link>
-To install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.
+Navigieren Sie zum Installieren der Software zu [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] und befolgen Sie die Anweisungen.
 ~</area-link>
 Wenn Sie diese Anfrage nicht initiiert haben, ignorieren Sie diese Mail bitte.
 ~

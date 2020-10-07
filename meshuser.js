@@ -856,7 +856,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     switch (cmd) {
                         case 'help': {
-                            var fin = '', f = '', availcommands = 'help,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes,watchdog';
+                            var fin = '', f = '', availcommands = 'help,info,versions,resetserver,usersessions,closeusersessions,tasklimiter,setmaxtasks,cores,migrationagents,agentstats,webstats,mpsstats,swarmstats,acceleratorsstats,updatecheck,serverupdate,nodeconfig,heapdump,relays,autobackup,backupconfig,dupagents,dispatchtable,badlogins,showpaths,le,lecheck,leevents,dbstats,sms,amtacm,certhashes,watchdog,amtmanager';
                             if (parent.parent.config.settings.heapdump === true) { availcommands += ',heapdump'; }
                             availcommands = availcommands.split(',').sort();
                             while (availcommands.length > 0) { if (f.length > 80) { fin += (f + ',\r\n'); f = ''; } f += (((f != '') ? ', ' : ' ') + availcommands.shift()); }
@@ -875,6 +875,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     default: { r = 'No help information about this command.'; break; }
                                 }
                             }
+                            break;
+                        }
+                        case 'amtmanager': {
+                            if (parent.parent.amtManager == null) { r = 'Intel AMT Manager not active.'; break; }
+                            for (var nodeid in parent.parent.amtManager.amtDevices) {
+                                var dev = parent.parent.amtManager.amtDevices[nodeid];
+                                r += (dev.conn + ', \"' + dev.name + '\"\r\n');
+                            }
+                            if (r == '') { r = 'Not current managing any devices.'; }
                             break;
                         }
                         case 'certhashes': {

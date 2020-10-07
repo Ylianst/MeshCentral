@@ -1,5 +1,5 @@
 [[[SERVERNAME]]]-帐户重置
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
+[[[USERNAME]]，您好：[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在请求重置帐户密码。导航至以下连结以完成该过程：
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

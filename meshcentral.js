@@ -34,6 +34,7 @@ function CreateMeshCentralServer(config, args) {
     obj.amtEventHandler = null;
     obj.pluginHandler = null;
     obj.amtScanner = null;
+    obj.amtManager = null;
     obj.meshScanner = null;
     obj.letsencrypt = null;
     obj.eventsDispatch = {};
@@ -1334,6 +1335,11 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.args.wanonly != true) {
                     obj.amtScanner = require('./amtscanner.js').CreateAmtScanner(obj).start();
                     obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
+                }
+
+                // Setup the Intel AMT manager
+                if ((obj.args.amtmanager == true) || (typeof obj.args.amtmanager == 'object')) {
+                    obj.amtManager = require('./amtmanager.js').CreateAmtManager(obj);
                 }
 
                 // Setup and start the MPS server

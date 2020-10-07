@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - Redefinição de conta
-Hi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:
+Olá, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) está solicitando uma redefinição de senha de conta. Acesse o seguinte link para concluir o processo:
 ~
 ~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
 ~

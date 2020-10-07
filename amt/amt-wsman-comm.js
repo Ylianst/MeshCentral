@@ -5,7 +5,7 @@
 */
 
 // Construct a MeshServer object
-var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent, mode) {
+var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
     //console.log('CreateWsmanComm', host, port, user, pass, tls, tlsoptions);
 
     var obj = {};    
@@ -38,8 +38,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     obj.pass = pass;
     obj.xtls = tls;
     obj.xtlsoptions = tlsoptions;
-    obj.parent = parent;
-    obj.mode = mode;//1: direct, 2: CIRA, 3: APF relay
+    obj.mode = mode; // 1 = Direct, 2 = CIRA, 3 = APF relay
     obj.xtlsFingerprint;
     obj.xtlsCertificate = null;
     obj.xtlsCheck = 0; // 0 = No TLS, 1 = CA Checked, 2 = Pinned, 3 = Untrusted
@@ -90,7 +89,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
 
     // NODE.js specific private method
     obj.PerformAjaxExNodeJS2 = function (postdata, callback, tag, url, action, retry) {
-        if (retry <= 0 || obj.FailAllError != 0) {
+        if ((retry <= 0) || (obj.FailAllError != 0)) {
             // Too many retry, fail here.
             obj.ActiveAjaxCount--;
             if (obj.FailAllError != 999) obj.gotNextMessages(null, 'error', { status: ((obj.FailAllError == 0) ? 408 : obj.FailAllError) }, [postdata, callback, tag, url, action]); // 408 is timeout error
@@ -167,7 +166,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
         obj.socketState = 1;
         obj.kerberosDone = 0;
 
-        if ((obj.parent != null) && (obj.mode === 2) || (obj.mode === 3)) { // CIRA and APF            
+        if ((obj.parent != null) && ((obj.mode === 2) || (obj.mode === 3))) { // CIRA and APF            
             if (obj.mode == 2) { // CIRA
                 var ciraconn = obj.parent.mpsserver.ciraConnections[obj.host];
                 obj.socket = obj.parent.mpsserver.SetupCiraChannel(ciraconn, obj.port);
@@ -200,7 +199,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
                 obj.socket.setTimeout(6000); // Set socket idle timeout
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
-                obj.socket.on('timeout', obj.xxOnSocketClosed);
+                obj.socket.on('timeout', obj.xxOnSocketTimeout);
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
                 // Connect with TLS
@@ -210,14 +209,13 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
                     if (obj.xtlsoptions.ca) options.ca = obj.xtlsoptions.ca;
                     if (obj.xtlsoptions.cert) options.cert = obj.xtlsoptions.cert;
                     if (obj.xtlsoptions.key) options.key = obj.xtlsoptions.key;
-                    obj.xtlsoptions = options;
                 }
-                obj.socket = obj.tls.connect(obj.port, obj.host, obj.xtlsoptions, obj.xxOnSocketConnected);
+                obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
                 obj.socket.setEncoding('binary');
                 obj.socket.setTimeout(6000); // Set socket idle timeout
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
-                obj.socket.on('timeout', obj.xxOnSocketClosed);
+                obj.socket.on('timeout', obj.xxOnSocketTimeout);
                 obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
             }
             obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
@@ -232,13 +230,13 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     obj.xxOnSocketConnected = function () {
         if (obj.socket == null) return;
         // check TLS certificate for webrelay and direct only
-        if (obj.mode < 2 && obj.xtls == 1) {
+        if (((obj.mode == null) || (obj.mode < 2)) && (obj.xtls == 1)) {
             obj.xtlsCertificate = obj.socket.getPeerCertificate();
 
             // ###BEGIN###{Certificates}
             // Setup the forge certificate check
             var camatch = 0;
-            if (obj.xtlsoptions.ca) {
+            if ((obj.xtlsoptions != null) && (obj.xtlsoptions.ca != null)) {
                 var forgeCert = forge.pki.certificateFromAsn1(forge.asn1.fromDer(atob(obj.xtlsCertificate.raw.toString('base64'))));
                 var caStore = forge.pki.createCaStore(obj.xtlsoptions.ca);
                 // Got thru all certificates in the store and look for a match.
@@ -351,9 +349,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
         if (isNaN(s)) s = 500;
         if (s == 401 && ++(obj.authcounter) < 3) {
             obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry            
-            if (obj.mode==1) {
-                obj.socket.end();
-            } 
+            if (obj.mode == 1) { obj.socket.end(); } 
         } else {
             var r = obj.pendingAjaxCall.shift();
             if (r == null || r.length < 1) { console.log("pendingAjaxCall error, " + r); return; }
@@ -366,22 +362,23 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, parent,
     }
 
     // NODE.js specific private method
-    obj.xxOnSocketClosed = function (data) {
+    obj.xxOnSocketClosed = function () {
         //obj.Debug("xxOnSocketClosed");
         obj.socketState = 0;
-        if (obj.mode ==1 && obj.socket != null) { obj.socket.destroy(); obj.socket = null; }
+        if (((obj.mode == null) || (obj.mode == 1)) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
         if (obj.pendingAjaxCall.length > 0) {
-            var r = obj.pendingAjaxCall.shift();
-            var retry = r[5];
+            var r = obj.pendingAjaxCall.shift(), retry = r[5];
             setTimeout(function () { obj.PerformAjaxExNodeJS2(r[0], r[1], r[2], r[3], r[4], --retry) }, 500); // Wait half a second and try again
         }
     }
 
+    obj.xxOnSocketTimeout = function () {
+        if (((obj.mode == null) || (obj.mode == 1)) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
+    }
+
     // NODE.js specific private method
     obj.xxSend = function (x) {
-        if (obj.socketState == 2) {
-            obj.socket.write(Buffer.from(x, "binary"));
-        }
+        if (obj.socketState == 2) { obj.socket.write(Buffer.from(x, "binary")); }
     }
 
     // Cancel all pending queries with given status

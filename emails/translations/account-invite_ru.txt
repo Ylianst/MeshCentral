@@ -1,5 +1,5 @@
 [[[SERVERNAME]]] - приглашение в аккаунт
-An account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username "[[[ACCOUNTNAME]]]" and password "[[[PASSWORD]]]".
+Учетная запись была создана для вас на сервере [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), теперь вы можете получить к ней доступ с именем пользователя «[[[ACCOUNTNAME]]]» и паролем «[[[PASSWORD] ]] ".
 ~
 С уважением,
 ~[[[USERNAME]]]
