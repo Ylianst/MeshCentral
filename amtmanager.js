@@ -88,8 +88,6 @@ module.exports.CreateAmtManager = function(parent) {
         if (dev == null) { dev = obj.amtDevices[nodeid]; }
         if (dev == null) return;
 
-        //if (dev.host != '192.168.2.136') return;
-
         if ((dev.acctry == null) && ((typeof dev.intelamt.user != 'string') || (typeof dev.intelamt.pass != 'string'))) {
             if (obj.amtAdminAccounts.length > 0) { dev.acctry = 0; } else { return; }
         }
@@ -155,6 +153,9 @@ module.exports.CreateAmtManager = function(parent) {
                 // Authentication error, see if we can use alternative credentials
                 if ((dev.acctry == null) && (obj.amtAdminAccounts.length > 0)) { dev.acctry = 0; attemptInitialContact(dev.nodeid, dev); return; }
                 if ((dev.acctry != null) && (obj.amtAdminAccounts.length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev.nodeid, dev); return; }
+
+                // We are unable to authenticate to this device, clear Intel AMT credentials.
+                ClearDeviceCredentials(dev);
             }
             //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
             removeDevice(dev.nodeid);
@@ -207,6 +208,42 @@ module.exports.CreateAmtManager = function(parent) {
                 parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(device.meshid, [device._id]), obj, event);
             }
 
+        });
+    }
+
+    // Change the current core information string and event it
+    function ClearDeviceCredentials(dev) {
+        if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this request.
+
+        // Check that the mesh exists
+        const mesh = parent.webserver.meshes[dev.meshid];
+        if (mesh == null) { removeDevice(dev.nodeid); return; }
+
+        // Get the node and change it if needed
+        parent.db.Get(dev.nodeid, function (err, nodes) {
+            if ((nodes == null) || (nodes.length != 1)) return;
+            const device = nodes[0];
+            var changes = [], change = 0, log = 0;
+            var domain = parent.config.domains[device.domain];
+            if (domain == null) return;
+
+            // Check if anything changes
+            if (device.intelamt == null) return;
+            if (device.intelamt.user != null) { change = 1; log = 1; delete device.intelamt.user; changes.push('AMT user'); }
+            if (device.intelamt.pass != null) { change = 1; log = 1; delete device.intelamt.pass; changes.push('AMT pass'); }
+
+            // If there are changes, event the new device
+            if (change == 1) {
+                // Save to the database
+                parent.db.Set(device);
+
+                // Event the node change
+                var event = { etype: 'node', action: 'changenode', nodeid: device._id, domain: domain.id, node: parent.webserver.CloneSafeNode(device) };
+                if (changes.length > 0) { event.msg = 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', '); }
+                if ((log == 0) || ((obj.agentInfo) && (obj.agentInfo.capabilities) && (obj.agentInfo.capabilities & 0x20)) || (changes.length == 0)) { event.nolog = 1; } // If this is a temporary device, don't log changes
+                if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+                parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(device.meshid, [device._id]), obj, event);
+            }
         });
     }
 

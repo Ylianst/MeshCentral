@@ -2777,7 +2777,7 @@
                                     if (node.intelamt == null) node.intelamt = {};
                                     if (message.event.node.intelamt.state != null) { node.intelamt.state = message.event.node.intelamt.state; }
                                     if (message.event.node.intelamt.host != null) { node.intelamt.user = message.event.node.intelamt.host; }
-                                    if (message.event.node.intelamt.user != null) { node.intelamt.user = message.event.node.intelamt.user; }
+                                    if (message.event.node.intelamt.user != null) { node.intelamt.user = message.event.node.intelamt.user; } else { delete node.intelamt.user; }
                                     if (message.event.node.intelamt.tls != null) { node.intelamt.tls = message.event.node.intelamt.tls; }
                                     if (message.event.node.intelamt.ver != null) { node.intelamt.ver = message.event.node.intelamt.ver; }
                                     if (message.event.node.intelamt.tag != null) { node.intelamt.tag = message.event.node.intelamt.tag; }
