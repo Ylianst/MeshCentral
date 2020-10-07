@@ -3765,7 +3765,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                         if ((rights & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
-                        var mesh = parent.meshes[node.meshid];
+                        var mesh = parent.meshes[node.meshid], amtchange = 0;
 
                         // Ready the node change event
                         var changes = [], event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id };
@@ -3815,7 +3815,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
                         if (command.intelamt != null) {
-                            if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); }
+                            if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); amtchange = 1; }
                             if ((command.intelamt.tls != null) && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                         }
                         if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
@@ -3833,6 +3833,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Event the node change. Only do this if the database will not do it.
                             event.msg = 'Changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
                             event.node = parent.CloneSafeNode(node);
+                            if (amtchange == 1) { event.amtchange = 1; } // This will give a hint to the AMT Manager to reconnect using new AMT credentials
                             if (command.rdpport == 3389) { event.node.rdpport = 3389; }
                             if (command.rfbport == 5900) { event.node.rfbport = 5900; }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
