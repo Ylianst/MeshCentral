@@ -40,20 +40,25 @@ module.exports.CreateAmtManager = function(parent) {
 
     // Handle server events
     obj.HandleEvent = function (source, event, ids, id) {
-        if (event.action != 'nodeconnect') return;
-        if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
-            // We have an OOB connection to Intel AMT, update our information
-            var dev = obj.amtDevices[event.nodeid];
-            if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
-        } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
-            // We have an agent connection without OOB, check if this agent supports Intel AMT
-            var agent = parent.webserver.wsagents[event.nodeid];
-            if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
-            var dev = obj.amtDevices[event.nodeid];
-            if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
-        } else {
-            removeDevice(event.nodeid);
+        // React to nodes connecting and disconnecting
+        if (event.action == 'nodeconnect') {
+            if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
+                // We have an OOB connection to Intel AMT, update our information
+                var dev = obj.amtDevices[event.nodeid];
+                if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
+            } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
+                // We have an agent connection without OOB, check if this agent supports Intel AMT
+                var agent = parent.webserver.wsagents[event.nodeid];
+                if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
+                var dev = obj.amtDevices[event.nodeid];
+                if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
+            } else {
+                removeDevice(event.nodeid);
+            }
         }
+
+        // React to node being removed
+        if (event.action == 'removenode') { removeDevice(event.nodeid); }
     }
 
     // Remove a device

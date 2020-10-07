@@ -1472,7 +1472,7 @@
                         }
                         case 'ifchange': {
                             // Network interface changed for a device, if we are currently viewing this device, ask for an update.
-                            if (currentNode._id == message.event.nodeid) { meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id }); }
+                            if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id }); }
                             break;
                         }
                         case 'devicesessions': {
