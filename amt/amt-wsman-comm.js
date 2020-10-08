@@ -348,7 +348,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, transpo
         if (isNaN(s)) s = 500;
         if (s == 401 && ++(obj.authcounter) < 3) {
             obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry            
-            if (obj.transportServer == null) { obj.socket.end(); } 
+            if (obj.transportServer == null) { obj.socket.end(); } else { obj.socket.close(); }
         } else {
             var r = obj.pendingAjaxCall.shift();
             if (r == null || r.length < 1) { console.log("pendingAjaxCall error, " + r); return; }
@@ -364,7 +364,10 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, transpo
     obj.xxOnSocketClosed = function () {
         //obj.Debug("xxOnSocketClosed");
         obj.socketState = 0;
-        if ((obj.transportServer == null) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
+        if (obj.socket != null) {
+            if (obj.transportServer == null) { obj.socket.destroy(); } else { obj.socket.close(); }
+            obj.socket = null;
+        }
         if (obj.pendingAjaxCall.length > 0) {
             var r = obj.pendingAjaxCall.shift(), retry = r[5];
             setTimeout(function () { obj.PerformAjaxExNodeJS2(r[0], r[1], r[2], r[3], r[4], --retry) }, 500); // Wait half a second and try again
@@ -372,7 +375,10 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, transpo
     }
 
     obj.xxOnSocketTimeout = function () {
-        if ((obj.transportServer == null) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
+        if (obj.socket != null) {
+            if (obj.transportServer == null) { obj.socket.destroy(); } else { obj.socket.close(); }
+            obj.socket = null;
+        }
     }
 
     // NODE.js specific private method
