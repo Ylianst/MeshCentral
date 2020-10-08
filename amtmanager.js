@@ -216,7 +216,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (dotls == -1) { removeDevice(dev.nodeid); return; } // The Intel AMT ports are not open, not a device we can deal with.
 
             // Connect now
-            console.log('CIRA-Connect', (dotls == 1)?"TLS":"NoTLS", dev.name, dev.host, user, pass);
+            //console.log('CIRA-Connect', (dotls == 1)?"TLS":"NoTLS", dev.name, dev.host, user, pass);
             var comm;
             if (dotls == 1) {
                 comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, parent.mpsserver); // Perform TLS
@@ -246,12 +246,13 @@ module.exports.CreateAmtManager = function(parent) {
                 if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; } else { user = obj.amtAdminAccounts[dev.acctry].user; pass = obj.amtAdminAccounts[dev.acctry].pass; }
 
                 // Connect now
-                //console.log('Connect', dev.name, dev.host, user, pass);
                 var comm;
                 if (dev.tlsfail !== true) {
+                    //console.log('Connect', "TLS", dev.name, dev.host, user, pass);
                     comm = CreateWsmanComm(dev.host, 16993, user, pass, 1); // Always try with TLS first
                     comm.xtlsFingerprint = 0; // Perform no certificate checking
                 } else {
+                    //console.log('Connect', "NoTLS", dev.name, dev.host, user, pass);
                     comm = CreateWsmanComm(dev.host, 16992, user, pass, 0); // Try without TLS
                 }
                 var wsstack = WsmanStackCreateService(comm);
