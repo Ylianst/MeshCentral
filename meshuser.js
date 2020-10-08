@@ -3642,6 +3642,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Send the commands to the agent
                                     try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser })); } catch (ex) { }
                                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+
+                                    // Send out an event that these commands where run on this device
+                                    var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                                    var msgid = 24; // "Running commands"
+                                    if (command.type == 1) { msgid = 99; } // "Running commands as user"
+                                    if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
+                                    var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                    parent.parent.DispatchEvent(targets, obj, event);
                                 } else {
                                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
                                 }
