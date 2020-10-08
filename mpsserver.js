@@ -142,6 +142,16 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var socketErrorCount = 0;
     var maxDomainDevicesReached = 0;
 
+    // Delay setting the connectivity state by 300ms to allow time for CIRA port mappings to be established
+    // Report power state as "present" (7) until Intel AMT manager starts polling for power state.
+    function delayedSetConnectivityState(meshid, nodeid, connectTime) {
+        var f = function setConnFunc() { if (obj.ciraConnections[setConnFunc.nodeid] != null) { obj.parent.SetConnectivityState(setConnFunc.meshid, setConnFunc.nodeid, setConnFunc.connectTime, 2, 7); } }
+        f.nodeid = nodeid;
+        f.meshid = meshid;
+        f.connectTime = connectTime;
+        setTimeout(f, 300);
+    }
+
     // Return statistics about this MPS server
     obj.getStats = function () {
         return {
@@ -324,7 +334,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Add the connection to the MPS connection list
                                             obj.ciraConnections[socket.tag.nodeid] = socket;
-                                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                            //obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
                                         }
                                     });
                                     return;
@@ -354,7 +365,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                         // Add the connection to the MPS connection list
                         obj.ciraConnections[socket.tag.nodeid] = socket;
-                        obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
                     });
                 } else {
                     // This node connected without certificate authentication, use password auth
@@ -372,7 +383,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             }
         });
 
-        // Process one AFP command
+        // Process one APF command
         function ProcessCommand(socket) {
             var cmd = socket.tag.accumulator.charCodeAt(0);
             var len = socket.tag.accumulator.length;
@@ -462,7 +473,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Add the connection to the MPS connection list
                                             obj.ciraConnections[socket.tag.nodeid] = socket;
-                                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
                                             SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
                                         }
                                     });
@@ -486,7 +497,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                             // Add the connection to the MPS connection list
                             obj.ciraConnections[socket.tag.nodeid] = socket;
-                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
                             SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
                         });
                     } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
@@ -525,7 +536,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                             // Add the connection to the MPS connection list
                             obj.ciraConnections[socket.tag.nodeid] = socket;
-                            obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
+                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
                             SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
                         });
                     } else { // Unknown mesh type
@@ -866,13 +877,15 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         }
     }
 
-    obj.SetupCiraChannelToHost = function (host, targetport) {
-        var ciraconn = obj.ciraConnections[host];
+    // Setup a new channel to a nodeid
+    obj.SetupChannelToNode = function (nodeid, targetport) {
+        var ciraconn = obj.ciraConnections[nodeid];
         if (ciraconn == null) return null;
-        return obj.SetupCiraChannel(ciraconn, targetport);
+        return obj.SetupChannel(ciraconn, targetport);
     }
 
-    obj.SetupCiraChannel = function (socket, targetport) {
+    // Setup a new channel
+    obj.SetupChannel = function (socket, targetport) {
         var sourceport = (socket.tag.nextsourceport++ % 30000) + 1024;
         var cirachannel = { targetport: targetport, channelid: socket.tag.nextchannelid++, socket: socket, state: 1, sendcredits: 0, amtpendingcredits: 0, amtCiraWindow: 0, ciraWindow: 32768 };
         SendChannelOpen(socket, false, cirachannel.channelid, cirachannel.ciraWindow, socket.tag.host, targetport, "1.2.3.4", sourceport);

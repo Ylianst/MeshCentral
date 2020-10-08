@@ -3390,7 +3390,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((port == 16993) || (port == 16995)) {
                     // Perform TLS - ( TODO: THIS IS BROKEN on Intel AMT v7 but works on v10, Not sure why. Well, could be broken TLS 1.0 in firmware )
                     var ser = new SerialTunnel();
-                    var chnl = parent.mpsserver.SetupCiraChannel(ciraconn, port);
+                    var chnl = parent.mpsserver.SetupChannel(ciraconn, port);
 
                     // Let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
@@ -3436,7 +3436,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws.forwardclient.xtls = 1;
                 } else {
                     // Without TLS
-                    ws.forwardclient = parent.mpsserver.SetupCiraChannel(ciraconn, port);
+                    ws.forwardclient = parent.mpsserver.SetupChannel(ciraconn, port);
                     ws.forwardclient.xtls = 0;
                     ws._socket.resume();
                 }

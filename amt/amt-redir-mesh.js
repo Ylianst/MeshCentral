@@ -126,7 +126,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                 if ((port == 16993) || (port == 16995)) {
                     // Perform TLS - ( TODO: THIS IS BROKEN on Intel AMT v7 but works on v10, Not sure why. Well, could be broken TLS 1.0 in firmware )
                     var ser = new SerialTunnel();
-                    var chnl = meshcentral.mpsserver.SetupCiraChannel(ciraconn, port);
+                    var chnl = meshcentral.mpsserver.SetupChannel(ciraconn, port);
 
                     // let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
@@ -171,7 +171,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                     obj.forwardclient.xtls = 1;
                 } else {
                     // Without TLS
-                    obj.forwardclient = meshcentral.mpsserver.SetupCiraChannel(ciraconn, port);
+                    obj.forwardclient = meshcentral.mpsserver.SetupChannel(ciraconn, port);
                     obj.forwardclient.xtls = 0;
                 }
 
