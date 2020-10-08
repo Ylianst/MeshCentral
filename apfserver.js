@@ -479,6 +479,7 @@ module.exports.CreateApfServer = function (parent, db, args) {
                         if (cirachannel.state > 0) {
                             cirachannel.state = 0;
                             if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
+                            SendChannelClose(cirachannel.socket, cirachannel.amtchannelid);
                             delete socket.tag.channels[RecipientChannel];
                         }
                         return 5;
