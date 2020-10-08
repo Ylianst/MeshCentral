@@ -959,7 +959,6 @@ function createMeshCore(agent) {
                 }
                 case 'runcommands': {
                     if (mesh.cmdchild != null) { sendConsoleText("Run commands can't execute, already busy."); break; }
-                    MeshServerLogEx(24, null, "Running commands", data);
                     sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
 
                     // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
