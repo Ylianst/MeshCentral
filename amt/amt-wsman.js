@@ -30,7 +30,6 @@ function WsmanStackCreateService(comm)
     obj.Address = '/wsman';
     obj.xmlParser = require('./amt-xml.js');
     obj.comm = comm;
-    obj.comm.parent = obj;
 
     obj.PerformAjax = function PerformAjax(postdata, callback, tag, pri, namespaces) {
         if (namespaces == null) namespaces = '';

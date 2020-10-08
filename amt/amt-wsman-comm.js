@@ -1,11 +1,11 @@
-﻿/** 
+﻿/** m
 * @description Intel(r) AMT WSMAN communication using Node.js TLS
 * @author Ylian Saint-Hilaire/Joko Sastriawan
 * @version v0.2.0b
 */
 
 // Construct a MeshServer object
-var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
+var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, transportServer) {
     //console.log('CreateWsmanComm', host, port, user, pass, tls, tlsoptions);
 
     var obj = {};    
@@ -38,7 +38,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
     obj.pass = pass;
     obj.xtls = tls;
     obj.xtlsoptions = tlsoptions;
-    obj.mode = mode; // 1 = Direct, 2 = CIRA, 3 = APF relay
+    obj.transportServer = transportServer; // This can be a CIRA or APF server, if null, local sockets are used as transport.
     obj.xtlsFingerprint;
     obj.xtlsCertificate = null;
     obj.xtlsCheck = 0; // 0 = No TLS, 1 = CA Checked, 2 = Pinned, 3 = Untrusted
@@ -166,34 +166,32 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
         obj.socketState = 1;
         obj.kerberosDone = 0;
 
-        if ((obj.parent != null) && ((obj.mode === 2) || (obj.mode === 3))) { // CIRA and APF            
-            if (obj.mode == 2) { // CIRA
-                var ciraconn = obj.parent.mpsserver.ciraConnections[obj.host];
-                obj.socket = obj.parent.mpsserver.SetupCiraChannel(ciraconn, obj.port);
-            } else { // APF
-                var apfconn = obj.parent.apfserver.apfConnections[obj.host];
-                obj.socket = obj.parent.apfserver.SetupCiraChannel(apfconn, obj.port);
-            }
-            obj.socket.onData = function (ccon, data) { obj.xxOnSocketData(data); }
-            obj.socket.onStateChange = function (ccon, state) {
-                if (state == 0) {
-                    try {
+        if (obj.transportServer != null) {
+            // CIRA or APF server
+            obj.socket = obj.transportServer.SetupCiraChannelToHost(obj.host, obj.port);
+            if (obj.socket == null) {
+                try { obj.xxOnSocketClosed(); } catch (e) { }
+            } else {
+                obj.socket.onData = function (ccon, data) { obj.xxOnSocketData(data); }
+                obj.socket.onStateChange = function (ccon, state) {
+                    if (state == 0) {
+                        // Channel closed
                         obj.socketParseState = 0;
                         obj.socketAccumulator = '';
                         obj.socketHeader = null;
                         obj.socketData = '';
                         obj.socketState = 0;
-                        obj.xxOnSocketClosed();
-                    } catch (e) { }
-                } else if (state == 2) {
-                    // channel open success
-                    obj.xxOnSocketConnected();
+                        try { obj.xxOnSocketClosed(); } catch (e) { }
+                    } else if (state == 2) {
+                        // Channel open success
+                        obj.xxOnSocketConnected();
+                    }
                 }
             }
         } else {
             // Direct connection
             if (obj.xtls != 1) {
-                // Connect without TLS
+                // Direct connect without TLS
                 obj.socket = new obj.net.Socket();
                 obj.socket.setEncoding('binary');
                 obj.socket.setTimeout(6000); // Set socket idle timeout
@@ -203,7 +201,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
                 obj.socket.on('error', obj.xxOnSocketClosed);
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
-                // Connect with TLS
+                // Direct connect with TLS
                 var options = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
                 if (obj.xtlsMethod != 0) { options.secureProtocol = 'TLSv1_method'; }
                 if (obj.xtlsoptions) {
@@ -231,7 +229,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
     obj.xxOnSocketConnected = function () {
         if (obj.socket == null) return;
         // check TLS certificate for webrelay and direct only
-        if (((obj.mode == null) || (obj.mode < 2)) && (obj.xtls == 1)) {
+        if ((obj.transportServer == null) && (obj.xtls == 1)) {
             obj.xtlsCertificate = obj.socket.getPeerCertificate();
 
             // ###BEGIN###{Certificates}
@@ -350,7 +348,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
         if (isNaN(s)) s = 500;
         if (s == 401 && ++(obj.authcounter) < 3) {
             obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry            
-            if (obj.mode == 1) { obj.socket.end(); } 
+            if (obj.transportServer == null) { obj.socket.end(); } 
         } else {
             var r = obj.pendingAjaxCall.shift();
             if (r == null || r.length < 1) { console.log("pendingAjaxCall error, " + r); return; }
@@ -366,7 +364,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
     obj.xxOnSocketClosed = function () {
         //obj.Debug("xxOnSocketClosed");
         obj.socketState = 0;
-        if (((obj.mode == null) || (obj.mode == 1)) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
+        if ((obj.transportServer == null) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
         if (obj.pendingAjaxCall.length > 0) {
             var r = obj.pendingAjaxCall.shift(), retry = r[5];
             setTimeout(function () { obj.PerformAjaxExNodeJS2(r[0], r[1], r[2], r[3], r[4], --retry) }, 500); // Wait half a second and try again
@@ -374,7 +372,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mode) {
     }
 
     obj.xxOnSocketTimeout = function () {
-        if (((obj.mode == null) || (obj.mode == 1)) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
+        if ((obj.transportServer == null) && (obj.socket != null)) { obj.socket.destroy(); obj.socket = null; }
     }
 
     // NODE.js specific private method
