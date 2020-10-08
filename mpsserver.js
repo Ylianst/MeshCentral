@@ -867,7 +867,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     obj.SetupCiraChannelToHost = function (host, targetport) {
-        var ciraconn = obj.parent.mpsserver.ciraConnections[host];
+        var ciraconn = obj.ciraConnections[host];
         if (ciraconn == null) return null;
         return obj.SetupCiraChannel(ciraconn, targetport);
     }
