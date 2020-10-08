@@ -44,15 +44,19 @@ module.exports.CreateAmtManager = function(parent) {
         // React to nodes connecting and disconnecting
         if (event.action == 'nodeconnect') {
             if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
+                if ((event.conn & 2) == 0) return // Debug: Only look at CIRA connections *****************************
+
                 // We have an OOB connection to Intel AMT, update our information
                 var dev = obj.amtDevices[event.nodeid];
                 if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
+            /*
             } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
                 // We have an agent connection without OOB, check if this agent supports Intel AMT
                 var agent = parent.webserver.wsagents[event.nodeid];
                 if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
                 var dev = obj.amtDevices[event.nodeid];
                 if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
+            */
             } else {
                 removeDevice(event.nodeid);
             }
@@ -195,6 +199,42 @@ module.exports.CreateAmtManager = function(parent) {
             if (obj.amtAdminAccounts.length > 0) { dev.acctry = 0; } else { return; }
         }
 
+        // Handle the case where the Intel AMT CIRA is connected (conn & 2)
+        if ((dev.conn & 2) != 0) {
+            // Check to see if CIRA is connected on this server.
+            var ciraconn = parent.mpsserver.ciraConnections[dev.nodeid];
+            if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { removeDevice(dev.nodeid); return; } // CIRA connection is not on this server, no need to deal with this device anymore.
+
+            // See what user/pass to try.
+            var user = null, pass = null;
+            if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; } else { user = obj.amtAdminAccounts[dev.acctry].user; pass = obj.amtAdminAccounts[dev.acctry].pass; }
+
+            // See if we need to perform TLS or not. We prefer not to do TLS within CIRA.
+            var dotls = -1;
+            if (ciraconn.tag.boundPorts.indexOf('16992')) { dotls = 0; }
+            else if (ciraconn.tag.boundPorts.indexOf('16993')) { dotls = 1; }
+            if (dotls == -1) { removeDevice(dev.nodeid); return; } // The Intel AMT ports are not open, not a device we can deal with.
+
+            // Connect now
+            console.log('CIRA-Connect', (dotls == 1)?"TLS":"NoTLS", dev.name, dev.host, user, pass);
+            var comm;
+            if (dotls == 1) {
+                comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, parent.mpsserver); // Perform TLS
+                comm.xtlsFingerprint = 0; // Perform no certificate checking
+            } else {
+                comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, parent.mpsserver); // No TLS
+            }
+            var wsstack = WsmanStackCreateService(comm);
+            dev.amtstack = AmtStackCreateService(wsstack);
+            dev.amtstack.dev = dev;
+            obj.activeLocalConnections[dev.host] = dev;
+            dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
+            dev.conntype = 2; // CIRA
+
+            return; // If CIRA is connected, don't try any other methods.
+        }
+
+        // Handle the case where the Intel AMT local scanner found the device (conn & 4)
         if (((dev.conn & 4) != 0) && (typeof dev.host == 'string')) {
             // Since we don't allow two or more connections to the same host, check if a pending connection is active.
             if (obj.activeLocalConnections[dev.host] != null) {
@@ -218,12 +258,15 @@ module.exports.CreateAmtManager = function(parent) {
                 dev.amtstack = AmtStackCreateService(wsstack);
                 dev.amtstack.dev = dev;
                 obj.activeLocalConnections[dev.host] = dev;
-                dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConectResponse);
+                dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
+                dev.conntype = 1; // LOCAL
             }
         }
     }
 
-    function attemptLocalConectResponse(stack, name, responses, status) {
+    function attemptLocalConnectResponse(stack, name, responses, status) {
+        console.log('attemptLocalConnectResponse', status);
+
         // Release active connection to this host.
         delete obj.activeLocalConnections[stack.wsman.comm.host];
 
@@ -255,8 +298,8 @@ module.exports.CreateAmtManager = function(parent) {
             fetchPowerState(dev);
         } else {
             // We got a bad response
-            if ((dev.tlsfail !== true) && (status == 408)) {
-                // TLS error, try again without TLS
+            if ((dev.conntype == 1) && (dev.tlsfail !== true) && (status == 408)) {
+                // TLS error on a local connection, try again without TLS
                 dev.tlsfail = true; attemptInitialContact(dev.nodeid, dev); return;
             } else if (status == 401) {
                 // Authentication error, see if we can use alternative credentials

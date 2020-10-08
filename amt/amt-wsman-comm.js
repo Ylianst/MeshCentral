@@ -167,8 +167,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, transpo
         obj.kerberosDone = 0;
 
         if (obj.transportServer != null) {
-            // CIRA or APF server
-            obj.socket = obj.transportServer.SetupCiraChannelToHost(obj.host, obj.port);
+            // Setup a new channel using the transport server (CIRA or APF)
+            obj.socket = obj.transportServer.SetupChannelToNode(obj.host, obj.port);
             if (obj.socket == null) {
                 try { obj.xxOnSocketClosed(); } catch (e) { }
             } else {

@@ -641,13 +641,14 @@ module.exports.CreateApfServer = function (parent, db, args) {
         }
     }
 
-    obj.SetupCiraChannelToHost = function (host, targetport) {
-        var apfconn = obj.apfConnections[host];
+    // Setup a new channel to a nodeid
+    obj.SetupChannelToNode = function (nodeid, targetport) {
+        var apfconn = obj.apfConnections[nodeid];
         if (apfconn == null) return null;
-        return obj.SetupCiraChannel(apfconn, targetport);
+        return obj.SetupChannel(apfconn, targetport);
     }
 
-    obj.SetupCiraChannel = function (socket, targetport) {
+    obj.SetupChannel = function (socket, targetport) {
         var sourceport = (socket.tag.nextsourceport++ % 30000) + 1024;
         var cirachannel = { targetport: targetport, channelid: socket.tag.nextchannelid++, socket: socket, state: 1, sendcredits: 0, amtpendingcredits: 0, amtCiraWindow: 0, ciraWindow: 32768 };
         SendChannelOpen(socket, false, cirachannel.channelid, cirachannel.ciraWindow, socket.tag.host, targetport, "1.2.3.4", sourceport);
