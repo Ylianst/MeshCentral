@@ -79,7 +79,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             const state = parent.parent.GetConnectivityState(obj.dbNodeKey);
             if ((state != null) && (state.connectivity != null)) {
                 if ((state.connectivity & 1) != 0) { parent.wsagents[obj.dbNodeKey].close(); } // Disconnect mesh agent
-                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[obj.dbNodeKey]); } // Disconnect CIRA connection
+                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.closeAllForNode(obj.dbNodeKey); } // Disconnect CIRA connection
             }
         } else {
             // Update the last connect time

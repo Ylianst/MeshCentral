@@ -1422,7 +1422,10 @@ function CreateMeshCentralServer(config, args) {
                             rs: obj.webserver.relaySessionCount
                         }
                     };
-                    if (obj.mpsserver != null) { data.conn.am = Object.keys(obj.mpsserver.ciraConnections).length; }
+                    if (obj.mpsserver != null) {
+                        data.conn.am = 0;
+                        for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
+                    }
                     if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
                     obj.db.SetServerStats(data); // Save the stats to the database
                     obj.DispatchEvent(['*'], obj, { action: 'servertimelinestats', data: data }); // Event the server stats

@@ -164,8 +164,8 @@ module.exports.CreateAmtScanner = function (parent) {
             if (err == null && docs.length > 0) {
                 for (var i in docs) {
                     var doc = docs[i], host = doc.host.toLowerCase();
-                    const ciraConnection = obj.parent.mpsserver ? obj.parent.mpsserver.ciraConnections[doc._id] : null;
-                    if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost') && (ciraConnection == null)) {
+                    const ciraConnections = obj.parent.mpsserver ? obj.parent.mpsserver.GetConnectionToNode(doc._id, null, true) : null; // See if any OOB connections are present
+                    if ((host != '127.0.0.1') && (host != '::1') && (host.toLowerCase() != 'localhost') && (ciraConnections == null)) {
                         var scaninfo = obj.scanTable[doc._id];
                         if (scaninfo == undefined) {
                             var tag = obj.nextTag++;

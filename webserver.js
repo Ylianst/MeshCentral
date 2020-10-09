@@ -3375,11 +3375,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // If Intel AMT CIRA connection is available, use it
-            if (((conn & 2) != 0) && (parent.mpsserver.ciraConnections[req.query.host] != null)) {
+            var ciraconn = parent.mpsserver.GetConnectionToNode(req.query.host, null, false);
+            if (ciraconn != null) {
                 parent.debug('web', 'Opening relay CIRA channel connection to ' + req.query.host + '.');
 
-                var ciraconn = parent.mpsserver.ciraConnections[req.query.host];
-
+                // TODO: If ciraconn is a relay connection, we can't detect the TLS state like this.
                 // Compute target port, look at the CIRA port mappings, if non-TLS is allowed, use that, if not use TLS
                 var port = 16993;
                 //if (node.intelamt.tls == 0) port = 16992; // DEBUG: Allow TLS flag to set TLS mode within CIRA
