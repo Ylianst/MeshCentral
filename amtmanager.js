@@ -44,7 +44,7 @@ module.exports.CreateAmtManager = function(parent) {
         // React to nodes connecting and disconnecting
         if (event.action == 'nodeconnect') {
             if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
-                //if ((event.conn & 2) == 0) return // Debug: Only look at CIRA connections *****************************
+                //if ((event.conn & 2) == 0) return // Debug: Only look at CIRA connections
 
                 // We have an OOB connection to Intel AMT, update our information
                 var dev = obj.amtDevices[event.nodeid];
@@ -266,7 +266,7 @@ module.exports.CreateAmtManager = function(parent) {
     }
 
     function attemptLocalConnectResponse(stack, name, responses, status) {
-        //console.log('attemptLocalConnectResponse', status);
+        //console.log('attemptLocalConnectResponse', status, stack.dev.name);
 
         // Release active connection to this host.
         delete obj.activeLocalConnections[stack.wsman.comm.host];

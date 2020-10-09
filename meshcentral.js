@@ -26,7 +26,6 @@ function CreateMeshCentralServer(config, args) {
     obj.webserver = null;
     obj.redirserver = null;
     obj.mpsserver = null;
-    obj.apfserver = null;
     obj.mqttbroker = null;
     obj.swarmserver = null;
     obj.mailserver = null;
@@ -1317,9 +1316,6 @@ function CreateMeshCentralServer(config, args) {
                 // Set the session length to 60 minutes if not set and set a random key if needed
                 if ((obj.args.sessiontime != null) && ((typeof obj.args.sessiontime != 'number') || (obj.args.sessiontime < 1))) { delete obj.args.sessiontime; }
                 if (!obj.args.sessionkey) { obj.args.sessionkey = buf.toString('hex').toUpperCase(); }
-
-                // Create APF server to hook into webserver
-                obj.apfserver = require('./apfserver.js').CreateApfServer(obj, obj.db, obj.args);
 
                 // Create MQTT Broker to hook into webserver and mpsserver
                 if ((typeof obj.config.settings.mqtt == 'object') && (typeof obj.config.settings.mqtt.auth == 'object') && (typeof obj.config.settings.mqtt.auth.keyid == 'string') && (typeof obj.config.settings.mqtt.auth.key == 'string')) { obj.mqttbroker = require("./mqttbroker.js").CreateMQTTBroker(obj, obj.db, obj.args); }
