@@ -3507,15 +3507,20 @@ function createMeshCore(agent) {
                                     mpskeepalive: 60000,
                                     clientname: require('os').hostname(),
                                     clientaddress: '127.0.0.1',
-                                    clientuuid: meshCoreObj.intelamt.uuid
+                                    clientuuid: meshCoreObj.intelamt.uuid,
+                                    conntype: 2 // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
                                 };
-                                var tobj = { debug: false }; //
-                                apftunnel = require('apfclient')(tobj, apfarg);
-                                try {
-                                    apftunnel.connect();
-                                    response += "..success";
-                                } catch (e) {
-                                    response += JSON.stringify(e);
+                                if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) {
+                                    response = "Unable to get Intel AMT UUID: " + apfarg.clientuuid;
+                                } else {
+                                    var tobj = { debug: false };
+                                    apftunnel = require('apfclient')(tobj, apfarg);
+                                    try {
+                                        apftunnel.connect();
+                                        response += "...success";
+                                    } catch (e) {
+                                        response += JSON.stringify(e);
+                                    }
                                 }
                             } else if (args['_'][0] == 'off') {
                                 response = "Stopping APF tunnel";
@@ -3640,18 +3645,10 @@ function createMeshCore(agent) {
                     {
                         switch(amt.lmsstate)
                         {
-                            case 0:
-                                intelamt.microlms = 'DISABLED'
-                                break;
-                            case 1:
-                                intelamt.microlms = 'CONNECTING'
-                                break;
-                            case 2:
-                                intelamt.microlms = 'CONNECTED'
-                                break;
-                            default:
-                                intelamt.microlms = 'unknown'
-                                break;
+                            case 0: intelamt.microlms = 'DISABLED'; break;
+                            case 1: intelamt.microlms = 'CONNECTING'; break;
+                            case 2: intelamt.microlms = 'CONNECTED'; break;
+                            default: intelamt.microlms = 'unknown'; break;
                         }
                     }
                     var p = false;

@@ -406,7 +406,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     RelayCount: Object.keys(parent.wsrelays).length
                 };
                 if (parent.relaySessionErrorCount != 0) { serverStats.RelayErrors = parent.relaySessionErrorCount; }
-                if (parent.parent.mpsserver != null) { serverStats.ConnectedIntelAMT = Object.keys(parent.parent.mpsserver.ciraConnections).length; }
+                if (parent.parent.mpsserver != null) {
+                    serverStats.ConnectedIntelAMT = 0;
+                    for (var i in parent.parent.mpsserver.ciraConnections) { serverStats.ConnectedIntelAMT += parent.parent.mpsserver.ciraConnections[i].length; }
+                }
 
                 // Take a look at agent errors
                 var agentstats = parent.getAgentStats();
@@ -657,7 +660,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 docs[i].conn = state.connectivity;
                                 docs[i].pwr = state.powerState;
                                 if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[docs[i]._id]; if (agent != null) { docs[i].agct = agent.connectTime; } }
-                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.ciraConnections[docs[i]._id]; if (cira != null) { docs[i].cict = cira.tag.connectTime; } }
+
+                                // Use the connection time of the CIRA/Relay connection
+                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.GetConnectionToNode(docs[i]._id, null, true); if (cira != null) { docs[i].cict = cira[0].tag.connectTime; } }
                             }
 
                             // Compress the meshid's
@@ -1059,6 +1064,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 for (var i in stats) {
                                     if (typeof stats[i] == 'object') { r += (i + ': ' + JSON.stringify(stats[i]) + '\r\n'); } else { r += (i + ': ' + stats[i] + '\r\n'); }
                                 }
+                            }
+                            break;
+                        }
+                        case 'mps': { // List all MPS connections and types.
+                            if (parent.parent.mpsserver == null) {
+                                r = 'MPS not enabled.';
+                            } else {
+                                const connectionTypes = ['CIRA', 'Relay', 'LMS'];
+                                for (var nodeid in parent.parent.mpsserver.ciraConnections) {
+                                    r += nodeid;
+                                    var connections = parent.parent.mpsserver.ciraConnections[nodeid];
+                                    for (var i in connections) { r += ', ' + connectionTypes[connections[i].tag.connType]; }
+                                    r += '\r\n';
+                                }
+                                if (r == '') { r = 'MPS has not connections.'; }
                             }
                             break;
                         }
@@ -3458,7 +3478,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 node.conn = state.connectivity;
                                 node.pwr = state.powerState;
                                 if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[node._id]; if (agent != null) { node.agct = agent.connectTime; } }
-                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.ciraConnections[node._id]; if (cira != null) { node.cict = cira.tag.connectTime; } }
+
+                                // Uuse the connection time of the CIRA/Relay connection
+                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.GetConnectionToNode(node._id, null, true); if (cira != null) { node.cict = cira[0].tag.connectTime; } }
                             }
 
                             // Event the node change
@@ -3527,7 +3549,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var state = parent.parent.GetConnectivityState(nodeid);
                             if ((state != null) && (state.connectivity != null)) {
                                 if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
-                                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.close(parent.parent.mpsserver.ciraConnections[nodeid]); } // Disconnect CIRA connection
+                                if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.closeAllForNode(nodeid); } // Disconnect CIRA/Relay/LMS connections
                             }
                         });
                     }

@@ -100,7 +100,6 @@
     <Compile Include="amt\amt-wsman.js" />
     <Compile Include="amt\amt-xml.js" />
     <Compile Include="amt\amt.js" />
-    <Compile Include="apfserver.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="letsencrypt.js" />
     <Compile Include="mcrec.js" />

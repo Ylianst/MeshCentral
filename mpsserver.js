@@ -22,7 +22,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     obj.db = db;
     obj.args = args;
     obj.certificates = certificates;
-    obj.ciraConnections = {};       // NodeID --> Socket
+    obj.ciraConnections = {};       // NodeID --> [ Socket ]
     var tlsSessionStore = {};       // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;   // Number of cached TLS session information in store.
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
@@ -79,7 +79,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         KEEPALIVE_REQUEST: 208,
         KEEPALIVE_REPLY: 209,
         KEEPALIVE_OPTIONS_REQUEST: 210,
-        KEEPALIVE_OPTIONS_REPLY: 211
+        KEEPALIVE_OPTIONS_REPLY: 211,
+        MESH_CONNECTION_TYPE: 250 // This is a Mesh specific command that instructs the server of the connection type: 1 = Relay, 2 = LMS.
     };
 
     /*
@@ -142,22 +143,71 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     var socketErrorCount = 0;
     var maxDomainDevicesReached = 0;
 
-    // Delay setting the connectivity state by 300ms to allow time for CIRA port mappings to be established
-    // Report power state as "present" (7) until Intel AMT manager starts polling for power state.
-    function delayedSetConnectivityState(meshid, nodeid, connectTime, connType) {
-        if (nodeid.startsWith('*')) return; // Don't set connectivity state for Intel AMT self agent relay
-        var f = function setConnFunc() { if (obj.ciraConnections[setConnFunc.nodeid] != null) { obj.parent.SetConnectivityState(setConnFunc.meshid, setConnFunc.nodeid, setConnFunc.connectTime, setConnFunc.connType, 7); } }
-        f.nodeid = nodeid;
-        f.meshid = meshid;
-        f.connectTime = connectTime;
-        f.connType = connType;
+    // Add a CIRA connection to the connection list
+    function addCiraConnection(socket) {
+        // Check if there is already a connection of the same type
+        var sameType = false, connections = obj.ciraConnections[socket.tag.nodeid];
+        if (connections != null) { for (var i in connections) { var conn = connections[i]; if (conn.tag.connType === socket.tag.connType) { sameType = true; } } }
+        
+        // Add this connection to the connections list
+        if (connections == null) { obj.ciraConnections[socket.tag.nodeid] = [socket]; } else { obj.ciraConnections[socket.tag.nodeid].push(socket); }
+        if ((socket.tag.connType != 0) && (socket.tag.connType != 1)) return; // If not a CIRA or Relay connection, we don't indicate a connection state change
+
+        // Update connectivity state
+        // Report the new state of a CIRA/Relay/LMS connection after a short delay. This is to wait for the connection to have the bounded ports setup before we advertise this new connection.
+        socket.xxStartHold = 1;
+        var f = function setConnFunc() {
+            delete setConnFunc.socket.xxStartHold;
+            const ciraArray = obj.ciraConnections[setConnFunc.socket.tag.nodeid];
+            if ((ciraArray != null) && ((ciraArray.indexOf(setConnFunc.socket) >= 0))) { // Check if this connection is still present
+                if (setConnFunc.socket.tag.connType == 0) {
+                    // Intel AMT CIRA connection. This connection indicates the remote device is present.
+                    obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 2, 7); // 7 = Present
+                } else if (setConnFunc.socket.tag.connType == 1) {
+                    // Intel AMT Relay connection. This connection does not give any information about the remote device's power state.
+                    obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 8, 0); // 0 = Unknown
+                } else if (setConnFunc.socket.tag.connType == 2) {
+                    // Intel AMT LMS connection. We don't notify of these connections except telling the Intel AMT manager about them.
+                    // TODO: Notify AMT manager
+                }
+            }
+        }
+        f.socket = socket;
         setTimeout(f, 300);
+    }
+
+    // Remove a CIRA connection from the connection list
+    function removeCiraConnection(socket) {
+        // Remove the connection from the list if present.
+        const ciraArray = obj.ciraConnections[socket.tag.nodeid];
+        if (ciraArray == null) return;
+        var i = ciraArray.indexOf(socket);
+        if (i == -1) return;
+        ciraArray.splice(i, 1);
+        if (ciraArray.length == 0) { delete obj.ciraConnections[socket.tag.nodeid]; } else { obj.ciraConnections[socket.tag.nodeid] = ciraArray; }
+
+        // If we are removing a connection during the hold period, don't clear any state since it was never set.
+        if (socket.xxStartHold == 1) return;
+
+        // Check if there is already a connection of the same type
+        var sameType = false, connections = obj.ciraConnections[socket.tag.nodeid];
+        if (connections != null) { for (var i in connections) { var conn = connections[i]; if (conn.tag.connType === socket.tag.connType) { sameType = true; } } }
+        if (sameType == true) return; // if there is a connection of the same type, don't change the connection state.
+
+        // Update connectivity state
+        if (socket.tag.connType == 0) {
+            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2); // CIRA
+        } else if (socket.tag.connType == 1) {
+            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 8); // Relay
+        }
     }
 
     // Return statistics about this MPS server
     obj.getStats = function () {
+        var ciraConnectionCount = 0;
+        for (var i in obj.ciraConnections) { ciraConnectionCount += obj.ciraConnections[i].length; }
         return {
-            ciraConnections: Object.keys(obj.ciraConnections).length,
+            ciraConnections: ciraConnectionCount,
             tlsSessionStore: Object.keys(tlsSessionStore).length,
             connectionCount: connectionCount,
             userAuthRequestCount: userAuthRequestCount,
@@ -224,8 +274,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     obj.onWebSocketConnection = function (socket) {
         connectionCount++;
-        // connType: 2 = CIRA, 8 = Relay
-        socket.tag = { first: true, connType: 2, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], websocket: true, socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        // connType: 0 = CIRA, 1 = Relay, 2 = LMS
+        socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], websocket: true, socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        socket.SetupChannel = function SetupChannel(targetport) { return SetupChannel.parent.SetupChannel(SetupChannel.conn, targetport); }
+        socket.SetupChannel.parent = obj;
+        socket.SetupChannel.conn = socket;
         socket.websocket = 1;
         parent.debug('mps', "New CIRA websocket connection");
 
@@ -245,8 +298,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.addListener('close', function () {
             socketClosedCount++;
             parent.debug('mps', "CIRA websocket closed", this.tag.meshid, this.tag.nodeid);
-            try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-            if (!this.tag.nodeid.startsWith('*')) { obj.parent.ClearConnectivityState(this.tag.meshid, this.tag.nodeid, this.tag.connType); }
+            removeCiraConnection(socket);
         });
 
         socket.addListener('error', function (e) {
@@ -258,12 +310,15 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     // Called when a new TLS/TCP connection is accepted
     function onConnection(socket) {
         connectionCount++;
-        // connType: 2 = CIRA, 8 = Relay
+        // connType: 0 = CIRA, 1 = Relay, 2 = LMS
         if (obj.args.mpstlsoffload) {
-            socket.tag = { first: true, connType: 2, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         } else {
-            socket.tag = { first: true, connType: 2, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, connType: 0, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         }
+        socket.SetupChannel = function SetupChannel(targetport) { return SetupChannel.parent.SetupChannel(SetupChannel.conn, targetport); }
+        socket.SetupChannel.parent = obj;
+        socket.SetupChannel.conn = socket;
         socket.setEncoding('binary');
         parent.debug('mps', "New CIRA connection");
 
@@ -274,8 +329,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.addListener('close', function () {
             socketClosedCount++;
             parent.debug('mps', 'CIRA connection closed');
-            try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connType);
+            removeCiraConnection(socket);
         });
 
         socket.addListener('error', function (e) {
@@ -382,8 +436,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                             obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: domainid });
 
                                             // Add the connection to the MPS connection list
-                                            obj.ciraConnections[socket.tag.nodeid] = socket;
-                                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                                            addCiraConnection(socket);
                                         }
                                     });
                                     return;
@@ -412,8 +465,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         }
 
                         // Add the connection to the MPS connection list
-                        obj.ciraConnections[socket.tag.nodeid] = socket;
-                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                        addCiraConnection(socket);
                     });
                 } else {
                     // This node connected without certificate authentication, use password auth
@@ -521,8 +573,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                         obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
 
                                         // Add the connection to the MPS connection list
-                                        obj.ciraConnections[socket.tag.nodeid] = socket;
-                                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                                        addCiraConnection(socket);
                                         SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
                                     }
                                 });
@@ -545,8 +596,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         }
 
                         // Add the connection to the MPS connection list
-                        obj.ciraConnections[socket.tag.nodeid] = socket;
-                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                        addCiraConnection(socket);
                         SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
                     });
                 } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
@@ -584,8 +634,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         socket.tag.connectTime = Date.now();
 
                         // Add the connection to the MPS connection list
-                        obj.ciraConnections[socket.tag.nodeid] = socket;
-                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                        addCiraConnection(socket);
                         SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
                     });
                 } else { // Unknown mesh type
@@ -818,9 +867,16 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var ReasonCode = common.ReadInt(data, 1);
                     disconnectCommandCount++;
                     parent.debug('mpscmd', '--> DISCONNECT', ReasonCode);
-                    try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-                    obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connType);
+                    removeCiraConnection(socket);
                     return 7;
+                }
+            case APFProtocol.MESH_CONNECTION_TYPE: // This is a Mesh specific command to indicate the connect type.
+                {
+                    if (len < 5) return 0;
+                    if ((socket.tag.connType == 0) && (socket.tag.SystemId == null)) { // Once set, the connection type can't be changed.
+                        socket.tag.connType = common.ReadInt(data, 1); // 0 = CIRA, 1 = Relay, 2 = LMS
+                    }
+                    return 5;
                 }
             default:
                 {
@@ -833,8 +889,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     // Disconnect CIRA tunnel
     obj.close = function (socket) {
         try { socket.end(); } catch (e) { }
-        try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-        obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connType);
+        removeCiraConnection(socket);
+    };
+
+    // Disconnect all CIRA tunnel for a given NodeId
+    obj.closeAllForNode = function (nodeid) {
+        var connections = obj.ciraConnections[nodeid];
+        if (connections == null) return;
+        for (var i in connections) { obj.close(connections[i]); }
     };
 
     function SendServiceAccept(socket, service) {
@@ -926,18 +988,36 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         }
     }
 
-    // Setup a new channel to a nodeid
-    obj.SetupChannelToNode = function (nodeid, targetport) {
-        var ciraconn = obj.ciraConnections[nodeid];
-        if (ciraconn == null) return null;
-        return obj.SetupChannel(ciraconn, targetport);
+    // Returns a CIRA/Relay/LMS connection to a nodeid, use the best possible connection, CIRA first, Relay second, LMS third.
+    // if oob is set to true, don't allow an LMS connection.
+    obj.GetConnectionToNode = function (nodeid, targetport, oob) {
+        var connectionArray = obj.ciraConnections[nodeid];
+        if (connectionArray == null) return null;
+        var selectConn = null;
+        // Select the best connection, which is the one with the lowest connType value.
+        for (var i in connectionArray) {
+            var conn = connectionArray[i];
+            if ((oob === true) && (conn.tag.connType == 2)) continue; // If an OOB connection is required, don't allow LMS connections.
+            if ((typeof oob === 'number') && (conn.tag.connType !== oob)) continue; // if OOB specifies an exact connection type, filter on this type.
+            if ((targetport != null) && (conn.tag.boundPorts.indexOf(targetport) == -1)) continue; // This connection does not route to the target port.
+            if ((selectConn == null) || (conn.tag.connType < selectConn.tag.connType)) { selectConn = conn; }
+        }
+        return selectConn;
+    }
+
+    // Setup a new channel to a nodeid, use the best possible connection, CIRA first, Relay second, LMS third.
+    // if oob is set to true, don't allow an LMS connection.
+    obj.SetupChannelToNode = function (nodeid, targetport, oob) {
+        var conn = obj.GetConnectionToNode(nodeid, targetport, oob);
+        if (conn == null) return null;
+        return obj.SetupChannel(conn, targetport);
     }
 
     // Setup a new channel
     obj.SetupChannel = function (socket, targetport) {
         var sourceport = (socket.tag.nextsourceport++ % 30000) + 1024;
         var cirachannel = { targetport: targetport, channelid: socket.tag.nextchannelid++, socket: socket, state: 1, sendcredits: 0, amtpendingcredits: 0, amtCiraWindow: 0, ciraWindow: 32768 };
-        SendChannelOpen(socket, false, cirachannel.channelid, cirachannel.ciraWindow, socket.tag.host, targetport, "1.2.3.4", sourceport);
+        SendChannelOpen(socket, false, cirachannel.channelid, cirachannel.ciraWindow, socket.tag.host, targetport, '1.2.3.4', sourceport);
 
         // This function writes data to this CIRA channel
         cirachannel.write = function (data) {
@@ -1015,8 +1095,12 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     // Change a node to a new meshid, this is called when a node changes groups.
     obj.changeDeviceMesh = function (nodeid, newMeshId) {
-        var socket = obj.ciraConnections[nodeid];
-        if ((socket != null) && (socket.tag != null)) { socket.tag.meshid = newMeshId; }
+        var connectionArray = obj.ciraConnections[nodeid];
+        if (connectionArray == null) return;
+        for (var i in connectionArray) {
+            var socket = connectionArray[i];
+            if ((socket != null) && (socket.tag != null)) { socket.tag.meshid = newMeshId; }
+        }
     }
 
     // Called when handling incoming HTTP data

@@ -41,67 +41,72 @@ module.exports.CreateAmtManager = function(parent) {
     // Handle server events
     // TODO: Only manage devices with connections to this server. In a multi-server setup, we don't want multiple managers talking to the same device.
     obj.HandleEvent = function (source, event, ids, id) {
-        // React to nodes connecting and disconnecting
-        if (event.action == 'nodeconnect') {
-            if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
-                //if ((event.conn & 2) == 0) return // Debug: Only look at CIRA connections
-
-                // We have an OOB connection to Intel AMT, update our information
+        switch (event.action) {
+            case 'nodeconnect': { // React to nodes connecting and disconnecting
+                // See if we have an existing device we manage
                 var dev = obj.amtDevices[event.nodeid];
-                if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
-            /*
-            } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
-                // We have an agent connection without OOB, check if this agent supports Intel AMT
-                var agent = parent.webserver.wsagents[event.nodeid];
-                if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
-                var dev = obj.amtDevices[event.nodeid];
-                if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = event.conn; }
-            */
-            } else {
-                removeDevice(event.nodeid);
-            }
-        }
 
-        // React to node being removed
-        if (event.action == 'removenode') { removeDevice(event.nodeid); }
+                // If the connection type we are using is not longer valid, remove our managed device.
+                if ((dev != null) && (dev.conntype != null) && ((dev.conntype & event.conn) == 0)) { removeDevice(event.nodeid); dev = null; }
 
-        // React to node wakeup command, perform Intel AMT wake if possible
-        if ((event.action == 'wakedevices') && (Array.isArray(event.nodeids))) {
-            for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); }
-        }
-
-        // React to changes in a node
-        if (event.action == 'changenode') {
-            if (event.amtchange === 1) {
-                // A change occured in the Intel AMT credentials, we need to reset the connection
-                removeDevice(event.nodeid);
-
-                // Check if the agent is connected
-                var constate = parent.GetConnectivityState(event.nodeid);
-                if (constate == null) return; // No OOB connectivity, exit now.
-
-                if ((constate & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
+                // Create or update a managed device
+                if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
                     // We have an OOB connection to Intel AMT, update our information
-                    var dev = obj.amtDevices[event.nodeid];
-                    if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: constate }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = constate; }
+                    if (dev == null) {
+                        obj.amtDevices[event.nodeid] = dev = { conn: event.conn }; fetchIntelAmtInformation(event.nodeid);
+                    } else {
+                        dev.conn = event.conn;
+                    }
                 } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
-                    // We have an agent connection without OOB, check if this agent supports Intel AMT
+                    // We have an agent connection without CIRA/Local/Relay, check if this agent supports Intel AMT
                     var agent = parent.webserver.wsagents[event.nodeid];
-                    if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
-                    var dev = obj.amtDevices[event.nodeid];
-                    if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: constate }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = constate; }
-                }
-            } else {
-                var dev = obj.amtDevices[event.nodeid];
-                if (dev != null) {
-                    var amtchange = 0;
-                    if (dev.name != event.node.name) { dev.name = event.node.name; }
-                    if (dev.host != event.node.host) {
-                        dev.host = event.node.host;
-                        // The host has changed, if we are connected to this device locally, we need to reset.
-                        if ((dev.conn & 4) != 0) { removeDevice(dev.nodeid); return; } // We are going to wait for the AMT scanned to find this device again.
+                    if ((agent != null) && (agent.agentInfo != null) && (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == true)) {
+                        // We could turn on LMS relay at this point.
                     }
                 }
+                break;
+            }
+            case 'removenode': { // React to node being removed
+                removeDevice(event.nodeid);
+                break;
+            }
+            case 'wakedevices': { // React to node wakeup command, perform Intel AMT wake if possible
+                if (Array.isArray(event.nodeids)) { for (var i in event.nodeids) { performPowerAction(event.nodeids[i], 2); } }
+                break;
+            }
+            case 'changenode': { // React to changes in a node
+                if (event.amtchange === 1) {
+                    // A change occured in the Intel AMT credentials, we need to reset the connection
+                    removeDevice(event.nodeid);
+
+                    // Check if the agent is connected
+                    var constate = parent.GetConnectivityState(event.nodeid);
+                    if (constate == null) return; // No OOB connectivity, exit now.
+
+                    if ((constate & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
+                        // We have an OOB connection to Intel AMT, update our information
+                        var dev = obj.amtDevices[event.nodeid];
+                        if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: constate }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = constate; }
+                    } else if (((event.conn & 1) != 0) && (parent.webserver != null)) {
+                        // We have an agent connection without OOB, check if this agent supports Intel AMT
+                        var agent = parent.webserver.wsagents[event.nodeid];
+                        if ((agent == null) || (agent.agentInfo == null) || (parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId].amt == false)) { removeDevice(event.nodeid); return; }
+                        var dev = obj.amtDevices[event.nodeid];
+                        if (dev == null) { obj.amtDevices[event.nodeid] = dev = { conn: constate }; fetchIntelAmtInformation(event.nodeid); } else { dev.conn = constate; }
+                    }
+                } else {
+                    var dev = obj.amtDevices[event.nodeid];
+                    if (dev != null) {
+                        var amtchange = 0;
+                        if (dev.name != event.node.name) { dev.name = event.node.name; }
+                        if (dev.host != event.node.host) {
+                            dev.host = event.node.host;
+                            // The host has changed, if we are connected to this device locally, we need to reset.
+                            if ((dev.conn & 4) != 0) { removeDevice(dev.nodeid); return; } // We are going to wait for the AMT scanned to find this device again.
+                        }
+                    }
+                }
+                break;
             }
         }
     }
@@ -186,23 +191,24 @@ module.exports.CreateAmtManager = function(parent) {
             if (node.host) { dev.host = node.host.toLowerCase(); }
             dev.meshid = node.meshid;
             dev.intelamt = node.intelamt;
-            attemptInitialContact(nodeid, dev);
+            attemptInitialContact(dev);
         });
     }
 
     // Attempt to perform initial contact with Intel AMT
-    function attemptInitialContact(nodeid, dev) {
-        if (dev == null) { dev = obj.amtDevices[nodeid]; }
+    function attemptInitialContact(dev) {
         if (dev == null) return;
+        //console.log('attemptInitialContact', dev.name);
 
         if ((dev.acctry == null) && ((typeof dev.intelamt.user != 'string') || (typeof dev.intelamt.pass != 'string'))) {
             if (obj.amtAdminAccounts.length > 0) { dev.acctry = 0; } else { return; }
         }
 
         // Handle the case where the Intel AMT CIRA is connected (conn & 2)
+        // In this connection type, we look at the port bindings to see if we need to do TLS or not.
         if ((dev.conn & 2) != 0) {
             // Check to see if CIRA is connected on this server.
-            var ciraconn = parent.mpsserver.ciraConnections[dev.nodeid];
+            var ciraconn = parent.mpsserver.GetConnectionToNode(dev.nodeid, null, 0); // Select the CIRA connection
             if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { removeDevice(dev.nodeid); return; } // CIRA connection is not on this server, no need to deal with this device anymore.
 
             // See what user/pass to try.
@@ -218,11 +224,12 @@ module.exports.CreateAmtManager = function(parent) {
             // Connect now
             //console.log('CIRA-Connect', (dotls == 1)?"TLS":"NoTLS", dev.name, dev.host, user, pass);
             var comm;
+            dotls = 0; // TODO: We don't support TLS with CIRA/Relay/LMS connections yet. Remove this when we do.
             if (dotls == 1) {
-                comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, parent.mpsserver); // Perform TLS
+                comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
                 comm.xtlsFingerprint = 0; // Perform no certificate checking
             } else {
-                comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, parent.mpsserver); // No TLS
+                comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, ciraconn); // No TLS
             }
             var wsstack = WsmanStackCreateService(comm);
             dev.amtstack = AmtStackCreateService(wsstack);
@@ -234,12 +241,45 @@ module.exports.CreateAmtManager = function(parent) {
             return; // If CIRA is connected, don't try any other methods.
         }
 
+        // Handle the case where the Intel AMT relay is connected (conn & 8)
+        if ((dev.conn & 8) != 0) {
+            // Check to see if CIRA is connected on this server.
+            var ciraconn = parent.mpsserver.GetConnectionToNode(dev.nodeid, null, 1); // Select a relay connection
+            if ((ciraconn == null) || (ciraconn.tag == null) || (ciraconn.tag.boundPorts == null)) { removeDevice(dev.nodeid); return; } // CIRA connection is not on this server, no need to deal with this device anymore.
+
+            // See what user/pass to try.
+            var user = null, pass = null;
+            if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; } else { user = obj.amtAdminAccounts[dev.acctry].user; pass = obj.amtAdminAccounts[dev.acctry].pass; }
+
+            // Connect now
+            var comm;
+            dev.tlsfail = true; // TODO: We don't support TLS with CIRA/Relay/LMS connections yet. Remove this when we do.
+            if (dev.tlsfail !== true) {
+                //console.log('Relay-Connect', "TLS", dev.name, dev.host, user, pass);
+                comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
+                comm.xtlsFingerprint = 0; // Perform no certificate checking
+            } else {
+                //console.log('Relay-Connect', "NoTLS", dev.name, dev.host, user, pass);
+                comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, ciraconn); // No TLS
+            }
+            var wsstack = WsmanStackCreateService(comm);
+            dev.amtstack = AmtStackCreateService(wsstack);
+            dev.amtstack.dev = dev;
+            obj.activeLocalConnections[dev.host] = dev;
+            dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
+            dev.conntype = 8; // Relay
+
+            return; // If relay is connected, don't try any other methods.
+        }
+
         // Handle the case where the Intel AMT local scanner found the device (conn & 4)
         if (((dev.conn & 4) != 0) && (typeof dev.host == 'string')) {
             // Since we don't allow two or more connections to the same host, check if a pending connection is active.
             if (obj.activeLocalConnections[dev.host] != null) {
                 // Active connection, hold and try later.
-                setTimeout(function () { attemptInitialContact(nodeid); }, 5000);
+                var tryAgainFunc = function tryAgainFunc() { if (obj.amtDevices[tryAgainFunc.dev.nodeid] != null) { attemptInitialContact(tryAgainFunc.dev); } }
+                tryAgainFunc.dev = dev;
+                setTimeout(tryAgainFunc, 5000);
             } else {
                 // No active connections, see what user/pass to try.
                 var user = null, pass = null;
@@ -248,11 +288,11 @@ module.exports.CreateAmtManager = function(parent) {
                 // Connect now
                 var comm;
                 if (dev.tlsfail !== true) {
-                    //console.log('Connect', "TLS", dev.name, dev.host, user, pass);
+                    //console.log('Direct-Connect', "TLS", dev.name, dev.host, user, pass);
                     comm = CreateWsmanComm(dev.host, 16993, user, pass, 1); // Always try with TLS first
                     comm.xtlsFingerprint = 0; // Perform no certificate checking
                 } else {
-                    //console.log('Connect', "NoTLS", dev.name, dev.host, user, pass);
+                    //console.log('Direct-Connect', "NoTLS", dev.name, dev.host, user, pass);
                     comm = CreateWsmanComm(dev.host, 16992, user, pass, 0); // Try without TLS
                 }
                 var wsstack = WsmanStackCreateService(comm);
@@ -301,11 +341,11 @@ module.exports.CreateAmtManager = function(parent) {
             // We got a bad response
             if ((dev.conntype == 1) && (dev.tlsfail !== true) && (status == 408)) {
                 // TLS error on a local connection, try again without TLS
-                dev.tlsfail = true; attemptInitialContact(dev.nodeid, dev); return;
+                dev.tlsfail = true; attemptInitialContact(dev); return;
             } else if (status == 401) {
                 // Authentication error, see if we can use alternative credentials
-                if ((dev.acctry == null) && (obj.amtAdminAccounts.length > 0)) { dev.acctry = 0; attemptInitialContact(dev.nodeid, dev); return; }
-                if ((dev.acctry != null) && (obj.amtAdminAccounts.length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev.nodeid, dev); return; }
+                if ((dev.acctry == null) && (obj.amtAdminAccounts.length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
+                if ((dev.acctry != null) && (obj.amtAdminAccounts.length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
 
                 // We are unable to authenticate to this device, clear Intel AMT credentials.
                 ClearDeviceCredentials(dev);

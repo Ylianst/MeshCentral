@@ -113,10 +113,9 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
             */
 
             // If Intel AMT CIRA connection is available, use it
-            if (((conn & 2) != 0) && (meshcentral.mpsserver.ciraConnections[nodeid] != null)) {
+            var ciraconn = meshcentral.mpsserver.GetConnectionToNode(nodeid, null, true); // Request an OOB connection
+            if (ciraconn != null) {
                 Debug(1, 'Opening Intel AMT CIRA transport connection to ' + nodeid + '.');
-
-                var ciraconn = meshcentral.mpsserver.ciraConnections[nodeid];
 
                 // Compute target port, look at the CIRA port mappings, if non-TLS is allowed, use that, if not use TLS
                 var port = 16995;

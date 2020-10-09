@@ -7,6 +7,8 @@
 */
 
 function CreateAPFClient(parent, args) {
+    if ((args.clientuuid == null) || (args.clientuuid.length != 36)) return null; // Require a UUID if this exact length
+
     var obj = {};
     obj.parent = parent;
     obj.args = args;
@@ -57,7 +59,7 @@ function CreateAPFClient(parent, args) {
 
     // Intel AMT forwarded port list for non-TLS mode
     //var pfwd_ports = [16992, 623, 16994, 5900];
-    var pfwd_ports = [ 16992 ];
+    var pfwd_ports = [ 16992, 16993 ];
 
     // protocol definitions
     var APFProtocol = {
@@ -81,7 +83,8 @@ function CreateAPFClient(parent, args) {
         KEEPALIVE_REQUEST: 208,
         KEEPALIVE_REPLY: 209,
         KEEPALIVE_OPTIONS_REQUEST: 210,
-        KEEPALIVE_OPTIONS_REPLY: 211
+        KEEPALIVE_OPTIONS_REPLY: 211,
+        MESH_CONNECTION_TYPE: 250 // This is a Mesh specific command that instructs the server of the connection type: 1 = Relay, 2 = LMS.
     }
 
     var APFDisconnectCode = {
@@ -160,13 +163,18 @@ function CreateAPFClient(parent, args) {
         });
 
         obj.state = CIRASTATE.INITIAL;
+        if (typeof obj.args.conntype == 'number') { SendConnectionType(obj.forwardClient.ws, obj.args.conntype); }
         SendProtocolVersion(obj.forwardClient.ws, obj.args.clientuuid);
         SendServiceRequest(obj.forwardClient.ws, 'auth@amt.intel.com');
     }
 
+    function SendConnectionType(socket, type) {
+        socket.write(String.fromCharCode(APFProtocol.MESH_CONNECTION_TYPE) + IntToStr(type));
+        Debug("APF: Send connection type " + type);
+    }
+
     function SendProtocolVersion(socket, uuid) {
-        var buuid = strToGuid(uuid);
-        var data = String.fromCharCode(APFProtocol.PROTOCOLVERSION) + '' + IntToStr(1) + IntToStr(0) + IntToStr(0) + hex2rstr(buuid) + binzerostring(64);
+        var data = String.fromCharCode(APFProtocol.PROTOCOLVERSION) + IntToStr(1) + IntToStr(0) + IntToStr(0) + hex2rstr(strToGuid(uuid)) + binzerostring(64);
         socket.write(data);
         Debug("APF: Send protocol version 1 0 " + uuid);
         obj.cirastate = CIRASTATE.PROTOCOL_VERSION_SENT;
