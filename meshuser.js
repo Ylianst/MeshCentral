@@ -4670,9 +4670,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((state == null) || (state.connectivity & 4) == 0) break;
                 } else if (command.mode == 2) {
                     if (parent.parent.mpsserver.ciraConnections[command.nodeid] == null) break;
-                } else if (command.mode == 3) {
+                }
+                /*
+                else if (command.mode == 3) {
                     if (parent.parent.apfserver.apfConnections[command.nodeid] == null) break;
                 }
+                */
 
                 // Get the node and the rights for this node
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {

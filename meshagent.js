@@ -1475,7 +1475,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Change the current core information string and event it
     function ChangeAgentCoreInfo(command) {
-        if (obj.agentInfo.capabilities & 0x40) return;
+        if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
         if ((command == null) || (command == null)) return; // Safety, should never happen.
 
         // If the device is pending a change, hold.

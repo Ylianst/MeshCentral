@@ -6,60 +6,30 @@
 * @version v0.0.1
 */
 
-function CreateAPFClient(parent, args) {    
+function CreateAPFClient(parent, args) {
     var obj = {};
     obj.parent = parent;
     obj.args = args;
     obj.http = require('http');
-    //obj.common = require('common');    
-    obj.net = require('net');    
+    obj.net = require('net');
     obj.forwardClient = null;
     obj.downlinks = {};
     obj.pfwd_idx = 0;
-    // keep alive timer
-    obj.timer = null;
-    
-    // some function copied from common.js
-    function ReadInt(v, p) { 
-        return (v.charCodeAt(p) * 0x1000000) + (v.charCodeAt(p + 1) << 16) + (v.charCodeAt(p + 2) << 8) + v.charCodeAt(p + 3); 
-    }; // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
-    
-    function IntToStr(v) { 
-        return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); 
-    };
+    obj.timer = null; // Keep alive timer
 
-    function hex2rstr(d) {
-        var r = '', m = ('' + d).match(/../g), t;
-        while (t = m.shift()) { r += String.fromCharCode('0x' + t); }
-        return r;
-    };
+    // Function copied from common.js
+    function ReadInt(v, p) { return (v.charCodeAt(p) * 0x1000000) + (v.charCodeAt(p + 1) << 16) + (v.charCodeAt(p + 2) << 8) + v.charCodeAt(p + 3); }; // We use "*0x1000000" instead of "<<24" because the shift converts the number to signed int32.
+    function IntToStr(v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+    function hex2rstr(d) { var r = '', m = ('' + d).match(/../g), t; while (t = m.shift()) { r += String.fromCharCode('0x' + t); } return r; };
+    function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); }; // Convert decimal to hex
+    function rstr2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); } return r; }; // Convert a raw string to a hex string
+    function d2h(d) { return (d / 256 + 1 / 512).toString(16).substring(2, 4); }
+    function buf2hex(input) { var r = '', i; for (i = 0; i < input.length; i++) { r += d2h(input[i]); } return r; };
+    function Debug(str) { if (obj.parent.debug) { console.log(str); } }
+    function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
+    function strToGuid(s) { s = s.replace(/-/g, ''); var ret = s.substring(6, 8) + s.substring(4, 6) + s.substring(2, 4) + s.substring(0, 2) + s.substring(10, 12) + s.substring(8, 10) + s.substring(14, 16) + s.substring(12, 14) + s.substring(16, 20) + s.substring(20); return ret; }
+    function binzerostring(len) { var res = ''; for (var l = 0; l < len; l++) { res += String.fromCharCode(0 & 0xFF); } return res; }
 
-    // Convert decimal to hex
-    function char2hex(i) { return (i + 0x100).toString(16).substr(-2).toUpperCase(); };
-
-    // Convert a raw string to a hex string
-    function rstr2hex(input) {
-        var r = '', i;
-        for (i = 0; i < input.length; i++) { r += char2hex(input.charCodeAt(i)); }
-        return r;
-    };
-
-    function d2h(d) {
-        return (d / 256 + 1 / 512).toString(16).substring(2, 4);
-    }
-
-    function buf2hex(input) {
-        var r = '', i;        
-        for (i = 0; i < input.length; i++) { r += d2h(input[i]); }
-        return r;
-    };
-
-    
-    function Debug(str) {
-        if (obj.parent.debug) {
-            console.log(str);
-        }
-    }
     // CIRA state
     var CIRASTATE = {
         INITIAL: 0,
@@ -85,9 +55,10 @@ function CreateAPFClient(parent, args) {
     obj.RedirectStartKvm = String.fromCharCode(0x10, 0x01, 0x00, 0x00, 0x4b, 0x56, 0x4d, 0x52);
     obj.RedirectStartIder = String.fromCharCode(0x10, 0x00, 0x00, 0x00, 0x49, 0x44, 0x45, 0x52);
 
+    // Intel AMT forwarded port list for non-TLS mode
+    //var pfwd_ports = [16992, 623, 16994, 5900];
+    var pfwd_ports = [ 16992 ];
 
-    // AMT forwarded port list for non-TLS mode
-    var pfwd_ports = [16992, 623, 16994, 5900];
     // protocol definitions
     var APFProtocol = {
         UNKNOWN: 0,
@@ -152,7 +123,7 @@ function CreateAPFClient(parent, args) {
         Debug("APF Secure WebSocket connected.");
         //console.log(JSON.stringify(resp));                
         obj.forwardClient.tag = { accumulator: [] };
-        obj.forwardClient.ws = ws;                
+        obj.forwardClient.ws = ws;
         obj.forwardClient.ws.on('end', function () {
             Debug("APF: Connection is closing.");
             if (obj.timer != null) {
@@ -162,12 +133,12 @@ function CreateAPFClient(parent, args) {
         });
 
         obj.forwardClient.ws.on('data', function (data) {
-            obj.forwardClient.tag.accumulator += hex2rstr(buf2hex(data));                        
+            obj.forwardClient.tag.accumulator += hex2rstr(buf2hex(data));
             try {
                 var len = 0;
                 do {
                     len = ProcessData(obj.forwardClient);
-                    if (len > 0) {                        
+                    if (len > 0) {
                         obj.forwardClient.tag.accumulator = obj.forwardClient.tag.accumulator.slice(len);
                     }
                     if (obj.cirastate == CIRASTATE.FAILED) {
@@ -178,44 +149,26 @@ function CreateAPFClient(parent, args) {
             } catch (e) {
                 Debug(e);
             }
-        });        
-        
+        });
+
         obj.forwardClient.ws.on('error', function (e) {
             Debug("APF: Connection error, ending connecting.");
             if (obj.timer != null) {
                 clearInterval(obj.timer);
                 obj.timer = null;
             }
-        });        
+        });
 
         obj.state = CIRASTATE.INITIAL;
         SendProtocolVersion(obj.forwardClient.ws, obj.args.clientuuid);
         SendServiceRequest(obj.forwardClient.ws, 'auth@amt.intel.com');
     }
 
-    function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
-    function strToGuid(s) {
-        s = s.replace(/-/g, '');
-        var ret = s.substring(6, 8) + s.substring(4, 6) + s.substring(2, 4) + s.substring(0, 2);
-        ret += s.substring(10, 12) + s.substring(8, 10) + s.substring(14, 16) + s.substring(12, 14) + s.substring(16, 20) + s.substring(20);
-        return ret;
-    }
-
-    function binzerostring(len) {
-        var res='';
-        for (var l=0; l< len ; l++) {
-            res+=String.fromCharCode(0 & 0xFF);
-        }
-        return res;
-    }
-
-
-    
-    function SendProtocolVersion(socket, uuid) {        
+    function SendProtocolVersion(socket, uuid) {
         var buuid = strToGuid(uuid);
         var data = String.fromCharCode(APFProtocol.PROTOCOLVERSION) + '' + IntToStr(1) + IntToStr(0) + IntToStr(0) + hex2rstr(buuid) + binzerostring(64);
-        socket.write(data);        
-        Debug("APF: Send protocol version 1 0 " + uuid);        
+        socket.write(data);
+        Debug("APF: Send protocol version 1 0 " + uuid);
         obj.cirastate = CIRASTATE.PROTOCOL_VERSION_SENT;
     }
 
@@ -267,7 +220,8 @@ function CreateAPFClient(parent, args) {
         var len = socket.tag.accumulator.length;
         var data = socket.tag.accumulator;
         if (len == 0) { return 0; }
-        // respond to MPS according to obj.cirastate
+
+        // Respond to MPS according to obj.cirastate
         switch (cmd) {
             case APFProtocol.SERVICE_ACCEPT: {
                 var slen = ReadInt(data, 1);
@@ -325,39 +279,50 @@ function CreateAPFClient(parent, args) {
             }
             // Channel management
             case APFProtocol.CHANNEL_OPEN: {
-                //parse CHANNEL OPEN request
+                // Parse CHANNEL OPEN request
                 var p_res = parseChannelOpen(data);
                 Debug("APF: CHANNEL_OPEN request: " + JSON.stringify(p_res));
                 // Check if target port is in pfwd_ports
                 if (pfwd_ports.indexOf(p_res.target_port) >= 0) {
-                    // connect socket to that port
-                    obj.downlinks[p_res.sender_chan] = obj.net.createConnection({ host: obj.args.clientaddress, port: p_res.target_port }, function () {
-                        //obj.downlinks[p_res.sender_chan].setEncoding('binary');//assume everything is binary, not interpreting
+                    // Connect socket to that port
+                    var chan = obj.net.createConnection({ host: obj.args.clientaddress, port: p_res.target_port }, function () {
+                        //require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "CHANNEL_OPEN-open" });
+                        // obj.downlinks[p_res.sender_chan].setEncoding('binary');//assume everything is binary, not interpreting
                         SendChannelOpenConfirm(socket.ws, p_res);
                     });
 
-                    obj.downlinks[p_res.sender_chan].on('data', function (ddata) {
-                        //Relay data to fordwardclient
+                    // Setup flow control
+                    chan.maxInWindow = p_res.window_size; // Oddly, we are using the same window size as the other side.
+                    chan.curInWindow = 0;
+
+                    chan.on('data', function (ddata) {
+                        // Relay data to fordwardclient
+                        // TODO: Implement flow control
                         SendChannelData(socket.ws, p_res.sender_chan, ddata.length, ddata);
                     });
 
-                    obj.downlinks[p_res.sender_chan].on('error', function (e) {
+                    chan.on('error', function (e) {
                         Debug("Downlink connection error: " + e);
                     });
 
-                    obj.downlinks[p_res.sender_chan].on('end', function () {
-                        if (obj.downlinks[p_res.sender_chan]) {
+                    chan.on('end', function () {
+                        var chan = obj.downlinks[p_res.sender_chan];
+                        if (chan != null) {
                             try {
                                 Debug("Socket ends.");
                                 SendChannelClose(socket.ws, p_res.sender_chan);
-                                // add some delay before removing... otherwise race condition
-                                setTimeout(function () { delete obj.downlinks[p_res.sender_chan];},100);
+                                chan.xclosed = 1;
+                                // Add some delay before removing... otherwise race condition
+                                setTimeout(function () { delete obj.downlinks[p_res.sender_chan]; }, 100);
                             } catch (e) {
                                 Debug("Downlink connection exception: " + e);
                             }
                         }
                     });
+
+                    obj.downlinks[p_res.sender_chan] = chan;
                 } else {
+                    // Not a supported port, fail the connection
                     SendChannelOpenFailure(socket.ws, p_res);
                 }
                 return p_res.len;
@@ -369,11 +334,12 @@ function CreateAPFClient(parent, args) {
             case APFProtocol.CHANNEL_CLOSE: {
                 var rcpt_chan = ReadInt(data, 1);
                 Debug("APF: CHANNEL_CLOSE: " + rcpt_chan);
-                SendChannelClose(socket.ws, rcpt_chan);
-                try {
-                    obj.downlinks[rcpt_chan].end();
+                var chan = obj.downlinks[rcpt_chan];
+                if ((chan != null) && (chan.xclosed !== 1)) {
+                    SendChannelClose(socket.ws, rcpt_chan);
+                    try { obj.downlinks[rcpt_chan].end(); } catch (e) { }
                     delete obj.downlinks[rcpt_chan];
-                } catch (e) { }
+                }
                 return 5;
             }
             case APFProtocol.CHANNEL_DATA: {
@@ -381,11 +347,14 @@ function CreateAPFClient(parent, args) {
                 var rcpt_chan = ReadInt(data, 1);
                 var chan_data_len = ReadInt(data, 5);
                 var chan_data = data.substring(9, 9 + chan_data_len);
-                if (obj.downlinks[rcpt_chan]) {
+                var chan = obj.downlinks[rcpt_chan];
+                if (chan != null) {
+                    chan.curInWindow += chan_data_len;
                     try {
-                        obj.downlinks[rcpt_chan].write(chan_data, 'binary', function () {
+                        chan.write(chan_data, 'binary', function () {
                             Debug("Write completed.");
-                            SendChannelWindowAdjust(socket.ws, rcpt_chan, chan_data_len);//I have full window capacity now
+                            // If the incoming window is over half used, send an adjust.
+                            if (this.curInWindow > (this.maxInWindow / 2)) { SendChannelWindowAdjust(socket.ws, rcpt_chan, this.curInWindow); this.curInWindow = 0; }
                         });
                     } catch (e) {
                         Debug("Cannot forward data to downlink socket.");
@@ -406,17 +375,7 @@ function CreateAPFClient(parent, args) {
     }
 
     function parseChannelOpen(data) {
-        var result = {
-            len: 0, //to be filled later
-            cmd: APFProtocol.CHANNEL_OPEN,
-            chan_type: "", //to be filled later
-            sender_chan: 0, //to be filled later
-            window_size: 0, //to be filled later
-            target_address: "", //to be filled later
-            target_port: 0, //to be filled later
-            origin_address: "", //to be filled later
-            origin_port: 0, //to be filled later
-        };
+        var result = { cmd: APFProtocol.CHANNEL_OPEN };
         var chan_type_slen = ReadInt(data, 1);
         result.chan_type = data.substring(5, 5 + chan_type_slen);
         result.sender_chan = ReadInt(data, 5 + chan_type_slen);
@@ -430,12 +389,14 @@ function CreateAPFClient(parent, args) {
         result.len = 33 + chan_type_slen + c_len + o_len;
         return result;
     }
+
     function SendChannelOpenFailure(socket, chan_data) {
         var data = String.fromCharCode(APFProtocol.CHANNEL_OPEN_FAILURE) + IntToStr(chan_data.sender_chan)
             + IntToStr(2) + IntToStr(0) + IntToStr(0);
         socket.write(data);
         Debug("APF: Send ChannelOpenFailure");
     }
+
     function SendChannelOpenConfirm(socket, chan_data) {
         var data = String.fromCharCode(APFProtocol.CHANNEL_OPEN_CONFIRMATION) + IntToStr(chan_data.sender_chan)
             + IntToStr(chan_data.sender_chan) + IntToStr(chan_data.window_size) + IntToStr(0xFFFFFFFF);
@@ -472,25 +433,18 @@ function CreateAPFClient(parent, args) {
         }
         obj.cirastate = CIRASTATE.INITIAL;
         obj.pfwd_idx = 0;
-        
+
         //obj.forwardClient = new obj.ws(obj.args.mpsurl, obj.tlsoptions);
         //obj.forwardClient.on("open", obj.onSecureConnect);
 
-
-        var wsoptions = obj.http.parseUri(obj.args.mpsurl);        
+        var wsoptions = obj.http.parseUri(obj.args.mpsurl);
         wsoptions.rejectUnauthorized = 0;
-        obj.forwardClient = obj.http.request(wsoptions);        
-        obj.forwardClient.upgrade = obj.onSecureConnect;        
+        obj.forwardClient = obj.http.request(wsoptions);
+        obj.forwardClient.upgrade = obj.onSecureConnect;
         obj.forwardClient.end(); // end request, trigger completion of HTTP request
     }
 
-    obj.disconnect = function () {
-        try {
-            obj.forwardClient.ws.end();
-        } catch (e) {
-            Debug(e);
-        }
-    }
+    obj.disconnect = function () { try { obj.forwardClient.ws.end(); } catch (e) { Debug(e); } }
 
     return obj;
 }

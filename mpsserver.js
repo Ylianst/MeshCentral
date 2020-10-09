@@ -144,11 +144,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     // Delay setting the connectivity state by 300ms to allow time for CIRA port mappings to be established
     // Report power state as "present" (7) until Intel AMT manager starts polling for power state.
-    function delayedSetConnectivityState(meshid, nodeid, connectTime) {
-        var f = function setConnFunc() { if (obj.ciraConnections[setConnFunc.nodeid] != null) { obj.parent.SetConnectivityState(setConnFunc.meshid, setConnFunc.nodeid, setConnFunc.connectTime, 2, 7); } }
+    function delayedSetConnectivityState(meshid, nodeid, connectTime, connType) {
+        if (nodeid.startsWith('*')) return; // Don't set connectivity state for Intel AMT self agent relay
+        var f = function setConnFunc() { if (obj.ciraConnections[setConnFunc.nodeid] != null) { obj.parent.SetConnectivityState(setConnFunc.meshid, setConnFunc.nodeid, setConnFunc.connectTime, setConnFunc.connType, 7); } }
         f.nodeid = nodeid;
         f.meshid = meshid;
         f.connectTime = connectTime;
+        f.connType = connType;
         setTimeout(f, 300);
     }
 
@@ -220,13 +222,47 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         return packet_len;
     }
 
+    obj.onWebSocketConnection = function (socket) {
+        connectionCount++;
+        // connType: 2 = CIRA, 8 = Relay
+        socket.tag = { first: true, connType: 2, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], websocket: true, socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+        socket.websocket = 1;
+        parent.debug('mps', "New CIRA websocket connection");
+
+        socket.on('message', function (data) {
+            if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS <-- (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
+            this.tag.accumulator += data.toString('binary'); // Append as binary string
+            try {
+                // Parse all of the APF data we can
+                var l = 0;
+                do { l = ProcessCommand(this); if (l > 0) { this.tag.accumulator = this.tag.accumulator.substring(l); } } while (l > 0);
+                if (l < 0) { this.terminate(); }
+            } catch (e) {
+                console.log(e);
+            }
+        });
+
+        socket.addListener('close', function () {
+            socketClosedCount++;
+            parent.debug('mps', "CIRA websocket closed", this.tag.meshid, this.tag.nodeid);
+            try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
+            if (!this.tag.nodeid.startsWith('*')) { obj.parent.ClearConnectivityState(this.tag.meshid, this.tag.nodeid, this.tag.connType); }
+        });
+
+        socket.addListener('error', function (e) {
+            socketErrorCount++;
+            parent.debug('mps', "CIRA websocket connection error", e);
+        });
+    }
+
     // Called when a new TLS/TCP connection is accepted
     function onConnection(socket) {
         connectionCount++;
+        // connType: 2 = CIRA, 8 = Relay
         if (obj.args.mpstlsoffload) {
-            socket.tag = { first: true, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, connType: 2, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         } else {
-            socket.tag = { first: true, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
+            socket.tag = { first: true, connType: 2, clientCert: socket.getPeerCertificate(true), accumulator: '', activetunnels: 0, boundPorts: [], socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
         }
         socket.setEncoding('binary');
         parent.debug('mps', "New CIRA connection");
@@ -234,6 +270,19 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         // Setup the CIRA keep alive timer
         socket.setTimeout(MAX_IDLE);
         socket.on('timeout', () => { ciraTimeoutCount++; parent.debug('mps', "CIRA timeout, disconnecting."); try { socket.end(); } catch (e) { } });
+
+        socket.addListener('close', function () {
+            socketClosedCount++;
+            parent.debug('mps', 'CIRA connection closed');
+            try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
+            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connType);
+        });
+
+        socket.addListener('error', function (e) {
+            socketErrorCount++;
+            parent.debug('mps', 'CIRA connection error', e);
+            //console.log("MPS Error: " + socket.remoteAddress);
+        });
 
         socket.addListener('data', function (data) {
             if (args.mpsdebug) { var buf = Buffer.from(data, 'binary'); console.log("MPS --> (" + buf.length + "):" + buf.toString('hex')); } // Print out received bytes
@@ -334,8 +383,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                                             // Add the connection to the MPS connection list
                                             obj.ciraConnections[socket.tag.nodeid] = socket;
-                                            //obj.parent.SetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, 2, 7); // TODO: Right now report power state as "present" (7) until we can poll.
-                                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
+                                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
                                         }
                                     });
                                     return;
@@ -365,7 +413,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                         // Add the connection to the MPS connection list
                         obj.ciraConnections[socket.tag.nodeid] = socket;
-                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
+                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
                     });
                 } else {
                     // This node connected without certificate authentication, use password auth
@@ -382,355 +430,294 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 console.log(e);
             }
         });
+    }
 
-        // Process one APF command
-        function ProcessCommand(socket) {
-            var cmd = socket.tag.accumulator.charCodeAt(0);
-            var len = socket.tag.accumulator.length;
-            var data = socket.tag.accumulator;
-            if (len == 0) { return 0; }
+    // Process one APF command
+    function ProcessCommand(socket) {
+        var cmd = socket.tag.accumulator.charCodeAt(0);
+        var len = socket.tag.accumulator.length;
+        var data = socket.tag.accumulator;
+        if (len == 0) { return 0; }
 
-            switch (cmd) {
-                case APFProtocol.KEEPALIVE_REQUEST: {
-                    if (len < 5) return 0;
-                    parent.debug('mpscmd', '--> KEEPALIVE_REQUEST');
-                    SendKeepAliveReply(socket, common.ReadInt(data, 1));
-                    return 5;
+        switch (cmd) {
+            case APFProtocol.KEEPALIVE_REQUEST: {
+                if (len < 5) return 0;
+                parent.debug('mpscmd', '--> KEEPALIVE_REQUEST');
+                SendKeepAliveReply(socket, common.ReadInt(data, 1));
+                return 5;
+            }
+            case APFProtocol.KEEPALIVE_REPLY: {
+                if (len < 5) return 0;
+                parent.debug('mpscmd', '--> KEEPALIVE_REPLY');
+                return 5;
+            }
+            case APFProtocol.PROTOCOLVERSION: {
+                if (len < 93) return 0;
+                protocolVersionCount++;
+                socket.tag.MajorVersion = common.ReadInt(data, 1);
+                socket.tag.MinorVersion = common.ReadInt(data, 5);
+                socket.tag.SystemId = guidToStr(common.rstr2hex(data.substring(13, 29))).toLowerCase();
+                parent.debug('mpscmd', '--> PROTOCOLVERSION', socket.tag.MajorVersion, socket.tag.MinorVersion, socket.tag.SystemId);
+                return 93;
+            }
+            case APFProtocol.USERAUTH_REQUEST: {
+                if (len < 13) return 0;
+                userAuthRequestCount++;
+                var usernameLen = common.ReadInt(data, 1);
+                var username = data.substring(5, 5 + usernameLen);
+                var serviceNameLen = common.ReadInt(data, 5 + usernameLen);
+                var serviceName = data.substring(9 + usernameLen, 9 + usernameLen + serviceNameLen);
+                var methodNameLen = common.ReadInt(data, 9 + usernameLen + serviceNameLen);
+                var methodName = data.substring(13 + usernameLen + serviceNameLen, 13 + usernameLen + serviceNameLen + methodNameLen);
+                var passwordLen = 0, password = null;
+                if (methodName == 'password') {
+                    passwordLen = common.ReadInt(data, 14 + usernameLen + serviceNameLen + methodNameLen);
+                    password = data.substring(18 + usernameLen + serviceNameLen + methodNameLen, 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen);
                 }
-                case APFProtocol.KEEPALIVE_REPLY: {
-                    if (len < 5) return 0;
-                    parent.debug('mpscmd', '--> KEEPALIVE_REPLY');
-                    return 5;
-                }
-                case APFProtocol.PROTOCOLVERSION: {
-                    if (len < 93) return 0;
-                    protocolVersionCount++;
-                    socket.tag.MajorVersion = common.ReadInt(data, 1);
-                    socket.tag.MinorVersion = common.ReadInt(data, 5);
-                    socket.tag.SystemId = guidToStr(common.rstr2hex(data.substring(13, 29))).toLowerCase();
-                    parent.debug('mpscmd', '--> PROTOCOLVERSION', socket.tag.MajorVersion, socket.tag.MinorVersion, socket.tag.SystemId);
-                    return 93;
-                }
-                case APFProtocol.USERAUTH_REQUEST: {
-                    if (len < 13) return 0;
-                    userAuthRequestCount++;
-                    var usernameLen = common.ReadInt(data, 1);
-                    var username = data.substring(5, 5 + usernameLen);
-                    var serviceNameLen = common.ReadInt(data, 5 + usernameLen);
-                    var serviceName = data.substring(9 + usernameLen, 9 + usernameLen + serviceNameLen);
-                    var methodNameLen = common.ReadInt(data, 9 + usernameLen + serviceNameLen);
-                    var methodName = data.substring(13 + usernameLen + serviceNameLen, 13 + usernameLen + serviceNameLen + methodNameLen);
-                    var passwordLen = 0, password = null;
-                    if (methodName == 'password') {
-                        passwordLen = common.ReadInt(data, 14 + usernameLen + serviceNameLen + methodNameLen);
-                        password = data.substring(18 + usernameLen + serviceNameLen + methodNameLen, 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen);
-                    }
-                    //console.log('MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
-                    parent.debug('mpscmd', '--> USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
+                //console.log('MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
+                parent.debug('mpscmd', '--> USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
 
-                    // Check the CIRA password
-                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                // Check the CIRA password
+                if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
 
-                    // Check the CIRA username, which should be the start of the MeshID.
-                    if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
-                    var meshIdStart = '/' + username, mesh = null;
-                    if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
+                // Check the CIRA username, which should be the start of the MeshID.
+                if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
+                var meshIdStart = '/' + username, mesh = null;
+                if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
+                if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
 
-                    // If this is a agent-less mesh, use the device guid 3 times as ID.
-                    if (mesh.mtype == 1) {
-                        // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
-                        var systemid = socket.tag.SystemId.split('-').join('');
-                        var nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                        var domain = obj.parent.config.domains[mesh.domain];
-                        socket.tag.domain = domain;
-                        socket.tag.domainid = mesh.domain;
-                        socket.tag.name = '';
-                        socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
-                        socket.tag.meshid = mesh._id;
+                // If this is a agent-less mesh, use the device guid 3 times as ID.
+                if (mesh.mtype == 1) {
+                    // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
+                    var systemid = socket.tag.SystemId.split('-').join('');
+                    var nodeid = Buffer.from(systemid + systemid + systemid, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                    var domain = obj.parent.config.domains[mesh.domain];
+                    socket.tag.domain = domain;
+                    socket.tag.domainid = mesh.domain;
+                    socket.tag.name = '';
+                    socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
+                    socket.tag.meshid = mesh._id;
+                    socket.tag.connectTime = Date.now();
+
+                    obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                        if ((nodes == null) || (nodes.length !== 1)) {
+                            // Check if we already have too many devices for this domain
+                            if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
+                                db.isMaxType(domain.limits.maxdevices, 'node', mesh.domain, function (ismax, count) {
+                                    if (ismax == true) {
+                                        // Too many devices in this domain.
+                                        maxDomainDevicesReached++;
+                                        console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
+                                        socket.end();
+                                    } else {
+                                        // We are under the limit, create the new device.
+                                        // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                        obj.db.Set(device);
+
+                                        // Event the new node
+                                        addedDeviceCount++;
+                                        var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
+                                        obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+
+                                        // Add the connection to the MPS connection list
+                                        obj.ciraConnections[socket.tag.nodeid] = socket;
+                                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                                        SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                                    }
+                                });
+                                return;
+                            } else {
+                                // Node is not in the database, add it. Credentials will be empty until added by the user.
+                                var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                obj.db.Set(device);
+
+                                // Event the new node
+                                addedDeviceCount++;
+                                var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
+                                obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
+                            }
+                        } else {
+                            // Node is already present
+                            var node = nodes[0];
+                            socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
+                            if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
+                        }
+
+                        // Add the connection to the MPS connection list
+                        obj.ciraConnections[socket.tag.nodeid] = socket;
+                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                        SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                    });
+                } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
+                    // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
+                    obj.db.getAmtUuidNode(socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
+                        if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
+                            // New CIRA connection for unknown node, disconnect.
+                            unknownNodeCount++;
+                            console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
+                            socket.end();
+                            return;
+                        }
+
+                        // Looking at nodes that match this UUID, select one in the same domain and mesh type.
+                        var node = null;
+                        for (var i in nodes) {
+                            if (mesh.domain == nodes[i].domain) {
+                                var nodemesh = obj.parent.webserver.meshes[nodes[i].meshid];
+                                if ((nodemesh != null) && (nodemesh.mtype == 2)) { node = nodes[i]; }
+                            }
+                        }
+
+                        if (node == null) {
+                            // New CIRA connection for unknown node, disconnect.
+                            unknownNodeCount++;
+                            console.log('CIRA connection for unknown node. candidate(s): ' + nodes.length + ', groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
+                            socket.end();
+                            return;
+                        }
+
+                        // Node is present
+                        if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
+                        socket.tag.nodeid = node._id;
+                        socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
                         socket.tag.connectTime = Date.now();
 
-                        obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length !== 1)) {
-                                // Check if we already have too many devices for this domain
-                                if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
-                                    db.isMaxType(domain.limits.maxdevices, 'node', mesh.domain, function (ismax, count) {
-                                        if (ismax == true) {
-                                            // Too many devices in this domain.
-                                            maxDomainDevicesReached++;
-                                            console.log('Too many devices on this domain to accept the CIRA connection. meshid: ' + socket.tag.meshid);
-                                            socket.end();
-                                        } else {
-                                            // We are under the limit, create the new device.
-                                            // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
-                                            obj.db.Set(device);
-
-                                            // Event the new node
-                                            addedDeviceCount++;
-                                            var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                            obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
-
-                                            // Add the connection to the MPS connection list
-                                            obj.ciraConnections[socket.tag.nodeid] = socket;
-                                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
-                                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
-                                        }
-                                    });
-                                    return;
-                                } else {
-                                    // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
-                                    obj.db.Set(device);
-
-                                    // Event the new node
-                                    addedDeviceCount++;
-                                    var change = 'CIRA added device ' + socket.tag.name + ' to group ' + mesh.name;
-                                    obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: mesh.domain });
-                                }
-                            } else {
-                                // Node is already present
-                                var node = nodes[0];
-                                socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
-                                if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
-                            }
-
-                            // Add the connection to the MPS connection list
-                            obj.ciraConnections[socket.tag.nodeid] = socket;
-                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
-                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
-                        });
-                    } else if (mesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
-                        // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
-                        obj.db.getAmtUuidNode(socket.tag.SystemId, function (err, nodes) { // TODO: May need to optimize this request with indexes
-                            if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
-                                // New CIRA connection for unknown node, disconnect.
-                                unknownNodeCount++;
-                                console.log('CIRA connection for unknown node. groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
-                                socket.end();
-                                return;
-                            }
-
-                            // Looking at nodes that match this UUID, select one in the same domain and mesh type.
-                            var node = null;
-                            for (var i in nodes) {
-                                if (mesh.domain == nodes[i].domain) {
-                                    var nodemesh = obj.parent.webserver.meshes[nodes[i].meshid];
-                                    if ((nodemesh != null) && (nodemesh.mtype == 2)) { node = nodes[i]; }
-                                }
-                            }
-
-                            if (node == null) {
-                                // New CIRA connection for unknown node, disconnect.
-                                unknownNodeCount++;
-                                console.log('CIRA connection for unknown node. candidate(s): ' + nodes.length + ', groupid: ' + mesh._id + ', uuid: ' + socket.tag.SystemId);
-                                socket.end();
-                                return;
-                            }
-
-                            // Node is present
-                            if ((node.intelamt != null) && (node.intelamt.state == 2)) { socket.tag.host = node.intelamt.host; }
-                            socket.tag.nodeid = node._id;
-                            socket.tag.meshid = node.meshid; // Correct the MeshID if the node has moved.
-                            socket.tag.connectTime = Date.now();
-
-                            // Add the connection to the MPS connection list
-                            obj.ciraConnections[socket.tag.nodeid] = socket;
-                            delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime);
-                            SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
-                        });
-                    } else { // Unknown mesh type
-                        // New CIRA connection for unknown node, disconnect.
-                        unknownMeshIdCount++;
-                        console.log('CIRA connection to a unknown group type. groupid: ' + socket.tag.meshid);
-                        socket.end();
-                        return;
-                    }
-                    return 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen;
+                        // Add the connection to the MPS connection list
+                        obj.ciraConnections[socket.tag.nodeid] = socket;
+                        delayedSetConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connectTime, socket.tag.connType);
+                        SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                    });
+                } else { // Unknown mesh type
+                    // New CIRA connection for unknown node, disconnect.
+                    unknownMeshIdCount++;
+                    console.log('CIRA connection to a unknown group type. groupid: ' + socket.tag.meshid);
+                    socket.end();
+                    return;
                 }
-                case APFProtocol.SERVICE_REQUEST: {
-                    if (len < 5) return 0;
-                    var xserviceNameLen = common.ReadInt(data, 1);
-                    if (len < 5 + xserviceNameLen) return 0;
-                    var xserviceName = data.substring(5, 5 + xserviceNameLen);
-                    parent.debug('mpscmd', '--> SERVICE_REQUEST', xserviceName);
-                    if (xserviceName == "pfwd@amt.intel.com") { SendServiceAccept(socket, "pfwd@amt.intel.com"); }
-                    if (xserviceName == "auth@amt.intel.com") { SendServiceAccept(socket, "auth@amt.intel.com"); }
-                    return 5 + xserviceNameLen;
+                return 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen;
+            }
+            case APFProtocol.SERVICE_REQUEST: {
+                if (len < 5) return 0;
+                var xserviceNameLen = common.ReadInt(data, 1);
+                if (len < 5 + xserviceNameLen) return 0;
+                var xserviceName = data.substring(5, 5 + xserviceNameLen);
+                parent.debug('mpscmd', '--> SERVICE_REQUEST', xserviceName);
+                if (xserviceName == "pfwd@amt.intel.com") { SendServiceAccept(socket, "pfwd@amt.intel.com"); }
+                if (xserviceName == "auth@amt.intel.com") { SendServiceAccept(socket, "auth@amt.intel.com"); }
+                return 5 + xserviceNameLen;
+            }
+            case APFProtocol.GLOBAL_REQUEST: {
+                if (len < 14) return 0;
+                var requestLen = common.ReadInt(data, 1);
+                if (len < 14 + requestLen) return 0;
+                var request = data.substring(5, 5 + requestLen);
+                //var wantResponse = data.charCodeAt(5 + requestLen);
+
+                if (request == 'tcpip-forward') {
+                    var addrLen = common.ReadInt(data, 6 + requestLen);
+                    if (len < 14 + requestLen + addrLen) return 0;
+                    var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
+                    var port = common.ReadInt(data, 10 + requestLen + addrLen);
+                    parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port);
+                    ChangeHostname(socket, addr, socket.tag.SystemId);
+                    if (socket.tag.boundPorts.indexOf(port) == -1) { socket.tag.boundPorts.push(port); }
+                    SendTcpForwardSuccessReply(socket, port);
+                    return 14 + requestLen + addrLen;
                 }
-                case APFProtocol.GLOBAL_REQUEST: {
-                    if (len < 14) return 0;
-                    var requestLen = common.ReadInt(data, 1);
-                    if (len < 14 + requestLen) return 0;
-                    var request = data.substring(5, 5 + requestLen);
-                    //var wantResponse = data.charCodeAt(5 + requestLen);
 
-                    if (request == 'tcpip-forward') {
-                        var addrLen = common.ReadInt(data, 6 + requestLen);
-                        if (len < 14 + requestLen + addrLen) return 0;
-                        var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
-                        var port = common.ReadInt(data, 10 + requestLen + addrLen);
-                        parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port);
-                        ChangeHostname(socket, addr, socket.tag.SystemId);
-                        if (socket.tag.boundPorts.indexOf(port) == -1) { socket.tag.boundPorts.push(port); }
-                        SendTcpForwardSuccessReply(socket, port);
-                        return 14 + requestLen + addrLen;
-                    }
-
-                    if (request == 'cancel-tcpip-forward') {
-                        var addrLen = common.ReadInt(data, 6 + requestLen);
-                        if (len < 14 + requestLen + addrLen) return 0;
-                        var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
-                        var port = common.ReadInt(data, 10 + requestLen + addrLen);
-                        parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port);
-                        var portindex = socket.tag.boundPorts.indexOf(port);
-                        if (portindex >= 0) { socket.tag.boundPorts.splice(portindex, 1); }
-                        SendTcpForwardCancelReply(socket);
-                        return 14 + requestLen + addrLen;
-                    }
-
-                    if (request == 'udp-send-to@amt.intel.com') {
-                        var addrLen = common.ReadInt(data, 6 + requestLen);
-                        if (len < 26 + requestLen + addrLen) return 0;
-                        var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
-                        var port = common.ReadInt(data, 10 + requestLen + addrLen);
-                        var oaddrLen = common.ReadInt(data, 14 + requestLen + addrLen);
-                        if (len < 26 + requestLen + addrLen + oaddrLen) return 0;
-                        var oaddr = data.substring(18 + requestLen, 18 + requestLen + addrLen);
-                        var oport = common.ReadInt(data, 18 + requestLen + addrLen + oaddrLen);
-                        var datalen = common.ReadInt(data, 22 + requestLen + addrLen + oaddrLen);
-                        if (len < 26 + requestLen + addrLen + oaddrLen + datalen) return 0;
-                        parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port, oaddr + ':' + oport, datalen);
-                        // TODO
-                        return 26 + requestLen + addrLen + oaddrLen + datalen;
-                    }
-
-                    return 6 + requestLen;
+                if (request == 'cancel-tcpip-forward') {
+                    var addrLen = common.ReadInt(data, 6 + requestLen);
+                    if (len < 14 + requestLen + addrLen) return 0;
+                    var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
+                    var port = common.ReadInt(data, 10 + requestLen + addrLen);
+                    parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port);
+                    var portindex = socket.tag.boundPorts.indexOf(port);
+                    if (portindex >= 0) { socket.tag.boundPorts.splice(portindex, 1); }
+                    SendTcpForwardCancelReply(socket);
+                    return 14 + requestLen + addrLen;
                 }
-                case APFProtocol.CHANNEL_OPEN: {
-                    if (len < 33) return 0;
-                    var ChannelTypeLength = common.ReadInt(data, 1);
-                    if (len < (33 + ChannelTypeLength)) return 0;
 
-                    // Decode channel identifiers and window size
-                    var ChannelType = data.substring(5, 5 + ChannelTypeLength);
-                    var SenderChannel = common.ReadInt(data, 5 + ChannelTypeLength);
-                    var WindowSize = common.ReadInt(data, 9 + ChannelTypeLength);
+                if (request == 'udp-send-to@amt.intel.com') {
+                    var addrLen = common.ReadInt(data, 6 + requestLen);
+                    if (len < 26 + requestLen + addrLen) return 0;
+                    var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
+                    var port = common.ReadInt(data, 10 + requestLen + addrLen);
+                    var oaddrLen = common.ReadInt(data, 14 + requestLen + addrLen);
+                    if (len < 26 + requestLen + addrLen + oaddrLen) return 0;
+                    var oaddr = data.substring(18 + requestLen, 18 + requestLen + addrLen);
+                    var oport = common.ReadInt(data, 18 + requestLen + addrLen + oaddrLen);
+                    var datalen = common.ReadInt(data, 22 + requestLen + addrLen + oaddrLen);
+                    if (len < 26 + requestLen + addrLen + oaddrLen + datalen) return 0;
+                    parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port, oaddr + ':' + oport, datalen);
+                    // TODO
+                    return 26 + requestLen + addrLen + oaddrLen + datalen;
+                }
 
-                    // Decode the target
-                    var TargetLen = common.ReadInt(data, 17 + ChannelTypeLength);
-                    if (len < (33 + ChannelTypeLength + TargetLen)) return 0;
-                    var Target = data.substring(21 + ChannelTypeLength, 21 + ChannelTypeLength + TargetLen);
-                    var TargetPort = common.ReadInt(data, 21 + ChannelTypeLength + TargetLen);
+                return 6 + requestLen;
+            }
+            case APFProtocol.CHANNEL_OPEN: {
+                if (len < 33) return 0;
+                var ChannelTypeLength = common.ReadInt(data, 1);
+                if (len < (33 + ChannelTypeLength)) return 0;
 
-                    // Decode the source
-                    var SourceLen = common.ReadInt(data, 25 + ChannelTypeLength + TargetLen);
-                    if (len < (33 + ChannelTypeLength + TargetLen + SourceLen)) return 0;
-                    var Source = data.substring(29 + ChannelTypeLength + TargetLen, 29 + ChannelTypeLength + TargetLen + SourceLen);
-                    var SourcePort = common.ReadInt(data, 29 + ChannelTypeLength + TargetLen + SourceLen);
+                // Decode channel identifiers and window size
+                var ChannelType = data.substring(5, 5 + ChannelTypeLength);
+                var SenderChannel = common.ReadInt(data, 5 + ChannelTypeLength);
+                var WindowSize = common.ReadInt(data, 9 + ChannelTypeLength);
 
-                    channelOpenCount++;
-                    parent.debug('mpscmd', '--> CHANNEL_OPEN', ChannelType, SenderChannel, WindowSize, Target + ':' + TargetPort, Source + ':' + SourcePort);
+                // Decode the target
+                var TargetLen = common.ReadInt(data, 17 + ChannelTypeLength);
+                if (len < (33 + ChannelTypeLength + TargetLen)) return 0;
+                var Target = data.substring(21 + ChannelTypeLength, 21 + ChannelTypeLength + TargetLen);
+                var TargetPort = common.ReadInt(data, 21 + ChannelTypeLength + TargetLen);
 
-                    // Check if we understand this channel type
-                    //if (ChannelType.toLowerCase() == "direct-tcpip")
-                    {
-                        // We don't understand this channel type, send an error back
-                        SendChannelOpenFailure(socket, SenderChannel, APFChannelOpenFailureReasonCode.UnknownChannelType);
-                        return 33 + ChannelTypeLength + TargetLen + SourceLen;
-                    }
+                // Decode the source
+                var SourceLen = common.ReadInt(data, 25 + ChannelTypeLength + TargetLen);
+                if (len < (33 + ChannelTypeLength + TargetLen + SourceLen)) return 0;
+                var Source = data.substring(29 + ChannelTypeLength + TargetLen, 29 + ChannelTypeLength + TargetLen + SourceLen);
+                var SourcePort = common.ReadInt(data, 29 + ChannelTypeLength + TargetLen + SourceLen);
 
-                    /*
-                    // This is a correct connection. Lets get it setup
-                    var MeshAmtEventEndpoint = { ServerChannel: GetNextBindId(), AmtChannel: SenderChannel, MaxWindowSize: 2048, CurrentWindowSize:2048, SendWindow: WindowSize, InfoHeader: "Target: " + Target + ":" + TargetPort + ", Source: " + Source + ":" + SourcePort};
-                    // TODO: Connect this socket for a WSMAN event
-                    SendChannelOpenConfirmation(socket, SenderChannel, MeshAmtEventEndpoint.ServerChannel, MeshAmtEventEndpoint.MaxWindowSize);
-                    */
+                channelOpenCount++;
+                parent.debug('mpscmd', '--> CHANNEL_OPEN', ChannelType, SenderChannel, WindowSize, Target + ':' + TargetPort, Source + ':' + SourcePort);
 
+                // Check if we understand this channel type
+                //if (ChannelType.toLowerCase() == "direct-tcpip")
+                {
+                    // We don't understand this channel type, send an error back
+                    SendChannelOpenFailure(socket, SenderChannel, APFChannelOpenFailureReasonCode.UnknownChannelType);
                     return 33 + ChannelTypeLength + TargetLen + SourceLen;
                 }
-                case APFProtocol.CHANNEL_OPEN_CONFIRMATION:
-                    {
-                        if (len < 17) return 0;
-                        var RecipientChannel = common.ReadInt(data, 1);
-                        var SenderChannel = common.ReadInt(data, 5);
-                        var WindowSize = common.ReadInt(data, 9);
-                        socket.tag.activetunnels++;
-                        var cirachannel = socket.tag.channels[RecipientChannel];
-                        if (cirachannel == null) { /*console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel);*/ return 17; }
-                        cirachannel.amtchannelid = SenderChannel;
-                        cirachannel.sendcredits = cirachannel.amtCiraWindow = WindowSize;
-                        channelOpenConfirmCount++;
-                        parent.debug('mpscmd', '--> CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
-                        if (cirachannel.closing == 1) {
-                            // Close this channel
-                            SendChannelClose(cirachannel.socket, cirachannel.amtchannelid);
-                        } else {
-                            cirachannel.state = 2;
-                            // Send any pending data
-                            if (cirachannel.sendBuffer != null) {
-                                if (cirachannel.sendBuffer.length <= cirachannel.sendcredits) {
-                                    // Send the entire pending buffer
-                                    SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer);
-                                    cirachannel.sendcredits -= cirachannel.sendBuffer.length;
-                                    delete cirachannel.sendBuffer;
-                                    if (cirachannel.onSendOk) { cirachannel.onSendOk(cirachannel); }
-                                } else {
-                                    // Send a part of the pending buffer
-                                    SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer.substring(0, cirachannel.sendcredits));
-                                    cirachannel.sendBuffer = cirachannel.sendBuffer.substring(cirachannel.sendcredits);
-                                    cirachannel.sendcredits = 0;
-                                }
-                            }
-                            // Indicate the channel is open
-                            if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
-                        }
-                        return 17;
-                    }
-                case APFProtocol.CHANNEL_OPEN_FAILURE:
-                    {
-                        if (len < 17) return 0;
-                        var RecipientChannel = common.ReadInt(data, 1);
-                        var ReasonCode = common.ReadInt(data, 5);
-                        channelOpenFailCount++;
-                        parent.debug('mpscmd', '--> CHANNEL_OPEN_FAILURE', RecipientChannel, ReasonCode);
-                        var cirachannel = socket.tag.channels[RecipientChannel];
-                        if (cirachannel == null) { console.log("MPS Error in CHANNEL_OPEN_FAILURE: Unable to find channelid " + RecipientChannel); return 17; }
-                        if (cirachannel.state > 0) {
-                            cirachannel.state = 0;
-                            if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
-                            delete socket.tag.channels[RecipientChannel];
-                        }
-                        return 17;
-                    }
-                case APFProtocol.CHANNEL_CLOSE:
-                    {
-                        if (len < 5) return 0;
-                        var RecipientChannel = common.ReadInt(data, 1);
-                        channelCloseCount++;
-                        parent.debug('mpscmd', '--> CHANNEL_CLOSE', RecipientChannel);
-                        var cirachannel = socket.tag.channels[RecipientChannel];
-                        if (cirachannel == null) { console.log("MPS Error in CHANNEL_CLOSE: Unable to find channelid " + RecipientChannel); return 5; }
-                        socket.tag.activetunnels--;
-                        if (cirachannel.state > 0) {
-                            cirachannel.state = 0;
-                            if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
-                            SendChannelClose(cirachannel.socket, cirachannel.amtchannelid);
-                            delete socket.tag.channels[RecipientChannel];
-                        }
-                        return 5;
-                    }
-                case APFProtocol.CHANNEL_WINDOW_ADJUST:
-                    {
-                        if (len < 9) return 0;
-                        var RecipientChannel = common.ReadInt(data, 1);
-                        var ByteToAdd = common.ReadInt(data, 5);
-                        var cirachannel = socket.tag.channels[RecipientChannel];
-                        if (cirachannel == null) { console.log("MPS Error in CHANNEL_WINDOW_ADJUST: Unable to find channelid " + RecipientChannel); return 9; }
-                        cirachannel.sendcredits += ByteToAdd;
-                        parent.debug('mpscmd', '--> CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd, cirachannel.sendcredits);
-                        if (cirachannel.state == 2 && cirachannel.sendBuffer != null) {
-                            // Compute how much data we can send                
+
+                /*
+                // This is a correct connection. Lets get it setup
+                var MeshAmtEventEndpoint = { ServerChannel: GetNextBindId(), AmtChannel: SenderChannel, MaxWindowSize: 2048, CurrentWindowSize:2048, SendWindow: WindowSize, InfoHeader: "Target: " + Target + ":" + TargetPort + ", Source: " + Source + ":" + SourcePort};
+                // TODO: Connect this socket for a WSMAN event
+                SendChannelOpenConfirmation(socket, SenderChannel, MeshAmtEventEndpoint.ServerChannel, MeshAmtEventEndpoint.MaxWindowSize);
+                */
+
+                return 33 + ChannelTypeLength + TargetLen + SourceLen;
+            }
+            case APFProtocol.CHANNEL_OPEN_CONFIRMATION:
+                {
+                    if (len < 17) return 0;
+                    var RecipientChannel = common.ReadInt(data, 1);
+                    var SenderChannel = common.ReadInt(data, 5);
+                    var WindowSize = common.ReadInt(data, 9);
+                    socket.tag.activetunnels++;
+                    var cirachannel = socket.tag.channels[RecipientChannel];
+                    if (cirachannel == null) { /*console.log("MPS Error in CHANNEL_OPEN_CONFIRMATION: Unable to find channelid " + RecipientChannel);*/ return 17; }
+                    cirachannel.amtchannelid = SenderChannel;
+                    cirachannel.sendcredits = cirachannel.amtCiraWindow = WindowSize;
+                    channelOpenConfirmCount++;
+                    parent.debug('mpscmd', '--> CHANNEL_OPEN_CONFIRMATION', RecipientChannel, SenderChannel, WindowSize);
+                    if (cirachannel.closing == 1) {
+                        // Close this channel
+                        SendChannelClose(cirachannel.socket, cirachannel.amtchannelid);
+                    } else {
+                        cirachannel.state = 2;
+                        // Send any pending data
+                        if (cirachannel.sendBuffer != null) {
                             if (cirachannel.sendBuffer.length <= cirachannel.sendcredits) {
                                 // Send the entire pending buffer
                                 SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer);
@@ -744,63 +731,110 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 cirachannel.sendcredits = 0;
                             }
                         }
-                        return 9;
+                        // Indicate the channel is open
+                        if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
                     }
-                case APFProtocol.CHANNEL_DATA:
-                    {
-                        if (len < 9) return 0;
-                        var RecipientChannel = common.ReadInt(data, 1);
-                        var LengthOfData = common.ReadInt(data, 5);
-                        if (len < (9 + LengthOfData)) return 0;
-                        parent.debug('mpscmddata', '--> CHANNEL_DATA', RecipientChannel, LengthOfData);
-                        var cirachannel = socket.tag.channels[RecipientChannel];
-                        if (cirachannel == null) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return 9 + LengthOfData; }
-                        cirachannel.amtpendingcredits += LengthOfData;
-                        if (cirachannel.onData) cirachannel.onData(cirachannel, data.substring(9, 9 + LengthOfData));
-                        if (cirachannel.amtpendingcredits > (cirachannel.ciraWindow / 2)) {
-                            SendChannelWindowAdjust(cirachannel.socket, cirachannel.amtchannelid, cirachannel.amtpendingcredits); // Adjust the buffer window
-                            cirachannel.amtpendingcredits = 0;
+                    return 17;
+                }
+            case APFProtocol.CHANNEL_OPEN_FAILURE:
+                {
+                    if (len < 17) return 0;
+                    var RecipientChannel = common.ReadInt(data, 1);
+                    var ReasonCode = common.ReadInt(data, 5);
+                    channelOpenFailCount++;
+                    parent.debug('mpscmd', '--> CHANNEL_OPEN_FAILURE', RecipientChannel, ReasonCode);
+                    var cirachannel = socket.tag.channels[RecipientChannel];
+                    if (cirachannel == null) { console.log("MPS Error in CHANNEL_OPEN_FAILURE: Unable to find channelid " + RecipientChannel); return 17; }
+                    if (cirachannel.state > 0) {
+                        cirachannel.state = 0;
+                        if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
+                        delete socket.tag.channels[RecipientChannel];
+                    }
+                    return 17;
+                }
+            case APFProtocol.CHANNEL_CLOSE:
+                {
+                    if (len < 5) return 0;
+                    var RecipientChannel = common.ReadInt(data, 1);
+                    channelCloseCount++;
+                    parent.debug('mpscmd', '--> CHANNEL_CLOSE', RecipientChannel);
+                    var cirachannel = socket.tag.channels[RecipientChannel];
+                    if (cirachannel == null) { console.log("MPS Error in CHANNEL_CLOSE: Unable to find channelid " + RecipientChannel); return 5; }
+                    socket.tag.activetunnels--;
+                    if (cirachannel.state > 0) {
+                        cirachannel.state = 0;
+                        if (cirachannel.onStateChange) { cirachannel.onStateChange(cirachannel, cirachannel.state); }
+                        SendChannelClose(cirachannel.socket, cirachannel.amtchannelid);
+                        delete socket.tag.channels[RecipientChannel];
+                    }
+                    return 5;
+                }
+            case APFProtocol.CHANNEL_WINDOW_ADJUST:
+                {
+                    if (len < 9) return 0;
+                    var RecipientChannel = common.ReadInt(data, 1);
+                    var ByteToAdd = common.ReadInt(data, 5);
+                    var cirachannel = socket.tag.channels[RecipientChannel];
+                    if (cirachannel == null) { console.log("MPS Error in CHANNEL_WINDOW_ADJUST: Unable to find channelid " + RecipientChannel); return 9; }
+                    cirachannel.sendcredits += ByteToAdd;
+                    parent.debug('mpscmd', '--> CHANNEL_WINDOW_ADJUST', RecipientChannel, ByteToAdd, cirachannel.sendcredits);
+                    if (cirachannel.state == 2 && cirachannel.sendBuffer != null) {
+                        // Compute how much data we can send                
+                        if (cirachannel.sendBuffer.length <= cirachannel.sendcredits) {
+                            // Send the entire pending buffer
+                            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer);
+                            cirachannel.sendcredits -= cirachannel.sendBuffer.length;
+                            delete cirachannel.sendBuffer;
+                            if (cirachannel.onSendOk) { cirachannel.onSendOk(cirachannel); }
+                        } else {
+                            // Send a part of the pending buffer
+                            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer.substring(0, cirachannel.sendcredits));
+                            cirachannel.sendBuffer = cirachannel.sendBuffer.substring(cirachannel.sendcredits);
+                            cirachannel.sendcredits = 0;
                         }
-                        return 9 + LengthOfData;
                     }
-                case APFProtocol.DISCONNECT:
-                    {
-                        if (len < 7) return 0;
-                        var ReasonCode = common.ReadInt(data, 1);
-                        disconnectCommandCount++;
-                        parent.debug('mpscmd', '--> DISCONNECT', ReasonCode);
-                        try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-                        obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
-                        return 7;
+                    return 9;
+                }
+            case APFProtocol.CHANNEL_DATA:
+                {
+                    if (len < 9) return 0;
+                    var RecipientChannel = common.ReadInt(data, 1);
+                    var LengthOfData = common.ReadInt(data, 5);
+                    if (len < (9 + LengthOfData)) return 0;
+                    parent.debug('mpscmddata', '--> CHANNEL_DATA', RecipientChannel, LengthOfData);
+                    var cirachannel = socket.tag.channels[RecipientChannel];
+                    if (cirachannel == null) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return 9 + LengthOfData; }
+                    cirachannel.amtpendingcredits += LengthOfData;
+                    if (cirachannel.onData) cirachannel.onData(cirachannel, data.substring(9, 9 + LengthOfData));
+                    if (cirachannel.amtpendingcredits > (cirachannel.ciraWindow / 2)) {
+                        SendChannelWindowAdjust(cirachannel.socket, cirachannel.amtchannelid, cirachannel.amtpendingcredits); // Adjust the buffer window
+                        cirachannel.amtpendingcredits = 0;
                     }
-                default:
-                    {
-                        parent.debug('mpscmd', '--> Unknown CIRA command: ' + cmd);
-                        return -1;
-                    }
-            }
+                    return 9 + LengthOfData;
+                }
+            case APFProtocol.DISCONNECT:
+                {
+                    if (len < 7) return 0;
+                    var ReasonCode = common.ReadInt(data, 1);
+                    disconnectCommandCount++;
+                    parent.debug('mpscmd', '--> DISCONNECT', ReasonCode);
+                    try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
+                    obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connType);
+                    return 7;
+                }
+            default:
+                {
+                    parent.debug('mpscmd', '--> Unknown CIRA command: ' + cmd);
+                    return -1;
+                }
         }
-
-        socket.addListener('close', function () {
-            socketClosedCount++;
-            parent.debug('mps', 'CIRA connection closed');
-            try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-            obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
-        });
-
-        socket.addListener('error', function () {
-            socketErrorCount++;
-            parent.debug('mps', 'CIRA connection error');
-            //console.log("MPS Error: " + socket.remoteAddress);
-        });
-
     }
 
     // Disconnect CIRA tunnel
     obj.close = function (socket) {
         try { socket.end(); } catch (e) { }
         try { delete obj.ciraConnections[socket.tag.nodeid]; } catch (e) { }
-        obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, 2);
+        obj.parent.ClearConnectivityState(socket.tag.meshid, socket.tag.nodeid, socket.tag.connType);
     };
 
     function SendServiceAccept(socket, service) {
@@ -886,9 +920,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             // Print out sent bytes
             var buf = Buffer.from(data, 'binary');
             console.log('MPS <-- (' + buf.length + '):' + buf.toString('hex'));
-            socket.write(buf);
+            if (socket.websocket == 1) { socket.send(buf); } else { socket.write(buf); }
         } else {
-            socket.write(Buffer.from(data, 'binary'));
+            if (socket.websocket == 1) { socket.send(Buffer.from(data, 'binary')); } else { socket.write(Buffer.from(data, 'binary')); }
         }
     }
 
