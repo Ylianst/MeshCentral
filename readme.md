@@ -20,6 +20,7 @@ For more information, [visit MeshCommander.com/MeshCentral2](https://www.meshcom
 [Reddit](https://www.reddit.com/r/MeshCentral/)  
 [Twitter](https://twitter.com/MeshCentral)  
 [BlogSpot](https://meshcentral2.blogspot.com/)  
+[Matrix #meshcentral:matrix.org](https://matrix.to/#/!LHmzIDANsciNRAnzWg:matrix.org?via=matrix.org)
 
 ## Documentation
 The [User's Guide](http://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) contains information every adminstrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
