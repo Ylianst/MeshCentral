@@ -138,7 +138,8 @@ function createMeshCore(agent) {
     obj.DAIPC = require('net').createServer();
     if (process.platform != 'win32') { try { require('fs').unlinkSync(process.cwd() + '/DAIPC'); } catch (e) { } }
     obj.DAIPC.IPCPATH = process.platform == 'win32' ? ('\\\\.\\pipe\\' + require('_agentNodeId')() + '-DAIPC') : (process.cwd() + '/DAIPC');
-    try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true }); } catch (e) { }
+    try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnections: 5 }); } catch (e) { }
+    obj.DAIPC._daipc = [];
     obj.DAIPC.on('connection', function (c) {
         c._send = function (j) {
             var data = JSON.stringify(j);
@@ -147,17 +148,13 @@ function createMeshCore(agent) {
             Buffer.from(data).copy(packet, 4);
             this.write(packet);
         };
-        this._daipc = c;
+        this._daipc.push(c);
         c.parent = this;
-        c.on('end', function () {
-            this.end(); // TODO: Must call end() on self to close the named pipe correctly.
-            this.parent._daipc = null;
-            if (this._registered != null) { try { mesh.SendCommand({ action: 'sessions', type: 'app', value: {} }); } catch (e) { } }
-        });
+        c.on('end', function () { removeRegisteredApp(this); });
         c.on('data', function (chunk) {
             if (chunk.length < 4) { this.unshift(chunk); return; }
             var len = chunk.readUInt32LE(0);
-            if (len > 8192) { this.parent._daipc = null; this.end(); return; }
+            if (len > 8192) { removeRegisteredApp(this); this.end(); return; }
             if (chunk.length < len) { this.unshift(chunk); return; }
 
             var data = chunk.slice(4, len);
@@ -186,6 +183,7 @@ function createMeshCore(agent) {
                             apps[data.value] = 1;
                             try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
                             this._send({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
+                            this._send({ cmd: 'sessions', sessions: tunnelUserCount });
                         }
                         break;
                     case 'query':
@@ -195,18 +193,43 @@ function createMeshCore(agent) {
                                 this._send(data);
                                 break;
                             case 'descriptors':
-                                require('ChainViewer').getSnapshot().then(function (f) {
+                                require('ChainViewer').getSnapshot().then(function (f)
+                                {
                                     this.tag.payload.result = f;
                                     this.tag.ipc._send(this.tag.payload);
                                 }).parentPromise.tag = { ipc: this, payload: data };
                                 break;
                         }
                         break;
+                    case 'sessions':
+                        this._send({ cmd: 'sessions', sessions: tunnelUserCount });
+                        break;
                 }
             }
-            catch (e) { this.parent._daipc = null; this.end(); return; }
+            catch (e) { removeRegisteredApp(this); this.end(); return; }
         });
     });
+
+    // Send this object to all registered local applications
+    function broadcastToRegisteredApps(x) {
+        if ((obj.DAIPC == null) || (obj.DAIPC._daipc == null)) return;
+        for (var i in obj.DAIPC._daipc) { if (obj.DAIPC._daipc[i]._registered != null) { obj.DAIPC._daipc[i]._send(x); } }
+    }
+
+    // Send list of registered apps to the server
+    function updateRegisteredAppsToServer() {
+        if ((obj.DAIPC == null) || (obj.DAIPC._daipc == null)) return;
+        var apps = {};
+        for (var i in obj.DAIPC._daipc) { if (apps[obj.DAIPC._daipc[i]._registered] == null) { apps[obj.DAIPC._daipc[i]._registered] = 1; } else { apps[obj.DAIPC._daipc[i]._registered]++; } }
+        try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
+    }
+
+    // Remove a registered app
+    function removeRegisteredApp(pipe) {
+        for (var i = obj.DAIPC._daipc.length - 1; i >= 0; i--) { if (obj.DAIPC._daipc[i] === pipe) { obj.DAIPC._daipc.splice(i, 1); } }
+        if (pipe._registered != null) updateRegisteredAppsToServer();
+    }
+
     function diagnosticAgent_uninstall() {
         require('service-manager').manager.uninstallService('meshagentDiagnostic');
         require('task-scheduler').delete('meshagentDiagnostic/periodicStart');
@@ -405,12 +428,16 @@ function createMeshCore(agent) {
         childProcess = require('child_process');
         if (mesh.hasKVM == 1) { // if the agent is compiled with KVM support
             // Check if this computer supports a desktop
-            try {
-                if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) {
+            try
+            {
+                if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support))
+                {
                     meshCoreObj.caps |= 1;
                 }
-                else if (process.platform == 'linux' || process.platform == 'freebsd') {
-                    require('monitor-info').on('kvmSupportDetected', function (value) {
+                else if(process.platform == 'linux' || process.platform == 'freebsd')
+                {
+                    require('monitor-info').on('kvmSupportDetected', function (value)
+                    {
                         meshCoreObj.caps |= 1;
                         mesh.SendCommand(meshCoreObj);
                     });
@@ -473,16 +500,20 @@ function createMeshCore(agent) {
                     if (mesh.isControlChannelConnected) { mesh.SendCommand({ action: 'smbios', value: SMBiosTablesRaw }); }
 
                     // If SMBios tables say that Intel AMT is present, try to connect MEI
-                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true)) {
+                    if (SMBiosTables.amtInfo && (SMBiosTables.amtInfo.AMT == true))
+                    {
                         var amtmodule = require('amt-manage');
                         amt = new amtmodule(mesh, db, false);
-                        amt.on('portBinding_LMS', function (map) {
+                        amt.on('portBinding_LMS', function (map)
+                        {
                             var j = { action: 'lmsinfo', value: { ports: map.keys() } };
                             mesh.SendCommand(j);
                         });
-                        amt.on('stateChange_LMS', function (v) {
+                        amt.on('stateChange_LMS', function (v)
+                        {
                             if (!meshCoreObj.intelamt) { meshCoreObj.intelamt = {}; }
-                            switch (v) {
+                            switch(v)
+                            {
                                 case 0:
                                     meshCoreObj.intelamt.microlms = 'DISABLED';
                                     break;
@@ -1189,9 +1220,11 @@ function createMeshCore(agent) {
         s.tunnel = this;
         s.descriptorMetadata = "MeshAgent_relayTunnel";
 
-        if (require('MeshAgent').idleTimeout != null) {
+        if (require('MeshAgent').idleTimeout != null)
+        {
             s.setTimeout(require('MeshAgent').idleTimeout * 1000);
-            s.on('timeout', function () {
+            s.on('timeout', function ()
+            {
                 this.ping();
                 this.setTimeout(require('MeshAgent').idleTimeout * 1000);
             });
@@ -1261,7 +1294,7 @@ function createMeshCore(agent) {
     // Called when we get data from the server for a TCP relay (We have to skip the first received 'c' and pipe the rest)
     function onTcpRelayServerTunnelData(data) {
         if (this.first == true) {
-            this.first = false;
+            this.first = false; 
             this.pipe(this.tcprelay, { dataTypeSkip: 1 }); // Pipe Server --> Target (don't pipe text type websocket frames)
         }
     }
@@ -1351,7 +1384,8 @@ function createMeshCore(agent) {
             // Check if this is a relay connection
             if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
         }
-        else {
+        else
+        {
             // Handle tunnel data
             if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
                 // Take a look at the protocol
@@ -1376,7 +1410,8 @@ function createMeshCore(agent) {
                         this.write(JSON.stringify({ op: 'cancel' }));
                     }
                 }
-                else if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9)) {
+                else if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6) || (this.httprequest.protocol == 8) || (this.httprequest.protocol == 9))
+                {
                     //
                     // Remote Terminal
                     //
@@ -1392,8 +1427,10 @@ function createMeshCore(agent) {
 
                     this.descriptorMetadata = "Remote Terminal";
 
-                    if (process.platform == 'win32') {
-                        if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9)) {
+                    if (process.platform == 'win32')
+                    {
+                        if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9))
+                        {
                             this.httprequest.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'PowerShell is not supported on this version of windows', msgid: 1 }));
                             this.httprequest.s.end();
                             return;
@@ -1405,23 +1442,27 @@ function createMeshCore(agent) {
                     this.httprequest.tpromise.that = this;
                     this.httprequest.tpromise.httprequest = this.httprequest;
 
-                    this.end = function () {
+                    this.end = function ()
+                    {
                         if (this.httprequest.tpromise._consent) { this.httprequest.tpromise._consent.close(); }
                         if (this.httprequest.connectionPromise) { this.httprequest.connectionPromise._rej('Closed'); }
 
                         // Remove the terminal session to the count to update the server
-                        if (this.httprequest.userid != null) {
+                        if (this.httprequest.userid != null)
+                        {
                             if (tunnelUserCount.terminal[this.httprequest.userid] != null) { tunnelUserCount.terminal[this.httprequest.userid]--; if (tunnelUserCount.terminal[this.httprequest.userid] <= 0) { delete tunnelUserCount.terminal[this.httprequest.userid]; } }
                             try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (e) { }
                         }
 
-                        if (process.platform == 'win32') {
+                        if (process.platform == 'win32')
+                        {
                             // Unpipe the web socket
                             this.unpipe(this.httprequest._term);
                             if (this.httprequest._term) { this.httprequest._term.unpipe(this); }
 
                             // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                            if (this.rtcchannel) {
+                            if (this.rtcchannel)
+                            {
                                 this.rtcchannel.unpipe(this.httprequest._term);
                                 if (this.httprequest._term) { this.httprequest._term.unpipe(this.rtcchannel); }
                             }
@@ -1433,7 +1474,8 @@ function createMeshCore(agent) {
                     };
 
                     // Perform User-Consent if needed. 
-                    if (this.httprequest.consent && (this.httprequest.consent & 16)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 16))
+                    {
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
                         var consentMessage = this.httprequest.username + " requesting remote terminal access. Grant access?", consentTitle = 'MeshCentral';
                         if (this.httprequest.soptions != null) {
@@ -1443,85 +1485,106 @@ function createMeshCore(agent) {
                         this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, 30);
                         this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
                         this.httprequest.tpromise._consent.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
                                 MeshServerLogEx(27, null, "Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
                                 this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
                                 this.retPromise._consent = null;
                                 this.retPromise._res();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // Denied
                                 MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
                                 this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                                 this.retPromise._rej(e.toString());
                             });
                     }
-                    else {
+                    else
+                    {
                         // User-Consent is not required, so just resolve this promise
                         this.httprequest.tpromise._res();
                     }
 
 
                     this.httprequest.tpromise.then(
-                        function () {
+                        function ()
+                        {
                             this.httprequest.connectionPromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
                             this.httprequest.connectionPromise.ws = this.that;
 
                             // Start Terminal
-                            if (process.platform == 'win32') {
-                                try {
+                            if(process.platform == 'win32')
+                            {
+                                try
+                                {
                                     var cols = 80, rows = 25;
-                                    if (this.httprequest.xoptions) {
+                                    if (this.httprequest.xoptions)
+                                    {
                                         if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
                                         if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
                                     }
 
-                                    if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6)) {
+                                    if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6))
+                                    {
                                         // Admin Terminal
-                                        if (require('win-virtual-terminal').supported) {
+                                        if (require('win-virtual-terminal').supported)
+                                        {
                                             // ConPTY PseudoTerminal
                                             // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
 
                                             // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
                                             this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                             this.httprequest._dispatcher.httprequest = this.httprequest;
-                                            this.httprequest._dispatcher.on('connection', function (c) {
-                                                if (this.httprequest.connectionPromise.completed) {
+                                            this.httprequest._dispatcher.on('connection', function (c)
+                                            {
+                                                if (this.httprequest.connectionPromise.completed)
+                                                {
                                                     c.end();
                                                 }
-                                                else {
+                                                else
+                                                {
                                                     this.httprequest.connectionPromise._res(c);
                                                 }
                                             });
                                         }
-                                        else {
+                                        else
+                                        {
                                             // Legacy Terminal
                                             this.httprequest.connectionPromise._res(require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows));
                                         }
                                     }
-                                    else {
+                                    else
+                                    {
                                         // Logged in user
                                         var userPromise = require('user-sessions').enumerateUsers();
                                         userPromise.that = this;
-                                        userPromise.then(function (u) {
+                                        userPromise.then(function (u)
+                                        {
                                             var that = this.that;
-                                            if (u.Active.length > 0) {
+                                            if (u.Active.length > 0)
+                                            {
                                                 var username = u.Active[0].Username;
-                                                if (require('win-virtual-terminal').supported) {
+                                                if (require('win-virtual-terminal').supported)
+                                                {
                                                     // ConPTY PseudoTerminal
                                                     that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                                 }
-                                                else {
+                                                else
+                                                {
                                                     // Legacy Terminal
                                                     that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
                                                 }
                                                 that.httprequest._dispatcher.ws = that;
-                                                that.httprequest._dispatcher.on('connection', function (c) {
-                                                    if (this.ws.httprequest.connectionPromise.completed) {
+                                                that.httprequest._dispatcher.on('connection', function (c)
+                                                {
+                                                    if (this.ws.httprequest.connectionPromise.completed)
+                                                    {
                                                         c.end();
                                                     }
-                                                    else {
+                                                    else
+                                                    {
                                                         this.ws.httprequest.connectionPromise._res(c);
                                                     }
                                                 });
@@ -1529,58 +1592,70 @@ function createMeshCore(agent) {
                                         });
                                     }
                                 }
-                                catch (e) {
+                                catch (e)
+                                {
                                     this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + e.toString());
                                 }
                             }
-                            else {
-                                try {
+                            else
+                            {
+                                try
+                                {
                                     var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
                                     var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
                                     var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
 
                                     var env = { HISTCONTROL: 'ignoreboth' };
-                                    if (this.httprequest.xoptions) {
+                                    if (this.httprequest.xoptions)
+                                    {
                                         if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
                                         if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
                                     }
                                     var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
-                                    if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin) {
+                                    if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
+                                    {
                                         if (!require('fs').existsSync(login)) { throw ('Unable to spawn login process'); }
                                         this.httprequest.connectionPromise._res(childProcess.execFile(login, ['login'], options)); // Start login shell
                                     }
-                                    else if (bash) {
+                                    else if (bash)
+                                    {
                                         var p = childProcess.execFile(bash, ['bash'], options); // Start bash
                                         // Spaces at the beginning of lines are needed to hide commands from the command history
                                         if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                         this.httprequest.connectionPromise._res(p);
                                     }
-                                    else if (sh) {
+                                    else if (sh)
+                                    {
                                         var p = childProcess.execFile(sh, ['sh'], options); // Start sh
                                         // Spaces at the beginning of lines are needed to hide commands from the command history
                                         if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
                                         this.httprequest.connectionPromise._res(p);
                                     }
-                                    else {
+                                    else
+                                    {
                                         this.httprequest.connectionPromise._rej('Failed to start remote terminal session, no shell found');
                                     }
                                 }
-                                catch (e) {
+                                catch (e)
+                                {
                                     this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + e.toString());
                                 }
                             }
 
                             this.httprequest.connectionPromise.then(
-                                function (term) {
+                                function (term)
+                                {
                                     // SUCCESS
                                     var stdoutstream;
                                     var stdinstream;
-                                    if (process.platform == 'win32') {
+                                    if (process.platform == 'win32')
+                                    {
                                         this.ws.httprequest._term = term;
                                         this.ws.httprequest._term.tunnel = this.ws;
                                         stdoutstream = stdinstream = term;
                                     }
-                                    else {
+                                    else
+                                    {
                                         term.descriptorMetadata = 'Remote Terminal';
                                         this.ws.httprequest.process = term;
                                         this.ws.httprequest.process.tunnel = this.ws;
@@ -1599,13 +1674,15 @@ function createMeshCore(agent) {
                                     this.ws.pipe(stdinstream, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. 
 
                                     // Add the terminal session to the count to update the server
-                                    if (this.ws.httprequest.userid != null) {
+                                    if (this.ws.httprequest.userid != null)
+                                    {
                                         if (tunnelUserCount.terminal[this.ws.httprequest.userid] == null) { tunnelUserCount.terminal[this.ws.httprequest.userid] = 1; } else { tunnelUserCount.terminal[this.ws.httprequest.userid]++; }
                                         try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (e) { }
                                     }
 
                                     // Toast Notification, if required
-                                    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
+                                    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
+                                    {
                                         // User Notifications is required
                                         var notifyMessage = this.ws.httprequest.username + " started a remote terminal session.", notifyTitle = "MeshCentral";
                                         if (this.ws.httprequest.soptions != null) {
@@ -1615,19 +1692,22 @@ function createMeshCore(agent) {
                                         try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (e) { }
                                     }
                                 },
-                                function (e) {
+                                function (e)
+                                {
                                     // FAILED to connect terminal
                                     this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                                     this.ws.end();
                                 });
                         },
-                        function (e) {
+                        function (e)
+                        {
                             // DO NOT start terminal
                             this.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
                             this.that.end();
-                        });
+                        });          
                 }
-                else if (this.httprequest.protocol == 2) {
+                else if (this.httprequest.protocol == 2)
+                {
                     //
                     // Remote KVM
                     //
@@ -1681,19 +1761,22 @@ function createMeshCore(agent) {
                         }
 
                         // Unpipe the web socket
-                        try {
+                        try
+                        {
                             this.unpipe(this.httprequest.desktop.kvm);
                             this.httprequest.desktop.kvm.unpipe(this);
                         }
-                        catch (e) { }
+                        catch(e) { }
 
                         // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                        if (this.rtcchannel) {
-                            try {
+                        if (this.rtcchannel)
+                        {
+                            try
+                            {
                                 this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
                                 this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
                             }
-                            catch (e) { }
+                            catch(e) { }
                         }
 
                         // Place wallpaper back if needed
@@ -1752,7 +1835,8 @@ function createMeshCore(agent) {
                     }
 
                     // Perform notification if needed. Toast messages may not be supported on all platforms.
-                    if (this.httprequest.consent && (this.httprequest.consent & 8)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 8))
+                    {
                         // User Consent Prompt is required
                         // Send a console message back using the console channel, "\n" is supported.
                         this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
@@ -1765,9 +1849,10 @@ function createMeshCore(agent) {
                         pr.ws = this;
                         this.pause();
                         this._consentpromise = pr;
-                        this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
+                        this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); }});
                         pr.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
                                 this.ws._consentpromise = null;
                                 MeshServerLogEx(30, null, "Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
@@ -1810,7 +1895,8 @@ function createMeshCore(agent) {
                                 this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
                                 this.ws.resume();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // User Consent Denied/Failed
                                 this.ws._consentpromise = null;
                                 MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
@@ -1907,7 +1993,8 @@ function createMeshCore(agent) {
                         this._consentpromise = pr;
                         this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
                         pr.then(
-                            function () {
+                            function ()
+                            {
                                 // Success
                                 this.ws._consentpromise = null;
                                 MeshServerLogEx(40, null, "Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
@@ -1923,7 +2010,8 @@ function createMeshCore(agent) {
                                 }
                                 this.ws.resume();
                             },
-                            function (e) {
+                            function (e)
+                            {
                                 // User Consent Denied/Failed
                                 this.ws._consentpromise = null;
                                 MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
@@ -2289,11 +2377,13 @@ function createMeshCore(agent) {
             }
             case 'termsize': {
                 // Indicates a change in terminal size
-                if (process.platform == 'win32') {
+                if (process.platform == 'win32')
+                {
                     if (ws.httprequest._dispatcher == null) return;
                     //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
                     if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
-                } else {
+                } else
+                {
                     if (ws.httprequest.process == null || ws.httprequest.process.pty == 0) return;
                     //sendConsoleText('Linux Resize: ' + obj.cols + 'x' + obj.rows);
 
@@ -2374,8 +2464,10 @@ function createMeshCore(agent) {
                     this.websocket.rtcchannel.on('end', function () {
                         // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
                         //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
-                        if (this.websocket.desktop && this.websocket.desktop.kvm) {
-                            try {
+                        if (this.websocket.desktop && this.websocket.desktop.kvm)
+                        {
+                            try
+                            {
                                 this.unpipe(this.websocket.desktop.kvm);
                                 this.websocket.httprequest.desktop.kvm.unpipe(this);
                             }
@@ -2452,7 +2544,7 @@ function createMeshCore(agent) {
                 case 'help': { // Displays available commands
                     var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
-                    if (process.platform != 'freebsd') { availcommands += ',vm'; }
+		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
                     try { require('zip-reader'); availcommands += ',zip,unzip'; } catch (e) { }
 
@@ -2496,7 +2588,8 @@ function createMeshCore(agent) {
                     if (args['_'].length != 1) {
                         response = "Proper usage: coredump on|off|status|clear"; // Display usage
                     } else {
-                        switch (args['_'][0].toLowerCase()) {
+                        switch (args['_'][0].toLowerCase())
+                        {
                             case 'on':
                                 process.coreDumpLocation = (process.platform == 'win32') ? (process.execPath.replace('.exe', '.dmp')) : (process.execPath + '.dmp');
                                 response = 'coredump is now on';
@@ -2526,20 +2619,25 @@ function createMeshCore(agent) {
                     }
                     break;
                 case 'service':
-                    if (args['_'].length != 1) {
+                    if (args['_'].length != 1)
+                    {
                         response = "Proper usage: service status|restart"; // Display usage
                     }
-                    else {
+                    else
+                    {
                         var s = require('service-manager').manager.getService(process.platform == 'win32' ? 'Mesh Agent' : 'meshagent');
-                        switch (args['_'][0].toLowerCase()) {
+                        switch(args['_'][0].toLowerCase())
+                        {
                             case 'status':
                                 response = 'Service ' + (s.isRunning() ? (s.isMe() ? '[SELF]' : '[RUNNING]') : ('[NOT RUNNING]'));
                                 break;
                             case 'restart':
-                                if (s.isMe()) {
+                                if (s.isMe())
+                                {
                                     s.restart();
                                 }
-                                else {
+                                else
+                                {
                                     response = 'Restarting another agent instance is not allowed';
                                 }
                                 break;
@@ -2596,41 +2694,51 @@ function createMeshCore(agent) {
                     break;
                 case 'fdcount':
                     require('DescriptorEvents').getDescriptorCount().then(
-                        function (c) {
+                        function (c)
+                        {
                             sendConsoleText('Descriptor Count: ' + c, this.sessionid);
-                        }, function (e) {
+                        }, function (e)
+                        {
                             sendConsoleText('Error fetching descriptor count: ' + e, this.sessionid);
                         }).parentPromise.sessionid = sessionid;
                     break;
                 case 'uac':
-                    if (process.platform != 'win32') {
+                    if (process.platform != 'win32')
+                    {
                         response = 'Unknown command "uac", type "help" for list of avaialble commands.';
                         break;
                     }
-                    if (args['_'].length != 1) {
+                    if (args['_'].length != 1)
+                    {
                         response = 'Proper usage: uac [get|interactive|secure]';
                     }
-                    else {
-                        switch (args['_'][0].toUpperCase()) {
+                    else
+                    {
+                        switch(args['_'][0].toUpperCase())
+                        {
                             case 'GET':
                                 var secd = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', 'PromptOnSecureDesktop');
                                 response = "UAC mode: " + (secd == 0 ? "Interactive Desktop" : "Secure Desktop");
                                 break;
                             case 'INTERACTIVE':
-                                try {
+                                try
+                                {
                                     require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', 'PromptOnSecureDesktop', 0);
                                     response = 'UAC mode changed to: Interactive Desktop';
                                 }
-                                catch (e) {
+                                catch (e)
+                                {
                                     response = "Unable to change UAC Mode";
                                 }
                                 break;
                             case 'SECURE':
-                                try {
+                                try
+                                {
                                     require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System', 'PromptOnSecureDesktop', 1);
                                     response = 'UAC mode changed to: Secure Desktop';
                                 }
-                                catch (e) {
+                                catch(e)
+                                {
                                     response = "Unable to change UAC Mode";
                                 }
                                 break;
@@ -2640,37 +2748,45 @@ function createMeshCore(agent) {
                         }
                     }
                     break;
-                case 'vm':
-                    response = 'Virtual Machine = ' + require('identifiers').isVM();
-                    break;
+		        case 'vm':
+			        response = 'Virtual Machine = ' + require('identifiers').isVM();
+			        break;
                 case 'startupoptions':
                     response = JSON.stringify(require('MeshAgent').getStartupOptions());
                     break;
                 case 'kvmmode':
-                    if (require('MeshAgent').maxKvmTileSize == null) {
+                    if (require('MeshAgent').maxKvmTileSize == null)
+                    {
                         response = "Unknown command \"kvmmode\", type \"help\" for list of avaialble commands.";
                     }
-                    else {
-                        if (require('MeshAgent').maxKvmTileSize == 0) {
+                    else
+                    {
+                        if(require('MeshAgent').maxKvmTileSize == 0)
+                        {
                             response = 'KVM Mode: Full JUMBO';
                         }
-                        else {
+                        else 
+                        {
                             response = 'KVM Mode: ' + (require('MeshAgent').maxKvmTileSize <= 65500 ? 'NO JUMBO' : 'Partial JUMBO');
-                            response += (', TileLimit: ' + (require('MeshAgent').maxKvmTileSize < 1024 ? (require('MeshAgent').maxKvmTileSize + ' bytes') : (Math.round(require('MeshAgent').maxKvmTileSize / 1024) + ' Kbytes')));
+                            response += (', TileLimit: ' + (require('MeshAgent').maxKvmTileSize < 1024 ? (require('MeshAgent').maxKvmTileSize + ' bytes') : (Math.round(require('MeshAgent').maxKvmTileSize/1024) + ' Kbytes')));
                         }
                     }
                     break;
                 case 'alert':
-                    if (args['_'].length == 0) {
+                    if (args['_'].length ==  0)
+                    {
                         response = "Proper usage: alert TITLE, CAPTION [, TIMEOUT]"; // Display usage
                     }
-                    else {
+                    else
+                    {
                         var p = args['_'].join(' ').split(',');
-                        if (p.length < 2) {
+                        if(p.length<2)
+                        {
                             response = "Proper usage: alert TITLE, CAPTION [, TIMEOUT]"; // Display usage
                         }
-                        else {
-                            this._alert = require('message-box').create(p[0], p[1], p.length == 3 ? parseInt(p[2]) : 9999, 1);
+                        else
+                        {
+                            this._alert = require('message-box').create(p[0], p[1], p.length==3?parseInt(p[2]):9999,1);
                         }
                     }
                     break;
@@ -3043,7 +3159,7 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'info': { // Return information about the agent and agent core module
-                    response = 'Current Core: ' + meshCoreObj.value + '\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
+                    response = 'Current Core: ' +  meshCoreObj.value + '\r\nAgent Time: ' + Date() + '.\r\nUser Rights: 0x' + rights.toString(16) + '.\r\nPlatform: ' + process.platform + '.\r\nCapabilities: ' + meshCoreObj.caps + '.\r\nServer URL: ' + mesh.ServerUrl + '.';
                     if (amt != null) { response += '\r\nBuilt-in LMS: ' + ['Disabled', 'Connecting..', 'Connected'][amt.lmsstate] + '.'; }
                     if (meshCoreObj.osdesc) { response += '\r\nOS: ' + meshCoreObj.osdesc + '.'; }
                     response += '\r\nModules: ' + addedModules.join(', ') + '.';
@@ -3508,17 +3624,13 @@ function createMeshCore(agent) {
             if (Object.keys(tunnelUserCount.msg).length > 0) {
                 try { mesh.SendCommand({ action: 'sessions', type: 'msg', value: tunnelUserCount.msg }); } catch (e) { }
             }
+
+            // Send update of registered applications to the server
+            updateRegisteredAppsToServer();
         }
 
-        // Send update to the registered application
-        if ((obj.DAIPC._daipc != null) && (obj.DAIPC._daipc._registered != null)) {
-            if (state == 1) {
-                var apps = {};
-                apps[obj.DAIPC._daipc._registered] = 1;
-                try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
-            }
-            obj.DAIPC._daipc._send({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
-        }
+        // Send server state update to registered applications
+        broadcastToRegisteredApps({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
     }
 
     // Update the server with the latest network interface information
@@ -3547,8 +3659,10 @@ function createMeshCore(agent) {
                 try {
                     if (meinfo == null) return;
                     var intelamt = {};
-                    if (amt != null) {
-                        switch (amt.lmsstate) {
+                    if (amt != null)
+                    {
+                        switch(amt.lmsstate)
+                        {
                             case 0: intelamt.microlms = 'DISABLED'; break;
                             case 1: intelamt.microlms = 'CONNECTING'; break;
                             case 2: intelamt.microlms = 'CONNECTED'; break;
