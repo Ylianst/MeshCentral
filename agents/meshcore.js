@@ -182,7 +182,7 @@ function createMeshCore(agent) {
                             var apps = {};
                             apps[data.value] = 1;
                             try { mesh.SendCommand({ action: 'sessions', type: 'app', value: apps }); } catch (e) { }
-                            this._send({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
+                            this._send({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer, amt: (amt != null) });
                         }
                         break;
                     case 'query':
@@ -192,13 +192,18 @@ function createMeshCore(agent) {
                                 this._send(data);
                                 break;
                             case 'descriptors':
-                                require('ChainViewer').getSnapshot().then(function (f)
-                                {
+                                require('ChainViewer').getSnapshot().then(function (f) {
                                     this.tag.payload.result = f;
                                     this.tag.ipc._send(this.tag.payload);
                                 }).parentPromise.tag = { ipc: this, payload: data };
                                 break;
                         }
+                        break;
+                    case 'amtstate':
+                        if (amt == null) return;
+                        var func = function amtStateFunc(state) { if (state != null) { amtStateFunc.pipe._send({ cmd: 'amtstate', value: state }); } }
+                        func.pipe = this;
+                        amt.getAmtInfo(func);
                         break;
                     case 'sessions':
                         this._send({ cmd: 'sessions', sessions: tunnelUserCount });
