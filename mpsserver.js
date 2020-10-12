@@ -80,7 +80,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         KEEPALIVE_REPLY: 209,
         KEEPALIVE_OPTIONS_REQUEST: 210,
         KEEPALIVE_OPTIONS_REPLY: 211,
-        MESH_CONNECTION_TYPE: 250 // This is a Mesh specific command that instructs the server of the connection type: 1 = Relay, 2 = LMS.
+        JSON_CONTROL: 250 // This is a Mesh specific command that sends JSON to and from the MPS server.
     };
 
     /*
@@ -870,13 +870,22 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     removeCiraConnection(socket);
                     return 7;
                 }
-            case APFProtocol.MESH_CONNECTION_TYPE: // This is a Mesh specific command to indicate the connect type.
+            case APFProtocol.JSON_CONTROL: // This is a Mesh specific command that sends JSON to and from the MPS server.
                 {
                     if (len < 5) return 0;
-                    if ((socket.tag.connType == 0) && (socket.tag.SystemId == null)) { // Once set, the connection type can't be changed.
-                        socket.tag.connType = common.ReadInt(data, 1); // 0 = CIRA, 1 = Relay, 2 = LMS
+                    var jsondatalen = common.ReadInt(data, 1);
+                    if (len < (5 + jsondatalen)) return 0;
+                    var jsondata = null, jsondatastr = data.substring(5, 5 + jsondatalen);
+                    try { jsondata = JSON.parse(jsondatastr); } catch (ex) { }
+                    if ((jsondata == null) || (typeof jsondata.action != 'string')) return;
+                    switch (jsondata.action) {
+                        case 'connType':
+                            if ((socket.tag.connType != 0) || (socket.tag.SystemId != null)) return; // Once set, the connection type can't be changed.
+                            if (typeof jsondata.value != 'number') return;
+                            socket.tag.connType = jsondata.value; // 0 = CIRA, 1 = Relay, 2 = LMS
+                            break;
                     }
-                    return 5;
+                    return 5 + jsondatalen;
                 }
             default:
                 {
