@@ -3538,8 +3538,12 @@ function createMeshCore(agent) {
                 case 'apf': {
                     if (meshCoreObj.intelamt !== null) {
                         if (args['_'].length == 1) {
-                            if (args['_'][0] == 'on') {
-                                response = "Starting APF tunnel";
+                            var connType = -1, connTypeStr = args['_'][0].toLowerCase();
+                            if (connTypeStr == 'lms') { connType = 2; }
+                            if (connTypeStr == 'relay') { connType = 1; }
+                            if (connTypeStr == 'cira') { connType = 0; }
+                            if (connTypeStr == 'off') { connType = -2; }
+                            if (connType >= 0) { // Connect
                                 var apfarg = {
                                     mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
                                     mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
@@ -3548,7 +3552,7 @@ function createMeshCore(agent) {
                                     clientname: require('os').hostname(),
                                     clientaddress: '127.0.0.1',
                                     clientuuid: meshCoreObj.intelamt.uuid,
-                                    conntype: 2 // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
+                                    conntype: connType // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
                                 };
                                 if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) {
                                     response = "Unable to get Intel AMT UUID: " + apfarg.clientuuid;
@@ -3557,25 +3561,24 @@ function createMeshCore(agent) {
                                     apftunnel = require('apfclient')(tobj, apfarg);
                                     try {
                                         apftunnel.connect();
-                                        response += "...success";
+                                        response = "Started APF tunnel";
                                     } catch (e) {
-                                        response += JSON.stringify(e);
+                                        response = JSON.stringify(e);
                                     }
                                 }
-                            } else if (args['_'][0] == 'off') {
-                                response = "Stopping APF tunnel";
+                            } else if (connType == -2) { // Disconnect
                                 try {
                                     apftunnel.disconnect();
-                                    response += "..success";
+                                    response = "Stopped APF tunnel";
                                 } catch (e) {
-                                    response += JSON.stringify(e);
+                                    response = JSON.stringify(e);
                                 }
                                 apftunnel = null;
                             } else {
-                                response = "Invalid command.\r\nCmd syntax: apf on|off";
+                                response = "Invalid command.\r\nUse: apf lms|relay|cira|off";
                             }
                         } else {
-                            response = "APF tunnel is " + (apftunnel == null ? "off" : "on");
+                            response = "APF tunnel is " + (apftunnel == null ? "off" : "on") + "\r\nUse: apf lms|relay|cira|off";
                         }
                     } else {
                         response = "APF tunnel requires Intel AMT";

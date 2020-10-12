@@ -1,9 +1,25 @@
+/*
+Copyright 2018-2020 Intel Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 /**
-* @description APF/CIRA Client for duktape
-* @author Joko Sastriawan
+* @description APF/CIRA Client for Duktape
+* @author Joko Sastriawan & Ylian Saint-Hilaire
 * @copyright Intel Corporation 2019
 * @license Apache-2.0
-* @version v0.0.1
+* @version v0.0.2
 */
 
 function CreateAPFClient(parent, args) {
@@ -84,7 +100,7 @@ function CreateAPFClient(parent, args) {
         KEEPALIVE_REPLY: 209,
         KEEPALIVE_OPTIONS_REQUEST: 210,
         KEEPALIVE_OPTIONS_REPLY: 211,
-        MESH_CONNECTION_TYPE: 250 // This is a Mesh specific command that instructs the server of the connection type: 1 = Relay, 2 = LMS.
+        JSON_CONTROL: 250 // This is a Mesh specific command that sends JSON to and from the MPS server.
     }
 
     var APFDisconnectCode = {
@@ -163,14 +179,15 @@ function CreateAPFClient(parent, args) {
         });
 
         obj.state = CIRASTATE.INITIAL;
-        if (typeof obj.args.conntype == 'number') { SendConnectionType(obj.forwardClient.ws, obj.args.conntype); }
+        if ((typeof obj.args.conntype == 'number') && (obj.args.conntype != 0)) { SendJsonControl(obj.forwardClient.ws, { action: 'connType', value: obj.args.conntype } ); }
         SendProtocolVersion(obj.forwardClient.ws, obj.args.clientuuid);
         SendServiceRequest(obj.forwardClient.ws, 'auth@amt.intel.com');
     }
 
-    function SendConnectionType(socket, type) {
-        socket.write(String.fromCharCode(APFProtocol.MESH_CONNECTION_TYPE) + IntToStr(type));
-        Debug("APF: Send connection type " + type);
+    function SendJsonControl(socket, o) {
+        var data = JSON.stringify(o)
+        socket.write(String.fromCharCode(APFProtocol.JSON_CONTROL) + IntToStr(data.length) + data);
+        Debug("APF: Send JSON control: " + data);
     }
 
     function SendProtocolVersion(socket, uuid) {
