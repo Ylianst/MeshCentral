@@ -662,7 +662,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[docs[i]._id]; if (agent != null) { docs[i].agct = agent.connectTime; } }
 
                                 // Use the connection time of the CIRA/Relay connection
-                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.GetConnectionToNode(docs[i]._id, null, true); if (cira != null) { docs[i].cict = cira[0].tag.connectTime; } }
+                                if ((state.connectivity & 2) != 0) {
+                                    var ciraConnection = parent.parent.mpsserver.GetConnectionToNode(docs[i]._id, null, true);
+                                    if ((ciraConnection != null) && (ciraConnection.tag != null)) { docs[i].cict = ciraConnection.tag.connectTime; }
+                                }
                             }
 
                             // Compress the meshid's
@@ -3480,7 +3483,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[node._id]; if (agent != null) { node.agct = agent.connectTime; } }
 
                                 // Uuse the connection time of the CIRA/Relay connection
-                                if ((state.connectivity & 2) != 0) { var cira = parent.parent.mpsserver.GetConnectionToNode(node._id, null, true); if (cira != null) { node.cict = cira[0].tag.connectTime; } }
+                                if ((state.connectivity & 2) != 0) {
+                                    var ciraConnection = parent.parent.mpsserver.GetConnectionToNode(node._id, null, true);
+                                    if ((ciraConnection != null) && (ciraConnection.tag != null)) { node.cict = ciraConnection.tag.connectTime; }
+                                }
                             }
 
                             // Event the node change
