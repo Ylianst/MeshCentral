@@ -6737,7 +6737,7 @@
                                     // ###BEGIN###{DesktopInbandFiles}
                                     /*
                                     QV('go24', true); // Files
-                                    downloadFile = null;
+                                    gdownloadFile = null;
                                     p24files = webRtcDesktop.softdesktop;
                                     p24targetpath = '';
                                     webRtcDesktop.softdesktop.onControlMsg = onFilesControlData;
@@ -7977,7 +7977,7 @@
                         // Server link
                         //link = '<a href="devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '" download="' + name + '" style=cursor:pointer>' + shortname + '</a>';
                         // Server link
-                        link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + name + '") style=cursor:pointer>' + shortname + '</a>';
+                        link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                     }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -8170,51 +8170,51 @@
         // FILES DOWNLOAD
         //
 
-        var downloadFile; // Global state for file download
+        var gdownloadFile; // Global state for file download
 
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z, tag) {
-            if (xxdialogMode || downloadFile || !files) return;
-            downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
-            //console.log('p13downloadFileCancel', downloadFile);
-            files.sendText({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path });
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            if (xxdialogMode || !files) return;
+            gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
+            //console.log('p13downloadFileCancel', gdownloadFile);
+            files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
         }
 
         // Called by the html page to cancel the download
-        function p13downloadFileCancel() { setDialogMode(0); files.sendText({ action: 'download', sub: 'cancel', id: downloadFile.id }); downloadFile = null; }
+        function p13downloadFileCancel() { setDialogMode(0); files.sendText({ action: 'download', sub: 'cancel', id: gdownloadFile.id }); gdownloadFile = null; }
 
         // Called by the transport when download control command is received
         function p13gotDownloadCommand(cmd) {
             //console.log('p13gotDownloadCommand', cmd);
-            if ((downloadFile == null) || (cmd.id != downloadFile.id)) return;
-            if (cmd.sub == 'start') { downloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: downloadFile.id }); }
-            else if (cmd.sub == 'cancel') { downloadFile = null; setDialogMode(0); }
+            if ((gdownloadFile == null) || (cmd.id != gdownloadFile.id)) return;
+            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id }); }
+            else if (cmd.sub == 'cancel') { gdownloadFile = null; setDialogMode(0); }
         }
 
         // Called by the transport when binary data is received
         function p13gotDownloadBinaryData(data) {
-            if (!downloadFile || downloadFile.state == 0) return;
+            if (!gdownloadFile || gdownloadFile.state == 0) return;
             if (data.length > 4) {
-                downloadFile.tsize += (data.length - 4); // Add to the total bytes received
-                downloadFile.data += data.substring(4); // Append the data
-                Q('d2progressBar').value = downloadFile.tsize; // Change the progress bar
+                gdownloadFile.tsize += (data.length - 4); // Add to the total bytes received
+                gdownloadFile.data += data.substring(4); // Append the data
+                Q('d2progressBar').value = gdownloadFile.tsize; // Change the progress bar
             }
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
-                if (downloadFile.tag == 'viewer') {
+                if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
-                    setDialogMode(4, EscapeHtml(downloadFile.file), 3, p13editSaveBack, null, downloadFile.file);
+                    setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
-                    Q('d4editorarea').value = downloadFile.data;
-                    downloadFile = null;
+                    Q('d4editorarea').value = gdownloadFile.data;
+                    gdownloadFile = null;
                 } else {
                     // Save the file to disk
-                    saveAs(data2blob(downloadFile.data), downloadFile.file); downloadFile = null; setDialogMode(0); // Save the file
+                    saveAs(data2blob(gdownloadFile.data), gdownloadFile.file); gdownloadFile = null; setDialogMode(0); // Save the file
                 }
             } else {
-                files.sendText({ action: 'download', sub: 'ack', id: downloadFile.id }); // Send the ACK
+                files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id }); // Send the ACK
             }
         }
 
@@ -13667,7 +13667,7 @@
             var element = document.createElement('a');
             element.setAttribute('href', link);
             element.setAttribute('rel', 'noreferrer noopener');
-            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', name?name:''); } else { element.setAttribute('target', 'fileDownloadFrame'); }
+            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name?name:'')); } else { element.setAttribute('target', 'fileDownloadFrame'); }
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
