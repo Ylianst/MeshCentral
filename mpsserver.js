@@ -854,7 +854,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var cirachannel = socket.tag.channels[RecipientChannel];
                     if (cirachannel == null) { console.log("MPS Error in CHANNEL_DATA: Unable to find channelid " + RecipientChannel); return 9 + LengthOfData; }
                     cirachannel.amtpendingcredits += LengthOfData;
-                    if (cirachannel.onData) cirachannel.onData(cirachannel, data.substring(9, 9 + LengthOfData));
+                    if (cirachannel.onData) { cirachannel.onData(cirachannel, Buffer.from(data.substring(9, 9 + LengthOfData), 'binary')); }
                     if (cirachannel.amtpendingcredits > (cirachannel.ciraWindow / 2)) {
                         SendChannelWindowAdjust(cirachannel.socket, cirachannel.amtchannelid, cirachannel.amtpendingcredits); // Adjust the buffer window
                         cirachannel.amtpendingcredits = 0;
@@ -960,8 +960,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     function SendChannelData(socket, channelid, data) {
-        parent.debug('mpscmddata', '<-- CHANNEL_DATA', channelid, data.length);
-        Write(socket, String.fromCharCode(APFProtocol.CHANNEL_DATA) + common.IntToStr(channelid) + common.IntToStr(data.length) + data);
+        parent.debug('mpscmddata', '<-- CHANNEL_DATA', channelid, data.length, Buffer.from(data, 'binary').toString('hex'));
+        Write(socket, String.fromCharCode(APFProtocol.CHANNEL_DATA) + common.IntToStr(channelid) + common.IntToStr(data.length) + ((typeof data == 'string') ? data : data.toString('binary')));
     }
 
     function SendChannelWindowAdjust(socket, channelid, bytestoadd) {
@@ -987,14 +987,16 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     function Write(socket, data) {
-        if (args.mpsdebug) {
-            // Print out sent bytes
-            var buf = Buffer.from(data, 'binary');
-            console.log('MPS <-- (' + buf.length + '):' + buf.toString('hex'));
-            if (socket.websocket == 1) { socket.send(buf); } else { socket.write(buf); }
-        } else {
-            if (socket.websocket == 1) { socket.send(Buffer.from(data, 'binary')); } else { socket.write(Buffer.from(data, 'binary')); }
-        }
+        try {
+            if (args.mpsdebug) {
+                // Print out sent bytes
+                var buf = Buffer.from(data, 'binary');
+                console.log('MPS <-- (' + buf.length + '):' + buf.toString('hex'));
+                if (socket.websocket == 1) { socket.send(buf); } else { socket.write(buf); }
+            } else {
+                if (socket.websocket == 1) { socket.send(Buffer.from(data, 'binary')); } else { socket.write(Buffer.from(data, 'binary')); }
+            }
+        } catch (ex) { }
     }
 
     // Returns a CIRA/Relay/LMS connection to a nodeid, use the best possible connection, CIRA first, Relay second, LMS third.

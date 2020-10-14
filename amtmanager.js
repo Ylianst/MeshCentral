@@ -49,6 +49,9 @@ module.exports.CreateAmtManager = function(parent) {
                 // If the connection type we are using is not longer valid, remove our managed device.
                 if ((dev != null) && (dev.conntype != null) && ((dev.conntype & event.conn) == 0)) { removeDevice(event.nodeid); dev = null; }
 
+                // Debug line, to only manage CIRA/Relay connections
+                //if ((event.conn & 10) == 0) return;
+
                 // Create or update a managed device
                 if ((event.conn & 14) != 0) { // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local, 8 = Intel AMT Relay, 16 = MQTT
                     // We have an OOB connection to Intel AMT, update our information
@@ -224,7 +227,6 @@ module.exports.CreateAmtManager = function(parent) {
             // Connect now
             //console.log('CIRA-Connect', (dotls == 1)?"TLS":"NoTLS", dev.name, dev.host, user, pass);
             var comm;
-            dotls = 0; // TODO: We don't support TLS with CIRA/Relay/LMS connections yet. Remove this when we do.
             if (dotls == 1) {
                 comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
                 comm.xtlsFingerprint = 0; // Perform no certificate checking
@@ -253,7 +255,6 @@ module.exports.CreateAmtManager = function(parent) {
 
             // Connect now
             var comm;
-            dev.tlsfail = true; // TODO: We don't support TLS with CIRA/Relay/LMS connections yet. Remove this when we do.
             if (dev.tlsfail !== true) {
                 //console.log('Relay-Connect', "TLS", dev.name, dev.host, user, pass);
                 comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS

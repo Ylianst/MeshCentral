@@ -51,6 +51,16 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
     // Private method
     obj.Debug = function (msg) { console.log(msg); }
 
+    // Used to add TLS to a steam
+    function SerialTunnel(options) {
+        var obj = new require('stream').Duplex(options);
+        obj.forwardwrite = null;
+        obj.updateBuffer = function (chunk) { this.push(chunk); };
+        obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); }; // Pass data written to forward
+        obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
+        return obj;
+    }
+
     // Private method
     //   pri = priority, if set to 1, the call is high priority and put on top of the stack.
     obj.PerformAjax = function (postdata, callback, tag, pri, url, action) {
@@ -167,11 +177,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
         obj.kerberosDone = 0;
 
         if (obj.ciraConnection != null) {
-            // Setup a new channel using the CIRA/Relay/LMS connection
-            obj.socket = obj.ciraConnection.SetupChannel(obj.port);
-            if (obj.socket == null) {
-                try { obj.xxOnSocketClosed(); } catch (e) { }
-            } else {
+            if (obj.xtls != 1) {
+                // Setup a new channel using the CIRA/Relay/LMS connection
+                obj.socket = obj.ciraConnection.SetupChannel(obj.port);
+                if (obj.socket == null) { obj.xxOnSocketClosed(); return; }
+
+                // Connect without TLS
                 obj.socket.onData = function (ccon, data) { obj.xxOnSocketData(data); }
                 obj.socket.onStateChange = function (ccon, state) {
                     if (state == 0) {
@@ -181,12 +192,57 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
                         obj.socketHeader = null;
                         obj.socketData = '';
                         obj.socketState = 0;
-                        try { obj.xxOnSocketClosed(); } catch (e) { }
+                        obj.xxOnSocketClosed();
                     } else if (state == 2) {
                         // Channel open success
                         obj.xxOnSocketConnected();
                     }
                 }
+            } else {
+                // Setup a new channel using the CIRA/Relay/LMS connection
+                obj.cirasocket = obj.ciraConnection.SetupChannel(obj.port);
+                if (obj.cirasocket == null) { obj.xxOnSocketClosed(); return; }
+
+                // Connect with TLS
+                var ser = new SerialTunnel();
+
+                // let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
+                // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
+                ser.forwardwrite = function (msg) { obj.cirasocket.write(msg); }; // TLS ---> CIRA
+
+                // When APF tunnel return something, update SerialTunnel buffer
+                obj.cirasocket.onData = function (ciraconn, data) { if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (e) { } } }; // CIRA ---> TLS
+
+                // Handle CIRA tunnel state change
+                obj.cirasocket.onStateChange = function (ciraconn, state) {
+                    if (state == 0) { obj.xxOnSocketClosed(); }
+                    if (state == 2) {
+                        // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
+                        var options = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                        if (obj.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                        if (obj.xtlsoptions) {
+                            if (obj.xtlsoptions.ca) options.ca = obj.xtlsoptions.ca;
+                            if (obj.xtlsoptions.cert) options.cert = obj.xtlsoptions.cert;
+                            if (obj.xtlsoptions.key) options.key = obj.xtlsoptions.key;
+                        }
+
+                        //obj.socket = new TLSSocket(ser, options);
+                        obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
+                        obj.socket.setEncoding('binary');
+                        obj.socket.setTimeout(6000); // Set socket idle timeout
+                        obj.socket.on('error', function (err) { console.log("CIRA TLS Connection Error ", err); obj.xxOnSocketClosed(); });
+                        //obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
+                        obj.socket.on('close', obj.xxOnSocketClosed);
+                        obj.socket.on('timeout', obj.xxOnSocketTimeout);
+
+                        // Decrypted tunnel from TLS communcation to be forwarded to websocket
+                        obj.socket.on('data', function (data) { try { obj.xxOnSocketData(data.toString('binary')); } catch (e) { } }); // AMT/TLS ---> WS
+
+                        // If TLS is on, forward it through TLSSocket
+                        obj.forwardclient = obj.socket;
+                        obj.forwardclient.xtls = 1;
+                    }
+                };
             }
         } else {
             // Direct connection
@@ -229,7 +285,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
     obj.xxOnSocketConnected = function () {
         if (obj.socket == null) return;
         // check TLS certificate for webrelay and direct only
-        if ((obj.ciraConnection == null) && (obj.xtls == 1)) {
+        if (obj.xtls == 1) {
             obj.xtlsCertificate = obj.socket.getPeerCertificate();
 
             // ###BEGIN###{Certificates}
@@ -365,8 +421,15 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
         //obj.Debug("xxOnSocketClosed");
         obj.socketState = 0;
         if (obj.socket != null) {
-            if (obj.ciraConnection == null) { obj.socket.destroy(); } else { obj.socket.close(); }
+            try {
+                if (obj.ciraConnection == null) {
+                    obj.socket.destroy();
+                } else {
+                    if (obj.cirasocket != null) { obj.cirasocket.close(); } else { obj.socket.close(); } 
+                }
+            } catch (ex) { }
             obj.socket = null;
+            obj.cirasocket = null;
         }
         if (obj.pendingAjaxCall.length > 0) {
             var r = obj.pendingAjaxCall.shift(), retry = r[5];
@@ -376,14 +439,22 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
 
     obj.xxOnSocketTimeout = function () {
         if (obj.socket != null) {
-            if (obj.ciraConnection == null) { obj.socket.destroy(); } else { obj.socket.close(); }
+            try {
+                if (obj.ciraConnection == null) {
+                    obj.socket.destroy();
+                } else {
+                    if (obj.cirasocket != null) { obj.cirasocket.close(); } else { obj.socket.close(); } 
+                }
+            } catch (ex) { }
             obj.socket = null;
+            obj.cirasocket = null;
         }
     }
 
     // NODE.js specific private method
     obj.xxSend = function (x) {
-        if (obj.socketState == 2) { obj.socket.write(Buffer.from(x, "binary")); }
+        //console.log('xxSend', x);
+        if (obj.socketState == 2) { obj.socket.write(Buffer.from(x, 'binary')); }
     }
 
     // Cancel all pending queries with given status
