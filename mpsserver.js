@@ -775,8 +775,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 if (cirachannel.onSendOk) { cirachannel.onSendOk(cirachannel); }
                             } else {
                                 // Send a part of the pending buffer
-                                SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer.substring(0, cirachannel.sendcredits));
-                                cirachannel.sendBuffer = cirachannel.sendBuffer.substring(cirachannel.sendcredits);
+                                SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer.slice(0, cirachannel.sendcredits));
+                                cirachannel.sendBuffer = cirachannel.sendBuffer.slice(cirachannel.sendcredits);
                                 cirachannel.sendcredits = 0;
                             }
                         }
@@ -837,8 +837,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             if (cirachannel.onSendOk) { cirachannel.onSendOk(cirachannel); }
                         } else {
                             // Send a part of the pending buffer
-                            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer.substring(0, cirachannel.sendcredits));
-                            cirachannel.sendBuffer = cirachannel.sendBuffer.substring(cirachannel.sendcredits);
+                            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, cirachannel.sendBuffer.slice(0, cirachannel.sendcredits));
+                            cirachannel.sendBuffer = cirachannel.sendBuffer.slice(cirachannel.sendcredits);
                             cirachannel.sendcredits = 0;
                         }
                     }
@@ -959,9 +959,15 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         Write(socket, String.fromCharCode(APFProtocol.CHANNEL_CLOSE) + common.IntToStr(channelid));
     }
 
+    // Send a buffer to a given channel
     function SendChannelData(socket, channelid, data) {
-        parent.debug('mpscmddata', '<-- CHANNEL_DATA', channelid, data.length, Buffer.from(data, 'binary').toString('hex'));
-        Write(socket, String.fromCharCode(APFProtocol.CHANNEL_DATA) + common.IntToStr(channelid) + common.IntToStr(data.length) + ((typeof data == 'string') ? data : data.toString('binary')));
+        parent.debug('mpscmddata', '<-- CHANNEL_DATA', channelid, data.length);
+        const buf = Buffer.alloc(9 + data.length);
+        buf[0] = APFProtocol.CHANNEL_DATA;  // CHANNEL_DATA
+        buf.writeInt32BE(channelid, 1);     // ChannelID
+        buf.writeInt32BE(data.length, 5);   // Data Length
+        data.copy(buf, 9, 0);
+        WriteBuffer(socket, buf);
     }
 
     function SendChannelWindowAdjust(socket, channelid, bytestoadd) {
@@ -986,6 +992,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         Write(socket, String.fromCharCode(APFProtocol.USERAUTH_SUCCESS));
     }
 
+    // Send a string or buffer
     function Write(socket, data) {
         try {
             if (args.mpsdebug) {
@@ -996,6 +1003,14 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
             } else {
                 if (socket.websocket == 1) { socket.send(Buffer.from(data, 'binary')); } else { socket.write(Buffer.from(data, 'binary')); }
             }
+        } catch (ex) { }
+    }
+
+    // Send a buffer
+    function WriteBuffer(socket, data) {
+        try {
+            if (args.mpsdebug) { console.log('MPS <-- (' + buf.length + '):' + data.toString('hex')); } // Print out sent bytes
+            if (socket.websocket == 1) { socket.send(data); } else { socket.write(data); }
         } catch (ex) { }
     }
 
@@ -1033,9 +1048,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         // This function writes data to this CIRA channel
         cirachannel.write = function (data) {
             if (cirachannel.state == 0) return false;
+            if (typeof data == 'string') { data = Buffer.from(data, 'binary'); } // Make sure we always handle buffers when sending data.
             if (cirachannel.state == 1 || cirachannel.sendcredits == 0 || cirachannel.sendBuffer != null) {
                 // Channel is connected, but we are out of credits. Add the data to the outbound buffer.
-                if (cirachannel.sendBuffer == null) { cirachannel.sendBuffer = data; } else { cirachannel.sendBuffer += data; }
+                if (cirachannel.sendBuffer == null) { cirachannel.sendBuffer = data; } else { cirachannel.sendBuffer = Buffer.concat([ cirachannel.sendBuffer, data ]); }
                 return true;
             }
             // Compute how much data we can send                
@@ -1046,8 +1062,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 return true;
             }
             // Send a part of the message
-            cirachannel.sendBuffer = data.toString('binary').substring(cirachannel.sendcredits);
-            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, data.toString('binary').substring(0, cirachannel.sendcredits));
+            cirachannel.sendBuffer = data.slice(cirachannel.sendcredits);
+            SendChannelData(cirachannel.socket, cirachannel.amtchannelid, data.slice(0, cirachannel.sendcredits));
             cirachannel.sendcredits = 0;
             return false;
         };

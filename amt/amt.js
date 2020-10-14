@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Intel Corporation
+Copyright 2020 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,13 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+@description Intel AMT Communication Stack
+@author Ylian Saint-Hilaire
+@version v0.3.0
 */
 
-/**
-* @fileoverview Intel(r) AMT Communication StackXX
-* @author Ylian Saint-Hilaire
-* @version v0.2.0b
-*/
+/*jslint node: true */
+/*jshint node: true */
+/*jshint strict:false */
+/*jshint -W097 */
+/*jshint esversion: 6 */
+"use strict";
 
 /**
  * Construct a AmtStackCreateService object, this is the main Intel AMT communication stack.
