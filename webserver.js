@@ -3379,7 +3379,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (ciraconn != null) {
                 parent.debug('web', 'Opening relay CIRA channel connection to ' + req.query.host + '.');
 
-                // TODO: If ciraconn is a relay connection, we can't detect the TLS state like this.
+                // TODO: If the CIRA connection is a relay or LMS connection, we can't detect the TLS state like this.
                 // Compute target port, look at the CIRA port mappings, if non-TLS is allowed, use that, if not use TLS
                 var port = 16993;
                 //if (node.intelamt.tls == 0) port = 16992; // DEBUG: Allow TLS flag to set TLS mode within CIRA
@@ -3394,69 +3394,110 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // Let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
-                    ser.forwardwrite = function (msg) {
-                        // TLS ---> CIRA
-                        chnl.write(msg.toString('binary'));
-                    };
+                    ser.forwardwrite = function (data) { if (data.length > 0) { chnl.write(data); } }; // TLS ---> CIRA
 
                     // When APF tunnel return something, update SerialTunnel buffer
-                    chnl.onData = function (ciraconn, data) {
-                        // CIRA ---> TLS
-                        parent.debug('webrelay', 'Relay TLS CIRA data', data.length);
-                        if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (ex) { console.log(ex); } }
-                    };
+                    chnl.onData = function (ciraconn, data) { if (data.length > 0) { try { ser.updateBuffer(data); } catch (ex) { console.log(ex); } } }; // CIRA ---> TLS
 
                     // Handle CIRA tunnel state change
                     chnl.onStateChange = function (ciraconn, state) {
                         parent.debug('webrelay', 'Relay TLS CIRA state change', state);
                         if (state == 0) { try { ws.close(); } catch (e) { } }
+                        if (state == 2) {
+                            // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
+                            const tlsoptions = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                            if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                            var tlsock = obj.tls.connect(tlsoptions, function () { parent.debug('webrelay', "CIRA Secure TLS Connection"); ws._socket.resume(); });
+                            tlsock.chnl = chnl;
+                            tlsock.setEncoding('binary');
+                            tlsock.on('error', function (err) { parent.debug('webrelay', "CIRA TLS Connection Error", err); });
+
+                            // Decrypted tunnel from TLS communcation to be forwarded to websocket
+                            tlsock.on('data', function (data) {
+                                // AMT/TLS ---> WS
+                                if (ws.interceptor) { data = Buffer.from(ws.interceptor.processAmtData(data.toString('binary')), 'binary'); } // Run data thru interceptor
+                                try { ws.send(data); } catch (ex) { }
+                            });
+
+                            // If TLS is on, forward it through TLSSocket
+                            ws.forwardclient = tlsock;
+                            ws.forwardclient.xtls = 1;
+
+                            ws.forwardclient.onStateChange = function (ciraconn, state) {
+                                parent.debug('webrelay', 'Relay CIRA state change', state);
+                                if (state == 0) { try { ws.close(); } catch (e) { } }
+                            };
+
+                            ws.forwardclient.onData = function (ciraconn, data) {
+                                // Run data thru interceptor
+                                if (ws.interceptor) { data = Buffer.from(ws.interceptor.processAmtData(data.toString('binary')), 'binary'); }
+
+                                if (data.length > 0) {
+                                    if (ws.logfile == null) {
+                                        try { ws.send(data); } catch (e) { } // TODO: Add TLS support
+                                    } else {
+                                        // Log to recording file
+                                        recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
+                                    }
+                                }
+                            };
+
+                            ws.forwardclient.onSendOk = function (ciraconn) {
+                                // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
+                                //console.log('onSendOk');
+                            };
+                        }
                     };
-
-                    // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
-                    const TLSSocket = require('tls').TLSSocket;
-                    const tlsoptions = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
-                    if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
-                    const tlsock = new TLSSocket(ser, tlsoptions);
-                    tlsock.on('error', function (err) { parent.debug('webrelay', "CIRA TLS Connection Error ", err); });
-                    tlsock.on('secureConnect', function () { parent.debug('webrelay', "CIRA Secure TLS Connection"); ws._socket.resume(); });
-
-                    // Decrypted tunnel from TLS communcation to be forwarded to websocket
-                    tlsock.on('data', function (data) {
-                        // AMT/TLS ---> WS
-                        try {
-                            data = data.toString('binary');
-                            if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                            //ws.send(Buffer.from(data, 'binary'));
-                            ws.send(data);
-                        } catch (e) { }
-                    });
-
-                    // If TLS is on, forward it through TLSSocket
-                    ws.forwardclient = tlsock;
-                    ws.forwardclient.xtls = 1;
                 } else {
                     // Without TLS
                     ws.forwardclient = parent.mpsserver.SetupChannel(ciraconn, port);
                     ws.forwardclient.xtls = 0;
                     ws._socket.resume();
+
+                    ws.forwardclient.onStateChange = function (ciraconn, state) {
+                        parent.debug('webrelay', 'Relay CIRA state change', state);
+                        if (state == 0) { try { ws.close(); } catch (e) { } }
+                    };
+
+                    ws.forwardclient.onData = function (ciraconn, data) {
+                        //parent.debug('webrelaydata', 'Relay CIRA data to WS', data.length);
+
+                        // Run data thru interceptor
+                        if (ws.interceptor) { data = Buffer.from(ws.interceptor.processAmtData(data.toString('binary')), 'binary'); }
+
+                        //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
+                        if (data.length > 0) {
+                            if (ws.logfile == null) {
+                                try { ws.send(data); } catch (e) { } // TODO: Add TLS support
+                            } else {
+                                // Log to recording file
+                                recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
+                            }
+                        }
+                    };
+
+                    ws.forwardclient.onSendOk = function (ciraconn) {
+                        // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
+                        //console.log('onSendOk');
+                    };
                 }
 
                 // When data is received from the web socket, forward the data into the associated CIRA cahnnel.
                 // If the CIRA connection is pending, the CIRA channel has built-in buffering, so we are ok sending anyway.
-                ws.on('message', function (msg) {
+                ws.on('message', function (data) {
+                    //parent.debug('webrelaydata', 'Relay WS data to CIRA', data.length);
+                    if (typeof data == 'string') { data = Buffer.from(data, 'binary'); }
+
                     // WS ---> AMT/TLS
-                    msg = msg.toString('binary');
-                    if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
-                    //console.log('WS --> AMT', Buffer.from(msg, 'binary').toString('hex'));
+                    if (ws.interceptor) { data = Buffer.from(ws.interceptor.processBrowserData(data.toString('binary')), 'binary'); } // Run data thru interceptor
 
                     // Log to recording file
                     if (ws.logfile == null) {
                         // Forward data to the associated TCP connection.
-                        if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(Buffer.from(msg, 'binary')); } else { ws.forwardclient.write(msg); }
+                        ws.forwardclient.write(data);
                     } else {
                         // Log to recording file
-                        var msg2 = Buffer.from(msg, 'binary');
-                        recordingEntry(ws.logfile.fd, 2, 2, msg2, function () { try { if (ws.forwardclient.xtls == 1) { ws.forwardclient.write(msg2); } else { ws.forwardclient.write(msg); } } catch (ex) { } });
+                        recordingEntry(ws.logfile.fd, 2, 2, data, function () { try { ws.forwardclient.write(data); } catch (ex) { } });
                     }
                 });
 
@@ -3467,60 +3508,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
 
                     // Close the recording file
-                    if (ws.logfile != null) {
-                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) {
-                            obj.fs.close(fd);
-                            ws.logfile = null;
-                        }, ws);
-                    }
+                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); ws.logfile = null; }, ws); }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function (req) {
                     parent.debug('webrelay', 'Websocket relay closed.');
-                    if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
+
+                    // Websocket closed, close the CIRA channel and TLS session.
+                    if (ws.forwardclient) {
+                        if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
+                        if (ws.forwardclient.end) { ws.forwardclient.end(); }          // TLS, close the TLS session
+                        if (ws.forwardclient.chnl) { ws.forwardclient.chnl.close(); }  // TLS, close the CIRA channel
+                    }
 
                     // Close the recording file
-                    if (ws.logfile != null) {
-                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) {
-                            obj.fs.close(fd);
-                            ws.logfile = null;
-                        }, ws);
-                    }
+                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); ws.logfile = null; }, ws); }
                 });
-
-                ws.forwardclient.onStateChange = function (ciraconn, state) {
-                    parent.debug('webrelay', 'Relay CIRA state change', state);
-                    if (state == 0) { try { ws.close(); } catch (e) { } }
-                };
-
-                ws.forwardclient.onData = function (ciraconn, data) {
-                    parent.debug('webrelaydata', 'Relay CIRA data', data.length);
-                    if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
-                    //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
-                    if (data.length > 0) {
-                        if (ws.logfile == null) {
-                            try { ws.send(Buffer.from(data, 'binary')); } catch (e) { } // TODO: Add TLS support
-                        } else {
-                            // Log to recording file
-                            data = Buffer.from(data, 'binary');
-                            recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
-                        }
-                    }
-                };
-
-                ws.forwardclient.onSendOk = function (ciraconn) {
-                    // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
-                    //console.log('onSendOk');
-                };
 
                 // Fetch Intel AMT credentials & Setup interceptor
                 if (req.query.p == 1) {
                     parent.debug('webrelaydata', 'INTERCEPTOR1', { host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor = obj.interceptor.CreateHttpInterceptor({ host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor.blockAmtStorage = true;
-                }
-                else if (req.query.p == 2) {
+                } else if (req.query.p == 2) {
                     parent.debug('webrelaydata', 'INTERCEPTOR2', { user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor = obj.interceptor.CreateRedirInterceptor({ user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor.blockAmtStorage = true;
