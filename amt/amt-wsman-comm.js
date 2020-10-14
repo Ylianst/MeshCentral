@@ -176,14 +176,14 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
     // NODE.js specific private method
     obj.parseDigest = function (header) {
         var t = header.substring(7).split(',');
-        for (i in t) t[i] = t[i].trim();
+        for (var i in t) t[i] = t[i].trim();
         return t.reduce(function (obj, s) { var parts = s.split('='); obj[parts[0]] = parts[1].replace(new RegExp('\"', 'g'), ''); return obj; }, {})
     }
 
     // NODE.js specific private method
     obj.renderDigest = function (params) {
         var paramsnames = [];
-        for (i in params) { paramsnames.push(i); }
+        for (var i in params) { paramsnames.push(i); }
         return 'Digest ' + paramsnames.reduce(function (s1, ii) { return s1 + ',' + ii + '="' + params[ii] + '"' }, '').substring(1);
     }
 
