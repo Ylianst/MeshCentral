@@ -37,14 +37,11 @@ module.exports.CreateHttpInterceptor = function (args) {
 
     // Process data coming from Intel AMT
     obj.processAmtData = function (data) {
-        obj.amt.acc += data; // Add data to accumulator
+        obj.amt.acc += data.toString('binary'); // Add data to accumulator
         data = '';
         var datalen = 0;
-        do {
-            datalen = data.length;
-            data += obj.processAmtDataEx();
-        } while (datalen != data.length); // Process as much data as possible
-        return data;
+        do { datalen = data.length; data += obj.processAmtDataEx(); } while (datalen != data.length); // Process as much data as possible
+        return Buffer.from(data, 'binary');
     };
 
     // Process data coming from AMT in the accumulator
@@ -122,14 +119,11 @@ module.exports.CreateHttpInterceptor = function (args) {
 
     // Process data coming from the Browser
     obj.processBrowserData = function (data) {
-        obj.ws.acc += data; // Add data to accumulator
+        obj.ws.acc += data.toString('binary'); // Add data to accumulator
         data = '';
         var datalen = 0;
-        do {
-            datalen = data.length;
-            data += obj.processBrowserDataEx();
-        } while (datalen != data.length); // Process as much data as possible
-        return data;
+        do { datalen = data.length; data += obj.processBrowserDataEx(); } while (datalen != data.length); // Process as much data as possible
+        return Buffer.from(data, 'binary');
     };
 
     // Process data coming from the Browser in the accumulator
@@ -279,20 +273,21 @@ module.exports.CreateRedirInterceptor = function (args) {
 
     // Process data coming from Intel AMT
     obj.processAmtData = function (data) {
-        obj.amt.acc += data; // Add data to accumulator
+        if ((obj.amt.direct == true) && (obj.amt.acc == '')) { return data; } // Interceptor fast path
+        obj.amt.acc += data.toString('binary'); // Add data to accumulator
         data = '';
         var datalen = 0;
         do { datalen = data.length; data += obj.processAmtDataEx(); } while (datalen != data.length); // Process as much data as possible
-        return data;
+        return Buffer.from(data, 'binary');
     };
 
     // Process data coming from AMT in the accumulator
     obj.processAmtDataEx = function () {
         var r;
-        if (obj.amt.acc.length == 0) return "";
+        if (obj.amt.acc.length == 0) return '';
         if (obj.amt.direct == true) {
             var data = obj.amt.acc;
-            obj.amt.acc = "";
+            obj.amt.acc = '';
             return data;
         } else {
             //console.log(obj.amt.acc.charCodeAt(0));
@@ -346,11 +341,12 @@ module.exports.CreateRedirInterceptor = function (args) {
 
     // Process data coming from the Browser
     obj.processBrowserData = function (data) {
-        obj.ws.acc += data; // Add data to accumulator
+        if ((obj.ws.direct == true) && (obj.ws.acc == '')) { return data; } // Interceptor fast path
+        obj.ws.acc += data.toString('binary'); // Add data to accumulator
         data = '';
         var datalen = 0;
         do { datalen = data.length; data += obj.processBrowserDataEx(); } while (datalen != data.length); // Process as much data as possible
-        return data;
+        return Buffer.from(data, 'binary');
     };
 
     // Process data coming from the Browser in the accumulator
@@ -434,7 +430,6 @@ module.exports.CreateRedirInterceptor = function (args) {
                 }
                 default: {
                     obj.ws.error = true;
-                    return '';
                 }
             }
         }

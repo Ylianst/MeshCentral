@@ -13,17 +13,7 @@
 /*jshint esversion: 6 */
 'use strict';
 
-/*
-class SerialTunnel extends require('stream').Duplex {
-    constructor(options) { super(options); this.forwardwrite = null; }
-    updateBuffer(chunk) { this.push(chunk); }
-    _write(chunk, encoding, callback) { if (this.forwardwrite != null) { this.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); } // Pass data written to forward
-    _read(size) { } // Push nothing, anything to read should be pushed from updateBuffer()
-}
-*/
-
-// Older NodeJS does not support the keyword "class", so we do without using this syntax
-// TODO: Validate that it's the same as above and that it works.
+// SerialTunnel object is used to embed TLS within another connection.
 function SerialTunnel(options) {
     var obj = new require('stream').Duplex(options);
     obj.forwardwrite = null;
@@ -3388,7 +3378,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // Setup a new CIRA channel
                 if ((port == 16993) || (port == 16995)) {
-                    // Perform TLS - ( TODO: THIS IS BROKEN on Intel AMT v7 but works on v10, Not sure why. Well, could be broken TLS 1.0 in firmware )
+                    // Perform TLS
                     var ser = new SerialTunnel();
                     var chnl = parent.mpsserver.SetupChannel(ciraconn, port);
 
@@ -3415,7 +3405,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             // Decrypted tunnel from TLS communcation to be forwarded to websocket
                             tlsock.on('data', function (data) {
                                 // AMT/TLS ---> WS
-                                if (ws.interceptor) { data = Buffer.from(ws.interceptor.processAmtData(data.toString('binary')), 'binary'); } // Run data thru interceptor
+                                if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
                                 try { ws.send(data); } catch (ex) { }
                             });
 
@@ -3430,11 +3420,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                             ws.forwardclient.onData = function (ciraconn, data) {
                                 // Run data thru interceptor
-                                if (ws.interceptor) { data = Buffer.from(ws.interceptor.processAmtData(data.toString('binary')), 'binary'); }
+                                if (ws.interceptor) { data = ws.interceptor.processAmtData(data); }
 
                                 if (data.length > 0) {
                                     if (ws.logfile == null) {
-                                        try { ws.send(data); } catch (e) { } // TODO: Add TLS support
+                                        try { ws.send(data); } catch (e) { }
                                     } else {
                                         // Log to recording file
                                         recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
@@ -3442,10 +3432,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 }
                             };
 
-                            ws.forwardclient.onSendOk = function (ciraconn) {
-                                // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
-                                //console.log('onSendOk');
-                            };
+                            // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
+                            ws.forwardclient.onSendOk = function (ciraconn) { };
                         }
                     };
                 } else {
@@ -3462,24 +3450,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     ws.forwardclient.onData = function (ciraconn, data) {
                         //parent.debug('webrelaydata', 'Relay CIRA data to WS', data.length);
 
-                        // Run data thru interceptor
-                        if (ws.interceptor) { data = Buffer.from(ws.interceptor.processAmtData(data.toString('binary')), 'binary'); }
+                        // Run data thru interceptorp
+                        if (ws.interceptor) { data = ws.interceptor.processAmtData(data); }
 
                         //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
                         if (data.length > 0) {
                             if (ws.logfile == null) {
-                                try { ws.send(data); } catch (e) { } // TODO: Add TLS support
+                                try { ws.send(data); } catch (e) { }
                             } else {
                                 // Log to recording file
-                                recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
+                                recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } });
                             }
                         }
                     };
 
-                    ws.forwardclient.onSendOk = function (ciraconn) {
-                        // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
-                        //console.log('onSendOk');
-                    };
+                    // TODO: Flow control? (Dont' really need it with AMT, but would be nice)
+                    ws.forwardclient.onSendOk = function (ciraconn) { };
                 }
 
                 // When data is received from the web socket, forward the data into the associated CIRA cahnnel.
@@ -3489,7 +3475,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (typeof data == 'string') { data = Buffer.from(data, 'binary'); }
 
                     // WS ---> AMT/TLS
-                    if (ws.interceptor) { data = Buffer.from(ws.interceptor.processBrowserData(data.toString('binary')), 'binary'); } // Run data thru interceptor
+                    if (ws.interceptor) { data = ws.interceptor.processBrowserData(data); } // Run data thru interceptor
 
                     // Log to recording file
                     if (ws.logfile == null) {
@@ -3505,10 +3491,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 ws.on('error', function (err) {
                     console.log('CIRA server websocket error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Websocket relay closed on error.');
-                    if (ws.forwardclient && ws.forwardclient.close) { ws.forwardclient.close(); } // TODO: If TLS is used, we need to close the socket that is wrapped by TLS
+
+                    // Websocket closed, close the CIRA channel and TLS session.
+                    if (ws.forwardclient) {
+                        if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
+                        if (ws.forwardclient.end) { ws.forwardclient.end(); }          // TLS, close the TLS session
+                        if (ws.forwardclient.chnl) { ws.forwardclient.chnl.close(); }  // TLS, close the CIRA channel
+                        delete ws.forwardclient;
+                    }
 
                     // Close the recording file
-                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); ws.logfile = null; }, ws); }
+                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); delete ws.logfile; }, ws); }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
@@ -3520,10 +3513,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
                         if (ws.forwardclient.end) { ws.forwardclient.end(); }          // TLS, close the TLS session
                         if (ws.forwardclient.chnl) { ws.forwardclient.chnl.close(); }  // TLS, close the CIRA channel
+                        delete ws.forwardclient;
                     }
 
                     // Close the recording file
-                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); ws.logfile = null; }, ws); }
+                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); delete ws.logfile; }, ws); }
                 });
 
                 // Fetch Intel AMT credentials & Setup interceptor
@@ -3546,20 +3540,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // When data is received from the web socket, forward the data into the associated TCP connection.
                 ws.on('message', function (msg) {
-                    if (obj.parent.debugLevel >= 1) { // DEBUG
-                        parent.debug('webrelaydata', 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
-                        //if (obj.parent.debugLevel >= 4) { parent.debug('webrelaydatahex', '  ' + msg.toString('hex')); }
-                    }
-                    msg = msg.toString('binary');
+                    //parent.debug('webrelaydata', 'TCP relay data to ' + node.host + ', ' + msg.length + ' bytes');
+
+                    if (typeof msg == 'string') { msg = Buffer.from(msg, 'binary'); }
                     if (ws.interceptor) { msg = ws.interceptor.processBrowserData(msg); } // Run data thru interceptor
 
                     // Log to recording file
                     if (ws.logfile == null) {
                         // Forward data to the associated TCP connection.
-                        try { ws.forwardclient.write(Buffer.from(msg, 'binary')); } catch (ex) { }
+                        try { ws.forwardclient.write(msg); } catch (ex) { }
                     } else {
                         // Log to recording file
-                        msg = Buffer.from(msg, 'binary');
                         recordingEntry(ws.logfile.fd, 2, 2, msg, function () { try { ws.forwardclient.write(msg); } catch (ex) { } });
                     }
                 });
@@ -3622,6 +3613,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                 // When we receive data on the TCP connection, forward it back into the web socket connection.
                 ws.forwardclient.on('data', function (data) {
+                    if (typeof data == 'string') { data = Buffer.from(data, 'binary'); }
                     if (obj.parent.debugLevel >= 1) { // DEBUG
                         parent.debug('webrelaydata', 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
                         //if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
@@ -3629,10 +3621,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
                     if (ws.logfile == null) {
                         // No logging
-                        try { ws.send(Buffer.from(data, 'binary')); } catch (e) { }
+                        try { ws.send(data); } catch (e) { }
                     } else {
                         // Log to recording file
-                        data = Buffer.from(data, 'binary');
                         recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (e) { } });
                     }
                 });
