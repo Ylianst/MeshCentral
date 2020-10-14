@@ -331,13 +331,17 @@ module.exports.CreateAmtManager = function(parent) {
             if (stack.wsman.comm.xtls == 1) { dev.aquired.hash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.hash; }
             //console.log(dev.nodeid, dev.name, dev.host, dev.aquired);
             UpdateDevice(dev);
-            attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
 
-            // Start power polling
-            var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-            ppfunc.dev = dev;
-            dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-            fetchPowerState(dev);
+            // Perform Intel AMT clock sync
+            attemptSyncClock(dev, function () {
+                attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
+
+                // Start power polling
+                var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                ppfunc.dev = dev;
+                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                fetchPowerState(dev);
+            });
         } else {
             // We got a bad response
             if ((dev.conntype == 1) && (dev.tlsfail !== true) && (status == 408)) {
@@ -440,6 +444,40 @@ module.exports.CreateAmtManager = function(parent) {
                 parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(device.meshid, [device._id]), obj, event);
             }
         });
+    }
+
+    // Attempt to sync the Intel AMT clock if needed, call func back when done.
+    // Care should be take not to have many pending WSMAN called when performing clock sync.
+    function attemptSyncClock(dev, func) {
+        if (obj.amtDevices[dev.nodeid] == null) return false; // Device no longer exists, ignore this request.
+        dev.clockSyncCompleted = func;
+        dev.amtstack.AMT_TimeSynchronizationService_GetLowAccuracyTimeSynch(attemptSyncClockEx);
+    }
+
+    // Intel AMT clock query response
+    function attemptSyncClockEx(stack, name, response, status) {
+        const dev = stack.dev;
+        if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+        if (status != 200) { removeDevice(dev.nodeid); }
+
+        // Compute how much drift between Intel AMT and our clock.
+        var t = new Date(), now = new Date();
+        t.setTime(response.Body['Ta0'] * 1000);
+        if (Math.abs(t - now) > 10000) { // If the Intel AMT clock is more than 10 seconds off, set it.
+            var Tm1 = Math.round(now.getTime() / 1000);
+            dev.amtstack.AMT_TimeSynchronizationService_SetHighAccuracyTimeSynch(response.Body['Ta0'], Tm1, Tm1, attemptSyncClockSet);
+        } else {
+            // Clock is fine, we are done.
+            if (dev.clockSyncCompleted != null) { var f = dev.clockSyncCompleted; delete dev.clockSyncCompleted; f(); }
+        }
+    }
+
+    // Intel AMT clock set response
+    function attemptSyncClockSet(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+        if (status != 200) { removeDevice(dev.nodeid); }
+        if (dev.clockSyncCompleted != null) { var f = dev.clockSyncCompleted; delete dev.clockSyncCompleted; f(); }
     }
 
     function attemptFetchHardwareInventory(dev) {
