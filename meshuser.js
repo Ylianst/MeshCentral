@@ -886,12 +886,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             break;
                         }
                         case 'amtmanager': {
-                            if (parent.parent.amtManager == null) { r = 'Intel AMT Manager not active.'; break; }
-                            for (var nodeid in parent.parent.amtManager.amtDevices) {
-                                var dev = parent.parent.amtManager.amtDevices[nodeid];
-                                r += (dev.conn + ', \"' + dev.name + '\"\r\n');
-                            }
-                            if (r == '') { r = 'Not current managing any devices.'; }
+                            if (parent.parent.amtManager == null) { r = 'Intel AMT Manager not active.'; } else { r = parent.parent.amtManager.getStatusString(); }
                             break;
                         }
                         case 'certhashes': {

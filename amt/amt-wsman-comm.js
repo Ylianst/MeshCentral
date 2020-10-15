@@ -26,7 +26,7 @@ limitations under the License.
 "use strict";
 
 // Construct a WSMAN stack communication object
-var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraConnection) {
+var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConnection) {
     //console.log('CreateWsmanComm', host, port, user, pass, tls, tlsoptions);
 
     var obj = {};    
@@ -59,7 +59,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
     obj.pass = pass;
     obj.xtls = tls;
     obj.xtlsoptions = tlsoptions;
-    obj.ciraConnection = ciraConnection; // This can be a CIRA or APF server, if null, local sockets are used as transport.
+    obj.mpsConnection = mpsConnection; // Link to a MPS connection, this can be CIRA, Relay or LMS. If null, local sockets are used as transport.
     obj.xtlsFingerprint;
     obj.xtlsCertificate = null;
     obj.xtlsCheck = 0; // 0 = No TLS, 1 = CA Checked, 2 = Pinned, 3 = Untrusted
@@ -197,10 +197,10 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
         obj.socketState = 1;
         obj.kerberosDone = 0;
 
-        if (obj.ciraConnection != null) {
+        if (obj.mpsConnection != null) {
             if (obj.xtls != 1) {
                 // Setup a new channel using the CIRA/Relay/LMS connection
-                obj.socket = obj.ciraConnection.SetupChannel(obj.port);
+                obj.socket = obj.mpsConnection.SetupChannel(obj.port);
                 if (obj.socket == null) { obj.xxOnSocketClosed(); return; }
 
                 // Connect without TLS
@@ -221,7 +221,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
                 }
             } else {
                 // Setup a new channel using the CIRA/Relay/LMS connection
-                obj.cirasocket = obj.ciraConnection.SetupChannel(obj.port);
+                obj.cirasocket = obj.mpsConnection.SetupChannel(obj.port);
                 if (obj.cirasocket == null) { obj.xxOnSocketClosed(); return; }
 
                 // Connect with TLS
@@ -425,7 +425,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
         if (isNaN(s)) s = 500;
         if (s == 401 && ++(obj.authcounter) < 3) {
             obj.challengeParams = obj.parseDigest(header['www-authenticate']); // Set the digest parameters, after this, the socket will close and we will auto-retry            
-            if (obj.ciraConnection == null) { obj.socket.end(); } else { obj.socket.close(); }
+            if (obj.mpsConnection == null) { obj.socket.end(); } else { obj.socket.close(); }
         } else {
             var r = obj.pendingAjaxCall.shift();
             if (r == null || r.length < 1) { console.log("pendingAjaxCall error, " + r); return; }
@@ -443,7 +443,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
         obj.socketState = 0;
         if (obj.socket != null) {
             try {
-                if (obj.ciraConnection == null) {
+                if (obj.mpsConnection == null) {
                     obj.socket.destroy();
                 } else {
                     if (obj.cirasocket != null) { obj.cirasocket.close(); } else { obj.socket.close(); } 
@@ -461,7 +461,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, ciraCon
     obj.xxOnSocketTimeout = function () {
         if (obj.socket != null) {
             try {
-                if (obj.ciraConnection == null) {
+                if (obj.mpsConnection == null) {
                     obj.socket.destroy();
                 } else {
                     if (obj.cirasocket != null) { obj.cirasocket.close(); } else { obj.socket.close(); } 

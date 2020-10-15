@@ -151,7 +151,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         
         // Add this connection to the connections list
         if (connections == null) { obj.ciraConnections[socket.tag.nodeid] = [socket]; } else { obj.ciraConnections[socket.tag.nodeid].push(socket); }
-        if ((socket.tag.connType != 0) && (socket.tag.connType != 1)) return; // If not a CIRA or Relay connection, we don't indicate a connection state change
 
         // Update connectivity state
         // Report the new state of a CIRA/Relay/LMS connection after a short delay. This is to wait for the connection to have the bounded ports setup before we advertise this new connection.
@@ -166,10 +165,10 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 } else if (setConnFunc.socket.tag.connType == 1) {
                     // Intel AMT Relay connection. This connection does not give any information about the remote device's power state.
                     obj.parent.SetConnectivityState(setConnFunc.socket.tag.meshid, setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connectTime, 8, 0); // 0 = Unknown
-                } else if (setConnFunc.socket.tag.connType == 2) {
-                    // Intel AMT LMS connection. We don't notify of these connections except telling the Intel AMT manager about them.
-                    // TODO: Notify AMT manager
                 }
+                // Intel AMT LMS connection (connType == 2), we don't notify of these connections except telling the Intel AMT manager about them.
+                // If the AMT manager is present, start management of this device
+                if (obj.parent.amtManager != null) { obj.parent.amtManager.startAmtManagement(setConnFunc.socket.tag.nodeid, setConnFunc.socket.tag.connType, setConnFunc.socket); }
             }
         }
         f.socket = socket;
@@ -178,6 +177,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
     // Remove a CIRA connection from the connection list
     function removeCiraConnection(socket) {
+        // If the AMT manager is present, stop management of this device
+        if (obj.parent.amtManager != null) { obj.parent.amtManager.stopAmtManagement(socket.tag.nodeid, socket.tag.connType, socket); }
+
         // Remove the connection from the list if present.
         const ciraArray = obj.ciraConnections[socket.tag.nodeid];
         if (ciraArray == null) return;

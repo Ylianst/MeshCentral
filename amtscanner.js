@@ -179,6 +179,7 @@ module.exports.CreateAmtScanner = function (parent) {
                                 // More than 2 minutes without a response, mark the node as unknown state
                                 scaninfo.state = 0;
                                 obj.parent.ClearConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, 4); // Clear connectivity state
+                                if (obj.parent.amtManager != null) { obj.parent.amtManager.stopAmtManagement(scaninfo.nodeinfo._id, 3, scaninfo.nodeinfo.host); }
                             } else if ((scaninfo.tcp == null) && ((scaninfo.state == 0) || isNaN(delta) || (delta > PeriodicScanTime))) {
                                 // More than 30 seconds without a response, try TCP detection
                                 obj.checkTcpPresence(host, (doc.intelamt.tls == 1) ? 16993 : 16992, scaninfo, function (tag, result, version) {
@@ -189,6 +190,7 @@ module.exports.CreateAmtScanner = function (parent) {
                                         tag.state = 1;
                                         obj.parent.SetConnectivityState(tag.nodeinfo.meshid, tag.nodeinfo._id, tag.lastpong, 4, 7); // Report power state as "present" (7).
                                         if (version != null) { obj.changeAmtState(tag.nodeinfo._id, version, 2, tag.nodeinfo.intelamt.tls); }
+                                        if (obj.parent.amtManager != null) { obj.parent.amtManager.startAmtManagement(tag.nodeinfo._id, 3, tag.nodeinfo.host); }
                                     }
                                 });
                             }
@@ -285,6 +287,7 @@ module.exports.CreateAmtScanner = function (parent) {
                 scaninfo.nodeinfo.intelamt.state = provisioningState;
                 obj.parent.SetConnectivityState(scaninfo.nodeinfo.meshid, scaninfo.nodeinfo._id, scaninfo.lastpong, 4, 7); // Report power state as "present" (7).
                 obj.changeAmtState(scaninfo.nodeinfo._id, scaninfo.nodeinfo.intelamt.ver, provisioningState, scaninfo.nodeinfo.intelamt.tls);
+                if (obj.parent.amtManager != null) { obj.parent.amtManager.startAmtManagement(scaninfo.nodeinfo._id, 3, scaninfo.nodeinfo.host); }
             }
         }
     };
