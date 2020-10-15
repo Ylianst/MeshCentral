@@ -1334,7 +1334,7 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Setup the Intel AMT manager
-                if ((obj.args.amtmanager == true) || (typeof obj.args.amtmanager == 'object')) {
+                if (obj.args.amtmanager == true) {
                     obj.amtManager = require('./amtmanager.js').CreateAmtManager(obj);
                 }
 
