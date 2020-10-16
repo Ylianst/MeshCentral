@@ -12026,11 +12026,13 @@
                 if (user.name.toLowerCase() != user._id.split('/')[2]) { x += addDeviceAttribute("User Identifier", EscapeHtml(user._id.split('/')[2])); }
             }
 
+            var emailLink = '';
+            if (user.email) { emailLink = ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>'; }
             if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email or real name
-                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>' + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
+                x += addDeviceAttribute("Email", everify + email + emailLink + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserEmailChangeDialog(event,"' + userid + '") />');
                 x += addDeviceAttribute("Real Name", realname + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30showUserRealNameChangeDialog(event,"' + userid + '") />');
             } else {
-                x += addDeviceAttribute("Email", everify + email + ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>');
+                x += addDeviceAttribute("Email", everify + email + emailLink);
                 x += addDeviceAttribute("Real Name", realname);
             }
 
@@ -12185,7 +12187,7 @@
         // Perform validation on the user's email change dialog box
         function p30validateEmail() {
             var v = Q('dp30email').value, x = v.split('@');
-            x = (x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2) && (v.length < 1024) && ((v != userinfo.email) || ((serverinfo.emailcheck == true) && (Q('dp30verified').value != (userinfo.emailVerified?1:0))));
+            x = (v.length == 0) || ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2) && (v.length < 1024) && ((v != userinfo.email) || ((serverinfo.emailcheck == true) && (Q('dp30verified').value != (userinfo.emailVerified?1:0)))));
             QE('idx_dlgOkButton', x);
         }
 
