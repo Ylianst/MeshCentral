@@ -28481,6 +28481,12 @@
       ]
     },
     {
+      "en": "Refresh the desktop",
+      "xloc": [
+        "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
+      ]
+    },
+    {
       "cs": "Předávání (relay)",
       "de": "Weiterleitung",
       "en": "Relay",
