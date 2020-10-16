@@ -1997,8 +1997,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Validate and change email
                         if (edituserdomain.usernameisemail !== true) {
-                            if (common.validateString(command.email, 1, 1024) && (chguser.email != command.email)) {
-                                if (command.email == '') { delete chguser.email; } else { chguser.email = command.email.toLowerCase(); }
+                            if (common.validateString(command.email, 0, 1024) && (chguser.email != command.email)) {
+                                if (command.email == '') { command.emailVerified = false; delete chguser.email; } else { chguser.email = command.email.toLowerCase(); }
                                 change = 1;
                             }
                         }
