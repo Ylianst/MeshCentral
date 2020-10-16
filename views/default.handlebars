@@ -619,6 +619,7 @@
                             <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img id=DeskClipboardOutButtonImage src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskRefreshButton title="Refresh the desktop"><img id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 style=padding-top:2px /></span>
                         </div>
                         <div>
                             <select id="deskkeys">
@@ -6116,6 +6117,11 @@
             if (navigator.clipboard.readText) { navigator.clipboard.readText().then(function(text) { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }).catch(function(err) { }); }
         }
 
+        function deskRefreshFunction() {
+            if (desktop == null || desktop.State != 3) return;
+            desktop.m.SendRefresh();
+        }
+
         function deviceToastFunction() {
             if (xxdialogMode) return;
             setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
@@ -6698,6 +6704,7 @@
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
             QV('DeskBackgroundButton', (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
+            QV('DeskRefreshButton', (deskState == 3) && (desktop.contype == 1))
             QV('deskActionsSettings', (browserfullscreen == false));
             if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
             QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red';
