@@ -137,7 +137,7 @@ function CreateMeshCentralServer(config, args) {
 
         if ((obj.args.help == true) || (obj.args['?'] == true)) {
             console.log('MeshCentral v' + getCurrentVerion() + ', remote computer management web portal.');
-            console.log('This software is open source under Apache 2.0 licence.');
+            console.log('This software is open source under Apache 2.0 license.');
             console.log('Details at: https://www.meshcommander.com/meshcentral2\r\n');
             if ((obj.platform == 'win32') || (obj.platform == 'linux')) {
                 console.log('Run as a background service');
@@ -153,7 +153,7 @@ function CreateMeshCentralServer(config, args) {
             console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
             console.log('   --listuserids                     Show a list of a user identifiers in the database.');
             console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
-            console.log('                                     country and organization can optionaly be set.');
+            console.log('                                     country and organization can optionally be set.');
             console.log('');
             console.log('Server recovery commands, use only when MeshCentral is offline.');
             console.log('   --createaccount [userid]          Create a new user account.');
@@ -1333,14 +1333,12 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshScanner = require('./meshscanner.js').CreateMeshScanner(obj).start();
                 }
 
-                // Setup the Intel AMT manager
-                if (obj.args.amtmanager == true) {
-                    obj.amtManager = require('./amtmanager.js').CreateAmtManager(obj);
-                }
-
                 // Setup and start the MPS server
-                if ((obj.args.lanonly != true) && (obj.args.mpsport !== 0)) {
-                    obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
+                obj.mpsserver = require('./mpsserver.js').CreateMpsServer(obj, obj.db, obj.args, obj.certificates);
+
+                // Setup the Intel AMT manager
+                if (obj.args.amtmanager !== false) {
+                    obj.amtManager = require('./amtmanager.js').CreateAmtManager(obj);
                 }
 
                 // Setup and start the legacy swarm server
