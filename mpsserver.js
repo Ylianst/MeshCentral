@@ -37,23 +37,26 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         //'/text.ico': { file: 'c:\\temp\\test.iso', maxserve: 3, maxtime: Date.now() + 15000 }
     };
 
-    if (obj.args.mpstlsoffload) {
-        obj.server = net.createServer(onConnection);
-    } else {
-        // Note that in oder to support older Intel AMT CIRA connections, we have to turn on TLSv1.
-        obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, minVersion: 'TLSv1', requestCert: true, rejectUnauthorized: false, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION }, onConnection);
-        //obj.server.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
-        //obj.server.on('error', function () { console.log('MPS tls server error'); });
-        obj.server.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
-        obj.server.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
+    // Set the MPS external port only if it's not set to zero and we are not in LAN mode.
+    if ((args.lanonly != true) && (args.mpsport !== 0)) {
+        if (obj.args.mpstlsoffload) {
+            obj.server = net.createServer(onConnection);
+        } else {
+            // Note that in oder to support older Intel AMT CIRA connections, we have to turn on TLSv1.
+            obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, minVersion: 'TLSv1', requestCert: true, rejectUnauthorized: false, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION }, onConnection);
+            //obj.server.on('error', function () { console.log('MPS tls server error'); });
+            obj.server.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
+            obj.server.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
+        }
+
+        obj.server.listen(args.mpsport, args.mpsportbind, function () {
+            console.log("MeshCentral Intel(R) AMT server running on " + certificates.AmtMpsName + ":" + args.mpsport + ((args.mpsaliasport != null) ? (", alias port " + args.mpsaliasport) : "") + ".");
+            obj.parent.authLog('mps', 'Server listening on ' + ((args.mpsportbind != null) ? args.mpsportbind : '0.0.0.0') + ' port ' + args.mpsport + '.');
+        }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available."); if (args.exactports) { process.exit(); } });
+
+        obj.server.on('tlsClientError', function (err, tlssocket) { if (args.mpsdebug) { var remoteAddress = tlssocket.remoteAddress; if (tlssocket.remoteFamily == 'IPv6') { remoteAddress = '[' + remoteAddress + ']'; } console.log('MPS:Invalid TLS connection from ' + remoteAddress + ':' + tlssocket.remotePort + '.'); } });
     }
 
-    obj.server.listen(args.mpsport, args.mpsportbind, function () {
-        console.log("MeshCentral Intel(R) AMT server running on " + certificates.AmtMpsName + ":" + args.mpsport + ((args.mpsaliasport != null) ? (", alias port " + args.mpsaliasport) : "") + ".");
-        obj.parent.authLog('mps', 'Server listening on ' + ((args.mpsportbind != null) ? args.mpsportbind : '0.0.0.0') + ' port ' + args.mpsport + '.');
-    }).on("error", function (err) { console.error("ERROR: MeshCentral Intel(R) AMT server port " + args.mpsport + " is not available."); if (args.exactports) { process.exit(); } });
-
-    obj.server.on('tlsClientError', function (err, tlssocket) { if (args.mpsdebug) { var remoteAddress = tlssocket.remoteAddress; if (tlssocket.remoteFamily == 'IPv6') { remoteAddress = '[' + remoteAddress + ']'; } console.log('MPS:Invalid TLS connection from ' + remoteAddress + ':' + tlssocket.remotePort + '.'); } });
     obj.parent.updateServerState('mps-port', args.mpsport);
     obj.parent.updateServerState('mps-name', certificates.AmtMpsName);
     if (args.mpsaliasport != null) { obj.parent.updateServerState('mps-alias-port', args.mpsaliasport); }
