@@ -2584,6 +2584,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
+                    if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
                     x += addDeviceAttribute("Agent", str);
                 }
 
@@ -2678,11 +2679,12 @@
                 // Set the node power state
                 var powerstate = PowerStateStr(node.state);
                 //if (node.state == 0) { powerstate = 'Unknown State'; }
-                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Mesh Agent" + '</span>'; }
-                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT connected" + '</span>'; }
-                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += '<span style=font-size:10px>' + "Intel&reg; AMT detected" + '</span>'; }
-                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += '<br/>'; } powerstate += '<span style=font-size:12px>' + "MQTT channel connected" + '</span>'; }
-                QH('MainComputerState', powerstate);
+                if ((connectivity & 1) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Mesh Agent"; }
+                if ((connectivity & 2) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Intel&reg; AMT connected"; }
+                else if ((connectivity & 4) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "Intel&reg; AMT detected"; }
+                if ((connectivity & 16) != 0) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += "MQTT channel connected"; }
+                if ((node.pwr > 1) && (node.pwr != 7)) { if (powerstate.length > 0) { powerstate += ', '; } powerstate += powerStateStrings[node.pwr]; }
+                QH('MainComputerState', '<span style=font-size:12px>' + powerstate + '</span>');
 
                 // Set the node icon
                 QH('MainComputerImage', '<div class="i' + node.icon + '"></div>');
