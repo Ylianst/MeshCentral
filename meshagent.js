@@ -1500,6 +1500,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((command.caps != null) && (device.agent.core != command.value)) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; } // Don't save this as an event to the db.
                 if ((command.caps != null) && ((device.agent.caps & 0xFFFFFFE7) != (command.caps & 0xFFFFFFE7))) { device.agent.caps = ((device.agent.caps & 24) + (command.caps & 0xFFFFFFE7)); change = 1; } // Allow Javascript on the agent to change all capabilities except console and javascript support, Don't save this as an event to the db.
                 if ((command.osdesc != null) && (typeof command.osdesc == 'string') && (device.osdesc != command.osdesc)) { device.osdesc = command.osdesc; change = 1; changes.push('os desc'); } // Don't save this as an event to the db.
+                if ((typeof command.root == 'boolean') && (command.root !== device.agent.root)) { change = 1; device.agent.root = command.root; }
                 if (device.ip != obj.remoteaddr) { device.ip = obj.remoteaddr; change = 1; }
                 if (command.intelamt) {
                     if (!device.intelamt) { device.intelamt = {}; }
