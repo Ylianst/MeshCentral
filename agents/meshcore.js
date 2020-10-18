@@ -2563,7 +2563,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'amtconfig,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -3540,6 +3540,29 @@ function createMeshCore(agent) {
                         if (diag) { diag.close(); diag = null; }
                         break;
                     }
+                case 'amtconfig': {
+                    if (meshCoreObj.intelamt == null) { response = "No Intel AMT support delected"; break; }
+                    if (apftunnel != null) { response = "Intel AMT server tunnel already active"; break; }
+                    var apfarg = {
+                        mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
+                        mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                        mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                        mpskeepalive: 60000,
+                        clientname: require('os').hostname(),
+                        clientaddress: '127.0.0.1',
+                        clientuuid: meshCoreObj.intelamt.uuid,
+                        conntype: 2 // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
+                    };
+                    if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) { response = "Unable to get Intel AMT UUID"; break; }
+                    apftunnel = require('apfclient')({ debug: false }, apfarg);
+                    apftunnel.onJsonControl = function (data) {
+                        if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); }
+                        if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; }
+                    }
+                    apftunnel.onChannelClosed = function () { apftunnel = null; }
+                    try { apftunnel.connect(); response = "Started Intel AMT configuration"; } catch (ex) { response = JSON.stringify(ex); }
+                    break;
+                }
                 case 'apf': {
                     if (meshCoreObj.intelamt !== null) {
                         if (args['_'].length == 1) {
@@ -3562,8 +3585,12 @@ function createMeshCore(agent) {
                                 if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) {
                                     response = "Unable to get Intel AMT UUID: " + apfarg.clientuuid;
                                 } else {
-                                    var tobj = { debug: false };
-                                    apftunnel = require('apfclient')(tobj, apfarg);
+                                    apftunnel = require('apfclient')({ debug: false }, apfarg);
+                                    apftunnel.onJsonControl = function (data) {
+                                        if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); }
+                                        if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; }
+                                    }
+                                    apftunnel.onChannelClosed = function () { apftunnel = null; }
                                     try {
                                         apftunnel.connect();
                                         response = "Started APF tunnel";

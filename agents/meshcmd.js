@@ -113,7 +113,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE'];
 
     // Load the action file
     var actionfile = null;
@@ -129,6 +129,7 @@ function run(argv) {
     if ((typeof args.localport) == 'string') { settings.localport = parseInt(args.localport); }
     if ((typeof args.remotenodeid) == 'string') { settings.remotenodeid = args.remotenodeid; }
     if ((typeof args.name) == 'string') { settings.name = args.name; }
+    if ((typeof args.id) == 'string') { settings.id = args.id; }
     if ((typeof args.username) == 'string') { settings.username = args.username; }
     if ((typeof args.password) == 'string') { settings.password = args.password; }
     if ((typeof args.url) == 'string') { settings.url = args.url; }
@@ -174,6 +175,7 @@ function run(argv) {
         console.log('  meshcmd [action] [arguments...]\r\n');
         console.log('Valid MeshCentral actions:');
         console.log('  Route             - Map a local TCP port to a remote computer.');
+        console.log('  AmtConfig         - Setup Intel AMT on this computer.');
         console.log('\r\nValid local actions:');
         console.log('  SMBios            - Display System Management BIOS tables for this computer.');
         console.log('  RawSMBios         - Display RAW System Management BIOS tables for this computer.');
@@ -245,6 +247,12 @@ function run(argv) {
             console.log('  --tag [string]            Optional string sent to the server during activation.');
             console.log('  --serverhttpshash [hash]  Optional TLS server certificate hash.');
             console.log('  --profile [string]        Optional profile used for server activation.');
+        } else if (action == 'amtconfig') {
+            console.log('AmtConfig will attempt to activate and configure Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtconfig --url [url]');
+            console.log('\r\nPossible arguments:\r\n');
+            console.log('  --url [wss://server]      The address of the MeshCentral server.');
+            console.log('  --id [groupid]            The device group identifier.');
+            console.log('  --serverhttpshash [hash]  Optional TLS server certificate hash.');
         } else if (action == 'amtacm') {
             console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work. Example usage:\r\n\r\n  meshcmd amtacm --url [url]');
             console.log('\r\nPossible arguments:\r\n');
@@ -643,6 +651,12 @@ function run(argv) {
         settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
         getAmtUuid();
+    } else if (settings.action == 'amtconfig') {
+        // Start Intel AMT configuration
+        if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No MeshCentral server URL specified, use --url [url].'); exit(1); return; }
+        if ((settings.id == null) || (typeof settings.id != 'string') || (settings.id == '')) { console.log('No device group identifier specified, use --id [identifier].'); exit(1); return; }
+        debug(1, "Settings: " + JSON.stringify(settings));
+        configureAmt();
     } else if (settings.action == 'amtccm') {
         // Start activation to CCM 
         if (((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) && ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == ''))) { console.log('No or invalid parameters specified, use --password [password] or --url [url].'); exit(1); return; }
@@ -1124,6 +1138,88 @@ function startMeshCommander() {
     });
     console.log('MeshCommander running on HTTP port ' + settings.localport + '.');
     console.log('Press ctrl-c to exit.');
+}
+
+
+//
+// Configure Intel AMT
+//
+
+function configureAmt() {
+    console.log('Starting Intel AMT configuration...');
+    settings.noconsole = true;
+
+    // Display Intel AMT version and activation state
+    mestate = {};
+    var amtMeiModule, amtMei;
+    try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
+    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
+    amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
+    amtMei.getVersion(function (val) { mestate.vers = {}; if (val != null) { for (var version in val.Versions) { mestate.vers[val.Versions[version].Description] = val.Versions[version].Version; } } });
+    amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
+    amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
+    amtMei.getControlMode(function (result) { if (result != null) { mestate.controlMode = result.controlMode; } }); // controlMode: 0 = NoActivated, 1 = CCM, 2 = ACM
+    amtMei.getDnsSuffix(function (result) {
+        if ((mestate.vers == null) || (mestate.vers['AMT'] == null)) { console.log("Unable to get Intel AMT version."); exit(100); return; }
+        if (mestate.ProvisioningState == null) { console.log("Unable to read Intel AMT activation state."); exit(100); return; }
+        //if ((settings.action != 'amtdiscover') && (mestate.controlMode == 2)) { console.log("Intel AMT already activation in admin control mode."); exit(100); return; }
+        if (mestate.uuid == null) { console.log("Unable to get Intel AMT UUID."); exit(100); return; }
+        var fqdn = null;
+        //if ((mestate.net0 == null) && (meinfo.net0.enabled != 0)) { console.log("No Intel AMT wired interface, can't perform ACM activation."); exit(100); return; }
+        if (result) { fqdn = result; } // If Intel AMT has a trusted DNS suffix set, use that one.
+        else {
+            // Look for the DNS suffix for the Intel AMT Ethernet interface
+            var interfaces = require('os').networkInterfaces();
+            for (var i in interfaces) {
+                for (var j in interfaces[i]) {
+                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
+                }
+            }
+        }
+        if (fqdn != null) { settings.fqdn = fqdn; settings.uuid = mestate.uuid; }
+        getTrustedHashes(amtMei, function () { startLms(configureAmt2, amtMei); });
+    });
+
+}
+
+function configureAmt2() {
+    // Connect to MPS and start APF relay
+    var apfarg = {
+        mpsurl: settings.url,
+        mpsuser: settings.id.substring(0, 16),
+        mpspass: settings.id.substring(0, 16),
+        mpskeepalive: 60000,
+        clientname: require('os').hostname(),
+        clientaddress: '127.0.0.1',
+        clientuuid: mestate.uuid,
+        conntype: 2 // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay.
+    };
+    if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) {
+        console.log("Unable to get Intel AMT UUID: " + apfarg.clientuuid);
+        exit(1); return;
+    } else {
+        settings.apftunnel = require('apfclient')({ debug: (settings.debuglevel > 0) }, apfarg);
+        settings.apftunnel.onJsonControl = configureJsonControl;
+        settings.apftunnel.onChannelClosed = function () { exit(0); }
+        try {
+            settings.apftunnel.connect();
+            console.log("Started APF tunnel...");
+        } catch (e) {
+            console.log(JSON.stringify(e));
+            exit(1); return;
+        }
+    }
+}
+
+function configureJsonControl(data) {
+    switch (data.action) {
+        case 'console':
+            console.log(data.msg);
+            break;
+        case 'close':
+            exit(0);
+            break;
+    }
 }
 
 

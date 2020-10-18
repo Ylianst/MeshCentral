@@ -240,19 +240,17 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                     if (state == 2) {
                         // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                         var options = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
-                        if (obj.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                        if (obj.xtlsMethod == 1) { options.secureProtocol = 'TLSv1_method'; }
                         if (obj.xtlsoptions) {
                             if (obj.xtlsoptions.ca) options.ca = obj.xtlsoptions.ca;
                             if (obj.xtlsoptions.cert) options.cert = obj.xtlsoptions.cert;
                             if (obj.xtlsoptions.key) options.key = obj.xtlsoptions.key;
                         }
 
-                        //obj.socket = new TLSSocket(ser, options);
                         obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
                         obj.socket.setEncoding('binary');
                         obj.socket.setTimeout(6000); // Set socket idle timeout
-                        obj.socket.on('error', function (err) { console.log("CIRA TLS Connection Error ", err); obj.xxOnSocketClosed(); });
-                        //obj.socket.on('error', function (e) { if (e.message && e.message.indexOf('sslv3 alert bad record mac') >= 0) { obj.xtlsMethod = 1 - obj.xtlsMethod; } });
+                        obj.socket.on('error', function (ex) { obj.xtlsMethod = 1 - obj.xtlsMethod; });
                         obj.socket.on('close', obj.xxOnSocketClosed);
                         obj.socket.on('timeout', obj.xxOnSocketTimeout);
 

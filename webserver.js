@@ -3520,6 +3520,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); delete ws.logfile; }, ws); }
                 });
 
+                // Note that here, req.query.p: 1 = WSMAN with server auth, 2 = REDIR with server auth, 3 = WSMAN without server auth, 4 = REDIR with server auth
+
                 // Fetch Intel AMT credentials & Setup interceptor
                 if (req.query.p == 1) {
                     parent.debug('webrelaydata', 'INTERCEPTOR1', { host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
@@ -3587,7 +3589,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Compute target port
                 var port = 16992;
                 if (node.intelamt.tls > 0) port = 16993; // This is a direct connection, use TLS when possible
-                if (req.query.p == 2) port += 2;
+                if ((req.query.p == 2) || (req.query.p == 4)) port += 2;
 
                 if (node.intelamt.tls == 0) {
                     // If this is TCP (without TLS) set a normal TCP socket
