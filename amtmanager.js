@@ -19,6 +19,8 @@ module.exports.CreateAmtManager = function(parent) {
     obj.amtDevices = {};             // Nodeid --> [ dev ]
     obj.activeLocalConnections = {}; // Host --> [ dev ]
     obj.amtAdminAccounts = {};       // DomainId -> [ { user, pass } ]
+    obj.rootCertBase64 = obj.parent.certificates.root.cert.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r').join('').split('\n').join('')
+    obj.rootCertCN = obj.parent.certificateOperations.forge.pki.certificateFromPem(obj.parent.certificates.root.cert).subject.getField('CN').value;
 
     // WSMAN stack
     const CreateWsmanComm = require('./amt/amt-wsman-comm');
@@ -229,7 +231,7 @@ module.exports.CreateAmtManager = function(parent) {
                 var dotls = -1;
                 if (ciraconn.tag.boundPorts.indexOf('16992')) { dotls = 0; }
                 else if (ciraconn.tag.boundPorts.indexOf('16993')) { dotls = 1; }
-                if (dotls == -1) { removeDevice(dev.nodeid); return; } // The Intel AMT ports are not open, not a device we can deal with.
+                if (dotls == -1) { removeAmtDevice(dev); return; } // The Intel AMT ports are not open, not a device we can deal with.
 
                 // Connect now
                 parent.debug('amt', 'CIRA-Connect', (dotls == 1) ? "TLS" : "NoTLS", dev.name, user, pass);
@@ -259,6 +261,7 @@ module.exports.CreateAmtManager = function(parent) {
 
                 // Connect now
                 var comm;
+                dev.tlsfail = true; // DEBUG!!!!!!!
                 if (dev.tlsfail !== true) {
                     parent.debug('amt', 'Relay-Connect', "TLS", dev.name, user, pass);
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
@@ -339,19 +342,25 @@ module.exports.CreateAmtManager = function(parent) {
 
             // Perform Intel AMT clock sync
             attemptSyncClock(dev, function () {
-                // See if we need to get hardware inventory
-                attemptFetchHardwareInventory(dev, function () {
-                    dev.consoleMsg('Done.');
-                    if (dev.connType != 2) {
-                        // Start power polling if not connected to LMS
-                        var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                        ppfunc.dev = dev;
-                        dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                        fetchPowerState(dev);
-                    } else {
-                        // For LMS connections, close now.
-                        dev.controlMsg({ action: "close" });
-                    }
+                // Check Intel AMT TLS state
+                attemptTlsSync(dev, function () {
+                    // Check Intel AMT root certificate state
+                    attemptRootCertSync(dev, function () {
+                        // See if we need to get hardware inventory
+                        attemptFetchHardwareInventory(dev, function () {
+                            dev.consoleMsg('Done.');
+                            if (dev.connType != 2) {
+                                // Start power polling if not connected to LMS
+                                var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                                ppfunc.dev = dev;
+                                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                fetchPowerState(dev);
+                            } else {
+                                // For LMS connections, close now.
+                                dev.controlMsg({ action: "close" });
+                            }
+                        });
+                    });
                 });
             });
         } else {
@@ -365,6 +374,7 @@ module.exports.CreateAmtManager = function(parent) {
                 if ((dev.acctry != null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
 
                 // We are unable to authenticate to this device, clear Intel AMT credentials.
+                dev.consoleMsg("Unable to connect.");
                 ClearDeviceCredentials(dev);
             }
             //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
@@ -378,7 +388,7 @@ module.exports.CreateAmtManager = function(parent) {
 
         // Check that the mesh exists
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { removeDevice(dev.nodeid); return false; }
+        if (mesh == null) { removeAmtDevice(dev); return false; }
 
         // Get the node and change it if needed
         parent.db.Get(dev.nodeid, function (err, nodes) {
@@ -428,7 +438,7 @@ module.exports.CreateAmtManager = function(parent) {
 
         // Check that the mesh exists
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { removeDevice(dev.nodeid); return; }
+        if (mesh == null) { removeAmtDevice(dev); return; }
 
         // Get the node and change it if needed
         parent.db.Get(dev.nodeid, function (err, nodes) {
@@ -532,7 +542,7 @@ module.exports.CreateAmtManager = function(parent) {
     function attemptSyncClockEx(stack, name, response, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) { removeDevice(dev.nodeid); return; }
+        if (status != 200) { removeAmtDevice(dev); return; }
 
         // Compute how much drift between Intel AMT and our clock.
         var t = new Date(), now = new Date();
@@ -552,14 +562,194 @@ module.exports.CreateAmtManager = function(parent) {
     function attemptSyncClockSet(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) { removeDevice(dev.nodeid); }
+        if (status != 200) { removeAmtDevice(dev); }
         devTaskCompleted(dev)
+    }
+
+    // Check if Intel AMT TLS state is correct
+    function attemptTlsSync(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+
+        // Fetch Intel AMT setup policy
+        // mesh.amt.type: 0 = No Policy, 1 = Deactivate CCM, 2 = Manage in CCM, 3 = Manage in ACM
+        // mesh.amt.cirasetup: 0 = No Change, 1 = Remove CIRA, 2 = Setup CIRA
+        const mesh = parent.webserver.meshes[dev.meshid];
+        if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev); return; }
+        var amtPolicy = 0, ciraPolicy = 0;
+        if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; } }
+        if (amtPolicy < 2) { ciraPolicy = 0; }
+        dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy }
+
+        if (amtPolicy < 2) {
+            // No policy or deactivation, do nothing.
+            dev.consoleMsg("No server policy for Intel AMT");
+            func();
+        } else {
+            // Manage in CCM or ACM
+            dev.taskCount = 1;
+            dev.taskCompleted = func;
+            // TODO: We only deal with certificates starting with Intel AMT 6 and beyond
+            dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate', 'AMT_PublicPrivateKeyPair', 'AMT_TLSSettingData', 'AMT_TLSCredentialContext'], attemptTlsSyncEx);
+        }
+    }
+
+    function attemptTlsSyncEx(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get security information."); removeAmtDevice(dev); return; }
+
+        // Setup the certificates
+        dev.policy.certPrivateKeys = responses['AMT_PublicPrivateKeyPair'].responses;
+        dev.policy.tlsSettings = responses['AMT_TLSSettingData'].responses;
+        dev.policy.tlsCredentialContext = responses['AMT_TLSCredentialContext'].responses;
+        var xxCertificates = responses['AMT_PublicKeyCertificate'].responses;
+        for (var i in xxCertificates) {
+            xxCertificates[i].TrustedRootCertficate = (xxCertificates[i]['TrustedRootCertficate'] == true);
+            xxCertificates[i].X509Certificate = Buffer.from(xxCertificates[i]['X509Certificate'], 'base64').toString('binary');
+            xxCertificates[i].XIssuer = parseCertName(xxCertificates[i]['Issuer']);
+            xxCertificates[i].XSubject = parseCertName(xxCertificates[i]['Subject']);
+        }
+        amtcert_linkCertPrivateKey(xxCertificates, dev.policy.certPrivateKeys);
+        dev.policy.certificates = xxCertificates;
+
+        // Find the current TLS certificate & MeshCentral root certificate
+        var xxTlsCurrentCert = null;
+        if (dev.policy.tlsCredentialContext.length > 0) {
+            var certInstanceId = dev.policy.tlsCredentialContext[0]['ElementInContext']['ReferenceParameters']['SelectorSet']['Selector']['Value'];
+            for (var i in dev.policy.certificates) { if (dev.policy.certificates[i]['InstanceID'] == certInstanceId) { xxTlsCurrentCert = i; } }
+        }
+
+        // This is a managed device and TLS is not enabled, turn it on.
+        if (xxTlsCurrentCert == null) {
+            // Start by generating a key pair
+            dev.amtstack.AMT_PublicKeyManagementService_GenerateKeyPair(0, 2048, function (stack, name, responses, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed to generate a key pair."); removeAmtDevice(dev); return; }
+
+                // Get the new key pair
+                dev.amtstack.Enum('AMT_PublicPrivateKeyPair', function (stack, name, responses, status, tag) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status != 200) { dev.consoleMsg("Failed to get a key pair list."); removeAmtDevice(dev); return; }
+
+                    // Get the new DER key
+                    var DERKey = null;
+                    for (var i in responses) { if (responses[i]['InstanceID'] == tag) { DERKey = responses[i]['DERKey']; } }
+
+                    // Get certificate values
+                    const commonName = 'IntelAMT-' + Buffer.from(parent.crypto.randomBytes(6), 'binary').toString('hex');
+                    const domain = parent.config.domains[dev.domainid];
+                    var serverName = 'MeshCentral';
+                    if ((domain != null) && (domain.title != null)) { serverName = domain.title; }
+                    const certattributes = { 'CN': commonName, 'O': serverName, 'ST': serverName, 'C': serverName };
+                    const issuerattributes = { 'CN': obj.rootCertCN };
+                    const xxCaPrivateKey = obj.parent.certificates.root.key;
+
+                    // Set the extended key usages
+                    var extKeyUsage = { name: 'extKeyUsage', serverAuth: true, clientAuth: true }
+
+                    // Sign the key pair using the CA certifiate
+                    const cert = amtcert_createCertificate(certattributes, xxCaPrivateKey, DERKey, issuerattributes, extKeyUsage);
+                    if (cert == null) { dev.consoleMsg("Failed to sign the TLS certificate."); removeAmtDevice(dev); return; }
+
+                    // Place the resulting signed certificate back into AMT
+                    var pem = obj.parent.certificateOperations.forge.pki.certificateToPem(cert).replace(/(\r\n|\n|\r)/gm, '');
+                    dev.amtstack.AMT_PublicKeyManagementService_AddCertificate(pem.substring(27, pem.length - 25), function (stack, name, responses, status) {
+                        const dev = stack.dev;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status != 200) { dev.consoleMsg("Failed to add TLS certificate."); removeAmtDevice(dev); return; }
+                        var certInstanceId = responses.Body['CreatedCertificate']['ReferenceParameters']['SelectorSet']['Selector']['Value'];
+
+                        // Set the TLS certificate
+                        dev.setTlsSecurityPendingCalls = 3;
+                        if (dev.policy.tlsCredentialContext.length > 0) {
+                            // Modify the current context
+                            var newTLSCredentialContext = Clone(dev.policy.tlsCredentialContext[0]);
+                            newTLSCredentialContext['ElementInContext']['ReferenceParameters']['SelectorSet']['Selector']['Value'] = certInstanceId;
+                            dev.amtstack.Put('AMT_TLSCredentialContext', newTLSCredentialContext, amtSwitchToTls, 0, 1);
+                        } else {
+                            // Add a new security context
+                            dev.amtstack.Create('AMT_TLSCredentialContext', {
+                                'ElementInContext': '<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>' + dev.amtstack.CompleteName('AMT_PublicKeyCertificate') + '</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + certInstanceId + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
+                                'ElementProvidingContext': '<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>' + dev.amtstack.CompleteName('AMT_TLSProtocolEndpointCollection') + '</w:ResourceURI><w:SelectorSet><w:Selector Name="ElementName">TLSProtocolEndpointInstances Collection</w:Selector></w:SelectorSet></a:ReferenceParameters>'
+                            }, amtSwitchToTls);
+                        }
+
+                        // Figure out what index is local & remote
+                        var localNdx = ((dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
+
+                        // Remote TLS settings
+                        var xxTlsSettings2 = Clone(dev.policy.tlsSettings);
+                        xxTlsSettings2[remoteNdx]['Enabled'] = true;
+                        xxTlsSettings2[remoteNdx]['MutualAuthentication'] = false;
+                        xxTlsSettings2[remoteNdx]['AcceptNonSecureConnections'] = true;
+                        delete xxTlsSettings2[remoteNdx]['TrustedCN'];
+
+                        // Local TLS settings
+                        xxTlsSettings2[localNdx]['Enabled'] = true;
+                        delete xxTlsSettings2[localNdx]['TrustedCN'];
+
+                        // Update TLS settings
+                        dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[0], amtSwitchToTls, 0, 1, xxTlsSettings2[0]);
+                        dev.amtstack.Put('AMT_TLSSettingData', xxTlsSettings2[1], amtSwitchToTls, 0, 1, xxTlsSettings2[1]);
+                    });
+
+                }, responses.Body['KeyPair']['ReferenceParameters']['SelectorSet']['Selector']['Value']);
+            });
+        } else {
+            // TLS is setup
+            devTaskCompleted(dev);
+        }
+    }
+
+    function amtSwitchToTls(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed setup TLS."); removeAmtDevice(dev); return; }
+
+        // Check if all the calls are done & perform a commit
+        if ((--dev.setTlsSecurityPendingCalls) == 0) {
+            dev.amtstack.AMT_SetupAndConfigurationService_CommitChanges(null, function (stack, name, responses, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed perform commit."); removeAmtDevice(dev); return; }
+                dev.consoleMsg("Enabled TLS");
+                // TODO: Switch our communications to TLS.
+                devTaskCompleted(dev);
+            });
+        }
+    }
+
+    // Check if Intel AMT has the server root certificate
+    function attemptRootCertSync(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.ciraPolicy != 2) { func(); return; } // Server root certificate does not need to be present is CIRA is not needed
+
+        // Find the current TLS certificate & MeshCentral root certificate
+        var xxMeshCentralRoot = null;
+        if (dev.policy.tlsCredentialContext.length > 0) {
+            for (var i in dev.policy.certificates) { if (dev.policy.certificates[i]['X509Certificate'] == obj.rootCertBase64) { xxMeshCentralRoot = i; } }
+        }
+
+        // If the server root certificate is not present and we need to configure CIRA, add it
+        if (xxMeshCentralRoot == null) {
+            dev.taskCount = 1;
+            dev.taskCompleted = func;
+            dev.amtstack.AMT_PublicKeyManagementService_AddTrustedRootCertificate(obj.rootCertBase64, function (stack, name, responses, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed to add server root certificate."); removeAmtDevice(dev); return; }
+                dev.consoleMsg("Added server root certificate.");
+                devTaskCompleted(dev);
+            });
+        } else { func(); }
     }
 
     function attemptFetchHardwareInventory(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { removeDevice(dev.nodeid); return; }
+        if (mesh == null) { removeAmtDevice(dev); return; }
         if (mesh.mtype == 1) { // If this is a Intel AMT only device group, pull the hardware inventory and network information for this device
             dev.consoleMsg("Fetching hardware inventory.");
             dev.taskCount = 2;
@@ -571,7 +761,7 @@ module.exports.CreateAmtManager = function(parent) {
         }
     }
 
-    // 
+    // Called this when a task is completed, when all tasks are completed the call back function will be called.
     function devTaskCompleted(dev) {
         dev.taskCount--;
         if (dev.taskCount == 0) { var f = dev.taskCompleted; delete dev.taskCount; delete dev.taskCompleted; if (f != null) { f(); } }
@@ -679,7 +869,7 @@ module.exports.CreateAmtManager = function(parent) {
                 if (m.PartNumber) { m2.PartNumber = m.PartNumber.trim(); }
                 if (typeof m.SerialNumber == 'string') { m2.SerialNumber = m.SerialNumber.trim(); }
                 if (typeof m.SerialNumber == 'number') { m2.SerialNumber = m.SerialNumber; }
-                if (typeof m.SerialNumber == 'string') { m2.Manufacturer = m.Manufacturer.trim(); }
+                if (typeof m.Manufacturer == 'string') { m2.Manufacturer = m.Manufacturer.trim(); }
                 if (typeof m.Manufacturer == 'number') { m2.Manufacturer = m.Manufacturer; }
                 memory.push(m2);
             }
@@ -739,6 +929,111 @@ module.exports.CreateAmtManager = function(parent) {
     }
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + '-' + g.substring(10, 12) + g.substring(8, 10) + '-' + g.substring(14, 16) + g.substring(12, 14) + '-' + g.substring(16, 20) + '-' + g.substring(20); }
+
+    // Check which key pair matches the public key in the certificate
+    function amtcert_linkCertPrivateKey(certs, keys) {
+        for (var i in certs) {
+            var cert = certs[i];
+            try {
+                if (keys.length == 0) return;
+                var b = obj.parent.certificateOperations.forge.asn1.fromDer(cert.X509Certificate);
+                var a = obj.parent.certificateOperations.forge.pki.certificateFromAsn1(b).publicKey;
+                var publicKeyPEM = obj.parent.certificateOperations.forge.pki.publicKeyToPem(a).substring(28 + 32).replace(/(\r\n|\n|\r)/gm, "");
+                for (var j = 0; j < keys.length; j++) {
+                    if (publicKeyPEM === (keys[j]['DERKey'] + '-----END PUBLIC KEY-----')) {
+                        keys[j].XCert = cert; // Link the key pair to the certificate
+                        cert.XPrivateKey = keys[j]; // Link the certificate to the key pair
+                    }
+                }
+            } catch (e) { console.log(e); }
+        }
+    }
+
+    function Clone(v) { return JSON.parse(JSON.stringify(v)); }
+
+    function parseCertName(x) {
+        var j, r = {}, xx = x.split(',');
+        for (var i in xx) { j = xx[i].indexOf('='); r[xx[i].substring(0, j)] = xx[i].substring(j + 1); }
+        return r;
+    }
+
+    /*
+    function amtcert_signWithCaKey(DERKey, caPrivateKey, certAttributes, issuerAttributes, extKeyUsage) {
+        return amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage);
+    }
+    */
+
+    // --- Extended Key Usage OID's ---
+    // 1.3.6.1.5.5.7.3.1            = TLS Server certificate
+    // 1.3.6.1.5.5.7.3.2            = TLS Client certificate
+    // 2.16.840.1.113741.1.2.1      = Intel AMT Remote Console
+    // 2.16.840.1.113741.1.2.2      = Intel AMT Local Console
+    // 2.16.840.1.113741.1.2.3      = Intel AMT Client Setup Certificate (Zero-Touch)
+
+    // Generate a certificate with a set of attributes signed by a rootCert. If the rootCert is obmitted, the generated certificate is self-signed.
+    function amtcert_createCertificate(certAttributes, caPrivateKey, DERKey, issuerAttributes, extKeyUsage) {
+        // Generate a keypair and create an X.509v3 certificate
+        var keys, cert = obj.parent.certificateOperations.forge.pki.createCertificate();
+        cert.publicKey = obj.parent.certificateOperations.forge.pki.publicKeyFromPem('-----BEGIN PUBLIC KEY-----' + DERKey + '-----END PUBLIC KEY-----');
+        cert.serialNumber = '' + Math.floor((Math.random() * 100000) + 1);
+        cert.validity.notBefore = new Date(2018, 0, 1);
+        //cert.validity.notBefore.setFullYear(cert.validity.notBefore.getFullYear() - 1); // Create a certificate that is valid one year before, to make sure out-of-sync clocks don't reject this cert.
+        cert.validity.notAfter = new Date(2049, 11, 31);
+        //cert.validity.notAfter.setFullYear(cert.validity.notAfter.getFullYear() + 20);
+        var attrs = [];
+        if (certAttributes['CN']) attrs.push({ name: 'commonName', value: certAttributes['CN'] });
+        if (certAttributes['C']) attrs.push({ name: 'countryName', value: certAttributes['C'] });
+        if (certAttributes['ST']) attrs.push({ shortName: 'ST', value: certAttributes['ST'] });
+        if (certAttributes['O']) attrs.push({ name: 'organizationName', value: certAttributes['O'] });
+        cert.setSubject(attrs);
+
+        // Use root attributes
+        var rootattrs = [];
+        if (issuerAttributes['CN']) rootattrs.push({ name: 'commonName', value: issuerAttributes['CN'] });
+        if (issuerAttributes['C']) rootattrs.push({ name: 'countryName', value: issuerAttributes['C'] });
+        if (issuerAttributes['ST']) rootattrs.push({ shortName: 'ST', value: issuerAttributes['ST'] });
+        if (issuerAttributes['O']) rootattrs.push({ name: 'organizationName', value: issuerAttributes['O'] });
+        cert.setIssuer(rootattrs);
+
+        if (extKeyUsage == null) { extKeyUsage = { name: 'extKeyUsage', serverAuth: true, } } else { extKeyUsage.name = 'extKeyUsage'; }
+
+        /*
+        {
+            name: 'extKeyUsage',
+            serverAuth: true,
+            clientAuth: true,
+            codeSigning: true,
+            emailProtection: true,
+            timeStamping: true,
+            '2.16.840.1.113741.1.2.1': true
+        }
+        */
+
+        // Create a leaf certificate
+        cert.setExtensions([{
+            name: 'basicConstraints'
+        }, {
+                name: 'keyUsage',
+                keyCertSign: true,
+                digitalSignature: true,
+                nonRepudiation: true,
+                keyEncipherment: true,
+                dataEncipherment: true
+            }, extKeyUsage, {
+                name: 'nsCertType',
+                client: true,
+                server: true,
+                email: true,
+                objsign: true,
+            }, {
+                name: 'subjectKeyIdentifier'
+            }]);
+    
+        // Self-sign certificate
+        var privatekey = obj.parent.certificateOperations.forge.pki.privateKeyFromPem(caPrivateKey);
+        cert.sign(privatekey, obj.parent.certificateOperations.forge.md.sha256.create());
+        return cert;
+    }
 
     return obj;
 };
