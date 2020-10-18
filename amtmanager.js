@@ -76,6 +76,9 @@ module.exports.CreateAmtManager = function(parent) {
         // Remove the device from the list
         devices.splice(i, 1);
         if (devices.length == 0) { delete obj.amtDevices[dev.nodeid]; } else { obj.amtDevices[dev.nodeid] = devices; }
+
+        // Notify connection closure if this is a LMS connection
+        if (dev.connType == 2) { dev.controlMsg({ action: "close" }); }
         return true;
     }
 
@@ -103,9 +106,13 @@ module.exports.CreateAmtManager = function(parent) {
         var devices = obj.amtDevices[nodeid], dev = null;
         if (devices != null) { for (var i in devices) { if ((devices[i].mpsConnection == connection) || (devices[i].host == connection)) { dev = devices[i]; } } }
         if (dev != null) return false; // We are already managing this device on this connection
-        dev = { nodeid: nodeid, connType: connType };
+        dev = { nodeid: nodeid, connType: connType, domainid: nodeid.split('/')[1] };
         if (typeof connection == 'string') { dev.host = connection; }
         if (typeof connection == 'object') { dev.mpsConnection = connection; }
+        dev.consoleMsg = function deviceConsoleMsg(msg) { if (typeof deviceConsoleMsg.conn == 'object') { deviceConsoleMsg.conn.ControlMsg({ action: 'console', msg: msg }); } }
+        dev.consoleMsg.conn = connection;
+        dev.controlMsg = function deviceControlMsg(msg) { if (typeof deviceControlMsg.conn == 'object') { deviceControlMsg.conn.ControlMsg(msg); } }
+        dev.controlMsg.conn = connection;
         parent.debug('amt', "Start Management", nodeid, connType);
         addAmtDevice(dev);
         fetchIntelAmtInformation(dev);
@@ -192,6 +199,7 @@ module.exports.CreateAmtManager = function(parent) {
             //if (node.host) { dev.host = node.host.toLowerCase(); }
             dev.meshid = node.meshid;
             dev.intelamt = node.intelamt;
+            dev.consoleMsg("Attempting Intel AMT connection...");
             attemptInitialContact(dev);
         });
     }
@@ -201,7 +209,7 @@ module.exports.CreateAmtManager = function(parent) {
         parent.debug('amt', "Attempt Initial Contact", dev.name, dev.connType);
 
         if ((dev.acctry == null) && ((typeof dev.intelamt.user != 'string') || (typeof dev.intelamt.pass != 'string'))) {
-            if ((obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; } else { return; }
+            if ((obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; } else { removeAmtDevice(dev); return; }
         }
 
         switch (dev.connType) {
@@ -315,6 +323,7 @@ module.exports.CreateAmtManager = function(parent) {
         // Check the response
         if ((status == 200) && (responses['AMT_GeneralSettings'] != null) && (responses['IPS_HostBasedSetupService'] != null) && (responses['IPS_HostBasedSetupService'].response != null) && (responses['IPS_HostBasedSetupService'].response != null) && (stack.wsman.comm.digestRealm == responses['AMT_GeneralSettings'].response.DigestRealm)) {
             // Everything looks good
+            dev.consoleMsg(stack.wsman.comm.xtls ? "Intel AMT connected with TLS." : "Intel AMT connected.");
             dev.state = 1;
             if (dev.aquired == null) { dev.aquired = {}; }
             dev.aquired.controlMode = responses['IPS_HostBasedSetupService'].response.CurrentControlMode; // 1 = CCM, 2 = ACM
@@ -330,15 +339,20 @@ module.exports.CreateAmtManager = function(parent) {
 
             // Perform Intel AMT clock sync
             attemptSyncClock(dev, function () {
-                attemptFetchHardwareInventory(dev); // See if we need to get hardware inventory
-
-                if (dev.connType != 2) {
-                    // Start power polling if not connected to LMS
-                    var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                    ppfunc.dev = dev;
-                    dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                    fetchPowerState(dev);
-                }
+                // See if we need to get hardware inventory
+                attemptFetchHardwareInventory(dev, function () {
+                    dev.consoleMsg('Done.');
+                    if (dev.connType != 2) {
+                        // Start power polling if not connected to LMS
+                        var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                        ppfunc.dev = dev;
+                        dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                        fetchPowerState(dev);
+                    } else {
+                        // For LMS connections, close now.
+                        dev.controlMsg({ action: "close" });
+                    }
+                });
             });
         } else {
             // We got a bad response
@@ -509,7 +523,8 @@ module.exports.CreateAmtManager = function(parent) {
     // Care should be take not to have many pending WSMAN called when performing clock sync.
     function attemptSyncClock(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        dev.clockSyncCompleted = func;
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
         dev.amtstack.AMT_TimeSynchronizationService_GetLowAccuracyTimeSynch(attemptSyncClockEx);
     }
 
@@ -517,17 +532,19 @@ module.exports.CreateAmtManager = function(parent) {
     function attemptSyncClockEx(stack, name, response, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) { removeDevice(dev.nodeid); }
+        if (status != 200) { removeDevice(dev.nodeid); return; }
 
         // Compute how much drift between Intel AMT and our clock.
         var t = new Date(), now = new Date();
         t.setTime(response.Body['Ta0'] * 1000);
         if (Math.abs(t - now) > 10000) { // If the Intel AMT clock is more than 10 seconds off, set it.
+            dev.consoleMsg("Performing clock sync.");
             var Tm1 = Math.round(now.getTime() / 1000);
             dev.amtstack.AMT_TimeSynchronizationService_SetHighAccuracyTimeSynch(response.Body['Ta0'], Tm1, Tm1, attemptSyncClockSet);
         } else {
             // Clock is fine, we are done.
-            if (dev.clockSyncCompleted != null) { var f = dev.clockSyncCompleted; delete dev.clockSyncCompleted; f(); }
+            dev.consoleMsg("Clock ok.");
+            devTaskCompleted(dev)
         }
     }
 
@@ -536,28 +553,37 @@ module.exports.CreateAmtManager = function(parent) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (status != 200) { removeDevice(dev.nodeid); }
-        if (dev.clockSyncCompleted != null) { var f = dev.clockSyncCompleted; delete dev.clockSyncCompleted; f(); }
+        devTaskCompleted(dev)
     }
 
-    function attemptFetchHardwareInventory(dev) {
-        if (obj.amtDevices[dev.nodeid] == null) return false; // Device no longer exists, ignore this request.
+    function attemptFetchHardwareInventory(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { removeDevice(dev.nodeid); return false; }
+        if (mesh == null) { removeDevice(dev.nodeid); return; }
         if (mesh.mtype == 1) { // If this is a Intel AMT only device group, pull the hardware inventory and network information for this device
+            dev.consoleMsg("Fetching hardware inventory.");
+            dev.taskCount = 2;
+            dev.taskCompleted = func;
             dev.amtstack.BatchEnum('', ['*CIM_ComputerSystemPackage', 'CIM_SystemPackaging', '*CIM_Chassis', 'CIM_Chip', '*CIM_Card', '*CIM_BIOSElement', 'CIM_Processor', 'CIM_PhysicalMemory', 'CIM_MediaAccessDevice', 'CIM_PhysicalPackage'], attemptFetchHardwareInventoryResponse);
             dev.amtstack.BatchEnum('', ['AMT_EthernetPortSettings'], attemptFetchNetworkResponse);
-            return true;
+        } else {
+            if (func) { func(); }
         }
-        return false;
+    }
+
+    // 
+    function devTaskCompleted(dev) {
+        dev.taskCount--;
+        if (dev.taskCount == 0) { var f = dev.taskCompleted; delete dev.taskCount; delete dev.taskCompleted; if (f != null) { f(); } }
     }
 
     function attemptFetchNetworkResponse(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) return;
+        if (status != 200) { devTaskCompleted(dev); return; }
 
         //console.log(JSON.stringify(responses, null, 2));
-        if ((responses['AMT_EthernetPortSettings'] == null) || (responses['AMT_EthernetPortSettings'].responses == null)) return;
+        if ((responses['AMT_EthernetPortSettings'] == null) || (responses['AMT_EthernetPortSettings'].responses == null)) { devTaskCompleted(dev); return; }
 
         // Find the wired and wireless interfaces
         var wired = null, wireless = null;
@@ -567,7 +593,7 @@ module.exports.CreateAmtManager = function(parent) {
                 if (netif.WLANLinkProtectionLevel != null) { wireless = netif; } else { wired = netif; }
             }
         }
-        if ((wired == null) && (wireless == null)) return;
+        if ((wired == null) && (wireless == null)) { devTaskCompleted(dev); return; }
 
         // Sent by the agent to update agent network interface information
         var net = { netif2: {} };
@@ -601,6 +627,8 @@ module.exports.CreateAmtManager = function(parent) {
 
         // Event the node interface information change
         parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, { action: 'ifchange', nodeid: dev.nodeid, domain: dev.nodeid.split('/')[1], nolog: 1 });
+
+        devTaskCompleted(dev);
     }
 
 
@@ -625,7 +653,7 @@ module.exports.CreateAmtManager = function(parent) {
     function attemptFetchHardwareInventoryResponse(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) return;
+        if (status != 200) { devTaskCompleted(dev); return; }
 
         // Extract basic data
         var hw = {}
@@ -648,9 +676,11 @@ module.exports.CreateAmtManager = function(parent) {
                 var m2 = {}, m = hw.PhysicalMemory[i];
                 m2.BankLabel = m.BankLabel;
                 m2.Capacity = m.Capacity;
-                m2.PartNumber = m.PartNumber.trim();
-                m2.SerialNumber = m.SerialNumber.trim();
-                m2.Manufacturer = m.Manufacturer.trim();
+                if (m.PartNumber) { m2.PartNumber = m.PartNumber.trim(); }
+                if (typeof m.SerialNumber == 'string') { m2.SerialNumber = m.SerialNumber.trim(); }
+                if (typeof m.SerialNumber == 'number') { m2.SerialNumber = m.SerialNumber; }
+                if (typeof m.SerialNumber == 'string') { m2.Manufacturer = m.Manufacturer.trim(); }
+                if (typeof m.Manufacturer == 'number') { m2.Manufacturer = m.Manufacturer; }
                 memory.push(m2);
             }
             hw2.hardware.windows.memory = memory;
@@ -660,21 +690,21 @@ module.exports.CreateAmtManager = function(parent) {
             for (var i in hw.MediaAccessDevice) {
                 var m2 = {}, m = hw.MediaAccessDevice[i];
                 m2.Caption = m.DeviceID;
-                m2.Size = (m.MaxMediaSize * 1000);
+                if (m.MaxMediaSize) { m2.Size = (m.MaxMediaSize * 1000); }
                 drives.push(m2);
             }
             hw2.hardware.identifiers.storage_devices = drives;
         }
         if (hw.Bios != null) {
-            hw2.hardware.identifiers.bios_vendor = hw.Bios.Manufacturer.trim();
+            if (hw.Bios.Manufacturer) { hw2.hardware.identifiers.bios_vendor = hw.Bios.Manufacturer.trim(); }
             hw2.hardware.identifiers.bios_version = hw.Bios.Version;
             if (hw.Bios.ReleaseDate && hw.Bios.ReleaseDate.Datetime) { hw2.hardware.identifiers.bios_date = hw.Bios.ReleaseDate.Datetime; }
         }
         if (hw.PhysicalPackage != null) {
-            hw2.hardware.identifiers.board_name = hw.Card.Model.trim();
-            hw2.hardware.identifiers.board_vendor = hw.Card.Manufacturer.trim();
-            hw2.hardware.identifiers.board_version = hw.Card.Version.trim();
-            hw2.hardware.identifiers.board_serial = hw.Card.SerialNumber.trim();
+            if (hw.Card.Model) { hw2.hardware.identifiers.board_name = hw.Card.Model.trim(); }
+            if (hw.Card.Manufacturer) { hw2.hardware.identifiers.board_vendor = hw.Card.Manufacturer.trim(); }
+            if (hw.Card.Version) { hw2.hardware.identifiers.board_version = hw.Card.Version.trim(); }
+            if (hw.Card.SerialNumber) { hw2.hardware.identifiers.board_serial = hw.Card.SerialNumber.trim(); }
         }
         if ((hw.Chips != null) && (hw.Chips.length > 0)) {
             for (var i in hw.Chips) {
@@ -704,6 +734,8 @@ module.exports.CreateAmtManager = function(parent) {
                 parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, event);
             }
         });
+
+        devTaskCompleted(dev);
     }
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + '-' + g.substring(10, 12) + g.substring(8, 10) + '-' + g.substring(14, 16) + g.substring(12, 14) + '-' + g.substring(16, 20) + '-' + g.substring(20); }

@@ -285,6 +285,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.SetupChannel.parent = obj;
         socket.SetupChannel.conn = socket;
         socket.websocket = 1;
+        socket.ControlMsg = function ControlMsg(message) { return ControlMsg.parent.SendJsonControl(ControlMsg.conn, message); }
+        socket.ControlMsg.parent = obj;
+        socket.ControlMsg.conn = socket;
         parent.debug('mps', "New CIRA websocket connection");
 
         socket.on('message', function (data) {
@@ -912,6 +915,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         if (connections == null) return;
         for (var i in connections) { obj.close(connections[i]); }
     };
+
+    obj.SendJsonControl = function(socket, data) {
+        if (socket.tag.connType == 0) return; // This command is valid only for connections that are not really CIRA.
+        parent.debug('mpscmd', '<-- JSON_CONTROL');
+        if (typeof data == 'object') { data = JSON.stringify(data); }
+        Write(socket, String.fromCharCode(APFProtocol.JSON_CONTROL) + common.IntToStr(data.length) + data);
+    }
 
     function SendServiceAccept(socket, service) {
         parent.debug('mpscmd', '<-- SERVICE_ACCEPT', service);
