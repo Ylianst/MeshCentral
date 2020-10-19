@@ -113,6 +113,7 @@ module.exports.CreateAmtManager = function(parent) {
         if (typeof connection == 'object') { dev.mpsConnection = connection; }
         dev.consoleMsg = function deviceConsoleMsg(msg) { if (typeof deviceConsoleMsg.conn == 'object') { deviceConsoleMsg.conn.ControlMsg({ action: 'console', msg: msg }); } }
         dev.consoleMsg.conn = connection;
+        dev.consoleMsg.dev = dev;
         dev.controlMsg = function deviceControlMsg(msg) { if (typeof deviceControlMsg.conn == 'object') { deviceControlMsg.conn.ControlMsg(msg); } }
         dev.controlMsg.conn = connection;
         parent.debug('amt', "Start Management", nodeid, connType);
@@ -187,6 +188,11 @@ module.exports.CreateAmtManager = function(parent) {
             }
         }
     }
+
+
+    //
+    // Intel AMT Connection Setup
+    //
 
     // Update information about a device
     function fetchIntelAmtInformation(dev) {
@@ -331,7 +337,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (dev.aquired == null) { dev.aquired = {}; }
             dev.aquired.controlMode = responses['IPS_HostBasedSetupService'].response.CurrentControlMode; // 1 = CCM, 2 = ACM
             var verSplit = stack.wsman.comm.amtVersion.split('.');
-            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); }
+            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
             dev.aquired.realm = stack.wsman.comm.digestRealm;
             dev.aquired.user = stack.wsman.comm.user;
             dev.aquired.pass = stack.wsman.comm.pass;
@@ -346,19 +352,22 @@ module.exports.CreateAmtManager = function(parent) {
                 attemptTlsSync(dev, function () {
                     // Check Intel AMT root certificate state
                     attemptRootCertSync(dev, function () {
-                        // See if we need to get hardware inventory
-                        attemptFetchHardwareInventory(dev, function () {
-                            dev.consoleMsg('Done.');
-                            if (dev.connType != 2) {
-                                // Start power polling if not connected to LMS
-                                var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                                ppfunc.dev = dev;
-                                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                                fetchPowerState(dev);
-                            } else {
-                                // For LMS connections, close now.
-                                dev.controlMsg({ action: "close" });
-                            }
+                        // Check Intel AMT CIRA settings
+                        attemptCiraSync(dev, function () {
+                            // See if we need to get hardware inventory
+                            attemptFetchHardwareInventory(dev, function () {
+                                dev.consoleMsg('Done.');
+                                if (dev.connType != 2) {
+                                    // Start power polling if not connected to LMS
+                                    var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                                    ppfunc.dev = dev;
+                                    dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                    fetchPowerState(dev);
+                                } else {
+                                    // For LMS connections, close now.
+                                    dev.controlMsg({ action: 'close' });
+                                }
+                            });
                         });
                     });
                 });
@@ -381,6 +390,11 @@ module.exports.CreateAmtManager = function(parent) {
             removeAmtDevice(dev);
         }
     }
+
+
+    //
+    // Intel AMT Database Update
+    //
 
     // Change the current core information string and event it
     function UpdateDevice(dev) {
@@ -468,6 +482,11 @@ module.exports.CreateAmtManager = function(parent) {
         });
     }
 
+
+    //
+    // Intel AMT Power State
+    //
+
     // Get the current power state of a device
     function fetchPowerState(dev) {
         if (isAmtDeviceValid(dev) == false) return;
@@ -529,6 +548,11 @@ module.exports.CreateAmtManager = function(parent) {
         //console.log('performPowerActionResponse', status);
     }
 
+
+    //
+    // Intel AMT Clock Syncronization
+    //
+
     // Attempt to sync the Intel AMT clock if needed, call func back when done.
     // Care should be take not to have many pending WSMAN called when performing clock sync.
     function attemptSyncClock(dev, func) {
@@ -565,6 +589,11 @@ module.exports.CreateAmtManager = function(parent) {
         if (status != 200) { removeAmtDevice(dev); }
         devTaskCompleted(dev)
     }
+
+
+    //
+    // Intel AMT TLS setup
+    //
 
     // Check if Intel AMT TLS state is correct
     function attemptTlsSync(dev, func) {
@@ -605,7 +634,7 @@ module.exports.CreateAmtManager = function(parent) {
         var xxCertificates = responses['AMT_PublicKeyCertificate'].responses;
         for (var i in xxCertificates) {
             xxCertificates[i].TrustedRootCertficate = (xxCertificates[i]['TrustedRootCertficate'] == true);
-            xxCertificates[i].X509Certificate = Buffer.from(xxCertificates[i]['X509Certificate'], 'base64').toString('binary');
+            xxCertificates[i].X509CertificateBin = Buffer.from(xxCertificates[i]['X509Certificate'], 'base64').toString('binary');
             xxCertificates[i].XIssuer = parseCertName(xxCertificates[i]['Issuer']);
             xxCertificates[i].XSubject = parseCertName(xxCertificates[i]['Subject']);
         }
@@ -715,16 +744,21 @@ module.exports.CreateAmtManager = function(parent) {
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed perform commit."); removeAmtDevice(dev); return; }
                 dev.consoleMsg("Enabled TLS");
-                // TODO: Switch our communications to TLS.
+                // TODO: Switch our communications to TLS (Restart our management of this node)
                 devTaskCompleted(dev);
             });
         }
     }
 
+
+    //
+    // Intel AMT Server Root Certificate
+    //
+
     // Check if Intel AMT has the server root certificate
     function attemptRootCertSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (dev.policy.ciraPolicy != 2) { func(); return; } // Server root certificate does not need to be present is CIRA is not needed
+        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2)) { func(); return; } // Server root certificate does not need to be present is CIRA is not needed
 
         // Find the current TLS certificate & MeshCentral root certificate
         var xxMeshCentralRoot = null;
@@ -746,6 +780,193 @@ module.exports.CreateAmtManager = function(parent) {
         } else { func(); }
     }
 
+
+    //
+    // Intel AMT CIRA Setup
+    //
+
+    // Check if Intel AMT has the server root certificate
+    function attemptCiraSync(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2)) { func(); return; } // Only setup CIRA when LMS connection is used and a CIRA policy is enabled.
+
+        // Get current CIRA settings
+        // TODO: We only deal with remote access starting with Intel AMT 6 and beyond
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
+        var requests = ['*AMT_EnvironmentDetectionSettingData', 'AMT_ManagementPresenceRemoteSAP', 'AMT_RemoteAccessCredentialContext', 'AMT_RemoteAccessPolicyAppliesToMPS', 'AMT_RemoteAccessPolicyRule', '*AMT_UserInitiatedConnectionService', 'AMT_MPSUsernamePassword'];
+        if (dev.aquired.majorver > 11) { requests.push('*IPS_HTTPProxyService', 'IPS_HTTPProxyAccessPoint'); }
+        dev.amtstack.BatchEnum(null, requests, function (stack, name, responses, status) {
+            const dev = stack.dev;
+            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+            //dev.consoleMsg("Added server root certificate.");
+
+            if ((dev.aquired.majorver > 11) && (status == 400)) {
+                // Check if only the HTTP proxy objects failed
+                status = 200;
+                if (responses['IPS_HTTPProxyAccessPoint'].status == 400) { delete responses['IPS_HTTPProxyAccessPoint']; }
+                if (responses['IPS_HTTPProxyService'].status == 400) { delete responses['IPS_HTTPProxyService']; }
+                for (var i in responses) { if (responses[i].status != 200) { status = responses[i].status; } }
+            }
+            if ((status != 200) || (responses['AMT_UserInitiatedConnectionService'] == null) || (responses['AMT_UserInitiatedConnectionService'].response == null)) { dev.consoleMsg("Failed get CIRA state."); removeAmtDevice(dev); return; }
+
+            dev.cira = {};
+            dev.cira.xxRemoteAccess = responses;
+            dev.cira.xxEnvironementDetection = responses['AMT_EnvironmentDetectionSettingData'].response;
+            dev.cira.xxEnvironementDetection['DetectionStrings'] = MakeToArray(dev.cira.xxEnvironementDetection['DetectionStrings']);
+            dev.cira.xxCiraServers = responses['AMT_ManagementPresenceRemoteSAP'].responses;
+            dev.cira.xxUserInitiatedCira = responses['AMT_UserInitiatedConnectionService'].response;
+            dev.cira.xxRemoteAccessCredentiaLinks = responses['AMT_RemoteAccessCredentialContext'].responses;
+            dev.cira.xxMPSUserPass = responses['AMT_MPSUsernamePassword'].responses;
+
+            // Set CIRA initiation to BIOS & OS enabled
+            if (dev.cira.xxUserInitiatedCira['EnabledState'] != 32771) { // 32768: "Disabled", 32769: "BIOS enabled", 32770: "OS enable", 32771: "BIOS & OS enabled"
+                dev.amtstack.AMT_UserInitiatedConnectionService_RequestStateChange(32771, null, function (stack, name, responses, status) { }); // This is not a critical call.
+            }
+
+            // Figure out policies attached to servers. Create a policy type to server table.
+            dev.cira.xxPolicies = { 'User': [], 'Alert': [], 'Periodic': [] };
+            for (var i in responses['AMT_RemoteAccessPolicyAppliesToMPS'].responses) {
+                var policy = responses['AMT_RemoteAccessPolicyAppliesToMPS'].responses[i];
+                var server = Clone(getItem(dev.cira.xxCiraServers, 'Name', getItem(policy['ManagedElement']['ReferenceParameters']['SelectorSet']['Selector'], '@Name', 'Name')['Value']));
+                server.MpsType = policy['MpsType']; // MpsType was added in Intel AMT 11.6
+                var ptype = (getItem(policy['PolicySet']['ReferenceParameters']['SelectorSet']['Selector'], '@Name', 'PolicyRuleName')['Value']).split(' ')[0];
+                dev.cira.xxPolicies[ptype].push(server);
+            }
+
+            // Fetch the server's CIRA settings
+            dev.cira.mpsPresent = null;
+            dev.cira.mpsPolicy = false;
+            if (dev.policy.ciraPolicy == 2) { // DEBUG
+                dev.cira.meshidx = dev.meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16);
+                dev.cira.mpsName = parent.webserver.certificates.AmtMpsName;
+                var serverNameSplit = dev.cira.mpsName.split('.');
+                dev.cira.mpsPort = ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport);
+                dev.cira.mpsAddressFormat = 201; // 201 = FQDN, 3 = IPv4
+                if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) { dev.cira.mpsAddressFormat = 3; }
+
+                // Check if our server is already present
+                if (dev.cira.xxCiraServers.length > 0) {
+                    for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
+                        var mpsServer = dev.cira.xxCiraServers[i];
+                        if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPresent = mpsServer['Name']; }
+                    }
+                }
+
+                // Check if our server is already present
+                if (dev.cira.xxPolicies['Periodic'].length > 0) {
+                    var mpsServer = dev.cira.xxPolicies['Periodic'][0];
+                    if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPolicy = true; }
+                }
+            }
+
+            // Remove all MPS policies that are not ours
+            if ((dev.cira.xxPolicies['User Initiated'] != null) && (dev.cira.xxPolicies['User Initiated'].length > 0)) { dev.consoleMsg("Removing CIRA user trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'User Initiated' }, function (stack, name, responses, status) { }); }
+            if ((dev.cira.xxPolicies['Alert'] != null) && (dev.cira.xxPolicies['Alert'].length > 0)) { dev.consoleMsg("Removing CIRA alert trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Alert' }, function (stack, name, responses, status) { }); }
+            if ((dev.cira.xxPolicies['Periodic'] != null) && (dev.cira.xxPolicies['Periodic'].length > 0) && (dev.cira.mpsPolicy == false)) { dev.consoleMsg("Removing CIRA periodic trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Periodic' }, function (stack, name, responses, status) { }); }
+
+            // Remove all MPS servers that are not ours
+            if (dev.cira.xxCiraServers.length > 0) {
+                for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
+                    var mpsServer = dev.cira.xxCiraServers[i];
+                    if ((mpsServer.AccessInfo != dev.cira.mpsName) || (mpsServer.Port != dev.cira.mpsPort) || (mpsServer.InfoFormat != dev.cira.mpsAddressFormat)) {
+                        dev.consoleMsg("Removing MPS server.");
+                        dev.amtstack.Delete('AMT_ManagementPresenceRemoteSAP', { 'Name': mpsServer['Name'] }, function (stack, name, responses, status) { });
+                    }
+                }
+            }
+
+            // If we need to setup CIRA, start by checking the MPS server
+            if (dev.policy.ciraPolicy == 2) { addMpsServer(dev); } else { checkEnvironmentDetection(dev); }
+        });
+    }
+
+    function addMpsServer(dev) {
+        // Add the MPS server if not present
+        if (dev.cira.mpsPresent == null) {
+            dev.taskCount++;
+            dev.amtstack.AMT_RemoteAccessService_AddMpServer(dev.cira.mpsName, dev.cira.mpsAddressFormat, dev.cira.mpsPort, 2, null, dev.cira.meshidx, 'P@ssw0rd', dev.cira.mpsName, function (stack, name, response, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed to create new MPS server."); removeAmtDevice(dev); return; }
+                dev.cira.mpsPresent = getItem(response.Body.MpServer.ReferenceParameters.SelectorSet.Selector, '@Name', 'Name').Value;
+                dev.consoleMsg("Created new MPS server.");
+                addMpsPolicy(dev);
+            });
+        } else {
+            // MPS server is present, check MPS trigger policy
+            addMpsPolicy(dev);
+        }
+    }
+
+    function addMpsPolicy(dev) {
+        if (dev.cira.mpsPolicy == false) {
+            var cilaSupport = ((dev.aquired.majorver > 11) || ((dev.aquired.majorver == 11) && (dev.aquired.minorver >= 6)));
+            var trigger = 2; // 1 = Alert, 2 = Periodic
+
+            // Setup extended data
+            var extendedData = null;
+            if (trigger == 2) {
+                var timertype = 0; // 0 = Periodic, 1 = Time of day
+                var exdata = IntToStr(10); // Interval trigger, 10 seconds
+                extendedData = Buffer.from(IntToStr(timertype) + exdata, 'binary').toString('base64');
+            }
+
+            // Create the MPS server references
+            var server1 = '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="Name">' + dev.cira.mpsPresent + '</Selector></SelectorSet></ReferenceParameters>';
+            var server2 = null;
+
+            // Put the CIRA/CILA servers in the right bins.
+            var ciraServers = [], cilaServers = [];
+            if (server1) { ciraServers.push(server1); if (server2) { ciraServers.push(server2); } }
+
+            // Go ahead and create the new CIRA/CILA policy.
+            dev.taskCount++;
+            dev.amtstack.AMT_RemoteAccessService_AddRemoteAccessPolicyRule(trigger, 0, extendedData, ciraServers, cilaServers, function (stack, name, responses, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed to create new MPS policy."); removeAmtDevice(dev); return; }
+                dev.consoleMsg("Created new MPS policy.");
+                checkEnvironmentDetection(dev);
+            });
+        } else {
+            checkEnvironmentDetection(dev);
+        }
+    }
+
+    function checkEnvironmentDetection(dev) {
+        var changes = false;
+        var editEnvironmentDetectionTmp = [];
+
+        //console.log('checkEnvironmentDetection', dev.cira.xxEnvironementDetection);
+        if (dev.policy.ciraPolicy == 2) {
+            // Check that we have a random environment detection
+            // TODO
+        } else {
+            // Check environment detection is clear
+            // TODO
+        }
+
+        if (changes == true) {
+            var t = Clone(dev.cire.xxEnvironementDetection);
+            t['DetectionStrings'] = editEnvironmentDetectionTmp;
+            //console.log('AMT_EnvironmentDetectionSettingData', t);
+            amtstack.Put('AMT_EnvironmentDetectionSettingData', t, function (stack, name, responses, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status != 200) { dev.consoleMsg("Failed to set environement detection."); removeAmtDevice(dev); return; }
+                dev.consoleMsg("Environment detection set.");
+                devTaskCompleted(dev);
+            }, 0, 1);
+        } else {
+            devTaskCompleted(dev);
+        }
+    }
+
+    //
+    // Intel AMT Hardware Inventory and Networking
+    //
+
     function attemptFetchHardwareInventory(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         const mesh = parent.webserver.meshes[dev.meshid];
@@ -759,12 +980,6 @@ module.exports.CreateAmtManager = function(parent) {
         } else {
             if (func) { func(); }
         }
-    }
-
-    // Called this when a task is completed, when all tasks are completed the call back function will be called.
-    function devTaskCompleted(dev) {
-        dev.taskCount--;
-        if (dev.taskCount == 0) { var f = dev.taskCompleted; delete dev.taskCount; delete dev.taskCompleted; if (f != null) { f(); } }
     }
 
     function attemptFetchNetworkResponse(stack, name, responses, status) {
@@ -928,6 +1143,16 @@ module.exports.CreateAmtManager = function(parent) {
         devTaskCompleted(dev);
     }
 
+    //
+    // General Methods
+    //
+
+    // Called this when a task is completed, when all tasks are completed the call back function will be called.
+    function devTaskCompleted(dev) {
+        dev.taskCount--;
+        if (dev.taskCount == 0) { var f = dev.taskCompleted; delete dev.taskCount; delete dev.taskCompleted; if (f != null) { f(); } }
+    }
+
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + '-' + g.substring(10, 12) + g.substring(8, 10) + '-' + g.substring(14, 16) + g.substring(12, 14) + '-' + g.substring(16, 20) + '-' + g.substring(20); }
 
     // Check which key pair matches the public key in the certificate
@@ -936,7 +1161,7 @@ module.exports.CreateAmtManager = function(parent) {
             var cert = certs[i];
             try {
                 if (keys.length == 0) return;
-                var b = obj.parent.certificateOperations.forge.asn1.fromDer(cert.X509Certificate);
+                var b = obj.parent.certificateOperations.forge.asn1.fromDer(cert.X509CertificateBin);
                 var a = obj.parent.certificateOperations.forge.pki.certificateFromAsn1(b).publicKey;
                 var publicKeyPEM = obj.parent.certificateOperations.forge.pki.publicKeyToPem(a).substring(28 + 32).replace(/(\r\n|\n|\r)/gm, "");
                 for (var j = 0; j < keys.length; j++) {
@@ -950,6 +1175,9 @@ module.exports.CreateAmtManager = function(parent) {
     }
 
     function Clone(v) { return JSON.parse(JSON.stringify(v)); }
+    function MakeToArray(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
+    function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
+    function IntToStr(v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); }
 
     function parseCertName(x) {
         var j, r = {}, xx = x.split(',');
