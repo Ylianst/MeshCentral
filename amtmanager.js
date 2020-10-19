@@ -948,11 +948,12 @@ module.exports.CreateAmtManager = function(parent) {
         if (changes == true) {
             var t = Clone(dev.cira.xxEnvironementDetection);
             t['DetectionStrings'] = editEnvironmentDetectionTmp;
+            dev.cira.envclear = (editEnvironmentDetectionTmp.length == 0);
             dev.amtstack.Put('AMT_EnvironmentDetectionSettingData', t, function (stack, name, responses, status) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to set environement detection (" + status + ")."); removeAmtDevice(dev); return; }
-                dev.consoleMsg("Environment detection set.");
+                if (dev.cira.envclear) { dev.consoleMsg("Environment detection cleared."); } else { dev.consoleMsg("Environment detection set."); }
                 devTaskCompleted(dev);
             }, 0, 1);
         } else {
