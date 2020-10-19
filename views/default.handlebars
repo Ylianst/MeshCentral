@@ -6542,7 +6542,7 @@
             if (os == 16) { osn = "MeshCmd (macOS, 64bit)"; }
             if (os == 25) { osn = "MeshCmd (Linux ARM, 32bit)"; }
             QH('meshcmddownloadid', osn);
-            Q('meshcmddownloadid').setAttribute('href', 'meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):''));
+            Q('meshcmddownloadid').onclick = function() { downloadFile('meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
         }
 
         function p10showiconselector() {
