@@ -327,6 +327,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.SetupChannel = function SetupChannel(targetport) { return SetupChannel.parent.SetupChannel(SetupChannel.conn, targetport); }
         socket.SetupChannel.parent = obj;
         socket.SetupChannel.conn = socket;
+        socket.ControlMsg = function ControlMsg(message) { return ControlMsg.parent.SendJsonControl(ControlMsg.conn, message); }
+        socket.ControlMsg.parent = obj;
+        socket.ControlMsg.conn = socket;
         socket.setEncoding('binary');
         parent.debug('mps', "New CIRA connection");
 
