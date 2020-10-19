@@ -9597,13 +9597,7 @@
                 x = addHtmlValue("Password*", '<input id=dp20amtpolicypass type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += addHtmlValue("Password*", '<input id=dp20amtpolicypass2 type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 if ((ptype == 2) && (currentMesh.mtype == 2)) { x += addHtmlValue("Password mismatch", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "Reactivate Intel&reg; AMT" + '</option></select>'); }
-                if ((features & 0x400) == 0) {
-                    if (ptype == 2) {
-                        x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don't configure" + '</option><option value=1>' + "Don't connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>');
-                    } else {
-                        x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don't configure" + '</option><option value=2>' + "Connect to server" + '</option></select>');
-                    }
-                }
+                if ((features & 0x400) == 0) { x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Don't configure" + '</option><option value=1>' + "Don't connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>'); }
                 x += '<br/><span style="font-size:10px">' + "* Leave blank to assign a random password to each device." + '</span><br/>';
                 if (currentMesh.mtype == 2) {
                     if (ptype == 2) {
