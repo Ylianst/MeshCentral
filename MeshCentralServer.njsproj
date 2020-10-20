@@ -35,6 +35,7 @@
     <Compile Include="agents\modules_meshcmd\amt-wsman.js" />
     <Compile Include="agents\modules_meshcmd\amt-xml.js" />
     <Compile Include="agents\modules_meshcmd\amt.js" />
+    <Compile Include="agents\modules_meshcmd\apfclient.js" />
     <Compile Include="agents\modules_meshcmd\identifiers.js" />
     <Compile Include="agents\modules_meshcmd\smbios.js" />
     <Compile Include="agents\modules_meshcmd\sysinfo.js" />

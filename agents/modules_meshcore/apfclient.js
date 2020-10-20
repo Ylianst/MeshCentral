@@ -173,10 +173,15 @@ function CreateAPFClient(parent, args) {
         });
 
         obj.state = CIRASTATE.INITIAL;
-        if ((typeof obj.args.conntype == 'number') && (obj.args.conntype != 0)) { SendJsonControl(obj.forwardClient.ws, { action: 'connType', value: obj.args.conntype } ); }
+        if ((typeof obj.args.conntype == 'number') && (obj.args.conntype != 0)) {
+            SendJsonControl(obj.forwardClient.ws, { action: 'connType', value: obj.args.conntype });
+            if (obj.args.meiState != null) { SendJsonControl(obj.forwardClient.ws, { action: 'meiState', value: obj.args.meiState }); }
+        }
         SendProtocolVersion(obj.forwardClient.ws, obj.args.clientuuid);
         SendServiceRequest(obj.forwardClient.ws, 'auth@amt.intel.com');
     }
+
+    obj.updateMeiState = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'meiState', value: state }); }
 
     function SendJsonControl(socket, o) {
         var data = JSON.stringify(o)

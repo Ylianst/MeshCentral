@@ -894,6 +894,13 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                             if ((socket.tag.connType != 0) || (socket.tag.SystemId != null)) return; // Once set, the connection type can't be changed.
                             if (typeof jsondata.value != 'number') return;
                             socket.tag.connType = jsondata.value; // 0 = CIRA, 1 = Relay, 2 = LMS
+                            //obj.SendJsonControl(socket, { action: 'mestate' }); // Request an MEI state refresh
+                            break;
+                        case 'meiState':
+                            if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
+                            socket.tag.meiState = jsondata.value;
+                            //if (socket.tag.meiState.UUID != null) { console.log('MEI State', socket.tag.meiState.UUID); }
+                            //console.log('meiState', JSON.stringify(socket.tag.meiState, null, 2)); // DEBUG
                             break;
                     }
                     return 5 + jsondatalen;
