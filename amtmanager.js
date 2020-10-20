@@ -86,6 +86,9 @@ module.exports.CreateAmtManager = function(parent) {
 
     // Remove all Intel AMT devices for a given nodeid
     function removeDevice(nodeid) {
+        // Remove from task limiter if needed
+        if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+
         // Find the devices in the list
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return false;
@@ -118,7 +121,18 @@ module.exports.CreateAmtManager = function(parent) {
         dev.controlMsg.conn = connection;
         parent.debug('amt', "Start Management", nodeid, connType);
         addAmtDevice(dev);
-        fetchIntelAmtInformation(dev);
+
+        // Start the device manager the task limiter so not to flood the server. Low priority task
+        obj.parent.taskLimiter.launch(function (dev, taskid, taskLimiterQueue) {
+            if (isAmtDeviceValid(dev)) {
+                // Start managing this device
+                dev.taskid = taskid;
+                fetchIntelAmtInformation(dev);
+            } else {
+                // Device is not valid anymore, do nothing
+                obj.parent.taskLimiter.completed(taskid);
+            }
+        }, dev, 2);
     }
 
     // Stop Intel AMT management
@@ -355,6 +369,10 @@ module.exports.CreateAmtManager = function(parent) {
                             // See if we need to get hardware inventory
                             attemptFetchHardwareInventory(dev, function () {
                                 dev.consoleMsg('Done.');
+
+                                // Remove from task limiter if needed
+                                if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+
                                 if (dev.connType != 2) {
                                     // Start power polling if not connected to LMS
                                     var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
