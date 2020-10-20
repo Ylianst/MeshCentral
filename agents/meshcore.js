@@ -3848,11 +3848,19 @@ function createMeshCore(agent) {
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
             amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } }); // Flag 2 = CCM, 4 = ACM
             //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
-            if ((flags & 8) != 0) { amtMei.getLanInterfaceSettings(0, function (result) { if (result) { amtMeiTmpState.net0 = result; } }); }
-            if ((flags & 8) != 0) { amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } }); }
+            if ((flags & 8) != 0) {
+                amtMei.getLanInterfaceSettings(0, function (result) {
+                    if (result) {
+                        amtMeiTmpState.net0 = result;
+                        var fqdn = null, interfaces = require('os').networkInterfaces(); // Look for the DNS suffix for the Intel AMT Ethernet interface
+                        for (var i in interfaces) { for (var j in interfaces[i]) { if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { amtMeiTmpState.OsDnsSuffix = interfaces[i][j].fqdn; } } }
+                    }
+                });
+                amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
+            }
             amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
             if ((flags & 2) != 0) { amtMei.getLocalSystemAccount(function (x) { if ((x != null) && x.user && x.pass) { amtMeiTmpState.OsAdmin = { user: x.user, pass: x.pass }; } }); }
-            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DNS = result; } if ((flags & 4) == 0) { if (func != null) { func(amtMeiTmpState); } } });
+            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DnsSuffix = result; } if ((flags & 4) == 0) { if (func != null) { func(amtMeiTmpState); } } });
             if ((flags & 4) != 0) {
                 amtMei.getHashHandles(function (handles) {
                     if (handles != null) { amtMeiTmpState.Hashes = []; } else { func(amtMeiTmpState); }
