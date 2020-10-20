@@ -899,6 +899,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     // Take a basic Intel AMT policy and add all server information to it, making it ready to send to this agent.
+    /*
     function completeIntelAmtPolicy(amtPolicy) {
         var r = amtPolicy;
         if (amtPolicy == null) return null;
@@ -923,12 +924,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
         return r;
     }
+    */
 
     // Send Intel AMT policy
     obj.sendUpdatedIntelAmtPolicy = function (policy) {
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) { // Only send Intel AMT policy to agents what could have AMT.
-            if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
-            if (policy != null) { try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(policy)) })); } catch (ex) { } }
+            // TODO
+            //if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
+            //if (policy != null) { try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(policy)) })); } catch (ex) { } }
         }
     }
 
@@ -981,9 +984,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
 
         // Send Intel AMT policy
+        /*
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null)) {  // Only send Intel AMT policy to agents what could have AMT.
             try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) })); } catch (ex) { }
         }
+        */
 
         // Fetch system information
         db.GetHash('si' + obj.dbNodeKey, function (err, results) {

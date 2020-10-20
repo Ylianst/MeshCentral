@@ -3541,26 +3541,40 @@ function createMeshCore(agent) {
                         break;
                     }
                 case 'amtconfig': {
-                    if (meshCoreObj.intelamt == null) { response = "No Intel AMT support delected"; break; }
                     if (apftunnel != null) { response = "Intel AMT server tunnel already active"; break; }
-                    var apfarg = {
-                        mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                        mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                        mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                        mpskeepalive: 60000,
-                        clientname: require('os').hostname(),
-                        clientaddress: '127.0.0.1',
-                        clientuuid: meshCoreObj.intelamt.uuid,
-                        conntype: 2 // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
-                    };
-                    if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) { response = "Unable to get Intel AMT UUID"; break; }
-                    apftunnel = require('apfclient')({ debug: false }, apfarg);
-                    apftunnel.onJsonControl = function (data) {
-                        if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); }
-                        if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; }
-                    }
-                    apftunnel.onChannelClosed = function () { apftunnel = null; }
-                    try { apftunnel.connect(); response = "Started Intel AMT configuration"; } catch (ex) { response = JSON.stringify(ex); }
+                    if (amt == null) { response = "No Intel AMT support delected"; break; }
+                    getMeiState(15, function (state) {
+                        var rx = '';
+                        var apfarg = {
+                            mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
+                            mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                            mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                            mpskeepalive: 60000,
+                            clientname: require('os').hostname(),
+                            clientaddress: '127.0.0.1',
+                            clientuuid: state.UUID,
+                            conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
+                            meiState: state // MEI state will be passed to MPS server
+                        };
+                        if ((state.UUID == null) || (state.UUID.length != 36)) {
+                            rx = "Unable to get Intel AMT UUID";
+                        } else {
+                            apftunnel = require('apfclient')({ debug: false }, apfarg);
+                            apftunnel.onJsonControl = function (data) {
+                                if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message
+                                if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
+                                if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
+                            }
+                            apftunnel.onChannelClosed = function () { apftunnel = null; }
+                            try {
+                                apftunnel.connect();
+                                rx = "Started Intel AMT configuration";
+                            } catch (ex) {
+                                rx = JSON.stringify(ex);
+                            }
+                        }
+                        if (rx != '') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: rx }); }
+                    });
                     break;
                 }
                 case 'apf': {
@@ -3817,6 +3831,36 @@ function createMeshCore(agent) {
         s.httprequest = this;
         s.end = onWebSocketClosed;
         s.data = onWebSocketData;
+    }
+
+    // Get Intel MEI State in a flexible way
+    // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
+    function getMeiState(flags, func) {
+        var amtMeiModule, amtMei;
+        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { func(null); return; }
+        amtMei.on('error', function (e) { func(null); return; });
+        try {
+            var amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+            amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
+            if ((flags & 1) != 0) { amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } }); }
+            amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
+            amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } }); // 0: "Not Activated (Pre)", 1: "Not Activated (In)", 2: "Activated"
+            amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
+            amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } }); // Flag 2 = CCM, 4 = ACM
+            //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
+            if ((flags & 8) != 0) { amtMei.getLanInterfaceSettings(0, function (result) { if (result) { amtMeiTmpState.net0 = result; } }); }
+            if ((flags & 8) != 0) { amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } }); }
+            amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
+            if ((flags & 2) != 0) { amtMei.getLocalSystemAccount(function (x) { if ((x != null) && x.user && x.pass) { amtMeiTmpState.OsAdmin = { user: x.user, pass: x.pass }; } }); }
+            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DNS = result; } if ((flags & 4) == 0) { if (func != null) { func(amtMeiTmpState); } } });
+            if ((flags & 4) != 0) {
+                amtMei.getHashHandles(function (handles) {
+                    if (handles != null) { amtMeiTmpState.Hashes = []; } else { func(amtMeiTmpState); }
+                    var exitOnCount = handles.length;
+                    for (var i = 0; i < handles.length; ++i) { this.getCertHashEntry(handles[i], function (hashresult) { amtMeiTmpState.Hashes.push(hashresult); if (--exitOnCount == 0) { if (func != null) { func(amtMeiTmpState); } } }); }
+                });
+            }
+        } catch (e) { if (func != null) { func(null); } return; }
     }
 
     return obj;
