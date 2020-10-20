@@ -9571,11 +9571,7 @@
             if (xxdialogMode) return;
             var x = '', acmoption = '';
             if ((features & 0x100000) != 0) { acmoption = '<option value=3>' + "Simple Admin Control Mode (ACM)" + '</option>'; }
-            if (currentMesh.mtype == 1) {
-                x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '</select>');
-            } else {
-                x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate Client Control Mode (CCM)" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '</select>');
-            }
+            x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate Client Control Mode (CCM)" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '</select>');
             x += '<div id=dp20amtpolicydiv></div>';
             setDialogMode(2, "Intel&reg; AMT Policy", 3, p20editMeshAmtEx, x);
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }

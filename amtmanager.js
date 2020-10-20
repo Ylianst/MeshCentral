@@ -71,6 +71,9 @@ module.exports.CreateAmtManager = function(parent) {
         var i = devices.indexOf(dev);
         if (i == -1) return false;
 
+        // Remove from task limiter if needed
+        if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+
         // Clean up this device
         if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
         if (dev.polltimer != null) { clearInterval(dev.polltimer); delete dev.polltimer; }
@@ -86,16 +89,17 @@ module.exports.CreateAmtManager = function(parent) {
 
     // Remove all Intel AMT devices for a given nodeid
     function removeDevice(nodeid) {
-        // Remove from task limiter if needed
-        if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
-
         // Find the devices in the list
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return false;
 
         for (var i in devices) {
-            // Clean up this device
             var dev = devices[i];
+
+            // Remove from task limiter if needed
+            if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+
+            // Clean up this device
             if (dev.amtstack != null) { dev.amtstack.wsman.comm.FailAllError = 999; delete dev.amtstack; } // Disconnect any active connections.
             if (dev.polltimer != null) { clearInterval(dev.polltimer); delete dev.polltimer; }
         }
@@ -229,6 +233,12 @@ module.exports.CreateAmtManager = function(parent) {
     // Attempt to perform initial contact with Intel AMT
     function attemptInitialContact(dev) {
         parent.debug('amt', "Attempt Initial Contact", dev.name, dev.connType);
+
+        if ((dev.connType == 2) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (dev.mpsConnection.tag.meiState.ProvisioningState !== 2)) {
+            // This Intel AMT device is not activated, we need to work on activating it.
+            activateIntelAmt(dev);
+            return;
+        }
 
         if ((dev.acctry == null) && ((typeof dev.intelamt.user != 'string') || (typeof dev.intelamt.pass != 'string'))) {
             if ((obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; } else { removeAmtDevice(dev); return; }
@@ -435,6 +445,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (dev.aquired.pass && (typeof dev.aquired.pass == 'string') && (dev.aquired.pass != device.intelamt.pass)) { change = 1; log = 1; device.intelamt.pass = dev.aquired.pass; changes.push('AMT pass'); }
             if (dev.aquired.realm && (typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
             if (dev.aquired.hash && (typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
+            if (dev.aquired.tls && (typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
             if (device.intelamt.state != 2) { change = 1; log = 1; device.intelamt.state = 2; changes.push('AMT state'); }
 
             // Update Intel AMT flags if needed
@@ -672,6 +683,11 @@ module.exports.CreateAmtManager = function(parent) {
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to generate a key pair (" + status + ")."); removeAmtDevice(dev); return; }
 
+                // Check that we get a key pair reference
+                var x = null;
+                try { x = responses.Body['KeyPair']['ReferenceParameters']['SelectorSet']['Selector']['Value']; } catch (ex) { }
+                if (x == null) { dev.consoleMsg("Unable to get key pair reference."); removeAmtDevice(dev); return; }
+
                 // Get the new key pair
                 dev.amtstack.Enum('AMT_PublicPrivateKeyPair', function (stack, name, responses, status, tag) {
                     const dev = stack.dev;
@@ -700,6 +716,12 @@ module.exports.CreateAmtManager = function(parent) {
 
                     // Place the resulting signed certificate back into AMT
                     var pem = obj.parent.certificateOperations.forge.pki.certificateToPem(cert).replace(/(\r\n|\n|\r)/gm, '');
+
+                    // Set the certificate finderprint (SHA1)
+                    var md = obj.parent.certificateOperations.forge.md.sha1.create();
+                    md.update(obj.parent.certificateOperations.forge.asn1.toDer(obj.parent.certificateOperations.forge.pki.certificateToAsn1(cert)).getBytes());
+                    dev.aquired.xhash = md.digest().toHex();
+
                     dev.amtstack.AMT_PublicKeyManagementService_AddCertificate(pem.substring(27, pem.length - 25), function (stack, name, responses, status) {
                         const dev = stack.dev;
                         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
@@ -760,6 +782,13 @@ module.exports.CreateAmtManager = function(parent) {
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed perform commit (" + status + ")."); removeAmtDevice(dev); return; }
                 dev.consoleMsg("Enabled TLS");
+
+                // Update device in the database
+                dev.aquired.tls = 1;
+                dev.aquired.hash = dev.aquired.xhash;
+                delete dev.aquired.xhash;
+                UpdateDevice(dev);
+
                 // TODO: Switch our communications to TLS (Restart our management of this node)
                 devTaskCompleted(dev);
             });
@@ -1159,6 +1188,70 @@ module.exports.CreateAmtManager = function(parent) {
         devTaskCompleted(dev);
     }
 
+
+    //
+    // Intel AMT Activation
+    //
+
+    function activateIntelAmt(dev) {
+        // Find the Intel AMT policy
+        const mesh = parent.webserver.meshes[dev.meshid];
+        if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev); return; }
+        var amtPolicy = 0; // 0 = Do nothing, 1 = Deactivate CCM, 2 = CCM, 3 = ACM
+        if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } }
+        if ((typeof dev.mpsConnection.tag.meiState.OsAdmin != 'object') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.user != 'string') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.pass != 'string')) { amtPolicy = 0; }
+        if (amtPolicy == 0) { removeAmtDevice(dev); return; } // Do nothing, we should not have gotten this CIRA-LMS connection.
+        if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); }
+    }
+
+    function activateIntelAmtCcm(dev, password) {
+        console.log('Intel AMT CCM Activation Required: ' + dev.name, dev.nodeid);
+        if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
+        dev.temp = { pass: password };
+
+        // Setup the WSMAN stack, no TLS
+        var comm = CreateWsmanComm(dev.nodeid, 16992, dev.mpsConnection.tag.meiState.OsAdmin.user, dev.mpsConnection.tag.meiState.OsAdmin.pass, 0, null, dev.mpsConnection); // No TLS
+        var wsstack = WsmanStackCreateService(comm);
+        dev.amtstack = AmtStackCreateService(wsstack);
+        dev.amtstack.dev = dev;
+        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activateIntelAmtCcmEx1);
+    }
+
+    function activateIntelAmtCcmEx1(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get Intel AMT state."); removeAmtDevice(dev); return; }
+        if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { dev.consoleMsg("Client control mode activation not allowed."); removeAmtDevice(dev); return; }
+        dev.amtstack.IPS_HostBasedSetupService_Setup(2, hex_md5('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + dev.temp.pass).substring(0, 32), null, null, null, null, activateIntelAmtCcmEx2);
+    }
+
+    function activateIntelAmtCcmEx2(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to activate Intel AMT to CCM."); removeAmtDevice(dev); return; }
+        obj.parent.mpsserver.SendJsonControl(dev.mpsConnection, { action: 'mestate' }); // Request an MEI state refresh
+
+        // Update the device
+        dev.aquired = {};
+        dev.aquired.controlMode = 1; // 1 = CCM, 2 = ACM
+        var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
+        if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+        dev.aquired.realm = dev.amtstack.wsman.comm.digestRealm;
+        dev.aquired.user = 'admin';
+        dev.aquired.pass = dev.temp.pass;
+        dev.aquired.lastContact = Date.now();
+        dev.aquired.tls = 0;
+        UpdateDevice(dev);
+
+        // Success, switch to managing this device
+        dev.consoleMsg("Succesfully activated Intel AMT in CCM mode.");
+
+        // Wait 8 seconds before attempting to manage this device in CCM
+        var f = function doManage() { if (isAmtDeviceValid(dev)) { attemptInitialContact(doManage.dev); } }
+        f.dev = dev;
+        setTimeout(f, 8000);
+    }
+
     //
     // General Methods
     //
@@ -1190,6 +1283,13 @@ module.exports.CreateAmtManager = function(parent) {
         }
     }
 
+    // Generate a random Intel AMT password
+    function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
+    function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
+    function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
+    function getRandomLowerCase(len) { var r = '', random = obj.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
+
+    function hex_md5(str) { return obj.parent.crypto.createHash('md5').update(str).digest('hex'); }
     function Clone(v) { return JSON.parse(JSON.stringify(v)); }
     function MakeToArray(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
     function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
