@@ -1349,6 +1349,7 @@ function serverConnect() {
             case 'addusertousergroup':
             case 'removeuserfromusergroup':
             case 'userbroadcast': { // BROADCAST
+                if (settings.cmd == 'upload') return;
                 if ((settings.multiresponse != null) && (settings.multiresponse > 1)) { settings.multiresponse--; break; }
                 if (data.responseid == 'meshctrl') {
                     if (data.meshid) { console.log(data.result, data.meshid); }
@@ -1660,7 +1661,7 @@ function connectTunnel(url) {
                 settings.uploadSize = require('fs').statSync(args.file).size;
                 settings.uploadFile = require('fs').openSync(args.file, 'r');
                 settings.uploadPtr = 0;
-                settings.tunnelws.send(JSON.stringify({ action: 'upload', reqid: 'up', path: require('path').dirname(args.target), name: require('path').basename(args.file), size: settings.uploadSize }));
+                settings.tunnelws.send(JSON.stringify({ action: 'upload', reqid: 'up', path: args.target, name: require('path').basename(args.file), size: settings.uploadSize }));
             }
         });
     } else if (settings.cmd == 'download') {
