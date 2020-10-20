@@ -4343,6 +4343,7 @@
     },
     {
       "en": "Agent is running on remote device with reduced privilages.",
+      "nl": "De agent wordt op een extern apparaat uitgevoerd met beperkte rechten.",
       "xloc": [
         "default.handlebars->29->161",
         "default.handlebars->29->661"
@@ -7837,6 +7838,7 @@
     },
     {
       "en": "Collapse All",
+      "nl": "Alles inklappen",
       "xloc": [
         "default.handlebars->expandAllContextMenu->3"
       ]
@@ -14728,6 +14730,7 @@
     },
     {
       "en": "Expand All",
+      "nl": "Alles uitvouwen",
       "xloc": [
         "default.handlebars->expandAllContextMenu->1"
       ]
@@ -28482,6 +28485,7 @@
     },
     {
       "en": "Refresh the desktop",
+      "nl": "Vernieuw het bureaublad",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -30055,6 +30059,7 @@
     },
     {
       "en": "Restricted",
+      "nl": "Beperkt",
       "xloc": [
         "default-mobile.handlebars->9->227",
         "default.handlebars->29->162",
@@ -30427,12 +30432,14 @@
     },
     {
       "en": "Running commands as user",
+      "nl": "Commando's uitvoeren als gebruiker",
       "xloc": [
         "default.handlebars->29->1687"
       ]
     },
     {
       "en": "Running commands as user if possible",
+      "nl": "Indien mogelijk commando's uitvoeren als gebruiker",
       "xloc": [
         "default.handlebars->29->1688"
       ]
