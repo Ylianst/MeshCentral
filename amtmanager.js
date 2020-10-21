@@ -249,14 +249,15 @@ module.exports.CreateAmtManager = function(parent) {
             // Fetch Intel AMT setup policy
             // mesh.amt.type: 0 = No Policy, 1 = Deactivate CCM, 2 = Manage in CCM, 3 = Manage in ACM
             // mesh.amt.cirasetup: 0 = No Change, 1 = Remove CIRA, 2 = Setup CIRA
-            var amtPolicy = 0, ciraPolicy = 0, badPass = 0;
+            var amtPolicy = 0, ciraPolicy = 0, badPass = 0, password = null;
             if (mesh.amt != null) {
                 if (mesh.amt.type) { amtPolicy = mesh.amt.type; }
                 if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; }
                 if (mesh.amt.badpass) { badPass = mesh.amt.badpass; }
+                if ((typeof mesh.amt.password == 'string') && (mesh.amt.password != '')) { password = mesh.amt.password; }
             }
             if (amtPolicy < 2) { ciraPolicy = 0; }
-            dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy, badPass: badPass };
+            dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy, badPass: badPass, password: password };
 
             // If there is no Intel AMT policy for this device, stop here.
             if (amtPolicy == 0) { dev.consoleMsg("Done."); removeAmtDevice(dev); return; }
@@ -320,7 +321,9 @@ module.exports.CreateAmtManager = function(parent) {
 
                 // See what user/pass to try.
                 var user = null, pass = null;
-                if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; } else { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
+                if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; }
+                else if (dev.acctry == 'policy') { user = 'admin'; pass = dev.policy.password; }
+                else if (typeof dev.acctry == 'number') { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
 
                 // See if we need to perform TLS or not. We prefer not to do TLS within CIRA.
                 var dotls = -1;
@@ -351,7 +354,9 @@ module.exports.CreateAmtManager = function(parent) {
 
                 // See what user/pass to try.
                 var user = null, pass = null;
-                if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; } else { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
+                if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; }
+                else if (dev.acctry == 'policy') { user = 'admin'; pass = dev.policy.password; }
+                else if (typeof dev.acctry == 'number') { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
 
                 // Connect now
                 var comm;
@@ -381,9 +386,13 @@ module.exports.CreateAmtManager = function(parent) {
                     tryAgainFunc.dev = dev;
                     setTimeout(tryAgainFunc, 5000);
                 } else {
-                    // No active connections, see what user/pass to try.
+                    // No active connections
+
+                    // See what user/pass to try.
                     var user = null, pass = null;
-                    if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; } else { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
+                    if (dev.acctry == null) { user = dev.intelamt.user; pass = dev.intelamt.pass; }
+                    else if (dev.acctry == 'policy') { user = 'admin'; pass = dev.policy.password; }
+                    else if (typeof dev.acctry == 'number') { user = obj.amtAdminAccounts[dev.domainid][dev.acctry].user; pass = obj.amtAdminAccounts[dev.domainid][dev.acctry].pass; }
 
                     // Connect now
                     var comm;
@@ -475,7 +484,8 @@ module.exports.CreateAmtManager = function(parent) {
                 dev.tlsfail = true; attemptInitialContact(dev); return;
             } else if (status == 401) {
                 // Authentication error, see if we can use alternative credentials
-                if ((dev.acctry == null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
+                if ((dev.acctry == null) && (dev.policy.password != null)) { dev.acctry = 'policy'; attemptInitialContact(dev); return; }
+                if ((dev.acctry == null) || (dev.acctry == 'policy') && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
                 if ((dev.acctry != null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
 
                 // If this devics is in CCM mode and we have a bad password reset policy, do it now.
@@ -1405,7 +1415,7 @@ module.exports.CreateAmtManager = function(parent) {
         obj.parent.mpsserver.SendJsonControl(dev.mpsConnection, { action: 'mestate' }); // Request an MEI state refresh
         dev.consoleMsg("Succesfully activated in CCM mode, holding 10 seconds...");
 
-        // Wait 8 seconds before attempting to manage this device in CCM
+        // Wait 10 seconds before attempting to manage this device in CCM
         var f = function doManage() { if (isAmtDeviceValid(dev)) { attemptInitialContact(doManage.dev); } }
         f.dev = dev;
         setTimeout(f, 10000);
