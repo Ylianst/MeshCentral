@@ -249,10 +249,14 @@ module.exports.CreateAmtManager = function(parent) {
             // Fetch Intel AMT setup policy
             // mesh.amt.type: 0 = No Policy, 1 = Deactivate CCM, 2 = Manage in CCM, 3 = Manage in ACM
             // mesh.amt.cirasetup: 0 = No Change, 1 = Remove CIRA, 2 = Setup CIRA
-            var amtPolicy = 0, ciraPolicy = 0;
-            if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; } }
+            var amtPolicy = 0, ciraPolicy = 0, badPass = 0;
+            if (mesh.amt != null) {
+                if (mesh.amt.type) { amtPolicy = mesh.amt.type; }
+                if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; }
+                if (mesh.amt.badpass) { badPass = mesh.amt.badpass; }
+            }
             if (amtPolicy < 2) { ciraPolicy = 0; }
-            dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy }
+            dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy, badPass: badPass };
 
             // If there is no Intel AMT policy for this device, stop here.
             if (amtPolicy == 0) { dev.consoleMsg("Done."); removeAmtDevice(dev); return; }
@@ -300,7 +304,7 @@ module.exports.CreateAmtManager = function(parent) {
             }
         }
 
-        // If we ran out of credentials to try, give up here.
+        // See if we need to try different credentials
         if ((dev.acctry == null) && ((typeof dev.intelamt.user != 'string') || (typeof dev.intelamt.pass != 'string'))) {
             if ((obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; } else { removeAmtDevice(dev); return; }
         }
@@ -474,9 +478,17 @@ module.exports.CreateAmtManager = function(parent) {
                 if ((dev.acctry == null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
                 if ((dev.acctry != null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
 
-                // We are unable to authenticate to this device, clear Intel AMT credentials.
+                // If this devics is in CCM mode and we have a bad password reset policy, do it now.
+                if ((dev.connType == 2) && (dev.policy.badPass == 1) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (dev.mpsConnection.tag.meiState.Flags != null) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
+                    deactivateIntelAmtCCM(dev);
+                    return;
+                }
+
+                // We are unable to authenticate to this device
                 dev.consoleMsg("Unable to connect.");
-                ClearDeviceCredentials(dev);
+
+                // Set an error that we can't login to this device
+                //ClearDeviceCredentials(dev);
             }
             //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
             removeAmtDevice(dev);
@@ -690,28 +702,10 @@ module.exports.CreateAmtManager = function(parent) {
     // Check if Intel AMT TLS state is correct
     function attemptTlsSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-
-        // Refetch Intel AMT setup policy
-        // mesh.amt.type: 0 = No Policy, 1 = Deactivate CCM, 2 = Manage in CCM, 3 = Manage in ACM
-        // mesh.amt.cirasetup: 0 = No Change, 1 = Remove CIRA, 2 = Setup CIRA
-        const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev); return; }
-        var amtPolicy = 0, ciraPolicy = 0;
-        if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; } }
-        if (amtPolicy < 2) { ciraPolicy = 0; }
-        dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy }
-
-        if (amtPolicy < 2) {
-            // No policy or deactivation, do nothing.
-            dev.consoleMsg("No server policy for Intel AMT");
-            func(dev);
-        } else {
-            // Manage in CCM or ACM
-            dev.taskCount = 1;
-            dev.taskCompleted = func;
-            // TODO: We only deal with certificates starting with Intel AMT 6 and beyond
-            dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate', 'AMT_PublicPrivateKeyPair', 'AMT_TLSSettingData', 'AMT_TLSCredentialContext'], attemptTlsSyncEx);
-        }
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
+        // TODO: We only deal with certificates starting with Intel AMT 6 and beyond
+        dev.amtstack.BatchEnum(null, ['AMT_PublicKeyCertificate', 'AMT_PublicPrivateKeyPair', 'AMT_TLSSettingData', 'AMT_TLSCredentialContext'], attemptTlsSyncEx);
     }
 
     function attemptTlsSyncEx(stack, name, responses, status) {
@@ -1402,11 +1396,14 @@ module.exports.CreateAmtManager = function(parent) {
         dev.aquired.pass = dev.temp.pass;
         dev.aquired.lastContact = Date.now();
         dev.aquired.tls = 0;
+        dev.intelamt.user = 'admin';
+        dev.intelamt.pass = dev.temp.pass;
+        delete dev.acctry;
         UpdateDevice(dev);
 
         // Success, switch to managing this device
         obj.parent.mpsserver.SendJsonControl(dev.mpsConnection, { action: 'mestate' }); // Request an MEI state refresh
-        dev.consoleMsg("Succesfully activated Intel AMT in CCM mode, holding 10 seconds...");
+        dev.consoleMsg("Succesfully activated in CCM mode, holding 10 seconds...");
 
         // Wait 8 seconds before attempting to manage this device in CCM
         var f = function doManage() { if (isAmtDeviceValid(dev)) { attemptInitialContact(doManage.dev); } }
@@ -1437,16 +1434,17 @@ module.exports.CreateAmtManager = function(parent) {
                 removeAmtDevice(dev);
             } else {
                 // Wait 20 seconds before attempting any operation on this device
-                dev.consoleMsg("Deactivation successful, holding for 20 seconds...");
+                dev.consoleMsg("Deactivation successful, holding for 1 minute...");
                 var f = function askMeiState() {
                     askMeiState.dev.pendingUpdatedMeiState = 1;
                     askMeiState.dev.controlMsg({ action: 'mestate' });
                 }
                 f.dev = dev;
-                setTimeout(f, 20000);
+                setTimeout(f, 60000);
             }
         }
     }
+
 
     //
     // General Methods
