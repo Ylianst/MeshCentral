@@ -5674,8 +5674,8 @@
                             str += (', v' + EscapeHtml(node.intelamt.ver));
                         }
 
-                    if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel&reg; AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
                     if (node.intelamt.state == 2) {
+                        if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel&reg; AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
                                 str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "No Credentials" + '</i>';

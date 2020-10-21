@@ -259,14 +259,29 @@ module.exports.CreateAmtManager = function(parent) {
             if (amtPolicy < 2) { ciraPolicy = 0; }
             dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy, badPass: badPass, password: password };
 
+            // Setup the monitored device
+            dev.name = node.name;
+            dev.meshid = node.meshid;
+            dev.intelamt = node.intelamt;
+
+            // Check if the status of Intel AMT sent by the agents matched what we have in the database
+            if ((dev.connType == 2) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) {
+                dev.aquired = {};
+                if (typeof dev.mpsConnection.tag.meiState['ProvisioningState'] == 'number') {
+                    dev.intelamt.state = dev.aquired.state = dev.mpsConnection.tag.meiState['ProvisioningState'];
+                }
+                if (typeof dev.mpsConnection.tag.meiState['Flags'] == 'number') {
+                    const flags = dev.intelamt.flags = dev.mpsConnection.tag.meiState['Flags'];
+                    if (flags & 2) { dev.aquired.controlMode = 1; } // CCM
+                    if (flags & 4) { dev.aquired.controlMode = 2; } // ACM
+                }
+                UpdateDevice(dev);
+            }
+
             // If there is no Intel AMT policy for this device, stop here.
             if (amtPolicy == 0) { dev.consoleMsg("Done."); removeAmtDevice(dev); return; }
 
-            // Setup the monitored device
-            dev.name = node.name;
-            //if (node.host) { dev.host = node.host.toLowerCase(); }
-            dev.meshid = node.meshid;
-            dev.intelamt = node.intelamt;
+            // Initiate the communication to Intel AMT
             dev.consoleMsg("Checking Intel AMT state...");
             attemptInitialContact(dev);
         });
@@ -435,8 +450,8 @@ module.exports.CreateAmtManager = function(parent) {
             var verSplit = stack.wsman.comm.amtVersion.split('.');
             if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
             dev.aquired.realm = stack.wsman.comm.digestRealm;
-            dev.aquired.user = stack.wsman.comm.user;
-            dev.aquired.pass = stack.wsman.comm.pass;
+            dev.aquired.user = dev.intelamt.user = stack.wsman.comm.user;
+            dev.aquired.pass = dev.intelamt.pass = stack.wsman.comm.pass;
             dev.aquired.lastContact = Date.now();
             if ((dev.connType == 1) || (dev.connType == 3)) { dev.aquired.tls = stack.wsman.comm.xtls; } // Only set the TLS state if in relay or local mode. When using CIRA, this is auto-detected.
             if (stack.wsman.comm.xtls == 1) { dev.aquired.hash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.hash; }
@@ -512,19 +527,17 @@ module.exports.CreateAmtManager = function(parent) {
 
     // Change the current core information string and event it
     function UpdateDevice(dev) {
-        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-
         // Check that the mesh exists
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { removeAmtDevice(dev); return false; }
+        if (mesh == null) { removeAmtDevice(dev); console.log('y3'); return false; }
 
         // Get the node and change it if needed
         parent.db.Get(dev.nodeid, function (err, nodes) {
-            if ((nodes == null) || (nodes.length != 1)) { return false; }
+            if ((nodes == null) || (nodes.length != 1)) { console.log('y1'); return false; }
             const device = nodes[0];
             var changes = [], change = 0, log = 0;
             var domain = parent.config.domains[device.domain];
-            if (domain == null) { return false; }
+            if (domain == null) { console.log('y2'); return false; }
 
             // Check if anything changes
             if (device.intelamt == null) { device.intelamt = {}; }
@@ -535,7 +548,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (dev.aquired.realm && (typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
             if (dev.aquired.hash && (typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
             if (dev.aquired.tls && (typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
-            if (device.intelamt.state != 2) { change = 1; log = 1; device.intelamt.state = 2; changes.push('AMT state'); }
+            if ((dev.aquired.state != null) && (typeof dev.aquired.state == 'number') && (dev.aquired.state != device.intelamt.state)) { change = 1; log = 1; device.intelamt.state = dev.aquired.state; changes.push('AMT state'); }
 
             // Update Intel AMT flags if needed
             // dev.aquired.controlMode // 1 = CCM, 2 = ACM
@@ -544,7 +557,10 @@ module.exports.CreateAmtManager = function(parent) {
             if (typeof device.intelamt.flags == 'number') { flags = device.intelamt.flags; }
             if (dev.aquired.controlMode == 1) { if ((flags & 4) != 0) { flags -= 4; } if ((flags & 2) == 0) { flags += 2; } } // CCM
             if (dev.aquired.controlMode == 2) { if ((flags & 4) == 0) { flags += 4; } if ((flags & 2) != 0) { flags -= 2; } } // ACM
-            if (device.intelamt.flags != flags) { change = 1; log = 1; device.intelamt.flags = flags; changes.push('AMT flags'); }
+            if (device.intelamt.flags != flags) {
+                console.log('ChangeFlags', flags);
+                change = 1; log = 1; device.intelamt.flags = flags; changes.push('AMT flags');
+            }
 
             // If there are changes, event the new device
             if (change == 1) {
@@ -1104,13 +1120,8 @@ module.exports.CreateAmtManager = function(parent) {
         // If this device does not have KVM, ignore the response. This can happen for Intel Standard Manageability (Intel(R) SM).
         if ((responses['CIM_KVMRedirectionSAP'] == null) || (responses['CIM_KVMRedirectionSAP'].status == 400)) { responses['CIM_KVMRedirectionSAP'] = null; }
 
-        // Check redirection services
-        var redir = (responses['AMT_RedirectionService'].response['ListenerEnabled'] == true);
-        var sol = ((responses['AMT_RedirectionService'].response['EnabledState'] & 2) != 0);
-        var ider = ((responses['AMT_RedirectionService'].response['EnabledState'] & 1) != 0);
-
         // Enable SOL & IDER
-        if (responses['AMT_RedirectionService'].response['EnabledState'] != 32771) {
+        if ((responses['AMT_RedirectionService'].response['EnabledState'] != 32771) || (responses['AMT_RedirectionService'].response['ListenerEnabled'] == false)) {
             dev.redirObj = responses['AMT_RedirectionService'].response;
             dev.redirObj['ListenerEnabled'] = true;
             dev.redirObj['EnabledState'] = 32771;
@@ -1402,12 +1413,11 @@ module.exports.CreateAmtManager = function(parent) {
             dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
         }
         dev.aquired.realm = dev.amtstack.wsman.comm.digestRealm;
-        dev.aquired.user = 'admin';
-        dev.aquired.pass = dev.temp.pass;
+        dev.intelamt.user = dev.aquired.user = 'admin';
+        dev.intelamt.pass = dev.aquired.pass = dev.temp.pass;
+        dev.intelamt.tls = dev.aquired.tls = 0;
         dev.aquired.lastContact = Date.now();
-        dev.aquired.tls = 0;
-        dev.intelamt.user = 'admin';
-        dev.intelamt.pass = dev.temp.pass;
+        dev.aquired.state = 2; // Activated
         delete dev.acctry;
         UpdateDevice(dev);
 
@@ -1438,6 +1448,14 @@ module.exports.CreateAmtManager = function(parent) {
             dev.consoleMsg("Failed to deactivate Intel AMT CCM.");
             removeAmtDevice(dev);
         } else {
+            // Update the device
+            dev.aquired = {};
+            dev.aquired.controlMode = 0; // 1 = CCM, 2 = ACM
+            dev.aquired.state = 0; // Not activated
+            delete dev.acctry;
+            delete dev.amtstack;
+            UpdateDevice(dev);
+
             if (dev.policy.amtPolicy == 1) { // CCM deactivation policy, we are done.
                 dev.consoleMsg("Deactivation successful.");
                 dev.consoleMsg("Done.");
