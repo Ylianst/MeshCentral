@@ -3308,6 +3308,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     } else if (command.amtpolicy.type === 3) {
                         if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
+                        if ((command.amtpolicy.badpass != null) && common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     }
                     mesh = parent.meshes[command.meshid];
@@ -3322,8 +3323,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Perform the Intel AMT policy change
                         change = 'Intel AMT policy change';
                         var amtpolicy = { type: command.amtpolicy.type };
-                        if (command.amtpolicy.type === 2) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup }; }
-                        else if (command.amtpolicy.type === 3) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, cirasetup: command.amtpolicy.cirasetup }; }
+                        if ((command.amtpolicy.type === 2) || (command.amtpolicy.type === 3)) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup }; }
                         mesh.amt = amtpolicy;
                         db.Set(mesh);
                         var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
