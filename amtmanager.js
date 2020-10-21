@@ -371,17 +371,19 @@ module.exports.CreateAmtManager = function(parent) {
             // TODO: Enable redirection port and KVM
 
             // Perform Intel AMT clock sync
-            attemptSyncClock(dev, function () {
+            attemptSyncClock(dev, function (dev) {
                 // Check Intel AMT TLS state
-                attemptTlsSync(dev, function () {
+                attemptTlsSync(dev, function (dev) {
+                    // If we need to switch to TLS, do it now.
+                    if (dev.switchToTls == 1) { delete dev.amtstack; delete dev.switchToTls; attemptInitialContact(dev); return; }
                     // Check Intel AMT root certificate state
-                    attemptRootCertSync(dev, function () {
+                    attemptRootCertSync(dev, function (dev) {
                         // Check Intel AMT CIRA settings
-                        attemptCiraSync(dev, function () {
+                        attemptCiraSync(dev, function (dev) {
                             // Check Intel AMT settings
-                            attemptSettingsSync(dev, function() {
+                            attemptSettingsSync(dev, function (dev) {
                                 // See if we need to get hardware inventory
-                                attemptFetchHardwareInventory(dev, function () {
+                                attemptFetchHardwareInventory(dev, function (dev) {
                                     dev.consoleMsg('Done.');
 
                                     // Remove from task limiter if needed
@@ -644,7 +646,7 @@ module.exports.CreateAmtManager = function(parent) {
         if (amtPolicy < 2) {
             // No policy or deactivation, do nothing.
             dev.consoleMsg("No server policy for Intel AMT");
-            func();
+            func(dev);
         } else {
             // Manage in CCM or ACM
             dev.taskCount = 1;
@@ -794,7 +796,9 @@ module.exports.CreateAmtManager = function(parent) {
                 delete dev.aquired.xhash;
                 UpdateDevice(dev);
 
-                // TODO: Switch our communications to TLS (Restart our management of this node)
+                // Switch our communications to TLS (Restart our management of this node)
+                dev.switchToTls = 1;
+                delete dev.tlsfail;
                 devTaskCompleted(dev);
             });
         }
@@ -808,7 +812,7 @@ module.exports.CreateAmtManager = function(parent) {
     // Check if Intel AMT has the server root certificate
     function attemptRootCertSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2)) { func(); return; } // Server root certificate does not need to be present is CIRA is not needed
+        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2)) { func(dev); return; } // Server root certificate does not need to be present is CIRA is not needed
 
         // Find the current TLS certificate & MeshCentral root certificate
         var xxMeshCentralRoot = null;
@@ -827,7 +831,7 @@ module.exports.CreateAmtManager = function(parent) {
                 dev.consoleMsg("Added server root certificate.");
                 devTaskCompleted(dev);
             });
-        } else { func(); }
+        } else { func(dev); }
     }
 
 
@@ -838,7 +842,7 @@ module.exports.CreateAmtManager = function(parent) {
     // Check if Intel AMT has the server root certificate
     function attemptCiraSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if ((dev.connType != 2) || ((dev.policy.ciraPolicy != 1) && (dev.policy.ciraPolicy != 2))) { func(); return; } // Only setup CIRA when LMS connection is used and a CIRA policy is enabled.
+        if ((dev.connType != 2) || ((dev.policy.ciraPolicy != 1) && (dev.policy.ciraPolicy != 2))) { func(dev); return; } // Only setup CIRA when LMS connection is used and a CIRA policy is enabled.
 
         // Get current CIRA settings
         // TODO: We only deal with remote access starting with Intel AMT 6 and beyond
@@ -1122,7 +1126,7 @@ module.exports.CreateAmtManager = function(parent) {
             dev.amtstack.BatchEnum('', ['*CIM_ComputerSystemPackage', 'CIM_SystemPackaging', '*CIM_Chassis', 'CIM_Chip', '*CIM_Card', '*CIM_BIOSElement', 'CIM_Processor', 'CIM_PhysicalMemory', 'CIM_MediaAccessDevice', 'CIM_PhysicalPackage'], attemptFetchHardwareInventoryResponse);
             dev.amtstack.BatchEnum('', ['AMT_EthernetPortSettings'], attemptFetchNetworkResponse);
         } else {
-            if (func) { func(); }
+            if (func) { func(dev); }
         }
     }
 
@@ -1361,7 +1365,7 @@ module.exports.CreateAmtManager = function(parent) {
     // Called this when a task is completed, when all tasks are completed the call back function will be called.
     function devTaskCompleted(dev) {
         dev.taskCount--;
-        if (dev.taskCount == 0) { var f = dev.taskCompleted; delete dev.taskCount; delete dev.taskCompleted; if (f != null) { f(); } }
+        if (dev.taskCount == 0) { var f = dev.taskCompleted; delete dev.taskCount; delete dev.taskCompleted; if (f != null) { f(dev); } }
     }
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + '-' + g.substring(10, 12) + g.substring(8, 10) + '-' + g.substring(14, 16) + g.substring(12, 14) + '-' + g.substring(16, 20) + '-' + g.substring(20); }
