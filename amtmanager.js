@@ -443,6 +443,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (dev.aquired.version && (typeof dev.aquired.version == 'string') && (dev.aquired.version != device.intelamt.ver)) { change = 1; log = 1; device.intelamt.ver = dev.aquired.version; changes.push('AMT version'); }
             if (dev.aquired.user && (typeof dev.aquired.user == 'string') && (dev.aquired.user != device.intelamt.user)) { change = 1; log = 1; device.intelamt.user = dev.aquired.user; changes.push('AMT user'); }
             if (dev.aquired.pass && (typeof dev.aquired.pass == 'string') && (dev.aquired.pass != device.intelamt.pass)) { change = 1; log = 1; device.intelamt.pass = dev.aquired.pass; changes.push('AMT pass'); }
+            if (dev.aquired.host && (typeof dev.aquired.host == 'string') && (dev.aquired.host != device.host)) { change = 1; log = 1; device.host = dev.aquired.host; changes.push('host'); }
             if (dev.aquired.realm && (typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
             if (dev.aquired.hash && (typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
             if (dev.aquired.tls && (typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
@@ -469,7 +470,6 @@ module.exports.CreateAmtManager = function(parent) {
                 if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                 parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(device.meshid, [device._id]), obj, event);
             }
-
         });
     }
 
@@ -703,7 +703,7 @@ module.exports.CreateAmtManager = function(parent) {
                     const domain = parent.config.domains[dev.domainid];
                     var serverName = 'MeshCentral';
                     if ((domain != null) && (domain.title != null)) { serverName = domain.title; }
-                    const certattributes = { 'CN': commonName, 'O': serverName, 'ST': serverName, 'C': serverName };
+                    const certattributes = { 'CN': commonName, 'O': serverName, 'ST': 'MC', 'C': 'MC' };
                     const issuerattributes = { 'CN': obj.rootCertCN };
                     const xxCaPrivateKey = obj.parent.certificates.root.key;
 
@@ -781,7 +781,7 @@ module.exports.CreateAmtManager = function(parent) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed perform commit (" + status + ")."); removeAmtDevice(dev); return; }
-                dev.consoleMsg("Enabled TLS");
+                dev.consoleMsg("Enabled TLS.");
 
                 // Update device in the database
                 dev.aquired.tls = 1;
@@ -1205,7 +1205,7 @@ module.exports.CreateAmtManager = function(parent) {
     }
 
     function activateIntelAmtCcm(dev, password) {
-        console.log('Intel AMT CCM Activation Required: ' + dev.name, dev.nodeid);
+        // Generate a random Intel AMT password if needed
         if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
         dev.temp = { pass: password };
 
@@ -1229,13 +1229,15 @@ module.exports.CreateAmtManager = function(parent) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (status != 200) { dev.consoleMsg("Failed to activate Intel AMT to CCM."); removeAmtDevice(dev); return; }
-        obj.parent.mpsserver.SendJsonControl(dev.mpsConnection, { action: 'mestate' }); // Request an MEI state refresh
 
         // Update the device
         dev.aquired = {};
         dev.aquired.controlMode = 1; // 1 = CCM, 2 = ACM
         var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
         if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+        if ((typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
+            dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
+        }
         dev.aquired.realm = dev.amtstack.wsman.comm.digestRealm;
         dev.aquired.user = 'admin';
         dev.aquired.pass = dev.temp.pass;
@@ -1244,6 +1246,7 @@ module.exports.CreateAmtManager = function(parent) {
         UpdateDevice(dev);
 
         // Success, switch to managing this device
+        obj.parent.mpsserver.SendJsonControl(dev.mpsConnection, { action: 'mestate' }); // Request an MEI state refresh
         dev.consoleMsg("Succesfully activated Intel AMT in CCM mode.");
 
         // Wait 8 seconds before attempting to manage this device in CCM
