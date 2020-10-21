@@ -192,7 +192,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                         obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core, function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                         parent.agentStats.updatingCoreCount++;
                                         parent.parent.debug('agent', "Updating core " + argument.name);
-                                        agentCoreIsStable();
                                     } else {
                                         // This agent is probably disconnected, nothing to do.
                                         parent.parent.taskLimiter.completed(taskid);
@@ -898,40 +897,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
     }
 
-    // Take a basic Intel AMT policy and add all server information to it, making it ready to send to this agent.
-    /*
-    function completeIntelAmtPolicy(amtPolicy) {
-        var r = amtPolicy;
-        if (amtPolicy == null) return null;
-        if (amtPolicy.type == 2) {
-            // CCM - Add server root certificate
-            if (parent.parent.certificates.rootex == null) { parent.parent.certificates.rootex = parent.parent.certificates.root.cert.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r').join('').split('\n').join(''); }
-            r.rootcert = parent.parent.certificates.rootex;
-            if ((amtPolicy.cirasetup == 2) && (parent.parent.mpsserver != null) && (parent.parent.certificates.AmtMpsName != null) && (args.lanonly != true) && (args.mpsport != 0)) {
-                // Add server CIRA settings
-                r.ciraserver = {
-                    name: parent.parent.certificates.AmtMpsName,
-                    port: (typeof args.mpsaliasport == 'number' ? args.mpsaliasport : args.mpsport),
-                    user: obj.meshid.replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16),
-                    pass: args.mpspass ? args.mpspass : 'A@xew9rt', // If the MPS password is not set, just use anything. TODO: Use the password as an agent identifier?
-                    home: ['sdlwerulis3wpj95dfj'] // Use a random FQDN to not have any home network.
-                };
-                if (Array.isArray(args.ciralocalfqdn)) { r.ciraserver.home = args.ciralocalfqdn; }
-            }
-        } else if ((amtPolicy.type == 3) && (domain.amtacmactivation.acmmatch)) {
-            // ACM - In this mode, don't send much to Intel AMT. Just indicate ACM policy and let the agent try activation when possible.
-            r = { type: 3, match: domain.amtacmactivation.acmmatch };
-        }
-        return r;
-    }
-    */
-
-    // Send Intel AMT policy
+    // Indicate to the agent that we want to reconfigure Intel AMT
     obj.sendUpdatedIntelAmtPolicy = function (policy) {
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) { // Only send Intel AMT policy to agents what could have AMT.
-            // TODO
-            //if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
-            //if (policy != null) { try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(policy)) })); } catch (ex) { } }
+            if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
+            if ((policy != null) && (policy.type != 0)) { try { obj.send(JSON.stringify({ action: 'amtconfig' })); } catch (ex) { } }
         }
     }
 
@@ -983,12 +953,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
         });
 
-        // Send Intel AMT policy
-        /*
-        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null)) {  // Only send Intel AMT policy to agents what could have AMT.
-            try { obj.send(JSON.stringify({ action: 'amtPolicy', amtPolicy: completeIntelAmtPolicy(common.Clone(mesh.amt)) })); } catch (ex) { }
+        // Indicate that we want to check the Intel AMT configuration
+        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null) && (mesh.amt.type != 0)) {  // Only send yo agents what could have AMT and if the policy is not empty.
+            try { obj.send(JSON.stringify({ action: 'amtconfig' })); } catch (ex) { }
         }
-        */
 
         // Fetch system information
         db.GetHash('si' + obj.dbNodeKey, function (err, results) {

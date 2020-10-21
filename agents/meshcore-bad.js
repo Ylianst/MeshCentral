@@ -1075,9 +1075,9 @@ function createMeshCore(agent) {
                 }
                 case 'amtconfig': {
                     // Perform Intel AMT activation and/or configuration
+                    require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'amtconfig' });
                     if ((apftunnel != null) || (amt == null)) break;
                     getMeiState(15, function (state) {
-                        if ((apftunnel != null) || (amt == null)) return;
                         if ((state == null) || (state.ProvisioningState == null)) return;
                         if ((state.UUID == null) || (state.UUID.length != 36)) return; // Bad UUID
                         var apfarg = {
@@ -1091,19 +1091,20 @@ function createMeshCore(agent) {
                             conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
                             meiState: state // MEI state will be passed to MPS server
                         };
+                        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'apf-on' });
                         apftunnel = require('apfclient')({ debug: false }, apfarg);
                         apftunnel.onJsonControl = function (data) {
-                            //if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message (DEBUG)
+                            if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message (DEBUG)
                             if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                             if (data.action == 'deactivate') { // Request CCM deactivation
                                 var amtMeiModule, amtMei;
-                                try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
-                                amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); });
-                                amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
+                                try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { apftunnel.sendMeiDeactivationState(1); return; }
+                                amtMei.on('error', function (e) { apftunnel.sendMeiDeactivationState(1); });
+                                amtMei.unprovision(1, function (status) { apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
                             }
                             if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
                         }
-                        apftunnel.onChannelClosed = function () { apftunnel = null; }
+                        apftunnel.onChannelClosed = function () { apftunnel = null; require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'apf-off' }); }
                         try { apftunnel.connect(); } catch (ex) { }
                     });
                     break;
@@ -3063,6 +3064,34 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
+                /*
+                case 'amtreset': {
+                    if (amt != null) { amt.reset(); response = 'Done.'; }
+                    break;
+                }
+                case 'amtlmsreset': {
+                    if (amt != null) { amt.lmsreset(); response = 'Done.'; }
+                    break;
+                }
+                case 'amtccm': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else {
+                        if (args['_'].length != 1) { response = 'Proper usage: amtccm (adminPassword)'; } // Display usage
+                        else { amt.setPolicy({ type: 0 }); amt.activeToCCM(args['_'][0]); }
+                    }
+                    break;
+                }
+                case 'amtacm': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else {
+                        amt.setPolicy({ type: 0 });
+                        amt.getAmtInfo(function (meinfo) { amt.activeToACM(meinfo); });
+                    }
+                    break;
+                }
+                case 'amtdeactivate': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else { amt.setPolicy({ type: 0 }); amt.deactivateCCM(); }
+                    break;
+                }
+                */
                 case 'openurl': {
                     if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
                     else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
@@ -3558,7 +3587,7 @@ function createMeshCore(agent) {
                                     if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                                     if (data.action == 'deactivate') { // Request CCM deactivation
                                         var amtMeiModule, amtMei;
-                                        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { apftunnel.sendMeiDeactivationState(1); return; }
+                                        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { apftunnel.sendMeiDeactivationState(1); break; }
                                         amtMei.on('error', function (e) { apftunnel.sendMeiDeactivationState(1); });
                                         amtMei.unprovision(1, function (status) { apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
                                     }
@@ -3853,7 +3882,7 @@ function createMeshCore(agent) {
                     if (result) {
                         amtMeiTmpState.net0 = result;
                         var fqdn = null, interfaces = require('os').networkInterfaces(); // Look for the DNS suffix for the Intel AMT Ethernet interface
-                        for (var i in interfaces) { for (var j in interfaces[i]) { if ((interfaces[i][j].mac == result.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { amtMeiTmpState.OsDnsSuffix = interfaces[i][j].fqdn; } } }
+                        for (var i in interfaces) { for (var j in interfaces[i]) { if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { amtMeiTmpState.OsDnsSuffix = interfaces[i][j].fqdn; } } }
                     }
                 });
                 amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });

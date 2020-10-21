@@ -400,6 +400,7 @@ function createMeshCore(agent) {
     var networkMonitor = null;
     var amtscanner = null;
     var nextTunnelIndex = 1;
+    var amtPolicy = null;
     var apftunnel = null;
     var tunnelUserCount = { terminal: {}, files: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files and TCP/UDP routing
 
@@ -537,6 +538,7 @@ function createMeshCore(agent) {
                             mesh.SendCommand(meshCoreObj);
                         });
                         amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } }
+                        if (amtPolicy != null) { amt.setPolicy(amtPolicy); }
                         amt.start();
                     }
                 }
@@ -1073,39 +1075,11 @@ function createMeshCore(agent) {
                     if (data.url) { mesh.SendCommand({ action: 'openUrl', url: data.url, sessionid: data.sessionid, success: (openUserDesktopUrl(data.url) != null) }); }
                     break;
                 }
-                case 'amtconfig': {
-                    // Perform Intel AMT activation and/or configuration
-                    if ((apftunnel != null) || (amt == null)) break;
-                    getMeiState(15, function (state) {
-                        if ((apftunnel != null) || (amt == null)) return;
-                        if ((state == null) || (state.ProvisioningState == null)) return;
-                        if ((state.UUID == null) || (state.UUID.length != 36)) return; // Bad UUID
-                        var apfarg = {
-                            mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                            mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16), // TODO: User a server provided encrypted cookie for CIRA-LMS login
-                            mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
-                            mpskeepalive: 60000,
-                            clientname: state.OsHostname,
-                            clientaddress: '127.0.0.1',
-                            clientuuid: state.UUID,
-                            conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
-                            meiState: state // MEI state will be passed to MPS server
-                        };
-                        apftunnel = require('apfclient')({ debug: false }, apfarg);
-                        apftunnel.onJsonControl = function (data) {
-                            //if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message (DEBUG)
-                            if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
-                            if (data.action == 'deactivate') { // Request CCM deactivation
-                                var amtMeiModule, amtMei;
-                                try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
-                                amtMei.on('error', function (e) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); });
-                                amtMei.unprovision(1, function (status) { if (apftunnel) apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
-                            }
-                            if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
-                        }
-                        apftunnel.onChannelClosed = function () { apftunnel = null; }
-                        try { apftunnel.connect(); } catch (ex) { }
-                    });
+                case 'amtPolicy': {
+                    // Store the latest Intel AMT policy
+                    amtPolicy = data.amtPolicy;
+                    if (data.amtPolicy != null) { db.Put('amtPolicy', JSON.stringify(data.amtPolicy)); } else { db.Put('amtPolicy', null); }
+                    if (amt != null) { amt.setPolicy(amtPolicy, true); }
                     break;
                 }
                 case 'getScript': {
@@ -2589,7 +2563,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'amtconfig,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'amtconfig,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,amtreset,amtccm,amtacm,amtdeactivate,amtpolicy,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -3060,6 +3034,40 @@ function createMeshCore(agent) {
                         else {
                             require("clipboard")(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
                         }
+                    }
+                    break;
+                }
+                case 'amtreset': {
+                    if (amt != null) { amt.reset(); response = 'Done.'; }
+                    break;
+                }
+                case 'amtlmsreset': {
+                    if (amt != null) { amt.lmsreset(); response = 'Done.'; }
+                    break;
+                }
+                case 'amtccm': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else {
+                        if (args['_'].length != 1) { response = 'Proper usage: amtccm (adminPassword)'; } // Display usage
+                        else { amt.setPolicy({ type: 0 }); amt.activeToCCM(args['_'][0]); }
+                    }
+                    break;
+                }
+                case 'amtacm': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else {
+                        amt.setPolicy({ type: 0 });
+                        amt.getAmtInfo(function (meinfo) { amt.activeToACM(meinfo); });
+                    }
+                    break;
+                }
+                case 'amtdeactivate': {
+                    if (amt == null) { response = 'Intel AMT not supported.'; } else { amt.setPolicy({ type: 0 }); amt.deactivateCCM(); }
+                    break;
+                }
+                case 'amtpolicy': {
+                    if (amtPolicy == null) {
+                        response = 'No Intel(R) AMT policy.';
+                    } else {
+                        response = JSON.stringify(amtPolicy);
                     }
                     break;
                 }
@@ -3853,7 +3861,7 @@ function createMeshCore(agent) {
                     if (result) {
                         amtMeiTmpState.net0 = result;
                         var fqdn = null, interfaces = require('os').networkInterfaces(); // Look for the DNS suffix for the Intel AMT Ethernet interface
-                        for (var i in interfaces) { for (var j in interfaces[i]) { if ((interfaces[i][j].mac == result.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { amtMeiTmpState.OsDnsSuffix = interfaces[i][j].fqdn; } } }
+                        for (var i in interfaces) { for (var j in interfaces[i]) { if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { amtMeiTmpState.OsDnsSuffix = interfaces[i][j].fqdn; } } }
                     }
                 });
                 amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
