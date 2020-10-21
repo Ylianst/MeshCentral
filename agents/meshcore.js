@@ -3564,6 +3564,12 @@ function createMeshCore(agent) {
                                 apftunnel.onJsonControl = function (data) {
                                     if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message
                                     if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
+                                    if (data.action == 'deactivate') { // Request CCM deactivation
+                                        var amtMeiModule, amtMei;
+                                        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { apftunnel.sendMeiDeactivationState(1); break; }
+                                        amtMei.on('error', function (e) { apftunnel.sendMeiDeactivationState(1); });
+                                        amtMei.unprovision(1, function (status) { apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
+                                    }
                                     if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
                                 }
                                 apftunnel.onChannelClosed = function () { apftunnel = null; }

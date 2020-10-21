@@ -899,8 +899,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         case 'meiState':
                             if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
                             socket.tag.meiState = jsondata.value;
-                            //if (socket.tag.meiState.UUID != null) { console.log('MEI State', socket.tag.meiState.UUID); }
-                            //console.log('meiState', JSON.stringify(socket.tag.meiState, null, 2)); // DEBUG
+                            if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
+                            break;
+                        case 'deactivate':
+                            if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
+                            if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
                             break;
                     }
                     return 5 + jsondatalen;
