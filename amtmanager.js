@@ -368,6 +368,8 @@ module.exports.CreateAmtManager = function(parent) {
             if (stack.wsman.comm.xtls == 1) { dev.aquired.hash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.hash; }
             UpdateDevice(dev);
 
+            // TODO: Enable redirection port and KVM
+
             // Perform Intel AMT clock sync
             attemptSyncClock(dev, function () {
                 // Check Intel AMT TLS state
@@ -376,23 +378,26 @@ module.exports.CreateAmtManager = function(parent) {
                     attemptRootCertSync(dev, function () {
                         // Check Intel AMT CIRA settings
                         attemptCiraSync(dev, function () {
-                            // See if we need to get hardware inventory
-                            attemptFetchHardwareInventory(dev, function () {
-                                dev.consoleMsg('Done.');
+                            // Check Intel AMT settings
+                            attemptSettingsSync(dev, function() {
+                                // See if we need to get hardware inventory
+                                attemptFetchHardwareInventory(dev, function () {
+                                    dev.consoleMsg('Done.');
 
-                                // Remove from task limiter if needed
-                                if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+                                    // Remove from task limiter if needed
+                                    if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
 
-                                if (dev.connType != 2) {
-                                    // Start power polling if not connected to LMS
-                                    var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                                    ppfunc.dev = dev;
-                                    dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                                    fetchPowerState(dev);
-                                } else {
-                                    // For LMS connections, close now.
-                                    dev.controlMsg({ action: 'close' });
-                                }
+                                    if (dev.connType != 2) {
+                                        // Start power polling if not connected to LMS
+                                        var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                                        ppfunc.dev = dev;
+                                        dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                        fetchPowerState(dev);
+                                    } else {
+                                        // For LMS connections, close now.
+                                        dev.controlMsg({ action: 'close' });
+                                    }
+                                });
                             });
                         });
                     });
@@ -1007,6 +1012,100 @@ module.exports.CreateAmtManager = function(parent) {
             devTaskCompleted(dev);
         }
     }
+
+
+    //
+    // Intel AMT Settings
+    //
+
+    function attemptSettingsSync(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
+
+        dev.consoleMsg("Checking settings...");
+
+        // Query the things we are going to be checking
+        var query = ['*AMT_GeneralSettings', '*AMT_RedirectionService'];
+        if (dev.aquired.majorver > 5) query.push('*CIM_KVMRedirectionSAP');
+        dev.amtstack.BatchEnum('', query, attemptSettingsSyncResponse);
+    }
+
+
+    function attemptSettingsSyncResponse(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { devTaskCompleted(dev); return; }
+
+        // If this device does not have KVM, ignore the response. This can happen for Intel Standard Manageability (Intel(R) SM).
+        if ((responses['CIM_KVMRedirectionSAP'] == null) || (responses['CIM_KVMRedirectionSAP'].status == 400)) { responses['CIM_KVMRedirectionSAP'] = null; }
+
+        // Check redirection services
+        var redir = (responses['AMT_RedirectionService'].response['ListenerEnabled'] == true);
+        var sol = ((responses['AMT_RedirectionService'].response['EnabledState'] & 2) != 0);
+        var ider = ((responses['AMT_RedirectionService'].response['EnabledState'] & 1) != 0);
+
+        // Enable SOL & IDER
+        if (responses['AMT_RedirectionService'].response['EnabledState'] != 32771) {
+            dev.redirObj = responses['AMT_RedirectionService'].response;
+            dev.redirObj['ListenerEnabled'] = true;
+            dev.redirObj['EnabledState'] = 32771;
+            dev.taskCount++;
+            dev.amtstack.AMT_RedirectionService_RequestStateChange(32771,
+                function (stack, name, response, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    dev.amtstack.Put('AMT_RedirectionService', dev.redirObj, function (stack, name, response, status) {
+                        const dev = stack.dev;
+                        delete dev.redirObj;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status == 200) { dev.consoleMsg("Enabled redirection features."); }
+                        devTaskCompleted(dev);
+                    }, 0, 1);
+                }
+            );
+        }
+
+        // Check KVM state
+        if ((dev.aquired.majorver > 5) && (responses['CIM_KVMRedirectionSAP'] != null)) {
+            var kvm = (((responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6) && (responses['CIM_KVMRedirectionSAP'].response['RequestedState'] == 2)) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 2) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6));
+            if (kvm == false) {
+                // Enable KVM
+                dev.taskCount++;
+                dev.amtstack.CIM_KVMRedirectionSAP_RequestStateChange(2, 0,
+                    function (stack, name, response, status) {
+                        const dev = stack.dev;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status == 200) { dev.consoleMsg("Enabled KVM"); }
+                        devTaskCompleted(dev);
+                    }
+                );
+            }
+        }
+
+        // Check device name and domain name
+        if ((dev.connType == 2) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null) && (typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
+            const generalSettings = responses['AMT_GeneralSettings'].response;
+            if ((generalSettings['HostName'] != dev.mpsConnection.tag.meiState.OsHostname) || (generalSettings['DomainName'] != dev.mpsConnection.tag.meiState.OsDnsSuffix)) {
+                // Change the computer and domain name
+                generalSettings['HostName'] = dev.mpsConnection.tag.meiState.OsHostname;
+                generalSettings['DomainName'] = dev.mpsConnection.tag.meiState.OsDnsSuffix;
+                dev.taskCount++;
+                dev.xname = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
+                dev.amtstack.Put('AMT_GeneralSettings', generalSettings, function () {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status == 200) { dev.consoleMsg("Changed device name: " + dev.xname); }
+                    delete dev.xname;
+                    devTaskCompleted(dev);
+                }, 0, 1);
+            }
+        }
+
+        // Done
+        devTaskCompleted(dev);
+    }
+
 
     //
     // Intel AMT Hardware Inventory and Networking
