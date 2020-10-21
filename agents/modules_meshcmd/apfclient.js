@@ -182,6 +182,7 @@ function CreateAPFClient(parent, args) {
     }
 
     obj.updateMeiState = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'meiState', value: state }); }
+    obj.sendMeiDeactivationState = function (state) { SendJsonControl(obj.forwardClient.ws, { action: 'deactivate', value: state }); }
 
     function SendJsonControl(socket, o) {
         var data = JSON.stringify(o)

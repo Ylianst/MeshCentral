@@ -1183,6 +1183,12 @@ function configureJsonControl(data) {
         case 'mestate': // Request an updated MEI state
             getMeiState(15, function (state) { settings.apftunnel.updateMeiState(state); });
             break;
+        case 'deactivate': // Request CCM deactivation
+            var amtMeiModule, amtMei;
+            try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { settings.apftunnel.sendMeiDeactivationState(1); break; }
+            amtMei.on('error', function (e) { settings.apftunnel.sendMeiDeactivationState(1); });
+            amtMei.unprovision(1, function (status) { settings.apftunnel.sendMeiDeactivationState(status); }); // 0 = Success
+            break;
         case 'close': // Close the CIRA-LMS connection
             exit(0);
             break;
