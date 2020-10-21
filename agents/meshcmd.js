@@ -537,64 +537,66 @@ function run(argv) {
         var amtMeiModule, amtMei;
         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
         amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
-        amtMei.getVersion(function (result) {
-            if (result) {
-                for (var version in result.Versions) {
-                    if (result.Versions[version].Description == 'AMT') { mestate.ver = result.Versions[version].Version; }
-                    if (result.Versions[version].Description == 'Sku') { mestate.sku = parseInt(result.Versions[version].Version); }
-                }
-            }
-        });
-        amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
-        amtMei.getProvisioningMode(function (result) { if (result) { mestate.ProvisioningMode = result; } });
-        amtMei.getEHBCState(function (result) { if (result) { mestate.ehbc = result; } });
-        amtMei.getControlMode(function (result) { if (result) { mestate.controlmode = result; } });
-        amtMei.getMACAddresses(function (result) { if (result) { mestate.mac = result; } });
-        amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
-        amtMei.getLanInterfaceSettings(1, function (result) { if (result) { mestate.net1 = result; } });
-        amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
-        amtMei.getDnsSuffix(function (result) {
-            if (result) { mestate.dns = result; }
-            if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
-                var str = 'Intel ME v' + mestate.ver;
-                if (mestate.sku & 8) { str = 'Intel AMT v' + mestate.ver }
-                else if (mestate.sku & 16) { str = 'Intel SM v' + mestate.ver }
-                if (mestate.ProvisioningState.stateStr == 'PRE') { str += ', pre-provisioning state'; }
-                else if (mestate.ProvisioningState.stateStr == 'IN') { str += ', in-provisioning state'; }
-                else if (mestate.ProvisioningState.stateStr == 'POST') {
-                    if (mestate.ProvisioningMode) {
-                        if (mestate.controlmode) {
-                            if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; }
-                        } else {
-                            str += ', activated in ' + mestate.ProvisioningMode.modeStr;
-                        }
+        try {
+            amtMei.getVersion(function (result) {
+                if (result) {
+                    for (var version in result.Versions) {
+                        if (result.Versions[version].Description == 'AMT') { mestate.ver = result.Versions[version].Version; }
+                        if (result.Versions[version].Description == 'Sku') { mestate.sku = parseInt(result.Versions[version].Version); }
                     }
                 }
-                if ((mestate.ehbc) && (mestate.ehbc.EHBC == true)) { str += ', EHBC enabled'; }
-                str += '.';
-                if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
-                if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
-                if ((mestate.ProvisioningState.stateStr != 'POST') && (mestate.net0 != null) && (mestate.net0.enabled == 1)) {
-                    if (mestate.dns != null) {
-                        // Intel AMT has a trusted DNS suffix set, use that one.
-                        str += '\r\nTrusted DNS suffix: ' + mestate.dns;
-                    } else {
-                        // Look for the DNS suffix for the Intel AMT Ethernet interface
-                        var fqdn = null, interfaces = require('os').networkInterfaces();
-                        for (var i in interfaces) {
-                            for (var j in interfaces[i]) {
-                                if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
+            });
+            amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
+            amtMei.getProvisioningMode(function (result) { if (result) { mestate.ProvisioningMode = result; } });
+            amtMei.getEHBCState(function (result) { if (result) { mestate.ehbc = result; } });
+            amtMei.getControlMode(function (result) { if (result) { mestate.controlmode = result; } });
+            amtMei.getMACAddresses(function (result) { if (result) { mestate.mac = result; } });
+            amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
+            amtMei.getLanInterfaceSettings(1, function (result) { if (result) { mestate.net1 = result; } });
+            amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
+            amtMei.getDnsSuffix(function (result) {
+                if (result) { mestate.dns = result; }
+                if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
+                    var str = 'Intel ME v' + mestate.ver;
+                    if (mestate.sku & 8) { str = 'Intel AMT v' + mestate.ver }
+                    else if (mestate.sku & 16) { str = 'Intel SM v' + mestate.ver }
+                    if (mestate.ProvisioningState.stateStr == 'PRE') { str += ', pre-provisioning state'; }
+                    else if (mestate.ProvisioningState.stateStr == 'IN') { str += ', in-provisioning state'; }
+                    else if (mestate.ProvisioningState.stateStr == 'POST') {
+                        if (mestate.ProvisioningMode) {
+                            if (mestate.controlmode) {
+                                if (mestate.ProvisioningMode.modeStr == 'ENTERPRISE') { str += ', activated in ' + ["none", "client control mode", "admin control mode", "remote assistance mode"][mestate.controlmode.controlMode]; } else { str += ', activated in ' + mestate.ProvisioningMode.modeStr; }
+                            } else {
+                                str += ', activated in ' + mestate.ProvisioningMode.modeStr;
                             }
                         }
-                        if (fqdn != null) { str += '\r\nDNS suffix: ' + fqdn; }
                     }
+                    if ((mestate.ehbc) && (mestate.ehbc.EHBC == true)) { str += ', EHBC enabled'; }
+                    str += '.';
+                    if (mestate.net0 != null) { str += '\r\nWired ' + ((mestate.net0.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net0.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net0.mac + (mestate.net0.address == '0.0.0.0' ? '' : (', ' + mestate.net0.address)); }
+                    if (mestate.net1 != null) { str += '\r\nWireless ' + ((mestate.net1.enabled == 1) ? 'Enabled' : 'Disabled') + ((mestate.net1.dhcpEnabled == 1) ? ', DHCP' : ', Static') + ', ' + mestate.net1.mac + (mestate.net1.address == '0.0.0.0' ? '' : (', ' + mestate.net1.address)); }
+                    if ((mestate.ProvisioningState.stateStr != 'POST') && (mestate.net0 != null) && (mestate.net0.enabled == 1)) {
+                        if (mestate.dns != null) {
+                            // Intel AMT has a trusted DNS suffix set, use that one.
+                            str += '\r\nTrusted DNS suffix: ' + mestate.dns;
+                        } else {
+                            // Look for the DNS suffix for the Intel AMT Ethernet interface
+                            var fqdn = null, interfaces = require('os').networkInterfaces();
+                            for (var i in interfaces) {
+                                for (var j in interfaces[i]) {
+                                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
+                                }
+                            }
+                            if (fqdn != null) { str += '\r\nDNS suffix: ' + fqdn; }
+                        }
+                    }
+                    console.log(str + '.');
+                } else {
+                    console.log('Intel(R) AMT not supported.');
                 }
-                console.log(str + '.');
-            } else {
-                console.log('Intel(R) AMT not supported.');
-            }
-            exit(1);
-        });
+                exit(1);
+            });
+        } catch (ex) { console.log("Unable to perform MEI operations, try running as administrator."); exit(1); return; }
     } else if (settings.action == 'amtinfodebug') {
         // Display Intel AMT version and activation state
         getMeiState(15, function (state) { console.log(JSON.stringify(state, null, 2)); exit(1); }); // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
@@ -1133,20 +1135,23 @@ function startMeshCommander() {
 //
 
 function configureAmt() {
-    console.log('Starting Intel AMT configuration...');
     settings.noconsole = true;
     startLms(configureAmt2, amtMei);
 }
 
 function configureAmt2() {
     getMeiState(15, function (state) { // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
+        if (state == null) { console.log('Unable to get Intel AMT state, try running as administrator.'); exit(1); return; }
+        if (state.ProvisioningState == null) { console.log('Intel AMT not ready for configuration.'); exit(1); return; }
+        console.log('Starting Intel AMT configuration...');
+
         // Connect to MPS and start APF relay
         var apfarg = {
             mpsurl: settings.url,
             mpsuser: settings.id.substring(0, 16),
             mpspass: settings.id.substring(0, 16),
             mpskeepalive: 60000,
-            clientname: require('os').hostname(),
+            clientname: state.OsHostname,
             clientaddress: '127.0.0.1',
             clientuuid: state.UUID,
             conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay.
@@ -1306,36 +1311,38 @@ function activeToACM() {
     var amtMeiModule, amtMei;
     try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
     amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
-    amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
-    amtMei.getVersion(function (val) { mestate.vers = {}; if (val != null) { for (var version in val.Versions) { mestate.vers[val.Versions[version].Description] = val.Versions[version].Version; } } });
-    amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
-    amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
-    amtMei.getControlMode(function (result) { if (result != null) { mestate.controlMode = result.controlMode; } }); // controlMode: 0 = NoActivated, 1 = CCM, 2 = ACM
-    amtMei.getDnsSuffix(function (result) {
-        if ((mestate.vers == null) || (mestate.vers['AMT'] == null)) { console.log("Unable to get Intel AMT version."); exit(100); return; }
-        if (mestate.ProvisioningState == null) { console.log("Unable to read Intel AMT activation state."); exit(100); return; }
-        if ((settings.action != 'amtdiscover') && (mestate.controlMode == 2)) { console.log("Intel AMT already activation in admin control mode."); exit(100); return; }
-        if (mestate.uuid == null) { console.log("Unable to get Intel AMT UUID."); exit(100); return; }
-        var fqdn = null;
-        if ((mestate.net0 == null) && (meinfo.net0.enabled != 0)) { console.log("No Intel AMT wired interface, can't perform ACM activation."); exit(100); return; }
-        if (result) { fqdn = result; } // If Intel AMT has a trusted DNS suffix set, use that one.
-        else {
-            // Look for the DNS suffix for the Intel AMT Ethernet interface
-            var interfaces = require('os').networkInterfaces();
-            for (var i in interfaces) {
-                for (var j in interfaces[i]) {
-                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
+    try {
+        amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
+        amtMei.getVersion(function (val) { mestate.vers = {}; if (val != null) { for (var version in val.Versions) { mestate.vers[val.Versions[version].Description] = val.Versions[version].Version; } } });
+        amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
+        amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
+        amtMei.getControlMode(function (result) { if (result != null) { mestate.controlMode = result.controlMode; } }); // controlMode: 0 = NoActivated, 1 = CCM, 2 = ACM
+        amtMei.getDnsSuffix(function (result) {
+            if ((mestate.vers == null) || (mestate.vers['AMT'] == null)) { console.log("Unable to get Intel AMT version."); exit(100); return; }
+            if (mestate.ProvisioningState == null) { console.log("Unable to read Intel AMT activation state."); exit(100); return; }
+            if ((settings.action != 'amtdiscover') && (mestate.controlMode == 2)) { console.log("Intel AMT already activation in admin control mode."); exit(100); return; }
+            if (mestate.uuid == null) { console.log("Unable to get Intel AMT UUID."); exit(100); return; }
+            var fqdn = null;
+            if ((mestate.net0 == null) && (meinfo.net0.enabled != 0)) { console.log("No Intel AMT wired interface, can't perform ACM activation."); exit(100); return; }
+            if (result) { fqdn = result; } // If Intel AMT has a trusted DNS suffix set, use that one.
+            else {
+                // Look for the DNS suffix for the Intel AMT Ethernet interface
+                var interfaces = require('os').networkInterfaces();
+                for (var i in interfaces) {
+                    for (var j in interfaces[i]) {
+                        if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
+                    }
                 }
             }
-        }
-        if (fqdn != null) {
-            settings.fqdn = fqdn;
-            settings.uuid = mestate.uuid;
-            getTrustedHashes(amtMei, function () { startLms(getFwNonce, amtMei); });
-        } else {
-            console.log("Trusted DNS suffix not set, can't perform ACM activation."); exit(100); return;
-        }
-    });
+            if (fqdn != null) {
+                settings.fqdn = fqdn;
+                settings.uuid = mestate.uuid;
+                getTrustedHashes(amtMei, function () { startLms(getFwNonce, amtMei); });
+            } else {
+                console.log("Trusted DNS suffix not set, can't perform ACM activation."); exit(100); return;
+            }
+        });
+    } catch (ex) { console.log("Unable to perform MEI operations, try running as administrator."); exit(1); return; }
 }
 
 // Gets the FWNonce from AMT and saves it to a file.  
@@ -1719,7 +1726,7 @@ function startLms(func, lmscommander, tag) {
     //console.log("PTHI Connected.");
 
     console.log('Setting up LME...');
-    amtLms = new lme_heci({ debug: settings.lmsdebug });
+    try { amtLms = new lme_heci({ debug: settings.lmsdebug }); } catch (ex) { if (func != null) { func(0, tag); } return; }
     amtLms.promise = ret;
     amtLms.on('error', function (e) {
         //console.log('LME connection failed', e);
@@ -1835,6 +1842,7 @@ function setupMeiOsAdmin(func, state, tag) {
         if (func) { func(state, tag); }
     } else {
         amtMei.getLocalSystemAccount(function (x) {
+            if ((x == null) || (x.user == null) || (x.pass == null)) { if (func) { func(state, tag); } return; } // No OsAdmin, stop here.
             var transport = require('amt-wsman-duk');
             var wsman = require('amt-wsman');
             var amt = require('amt');
@@ -2957,7 +2965,7 @@ function getMeiState(flags, func) {
     try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { func(null); return; }
     amtMei.on('error', function (e) { func(null); return; });
     try {
-        var amtMeiTmpState = { Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
+        var amtMeiTmpState = { OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
         amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
         if ((flags & 1) != 0) { amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } }); }
         amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
@@ -2980,7 +2988,7 @@ function getMeiState(flags, func) {
         amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DnsSuffix = result; } if ((flags & 4) == 0) { if (func != null) { func(amtMeiTmpState); } } });
         if ((flags & 4) != 0) {
             amtMei.getHashHandles(function (handles) {
-                if (handles != null) { amtMeiTmpState.Hashes = []; } else { func(amtMeiTmpState); }
+                if ((handles != null) && (handles.length > 0)) { amtMeiTmpState.Hashes = []; } else { func(amtMeiTmpState); }
                 var exitOnCount = handles.length;
                 for (var i = 0; i < handles.length; ++i) { this.getCertHashEntry(handles[i], function (hashresult) { amtMeiTmpState.Hashes.push(hashresult); if (--exitOnCount == 0) { if (func != null) { func(amtMeiTmpState); } } }); }
             });
