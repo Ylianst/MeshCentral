@@ -544,14 +544,31 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 //console.log('MPS:USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
                 parent.debug('mpscmd', '--> USERAUTH_REQUEST user=' + username + ', service=' + serviceName + ', method=' + methodName + ', password=' + password);
 
-                // Check the CIRA password
-                if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                // If the login uses a cookie, check this now
+                if ((username == '**MeshAgentApfTunnel**') && (password != null)) {
+                    const cookie = parent.decodeCookie(password, parent.loginCookieEncryptionKey);
+                    if ((cookie == null) || (cookie.a !== 'apf')) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+                    if (obj.parent.webserver.meshes[cookie.m] == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
 
-                // Check the CIRA username, which should be the start of the MeshID.
-                if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
-                var meshIdStart = '/' + username, mesh = null;
-                if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
-                if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
+                    // Setup the connection
+                    socket.tag.nodeid = cookie.n;
+                    socket.tag.meshid = cookie.m;
+                    socket.tag.connectTime = Date.now();
+
+                    // Add the connection to the MPS connection list
+                    addCiraConnection(socket);
+                    SendUserAuthSuccess(socket); // Notify the auth success on the CIRA connection
+                    return 18 + usernameLen + serviceNameLen + methodNameLen + passwordLen;
+                } else {
+                    // Check the CIRA password
+                    if ((args.mpspass != null) && (password != args.mpspass)) { incorrectPasswordCount++; parent.debug('mps', 'Incorrect password', username, password); SendUserAuthFail(socket); return -1; }
+
+                    // Check the CIRA username, which should be the start of the MeshID.
+                    if (usernameLen != 16) { badUserNameLengthCount++; parent.debug('mps', 'Username length not 16', username, password); SendUserAuthFail(socket); return -1; }
+                    var meshIdStart = '/' + username, mesh = null;
+                    if (obj.parent.webserver.meshes) { for (var i in obj.parent.webserver.meshes) { if (obj.parent.webserver.meshes[i]._id.replace(/\@/g, 'X').replace(/\$/g, 'X').indexOf(meshIdStart) > 0) { mesh = obj.parent.webserver.meshes[i]; break; } } }
+                    if (mesh == null) { meshNotFoundCount++; parent.debug('mps', 'Device group not found', username, password); SendUserAuthFail(socket); return -1; }
+                }
 
                 // If this is a agent-less mesh, use the device guid 3 times as ID.
                 if (mesh.mtype == 1) {

@@ -897,11 +897,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
     }
 
-    // Indicate to the agent that we want to reconfigure Intel AMT
+    // Indicate to the agent that we want to check Intel AMT configuration
+    // This may trigger a CIRA-LMS tunnel from the agent so the server can inspect the device.
     obj.sendUpdatedIntelAmtPolicy = function (policy) {
         if (obj.agentExeInfo && (obj.agentExeInfo.amt == true)) { // Only send Intel AMT policy to agents what could have AMT.
             if (policy == null) { var mesh = parent.meshes[obj.dbMeshKey]; if (mesh == null) return; policy = mesh.amt; }
-            if ((policy != null) && (policy.type != 0)) { try { obj.send(JSON.stringify({ action: 'amtconfig' })); } catch (ex) { } }
+            if ((policy != null) && (policy.type != 0)) {
+                const cookie = parent.parent.encodeCookie({ a: 'apf', n: obj.dbNodeKey, m: obj.dbMeshKey }, parent.parent.loginCookieEncryptionKey);
+                try { obj.send(JSON.stringify({ action: 'amtconfig', user: '**MeshAgentApfTunnel**', pass: cookie })); } catch (ex) { }
+            }
         }
     }
 
@@ -954,9 +958,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
 
         // Indicate that we want to check the Intel AMT configuration
-        if (obj.agentExeInfo && (obj.agentExeInfo.amt == true) && (mesh.amt != null) && (mesh.amt.type != 0)) {  // Only send yo agents what could have AMT and if the policy is not empty.
-            try { obj.send(JSON.stringify({ action: 'amtconfig' })); } catch (ex) { }
-        }
+        // This may trigger a CIRA-LMS tunnel to the server for further processing
+        obj.sendUpdatedIntelAmtPolicy();
 
         // Fetch system information
         db.GetHash('si' + obj.dbNodeKey, function (err, results) {
