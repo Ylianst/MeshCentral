@@ -13,7 +13,7 @@
 /*jshint esversion: 6 */
 'use strict';
 
-module.exports.CreateAmtManager = function(parent) {
+module.exports.CreateAmtManager = function (parent) {
     var obj = {};
     obj.parent = parent;
     obj.amtDevices = {};             // Nodeid --> [ dev ]
@@ -43,7 +43,7 @@ module.exports.CreateAmtManager = function(parent) {
                     }
                 }
             }
-            
+
         }
     }
 
@@ -51,7 +51,7 @@ module.exports.CreateAmtManager = function(parent) {
     function isAmtDeviceValid(dev) {
         var devices = obj.amtDevices[dev.nodeid];
         if (devices == null) return false;
-        return (devices.indexOf(dev) >= 0) 
+        return (devices.indexOf(dev) >= 0)
     }
 
     // Add an Intel AMT managed device
@@ -529,15 +529,15 @@ module.exports.CreateAmtManager = function(parent) {
     function UpdateDevice(dev) {
         // Check that the mesh exists
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { removeAmtDevice(dev); console.log('y3'); return false; }
+        if (mesh == null) { removeAmtDevice(dev); return false; }
 
         // Get the node and change it if needed
         parent.db.Get(dev.nodeid, function (err, nodes) {
-            if ((nodes == null) || (nodes.length != 1)) { console.log('y1'); return false; }
+            if ((nodes == null) || (nodes.length != 1)) return false;
             const device = nodes[0];
             var changes = [], change = 0, log = 0;
             var domain = parent.config.domains[device.domain];
-            if (domain == null) { console.log('y2'); return false; }
+            if (domain == null) return false;
 
             // Check if anything changes
             if (device.intelamt == null) { device.intelamt = {}; }
@@ -557,10 +557,7 @@ module.exports.CreateAmtManager = function(parent) {
             if (typeof device.intelamt.flags == 'number') { flags = device.intelamt.flags; }
             if (dev.aquired.controlMode == 1) { if ((flags & 4) != 0) { flags -= 4; } if ((flags & 2) == 0) { flags += 2; } } // CCM
             if (dev.aquired.controlMode == 2) { if ((flags & 4) == 0) { flags += 4; } if ((flags & 2) != 0) { flags -= 2; } } // ACM
-            if (device.intelamt.flags != flags) {
-                console.log('ChangeFlags', flags);
-                change = 1; log = 1; device.intelamt.flags = flags; changes.push('AMT flags');
-            }
+            if (device.intelamt.flags != flags) { change = 1; log = 1; device.intelamt.flags = flags; changes.push('AMT flags'); }
 
             // If there are changes, event the new device
             if (change == 1) {
@@ -866,7 +863,7 @@ module.exports.CreateAmtManager = function(parent) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed perform commit (" + status + ")."); removeAmtDevice(dev); return; }
-                dev.consoleMsg("Enabled TLS.");
+                dev.consoleMsg("Enabled TLS, holding 5 seconds...");
 
                 // Update device in the database
                 dev.aquired.tls = 1;
@@ -877,7 +874,11 @@ module.exports.CreateAmtManager = function(parent) {
                 // Switch our communications to TLS (Restart our management of this node)
                 dev.switchToTls = 1;
                 delete dev.tlsfail;
-                devTaskCompleted(dev);
+
+                // Wait 5 seconds before attempting to manage this device some more
+                var f = function doManage() { if (isAmtDeviceValid(dev)) { devTaskCompleted(doManage.dev); } }
+                f.dev = dev;
+                setTimeout(f, 5000);
             });
         }
     }
@@ -1073,7 +1074,7 @@ module.exports.CreateAmtManager = function(parent) {
 
         if (dev.policy.ciraPolicy == 2) {
             // Check that we have a random environment detection
-            if (domains.length == 0) { editEnvironmentDetectionTmp = [ Buffer.from(parent.crypto.randomBytes(6), 'binary').toString('hex') ]; changes = true; }
+            if (domains.length == 0) { editEnvironmentDetectionTmp = [Buffer.from(parent.crypto.randomBytes(6), 'binary').toString('hex')]; changes = true; }
         } else if (dev.policy.ciraPolicy == 1) {
             // Check environment detection is clear
             if (domains.length != 0) { editEnvironmentDetectionTmp = []; changes = true; }
@@ -1230,7 +1231,7 @@ module.exports.CreateAmtManager = function(parent) {
             x.netmask = wired.SubnetMask;
             x.mac = wired.MACAddress.split('-').join(':').toUpperCase();
             x.gateway = wired.DefaultGateway;
-            net.netif2['Ethernet'] = [ x ];
+            net.netif2['Ethernet'] = [x];
         }
 
         if (wireless != null) {
@@ -1241,7 +1242,7 @@ module.exports.CreateAmtManager = function(parent) {
             x.netmask = wireless.SubnetMask;
             x.mac = wireless.MACAddress.split('-').join(':').toUpperCase();
             x.gateway = wireless.DefaultGateway;
-            net.netif2['Wireless'] = [ x ];
+            net.netif2['Wireless'] = [x];
         }
 
         net.updateTime = Date.now();
@@ -1375,7 +1376,15 @@ module.exports.CreateAmtManager = function(parent) {
         if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } }
         if ((typeof dev.mpsConnection.tag.meiState.OsAdmin != 'object') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.user != 'string') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.pass != 'string')) { amtPolicy = 0; }
         if (amtPolicy == 0) { removeAmtDevice(dev); return; } // Do nothing, we should not have gotten this CIRA-LMS connection.
-        if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); }
+        if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); } // Activate to CCM policy
+        if (amtPolicy == 3) { // Activate to ACM policy
+            var acminfo = checkAcmActivation(dev);
+            if (acminfo == null) {
+                activateIntelAmtCcm(dev, mesh.amt.password); // No ACM certificate found, fallback to CCM.
+            } else {
+                activateIntelAmtAcm(dev, mesh.amt.password, acminfo); // Found a certificate, activate to ACM.
+            }
+        }
     }
 
     function activateIntelAmtCcm(dev, password) {
@@ -1419,6 +1428,7 @@ module.exports.CreateAmtManager = function(parent) {
         dev.aquired.lastContact = Date.now();
         dev.aquired.state = 2; // Activated
         delete dev.acctry;
+        delete dev.temp;
         UpdateDevice(dev);
 
         // Success, switch to managing this device
@@ -1429,6 +1439,128 @@ module.exports.CreateAmtManager = function(parent) {
         var f = function doManage() { if (isAmtDeviceValid(dev)) { attemptInitialContact(doManage.dev); } }
         f.dev = dev;
         setTimeout(f, 10000);
+    }
+
+    // Check if this device has any way to be activated in ACM using our server certificates.
+    function checkAcmActivation(dev) {
+        var domain = parent.config.domains[dev.domainid];
+        if ((domain == null) || (domain.amtacmactivation == null) || (domain.amtacmactivation.certs == null) || (domain.amtacmactivation.certs.length == 0)) return null;
+        const activationCerts = domain.amtacmactivation.certs;
+        if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.Hashes == null) || (dev.mpsConnection.tag.meiState.Hashes.length == 0)) return null;
+        const deviceHashes = dev.mpsConnection.tag.meiState.Hashes;
+
+        // Get the trusted FQDN of the device
+        var trustedFqdn = null;
+        if (dev.mpsConnection.tag.meiState.OsDnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.OsDnsSuffix; }
+        if (dev.mpsConnection.tag.meiState.DnsSuffix != null) { trustedFqdn = dev.mpsConnection.tag.meiState.DnsSuffix; }
+        if (trustedFqdn == null) return null;
+
+        // Find a matching certificate
+        for (var i in activationCerts) {
+            var cert = activationCerts[i];
+            if ((cert.cn == '*') || (cert.cn == trustedFqdn)) {
+                for (var j in deviceHashes) {
+                    var hashInfo = deviceHashes[j];
+                    if (hashInfo.isActive == 1) {
+                        if ((hashInfo.hashAlgorithmStr == 'SHA256') && (hashInfo.certificateHash.toLowerCase() == cert.sha256)) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha256 }; } // Found a match
+                        else if ((hashInfo.hashAlgorithmStr == 'SHA1') && (hashInfo.certificateHash.toLowerCase() == cert.sha1)) { return { cert: cert, fqdn: trustedFqdn, hash: cert.sha1 }; } // Found a match
+                    }
+                }
+            }
+        }
+        return null; // Did not find a match
+    }
+
+    // Attempt Intel AMT ACM activation
+    function activateIntelAmtAcm(dev, password, acminfo) {
+        // Generate a random Intel AMT password if needed
+        if ((password == null) || (password == '')) { password = getRandomAmtPassword(); }
+        dev.temp = { pass: password, acminfo: acminfo };
+
+        // Setup the WSMAN stack, no TLS
+        var comm = CreateWsmanComm(dev.nodeid, 16992, dev.mpsConnection.tag.meiState.OsAdmin.user, dev.mpsConnection.tag.meiState.OsAdmin.pass, 0, null, dev.mpsConnection); // No TLS
+        var wsstack = WsmanStackCreateService(comm);
+        dev.amtstack = AmtStackCreateService(wsstack);
+        dev.amtstack.dev = dev;
+        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], activateIntelAmtAcmEx1);
+    }
+
+    function activateIntelAmtAcmEx1(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (status != 200) { dev.consoleMsg("Failed to get Intel AMT state."); removeAmtDevice(dev); return; }
+
+        // Sign the Intel AMT ACM activation request
+        var info = { nonce: responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'], realm: responses['AMT_GeneralSettings'].response['DigestRealm'], fqdn: dev.temp.acminfo.fqdn, hash: dev.temp.acminfo.hash, uuid: dev.mpsConnection.tag.meiState.UUID };
+        var acmdata = parent.certificateOperations.signAcmRequest(parent.config.domains[dev.domainid], info, 'admin', dev.temp.pass, obj.remoteaddrport, dev.nodeid, dev.meshid, dev.name, 0);
+        if ((acmdata == null) || (acmdata.error != null)) { dev.consoleMsg("Failed to sign ACM nonce."); removeAmtDevice(dev); return; }
+
+        // Log this activation event
+        var event = { etype: 'node', action: 'amtactivate', nodeid: dev.nodeid, domain: dev.domainid, msgid: 58, msgArgs: [ dev.temp.acminfo.fqdn ], msg: 'Device requested Intel(R) AMT ACM activation, FQDN: ' + dev.temp.acminfo.fqdn };
+        if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
+        parent.DispatchEvent(parent.webserver.CreateMeshDispatchTargets(dev.meshid, [dev.nodeid]), obj, event);
+
+        // Start the activation process
+        dev.temp.acmdata = acmdata;
+        dev.temp.acmdata.index = 0;
+        dev.consoleMsg("Performing ACM activation...");
+        activateIntelAmtAcmEx2(dev);
+    }
+
+    // Recursive function to inject the provisioning certificates into AMT in the proper order and completes ACM activation
+    function activateIntelAmtAcmEx2(dev) {
+        var acmdata = dev.temp.acmdata;
+        var leaf = (acmdata.index == 0), root = (acmdata.index == (acmdata.certs.length - 1));
+        if ((acmdata.index < acmdata.certs.length) && (acmdata.certs[acmdata.index] != null)) {
+            dev.amtstack.IPS_HostBasedSetupService_AddNextCertInChain(acmdata.certs[acmdata.index], leaf, root,
+                function (stack, name, responses, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status != 200) { dev.consoleMsg("Failed to set ACM certificate chain (" + status + ")."); removeAmtDevice(dev); return; }
+                    if (responses['Body']['ReturnValue'] != 0) { dev.consoleMsg("Failed to set ACM certificate chain (ERR/" + responses['Body']['ReturnValue'] + ")."); removeAmtDevice(dev); return; }
+
+                    // Move to the next activation operation
+                    dev.temp.acmdata.index++;
+                    activateIntelAmtAcmEx2(dev);
+                }
+            );
+        } else {
+            dev.amtstack.IPS_HostBasedSetupService_AdminSetup(2, acmdata.password, acmdata.nonce, 2, acmdata.signature,
+                function (stack, name, responses, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                    if (status != 200) { dev.consoleMsg("Failed to complete ACM activation (" + status + ")."); removeAmtDevice(dev); return; }
+                    if (responses['Body']['ReturnValue'] != 0) { dev.consoleMsg("Failed to complete ACM activation (ERR/" + responses['Body']['ReturnValue'] + ")."); removeAmtDevice(dev); return; }
+
+                    // Success, switch to managing this device
+                    obj.parent.mpsserver.SendJsonControl(dev.mpsConnection, { action: 'mestate' }); // Request an MEI state refresh
+                    dev.consoleMsg("Succesfully activated in ACM mode, holding 10 seconds...");
+
+                    // Update the device
+                    dev.aquired = {};
+                    dev.aquired.controlMode = 2; // 1 = CCM, 2 = ACM
+                    var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
+                    if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+                    if ((typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
+                        dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
+                    }
+                    dev.aquired.realm = dev.amtstack.wsman.comm.digestRealm;
+                    dev.intelamt.user = dev.aquired.user = 'admin';
+                    dev.intelamt.pass = dev.aquired.pass = dev.temp.pass;
+                    dev.intelamt.tls = dev.aquired.tls = 0;
+                    dev.aquired.lastContact = Date.now();
+                    dev.aquired.state = 2; // Activated
+                    delete dev.acctry;
+                    delete dev.temp;
+                    UpdateDevice(dev);
+
+                    // Wait 10 seconds before attempting to manage this device in CCM
+                    var f = function doManage() { if (isAmtDeviceValid(dev)) { attemptInitialContact(doManage.dev); } }
+                    f.dev = dev;
+                    setTimeout(f, 10000);
+                }
+            );
+        }
     }
 
 
