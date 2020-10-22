@@ -203,10 +203,19 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                 try { cmd = JSON.parse(data); } catch (ex) { }
                 if ((cmd == null) || (typeof cmd.op == 'string')) {
                     if (cmd.op == 'ok') {
+                        var filename = require('path').basename(this.file).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
                         if (typeof cmd.size == 'number') {
-                            this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + require('path').basename(this.file) + '"', 'Content-Length': cmd.size });
+                            try {
+                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + filename + '"', 'Content-Length': cmd.size });
+                            } catch (ex) {
+                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="file.bin"', 'Content-Length': cmd.size });
+                            }
                         } else {
-                            this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + require('path').basename(this.file) + '"' });
+                            try {
+                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + filename + '"' });
+                            } catch (ex) {
+                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="file.bin"'});
+                            }
                         }
                     } else {
                         try { this.res.sendStatus(401); } catch (ex) { }
