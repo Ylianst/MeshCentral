@@ -277,7 +277,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         return packet_len;
     }
 
-    obj.onWebSocketConnection = function (socket) {
+    obj.onWebSocketConnection = function (socket, req) {
         connectionCount++;
         // connType: 0 = CIRA, 1 = Relay, 2 = LMS
         socket.tag = { first: true, connType: 0, clientCert: null, accumulator: '', activetunnels: 0, boundPorts: [], websocket: true, socket: socket, host: null, nextchannelid: 4, channels: {}, nextsourceport: 0 };
@@ -288,6 +288,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.ControlMsg = function ControlMsg(message) { return ControlMsg.parent.SendJsonControl(ControlMsg.conn, message); }
         socket.ControlMsg.parent = obj;
         socket.ControlMsg.conn = socket;
+        socket.remoteAddr = req.clientIp;
+        socket.remotePort = socket._socket.remotePort;
         parent.debug('mps', "New CIRA websocket connection");
 
         socket.on('message', function (data) {
@@ -330,6 +332,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.ControlMsg = function ControlMsg(message) { return ControlMsg.parent.SendJsonControl(ControlMsg.conn, message); }
         socket.ControlMsg.parent = obj;
         socket.ControlMsg.conn = socket;
+        socket.remoteAddr = cleanRemoteAddr(socket.remoteAddress);
+        //socket.remotePort is already present, no need to set it.
         socket.setEncoding('binary');
         parent.debug('mps', "New CIRA connection");
 
@@ -1224,6 +1228,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     }
 
     function guidToStr(g) { return g.substring(6, 8) + g.substring(4, 6) + g.substring(2, 4) + g.substring(0, 2) + "-" + g.substring(10, 12) + g.substring(8, 10) + "-" + g.substring(14, 16) + g.substring(12, 14) + "-" + g.substring(16, 20) + "-" + g.substring(20); }
+
+    // Clean a IPv6 address that encodes a IPv4 address
+    function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }
 
     // Example, this will add a file to stream, served 2 times max and 3 minutes max.
     //obj.addHttpFileResponse('/a.png', 'c:\\temp\\MC2-LetsEncrypt.png', 2, 3);

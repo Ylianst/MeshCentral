@@ -1093,7 +1093,7 @@ function createMeshCore(agent) {
                         };
                         apftunnel = require('apfclient')({ debug: false }, apfarg);
                         apftunnel.onJsonControl = function (data) {
-                            //if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message (DEBUG)
+                            if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message (DEBUG)
                             if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                             if (data.action == 'deactivate') { // Request CCM deactivation
                                 var amtMeiModule, amtMei;
