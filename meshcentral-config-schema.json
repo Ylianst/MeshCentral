@@ -276,7 +276,7 @@
             "additionalProperties": false,
             "description": "Information passed to the AMT manager module that impacts all Intel AMT device managed within this domain.",
             "properties": {
-              "amtAdminAccount": {
+              "AdminAccounts": {
                 "description": "List of username and passwords to try when connecting to Intel AMT.",
                 "type": "array",
                 "items": {
@@ -294,6 +294,16 @@
                       "type": "string"
                     }
                   }
+                }
+              },
+              "EnvironmentDetection": {
+                "description": "List of up to 4 domain suffixes to configure in Intel AMT when activating CIRA.",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "uniqueItems": true
                 }
               }
             }

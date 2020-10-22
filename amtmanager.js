@@ -28,22 +28,35 @@ module.exports.CreateAmtManager = function (parent) {
     const AmtStackCreateService = require('./amt/amt');
     const ConnectionTypeStrings = { 0: "CIRA", 1: "Relay", 2: "LMS", 3: "Local" };
 
-    // Load the Intel AMT admin accounts credentials for each domain
-    if ((parent.config != null) && (parent.config.domains != null)) {
-        for (var domainid in parent.config.domains) {
-            var domain = parent.config.domains[domainid];
-            if ((typeof domain.amtmanager == 'object') && (Array.isArray(domain.amtmanager.amtadminaccount) == true)) {
-                for (var i in domain.amtmanager.amtadminaccount) {
-                    var c = domain.amtmanager.amtadminaccount[i], c2 = { user: 'admin' };
-                    if (typeof c.user == 'string') { c2.user = c.user; }
-                    if (typeof c.pass == 'string') {
-                        c2.pass = c.pass;
-                        if (obj.amtAdminAccounts[domainid] == null) { obj.amtAdminAccounts[domainid] = []; }
-                        obj.amtAdminAccounts[domainid].push(c2);
-                    }
+    // Check that each domain configuration is correct because we are not going to be checking this later.
+    if (parent.config == null) parent.config = {};
+    if (parent.config.domains == null) parent.config.domains = {};
+    for (var domainid in parent.config.domains) {
+        var domain = parent.config.domains[domainid];
+        if (typeof domain.amtmanager != 'object') { domain.amtmanager = {}; }
+
+        // Load administrator accounts
+        if (Array.isArray(domain.amtmanager.adminaccounts) == true) {
+            for (var i = 0; i < domain.amtmanager.adminaccounts.length; i++) {
+                var c = domain.amtmanager.adminaccounts[i], c2 = {};
+                if (typeof c.user == 'string') { c2.user = c.user; } else { c2.user = 'admin'; }
+                if (typeof c.pass == 'string') {
+                    c2.pass = c.pass;
+                    if (obj.amtAdminAccounts[domainid] == null) { obj.amtAdminAccounts[domainid] = []; }
+                    obj.amtAdminAccounts[domainid].push(c2);
                 }
             }
+        }
 
+        // Check environment detection
+        if (Array.isArray(domain.amtmanager.environmentdetection) == true) {
+            var envDetect = [];
+            for (var i = 0; i < domain.amtmanager.environmentdetection.length; i++) {
+                var x = domain.amtmanager.environmentdetection[i].toLowerCase();
+                if ((typeof x == 'string') && (x != '') && (x.length < 64) && (envDetect.indexOf(x) == -1)) { envDetect.push(x); }
+                if (envDetect.length >= 4) break; // Maximum of 4 DNS suffix
+            }
+            if (envDetect.length > 0) { domain.amtmanager.environmentdetection = envDetect; } else { delete domain.amtmanager.environmentdetection; }
         }
     }
 
@@ -1076,17 +1089,34 @@ module.exports.CreateAmtManager = function (parent) {
     function checkEnvironmentDetection(dev) {
         var changes = false;
         var editEnvironmentDetectionTmp = [];
-        var domains = dev.cira.xxEnvironementDetection['DetectionStrings'];
-        if (domains == null) { domains = []; }
+        var currentEnvDetect = dev.cira.xxEnvironementDetection['DetectionStrings'];
+        if (currentEnvDetect == null) { currentEnvDetect = []; }
 
-        if (dev.policy.ciraPolicy == 2) {
-            // Check that we have a random environment detection
-            if (domains.length == 0) { editEnvironmentDetectionTmp = [Buffer.from(parent.crypto.randomBytes(6), 'binary').toString('hex')]; changes = true; }
+        if (dev.policy.ciraPolicy == 2) { // ciraPolicy: 0 = Do Nothing, 1 = Clear, 2 = Set
+            const newEnvDetect = parent.config.domains[dev.domainid].amtmanager.environmentdetection;
+            if (newEnvDetect == null) {
+                // If no environment detection is specified in the config.json, check that we have a random environment detection
+                if (currentEnvDetect.length == 0) { editEnvironmentDetectionTmp = [ Buffer.from(parent.crypto.randomBytes(6), 'binary').toString('hex') ]; changes = true; }
+            } else {
+                // Check that we have exactly the correct environement detection suffixes
+                var mismatch = false;
+                if (currentEnvDetect.length != newEnvDetect.length) {
+                    mismatch = true;
+                } else {
+                    // Check if everything matches
+                    for (var i in currentEnvDetect) { if (newEnvDetect.indexOf(currentEnvDetect[i]) == -1) { mismatch = true; } }
+                    for (var i in newEnvDetect) { if (currentEnvDetect.indexOf(newEnvDetect[i]) == -1) { mismatch = true; } }
+                }
+                // If not, we need to set the new ones
+                if (mismatch == true) { editEnvironmentDetectionTmp = newEnvDetect; changes = true; }
+            }
+            
         } else if (dev.policy.ciraPolicy == 1) {
             // Check environment detection is clear
-            if (domains.length != 0) { editEnvironmentDetectionTmp = []; changes = true; }
+            if (currentEnvDetect.length != 0) { editEnvironmentDetectionTmp = []; changes = true; }
         }
 
+        // If we need to change the environment detection on the remote device, do it now.
         if (changes == true) {
             var t = Clone(dev.cira.xxEnvironementDetection);
             t['DetectionStrings'] = editEnvironmentDetectionTmp;
@@ -1130,7 +1160,6 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Clear user consent requirements
         if ((responses['IPS_OptInService'] != null) && (responses['IPS_OptInService'].response['OptInRequired'] != 0)) {
-            console.log(responses['IPS_OptInService']);
             responses['IPS_OptInService'].response['OptInRequired'] = 0; // 0 = Not Required, 1 = Required for KVM only, 0xFFFFFFFF = Always Required
             dev.amtstack.Put('IPS_OptInService', responses['IPS_OptInService'].response, function (stack, name, responses, status) {
                 const dev = stack.dev;
