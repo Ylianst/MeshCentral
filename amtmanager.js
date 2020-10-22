@@ -267,6 +267,9 @@ module.exports.CreateAmtManager = function (parent) {
             // Check if the status of Intel AMT sent by the agents matched what we have in the database
             if ((dev.connType == 2) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) {
                 dev.aquired = {};
+                if ((typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
+                    dev.host = dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
+                }
                 if (typeof dev.mpsConnection.tag.meiState['ProvisioningState'] == 'number') {
                     dev.intelamt.state = dev.aquired.state = dev.mpsConnection.tag.meiState['ProvisioningState'];
                 }
@@ -847,6 +850,10 @@ module.exports.CreateAmtManager = function (parent) {
                 }, responses.Body['KeyPair']['ReferenceParameters']['SelectorSet']['Selector']['Value']);
             });
         } else {
+            // Update device in the database
+            dev.intelamt.tls = dev.aquired.tls = 1;
+            UpdateDevice(dev);
+
             // TLS is setup
             devTaskCompleted(dev);
         }
@@ -866,8 +873,8 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.consoleMsg("Enabled TLS, holding 5 seconds...");
 
                 // Update device in the database
-                dev.aquired.tls = 1;
-                dev.aquired.hash = dev.aquired.xhash;
+                dev.intelamt.tls = dev.aquired.tls = 1;
+                dev.intelamt.hash = dev.aquired.hash = dev.aquired.xhash;
                 delete dev.aquired.xhash;
                 UpdateDevice(dev);
 
