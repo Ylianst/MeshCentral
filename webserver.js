@@ -2669,127 +2669,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
-    // Return the CIRA configuration script
-    obj.getCiraCleanupScript = function (func) {
-        obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_cleanup.mescript'), 'utf8', function (err, data) {
-            if (err != null) { func(null); return; }
-            func(Buffer.from(data));
-        });
-    }
-
-    // Return the CIRA configuration script
-    obj.getCiraConfigurationScript = function (meshid, func) {
-        var meshidx = meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16);
-        var serverNameSplit = obj.certificates.AmtMpsName.split('.');
-
-        // Figure out the MPS port, use the alias if set
-        var mpsport = ((obj.args.mpsaliasport != null) ? obj.args.mpsaliasport : obj.args.mpsport);
-
-        if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) {
-            // Server name is an IPv4 address
-            obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_ip.mescript'), 'utf8', function (err, data) {
-                if (err != null) { func(null); return; }
-
-                // Randomize the environement detection
-                var randomDnsName;
-                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
-                while (data.indexOf('aabbccddeeffgg') >= 0) { data = data.replace('aabbccddeeffgg', randomDnsName); }
-                var scriptFile = JSON.parse(data);
-
-                // Change a few things in the script
-                scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
-                scriptFile.scriptBlocks[3].vars.IP.value = obj.certificates.AmtMpsName; // Set the server IPv4 address name
-                scriptFile.scriptBlocks[3].vars.ServerName.value = obj.certificates.AmtMpsName; // Set the server certificate name
-                scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
-                scriptFile.scriptBlocks[3].vars.username.value = meshidx; // Set the username
-                scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
-                scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
-                //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
-                if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
-
-                // Compile the script
-                var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
-                var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
-                scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
-                scriptFile.scriptText = runscript;
-
-                // Send the script
-                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
-            });
-        } else {
-            // Server name is a hostname
-            obj.fs.readFile(obj.parent.path.join(obj.parent.webPublicPath, 'scripts/cira_setup_script_dns.mescript'), 'utf8', function (err, data) {
-                if (err != null) { res.sendStatus(404); return; }
-
-                // Randomize the environement detection
-                var randomDnsName;
-                do { randomDnsName = getRandomLowerCase(14); } while (randomDnsName == 'aabbccddeeffgg');
-                while (data.indexOf('aabbccddeeffgg') >= 0) { data = data.replace('aabbccddeeffgg', randomDnsName); }
-                var scriptFile = JSON.parse(data);
-
-                // Change a few things in the script
-                scriptFile.scriptBlocks[2].vars.CertBin.value = getRootCertBase64(); // Set the root certificate
-                scriptFile.scriptBlocks[3].vars.FQDN.value = obj.certificates.AmtMpsName; // Set the server DNS name
-                scriptFile.scriptBlocks[3].vars.Port.value = mpsport; // Set the server MPS port
-                scriptFile.scriptBlocks[3].vars.username.value = meshidx; // Set the username
-                scriptFile.scriptBlocks[3].vars.password.value = obj.args.mpspass ? obj.args.mpspass : 'A@xew9rt'; // Set the password
-                scriptFile.scriptBlocks[4].vars.AccessInfo1.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the primary server name:port to set periodic timer
-                //scriptFile.scriptBlocks[4].vars.AccessInfo2.value = obj.certificates.AmtMpsName + ':' + mpsport; // Set the secondary server name:port to set periodic timer
-                if (obj.args.ciralocalfqdn != null) { scriptFile.scriptBlocks[6].vars.DetectionStrings.value = obj.args.ciralocalfqdn; } // Set the environment detection local FQDN's
-
-                // Compile the script
-                var scriptEngine = require('./amtscript.js').CreateAmtScriptEngine();
-                var runscript = scriptEngine.script_blocksToScript(scriptFile.blocks, scriptFile.scriptBlocks);
-                scriptFile.mescript = Buffer.from(scriptEngine.script_compile(runscript), 'binary').toString('base64');
-                scriptFile.scriptText = runscript;
-
-                // Send the script
-                func(Buffer.from(JSON.stringify(scriptFile, null, ' ')));
-            });
-        }
-    }
-
-    // Returns an mescript for Intel AMT configuration
-    function handleMeScriptRequest(req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { parent.debug('web', 'handleMeScriptRequest: no domain'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
-
-        // Get the user and check user rights
-        var authUserid = null;
-        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
-        if (authUserid == null) { res.sendStatus(401); return; }
-        const user = obj.users[authUserid];
-        if (user == null) { res.sendStatus(401); return; }
-
-        if ((req.query.type == 1) && (req.query.meshid != null)) {
-            // Get the CIRA install script
-            if (obj.IsMeshViewable(user, req.query.meshid) == false) { res.sendStatus(404); return; }
-            obj.getCiraConfigurationScript(req.query.meshid, function (script) {
-                if (script == null) { res.sendStatus(404); } else {
-                    try {
-                        var cirafilename = obj.meshes[req.query.meshid].name.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
-                        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_setup_' + cirafilename + '.mescript"' });
-                    } catch (ex) {
-                        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_setup.mescript"' });
-                    }
-                    res.send(script);
-                }
-            });
-        } else if (req.query.type == 2) {
-            // Get the CIRA cleanup script
-            obj.getCiraCleanupScript(function (script) {
-                if (script == null) { res.sendStatus(404); } else {
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="cira_cleanup.mescript"' });
-                    res.send(script);
-                }
-            });
-        } else {
-            res.sendStatus(404);
-        }
-    }
-
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -4831,7 +4710,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.post(url + 'tokenlogin', handleLoginRequest);
             obj.app.get(url + 'logout', handleLogoutRequest);
             obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
-            obj.app.get(url + 'mescript.ashx', handleMeScriptRequest);
             obj.app.post(url + 'changepassword', handlePasswordChangeRequest);
             obj.app.post(url + 'deleteaccount', handleDeleteAccountRequest);
             obj.app.post(url + 'createaccount', handleCreateAccountRequest);
