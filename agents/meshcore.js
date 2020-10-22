@@ -1075,15 +1075,15 @@ function createMeshCore(agent) {
                 }
                 case 'amtconfig': {
                     // Perform Intel AMT activation and/or configuration
-                    if ((apftunnel != null) || (amt == null)) break;
+                    if ((apftunnel != null) || (amt == null) || (typeof data.user != 'string') || (typeof data.pass != 'string')) break;
                     getMeiState(15, function (state) {
                         if ((apftunnel != null) || (amt == null)) return;
                         if ((state == null) || (state.ProvisioningState == null)) return;
                         if ((state.UUID == null) || (state.UUID.length != 36)) return; // Bad UUID
                         var apfarg = {
-                            mpsurl: mesh.ServerUrl.replace('agent.ashx', 'apf.ashx'),
-                            mpsuser: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16), // TODO: User a server provided encrypted cookie for CIRA-LMS login
-                            mpspass: Buffer.from(mesh.ServerInfo.MeshID, 'hex').toString('base64').substring(0, 16),
+                            mpsurl: mesh.ServerUrl.replace('/agent.ashx', '/apf.ashx'),
+                            mpsuser: data.user, // Agent user name
+                            mpspass: data.pass, // Encrypted login cookie
                             mpskeepalive: 60000,
                             clientname: state.OsHostname,
                             clientaddress: '127.0.0.1',
