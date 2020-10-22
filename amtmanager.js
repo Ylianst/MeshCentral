@@ -1108,7 +1108,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Query the things we are going to be checking
         var query = ['*AMT_GeneralSettings', '*AMT_RedirectionService'];
-        if (dev.aquired.majorver > 5) query.push('*CIM_KVMRedirectionSAP');
+        if (dev.aquired.majorver > 5) { query.push('*CIM_KVMRedirectionSAP', '*IPS_OptInService'); }
         dev.amtstack.BatchEnum('', query, attemptSettingsSyncResponse);
     }
 
@@ -1120,6 +1120,17 @@ module.exports.CreateAmtManager = function (parent) {
 
         // If this device does not have KVM, ignore the response. This can happen for Intel Standard Manageability (Intel(R) SM).
         if ((responses['CIM_KVMRedirectionSAP'] == null) || (responses['CIM_KVMRedirectionSAP'].status == 400)) { responses['CIM_KVMRedirectionSAP'] = null; }
+
+        // Clear user consent requirements
+        if ((responses['IPS_OptInService'] != null) && (responses['IPS_OptInService'].response['OptInRequired'] != 0)) {
+            console.log(responses['IPS_OptInService']);
+            responses['IPS_OptInService'].response['OptInRequired'] = 0; // 0 = Not Required, 1 = Required for KVM only, 0xFFFFFFFF = Always Required
+            dev.amtstack.Put('IPS_OptInService', responses['IPS_OptInService'].response, function (stack, name, responses, status) {
+                const dev = stack.dev;
+                if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                if (status == 200) { dev.consoleMsg("Cleared user consent requirements."); }
+            }, 0, 1);
+        }
 
         // Enable SOL & IDER
         if ((responses['AMT_RedirectionService'].response['EnabledState'] != 32771) || (responses['AMT_RedirectionService'].response['ListenerEnabled'] == false)) {
