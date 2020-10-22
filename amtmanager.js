@@ -1452,6 +1452,13 @@ module.exports.CreateAmtManager = function (parent) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (status != 200) { dev.consoleMsg("Failed to get Intel AMT state."); removeAmtDevice(dev); return; }
         if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { dev.consoleMsg("Client control mode activation not allowed."); removeAmtDevice(dev); return; }
+
+        // Log the activation request, logging is a required step for activation.
+        if (parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: 'ccmactivate', domain: dev.domainid, amtUuid: dev.mpsConnection.tag.meiState.UUID, amtRealm: responses['AMT_GeneralSettings'].response['DigestRealm'], user: 'admin', password: dev.temp.pass, ipport: dev.mpsConnection.remoteAddr + ':' + dev.mpsConnection.remotePort, nodeid: dev.nodeid, meshid: dev.meshid, computerName: dev.name }) == false) {
+            dev.consoleMsg("Unable to log operation."); removeAmtDevice(dev); return;
+        }
+
+        // Perform CCM activation
         dev.amtstack.IPS_HostBasedSetupService_Setup(2, hex_md5('admin:' + responses['AMT_GeneralSettings'].response['DigestRealm'] + ':' + dev.temp.pass).substring(0, 32), null, null, null, null, activateIntelAmtCcmEx2);
     }
 
@@ -1539,8 +1546,9 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Sign the Intel AMT ACM activation request
         var info = { nonce: responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'], realm: responses['AMT_GeneralSettings'].response['DigestRealm'], fqdn: dev.temp.acminfo.fqdn, hash: dev.temp.acminfo.hash, uuid: dev.mpsConnection.tag.meiState.UUID };
-        var acmdata = parent.certificateOperations.signAcmRequest(parent.config.domains[dev.domainid], info, 'admin', dev.temp.pass, obj.remoteaddrport, dev.nodeid, dev.meshid, dev.name, 0);
-        if ((acmdata == null) || (acmdata.error != null)) { dev.consoleMsg("Failed to sign ACM nonce."); removeAmtDevice(dev); return; }
+        var acmdata = parent.certificateOperations.signAcmRequest(parent.config.domains[dev.domainid], info, 'admin', dev.temp.pass, dev.mpsConnection.remoteAddr + ':' + dev.mpsConnection.remotePort, dev.nodeid, dev.meshid, dev.name, 0);
+        if (acmdata == null) { dev.consoleMsg("Failed to sign ACM nonce."); removeAmtDevice(dev); return; }
+        if (acmdata.error != null) { dev.consoleMsg(acmdata.errorText); removeAmtDevice(dev); return; }
 
         // Log this activation event
         var event = { etype: 'node', action: 'amtactivate', nodeid: dev.nodeid, domain: dev.domainid, msgid: 58, msgArgs: [ dev.temp.acminfo.fqdn ], msg: 'Device requested Intel(R) AMT ACM activation, FQDN: ' + dev.temp.acminfo.fqdn };
