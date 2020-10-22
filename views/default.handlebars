@@ -3972,18 +3972,13 @@
         function getMeshActions(mesh, meshrights) {
             if ((meshrights & 4) == 0) return '';
             var r = '';
-            if ((features & 1024) == 0) { // If CIRA is allowed
-                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '" onclick=\'return addCiraDeviceToMesh("' + mesh._id + '")\'>' + "Add CIRA" + '</a>';
-            }
             if (mesh.mtype == 1) {
                 if ((features & 1) == 0) { // If not WAN-Only
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
                 }
-                if (mesh.amt && (mesh.amt.type == 2)) { // CCM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT client control mode (CCM) activation." + '" onclick=\'return showCcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
-                } else if (mesh.amt && (mesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT admin control mode (ACM) activation." + '" onclick=\'return showAcmActivation("' + mesh._id + '")\'>' + "Activation" + '</a>';
+                if (mesh.amt && (mesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
                 }
             }
             if (mesh.mtype == 2) {
@@ -4008,8 +4003,8 @@
             return false;
         }
 
-        // Intel AMT CCM Activation
-        function showCcmActivation(meshid) {
+        // Intel AMT activation and configuration for agentless device groups
+        function showAmtSetup(meshid) {
             if (xxdialogMode) return false;
             var servername = serverinfo.name, mesh = meshes[meshid];
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
@@ -4021,32 +4016,12 @@
                 var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
                 url = 'ws://' + servername + portStr + domainUrl;
             }
-            var x = format("Perform Intel&reg; AMT client control mode (CCM) activation to group \"{0}\" by downloading the MeshCMD tool and running it like this:", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtccm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
-            setDialogMode(2, "Intel&reg; AMT activation", 9, null, x);
-            Q('idx_dlgOkButton').focus();
-            return false;
-        }
-
-        // Intel AMT ACM Activation
-        function showAcmActivation(meshid) {
-            if (xxdialogMode) return false;
-            var servername = serverinfo.name, mesh = meshes[meshid];
-            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
-            var url, domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
-            if (serverinfo.https == true) {
-                var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
-                url = 'wss://' + servername + portStr + domainUrl;
-            } else {
-                var portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port);
-                url = 'ws://' + servername + portStr + domainUrl;
-            }
-            var x = format("Perform Intel&reg; AMT admin control mode (ACM) activation to group \"{0}\" by downloading the MeshCMD tool and running it like this:", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtacm --url ' + url + 'amtactivate?id=' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
+            var x = format("Add, activate and configure Intel&reg; AMT to group \"{0}\" by periodically running MeshCmd as administrator on the remote device.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<textarea readonly=readonly style=width:100%;resize:none;height:100px;overflow:auto;font-size:12px readonly>meshcmd amtconfig --url ' + url + 'apf.ashx --id ' + meshid.split('/')[2] + ' --serverhttpshash ' + serverinfo.tlshash + '</textarea>';
             if (serverinfo.amtAcmFqdn != null) {
-                x += ('<div style=margin-top:8px>' + "Intel&reg; AMT will need to be set with a Trusted FQDN in MEBx or have a wired LAN on the network:" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
+                x += ('<div style=margin-top:8px>' + "For ACM activation, Intel&reg; AMT will need to be set to the following trusted FQDN:" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
             }
-            setDialogMode(2, "Intel&reg; AMT activation", 9, null, x);
+            setDialogMode(2, "Intel&reg; AMT setup", 9, null, x);
             Q('idx_dlgOkButton').focus();
             return false;
         }
@@ -9507,12 +9482,13 @@
 
             if (meshrights & 4) {
                 if (currentMesh.mtype == 1) {
-                    x += '<a href=# onclick=\'return addCiraDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the internet." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install CIRA" + '</a>';
-                    x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
-                    if (currentMesh.amt && (currentMesh.amt.type == 2)) { // CCM activation
-                        x += '<a href=# onclick=\'return showCcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT client control mode (CCM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
-                    } else if (currentMesh.amt && (currentMesh.amt.type == 3) && ((features & 0x00100000) != 0)) { // ACM activation
-                        x += '<a href=# onclick=\'return showAcmActivation("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT admin control mode (ACM) activation." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Activation" + '</a>';
+                    /*
+                    if ((features & 1) == 0) { // If not WAN-Only
+                        x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
+                    }
+                    */
+                    if ((currentMesh.amt != null) && (currentMesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation
+                        x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Setup" + '</a>';
                     }
                 }
                 if (currentMesh.mtype == 2) {
