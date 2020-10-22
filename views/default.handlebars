@@ -4089,57 +4089,6 @@
             QE('idx_dlgOkButton', checkcount > 0);
         }
 
-        function addCiraDeviceToMesh(meshid) {
-            if (xxdialogMode) return false;
-            var mesh = meshes[meshid];
-
-            // Replace non alphabetic characters (@ and $) with 'X' because MPS username cannot accept it.
-            var meshidx = meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X');
-
-            var y = '<select id=dlgAddCiraSel onclick=dlgAddCiraSelClick() style=width:230px><option value=0>' + "MeshCommander Script" + '</option><option value=1>' + "Manual Username/Password" + '</option>';
-            if ((features & 16) == 0) { y += ('<option value=2>' + "Manual Certificate" + '</option></select>'); } // Only display this option if Intel AMT CIRA with Mutual-Auth is allowed.
-
-            var x = '';
-            x += addHtmlValue("Setup Method", y);
-            x += '<hr>';
-
-            // Setup CIRA using a MeshCommander script (Pretty Simple)
-            x += '<div id=dlgAddCira0>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, download the following script files and use <a href='http://meshcommander.com' rel='noreferrer noopener' target='_blank'>MeshCommander</a> to run the script to configure computers.", EscapeHtml(mesh.name)) + '<br /><br />';
-            //x += addHtmlValue('Setup CIRA', '<a href="mescript.ashx?type=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&meshid=' + meshidx.substring(0, 16) + '" download>cira_setup.mescript</a>');
-            x += addHtmlValue("Setup CIRA", '<a onclick=downloadFile("mescript.ashx?type=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&meshid=' + meshid + '")>cira_setup.mescript</a>');
-            x += addHtmlValue("Cleanup CIRA", '<a onclick=downloadFile("mescript.ashx?type=2' + (urlargs.key?('&key=' + urlargs.key):'') + '")>cira_clean.mescript</a>');
-            x += '</div>';
-
-            // Setup CIRA with user/pass authentication (Somewhat difficult)
-            x += '<div id=dlgAddCira1 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT", EscapeHtml(mesh.name));
-            if (serverinfo.mpspass) { x += (" and authenticate to the server using this username and password." + '<br /><br />'); } else { x += (" and authenticate to the server using this username and any password." + '<br /><br />'); }
-            x += addHtmlValue("Root Certificate", '<a onclick=downloadFile("' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '")>' + "Root Certificate File" + '</a>');
-            x += addHtmlValue("Username", '<input style=width:230px readonly value="' + meshidx.substring(0, 16) + '" />');
-            if (serverinfo.mpspass) { x += addHtmlValue("Password", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpspass) + '" />'); }
-            if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
-            x += '</div>';
-
-            // Setup CIRA with certificate authentication (Really difficult, only if TLS offload is not used)
-            if ((features & 16) == 0) {
-                x += '<div id=dlgAddCira2 style=display:none>' + format("To add a new Intel&reg; AMT device to device group \"{0}\" with CIRA, load the following certificate as trusted root within Intel&reg; AMT, authenticate using a client certificate with the following common name and connect to the following server.", EscapeHtml(mesh.name)) + '<br /><br />';
-                x += addHtmlValue("Root Certificate", '<a onclick=downloadFile("' + "MeshServerRootCert.cer" + (urlargs.key?('?key=' + urlargs.key):'') + '")>' + "Root Certificate File" + '</a>');
-                x += addHtmlValue("Organization", '<input style=width:230px readonly value="' + meshidx + '" />');
-                if (serverinfo != null) { x += addHtmlValue("MPS Server", '<input style=width:230px readonly value="' + EscapeHtml(serverinfo.mpsname) + ':' + serverinfo.mpsport + '" />'); }
-                x += '</div>';
-            }
-
-            setDialogMode(2, "Add Intel&reg; AMT CIRA device", 2, null, x, 'fileDownload');
-            Q('dlgAddCiraSel').focus();
-            return false;
-        }
-
-        function dlgAddCiraSelClick() {
-            var val = Q('dlgAddCiraSel').value;
-            QV('dlgAddCira0', val == 0);
-            QV('dlgAddCira1', val == 1);
-            QV('dlgAddCira2', val == 2);
-        }
-
         // Return true is the input string looks like an email address
         function checkEmail(str) {
             var x = str.split('@');
