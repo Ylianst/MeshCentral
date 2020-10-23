@@ -418,8 +418,8 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.amtstack.dev = dev;
                 dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
                 break;
-            case 1:
-            case 2:
+            case 1: // CIRA-Relay
+            case 2: // CIRA-LMS
                 // Handle the case where the Intel AMT relay or LMS is connected (connType 1 or 2)
                 // Check to see if CIRA is connected on this server.
                 var ciraconn = dev.mpsConnection;
@@ -433,7 +433,6 @@ module.exports.CreateAmtManager = function (parent) {
 
                 // Connect now
                 var comm;
-                dev.tlsfail = true; // DEBUG!!!!!!!
                 if (dev.tlsfail !== true) {
                     parent.debug('amt', 'Relay-Connect', "TLS", dev.name, user, pass);
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
@@ -447,7 +446,7 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.amtstack.dev = dev;
                 dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
                 break;
-            case 3:
+            case 3: // Local LAN
                 // Handle the case where the Intel AMT local scanner found the device (connType 3)
                 parent.debug('amt', "Attempt Initial Local Contact", dev.name, dev.connType, dev.host);
                 if (typeof dev.host != 'string') { removeAmtDevice(dev); return; } // Local connection not valid
@@ -555,7 +554,7 @@ module.exports.CreateAmtManager = function (parent) {
             });
         } else {
             // We got a bad response
-            if ((dev.conntype == 1) && (dev.tlsfail !== true) && (status == 408)) {
+            if ((dev.conntype != 0) && (dev.tlsfail !== true) && (status == 408)) { // If not using CIRA and we get a 408 error while using TLS, try non-TLS.
                 // TLS error on a local connection, try again without TLS
                 dev.tlsfail = true; attemptInitialContact(dev); return;
             } else if (status == 401) {
