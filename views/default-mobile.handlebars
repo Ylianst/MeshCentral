@@ -828,6 +828,7 @@
         var args = urlargs;
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
+        var features2 = parseInt('{{{features2}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
@@ -1075,6 +1076,7 @@
                     powerTimelineNode = message.nodeid;
                     powerTimeline = message.timeline;
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
+                    for (var i in powerTimeline) { if (i % 2 == 1) { powerTimeline[i] = powerTimeline[i] * 1000; } } // Decompress time
                     if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
                     break;
                 }
@@ -1382,6 +1384,7 @@
                                     if (message.event.node.intelamt.uuid != null) { node.intelamt.uuid = message.event.node.intelamt.uuid; }
                                     if (message.event.node.intelamt.realm != null) { node.intelamt.realm = message.event.node.intelamt.realm; }
                                     if (message.event.node.intelamt.flags != null) { node.intelamt.flags = message.event.node.intelamt.flags; }
+                                    if (message.event.node.intelamt.warn != null) { node.intelamt.warn = message.event.node.intelamt.warn; } else { delete node.intelamt.warn; }
                                 }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
@@ -2594,15 +2597,45 @@
                     var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
                     if (node.intelamt.ver != null && node.intelamt.state == null) { str += '<i>' + nobreak("Unknown State") + '</i>, v' + EscapeHtml(node.intelamt.ver); } else
 
-                        if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
-                        else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
-                        else {
-                            str += provisioningStates[node.intelamt.state];
-                            if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span>' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str = ' <span>' + "ACM" + '</span>'; } }
-                            str += (', v' + EscapeHtml(node.intelamt.ver));
+                    if ((node.intelamt.ver == null) && (node.intelamt.state == 2)) { str += '<i>' + "Activated" + '</i>'; }
+                    else if ((node.intelamt.ver == null) || (node.intelamt.state == null)) { str += '<i>' + "Unknown Version & State" + '</i>'; }
+                    else {
+                        str += provisioningStates[node.intelamt.state];
+                        if (node.intelamt.flags) { if (node.intelamt.flags & 2) { str = ' <span>' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { str = ' <span>' + "ACM" + '</span>'; } }
+                        str += (', v' + EscapeHtml(node.intelamt.ver));
+                    }
+
+                    // If Intel AMT is activated, show additional options
+                    if (node.intelamt.state == 2) {
+                        if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel&reg; AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
+
+                        var editUserCredentialsIcon = false;
+                        if (node.intelamt.user == null || node.intelamt.user == '') { // If credentials are not set, allow setting them.
+                            if ((meshrights & 4) != 0) {
+                                str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "No Credentials" + '</i>';
+                                editUserCredentialsIcon = true;
+                            } else {
+                                str += ', <i style=color:#FF0000>' + "No Credentials" + '</i>';
+                            }
+                        } else if (((features2 & 1) != 0) && (node.intelamt.warn != null) && ((node.intelamt.warn & 1) != 0)) { // If AMT manager is running and warned of invalid credentials, allow setting them.
+                            if ((meshrights & 4) != 0) {
+                                str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "Invalid Credentials" + '</i>';
+                                editUserCredentialsIcon = true;
+                            } else {
+                                str += ', <i style=color:#FF0000>' + "Invalid Credentials" + '</i>';
+                            }
                         }
 
-                    if (node.intelamt.tls == 1) { str += ', <span>' + "TLS" + '</span>'; }
+                        // If the AMT manager is not running, always allow Intel AMT credentials to be edited.
+                        if (((meshrights & 4) != 0) && ((features2 & 1) == 0)) { editUserCredentialsIcon = true; }
+
+                        str += ' ';
+                        if (editUserCredentialsIcon) {
+                            str += '<img src=images/link4.png height=10 width=10 title="' + "Edit Intel&reg; AMT credentials" + '" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
+                        }
+                    }
+
+                    /*
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.user == null || node.intelamt.user == '') {
                             if ((meshrights & 4) != 0) {
@@ -2616,6 +2649,7 @@
                             str += '<img src=images/link4.png height=10 width=10 style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
+                    */
 
                     var meName = "Intel&reg; ME";
                     if (typeof node.intelamt.sku == 'number') {
@@ -2839,11 +2873,12 @@
             if ((meshrights & 4) == 0) return;
             x += addHtmlValue("Username", '<input id=dp10username style=width:170px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Password", '<input id=dp10password type=password style=width:170px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue("Security", '<select id=dp10tls style=width:176px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>');
+            // Only display the TLS setting if the Intel AMT manager is not running on the server. With the manager TLS is auto-detected.
+            if ((features2 & 1) == 0) { x += addHtmlValue("Security", '<select id=dp10tls style=width:176px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>'); }
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
             setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
-            Q('dp10tls').value = node.intelamt.tls;
+            if ((features2 & 1) == 0) { Q('dp10tls').value = node.intelamt.tls; }
             validateDeviceAmtSettings();
         }
 
@@ -2861,10 +2896,10 @@
                 if (amtuser == '') amtuser = 'admin';
                 var amtpass = Q('dp10password').value;
                 if (amtpass == '') amtuser = '';
-                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: parseInt(Q('dp10tls').value) } });
-                tag.node.intelamt.user = amtuser;
-                tag.node.intelamt.tls = parseInt(Q('dp10tls').value);
-                if (tag.func) { setTimeout(tag.func, 300); }
+                var x = { action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass } };
+                if ((features2 & 1) == 0) { x.intelamt.tls = parseInt(Q('dp10tls').value); }
+                meshserver.send(x);
+                if (tag.func) { setTimeout(tag.func, 1000); }
             }
         }
 
@@ -4451,7 +4486,7 @@
 
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); deskAdjust(); /*drawDeviceTimeline();*/ }
+        function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); deskAdjust(); if (currentNode != null) { drawDeviceTimeline(); } }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
