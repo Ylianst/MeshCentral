@@ -426,7 +426,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
             if (obj.mpsConnection == null) { obj.socket.end(); } else { obj.socket.close(); }
         } else {
             var r = obj.pendingAjaxCall.shift();
-            if (r == null || r.length < 1) { console.log("pendingAjaxCall error, " + r); return; }
+            if ((r == null) || (r.length < 1)) { /*console.log("pendingAjaxCall error, " + r);*/ return; } // Get a response without any pending requests.
             //if (s != 200) { obj.Debug("Error, status=" + s + "\r\n\r\nreq=" + r[0] + "\r\n\r\nresp=" + data); } // Debug: Display the request & response if something did not work.
             obj.authcounter = 0;
             obj.ActiveAjaxCount--;

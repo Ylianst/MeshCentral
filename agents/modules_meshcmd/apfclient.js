@@ -324,7 +324,8 @@ function CreateAPFClient(parent, args) {
                     });
 
                     chan.on('error', function (e) {
-                        Debug("Downlink connection error: " + e);
+                        //Debug("Downlink connection error: " + e);
+                        SendChannelOpenFailure(socket.ws, p_res);
                     });
 
                     chan.on('end', function () {
