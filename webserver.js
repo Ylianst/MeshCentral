@@ -2123,7 +2123,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     }
 
     function handleRootRequestEx(req, res, domain, direct) {
-        var nologout = false, user = null, features = 0;
+        var nologout = false, user = null, features = 0, features2 = 0;
         res.set({ 'Cache-Control': 'no-store' });
 
         // Check if we have an incomplete domain name in the path
@@ -2285,6 +2285,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Give the web page a list of supported server features
             features = 0;
+            features2 = 0;
             if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
             if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
             if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
@@ -2326,6 +2327,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (domain.novnc === false) { features += 0x20000000; } // Disables noVNC
             if (domain.mstsc !== true) { features += 0x40000000; } // Disables MSTSC.js
             if (obj.isTrustedCert(domain) == false) { features += 0x80000000; } // Indicate we are not using a trusted certificate
+            if (obj.parent.amtManager != null) { features2 += 1; } // Indicates that the Intel AMT manager is active
 
             // Create a authentication cookie
             const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
@@ -2390,6 +2392,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     serverPublicPort: httpsPort,
                     serverfeatures: serverFeatures,
                     features: features,
+                    features2: features2,
                     sessiontime: args.sessiontime,
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,

@@ -1263,6 +1263,7 @@
         var files;
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
+        var features2 = parseInt('{{{features2}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
@@ -6222,11 +6223,12 @@
             if ((meshrights & 4) == 0) return;
             x += addHtmlValue("Username", '<input id=dp10username style=width:230px maxlength=32 autocomplete=nope placeholder="admin" onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
             x += addHtmlValue("Password", '<input id=dp10password type=password style=width:230px autocomplete=nope maxlength=32 onchange=validateDeviceAmtSettings() onkeyup=validateDeviceAmtSettings() />');
-            x += addHtmlValue("Security", '<select id=dp10tls style=width:236px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>');
+            // Only display the TLS setting if the Intel AMT manager is not running on the server. With the manager TLS is auto-detected.
+            if ((features2 & 1) == 0) { x += addHtmlValue("Security", '<select id=dp10tls style=width:236px><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>'); }
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
             setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func, arg: arg });
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
-            Q('dp10tls').value = node.intelamt.tls;
+            if ((features2 & 1) == 0) { Q('dp10tls').value = node.intelamt.tls; }
             validateDeviceAmtSettings();
         }
 
@@ -6244,9 +6246,11 @@
                 if (amtuser == '') amtuser = 'admin';
                 var amtpass = Q('dp10password').value;
                 if (amtpass == '') amtuser = '';
-                meshserver.send({ action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass, tls: parseInt(Q('dp10tls').value) } });
+                var x = { action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass } };
+                if ((features2 & 1) == 0) { x.intelamt.tls = parseInt(Q('dp10tls').value); }
+                meshserver.send(x);
                 tag.node.intelamt.user = amtuser;
-                tag.node.intelamt.tls = parseInt(Q('dp10tls').value);
+                if ((features2 & 1) == 0) { tag.node.intelamt.tls = parseInt(Q('dp10tls').value); }
                 if (tag.func) { setTimeout(function () { tag.func(null, tag.arg); }, 300); }
             }
         }
@@ -9398,19 +9402,22 @@
                 x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
             }
 
-            // Intel AMT setup
-            var intelAmtPolicy = "No Policy";
-            if (currentMesh.amt) {
-                if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate Client Control Mode (CCM)'; }
-                else if (currentMesh.amt.type == 2) {
-                    intelAmtPolicy = "Simple Client Control Mode (CCM)";
-                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
-                } else if (currentMesh.amt.type == 3) {
-                    intelAmtPolicy = "Simple Admin Control Mode (ACM)";
-                    if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
+            // If the Intel AMT manager is active on the server, show the Intel AMT policy edit box.
+            if ((features2 & 1) != 0) {
+                // Intel AMT setup
+                var intelAmtPolicy = "No Policy";
+                if (currentMesh.amt) {
+                    if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate Client Control Mode (CCM)'; }
+                    else if (currentMesh.amt.type == 2) {
+                        intelAmtPolicy = "Simple Client Control Mode (CCM)";
+                        if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
+                    } else if (currentMesh.amt.type == 3) {
+                        intelAmtPolicy = "Simple Admin Control Mode (ACM)";
+                        if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
+                    }
                 }
+                x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
             }
-            x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
 
             // Display group note support
             if (meshrights & 1) { x += '<br><input type=button value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
