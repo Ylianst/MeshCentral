@@ -9552,7 +9552,9 @@
                     }
                 }
             }
-            if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommanded policy type. Intel&reg; AMT activation and management is completely automated." + '</table>'; }
+            if (ptype == 0) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it." + '</table>'; }
+            if (ptype == 1) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Devices in Admin Control Mode (ACM) can still be managed manually." + '</table>'; }
+            if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommanded policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management." + '</table>'; }
             QH('dp20amtpolicydiv', x);
             setTimeout(dp20amtValidatePolicy, 1);
         }
