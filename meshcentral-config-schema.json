@@ -305,6 +305,43 @@
                   "maxItems": 4,
                   "uniqueItems": true
                 }
+              },
+              "WifiProfiles": {
+                "description": "List of WIFI profiles to setup in any managed Intel AMT device with a WIFI network interface.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [ "ssid", "password" ],
+                  "properties": {
+                    "name": {
+                      "description": "WIFI profile name, if not specified the SSID is used.",
+                      "type": "string"
+                    },
+                    "ssid": {
+                      "description": "SSID of the WIFI station.",
+                      "type": "string"
+                    },
+                    "authentication": {
+                      "description": "WIFI authentication.",
+                      "type": "string",
+                      "enum": [ "wpa2-psk", "wpa-psk" ],
+                      "default": "wpa2-psk"
+                    },
+                    "encryption": {
+                      "description": "WIFI encryption.",
+                      "type": "string",
+                      "enum": [ "ccmp-aes", "tkip-rc4" ],
+                      "default": "ccmp-aes"
+                    },
+                    "password": {
+                      "description": "Password on the WIFI station",
+                      "type": "string",
+                      "minLength": 8,
+                      "maxLength": 63
+                    }
+                  }
+                }
               }
             }
           },

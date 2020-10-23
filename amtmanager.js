@@ -77,13 +77,13 @@ module.exports.CreateAmtManager = function (parent) {
                         if (typeof wifiProfile.authentication == 'string') { wifiProfile.authentication = wifiProfile.authentication.toLowerCase(); }
                         if (wifiProfile.authentication == 'wpa-psk') { wifiProfile.authentication = 4; }
                         if (wifiProfile.authentication == 'wpa2-psk') { wifiProfile.authentication = 6; }
-                        if (typeof wifiProfile.authentication != 'number') { wifiProfile.authentication = 4; } // Default to CCMP-AES
+                        if (typeof wifiProfile.authentication != 'number') { wifiProfile.authentication = 6; } // Default to WPA2-PSK
 
                         // Encyption
                         if (typeof wifiProfile.encryption == 'string') { wifiProfile.encryption = wifiProfile.encryption.toLowerCase(); }
                         if ((wifiProfile.encryption == 'ccmp-aes') || (wifiProfile.encryption == 'ccmp')) { wifiProfile.encryption = 4; }
                         if ((wifiProfile.encryption == 'tkip-rc4') || (wifiProfile.encryption == 'tkip')) { wifiProfile.encryption = 3; }
-                        if (typeof wifiProfile.encryption != 'number') { wifiProfile.encryption = 6; } // Default to WPA2-PSK
+                        if (typeof wifiProfile.encryption != 'number') { wifiProfile.encryption = 4; } // Default to CCMP-AES
 
                         // Type
                         wifiProfile.type = 3; // Infrastructure
