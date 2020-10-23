@@ -504,8 +504,10 @@ module.exports.CreateAmtManager = function (parent) {
             dev.state = 1;
             if (dev.aquired == null) { dev.aquired = {}; }
             dev.aquired.controlMode = responses['IPS_HostBasedSetupService'].response.CurrentControlMode; // 1 = CCM, 2 = ACM
-            var verSplit = stack.wsman.comm.amtVersion.split('.');
-            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+            if (typeof stack.wsman.comm.amtVersion == 'string') { // Set the Intel AMT version using the HTTP header if present
+                var verSplit = stack.wsman.comm.amtVersion.split('.');
+                if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+            }
             dev.aquired.realm = stack.wsman.comm.digestRealm;
             dev.aquired.user = dev.intelamt.user = stack.wsman.comm.user;
             dev.aquired.pass = dev.intelamt.pass = stack.wsman.comm.pass;
@@ -690,7 +692,7 @@ module.exports.CreateAmtManager = function (parent) {
 
             if ((status != 200) || (responses['CIM_ServiceAvailableToElement'] == null) || (responses['CIM_ServiceAvailableToElement'].responses == null) || (responses['CIM_ServiceAvailableToElement'].responses.length < 1)) return; // If the polling fails, just skip it.
             var powerstate = responses['CIM_ServiceAvailableToElement'].responses[0].PowerState;
-            if ((powerstate == 2) && (dev.aquired.majorver > 9)) {
+            if ((powerstate == 2) && (dev.aquired.majorver != null) && (dev.aquired.majorver > 9)) {
                 // Device is powered on and Intel AMT 10+, poll the OS power state.
                 dev.amtstack.Get('IPS_PowerManagementService', function (stack, name, response, status) {
                     const dev = stack.dev;
@@ -1100,13 +1102,13 @@ module.exports.CreateAmtManager = function (parent) {
         dev.taskCount = 1;
         dev.taskCompleted = func;
         var requests = ['*AMT_EnvironmentDetectionSettingData', 'AMT_ManagementPresenceRemoteSAP', 'AMT_RemoteAccessCredentialContext', 'AMT_RemoteAccessPolicyAppliesToMPS', 'AMT_RemoteAccessPolicyRule', '*AMT_UserInitiatedConnectionService', 'AMT_MPSUsernamePassword'];
-        if (dev.aquired.majorver > 11) { requests.push('*IPS_HTTPProxyService', 'IPS_HTTPProxyAccessPoint'); }
+        if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 11)) { requests.push('*IPS_HTTPProxyService', 'IPS_HTTPProxyAccessPoint'); }
         dev.amtstack.BatchEnum(null, requests, function (stack, name, responses, status) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             //dev.consoleMsg("Added server root certificate.");
 
-            if ((dev.aquired.majorver > 11) && (status == 400)) {
+            if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 11) && (status == 400)) {
                 // Check if only the HTTP proxy objects failed
                 status = 200;
                 if (responses['IPS_HTTPProxyAccessPoint'].status == 400) { delete responses['IPS_HTTPProxyAccessPoint']; }
@@ -1206,7 +1208,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     function addMpsPolicy(dev) {
         if (dev.cira.mpsPolicy == false) {
-            var cilaSupport = ((dev.aquired.majorver > 11) || ((dev.aquired.majorver == 11) && (dev.aquired.minorver >= 6)));
+            var cilaSupport = ((dev.aquired.majorver != null) && (dev.aquired.minorver != null)) && ((dev.aquired.majorver > 11) || ((dev.aquired.majorver == 11) && (dev.aquired.minorver >= 6)));
             var trigger = 2; // 1 = Alert, 2 = Periodic
 
             // Setup extended data
@@ -1297,7 +1299,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Query the things we are going to be checking
         var query = ['*AMT_GeneralSettings', '*AMT_RedirectionService'];
-        if (dev.aquired.majorver > 5) { query.push('*CIM_KVMRedirectionSAP', '*IPS_OptInService'); }
+        if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 5)) { query.push('*CIM_KVMRedirectionSAP', '*IPS_OptInService'); }
         dev.amtstack.BatchEnum('', query, attemptSettingsSyncResponse);
     }
 
@@ -1342,7 +1344,7 @@ module.exports.CreateAmtManager = function (parent) {
         }
 
         // Check KVM state
-        if ((dev.aquired.majorver > 5) && (responses['CIM_KVMRedirectionSAP'] != null)) {
+        if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 5) && (responses['CIM_KVMRedirectionSAP'] != null)) {
             var kvm = (((responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6) && (responses['CIM_KVMRedirectionSAP'].response['RequestedState'] == 2)) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 2) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6));
             if (kvm == false) {
                 // Enable KVM
@@ -1500,7 +1502,8 @@ module.exports.CreateAmtManager = function (parent) {
                 var m2 = {}, m = hw.PhysicalMemory[i];
                 m2.BankLabel = m.BankLabel;
                 m2.Capacity = m.Capacity;
-                if (m.PartNumber) { m2.PartNumber = m.PartNumber.trim(); }
+                if (typeof m.PartNumber == 'string') { m2.PartNumber = m.PartNumber.trim(); }
+                if (typeof m.PartNumber == 'number') { m2.PartNumber = m.PartNumber; }
                 if (typeof m.SerialNumber == 'string') { m2.SerialNumber = m.SerialNumber.trim(); }
                 if (typeof m.SerialNumber == 'number') { m2.SerialNumber = m.SerialNumber; }
                 if (typeof m.Manufacturer == 'string') { m2.Manufacturer = m.Manufacturer.trim(); }
@@ -1520,15 +1523,20 @@ module.exports.CreateAmtManager = function (parent) {
             hw2.hardware.identifiers.storage_devices = drives;
         }
         if (hw.Bios != null) {
-            if (hw.Bios.Manufacturer) { hw2.hardware.identifiers.bios_vendor = hw.Bios.Manufacturer.trim(); }
+            if (typeof hw.Bios.Manufacturer == 'string') { hw2.hardware.identifiers.bios_vendor = hw.Bios.Manufacturer.trim(); }
+            if (typeof hw.Bios.Manufacturer == 'number') { hw2.hardware.identifiers.bios_vendor = hw.Bios.Manufacturer; }
             hw2.hardware.identifiers.bios_version = hw.Bios.Version;
             if (hw.Bios.ReleaseDate && hw.Bios.ReleaseDate.Datetime) { hw2.hardware.identifiers.bios_date = hw.Bios.ReleaseDate.Datetime; }
         }
         if (hw.PhysicalPackage != null) {
-            if (hw.Card.Model) { hw2.hardware.identifiers.board_name = hw.Card.Model.trim(); }
-            if (hw.Card.Manufacturer) { hw2.hardware.identifiers.board_vendor = hw.Card.Manufacturer.trim(); }
-            if (hw.Card.Version) { hw2.hardware.identifiers.board_version = hw.Card.Version.trim(); }
-            if (hw.Card.SerialNumber) { hw2.hardware.identifiers.board_serial = hw.Card.SerialNumber.trim(); }
+            if (typeof hw.Card.Model == 'string') { hw2.hardware.identifiers.board_name = hw.Card.Model.trim(); }
+            if (typeof hw.Card.Model == 'number') { hw2.hardware.identifiers.board_name = hw.Card.Model; }
+            if (typeof hw.Card.Manufacturer == 'string') { hw2.hardware.identifiers.board_vendor = hw.Card.Manufacturer.trim(); }
+            if (typeof hw.Card.Manufacturer == 'number') { hw2.hardware.identifiers.board_vendor = hw.Card.Manufacturer; }
+            if (typeof hw.Card.Version == 'string') { hw2.hardware.identifiers.board_version = hw.Card.Version.trim(); }
+            if (typeof hw.Card.Version == 'number') { hw2.hardware.identifiers.board_version = hw.Card.Version; }
+            if (typeof hw.Card.SerialNumber == 'string') { hw2.hardware.identifiers.board_serial = hw.Card.SerialNumber.trim(); }
+            if (typeof hw.Card.SerialNumber == 'number') { hw2.hardware.identifiers.board_serial = hw.Card.SerialNumber; }
         }
         if ((hw.Chips != null) && (hw.Chips.length > 0)) {
             for (var i in hw.Chips) {
@@ -1633,8 +1641,10 @@ module.exports.CreateAmtManager = function (parent) {
         // Update the device
         dev.aquired = {};
         dev.aquired.controlMode = 1; // 1 = CCM, 2 = ACM
-        var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
-        if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+        if (typeof dev.amtstack.wsman.comm.amtVersion == 'string') {
+            var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
+            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+        }
         if ((typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
             dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
         }
@@ -1757,8 +1767,10 @@ module.exports.CreateAmtManager = function (parent) {
                     // Update the device
                     dev.aquired = {};
                     dev.aquired.controlMode = 2; // 1 = CCM, 2 = ACM
-                    var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
-                    if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+                    if (typeof dev.amtstack.wsman.comm.amtVersion == 'string') {
+                        var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
+                        if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+                    }
                     if ((typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
                         dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
                     }
