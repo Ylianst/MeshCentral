@@ -203,20 +203,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                 try { cmd = JSON.parse(data); } catch (ex) { }
                 if ((cmd == null) || (typeof cmd.op == 'string')) {
                     if (cmd.op == 'ok') {
-                        var filename = require('path').basename(this.file).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
-                        if (typeof cmd.size == 'number') {
-                            try {
-                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + filename + '"', 'Content-Length': cmd.size });
-                            } catch (ex) {
-                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="file.bin"', 'Content-Length': cmd.size });
-                            }
-                        } else {
-                            try {
-                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + filename + '"' });
-                            } catch (ex) {
-                                this.res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="file.bin"'});
-                            }
-                        }
+                        setContentDispositionHeader(this.res, 'application/octet-stream', filename, cmd.size, 'file.bin');
                     } else {
                         try { this.res.sendStatus(401); } catch (ex) { }
                     }
@@ -286,6 +273,21 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
         const command = { nodeid: nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/devicefile.ashx?id=' + obj.id + '&rauth=' + rcookie, soptions: {} };
         parent.parent.debug('relay', 'FileRelay: Sending agent tunnel command: ' + JSON.stringify(command));
         if (obj.sendAgentMessage(command, user, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'FileRelay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
+    }
+
+    // Set the content disposition header for a HTTP response.
+    // Because the filename can't have any special characters in it, we need to be extra careful.
+    function setContentDispositionHeader(res, type, name, size, altname) {
+        var name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+        try {
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + name + '"' };
+            if (typeof size == 'number') { x['Content-Length'] = size; }
+            res.set(x);
+        } catch (ex) {
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + altname + '"' };
+            if (typeof size == 'number') { x['Content-Length'] = size; }
+            res.set(x);
+        }
     }
 
     // If this is not an authenticated session, or the session does not have routing instructions, just go ahead an connect to existing session.

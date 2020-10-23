@@ -2664,11 +2664,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleRootCertRequest: invalid ip'); return; } // Check server-wide IP filter only.
         parent.debug('web', 'handleRootCertRequest()');
-        try {
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + certificates.RootName + '.cer"' });
-        } catch (ex) {
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="rootcert.cer"' });
-        }
+        setContentDispositionHeader(res, 'application/octet-stream', certificates.RootName + '.cer', null, 'rootcert.cer');
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
@@ -2689,11 +2685,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         try { stat = obj.fs.statSync(path); } catch (e) { }
         if ((stat != null) && ((stat.mode & 0x004000) == 0)) {
             if (req.query.download == 1) {
-                try {
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + filename + '\"' });
-                } catch (ex) {
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"file.bin\"' });
-                }
+                setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
                 render(req, res, getRenderPage((domain.sitestyle == 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
@@ -2908,7 +2900,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((user.siteadmin & 512) == 0) { res.sendStatus(401); return; } // Check if we have right to get recordings
 
         // Send the recorded file
-        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + req.query.file + '\"' });
+        setContentDispositionHeader(res, 'application/octet-stream', req.query.file, null, 'recording.mcrec');
         try { res.sendFile(obj.path.join(recordingsPath, req.query.file)); } catch (ex) { res.sendStatus(404); }
     }
 
@@ -3003,11 +2995,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (user == null) { res.sendStatus(404); return; }
         const file = obj.getServerFilePath(user, domain, req.query.link);
         if (file == null) { res.sendStatus(404); return; }
-        try {
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"' + file.name + '\"' });
-        } catch (ex) {
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename=\"file.bin\"' });
-        }
+        setContentDispositionHeader(res, 'application/octet-stream', file.name, null, 'file.bin');
         obj.fs.exists(file.fullpath, function (exists) { if (exists == true) { res.sendFile(file.fullpath); } else { res.sendStatus(404); } });
     }
 
@@ -4031,7 +4019,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
             var js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
 
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshagent"' });
+            setContentDispositionHeader(res, 'application/octet-stream', 'meshagent', null, 'meshagent');
             res.statusCode = 200;
             obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(js, 'utf8'), peinfo: argentInfo.pe });
         } else if (req.query.id != null) {
@@ -4039,7 +4027,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
             if (argentInfo == null) { res.sendStatus(404); return; }
             if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
-                res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
+                setContentDispositionHeader(res, 'application/octet-stream', argentInfo.rname, null, 'meshagent');
                 if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.end(argentInfo.data); }
             } else {
                 // Check if the meshid is a time limited, encrypted cookie
@@ -4085,11 +4073,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
                 if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
 
-                try {
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + meshfilename + '"' });
-                } catch (ex) {
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + argentInfo.rname + '"' });
-                }
+                setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, argentInfo.rname);
                 obj.parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: obj.parent.meshAgentBinaries[req.query.id].path, destinationStream: res, msh: meshsettings, peinfo: obj.parent.meshAgentBinaries[req.query.id].pe });
             }
         } else if (req.query.script != null) {
@@ -4098,7 +4082,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             // Send a specific mesh install script back
             var scriptInfo = obj.parent.meshAgentInstallScripts[req.query.script];
             if (scriptInfo == null) { res.sendStatus(404); return; }
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="' + scriptInfo.rname + '"' });
+            setContentDispositionHeader(res, 'application/octet-stream', scriptInfo.rname, null, 'script');
             var data = scriptInfo.data;
             var cmdoptions = { wgetoptionshttp: '', wgetoptionshttps: '', curloptionshttp: '-L ', curloptionshttps: '-L ' }
             if (obj.isTrustedCert(domain) != true) {
@@ -4122,17 +4106,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((agentid == 3)) { // Signed Windows MeshCmd.exe x86
                 var stats = null, meshCmdPath = obj.path.join(__dirname, 'agents', 'MeshCmd-signed.exe');
                 try { stats = obj.fs.statSync(meshCmdPath); } catch (e) { }
-                if ((stats != null)) { res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 3) ? '.exe' : '') + '"' }); res.sendFile(meshCmdPath); return; }
+                if ((stats != null)) {
+                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 3) ? '.exe' : ''), null, 'meshcmd');
+                    res.sendFile(meshCmdPath); return;
+                }
             } else if ((agentid == 4)) { // Signed Windows MeshCmd64.exe x64
                 var stats = null, meshCmd64Path = obj.path.join(__dirname, 'agents', 'MeshCmd64-signed.exe');
                 try { stats = obj.fs.statSync(meshCmd64Path); } catch (e) { }
-                if ((stats != null)) { res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') + '"' }); res.sendFile(meshCmd64Path); return; }
+                if ((stats != null)) {
+                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
+                    res.sendFile(meshCmd64Path); return;
+                }
             }
             // No signed agents, we are going to merge a new MeshCmd.
             if ((agentid < 10000) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { res.sendStatus(404); return; }
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : '') + '"' });
+            setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
             res.statusCode = 200;
             if (argentInfo.signedMeshCmdPath != null) {
                 // If we have a pre-signed MeshCmd, send that.
@@ -4168,7 +4158,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                     var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                     if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="meshaction.txt"' });
+
+                    setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                     res.send(JSON.stringify(meshaction, null, ' '));
                 });
             } else if (req.query.meshaction == 'generic') {
@@ -4183,12 +4174,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                 if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
-                res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="meshaction.txt"' });
+                setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                 res.send(JSON.stringify(meshaction, null, ' '));
             } else if (req.query.meshaction == 'winrouter') {
                 var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
                 if (obj.fs.existsSync(p)) {
-                    res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="MeshCentralRouter.exe"' });
+                    setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
                     try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                 } else { res.sendStatus(404); }
             } else {
@@ -4211,7 +4202,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     // Download a dump file
                     var dumpFile = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', req.query.dldump);
                     if (obj.fs.existsSync(dumpFile)) {
-                        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="' + req.query.dldump + '' });
+                        setContentDispositionHeader(res, 'application/octet-stream', req.query.dldump, null, 'file.bin');
                         res.sendFile(dumpFile); return;
                     } else {
                         res.sendStatus(404); return;
@@ -4349,13 +4340,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
         archive.on('error', function (err) { throw err; });
-        try {
-            // Set the agent download including the mesh name.
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent-' + mesh.name + '.zip"' });
-        } catch (ex) {
-            // If the mesh name contains invalid characters, just use a generic name.
-            res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent.zip"' });
-        }
+
+        // Set the agent download including the mesh name.
+        setContentDispositionHeader(res, 'application/octet-stream', 'MeshAgent-' + mesh.name + '.zip', null, 'MeshAgent.zip');
         archive.pipe(res);
 
         // Opens the "MeshAgentOSXPackager.zip"
@@ -4453,7 +4440,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var meshsettings = getMshFromRequest(req, res, domain);
         if (meshsettings == null) { res.sendStatus(401); return; }
 
-        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="meshagent.msh"' });
+        setContentDispositionHeader(res, 'application/octet-stream', 'meshagent.msh', null, 'meshagent.msh');
         res.send(meshsettings);
     };
 
@@ -4477,7 +4464,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (obj.GetNodeRights(user, node.meshid, node._id) == 0) { res.sendStatus(401); return; }
 
                 // Get the list of power events and send them
-                res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="powerevents.csv"' });
+                setContentDispositionHeader(res, 'application/octet-stream', 'powerevents.csv', null, 'powerevents.csv');
                 obj.db.getPowerTimeline(node._id, function (err, docs) {
                     var xevents = ['Time, State, Previous State'], prevState = 0;
                     for (var i in docs) {
@@ -6268,6 +6255,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Clean a IPv6 address that encodes a IPv4 address
     function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }
+
+    // Set the content disposition header for a HTTP response.
+    // Because the filename can't have any special characters in it, we need to be extra careful.
+    function setContentDispositionHeader(res, type, name, size, altname) {
+        var name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+        try {
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + name + '"' };
+            if (typeof size == 'number') { x['Content-Length'] = size; }
+            res.set(x);
+        } catch (ex) {
+            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + altname + '"' };
+            if (typeof size == 'number') { x['Content-Length'] = size; }
+            res.set(x);
+        }
+    }
 
     // Record a new entry in a recording log
     function recordingEntry(fd, type, flags, data, func, tag) {
