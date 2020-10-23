@@ -31,16 +31,16 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
 
     // Connection Authentication
     aedes.authenticate = function (client, username, password, callback) {
-        obj.parent.debug("mqtt", "Authentication User:" + username + ", Pass:" + password.toString() + ", ClientID:" + client.id + ", " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
+        obj.parent.debug('mqtt', "Authentication User:" + username + ", Pass:" + password.toString() + ", ClientID:" + client.id + ", " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
 
         // Parse the username and password
         var usersplit = username.split(':');
         var passsplit = password.toString().split(':');
-        if ((usersplit.length !== 4) || (passsplit.length !== 3)) { obj.parent.debug("mqtt", "Invalid user/pass format, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
-        if (usersplit[0] !== 'MCAuth1') { obj.parent.debug("mqtt", "Invalid auth method, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
+        if ((usersplit.length !== 4) || (passsplit.length !== 3)) { obj.parent.debug('mqtt', "Invalid user/pass format, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
+        if (usersplit[0] !== 'MCAuth1') { obj.parent.debug('mqtt', "Invalid auth method, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
 
         // Check authentication
-        if (passsplit[0] !== parent.config.settings.mqtt.auth.keyid) { obj.parent.debug("mqtt", "Invalid auth keyid, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
+        if (passsplit[0] !== parent.config.settings.mqtt.auth.keyid) { obj.parent.debug('mqtt', "Invalid auth keyid, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
         if (parent.crypto.createHash('sha384').update(username + ':' + passsplit[1] + ':' + parent.config.settings.mqtt.auth.key).digest("base64") !== passsplit[2]) { obj.parent.debug("mqtt", "Invalid password, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(authError, null); return; }
 
         // Setup the identifiers
@@ -49,7 +49,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
         const xdomainid = usersplit[3];
 
         // Check the domain
-        if ((typeof client.conn.xdomain == 'object') && (xdomainid != client.conn.xdomain.id)) { obj.parent.debug("mqtt", "Invalid domain connection, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(null, false); return; }
+        if ((typeof client.conn.xdomain == 'object') && (xdomainid != client.conn.xdomain.id)) { obj.parent.debug('mqtt', "Invalid domain connection, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip)); callback(null, false); return; }
 
         // Convert meshid from HEX to Base64 if needed
         if (xmeshid.length === 96) { xmeshid = Buffer.from(xmeshid, 'hex').toString('base64'); }
@@ -77,7 +77,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
             client.conn.parent = client;
             client.conn.on('end', function () {
                 // client is "this.parent"
-                obj.parent.debug("mqtt", "Connection closed, " + this.parent.conn.xtransport + "://" + cleanRemoteAddr(this.parent.conn.xip));
+                obj.parent.debug('mqtt', "Connection closed, " + this.parent.conn.xtransport + '://' + cleanRemoteAddr(this.parent.conn.xip));
 
                 // Remove this client from the connections list
                 if ((this.parent.xdbNodeKey != null) && (obj.connections[this.parent.xdbNodeKey] != null)) {
@@ -99,7 +99,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
     // Check if a client can publish a packet
     aedes.authorizeSubscribe = function (client, sub, callback) {
         // Subscription control
-        obj.parent.debug("mqtt", "AuthorizeSubscribe \"" + sub.topic + "\", " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
+        obj.parent.debug('mqtt', "AuthorizeSubscribe \"" + sub.topic + '", ' + client.conn.xtransport + '://' + cleanRemoteAddr(client.conn.xip));
         if (allowedSubscriptionTopics.indexOf(sub.topic) === -1) { sub = null; } // If not a supported subscription, deny it.
         callback(null, sub); // We authorize supported topics, but will not allow agents to publish anything to other agents.
     }
@@ -107,7 +107,7 @@ module.exports.CreateMQTTBroker = function (parent, db, args) {
     // Check if a client can publish a packet
     aedes.authorizePublish = function (client, packet, callback) {
         // Handle a published message
-        obj.parent.debug("mqtt", "AuthorizePublish, " + client.conn.xtransport + "://" + cleanRemoteAddr(client.conn.xip));
+        obj.parent.debug('mqtt', "AuthorizePublish, " + client.conn.xtransport + '://' + cleanRemoteAddr(client.conn.xip));
         handleMessage(client.xdbNodeKey, client.xdbMeshKey, client.xdomainid, packet.topic, packet.payload);
         // We don't accept that any client message be published, so don't call the callback.
     }
