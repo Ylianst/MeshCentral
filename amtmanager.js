@@ -302,9 +302,16 @@ module.exports.CreateAmtManager = function (parent) {
             var amtPolicy = 0, ciraPolicy = 0, badPass = 0, password = null;
             if (mesh.amt != null) {
                 if (mesh.amt.type) { amtPolicy = mesh.amt.type; }
-                if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; }
-                if (mesh.amt.badpass) { badPass = mesh.amt.badpass; }
-                if ((typeof mesh.amt.password == 'string') && (mesh.amt.password != '')) { password = mesh.amt.password; }
+                if (mesh.amt.type == 4) {
+                    // Fully automatic policy
+                    ciraPolicy = 2; // CIRA will be setup
+                    badPass = 1; // Automatically re-active CCM
+                    password = null; // Randomize the password.
+                } else {
+                    if (mesh.amt.cirasetup) { ciraPolicy = mesh.amt.cirasetup; }
+                    if (mesh.amt.badpass) { badPass = mesh.amt.badpass; }
+                    if ((typeof mesh.amt.password == 'string') && (mesh.amt.password != '')) { password = mesh.amt.password; }
+                }
             }
             if (amtPolicy < 2) { ciraPolicy = 0; }
             dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy, badPass: badPass, password: password };
@@ -343,7 +350,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Attempt to perform initial contact with Intel AMT
     function attemptInitialContact(dev) {
         delete dev.amtstack; // If there is a WSMAn stack setup, clean it up now.
-        parent.debug('amt', "Attempt Initial Contact", dev.name, dev.connType);
+        parent.debug('amt', "Attempt Initial Contact", dev.name, ["CIRA", "CIRA-Relay", "CIRA-LMS", "Local"][dev.connType]);
 
         // Check Intel AMT policy when CIRA-LMS connection is in use.
         if ((dev.connType == 2) && (dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) {
@@ -354,7 +361,7 @@ module.exports.CreateAmtManager = function (parent) {
                 return;
             }
             // Check if we have an ACM activation policy, but the device is in CCM
-            if ((dev.policy.amtPolicy == 3) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
+            if (((dev.policy.amtPolicy == 3) || (dev.policy.amtPolicy == 4)) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
                 // This device in is CCM, check if we can upgrade to ACM
                 if (activateIntelAmt(dev) == false) return; // If this return true, the platform is in CCM and can't go to ACM, keep going with management.
             }
@@ -562,7 +569,7 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.tlsfail = true; attemptInitialContact(dev); return;
             } else if (status == 401) {
                 // Authentication error, see if we can use alternative credentials
-                if ((dev.acctry == null) && (dev.policy.password != null)) { dev.acctry = 'policy'; attemptInitialContact(dev); return; }
+                if ((dev.acctry == null) && (typeof dev.policy.password == 'string') && (dev.policy.password != '')) { dev.acctry = 'policy'; attemptInitialContact(dev); return; }
                 if ((dev.acctry == null) || (dev.acctry == 'policy') && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
                 if ((dev.acctry != null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
 
@@ -1070,7 +1077,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Check if Intel AMT has the server root certificate
     function attemptRootCertSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2)) { func(dev); return; } // Server root certificate does not need to be present is CIRA is not needed
+        if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2) || (parent.mpsserver.server == null)) { func(dev); return; } // Server root certificate does not need to be present is CIRA is not needed
 
         // Find the current TLS certificate & MeshCentral root certificate
         var xxMeshCentralRoot = null;
@@ -1150,7 +1157,7 @@ module.exports.CreateAmtManager = function (parent) {
             // Fetch the server's CIRA settings
             dev.cira.mpsPresent = null;
             dev.cira.mpsPolicy = false;
-            if (dev.policy.ciraPolicy == 2) {
+            if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { // parent.mpsserver.server is not null if the MPS server is listening for TCP/TLS connections
                 dev.cira.meshidx = dev.meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16);
                 dev.cira.mpsName = parent.webserver.certificates.AmtMpsName;
                 var serverNameSplit = dev.cira.mpsName.split('.');
@@ -1190,7 +1197,8 @@ module.exports.CreateAmtManager = function (parent) {
             }
 
             // If we need to setup CIRA, start by checking the MPS server
-            if (dev.policy.ciraPolicy == 2) { addMpsServer(dev); } else { checkEnvironmentDetection(dev); }
+            // parent.mpsserver.server is not null if the MPS server is listening for TCP/TLS connections
+            if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { addMpsServer(dev); } else { checkEnvironmentDetection(dev); }
         });
     }
 
@@ -1202,6 +1210,7 @@ module.exports.CreateAmtManager = function (parent) {
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to create new MPS server (" + status + ")."); removeAmtDevice(dev); return; }
                 dev.cira.mpsPresent = getItem(response.Body.MpServer.ReferenceParameters.SelectorSet.Selector, '@Name', 'Name').Value;
+                console.log(dev.cira.mpsPresent);
                 dev.consoleMsg("Created new MPS server.");
                 addMpsPolicy(dev);
             });
@@ -1251,7 +1260,7 @@ module.exports.CreateAmtManager = function (parent) {
         var currentEnvDetect = dev.cira.xxEnvironementDetection['DetectionStrings'];
         if (currentEnvDetect == null) { currentEnvDetect = []; }
 
-        if (dev.policy.ciraPolicy == 2) { // ciraPolicy: 0 = Do Nothing, 1 = Clear, 2 = Set
+        if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { // ciraPolicy: 0 = Do Nothing, 1 = Clear, 2 = Set
             const newEnvDetect = parent.config.domains[dev.domainid].amtmanager.environmentdetection;
             if (newEnvDetect == null) {
                 // If no environment detection is specified in the config.json, check that we have a random environment detection
@@ -1270,7 +1279,7 @@ module.exports.CreateAmtManager = function (parent) {
                 if (mismatch == true) { editEnvironmentDetectionTmp = newEnvDetect; changes = true; }
             }
             
-        } else if (dev.policy.ciraPolicy == 1) {
+        } else if ((dev.policy.ciraPolicy == 1) || (parent.mpsserver.server == null)) {
             // Check environment detection is clear
             if (currentEnvDetect.length != 0) { editEnvironmentDetectionTmp = []; changes = true; }
         }
@@ -1589,7 +1598,7 @@ module.exports.CreateAmtManager = function (parent) {
         if ((typeof dev.mpsConnection.tag.meiState.OsAdmin != 'object') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.user != 'string') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.pass != 'string')) { amtPolicy = 0; }
         if (amtPolicy == 0) { removeAmtDevice(dev); return false; } // Do nothing, we should not have gotten this CIRA-LMS connection.
         if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); } // Activate to CCM policy
-        if (amtPolicy == 3) { // Activate to ACM policy
+        if ((amtPolicy == 3) || (amtPolicy == 4)) { // Activate to ACM policy
             var acminfo = checkAcmActivation(dev);
             if (acminfo == null) {
                 // No opportunity to activate to ACM, check if we are already in CCM

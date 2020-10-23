@@ -3301,7 +3301,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Change a mesh Intel AMT policy
                     if (common.validateString(command.meshid, 1, 1024) == false) break; // Check the meshid
                     if (common.validateObject(command.amtpolicy) == false) break; // Check the amtpolicy
-                    if (common.validateInt(command.amtpolicy.type, 0, 3) == false) break; // Check the amtpolicy.type
+                    if (common.validateInt(command.amtpolicy.type, 0, 4) == false) break; // Check the amtpolicy.type
                     if (command.amtpolicy.type === 2) {
                         if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
                         if ((command.amtpolicy.badpass != null) && common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
