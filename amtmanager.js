@@ -512,6 +512,7 @@ module.exports.CreateAmtManager = function (parent) {
             dev.aquired.user = dev.intelamt.user = stack.wsman.comm.user;
             dev.aquired.pass = dev.intelamt.pass = stack.wsman.comm.pass;
             dev.aquired.lastContact = Date.now();
+            dev.aquired.warn = 0; // Clear all warnings (TODO: Check Realm and TLS cert pinning)
             if ((dev.connType == 1) || (dev.connType == 3)) { dev.aquired.tls = stack.wsman.comm.xtls; } // Only set the TLS state if in relay or local mode. When using CIRA, this is auto-detected.
             if (stack.wsman.comm.xtls == 1) { dev.aquired.hash = stack.wsman.comm.xtlsCertificate.fingerprint.split(':').join('').toLowerCase(); } else { delete dev.aquired.hash; }
             UpdateDevice(dev);
@@ -575,7 +576,8 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.consoleMsg("Unable to connect.");
 
                 // Set an error that we can't login to this device
-                //ClearDeviceCredentials(dev);
+                dev.aquired.warn = 1; // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch
+                UpdateDevice(dev);
             }
             //console.log(dev.nodeid, dev.name, dev.host, status, 'Bad response');
             removeAmtDevice(dev);
@@ -611,6 +613,9 @@ module.exports.CreateAmtManager = function (parent) {
             if (dev.aquired.hash && (typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
             if (dev.aquired.tls && (typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
             if ((dev.aquired.state != null) && (typeof dev.aquired.state == 'number') && (dev.aquired.state != device.intelamt.state)) { change = 1; log = 1; device.intelamt.state = dev.aquired.state; changes.push('AMT state'); }
+
+            // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch
+            if ((typeof dev.aquired.warn == 'number')) { if ((dev.aquired.warn == 0) && (device.intelamt.warn != null)) { delete device.intelamt.warn; change = 1; } else if (dev.aquired.warn != device.intelamt.warn) { device.intelamt.warn = dev.aquired.warn; change = 1; } }
 
             // Update Intel AMT flags if needed
             // dev.aquired.controlMode // 1 = CCM, 2 = ACM

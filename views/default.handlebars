@@ -2793,6 +2793,7 @@
                                     if (message.event.node.intelamt.uuid != null) { node.intelamt.uuid = message.event.node.intelamt.uuid; }
                                     if (message.event.node.intelamt.realm != null) { node.intelamt.realm = message.event.node.intelamt.realm; }
                                     if (message.event.node.intelamt.flags != null) { node.intelamt.flags = message.event.node.intelamt.flags; }
+                                    if (message.event.node.intelamt.warn != null) { node.intelamt.warn = message.event.node.intelamt.warn; } else { delete node.intelamt.warn; }
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 node.namel = node.name.toLowerCase();
@@ -5599,17 +5600,32 @@
                             str += (', v' + EscapeHtml(node.intelamt.ver));
                         }
 
+                    // If Intel AMT is activated, show additional options
                     if (node.intelamt.state == 2) {
                         if (node.intelamt.tls == 1) { str += ', <span title="' + "Intel&reg; AMT is setup with TLS network security" + '">' + "TLS" + '</span>'; }
-                        if (node.intelamt.user == null || node.intelamt.user == '') {
+
+                        var editUserCredentialsIcon = false;
+                        if (node.intelamt.user == null || node.intelamt.user == '') { // If credentials are not set, allow setting them.
                             if ((meshrights & 4) != 0) {
                                 str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "No Credentials" + '</i>';
+                                editUserCredentialsIcon = true;
                             } else {
                                 str += ', <i style=color:#FF0000>' + "No Credentials" + '</i>';
                             }
+                        } else if (((features2 & 1) != 0) && (node.intelamt.warn != null) && ((node.intelamt.warn & 1) != 0)) { // If AMT manager is running and warned of invalid credentials, allow setting them.
+                            if ((meshrights & 4) != 0) {
+                                str += ', <i style=color:#FF0000;cursor:pointer title="' + "Edit Intel&reg; AMT credentials" + '" onclick=editDeviceAmtSettings("' + node._id + '")>' + "Invalid Credentials" + '</i>';
+                                editUserCredentialsIcon = true;
+                            } else {
+                                str += ', <i style=color:#FF0000>' + "Invalid Credentials" + '</i>';
+                            }
                         }
+
+                        // If the AMT manager is not running, always allow Intel AMT credentials to be edited.
+                        if (((meshrights & 4) != 0) && ((features2 & 1) == 0)) { editUserCredentialsIcon = true; }
+
                         str += ' ';
-                        if ((meshrights & 4) != 0) {
+                        if (editUserCredentialsIcon) {
                             str += '<img src=images/link4.png height=10 width=10 title="' + "Edit Intel&reg; AMT credentials" + '" style=cursor:pointer onclick=editDeviceAmtSettings("' + node._id + '")>';
                         }
                     }
@@ -6249,9 +6265,7 @@
                 var x = { action: 'changedevice', nodeid: tag.node._id, intelamt: { user: amtuser, pass: amtpass } };
                 if ((features2 & 1) == 0) { x.intelamt.tls = parseInt(Q('dp10tls').value); }
                 meshserver.send(x);
-                tag.node.intelamt.user = amtuser;
-                if ((features2 & 1) == 0) { tag.node.intelamt.tls = parseInt(Q('dp10tls').value); }
-                if (tag.func) { setTimeout(function () { tag.func(null, tag.arg); }, 300); }
+                if (tag.func) { setTimeout(function () { tag.func(null, tag.arg); }, 1000); }
             }
         }
 
