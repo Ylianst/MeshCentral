@@ -9421,7 +9421,7 @@
                 // Intel AMT setup
                 var intelAmtPolicy = "No Policy";
                 if (currentMesh.amt) {
-                    if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate Client Control Mode (CCM)'; }
+                    if (currentMesh.amt.type == 1) { intelAmtPolicy = 'Deactivate'; }
                     else if (currentMesh.amt.type == 2) {
                         intelAmtPolicy = "Simple Client Control Mode (CCM)";
                         if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
@@ -9519,7 +9519,7 @@
             if (xxdialogMode) return;
             var x = '', acmoption = '';
             if ((features & 0x100000) != 0) { acmoption = '<option value=3>' + "Simple Admin Control Mode (ACM)" + '</option>'; }
-            x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate Client Control Mode (CCM)" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '<option value=4>' + "Fully Automatic" + '</option></select>');
+            x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '<option value=4>' + "Fully Automatic" + '</option></select>');
             x += '<div id=dp20amtpolicydiv></div>';
             setDialogMode(2, "Intel&reg; AMT Policy", 3, p20editMeshAmtEx, x);
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
@@ -9553,7 +9553,7 @@
                 }
             }
             if (ptype == 0) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it." + '</table>'; }
-            if (ptype == 1) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Devices in Admin Control Mode (ACM) can still be managed manually." + '</table>'; }
+            if (ptype == 1) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually." + '</table>'; }
             if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommanded policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management." + '</table>'; }
             QH('dp20amtpolicydiv', x);
             setTimeout(dp20amtValidatePolicy, 1);

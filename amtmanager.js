@@ -313,7 +313,8 @@ module.exports.CreateAmtManager = function (parent) {
                     if ((typeof mesh.amt.password == 'string') && (mesh.amt.password != '')) { password = mesh.amt.password; }
                 }
             }
-            if (amtPolicy < 2) { ciraPolicy = 0; }
+            if (amtPolicy == 0) { ciraPolicy = 0; } // If no policy, don't change CIRA state.
+            if (amtPolicy == 1) { ciraPolicy = 1; } // If deactivation policy, clear CIRA.
             dev.policy = { amtPolicy: amtPolicy, ciraPolicy: ciraPolicy, badPass: badPass, password: password };
 
             // Setup the monitored device
@@ -371,8 +372,8 @@ module.exports.CreateAmtManager = function (parent) {
                     // Deactivate CCM.
                     deactivateIntelAmtCCM(dev);
                 } else {
-                    // Already deactivated or in ACM, do nothing.
-                    dev.consoleMsg("Done.");
+                    // Already deactivated or in ACM
+                    dev.consoleMsg("Done."); // TODO: We need to at least clear CIRA
                     removeAmtDevice(dev);
                 }
                 return;
@@ -570,7 +571,7 @@ module.exports.CreateAmtManager = function (parent) {
             } else if (status == 401) {
                 // Authentication error, see if we can use alternative credentials
                 if ((dev.acctry == null) && (typeof dev.policy.password == 'string') && (dev.policy.password != '')) { dev.acctry = 'policy'; attemptInitialContact(dev); return; }
-                if ((dev.acctry == null) || (dev.acctry == 'policy') && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
+                if (((dev.acctry == null) || (dev.acctry == 'policy')) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > 0)) { dev.acctry = 0; attemptInitialContact(dev); return; }
                 if ((dev.acctry != null) && (obj.amtAdminAccounts[dev.domainid] != null) && (obj.amtAdminAccounts[dev.domainid].length > (dev.acctry + 1))) { dev.acctry++; attemptInitialContact(dev); return; }
 
                 // If this devics is in CCM mode and we have a bad password reset policy, do it now.
@@ -1209,8 +1210,8 @@ module.exports.CreateAmtManager = function (parent) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to create new MPS server (" + status + ")."); removeAmtDevice(dev); return; }
+                if ((response.Body.MpServer == null) || (response.Body.MpServer.ReferenceParameters == null) || (response.Body.MpServer.ReferenceParameters.SelectorSet == null) || (response.Body.MpServer.ReferenceParameters.SelectorSet.Selector == null)) { dev.consoleMsg("Create new MPS server invalid response."); removeAmtDevice(dev); return; }
                 dev.cira.mpsPresent = getItem(response.Body.MpServer.ReferenceParameters.SelectorSet.Selector, '@Name', 'Name').Value;
-                console.log(dev.cira.mpsPresent);
                 dev.consoleMsg("Created new MPS server.");
                 addMpsPolicy(dev);
             });
@@ -1832,7 +1833,7 @@ module.exports.CreateAmtManager = function (parent) {
             delete dev.amtstack;
             UpdateDevice(dev);
 
-            if (dev.policy.amtPolicy == 1) { // CCM deactivation policy, we are done.
+            if (dev.policy.amtPolicy == 1) { // Deactivation policy, we are done.
                 dev.consoleMsg("Deactivation successful.");
                 dev.consoleMsg("Done.");
                 removeAmtDevice(dev);
