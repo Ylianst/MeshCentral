@@ -3847,7 +3847,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
                         if (command.intelamt != null) {
                             if ((command.intelamt.user != null) && (command.intelamt.pass != undefined) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) { change = 1; node.intelamt.user = command.intelamt.user; node.intelamt.pass = command.intelamt.pass; changes.push('Intel AMT credentials'); amtchange = 1; }
-                            if ((command.intelamt.tls != null) && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
+                            // Only allow the user to set Intel AMT TLS state if AMT Manager is not active. AMT manager will auto-detect TLS state.
+                            if ((parent.parent.amtManager != null) && (command.intelamt.tls != null) && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                         }
                         if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
                             var ok = true, group2 = [];
