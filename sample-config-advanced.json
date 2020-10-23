@@ -212,6 +212,19 @@
           }
         }
       },
+      "_amtManager": {
+        "adminAccounts": [{ "user": "admin", "pass": "MyP@ssw0rd" }],
+        "environmentDetection": [ "domain1.com", "domain2.com", "domain3.com", "domain4.com" ],
+        "wifiProfiles": [
+          {
+            "name": "Profile1",
+            "ssid": "MyStation1",
+            "authentication": "wpa2-psk",
+            "encryption": "ccmp-aes",
+            "password": "MyP@ssw0rd"
+          }
+        ]
+      },
       "_redirects": {
         "meshcommander": "https://www.meshcommander.com/"
       },
