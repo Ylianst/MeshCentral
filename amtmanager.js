@@ -353,6 +353,11 @@ module.exports.CreateAmtManager = function (parent) {
                 activateIntelAmt(dev);
                 return;
             }
+            // Check if we have an ACM activation policy, but the device is in CCM
+            if ((dev.policy.amtPolicy == 3) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
+                // This device in is CCM, check if we can upgrade to ACM
+                if (activateIntelAmt(dev) == false) return; // If this return true, the platform is in CCM and can't go to ACM, keep going with management.
+            }
             // Intel AMT CCM deactivation policy
             if (dev.policy.amtPolicy == 1) {
                 if ((dev.mpsConnection.tag.meiState.ProvisioningState == 2) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
@@ -994,11 +999,11 @@ module.exports.CreateAmtManager = function (parent) {
             for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); } }
 
             // Notify of WIFI profile changes
-            if ((profilesToAdd.length > 0) && (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
+            if ((profilesToAdd.length > 0) || (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
 
             // Remove any extra WIFI profiles
             for (var i in profilesToRemove) {
-                dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { console.log('removed', status); }, 0, 1);
+                dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { }, 0, 1);
             }
 
             // Add missing WIFI profiles
@@ -1023,7 +1028,7 @@ module.exports.CreateAmtManager = function (parent) {
                     PSKPassPhrase: profileToAdd.password
                 }
                 prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
-                dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { console.log('added', status); });
+                dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { });
             }
 
             // Compute how many WIFI profiles will be in the device and change the state if needed
@@ -1566,20 +1571,31 @@ module.exports.CreateAmtManager = function (parent) {
     function activateIntelAmt(dev) {
         // Find the Intel AMT policy
         const mesh = parent.webserver.meshes[dev.meshid];
-        if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev); return; }
+        if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev); return false; }
         var amtPolicy = 0; // 0 = Do nothing, 1 = Deactivate CCM, 2 = CCM, 3 = ACM
         if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } }
         if ((typeof dev.mpsConnection.tag.meiState.OsAdmin != 'object') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.user != 'string') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.pass != 'string')) { amtPolicy = 0; }
-        if (amtPolicy == 0) { removeAmtDevice(dev); return; } // Do nothing, we should not have gotten this CIRA-LMS connection.
+        if (amtPolicy == 0) { removeAmtDevice(dev); return false; } // Do nothing, we should not have gotten this CIRA-LMS connection.
         if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); } // Activate to CCM policy
         if (amtPolicy == 3) { // Activate to ACM policy
             var acminfo = checkAcmActivation(dev);
             if (acminfo == null) {
-                activateIntelAmtCcm(dev, mesh.amt.password); // No ACM certificate found, fallback to CCM.
+                // No opportunity to activate to ACM, check if we are already in CCM
+                if ((dev.mpsConnection.tag.meiState.Flags & 2) != 0) return true; // We are in CCM, keep going
+                // We are not already in CCM, go to CCM now
+                activateIntelAmtCcm(dev, mesh.amt.password);
             } else {
-                activateIntelAmtAcm(dev, mesh.amt.password, acminfo); // Found a certificate, activate to ACM.
+                // Found a certificate to activate to ACM.
+                if ((dev.mpsConnection.tag.meiState.Flags & 2) != 0) {
+                    // We are in CCM, deactivate CCM first.
+                    deactivateIntelAmtCCM(dev);
+                } else {
+                    // We are not activated now, go to ACM directly.
+                    activateIntelAmtAcm(dev, mesh.amt.password, acminfo);
+                }
             }
         }
+        return false;
     }
 
     function activateIntelAmtCcm(dev, password) {
