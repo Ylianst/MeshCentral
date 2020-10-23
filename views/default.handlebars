@@ -9428,6 +9428,8 @@
                     } else if (currentMesh.amt.type == 3) {
                         intelAmtPolicy = "Simple Admin Control Mode (ACM)";
                         if (currentMesh.amt.cirasetup == 2) { intelAmtPolicy += " + CIRA"; }
+                    } else if (currentMesh.amt.type == 4) {
+                        intelAmtPolicy = "Fully Automatic";
                     }
                 }
                 x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
@@ -9517,7 +9519,7 @@
             if (xxdialogMode) return;
             var x = '', acmoption = '';
             if ((features & 0x100000) != 0) { acmoption = '<option value=3>' + "Simple Admin Control Mode (ACM)" + '</option>'; }
-            x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate Client Control Mode (CCM)" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '</select>');
+            x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate Client Control Mode (CCM)" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '<option value=4>' + "Fully Automatic" + '</option></select>');
             x += '<div id=dp20amtpolicydiv></div>';
             setDialogMode(2, "Intel&reg; AMT Policy", 3, p20editMeshAmtEx, x);
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
@@ -9535,7 +9537,7 @@
 
         function p20editMeshAmtChange() {
             var ptype = Q('dp20amtpolicy').value, x = '';
-            if (ptype >= 2) {
+            if ((ptype >= 2) && (ptype < 4)) {
                 x = addHtmlValue("Password*", '<input id=dp20amtpolicypass type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += addHtmlValue("Password*", '<input id=dp20amtpolicypass2 type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += addHtmlValue("Password mismatch", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "Reactivate Intel&reg; AMT" + '</option></select>');
@@ -9550,6 +9552,7 @@
                     }
                 }
             }
+            if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommanded policy type. Intel&reg; AMT activation and management is completely automated." + '</table>'; }
             QH('dp20amtpolicydiv', x);
             setTimeout(dp20amtValidatePolicy, 1);
         }
@@ -9565,12 +9568,14 @@
 
         function p20editMeshAmtEx() {
             var ptype = parseInt(Q('dp20amtpolicy').value), amtpolicy = { type: ptype };
-            if (ptype == 2) {
+            if (ptype == 2) { // CCM policy
                 amtpolicy = { type: ptype, password: Q('dp20amtpolicypass').value, badpass: parseInt(Q('dp20amtbadpass').value) };
                 if ((features & 0x400) == 0) { amtpolicy.cirasetup = parseInt(Q('dp20amtcira').value); } else { amtpolicy.cirasetup = 1; }
-            } else if (ptype == 3) {
+            } else if (ptype == 3) { // ACM policy
                 amtpolicy = { type: ptype, password: Q('dp20amtpolicypass').value, badpass: parseInt(Q('dp20amtbadpass').value) };
                 if ((features & 0x400) == 0) { amtpolicy.cirasetup = parseInt(Q('dp20amtcira').value); } else { amtpolicy.cirasetup = 1; }
+            } else if (ptype == 4) { // Fully automatic policy
+                amtpolicy = { type: ptype };
             }
             meshserver.send({ action: 'meshamtpolicy', meshid: currentMesh._id, amtpolicy: amtpolicy });
         }
