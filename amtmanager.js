@@ -584,6 +584,7 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.consoleMsg("Unable to connect.");
 
                 // Set an error that we can't login to this device
+                if (dev.aquired == null) { dev.aquired = {}; }
                 dev.aquired.warn = 1; // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch
                 UpdateDevice(dev);
             }
@@ -1884,11 +1885,11 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Generate a random Intel AMT password
     function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
-    function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
-    function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
-    function getRandomLowerCase(len) { var r = '', random = obj.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
+    function getRandomAmtPassword() { var p; do { p = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
+    function getRandomPassword() { return Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
+    function getRandomLowerCase(len) { var r = '', random = parent.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
 
-    function hex_md5(str) { return obj.parent.crypto.createHash('md5').update(str).digest('hex'); }
+    function hex_md5(str) { return parent.crypto.createHash('md5').update(str).digest('hex'); }
     function Clone(v) { return JSON.parse(JSON.stringify(v)); }
     function MakeToArray(v) { if (!v || v == null || typeof v == 'object') return v; return [v]; }
     function getItem(x, y, z) { for (var i in x) { if (x[i][y] == z) return x[i]; } return null; }
