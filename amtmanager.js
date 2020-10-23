@@ -46,6 +46,8 @@ module.exports.CreateAmtManager = function (parent) {
                     obj.amtAdminAccounts[domainid].push(c2);
                 }
             }
+        } else {
+            delete domain.amtmanager.adminaccounts;
         }
 
         // Check environment detection
@@ -57,6 +59,41 @@ module.exports.CreateAmtManager = function (parent) {
                 if (envDetect.length >= 4) break; // Maximum of 4 DNS suffix
             }
             if (envDetect.length > 0) { domain.amtmanager.environmentdetection = envDetect; } else { delete domain.amtmanager.environmentdetection; }
+        } else {
+            delete domain.amtmanager.environmentdetection;
+        }
+
+        // Check WIFI profiles
+        //var wifiAuthMethod = { 1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768: "WPA3 802.1x" };
+        //var wifiEncMethod = { 1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None" }
+        if (Array.isArray(domain.amtmanager.wifiprofiles) == true) {
+            var goodWifiProfiles = [];
+            for (var i = 0; i < domain.amtmanager.wifiprofiles.length; i++) {
+                var wifiProfile = domain.amtmanager.wifiprofiles[i];
+                if ((typeof wifiProfile.ssid == 'string') && (wifiProfile.ssid != '') && (typeof wifiProfile.password == 'string') && (wifiProfile.password != '')) {
+                    if ((wifiProfile.name == null) || (wifiProfile.name == '')) { wifiProfile.name = wifiProfile.ssid; }
+                    if (typeof wifiProfile.authentication == 'string') {
+                        // Authentication
+                        if (typeof wifiProfile.authentication == 'string') { wifiProfile.authentication = wifiProfile.authentication.toLowerCase(); }
+                        if (wifiProfile.authentication == 'wpa-psk') { wifiProfile.authentication = 4; }
+                        if (wifiProfile.authentication == 'wpa2-psk') { wifiProfile.authentication = 6; }
+                        if (typeof wifiProfile.authentication != 'number') { wifiProfile.authentication = 4; } // Default to CCMP-AES
+
+                        // Encyption
+                        if (typeof wifiProfile.encryption == 'string') { wifiProfile.encryption = wifiProfile.encryption.toLowerCase(); }
+                        if ((wifiProfile.encryption == 'ccmp-aes') || (wifiProfile.encryption == 'ccmp')) { wifiProfile.encryption = 4; }
+                        if ((wifiProfile.encryption == 'tkip-rc4') || (wifiProfile.encryption == 'tkip')) { wifiProfile.encryption = 3; }
+                        if (typeof wifiProfile.encryption != 'number') { wifiProfile.encryption = 6; } // Default to WPA2-PSK
+
+                        // Type
+                        wifiProfile.type = 3; // Infrastructure
+                    }
+                    goodWifiProfiles.push(wifiProfile);
+                }
+            }
+            domain.amtmanager.wifiprofiles = goodWifiProfiles;
+        } else {
+            delete domain.amtmanager.wifiprofiles;
         }
     }
 
@@ -479,29 +516,32 @@ module.exports.CreateAmtManager = function (parent) {
                 attemptTlsSync(dev, function (dev) {
                     // If we need to switch to TLS, do it now.
                     if (dev.switchToTls == 1) { delete dev.switchToTls; attemptInitialContact(dev); return; }
-                    // Check Intel AMT root certificate state
-                    attemptRootCertSync(dev, function (dev) {
-                        // Check Intel AMT CIRA settings
-                        attemptCiraSync(dev, function (dev) {
-                            // Check Intel AMT settings
-                            attemptSettingsSync(dev, function (dev) {
-                                // See if we need to get hardware inventory
-                                attemptFetchHardwareInventory(dev, function (dev) {
-                                    dev.consoleMsg('Done.');
+                    // Check Intel AMT WIFI state
+                    attemptWifiSync(dev, function (dev) {
+                        // Check Intel AMT root certificate state
+                        attemptRootCertSync(dev, function (dev) {
+                            // Check Intel AMT CIRA settings
+                            attemptCiraSync(dev, function (dev) {
+                                // Check Intel AMT settings
+                                attemptSettingsSync(dev, function (dev) {
+                                    // See if we need to get hardware inventory
+                                    attemptFetchHardwareInventory(dev, function (dev) {
+                                        dev.consoleMsg('Done.');
 
-                                    // Remove from task limiter if needed
-                                    if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
+                                        // Remove from task limiter if needed
+                                        if (dev.taskid != null) { obj.parent.taskLimiter.completed(dev.taskid); delete dev.taskLimiter; }
 
-                                    if (dev.connType != 2) {
-                                        // Start power polling if not connected to LMS
-                                        var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
-                                        ppfunc.dev = dev;
-                                        dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
-                                        fetchPowerState(dev);
-                                    } else {
-                                        // For LMS connections, close now.
-                                        dev.controlMsg({ action: 'close' });
-                                    }
+                                        if (dev.connType != 2) {
+                                            // Start power polling if not connected to LMS
+                                            var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
+                                            ppfunc.dev = dev;
+                                            dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                            fetchPowerState(dev);
+                                        } else {
+                                            // For LMS connections, close now.
+                                            dev.controlMsg({ action: 'close' });
+                                        }
+                                    });
                                 });
                             });
                         });
@@ -901,6 +941,97 @@ module.exports.CreateAmtManager = function (parent) {
                 setTimeout(f, 5000);
             });
         }
+    }
+
+
+    //
+    // Intel AMT WIFI
+    //
+
+    // This method will sync the WIFI profiles from the device and the server, but does not care about profile priority.
+    // We may want to work on an alternate version that does do priority if requested.
+    function attemptWifiSync(dev, func) {
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.connType != 2) { func(dev); return; } // Only configure wireless over a CIRA-LMS link
+        if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
+
+        // Get the current list of WIFI profiles
+        dev.taskCount = 1;
+        dev.taskCompleted = func;
+        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings'], function (stack, name, responses, status) {
+            const dev = stack.dev;
+            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+            if (status != 200) { devTaskCompleted(dev); return; } // We can't get wireless settings, ignore and carry on.
+
+            // The server and device WIFI profiles, find profiles to add and remove
+            const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
+            const devProfiles = responses['CIM_WiFiEndpointSettings'].responses
+            var profilesToAdd = [], profilesToRemove = [];            
+
+            // Look at the WIFI profiles in the device
+            for (var i in sevProfiles) {
+                var sevProfile = sevProfiles[i], match = false;
+                for (var j in devProfiles) {
+                    var devProfile = devProfiles[j];
+                    if (
+                        (devProfile.ElementName == sevProfile.name) &&
+                        (devProfile.SSID == sevProfile.ssid) &&
+                        (devProfile.AuthenticationMethod == sevProfile.authentication) &&
+                        (devProfile.EncryptionMethod == sevProfile.encryption) &&
+                        (devProfile.BSSType == sevProfile.type)
+                    ) { match = true; devProfile.match = true; }
+                }
+                if (match == false) { profilesToAdd.push(sevProfile); }
+            }
+            for (var j in devProfiles) {
+                var devProfile = devProfiles[j];
+                if (devProfile.match !== true) { profilesToRemove.push(devProfile); }
+            }
+
+            // If both lists are empty, we have nothing to do.
+            if ((profilesToAdd.length == 0) && (profilesToRemove.length == 0)) { devTaskCompleted(dev); return; }
+
+            // Compute what priorities are allowed
+            var prioritiesInUse = [];
+            for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); }}
+
+            // Notify of WIFI profile changes
+            console.log(dev.name, "Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + ".");
+            dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + ".");
+
+            // Remove any extra WIFI profiles
+            for (var i in profilesToRemove) {
+                dev.amtstack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profilesToRemove[i].ElementName }, function (stack, name, responses, status) { console.log('removed', status); }, 0, 1);
+            }
+
+            // Add missing WIFI profiles
+            var nextPriority = 0;
+            for (var i in profilesToAdd) {
+                while (prioritiesInUse.indexOf(nextPriority) >= 0) { nextPriority++; } // Figure out the next available priority slot.
+                var profileToAdd = profilesToAdd[i];
+                const wifiep = {
+                    __parameterType: 'reference',
+                    __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
+                    Name: 'WiFi Endpoint 0'
+                };
+                const wifiepsettinginput = {
+                    __parameterType: 'instance',
+                    __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
+                    ElementName: profileToAdd.name,
+                    InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + profileToAdd.name,
+                    AuthenticationMethod: profileToAdd.authentication,
+                    EncryptionMethod: profileToAdd.encryption,
+                    SSID: profileToAdd.ssid,
+                    Priority: nextPriority,
+                    PSKPassPhrase: profileToAdd.password
+                }
+                prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
+                dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { console.log('added', status); });   
+            }
+
+            // Done
+            devTaskCompleted(dev);
+        });
     }
 
 
