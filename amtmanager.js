@@ -954,19 +954,20 @@ module.exports.CreateAmtManager = function (parent) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if (dev.connType != 2) { func(dev); return; } // Only configure wireless over a CIRA-LMS link
         if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
+        if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.net1 == null)) { func(dev); return; } // No WIFI on this device, skip this.
 
         // Get the current list of WIFI profiles
         dev.taskCount = 1;
         dev.taskCompleted = func;
-        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings'], function (stack, name, responses, status) {
+        dev.amtstack.BatchEnum(null, ['CIM_WiFiEndpointSettings', '*CIM_WiFiPort'], function (stack, name, responses, status) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             if (status != 200) { devTaskCompleted(dev); return; } // We can't get wireless settings, ignore and carry on.
 
             // The server and device WIFI profiles, find profiles to add and remove
             const sevProfiles = parent.config.domains[dev.domainid].amtmanager.wifiprofiles;
-            const devProfiles = responses['CIM_WiFiEndpointSettings'].responses
-            var profilesToAdd = [], profilesToRemove = [];            
+            const devProfiles = responses['CIM_WiFiEndpointSettings'].responses;
+            var profilesToAdd = [], profilesToRemove = [];
 
             // Look at the WIFI profiles in the device
             for (var i in sevProfiles) {
@@ -988,16 +989,12 @@ module.exports.CreateAmtManager = function (parent) {
                 if (devProfile.match !== true) { profilesToRemove.push(devProfile); }
             }
 
-            // If both lists are empty, we have nothing to do.
-            if ((profilesToAdd.length == 0) && (profilesToRemove.length == 0)) { devTaskCompleted(dev); return; }
-
             // Compute what priorities are allowed
             var prioritiesInUse = [];
-            for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); }}
+            for (var j in devProfiles) { if (devProfiles[j].match == true) { prioritiesInUse.push(devProfiles[j].Priority); } }
 
             // Notify of WIFI profile changes
-            console.log(dev.name, "Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + ".");
-            dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + ".");
+            if ((profilesToAdd.length > 0) && (profilesToRemove.length > 0)) { dev.consoleMsg("Changing WIFI profiles, adding " + profilesToAdd.length + ", removing " + profilesToRemove.length + "."); }
 
             // Remove any extra WIFI profiles
             for (var i in profilesToRemove) {
@@ -1026,7 +1023,27 @@ module.exports.CreateAmtManager = function (parent) {
                     PSKPassPhrase: profileToAdd.password
                 }
                 prioritiesInUse.push(nextPriority); // Occupy the priority slot and add the WIFI profile.
-                dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { console.log('added', status); });   
+                dev.amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, function (stack, name, responses, status) { console.log('added', status); });
+            }
+
+            // Compute how many WIFI profiles will be in the device and change the state if needed
+            // WifiState = { 3: "Disabled", 32768: "Enabled in S0", 32769: "Enabled in S0, Sx/AC" };
+            var resultingProfileCount = (devProfiles.length + profilesToAdd.length - profilesToRemove.length);
+            var wifiState = (resultingProfileCount == 0) ? 3 : 32769;
+            if (responses['CIM_WiFiPort'].responses.Body.EnabledState != wifiState) {
+                if (wifiState == 3) {
+                    dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
+                        const dev = stack.dev;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status == 200) { dev.consoleMsg("Disabled WIFI."); }
+                    });
+                } else {
+                    dev.amtstack.CIM_WiFiPort_RequestStateChange(wifiState, null, function (stack, name, responses, status) {
+                        const dev = stack.dev;
+                        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+                        if (status == 200) { dev.consoleMsg("Enabled WIFI."); }
+                    });
+                }
             }
 
             // Done
