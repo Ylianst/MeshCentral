@@ -674,7 +674,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             delete docs[i].meshid;
 
                             // Remove Intel AMT credential if present
-                            if (docs[i].intelamt != null && docs[i].intelamt.pass != null) { delete docs[i].intelamt.pass; }
+                            if (docs[i].intelamt != null) {
+                                if (docs[i].intelamt.pass != null) { docs[i].intelamt.pass = 1; }
+                                if (docs[i].intelamt.mpspass != null) { docs[i].intelamt.mpspass = 1; }
+                            }
 
                             // If GeoLocation not enabled, remove any node location information
                             if (domain.geolocation != true) {

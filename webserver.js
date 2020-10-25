@@ -5899,10 +5899,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.CloneSafeNode = function (node) {
         if (typeof node != 'object') { return node; }
         var r = node;
-        if (r.intelamt && r.intelamt.pass) {
+        if ((r.intelamt != null) && ((r.intelamt.pass != null) || (r.intelamt.mpspass != null))) {
             r = Object.assign({}, r); // Shallow clone
             r.intelamt = Object.assign({}, r.intelamt); // Shallow clone
-            delete r.intelamt.pass; // Remove the Intel AMT password from the node
+            if (r.intelamt.pass != null) { r.intelamt.pass = 1; }; // Remove the Intel AMT administrator password from the node
+            if (r.intelamt.mpspass != null) { r.intelamt.mpspass = 1; }; // Remove the Intel AMT MPS password from the node
         }
         return r;
     }
@@ -5911,10 +5912,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.CloneSafeMesh = function (mesh) {
         if (typeof mesh != 'object') { return mesh; }
         var r = mesh;
-        if (r.amt && r.amt.password) {
+        if ((r.amt != null) && (r.amt.password != null)) {
             r = Object.assign({}, r); // Shallow clone
             r.amt = Object.assign({}, r.amt); // Shallow clone
-            delete r.amt.password; // Remove the Intel AMT password from the policy
+            if (r.amt.password != null) { r.amt.password = 1; } // Remove the Intel AMT password from the policy
         }
         return r;
     }
