@@ -276,7 +276,7 @@ module.exports.CreateDB = function (parent, func) {
     function performTypedRecordEncrypt(data) {
         if (obj.dbRecordsEncryptKey == null) return data;
         if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash', 'oldpasswords']); }
-        else if ((data.type == 'node') && (data.intelamt != null)) { var xdata = Clone(data); xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass']); return xdata; }
+        else if ((data.type == 'node') && (data.intelamt != null)) { var xdata = Clone(data); xdata.intelamt = performPartialRecordEncrypt(xdata.intelamt, ['user', 'pass', 'mpspass']); return xdata; }
         else if ((data.type == 'mesh') && (data.amt != null)) { var xdata = Clone(data); xdata.amt = performPartialRecordEncrypt(xdata.amt, ['password']); return xdata; }
         return data;
     }
@@ -1566,7 +1566,10 @@ module.exports.CreateDB = function (parent, func) {
     function dbNodeChange(nodeChange, added) {
         common.unEscapeLinksFieldName(nodeChange.fullDocument);
         const node = nodeChange.fullDocument;
-        if (node.intelamt && node.intelamt.pass) { delete node.intelamt.pass; } // Remove the Intel AMT password before eventing this.
+        if (node.intelamt != null) { // Remove the Intel AMT password and MPS password before eventing this.
+            if (node.intelamt.pass != null) { node.intelamt.pass = 1; }
+            if (node.intelamt.mpspass != null) { node.intelamt.mpspass = 1; }
+        } 
         parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: node, nodeid: node._id, domain: node.domain, nolog: 1 });
     }
 
@@ -1587,7 +1590,9 @@ module.exports.CreateDB = function (parent, func) {
         mesh.nolog = 1;
         delete mesh.type;
         delete mesh._id;
-        if (mesh.amt) { delete mesh.amt.password; } // Remove the Intel AMT password if present
+        if (mesh.amt != null) {
+            if (delete mesh.amt.password != null) { mesh.amt.password = 1; } // Remove the Intel AMT password if present
+        }
         parent.DispatchEvent(['*', mesh.meshid], obj, mesh);
     }
 

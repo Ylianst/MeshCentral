@@ -614,14 +614,15 @@ module.exports.CreateAmtManager = function (parent) {
 
             // Check if anything changes
             if (device.intelamt == null) { device.intelamt = {}; }
-            if (dev.aquired.version && (typeof dev.aquired.version == 'string') && (dev.aquired.version != device.intelamt.ver)) { change = 1; log = 1; device.intelamt.ver = dev.aquired.version; changes.push('AMT version'); }
-            if (dev.aquired.user && (typeof dev.aquired.user == 'string') && (dev.aquired.user != device.intelamt.user)) { change = 1; log = 1; device.intelamt.user = dev.aquired.user; changes.push('AMT user'); }
-            if (dev.aquired.pass && (typeof dev.aquired.pass == 'string') && (dev.aquired.pass != device.intelamt.pass)) { change = 1; log = 1; device.intelamt.pass = dev.aquired.pass; changes.push('AMT pass'); }
-            if (dev.aquired.host && (typeof dev.aquired.host == 'string') && (dev.aquired.host != device.host)) { change = 1; log = 1; device.host = dev.aquired.host; changes.push('host'); }
-            if (dev.aquired.realm && (typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
-            if (dev.aquired.hash && (typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
-            if (dev.aquired.tls && (typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
-            if ((dev.aquired.state != null) && (typeof dev.aquired.state == 'number') && (dev.aquired.state != device.intelamt.state)) { change = 1; log = 1; device.intelamt.state = dev.aquired.state; changes.push('AMT state'); }
+            if ((typeof dev.aquired.version == 'string') && (dev.aquired.version != device.intelamt.ver)) { change = 1; log = 1; device.intelamt.ver = dev.aquired.version; changes.push('AMT version'); }
+            if ((typeof dev.aquired.user == 'string') && (dev.aquired.user != device.intelamt.user)) { change = 1; log = 1; device.intelamt.user = dev.aquired.user; changes.push('AMT user'); }
+            if ((typeof dev.aquired.pass == 'string') && (dev.aquired.pass != device.intelamt.pass)) { change = 1; log = 1; device.intelamt.pass = dev.aquired.pass; changes.push('AMT pass'); }
+            if ((typeof dev.aquired.mpspass == 'string') && (dev.aquired.mpspass != device.intelamt.mpspass)) { change = 1; log = 1; device.intelamt.mpspass = dev.aquired.mpspass; changes.push('AMT MPS pass'); }
+            if ((typeof dev.aquired.host == 'string') && (dev.aquired.host != device.host)) { change = 1; log = 1; device.host = dev.aquired.host; changes.push('host'); }
+            if ((typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
+            if ((typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
+            if ((typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
+            if ((typeof dev.aquired.state == 'number') && (dev.aquired.state != device.intelamt.state)) { change = 1; log = 1; device.intelamt.state = dev.aquired.state; changes.push('AMT state'); }
 
             // Intel AMT Warning Flags: 1 = Unknown credentials, 2 = Realm Mismatch, 4 = TLS Cert Mismatch
             if ((typeof dev.aquired.warn == 'number')) { if ((dev.aquired.warn == 0) && (device.intelamt.warn != null)) { delete device.intelamt.warn; change = 1; } else if (dev.aquired.warn != device.intelamt.warn) { device.intelamt.warn = dev.aquired.warn; change = 1; } }
@@ -1165,6 +1166,7 @@ module.exports.CreateAmtManager = function (parent) {
                 var serverNameSplit = dev.cira.mpsName.split('.');
                 dev.cira.mpsPort = ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport);
                 dev.cira.mpsAddressFormat = 201; // 201 = FQDN, 3 = IPv4
+                dev.cira.mpsPass = getRandomAmtPassword();
                 if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) { dev.cira.mpsAddressFormat = 3; }
 
                 // Check if our server is already present
@@ -1207,7 +1209,7 @@ module.exports.CreateAmtManager = function (parent) {
     function addMpsServer(dev) {
         // Add the MPS server if not present
         if (dev.cira.mpsPresent == null) {
-            dev.amtstack.AMT_RemoteAccessService_AddMpServer(dev.cira.mpsName, dev.cira.mpsAddressFormat, dev.cira.mpsPort, 2, null, dev.cira.meshidx, 'P@ssw0rd', dev.cira.mpsName, function (stack, name, response, status) {
+            dev.amtstack.AMT_RemoteAccessService_AddMpServer(dev.cira.mpsName, dev.cira.mpsAddressFormat, dev.cira.mpsPort, 2, null, dev.cira.meshidx, dev.cira.mpsPass, dev.cira.mpsName, function (stack, name, response, status) {
                 const dev = stack.dev;
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to create new MPS server (" + status + ")."); removeAmtDevice(dev); return; }
@@ -1215,6 +1217,10 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.cira.mpsPresent = getItem(response.Body.MpServer.ReferenceParameters.SelectorSet.Selector, '@Name', 'Name').Value;
                 dev.consoleMsg("Created new MPS server.");
                 addMpsPolicy(dev);
+
+                // Update the device with the MPS password
+                dev.aquired.mpspass = dev.cira.mpsPass;
+                UpdateDevice(dev);
             });
         } else {
             // MPS server is present, check MPS trigger policy
