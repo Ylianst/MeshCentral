@@ -340,7 +340,7 @@ module.exports.CreateAmtManager = function (parent) {
             }
 
             // If there is no Intel AMT policy for this device, stop here.
-            if (amtPolicy == 0) { dev.consoleMsg("Done."); removeAmtDevice(dev); return; }
+            //if (amtPolicy == 0) { dev.consoleMsg("Done."); removeAmtDevice(dev); return; }
 
             // Initiate the communication to Intel AMT
             dev.consoleMsg("Checking Intel AMT state...");
@@ -371,19 +371,22 @@ module.exports.CreateAmtManager = function (parent) {
                 if ((dev.mpsConnection.tag.meiState.ProvisioningState == 2) && ((dev.mpsConnection.tag.meiState.Flags & 2) != 0)) {
                     // Deactivate CCM.
                     deactivateIntelAmtCCM(dev);
-                } else {
+                    return;
+                } //else {
                     // Already deactivated or in ACM
-                    dev.consoleMsg("Done."); // TODO: We need to at least clear CIRA
-                    removeAmtDevice(dev);
-                }
-                return;
+                    //dev.consoleMsg("Done."); // TODO: We need to at least clear CIRA
+                    //removeAmtDevice(dev);
+                //}
+                //return;
             }
-            // No Intel AMT policy, stop here
+            /*
+            // No Intel AMT policy, since this is CIRA-LMS, stop here.
             if (dev.policy.amtPolicy == 0) {
                 dev.consoleMsg("Done.");
                 removeAmtDevice(dev);
                 return;
             }
+            */
         }
 
         // See if we need to try different credentials
@@ -762,6 +765,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Care should be take not to have many pending WSMAN called when performing clock sync.
     function attemptSyncClock(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
         dev.taskCount = 1;
         dev.taskCompleted = func;
         dev.amtstack.AMT_TimeSynchronizationService_GetLowAccuracyTimeSynch(attemptSyncClockEx);
@@ -802,6 +806,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Check if Intel AMT TLS state is correct
     function attemptTlsSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
         dev.taskCount = 1;
         dev.taskCompleted = func;
         // TODO: We only deal with certificates starting with Intel AMT 6 and beyond
@@ -973,6 +978,7 @@ module.exports.CreateAmtManager = function (parent) {
     // We may want to work on an alternate version that does do priority if requested.
     function attemptWifiSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
         if (dev.connType != 2) { func(dev); return; } // Only configure wireless over a CIRA-LMS link
         if (parent.config.domains[dev.domainid].amtmanager.wifiprofiles == null) { func(dev); return; } // No server WIFI profiles set, skip this.
         if ((dev.mpsConnection.tag.meiState == null) || (dev.mpsConnection.tag.meiState.net1 == null)) { func(dev); return; } // No WIFI on this device, skip this.
@@ -1080,6 +1086,7 @@ module.exports.CreateAmtManager = function (parent) {
     // Check if Intel AMT has the server root certificate
     function attemptRootCertSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
         if ((dev.connType != 2) || (dev.policy.ciraPolicy != 2) || (parent.mpsserver.server == null)) { func(dev); return; } // Server root certificate does not need to be present is CIRA is not needed
 
         // Find the current TLS certificate & MeshCentral root certificate
@@ -1108,6 +1115,7 @@ module.exports.CreateAmtManager = function (parent) {
     //
 
     // Check if Intel AMT has the server root certificate
+    // If deactivation policy is in effect, remove CIRA configuration
     function attemptCiraSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
         if ((dev.connType != 2) || ((dev.policy.ciraPolicy != 1) && (dev.policy.ciraPolicy != 2))) { func(dev); return; } // Only setup CIRA when LMS connection is used and a CIRA policy is enabled.
@@ -1116,94 +1124,113 @@ module.exports.CreateAmtManager = function (parent) {
         // TODO: We only deal with remote access starting with Intel AMT 6 and beyond
         dev.taskCount = 1;
         dev.taskCompleted = func;
+        dev.tryCount = 0;
         var requests = ['*AMT_EnvironmentDetectionSettingData', 'AMT_ManagementPresenceRemoteSAP', 'AMT_RemoteAccessCredentialContext', 'AMT_RemoteAccessPolicyAppliesToMPS', 'AMT_RemoteAccessPolicyRule', '*AMT_UserInitiatedConnectionService', 'AMT_MPSUsernamePassword'];
         if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 11)) { requests.push('*IPS_HTTPProxyService', 'IPS_HTTPProxyAccessPoint'); }
-        dev.amtstack.BatchEnum(null, requests, function (stack, name, responses, status) {
-            const dev = stack.dev;
-            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-            //dev.consoleMsg("Added server root certificate.");
+        dev.amtstack.BatchEnum(null, requests, attemptCiraSyncResponse);
+    }
 
-            if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 11) && (status == 400)) {
-                // Check if only the HTTP proxy objects failed
-                status = 200;
-                if (responses['IPS_HTTPProxyAccessPoint'].status == 400) { delete responses['IPS_HTTPProxyAccessPoint']; }
-                if (responses['IPS_HTTPProxyService'].status == 400) { delete responses['IPS_HTTPProxyService']; }
-                for (var i in responses) { if (responses[i].status != 200) { status = responses[i].status; } }
-            }
-            if (status != 200) { dev.consoleMsg("Failed to get CIRA state (" + status + ")."); removeAmtDevice(dev); return; }
-            if ((responses['AMT_UserInitiatedConnectionService'] == null) || (responses['AMT_UserInitiatedConnectionService'].response == null)) { dev.consoleMsg("Invalid CIRA state."); removeAmtDevice(dev); return; }
+    function attemptCiraSyncResponse(stack, name, responses, status) {
+        const dev = stack.dev;
+        if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
 
-            dev.cira = {};
-            dev.cira.xxRemoteAccess = responses;
-            dev.cira.xxEnvironementDetection = responses['AMT_EnvironmentDetectionSettingData'].response;
-            dev.cira.xxEnvironementDetection['DetectionStrings'] = MakeToArray(dev.cira.xxEnvironementDetection['DetectionStrings']);
-            dev.cira.xxCiraServers = responses['AMT_ManagementPresenceRemoteSAP'].responses;
-            dev.cira.xxUserInitiatedCira = responses['AMT_UserInitiatedConnectionService'].response;
-            dev.cira.xxRemoteAccessCredentiaLinks = responses['AMT_RemoteAccessCredentialContext'].responses;
-            dev.cira.xxMPSUserPass = responses['AMT_MPSUsernamePassword'].responses;
+        if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 11) && (status == 400)) {
+            // Check if only the HTTP proxy objects failed
+            status = 200;
+            if (responses['IPS_HTTPProxyAccessPoint'].status == 400) { delete responses['IPS_HTTPProxyAccessPoint']; }
+            if (responses['IPS_HTTPProxyService'].status == 400) { delete responses['IPS_HTTPProxyService']; }
+            for (var i in responses) { if (responses[i].status != 200) { status = responses[i].status; } }
+        }
 
-            // Set CIRA initiation to BIOS & OS enabled
-            if (dev.cira.xxUserInitiatedCira['EnabledState'] != 32771) { // 32768: "Disabled", 32769: "BIOS enabled", 32770: "OS enable", 32771: "BIOS & OS enabled"
-                dev.amtstack.AMT_UserInitiatedConnectionService_RequestStateChange(32771, null, function (stack, name, responses, status) { }); // This is not a critical call.
+        // If batch enumeration was not succesful, try again.
+        if (status != 200) {
+            // If we failed to get the CIRA state, try again up to 5 times.
+            if (dev.tryCount <= 5) {
+                dev.tryCount++;
+                var requests = ['*AMT_EnvironmentDetectionSettingData', 'AMT_ManagementPresenceRemoteSAP', 'AMT_RemoteAccessCredentialContext', 'AMT_RemoteAccessPolicyAppliesToMPS', 'AMT_RemoteAccessPolicyRule', '*AMT_UserInitiatedConnectionService', 'AMT_MPSUsernamePassword'];
+                if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 11)) { requests.push('*IPS_HTTPProxyService', 'IPS_HTTPProxyAccessPoint'); }
+                dev.amtstack.BatchEnum(null, requests, attemptCiraSyncResponse);
+                return;
             }
 
-            // Figure out policies attached to servers. Create a policy type to server table.
-            dev.cira.xxPolicies = { 'User': [], 'Alert': [], 'Periodic': [] };
-            for (var i in responses['AMT_RemoteAccessPolicyAppliesToMPS'].responses) {
-                var policy = responses['AMT_RemoteAccessPolicyAppliesToMPS'].responses[i];
-                var server = Clone(getItem(dev.cira.xxCiraServers, 'Name', getItem(policy['ManagedElement']['ReferenceParameters']['SelectorSet']['Selector'], '@Name', 'Name')['Value']));
-                server.MpsType = policy['MpsType']; // MpsType was added in Intel AMT 11.6
-                var ptype = (getItem(policy['PolicySet']['ReferenceParameters']['SelectorSet']['Selector'], '@Name', 'PolicyRuleName')['Value']).split(' ')[0];
-                dev.cira.xxPolicies[ptype].push(server);
-            }
+            // We tried 5 times, give up.
+            dev.consoleMsg("Failed to get CIRA state (" + status + ").");
+            removeAmtDevice(dev);
+            return;
+        }
 
-            // Fetch the server's CIRA settings
-            dev.cira.mpsPresent = null;
-            dev.cira.mpsPolicy = false;
-            if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { // parent.mpsserver.server is not null if the MPS server is listening for TCP/TLS connections
-                dev.cira.meshidx = dev.meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16);
-                dev.cira.mpsName = parent.webserver.certificates.AmtMpsName;
-                var serverNameSplit = dev.cira.mpsName.split('.');
-                dev.cira.mpsPort = ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport);
-                dev.cira.mpsAddressFormat = 201; // 201 = FQDN, 3 = IPv4
-                dev.cira.mpsPass = getRandomAmtPassword();
-                if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) { dev.cira.mpsAddressFormat = 3; }
+        if ((responses['AMT_UserInitiatedConnectionService'] == null) || (responses['AMT_UserInitiatedConnectionService'].response == null)) { dev.consoleMsg("Invalid CIRA state."); removeAmtDevice(dev); return; }
 
-                // Check if our server is already present
-                if (dev.cira.xxCiraServers.length > 0) {
-                    for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
-                        var mpsServer = dev.cira.xxCiraServers[i];
-                        if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPresent = mpsServer['Name']; }
-                    }
-                }
+        dev.cira = {};
+        dev.cira.xxRemoteAccess = responses;
+        dev.cira.xxEnvironementDetection = responses['AMT_EnvironmentDetectionSettingData'].response;
+        dev.cira.xxEnvironementDetection['DetectionStrings'] = MakeToArray(dev.cira.xxEnvironementDetection['DetectionStrings']);
+        dev.cira.xxCiraServers = responses['AMT_ManagementPresenceRemoteSAP'].responses;
+        dev.cira.xxUserInitiatedCira = responses['AMT_UserInitiatedConnectionService'].response;
+        dev.cira.xxRemoteAccessCredentiaLinks = responses['AMT_RemoteAccessCredentialContext'].responses;
+        dev.cira.xxMPSUserPass = responses['AMT_MPSUsernamePassword'].responses;
 
-                // Check if our server is already present
-                if (dev.cira.xxPolicies['Periodic'].length > 0) {
-                    var mpsServer = dev.cira.xxPolicies['Periodic'][0];
-                    if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPolicy = true; }
-                }
-            }
+        // Set CIRA initiation to BIOS & OS enabled
+        if (dev.cira.xxUserInitiatedCira['EnabledState'] != 32771) { // 32768: "Disabled", 32769: "BIOS enabled", 32770: "OS enable", 32771: "BIOS & OS enabled"
+            dev.amtstack.AMT_UserInitiatedConnectionService_RequestStateChange(32771, null, function (stack, name, responses, status) { }); // This is not a critical call.
+        }
 
-            // Remove all MPS policies that are not ours
-            if ((dev.cira.xxPolicies['User'] != null) && (dev.cira.xxPolicies['User'].length > 0)) { dev.consoleMsg("Removing CIRA user trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'User Initiated' }, function (stack, name, responses, status) { }); }
-            if ((dev.cira.xxPolicies['Alert'] != null) && (dev.cira.xxPolicies['Alert'].length > 0)) { dev.consoleMsg("Removing CIRA alert trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Alert' }, function (stack, name, responses, status) { }); }
-            if ((dev.cira.xxPolicies['Periodic'] != null) && (dev.cira.xxPolicies['Periodic'].length > 0) && (dev.cira.mpsPolicy == false)) { dev.consoleMsg("Removing CIRA periodic trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Periodic' }, function (stack, name, responses, status) { }); }
+        // Figure out policies attached to servers. Create a policy type to server table.
+        dev.cira.xxPolicies = { 'User': [], 'Alert': [], 'Periodic': [] };
+        for (var i in responses['AMT_RemoteAccessPolicyAppliesToMPS'].responses) {
+            var policy = responses['AMT_RemoteAccessPolicyAppliesToMPS'].responses[i];
+            var server = Clone(getItem(dev.cira.xxCiraServers, 'Name', getItem(policy['ManagedElement']['ReferenceParameters']['SelectorSet']['Selector'], '@Name', 'Name')['Value']));
+            server.MpsType = policy['MpsType']; // MpsType was added in Intel AMT 11.6
+            var ptype = (getItem(policy['PolicySet']['ReferenceParameters']['SelectorSet']['Selector'], '@Name', 'PolicyRuleName')['Value']).split(' ')[0];
+            dev.cira.xxPolicies[ptype].push(server);
+        }
 
-            // Remove all MPS servers that are not ours
+        // Fetch the server's CIRA settings
+        dev.cira.mpsPresent = null;
+        dev.cira.mpsPolicy = false;
+        if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { // parent.mpsserver.server is not null if the MPS server is listening for TCP/TLS connections
+            dev.cira.meshidx = dev.meshid.split('/')[2].replace(/\@/g, 'X').replace(/\$/g, 'X').substring(0, 16);
+            dev.cira.mpsName = parent.webserver.certificates.AmtMpsName;
+            var serverNameSplit = dev.cira.mpsName.split('.');
+            dev.cira.mpsPort = ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport);
+            dev.cira.mpsAddressFormat = 201; // 201 = FQDN, 3 = IPv4
+            dev.cira.mpsPass = getRandomAmtPassword();
+            if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) { dev.cira.mpsAddressFormat = 3; }
+
+            // Check if our server is already present
             if (dev.cira.xxCiraServers.length > 0) {
                 for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
                     var mpsServer = dev.cira.xxCiraServers[i];
-                    if ((mpsServer.AccessInfo != dev.cira.mpsName) || (mpsServer.Port != dev.cira.mpsPort) || (mpsServer.InfoFormat != dev.cira.mpsAddressFormat)) {
-                        dev.consoleMsg("Removing MPS server.");
-                        dev.amtstack.Delete('AMT_ManagementPresenceRemoteSAP', { 'Name': mpsServer['Name'] }, function (stack, name, responses, status) { });
-                    }
+                    if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPresent = mpsServer['Name']; }
                 }
             }
 
-            // If we need to setup CIRA, start by checking the MPS server
-            // parent.mpsserver.server is not null if the MPS server is listening for TCP/TLS connections
-            if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { addMpsServer(dev); } else { checkEnvironmentDetection(dev); }
-        });
+            // Check if our server is already present
+            if (dev.cira.xxPolicies['Periodic'].length > 0) {
+                var mpsServer = dev.cira.xxPolicies['Periodic'][0];
+                if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPolicy = true; }
+            }
+        }
+
+        // Remove all MPS policies that are not ours
+        if ((dev.cira.xxPolicies['User'] != null) && (dev.cira.xxPolicies['User'].length > 0)) { dev.consoleMsg("Removing CIRA user trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'User Initiated' }, function (stack, name, responses, status) { }); }
+        if ((dev.cira.xxPolicies['Alert'] != null) && (dev.cira.xxPolicies['Alert'].length > 0)) { dev.consoleMsg("Removing CIRA alert trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Alert' }, function (stack, name, responses, status) { }); }
+        if ((dev.cira.xxPolicies['Periodic'] != null) && (dev.cira.xxPolicies['Periodic'].length > 0) && (dev.cira.mpsPolicy == false)) { dev.consoleMsg("Removing CIRA periodic trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Periodic' }, function (stack, name, responses, status) { }); }
+
+        // Remove all MPS servers that are not ours
+        if (dev.cira.xxCiraServers.length > 0) {
+            for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
+                var mpsServer = dev.cira.xxCiraServers[i];
+                if ((mpsServer.AccessInfo != dev.cira.mpsName) || (mpsServer.Port != dev.cira.mpsPort) || (mpsServer.InfoFormat != dev.cira.mpsAddressFormat)) {
+                    dev.consoleMsg("Removing MPS server.");
+                    dev.amtstack.Delete('AMT_ManagementPresenceRemoteSAP', { 'Name': mpsServer['Name'] }, function (stack, name, responses, status) { });
+                }
+            }
+        }
+
+        // If we need to setup CIRA, start by checking the MPS server
+        // parent.mpsserver.server is not null if the MPS server is listening for TCP/TLS connections
+        if ((dev.policy.ciraPolicy == 2) && (parent.mpsserver.server != null)) { addMpsServer(dev); } else { checkEnvironmentDetection(dev); }
     }
 
     function addMpsServer(dev) {
@@ -1316,6 +1343,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     function attemptSettingsSync(dev, func) {
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+        if (dev.policy.amtPolicy == 0) { func(dev); return; } // If there is no Intel AMT policy, skip this operation.
         dev.taskCount = 1;
         dev.taskCompleted = func;
 
