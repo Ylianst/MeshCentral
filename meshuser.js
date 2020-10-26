@@ -18,7 +18,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const fs = require('fs');
     const path = require('path');
     const common = parent.common;
-
     // Cross domain messages, for cross-domain administrators only.
     const allowedCrossDomainMessages = ['accountcreate', 'accountremove', 'accountchange', 'createusergroup', 'deleteusergroup', 'usergroupchange'];
 
@@ -3306,11 +3305,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (common.validateObject(command.amtpolicy) == false) break; // Check the amtpolicy
                     if (common.validateInt(command.amtpolicy.type, 0, 4) == false) break; // Check the amtpolicy.type
                     if (command.amtpolicy.type === 2) {
-                        if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
+                        if ((command.amtpolicy.password != null) && (common.validateString(command.amtpolicy.password, 0, 32) == false)) break; // Check the amtpolicy.password
                         if ((command.amtpolicy.badpass != null) && common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     } else if (command.amtpolicy.type === 3) {
-                        if (common.validateString(command.amtpolicy.password, 0, 32) == false) break; // Check the amtpolicy.password
+                        if ((command.amtpolicy.password != null) && (common.validateString(command.amtpolicy.password, 0, 32) == false)) break; // Check the amtpolicy.password
                         if ((command.amtpolicy.badpass != null) && common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     }
@@ -3326,11 +3325,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Perform the Intel AMT policy change
                         change = 'Intel AMT policy change';
                         var amtpolicy = { type: command.amtpolicy.type };
-                        if ((command.amtpolicy.type === 2) || (command.amtpolicy.type === 3)) { amtpolicy = { type: command.amtpolicy.type, password: command.amtpolicy.password, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup }; }
+                        if ((command.amtpolicy.type === 2) || (command.amtpolicy.type === 3)) {
+                            amtpolicy = { type: command.amtpolicy.type, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup };
+                            if ((command.amtpolicy.password == null) && (mesh.amt != null) && (typeof mesh.amt.password == 'string')) { amtpolicy.password = mesh.amt.password; } // Keep the last password
+                            if ((typeof command.amtpolicy.password == 'string') && (command.amtpolicy.password.length >= 8)) { amtpolicy.password = command.amtpolicy.password; } // Set a new password
+                        }
                         mesh.amt = amtpolicy;
                         db.Set(mesh);
                         var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
-                        delete amtpolicy2.password;
+                        if (amtpolicy2.password != null) { amtpolicy2.password = 1; }
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
