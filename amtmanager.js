@@ -1130,7 +1130,7 @@ module.exports.CreateAmtManager = function (parent) {
                 if (responses['IPS_HTTPProxyService'].status == 400) { delete responses['IPS_HTTPProxyService']; }
                 for (var i in responses) { if (responses[i].status != 200) { status = responses[i].status; } }
             }
-            if (status != 200) { dev.consoleMsg("Failed get CIRA state (" + status + ")."); removeAmtDevice(dev); return; }
+            if (status != 200) { dev.consoleMsg("Failed to get CIRA state (" + status + ")."); removeAmtDevice(dev); return; }
             if ((responses['AMT_UserInitiatedConnectionService'] == null) || (responses['AMT_UserInitiatedConnectionService'].response == null)) { dev.consoleMsg("Invalid CIRA state."); removeAmtDevice(dev); return; }
 
             dev.cira = {};

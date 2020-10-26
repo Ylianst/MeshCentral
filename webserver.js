@@ -2296,7 +2296,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
             if (obj.args.clickonce !== false) { features += 0x00000100; } // Enable ClickOnce (Default true)
             if (obj.args.allowhighqualitydesktop !== false) { features += 0x00000200; } // Enable AllowHighQualityDesktop (Default true)
-            if (obj.args.lanonly == true || obj.args.mpsport == 0) { features += 0x00000400; } // No CIRA
+            if ((obj.args.lanonly == true) || (obj.args.mpsport == 0)) { features += 0x00000400; } // No CIRA
             if ((obj.parent.serverSelfWriteAllowed == true) && (user != null) && (user.siteadmin == 0xFFFFFFFF)) { features += 0x00000800; } // Server can self-write (Allows self-update)
             if ((parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (user._id.split('/')[2][0] != '~')) { features += 0x00001000; } // 2FA login supported
             if (domain.agentnoproxy === true) { features += 0x00002000; } // Indicates that agents should be installed without using a HTTP proxy
@@ -5915,7 +5915,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((r.amt != null) && (r.amt.password != null)) {
             r = Object.assign({}, r); // Shallow clone
             r.amt = Object.assign({}, r.amt); // Shallow clone
-            if (r.amt.password != null) { r.amt.password = 1; } // Remove the Intel AMT password from the policy
+            if ((r.amt.password != null) && (r.amt.password != '')) { r.amt.password = 1; } // Remove the Intel AMT password from the policy
         }
         return r;
     }
