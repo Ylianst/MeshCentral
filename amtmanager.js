@@ -1675,6 +1675,8 @@ module.exports.CreateAmtManager = function (parent) {
         if (responses['IPS_HostBasedSetupService'].response['AllowedControlModes'].length != 2) { dev.consoleMsg("Client control mode activation not allowed."); removeAmtDevice(dev); return; }
 
         // Log the activation request, logging is a required step for activation.
+        var domain = parent.config.domains[dev.domainid];
+        if (domain == null) { dev.consoleMsg("Invalid domain."); removeAmtDevice(dev); return; }
         if (parent.certificateOperations.logAmtActivation(domain, { time: new Date(), action: 'ccmactivate', domain: dev.domainid, amtUuid: dev.mpsConnection.tag.meiState.UUID, amtRealm: responses['AMT_GeneralSettings'].response['DigestRealm'], user: 'admin', password: dev.temp.pass, ipport: dev.mpsConnection.remoteAddr + ':' + dev.mpsConnection.remotePort, nodeid: dev.nodeid, meshid: dev.meshid, computerName: dev.name }) == false) {
             dev.consoleMsg("Unable to log operation."); removeAmtDevice(dev); return;
         }
@@ -1704,6 +1706,7 @@ module.exports.CreateAmtManager = function (parent) {
         dev.intelamt.tls = dev.aquired.tls = 0;
         dev.aquired.lastContact = Date.now();
         dev.aquired.state = 2; // Activated
+        dev.aquired.warn = 0; // Clear all warnings
         delete dev.acctry;
         delete dev.temp;
         UpdateDevice(dev);

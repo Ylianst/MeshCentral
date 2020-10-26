@@ -134,6 +134,16 @@ function createMeshCore(agent) {
         }
     }
 
+    // Add an Intel AMT event to the log
+    function addAmtEvent(msg) {
+        if (obj.amtevents == null) { obj.amtevents = []; }
+        var d = new Date();
+        obj.amtevents.push(zeroPad(d.getHours(), 2) + ':' + zeroPad(d.getMinutes(), 2) + ':' + zeroPad(d.getSeconds(), 2) + ', ' + msg);
+        if (obj.amtevents.length > 100) { obj.amtevents.splice(0, obj.amtevents.length - 100); }
+    }
+    function zeroPad(num, size) { var s = '000000000' + num; return s.substr(s.length - size); }
+
+
     // Create Secure IPC for Diagnostic Agent Communications
     obj.DAIPC = require('net').createServer();
     if (process.platform != 'win32') { try { require('fs').unlinkSync(process.cwd() + '/DAIPC'); } catch (e) { } }
@@ -1091,9 +1101,10 @@ function createMeshCore(agent) {
                             conntype: 2, // 0 = CIRA, 1 = Relay, 2 = LMS. The correct value is 2 since we are performing an LMS relay, other values for testing.
                             meiState: state // MEI state will be passed to MPS server
                         };
+                        addAmtEvent('LMS tunnel start.');
                         apftunnel = require('apfclient')({ debug: false }, apfarg);
                         apftunnel.onJsonControl = function (data) {
-                            if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message (DEBUG)
+                            if (data.action == 'console') { addAmtEvent(data.msg); } // Add console message to AMT event log
                             if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                             if (data.action == 'deactivate') { // Request CCM deactivation
                                 var amtMeiModule, amtMei;
@@ -1103,7 +1114,7 @@ function createMeshCore(agent) {
                             }
                             if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
                         }
-                        apftunnel.onChannelClosed = function () { apftunnel = null; }
+                        apftunnel.onChannelClosed = function () { addAmtEvent('LMS tunnel closed.'); apftunnel = null; }
                         try { apftunnel.connect(); } catch (ex) { }
                     });
                     break;
@@ -2589,7 +2600,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'amtconfig,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'amtconfig,amtevents,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
@@ -3532,6 +3543,10 @@ function createMeshCore(agent) {
                         if (diag) { diag.close(); diag = null; }
                         break;
                     }
+                case 'amtevents': {
+                    if (obj.amtevents == null) { response = 'No events.'; } else { response = obj.amtevents.join('\r\n'); }
+                    break;
+                }
                 case 'amtconfig': {
                     if (apftunnel != null) { response = "Intel AMT server tunnel already active"; break; }
                     if (amt == null) { response = "No Intel AMT support delected"; break; }
@@ -3552,9 +3567,10 @@ function createMeshCore(agent) {
                             if ((state.UUID == null) || (state.UUID.length != 36)) {
                                 rx = "Unable to get Intel AMT UUID";
                             } else {
+                                addAmtEvent('User LMS tunnel start.');
                                 apftunnel = require('apfclient')({ debug: false }, apfarg);
                                 apftunnel.onJsonControl = function (data) {
-                                    if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message
+                                    if (data.action == 'console') { addAmtEvent(data.msg); require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message
                                     if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                                     if (data.action == 'deactivate') { // Request CCM deactivation
                                         var amtMeiModule, amtMei;
@@ -3564,7 +3580,7 @@ function createMeshCore(agent) {
                                     }
                                     if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; } // Close the CIRA-LMS connection
                                 }
-                                apftunnel.onChannelClosed = function () { apftunnel = null; }
+                                apftunnel.onChannelClosed = function () { addAmtEvent('User LMS tunnel closed.'); apftunnel = null; }
                                 try {
                                     apftunnel.connect();
                                     rx = "Started Intel AMT configuration";

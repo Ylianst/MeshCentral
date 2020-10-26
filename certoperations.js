@@ -68,11 +68,15 @@ module.exports.CertificateOperations = function (parent) {
         return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce.toString('base64'), 'certs': certChain };
     }
 
-    // Log the Intel AMT activation operation
+    // Log the Intel AMT activation operation in the domain log
     obj.logAmtActivation = function (domain, x) {
-        if ((domain.amtacmactivation == null) || (domain.amtacmactivation.log == null) || (typeof domain.amtacmactivation.log != 'string') || (x == null)) return true;
+        if (x == null) return true;
         var logpath = null;
-        if ((domain.amtacmactivation.log.length >= 2) && ((domain.amtacmactivation.log[0] == '/') || (domain.amtacmactivation.log[1] == ':'))) { logpath = domain.amtacmactivation.log; } else { logpath = parent.path.join(obj.parent.datapath, domain.amtacmactivation.log); }
+        if ((domain.amtacmactivation == null) || (domain.amtacmactivation.log == null) || (typeof domain.amtacmactivation.log != 'string')) {
+            if (domain.id == '') { logpath = parent.path.join(obj.parent.datapath, 'amtactivation.log'); } else { logpath = parent.path.join(obj.parent.datapath, 'amtactivation-' + domain.id + '.log'); }
+        } else {
+            if ((domain.amtacmactivation.log.length >= 2) && ((domain.amtacmactivation.log[0] == '/') || (domain.amtacmactivation.log[1] == ':'))) { logpath = domain.amtacmactivation.log; } else { logpath = parent.path.join(obj.parent.datapath, domain.amtacmactivation.log); }
+        }
         try { obj.fs.appendFileSync(logpath, JSON.stringify(x) + '\r\n'); } catch (ex) { console.log(ex); return false; }
         return true;
     }
