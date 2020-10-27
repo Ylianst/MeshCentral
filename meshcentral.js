@@ -1263,6 +1263,7 @@ function CreateMeshCentralServer(config, args) {
         // Load any domain web certificates
         for (var i in obj.config.domains) {
             // Load any Intel AMT ACM activation certificates
+            if (obj.config.domains[i].amtacmactivation == null) { obj.config.domains[i].amtacmactivation = {}; }
             obj.certificateOperations.loadIntelAmtAcmCerts(obj.config.domains[i].amtacmactivation);
 
             if (typeof obj.config.domains[i].certurl == 'string') {

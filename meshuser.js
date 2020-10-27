@@ -4854,6 +4854,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'amtsetupbin': {
+                if ((command.oldmebxpass != 'admin') && (common.validateString(command.oldmebxpass, 8, 16) == false)) break; // Check password
+                if (common.validateString(command.newmebxpass, 8, 16) == false) break; // Check password
+                var bin = parent.parent.certificateOperations.GetSetupBinFile(domain.amtacmactivation, command.oldmebxpass, command.newmebxpass);
+                try { ws.send(JSON.stringify({ action: 'amtsetupbin', file: Buffer.from(bin, 'binary').toString('base64') })); } catch (ex) { }
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
