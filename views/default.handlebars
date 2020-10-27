@@ -3989,13 +3989,13 @@
                 if (mesh.amt && (mesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation, Full Automatic
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
                 }
-                if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
-                }
             }
             if (mesh.mtype == 2) {
                 r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
                 if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
+            }
+            if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
+                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
             }
             return r;
         }
@@ -9497,21 +9497,23 @@
                 }
             }
 
-            if (meshrights & 4) {
-                if (currentMesh.mtype == 1) {
-                    /*
-                    if ((features & 1) == 0) { // If not WAN-Only
-                        x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
-                    }
-                    */
-                    if ((currentMesh.amt != null) && (currentMesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation
-                        x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Setup" + '</a>';
-                    }
+            //if (meshrights & 4) { }
+            if (currentMesh.mtype == 1) {
+                /*
+                if ((features & 1) == 0) { // If not WAN-Only
+                    x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
                 }
-                if (currentMesh.mtype == 2) {
-                    x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
-                    x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
+                */
+                if ((currentMesh.amt != null) && (currentMesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation
+                    x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Setup" + '</a>';
                 }
+            }
+            if (currentMesh.mtype == 2) {
+                x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
+                x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
+            }
+            if (currentMesh.amt && (currentMesh.amt.type > 2)) { // ACM activation or Full Automatic
+                x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
             }
 
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Authorizations" + '</th><th scope=col style=text-align:left></th></tr>';
