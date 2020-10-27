@@ -3126,6 +3126,10 @@
                     try { pluginHandler[message.plugin][message.method](server, message); } catch (e) { console.log('Error loading plugin handler ('+ e + ')'); }
                     break;
                 }
+                case 'amtsetupbin': {
+                    saveAs(new Blob([ Uint8Array.from(atob(message.file), function (c) { return c.charCodeAt(0) }) ], { type: 'application/octet-stream' }), "setup.bin");
+                    break;
+                }
                 default:
                     //console.log('Unknown message.action', message.action);
                     break;
@@ -3982,8 +3986,11 @@
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
                 }
-                if (mesh.amt && (mesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation
+                if (mesh.amt && (mesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation, Full Automatic
                     r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
+                }
+                if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
+                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
                 }
             }
             if (mesh.mtype == 2) {
@@ -4029,6 +4036,30 @@
             setDialogMode(2, "Intel&reg; AMT setup", 9, null, x);
             Q('idx_dlgOkButton').focus();
             return false;
+        }
+
+        // Intel AMT ACM activation using setup.bin
+        function showAmtAcmSetup() {
+            if (xxdialogMode) return false;
+            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formated USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MBEx password. " + '</div></table>';
+            x += addHtmlValue("Old Password", '<input id=dp1password0 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
+            x += addHtmlValue("New Password*", '<input id=dp1password1 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
+            x += addHtmlValue("New Password*", '<input id=dp1password2 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
+            x += '<span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span>';
+            setDialogMode(2, "Intel&reg; AMT ACM", 3, showAmtAcmSetupEx, x);
+            Q('dp1password0').focus();
+            validateAmtAcmSetupEx();
+        }
+
+        function validateAmtAcmSetupEx() {
+            var p0 = Q('dp1password0').value, p1 = Q('dp1password1').value, p2 = Q('dp1password2').value, ok = true;
+            if ((p0 != 'admin') && (checkPasswordRequirements(p0, { min: 8, max:16, numeric: 1, lower: 1, upper: 1, nonalpha: 1 }) == false)) { ok = false; }
+            if ((p1 != p2) || (checkPasswordRequirements(p1, { min: 8, max:16, numeric: 1, lower: 1, upper: 1, nonalpha: 1 }) == false)) { ok = false; }
+            QE('idx_dlgOkButton', ok);
+        }
+
+        function showAmtAcmSetupEx() {
+            meshserver.send({ action: 'amtsetupbin', oldmebxpass: Q('dp1password0').value, newmebxpass: Q('dp1password1').value });
         }
 
         // Display the Intel AMT scanning dialog box
