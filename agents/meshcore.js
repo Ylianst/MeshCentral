@@ -1140,8 +1140,12 @@ function createMeshCore(agent) {
                 case 'coredump':
                     // Set the current agent coredump situation.
                     if (data.value === true) {
-                        // TODO: This replace() below is not ideal, would be better to remove the .exe at the end instead of replace.
-                        process.coreDumpLocation = (process.platform == 'win32') ? (process.execPath.replace('.exe', '.dmp')) : (process.execPath + '.dmp');
+                        if (process.platform == 'win32') {
+                            // TODO: This replace() below is not ideal, would be better to remove the .exe at the end instead of replace.
+                            process.coreDumpLocation = process.execPath.replace('.exe', '.dmp');
+                        } else {
+                            process.coreDumpLocation = (process.cwd() != '//') ? (process.cwd() + 'core') : null;
+                        }
                     } else if (data.value === false) {
                         process.coreDumpLocation = null;
                     }
@@ -1151,8 +1155,18 @@ function createMeshCore(agent) {
                     var r = { action: 'getcoredump', value: (process.coreDumpLocation != null) };
                     var coreDumpPath = null;
                     if (process.platform == 'win32') { coreDumpPath = process.coreDumpLocation; } else { coreDumpPath = (process.cwd() != '//') ? fs.existsSync(process.cwd() + 'core') : null; }
-                    if ((coreDumpPath != null) && (fs.existsSync(coreDumpPath))) { r.exists = (db.Get('CoreDumpTime') != require('fs').statSync(coreDumpPath).mtime); }
-                    if (r.exists == true) { r.agenthashhex = getSHA384FileHash(process.execPath).toString('hex'); }
+                    if ((coreDumpPath != null) && (fs.existsSync(coreDumpPath))) {
+                        try {
+                            var coredate = fs.statSync(coreDumpPath).mtime;
+                            var coretime = new Date(coredate).getTime();
+                            var agenttime = new Date(fs.statSync(process.execPath).mtime).getTime();
+                            if (coretime > agenttime) { r.exists = (db.Get('CoreDumpTime') != coredate); }
+                        } catch (ex) { }
+                    }
+                    if (r.exists == true) {
+                        r.agenthashhex = getSHA384FileHash(process.execPath).toString('hex'); // Hash of current agent
+                        r.corehashhex = getSHA384FileHash(coreDumpPath).toString('hex'); // Hash of core dump file
+                    }
                     mesh.SendCommand(JSON.stringify(r));
                 default:
                     // Unknown action, ignore it.
@@ -2662,9 +2676,17 @@ function createMeshCore(agent) {
                                 response = 'coredump is: ' + ((process.coreDumpLocation == null) ? 'off' : 'on');
                                 if (process.coreDumpLocation != null) {
                                     if (process.platform == 'win32') {
-                                        if (fs.existsSync(process.coreDumpLocation)) { response += '\r\n  CoreDump present at: ' + process.coreDumpLocation; }
+                                        if (fs.existsSync(process.coreDumpLocation)) {
+                                            response += '\r\n  CoreDump present at: ' + process.coreDumpLocation;
+                                            response += '\r\n  CoreDump Time: ' + new Date(fs.statSync(process.coreDumpLocation).mtime).getTime();
+                                            response += '\r\n  Agent Time   : ' + new Date(fs.statSync(process.execPath).mtime).getTime();
+                                        }
                                     } else {
-                                        if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { response += '\r\n  CoreDump present at: ' + process.cwd() + 'core'; }
+                                        if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) {
+                                            response += '\r\n  CoreDump present at: ' + process.cwd() + 'core';
+                                            response += '\r\n  CoreDump Time: ' + new Date(fs.statSync(process.cwd() + 'core').mtime).getTime();
+                                            response += '\r\n  Agent Time   : ' + new Date(fs.statSync(process.execPath).mtime).getTime();
+                                        }
                                     }
                                 }
                                 break;

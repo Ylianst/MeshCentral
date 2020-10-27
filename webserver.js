@@ -3753,7 +3753,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             onFileOpen.xws.send(JSON.stringify({ action: 'download', sub: 'startack', id: onFileOpen.xws.xid, ack: 1 })); // Ask for a directory (test)
                         };
                         callback.xws = this;
-                        obj.fs.open(this.xfilepath, 'w', callback)
+                        obj.fs.open(this.xfilepath + '.part', 'w', callback);
                         break;
                     }
                 }
@@ -3769,7 +3769,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                             if (onFileDataWritten.xflags & 1) {
                                 // End of file
                                 parent.debug('web', "Completed downloads of agent dumpfile, " + onFileDataWritten.xws.xfilelen + " bytes.");
-                                if (onFileDataWritten.xws.xfile) { try { obj.fs.close(onFileDataWritten.xws.xfile, function (err) { }); } catch (ex) { } }
+                                if (onFileDataWritten.xws.xfile) {
+                                    obj.fs.close(onFileDataWritten.xws.xfile, function (err) { });
+                                    obj.fs.rename(onFileDataWritten.xws.xfilepath + '.part', onFileDataWritten.xws.xfilepath, function (err) { });
+                                    onFileDataWritten.xws.xfile = null;
+                                }
                                 onFileDataWritten.xws.send(JSON.stringify({ action: 'markcoredump' })); // Ask to delete the core dump file
                                 try { onFileDataWritten.xws.close(); } catch (ex) { }
                             } else {
@@ -3785,7 +3789,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (flags & 1) {
                         // End of file
                         parent.debug('web', "Completed downloads of agent dumpfile, " + this.xfilelen + " bytes.");
-                        if (this.xfile) { try { obj.fs.close(this.xfile, function (err) { }); } catch (ex) { } }
+                        if (this.xfile) {
+                            obj.fs.close(this.xfile, function (err) { });
+                            obj.fs.rename(this.xfilepath + '.part', this.xfilepath, function (err) { });
+                            this.xfile = null;
+                        }
                         this.send(JSON.stringify({ action: 'markcoredump' })); // Ask to delete the core dump file
                         try { this.close(); } catch (ex) { }
                     } else {
@@ -3800,7 +3808,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         ws.on('error', function (err) { console.log('Agent file transfer server error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.'); });
 
         // If closed, do nothing
-        ws.on('close', function (req) { });
+        ws.on('close', function (req) {
+            if (this.xfile) {
+                obj.fs.close(this.xfile, function (err) { });
+                obj.fs.unlink(this.xfilepath + '.part', function (err) { }); // Remove a partial file
+            }
+        });
     }
 
     // Handle the web socket echo request, just echo back the data sent
@@ -5853,6 +5866,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     obj.GetNodeRights = function (user, mesh, nodeid) {
         if ((user == null) || (mesh == null) || (nodeid == null)) { return 0; }
         if (typeof user == 'string') { user = obj.users[user]; }
+        if (user == null) { return 0; }
         var r = obj.GetMeshRights(user, mesh);
         if (r == 0xFFFFFFFF) return r;
 
