@@ -46,8 +46,17 @@ module.exports.CertificateOperations = function (parent) {
         }
         if (signkey == null) return { 'action': 'acmactivate', 'error': 2, 'errorText': "No signing certificate found." }; // Did not find a match.
 
-        // If the matching certificate is a root cert, issue a leaf cert that matches the fqdn
-        if (domain.amtacmactivation.certs[certIndex].cn == '*') return { 'action': 'acmactivate', 'error': 3, 'errorText': "Unsupported activation." }; // TODO: Add support for this mode
+        // If the matching certificate our wildcard root cert, we can use the root to match any FQDN
+        if (domain.amtacmactivation.certs[certIndex].cn == '*') {
+            // Create a leaf certificate that matches the FQDN we want
+            // TODO: This is an expensive operation, work on ways to pre-generate or cache this leaf certificate.
+            var rootcert = { cert: domain.amtacmactivation.certs[certIndex].rootcert, key: obj.pki.privateKeyFromPem(domain.amtacmactivation.certs[certIndex].key) };
+            var leafcert = obj.IssueWebServerCertificate(rootcert, false, request.fqdn, 'mc', 'Intel(R) Client Setup Certificate', { serverAuth: true, '2.16.840.1.113741.1.2.3': true }, false);
+
+            // Setup the certificate chain and key
+            certChain = [pemToBase64(obj.pki.certificateToPem(leafcert.cert)), pemToBase64(obj.pki.certificateToPem(domain.amtacmactivation.certs[certIndex].rootcert))];
+            signkey = obj.pki.privateKeyToPem(leafcert.key);
+        }
 
         // Setup both nonces, ready to be signed
         const mcNonce = Buffer.from(obj.crypto.randomBytes(20), 'binary');
@@ -59,7 +68,9 @@ module.exports.CertificateOperations = function (parent) {
             var signer = obj.crypto.createSign(hashAlgo);
             signer.update(Buffer.concat([fwNonce, mcNonce]));
             signature = signer.sign(signkey, 'base64');
-        } catch (ex) { return { 'action': 'acmactivate', 'error': 4, 'errorText': "Unable to perform signature." }; }
+        } catch (ex) {
+            return { 'action': 'acmactivate', 'error': 4, 'errorText': "Unable to perform signature." };
+        }
 
         // Log the activation request, logging is a required step for activation.
         if (obj.logAmtActivation(domain, { time: new Date(), action: 'acmactivate', domain: domain.id, amtUuid: request.uuid, certHash: request.hash, hashType: hashAlgo, amtRealm: request.realm, amtFqdn: request.fqdn, user: user, password: pass, ipport: ipport, nodeid: nodeid, meshid: meshid, computerName: computerName, agentId: agentId, tag: request.tag, name: request.name }) == false) return { 'action': 'acmactivate', 'error': 5, 'errorText': "Unable to log operation." };
@@ -67,6 +78,9 @@ module.exports.CertificateOperations = function (parent) {
         // Return the signature with the computed account password hash
         return { 'action': 'acmactivate', 'signature': signature, 'password': obj.crypto.createHash('md5').update(user + ':' + request.realm + ':' + pass).digest('hex'), 'nonce': mcNonce.toString('base64'), 'certs': certChain };
     }
+
+    // Remove the PEM header, footer and carriage returns so we only have the Base64 DER.
+    function pemToBase64(pem) { return pem.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r\n').join(''); }
 
     // Log the Intel AMT activation operation in the domain log
     obj.logAmtActivation = function (domain, x) {
@@ -176,7 +190,7 @@ module.exports.CertificateOperations = function (parent) {
             if ((x1 >= 0) && (x2 > x1)) {
                 var sha256 = obj.crypto.createHash('sha256').update(Buffer.from(obj.parent.certificates.root.cert.substring(x1 + 27, x2), 'base64')).digest('hex');
                 var sha1 = obj.crypto.createHash('sha1').update(Buffer.from(obj.parent.certificates.root.cert.substring(x1 + 27, x2), 'base64')).digest('hex');
-                amtacmactivation.certs.push({ 'sha256': sha256, 'sha1': sha1, 'cn': '*', certs: [obj.pki.certificateFromPem(obj.parent.certificates.root.cert)], key: obj.parent.certificates.root.key });
+                amtacmactivation.certs.push({ 'sha256': sha256, 'sha1': sha1, 'cn': '*', rootcert: obj.pki.certificateFromPem(obj.parent.certificates.root.cert), key: obj.parent.certificates.root.key });
                 amtacmactivation.acmmatch.push({ 'sha256': sha256, 'sha1': sha1, 'cn': '*' });
             }
         }
