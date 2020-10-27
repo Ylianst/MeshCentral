@@ -252,6 +252,8 @@
                                 <option value=3>Starred</option>
                                 <option value=4>Intel&reg; AMT</option>
                                 <option value=6>Help</option>
+                                <option value=7>Tagged</option>
+                                <option value=8>Untagged</option>
                             </select>
                             <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span title="Show devices operating system name">OS Name</span></label>
                             <label style="display:none"><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
@@ -3127,7 +3129,7 @@
                     break;
                 }
                 case 'amtsetupbin': {
-                    saveAs(new Blob([ Uint8Array.from(atob(message.file), function (c) { return c.charCodeAt(0) }) ], { type: 'application/octet-stream' }), "setup.bin");
+                    saveAs(new Blob([ Uint8Array.from(atob(message.file), function (c) { return c.charCodeAt(0) }) ], { type: 'application/octet-stream' }), 'setup.bin');
                     break;
                 }
                 default:
@@ -4651,6 +4653,8 @@
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
             if (devFilter == 5) { for (var d in nodes) { if ((nodes[d].conn != null) && (nodes[d].conn != 0)) { nodes[d].v = false; } } } // Offline
             if (devFilter == 6) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || (n.sessions.help == null)) { n.v = false; } } } // Sessions
+            if (devFilter == 7) { for (var d in nodes) { var n = nodes[d]; if ((n.tags == null) || (n.tags.length == 0)) { n.v = false; } } } // Tagged
+            if (devFilter == 8) { for (var d in nodes) { var n = nodes[d]; if ((n.tags != null) && (n.tags.length > 0)) { n.v = false; } } } // Untagged
         }
 
         var contextelement = null;
