@@ -1395,7 +1395,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Get the core dump uploaded to the server.
                                 parent.lastCoreDumpRequest = Date.now();
-                                obj.RequestCoreDump(command.agenthashhex);
+                                obj.RequestCoreDump(command.agenthashhex, command.corehashhex);
                             });
                         });
                     }
@@ -1668,7 +1668,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     // Request that the core dump file on this agent be uploaded to the server
-    obj.RequestCoreDump = function (agenthashhex) {
+    obj.RequestCoreDump = function (agenthashhex, corehashhex) {
         if (agenthashhex.length > 16) { agenthashhex = agenthashhex.substring(0, 16); }
         const cookie = parent.parent.encodeCookie({ a: 'aft', b: 'coredump', c: obj.agentInfo.agentId + '-' + agenthashhex + '-' + obj.nodeid + '.dmp' }, parent.parent.loginCookieEncryptionKey);
         obj.send('{"action":"msg","type":"tunnel","value":"*/' + (((domain.dns == null) && (domain.id != '')) ? (domain.id + '/') : '') + 'agenttransfer.ashx?c=' + cookie + '","rights":"4294967295"}');
