@@ -372,21 +372,8 @@ module.exports.CreateAmtManager = function (parent) {
                     // Deactivate CCM.
                     deactivateIntelAmtCCM(dev);
                     return;
-                } //else {
-                    // Already deactivated or in ACM
-                    //dev.consoleMsg("Done."); // TODO: We need to at least clear CIRA
-                    //removeAmtDevice(dev);
-                //}
-                //return;
+                }
             }
-            /*
-            // No Intel AMT policy, since this is CIRA-LMS, stop here.
-            if (dev.policy.amtPolicy == 0) {
-                dev.consoleMsg("Done.");
-                removeAmtDevice(dev);
-                return;
-            }
-            */
         }
 
         // See if we need to try different credentials
