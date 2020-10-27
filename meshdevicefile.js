@@ -203,7 +203,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                 try { cmd = JSON.parse(data); } catch (ex) { }
                 if ((cmd == null) || (typeof cmd.op == 'string')) {
                     if (cmd.op == 'ok') {
-                        setContentDispositionHeader(this.res, 'application/octet-stream', filename, cmd.size, 'file.bin');
+                        setContentDispositionHeader(this.res, 'application/octet-stream', this.file, cmd.size, 'file.bin');
                     } else {
                         try { this.res.sendStatus(401); } catch (ex) { }
                     }
