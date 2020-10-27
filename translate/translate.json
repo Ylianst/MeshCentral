@@ -417,6 +417,7 @@
     },
     {
       "en": "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric.",
+      "nl": "* 8 karakters, 1 hoofdletter, 1 normale letter, 1 nummeriek, 1 niet alfanumeriek.",
       "xloc": [
         "default.handlebars->29->1384",
         "default.handlebars->29->308"
@@ -2956,6 +2957,7 @@
     },
     {
       "en": "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formated USB key. Place setup.bin on it and boot one or more computers with this key.",
+      "nl": "Activeer Intel&reg; AMT in Admin Control Mode (ACM) gebruikmakend van een FAT geformateerde USB sleutel. Plaats setup.bin erop en start een of meer computers met deze sleutel.",
       "xloc": [
         "default.handlebars->29->303"
       ]
@@ -3672,6 +3674,7 @@
     },
     {
       "en": "Add, activate and configure Intel&reg; AMT to group \\\"{0}\\\" by periodically running MeshCmd as administrator on the remote device.",
+      "nl": "Voeg toe, activeer en configureer Intel&reg; AMT aan groep \\\"{0}\\\" door MeshCmd periodiek uit te voeren als beheerder op het externe apparaat.",
       "xloc": [
         "default.handlebars->29->300"
       ]
@@ -6268,6 +6271,7 @@
     },
     {
       "en": "CIRA setup",
+      "nl": "CIRA setup",
       "xloc": [
         "default.handlebars->29->1380"
       ]
@@ -10063,6 +10067,7 @@
     },
     {
       "en": "Deactivate",
+      "nl": "Deactiveren",
       "xloc": [
         "default.handlebars->29->1366"
       ]
@@ -15403,6 +15408,7 @@
     },
     {
       "en": "For ACM activation, Intel&reg; AMT will need to be set to the following trusted FQDN:",
+      "nl": "Voor ACM activering moet Intel&reg; AMT worden ingesteld op de volgende vertrouwde FQDN:",
       "xloc": [
         "default.handlebars->29->301"
       ]
@@ -15962,6 +15968,7 @@
     },
     {
       "en": "Fully Automatic",
+      "nl": "Vol automatisch",
       "xloc": [
         "default.handlebars->29->1345",
         "default.handlebars->29->1368"
@@ -17610,6 +17617,7 @@
     },
     {
       "en": "If in CCM, reactivate Intel&reg; AMT",
+      "nl": "Indien in CCM, heractiveer Intel&reg; AMT",
       "xloc": [
         "default.handlebars->29->1378"
       ]
@@ -18032,6 +18040,7 @@
     },
     {
       "en": "Intel&reg; AMT ACM",
+      "nl": "Intel&reg; AMT ACM",
       "xloc": [
         "default.handlebars->29->309"
       ]
@@ -18493,6 +18502,7 @@
     },
     {
       "en": "Intel&reg; AMT setup",
+      "nl": "Intel&reg; AMT setup",
       "xloc": [
         "default.handlebars->29->302"
       ]
@@ -18826,6 +18836,7 @@
     },
     {
       "en": "Invalid Credentials",
+      "nl": "Ongeldige inloggegevens",
       "xloc": [
         "default-mobile.handlebars->9->243",
         "default-mobile.handlebars->9->244",
@@ -19489,6 +19500,7 @@
     },
     {
       "en": "Keep existing password",
+      "nl": "Behoud huidige wachtwoord",
       "xloc": [
         "default.handlebars->29->1370"
       ]
@@ -24111,6 +24123,7 @@
     },
     {
       "en": "New Password*",
+      "nl": "Nieuw Wachtwoord*",
       "xloc": [
         "default.handlebars->29->306",
         "default.handlebars->29->307"
@@ -24138,6 +24151,7 @@
     },
     {
       "en": "New password*",
+      "nl": "Nieuw wachtwoord*",
       "xloc": [
         "default.handlebars->29->1374",
         "default.handlebars->29->1375"
@@ -25266,6 +25280,7 @@
     },
     {
       "en": "Not Activated",
+      "nl": "Niet geactiveerd",
       "xloc": [
         "default.handlebars->29->957"
       ]
@@ -25748,6 +25763,7 @@
     },
     {
       "en": "Old Password",
+      "nl": "Oud wachtwoord",
       "xloc": [
         "default.handlebars->29->305"
       ]
@@ -26798,6 +26814,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT activation and configuration.",
+      "nl": "Voer Intel&reg; AMT-activering en configuratie uit.",
       "xloc": [
         "default.handlebars->29->1351",
         "default.handlebars->29->281"
@@ -27578,6 +27595,7 @@
     },
     {
       "en": "Pre-activation",
+      "nl": "Pre-activering",
       "xloc": [
         "default.handlebars->29->958"
       ]
@@ -28222,6 +28240,7 @@
     },
     {
       "en": "Randomize password",
+      "nl": "Willekeurig wachtwoord",
       "xloc": [
         "default.handlebars->29->1372"
       ]
@@ -31325,6 +31344,7 @@
     },
     {
       "en": "Select new password",
+      "nl": "Selecteer nieuw wachtwoord",
       "xloc": [
         "default.handlebars->29->1373"
       ]
@@ -32417,6 +32437,7 @@
     },
     {
       "en": "Setup",
+      "nl": "Setup",
       "xloc": [
         "default.handlebars->29->1352",
         "default.handlebars->29->282"
@@ -34193,6 +34214,7 @@
     },
     {
       "en": "Start by entering the old and new MBEx password. ",
+      "nl": "Begin met het invoeren van het oude en nieuwe MBEx-wachtwoord. ",
       "xloc": [
         "default.handlebars->29->304"
       ]
@@ -34861,6 +34883,7 @@
     },
     {
       "en": "Switch Intel AMT to Admin Control Mode (ACM).",
+      "nl": "Schakel Intel AMT over naar Admin Control Mode (ACM).",
       "xloc": [
         "default.handlebars->29->1357",
         "default.handlebars->29->287"
@@ -35583,6 +35606,7 @@
     },
     {
       "en": "This is the recommanded policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
+      "nl": "Dit is het aanbevolen beleid. Activering en beheer van Intel&reg; AMT is volledig geautomatiseerd en de server zal proberen om optimaal gebruik te maken van hardwarebeheer.",
       "xloc": [
         "default.handlebars->29->1388"
       ]
@@ -37266,6 +37290,7 @@
     },
     {
       "en": "Unknown password",
+      "nl": "Onbekend wachtwoord",
       "xloc": [
         "default.handlebars->29->1376"
       ]
@@ -39259,15 +39284,18 @@
     },
     {
       "en": "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it.",
+      "nl": "Als dit beleid is geselecteerd, wordt Intel&reg; AMT niet beheerd door deze server. Intel AMT kan nog steeds worden gebruikt door het handmatig te activeren en te configureren.",
       "xloc": [
         "default.handlebars->29->1386"
       ]
     },
     {
       "en": "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Devices in Admin Control Mode (ACM) can still be managed manually."
+      "nl": "Wanneer dit beleid is geselecteerd, wordt elke Intel&reg; AMT in Client Control Mode (CCM) gedeactiveerd. Apparaten in Admin Control Mode (ACM) kunnen nog steeds handmatig worden beheerd."
     },
     {
       "en": "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually.",
+      "nl": "Wanneer dit beleid is geselecteerd, wordt elke Intel&reg; AMT in Client Control Mode (CCM) gedeactiveerd. Bij andere apparaten is CIRA gewist en kunnen ze nog steeds handmatig worden beheerd.",
       "xloc": [
         "default.handlebars->29->1387"
       ]
@@ -41553,6 +41581,20 @@
     },
     {
       "en": "setup.bin",
+      "nl": "setup.bin",
+      "cs": "setup.bin",
+      "de": "setup.bin",
+      "es": "setup.bin",
+      "fi": "setup.bin",
+      "fr": "setup.bin",
+      "hi": "setup.bin",
+      "ja": "setup.bin",
+      "ko": "setup.bin",
+      "pt": "setup.bin",
+      "ru": "setup.bin",
+      "tr": "setup.bin",
+      "zh-chs": "setup.bin",
+      "zh-cht": "setup.bin",
       "xloc": [
         "default.handlebars->29->206"
       ]
