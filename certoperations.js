@@ -198,7 +198,7 @@ module.exports.CertificateOperations = function (parent) {
 
 
     // Get the setup.bin file
-    obj.GetSetupBinFile = function (amtacmactivation, oldmebxpass, newmebxpass) {
+    obj.GetSetupBinFile = function (amtacmactivation, oldmebxpass, newmebxpass, domain, user) {
         // Create a setup.bin file for our own root cert
         // Get the wiadcard certificate hash
         var wildcardCertSha256 = null;
@@ -248,14 +248,14 @@ module.exports.CertificateOperations = function (parent) {
         v.moduleid = 2;
         v.varid = 3;
         v.length = -1;
-        v.value = 'meshcentral.com';
+        v.value = 'rootcert.meshcentral.com';
         setupbin.records[0].variables.push(v);
 
-        return AmtSetupBinStack.AmtSetupBinEncode(setupbin);
+        // Write to log file
+        obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: 'rootcert.meshcentral.com' });
 
-        // Write the setup.bin file
-        //var bin = AmtSetupBinStack.AmtSetupBinEncode(setupbin);
-        //obj.fs.writeFileSync('c:\\temp\\setup.bin', bin, 'binary');
+        // Encode the setup.bin file
+        return AmtSetupBinStack.AmtSetupBinEncode(setupbin);
     }
 
     // Return the certificate of the remote HTTPS server
