@@ -213,7 +213,7 @@ function createMeshCore(agent) {
                         if (amt == null) return;
                         var func = function amtStateFunc(state) { if (state != null) { amtStateFunc.pipe._send({ cmd: 'amtstate', value: state }); } }
                         func.pipe = this;
-                        amt.getAmtInfo(func);
+                        amt.getMeiState(11, func);
                         break;
                     case 'sessions':
                         this._send({ cmd: 'sessions', sessions: tunnelUserCount });
@@ -408,7 +408,6 @@ function createMeshCore(agent) {
     var wifiScannerLib = null;
     var wifiScanner = null;
     var networkMonitor = null;
-    var amtscanner = null;
     var nextTunnelIndex = 1;
     var apftunnel = null;
     var tunnelUserCount = { terminal: {}, files: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files and TCP/UDP routing
@@ -472,22 +471,6 @@ function createMeshCore(agent) {
     mesh.DAIPC = obj.DAIPC;
 
     /*
-    var AMTScanner = require("AMTScanner");
-    var scan = new AMTScanner();
-
-    scan.on("found", function (data) {
-        if (typeof data === 'string') {
-            console.log(data);
-        } else {
-            console.log(JSON.stringify(data, null, " "));
-        }
-    });
-    scan.scan("10.2.55.140", 1000);
-    scan.scan("10.2.55.139-10.2.55.145", 1000);
-    scan.scan("10.2.55.128/25", 2000);
-    */
-
-    /*
     // Try to load up the network monitor
     try {
         networkMonitor = require('NetworkMonitor');
@@ -496,13 +479,6 @@ function createMeshCore(agent) {
         networkMonitor.on('remove', function (addr) { sendNetworkUpdateNagle(); });
     } catch (e) { networkMonitor = null; }
     */
-
-    // Try to load up the Intel AMT scanner
-    try {
-        var AMTScannerModule = require('amt-scanner');
-        amtscanner = new AMTScannerModule();
-        //amtscanner.on('found', function (data) { if (typeof data != 'string') { data = JSON.stringify(data, null, " "); } sendConsoleText(data); });
-    } catch (e) { amtscanner = null; }
 
     // Fetch the SMBios Tables
     var SMBiosTables = null;
@@ -547,7 +523,7 @@ function createMeshCore(agent) {
                             mesh.SendCommand(meshCoreObj);
                         });
                         amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } }
-                        amt.start();
+                        amt.reset();
                     }
                 }
             });
@@ -1086,7 +1062,7 @@ function createMeshCore(agent) {
                 case 'amtconfig': {
                     // Perform Intel AMT activation and/or configuration
                     if ((apftunnel != null) || (amt == null) || (typeof data.user != 'string') || (typeof data.pass != 'string')) break;
-                    getMeiState(15, function (state) {
+                    amt.getMeiState(15, function (state) {
                         if ((apftunnel != null) || (amt == null)) return;
                         if ((state == null) || (state.ProvisioningState == null)) return;
                         if ((state.UUID == null) || (state.UUID.length != 36)) return; // Bad UUID
@@ -1102,10 +1078,10 @@ function createMeshCore(agent) {
                             meiState: state // MEI state will be passed to MPS server
                         };
                         addAmtEvent('LMS tunnel start.');
-                        apftunnel = require('apfclient')({ debug: false }, apfarg);
+                        apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
                         apftunnel.onJsonControl = function (data) {
                             if (data.action == 'console') { addAmtEvent(data.msg); } // Add console message to AMT event log
-                            if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
+                            if (data.action == 'mestate') { amt.getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                             if (data.action == 'deactivate') { // Request CCM deactivation
                                 var amtMeiModule, amtMei;
                                 try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { if (apftunnel) apftunnel.sendMeiDeactivationState(1); return; }
@@ -2614,8 +2590,9 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'amtconfig,amtevents,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,amt,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,scanamt,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
+                    if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
                     if (require('MeshAgent').maxKvmTileSize != null) { availcommands += ',kvmmode'; }
                     try { require('zip-reader'); availcommands += ',zip,unzip'; } catch (e) { }
@@ -3431,13 +3408,13 @@ function createMeshCore(agent) {
                 }
                 case 'amt': { // Show Intel AMT status
                     if (amt != null) {
-                        amt.getAmtInfo(function (state) {
-                            var resp = 'Intel AMT not detected.';
+                        amt.getMeiState(9, function (state) {
+                            var resp = "Intel AMT not detected.";
                             if (state != null) { resp = objToString(state, 0, ' ', true); }
                             sendConsoleText(resp, sessionid);
                         });
                     } else {
-                        response = 'Intel AMT not detected.';
+                        response = "Intel AMT not detected.";
                     }
                     break;
                 }
@@ -3487,32 +3464,6 @@ function createMeshCore(agent) {
                         var wifiPresent = wifiScanner.hasWireless;
                         if (wifiPresent) { response = "Perfoming Wifi scan..."; wifiScanner.Scan(); } else { response = "Wifi absent."; }
                     } else { response = "Wifi module not present."; }
-                    break;
-                }
-                case 'scanamt': {
-                    if (amtscanner != null) {
-                        if (args['_'].length != 1) {
-                            response = 'Usage examples:\r\n  scanamt 1.2.3.4\r\n  scanamt 1.2.3.0-1.2.3.255\r\n  scanamt 1.2.3.0/24\r\n'; // Display correct command usage
-                        } else {
-                            response = 'Scanning: ' + args['_'][0] + '...';
-                            amtscanner.scan(args['_'][0], 2000, function (data) {
-                                if (data.length > 0) {
-                                    var r = '', pstates = ['NotActivated', 'InActivation', 'Activated'];
-                                    for (var i in data) {
-                                        var x = data[i];
-                                        if (r != '') { r += '\r\n'; }
-                                        r += x.address + ' - Intel AMT v' + x.majorVersion + '.' + x.minorVersion;
-                                        if (x.provisioningState < 3) { r += (', ' + pstates[x.provisioningState]); }
-                                        if (x.provisioningState == 2) { r += (', ' + x.openPorts.join(', ')); }
-                                        r += '.';
-                                    }
-                                } else {
-                                    r = 'No Intel AMT found.';
-                                }
-                                sendConsoleText(r);
-                            });
-                        }
-                    } else { response = "Intel AMT scanner module not present."; }
                     break;
                 }
                 case 'modules': {
@@ -3570,9 +3521,9 @@ function createMeshCore(agent) {
                     break;
                 }
                 case 'amtconfig': {
+                    if (amt == null) { response = "Intel AMT not detected."; break; }
                     if (apftunnel != null) { response = "Intel AMT server tunnel already active"; break; }
-                    if (amt == null) { response = "No Intel AMT support delected"; break; }
-                    getMeiState(15, function (state) {
+                    amt.getMeiState(15, function (state) {
                         var rx = '';
                         if ((state == null) || (state.ProvisioningState == null)) { rx = "Intel AMT not ready for configuration."; } else {
                             var apfarg = {
@@ -3590,10 +3541,10 @@ function createMeshCore(agent) {
                                 rx = "Unable to get Intel AMT UUID";
                             } else {
                                 addAmtEvent('User LMS tunnel start.');
-                                apftunnel = require('apfclient')({ debug: false }, apfarg);
+                                apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
                                 apftunnel.onJsonControl = function (data) {
                                     if (data.action == 'console') { addAmtEvent(data.msg); require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); } // Display a console message
-                                    if (data.action == 'mestate') { getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
+                                    if (data.action == 'mestate') { amt.getMeiState(15, function (state) { apftunnel.updateMeiState(state); }); } // Update the MEI state
                                     if (data.action == 'deactivate') { // Request CCM deactivation
                                         var amtMeiModule, amtMei;
                                         try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { apftunnel.sendMeiDeactivationState(1); return; }
@@ -3637,7 +3588,7 @@ function createMeshCore(agent) {
                                 if ((apfarg.clientuuid == null) || (apfarg.clientuuid.length != 36)) {
                                     response = "Unable to get Intel AMT UUID: " + apfarg.clientuuid;
                                 } else {
-                                    apftunnel = require('apfclient')({ debug: false }, apfarg);
+                                    apftunnel = require('amt-apfclient')({ debug: false }, apfarg);
                                     apftunnel.onJsonControl = function (data) {
                                         if (data.action == 'console') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: data.msg }); }
                                         if (data.action == 'close') { try { apftunnel.disconnect(); } catch (e) { } apftunnel = null; }
@@ -3761,7 +3712,7 @@ function createMeshCore(agent) {
 
         if ((flags & 1) && (amt != null)) {
             // If we have a connected MEI, get Intel ME information
-            amt.getAmtInfo(function (meinfo) {
+            amt.getMeiState(11, function (meinfo) {
                 try {
                     if (meinfo == null) return;
                     var intelamt = {};
@@ -3869,44 +3820,6 @@ function createMeshCore(agent) {
         s.httprequest = this;
         s.end = onWebSocketClosed;
         s.data = onWebSocketData;
-    }
-
-    // Get Intel MEI State in a flexible way
-    // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
-    function getMeiState(flags, func) {
-        var amtMeiModule, amtMei;
-        try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { func(null); return; }
-        amtMei.on('error', function (e) { func(null); return; });
-        try {
-            var amtMeiTmpState = { OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
-            amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
-            if ((flags & 1) != 0) { amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } }); }
-            amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
-            amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } }); // 0: "Not Activated (Pre)", 1: "Not Activated (In)", 2: "Activated"
-            amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
-            amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } }); // Flag 2 = CCM, 4 = ACM
-            //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
-            if ((flags & 8) != 0) {
-                amtMei.getLanInterfaceSettings(0, function (result) {
-                    if (result) {
-                        amtMeiTmpState.net0 = result;
-                        var fqdn = null, interfaces = require('os').networkInterfaces(); // Look for the DNS suffix for the Intel AMT Ethernet interface
-                        for (var i in interfaces) { for (var j in interfaces[i]) { if ((interfaces[i][j].mac == result.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { amtMeiTmpState.OsDnsSuffix = interfaces[i][j].fqdn; } } }
-                    }
-                });
-                amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
-            }
-            amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
-            if ((flags & 2) != 0) { amtMei.getLocalSystemAccount(function (x) { if ((x != null) && x.user && x.pass) { amtMeiTmpState.OsAdmin = { user: x.user, pass: x.pass }; } }); }
-            amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DnsSuffix = result; } if ((flags & 4) == 0) { if (func != null) { func(amtMeiTmpState); } } });
-            if ((flags & 4) != 0) {
-                amtMei.getHashHandles(function (handles) {
-                    if ((handles != null) && (handles.length > 0)) { amtMeiTmpState.Hashes = []; } else { func(amtMeiTmpState); }
-                    var exitOnCount = handles.length;
-                    for (var i = 0; i < handles.length; ++i) { this.getCertHashEntry(handles[i], function (hashresult) { amtMeiTmpState.Hashes.push(hashresult); if (--exitOnCount == 0) { if (func != null) { func(amtMeiTmpState); } } }); }
-                });
-            }
-        } catch (e) { if (func != null) { func(null); } return; }
     }
 
     return obj;
