@@ -89,14 +89,14 @@ module.exports.CreateMeshScanner = function (parent) {
                     server4.xxclear = false;
                     server4.xxtype = 4;
                     server4.xxlocal = localAddress;
-                    server4.on('error', function (err) { if (this.xxlocal == '*') { console.log("ERROR: Server port 16989 not available, check if server is running twice."); } this.close(); delete obj.servers6[this.xxlocal]; });
+                    server4.on('error', function (err) { /*if (this.xxlocal == '*') { console.log("ERROR: Server port 16989 not available, check if server is running twice."); } this.close(); delete obj.servers6[this.xxlocal];*/ });
                     bindOptions = { port: 16989, exclusive: true };
                     if (server4.xxlocal != '*') { bindOptions.address = server4.xxlocal; }
                     server4.bind(bindOptions, function () {
                         try {
                             var doscan = true;
                             try { this.setBroadcast(true); this.setMulticastTTL(128); this.addMembership(membershipIPv4, this.xxlocal); } catch (e) { doscan = false; }
-                            this.on('error', function (error) { console.log('Error: ' + error); });
+                            this.on('error', function (error) { /*console.log('Error: ' + error);*/ });
                             this.on('message', function (msg, info) { onUdpPacket(msg, info, this); });
                             if (doscan == true) { obj.performScan(this); obj.performScan(this); }
                         } catch (e) { console.log(e); }
@@ -120,7 +120,7 @@ module.exports.CreateMeshScanner = function (parent) {
                     server6.xxclear = false;
                     server6.xxtype = 6;
                     server6.xxlocal = localAddress;
-                    server6.on('error', function (err) { this.close(); delete obj.servers6[this.xxlocal]; });
+                    server6.on('error', function (err) { /*this.close(); delete obj.servers6[this.xxlocal];*/ });
                     bindOptions = { port: 16989, exclusive: true };
                     if (server6.xxlocal != '*') { bindOptions.address = server6.xxlocal; }
                     server6.bind(bindOptions, function () {
@@ -228,7 +228,7 @@ module.exports.CreateMeshScanner = function (parent) {
     }
 
     // As a side job, we also send server wake-on-lan packets
-    obj.wakeOnLan = function (macs) {
+    obj.wakeOnLan = function (macs, host) {
         var i, j;
         for (i in macs) {
             var mac = macs[i].split(':').join('');
@@ -237,17 +237,24 @@ module.exports.CreateMeshScanner = function (parent) {
             var wakepacket = Buffer.from(hexpacket, 'hex');
             //console.log(wakepacket.toString('hex'));
 
-            // Send the wake packet 3 times with small time intervals
-            for (j in obj.servers4) { obj.servers4[j].send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.servers4[j].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
-            for (j in obj.servers6) { obj.servers6[j].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
-            setTimeout(function () {
-                for (j in obj.servers4) { obj.servers4[j].send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.servers4[j].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
-                for (j in obj.servers6) { obj.servers6[j].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
-            }, 200);
-            setTimeout(function () {
-                for (j in obj.servers4) { obj.servers4[j].send(wakepacket, 0, wakepacket.length, 7, "255.255.255.255"); obj.servers4[j].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv4); }
-                for (j in obj.servers6) { obj.servers6[j].send(wakepacket, 0, wakepacket.length, 16990, membershipIPv6); }
-            }, 500);
+            // Setup the wake function
+            const func = function wakeFunc() {
+                for (j in obj.servers4) {
+                    obj.servers4[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 7, '255.255.255.255');
+                    obj.servers4[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 16990, membershipIPv4);
+                    if (wakeFunc.host != null) { obj.servers4[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 7, wakeFunc.host); }
+                }
+                for (j in obj.servers6) {
+                    obj.servers6[j].send(wakeFunc.wakepacket, 0, wakeFunc.wakepacket.length, 16990, membershipIPv6);
+                }
+            }
+            func.wakepacket = wakepacket;
+            func.host = host;
+
+            // Call the wake function 3 times with small time intervals
+            func();
+            setTimeout(func, 200);
+            setTimeout(func, 500);
         }
     };
 

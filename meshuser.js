@@ -3594,7 +3594,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (macs.length == 0) return;
 
                                     // Have the server send a wake-on-lan packet (Will not work in WAN-only)
-                                    if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs); }
+                                    if (parent.parent.meshScanner != null) { parent.parent.meshScanner.wakeOnLan(macs, node.host); }
 
                                     // Get the list of device groups this user as wake permissions on
                                     var targets = [], targetDeviceGroups = parent.GetAllMeshWithRights(user, MESHRIGHT_WAKEDEVICE);
