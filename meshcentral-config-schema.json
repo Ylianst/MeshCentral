@@ -48,7 +48,6 @@
         "cookieEncoding": { "type": "string", "enum": [ "hex", "base64" ], "default": "base64", "description": "Encoding format of cookies in the HTTP headers, this is typically Base64 but some reverse proxies will require HEX." },
         "webRTC": { "type": "boolean", "default": false, "description": "When enabled, allows use of WebRTC to allow direct network traffic between the agent and browser." },
         "nice404": { "type": "boolean", "default": true, "description": "By default, a nice looking 404 error page is displayed when needed. Set this to false to disable it." },
-        "clickOnce": { "type": "boolean", "default": true, "description": "By default Microsoft ClickOnce support is enabled allowing connection routing from the web site on IE browser and browsers with ClickOnce add-in." },
         "selfUpdate": { "type": "boolean", "default": false, "description": "When true, this server will attempt to self-update everyday after midnight." },
         "browserPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval and expects a response from the browser." },
         "browserPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval." },

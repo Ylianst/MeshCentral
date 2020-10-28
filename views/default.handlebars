@@ -1281,7 +1281,8 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var amtScanResults = null;
         var debugmode = 0;
-        var clickOnce = (((features & 256) != 0) && detectClickOnce());
+        //var clickOnce = (((features & 256) != 0) && detectClickOnce());
+        var clickOnce = detectClickOnce();
         var attemptWebRTC = ((features & 128) != 0);
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -1828,9 +1829,11 @@
 
         // Return true if this browser supports clickonce
         function detectClickOnce() {
-            for (var i in window.navigator.mimeTypes) { if (window.navigator.mimeTypes[i].type == 'application/x-ms-application') { return true; } }
+            //for (var i in window.navigator.mimeTypes) { if (window.navigator.mimeTypes[i].type == 'application/x-ms-application') { return true; } }
+            //var userAgent = window.navigator.userAgent.toUpperCase();
+            //return (userAgent.indexOf('.NET CLR 3.5') >= 0) || (userAgent.indexOf('(WINDOWS NT ') >= 0);
             var userAgent = window.navigator.userAgent.toUpperCase();
-            return (userAgent.indexOf('.NET CLR 3.5') >= 0) || (userAgent.indexOf('(WINDOWS NT ') >= 0);
+            return (userAgent.indexOf('WINDOWS') >= 0) || (userAgent.indexOf('WIN32') >= 0) || (userAgent.indexOf('WIN64') >= 0);
         }
 
         function updateSiteAdmin() {
@@ -2325,6 +2328,7 @@
                 }
                 case 'getcookie': {
                     if (message.tag == 'clickonce') {
+                        /*
                         if (message.trustedCert == true) {
                             // Trusted certificate, use HTTPS port.
                             var rdpurl = window.location.origin + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
@@ -2335,18 +2339,22 @@
                             var rdpurl = 'http://' + window.location.hostname + ':' + basicPort  + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
                             safeNewWindow(rdpurl, '_blank');
                         }
-                        /*
+                        */
                         var servername = serverinfo.name;
                         if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
                         var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
                         var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
                         var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key?('&key=' + urlargs.key):'');
-                        if (message.nodeid != null) { url += ('&n=' + message.nodeid); }
-                        if (message.protocol != null) { url += ('&p=' + message.protocol); }
-                        if (message.tcpport != null) { url += ('&tcpport=' + message.tcpport); }
+                        if (message.nodeid != null) { url += ('&nodeid=' + message.nodeid); }
+                        if (message.tcpport != null) { url += ('&protocol=1&remoteport=' + message.tcpport); }
+                        if (message.protocol == 'HTTP') { url += ('&appid=1'); } // HTTP
+                        if (message.protocol == 'HTTPS') { url += ('&appid=2'); } // HTTPS
+                        if (message.protocol == 'RDP2') { url += ('&appid=3'); } // RDP
+                        if (message.protocol == 'PSSH') { url += ('&appid=4'); } // Putty
+                        if (message.protocol == 'WSCP') { url += ('&appid=5'); } // WinSCP
+                        url += '&autoexit=1';
                         console.log(url);
                         downloadFile(url, '');
-                        */
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + 'meshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
                         var node = getNodeFromId(message.nodeid);

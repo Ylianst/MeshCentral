@@ -43,7 +43,6 @@
     "_agentsInRam": false,
     "_webRTC": false,
     "_nice404": false,
-    "_clickOnce": false,
     "_selfUpdate": true,
     "_browserPing": 60,
     "_browserPong": 60,
