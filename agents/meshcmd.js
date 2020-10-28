@@ -1161,7 +1161,7 @@ function configureAmt2() {
             console.log("Unable to get Intel AMT UUID: " + apfarg.clientuuid);
             exit(1); return;
         } else {
-            settings.apftunnel = require('apfclient')({ debug: (settings.debuglevel > 0) }, apfarg);
+            settings.apftunnel = require('amt-apfclient')({ debug: (settings.debuglevel > 0) }, apfarg);
             settings.apftunnel.onJsonControl = configureJsonControl;
             settings.apftunnel.onChannelClosed = function () { exit(0); }
             try {
