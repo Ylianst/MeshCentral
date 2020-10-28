@@ -229,7 +229,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
 
                 // let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                 // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
-                ser.forwardwrite = function (msg) { obj.cirasocket.write(msg); }; // TLS ---> CIRA
+                ser.forwardwrite = function (msg) { try { obj.cirasocket.write(msg); } catch (ex) { } }; // TLS ---> CIRA
 
                 // When APF tunnel return something, update SerialTunnel buffer
                 obj.cirasocket.onData = function (ciraconn, data) { if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (e) { } } }; // CIRA ---> TLS

@@ -6,6 +6,7 @@
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex,nofollow">
     <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon" />
     <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
@@ -2334,6 +2335,18 @@
                             var rdpurl = 'http://' + window.location.hostname + ':' + basicPort  + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
                             safeNewWindow(rdpurl, '_blank');
                         }
+                        /*
+                        var servername = serverinfo.name;
+                        if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+                        var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
+                        var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
+                        var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key?('&key=' + urlargs.key):'');
+                        if (message.nodeid != null) { url += ('&n=' + message.nodeid); }
+                        if (message.protocol != null) { url += ('&p=' + message.protocol); }
+                        if (message.tcpport != null) { url += ('&tcpport=' + message.tcpport); }
+                        console.log(url);
+                        downloadFile(url, '');
+                        */
                     } else if (message.tag == 'novnc') {
                         var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + 'meshrelay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
                         var node = getNodeFromId(message.nodeid);
@@ -3996,9 +4009,9 @@
                 r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
                 if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
             }
-            if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
-                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
-            }
+            //if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
+            //    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
+            //}
             return r;
         }
 
@@ -6522,7 +6535,7 @@
             if (os == 16) { osn = "MeshCmd (macOS, 64bit)"; }
             if (os == 25) { osn = "MeshCmd (Linux ARM, 32bit)"; }
             QH('meshcmddownloadid', osn);
-            Q('meshcmddownloadid').onclick = function() { downloadFile('meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
+            Q('meshcmddownloadid').onclick = function() { downloadFile('meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):'')); }
         }
 
         function p10showiconselector() {
@@ -13713,7 +13726,8 @@
             var element = document.createElement('a');
             element.setAttribute('href', link);
             element.setAttribute('rel', 'noreferrer noopener');
-            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name?name:'')); } else { element.setAttribute('target', 'fileDownloadFrame'); }
+            element.setAttribute('target', 'fileDownloadFrame');
+            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name?name:'')); }
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
