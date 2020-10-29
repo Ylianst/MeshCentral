@@ -113,7 +113,7 @@ function run(argv) {
     //console.log('addedModules = ' + JSON.stringify(addedModules));
     var actionpath = 'meshaction.txt';
     if (args.actionfile != null) { actionpath = args.actionfile; }
-    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTSCRIPT', 'AMTUUID', 'AMTCCM', 'AMTACM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE'];
+    var actions = ['HELP', 'ROUTE', 'MICROLMS', 'AMTCONFIG', 'AMTSCAN', 'AMTPOWER', 'AMTFEATURES', 'AMTNETWORK', 'AMTLOADWEBAPP', 'AMTLOADSMALLWEBAPP', 'AMTLOADLARGEWEBAPP', 'AMTCLEARWEBAPP', 'AMTSTORAGESTATE', 'AMTINFO', 'AMTINFODEBUG', 'AMTVERSIONS', 'AMTHASHES', 'AMTSAVESTATE', 'AMTUUID', 'AMTCCM', 'AMTDEACTIVATE', 'AMTACMDEACTIVATE', 'SMBIOS', 'RAWSMBIOS', 'MESHCOMMANDER', 'AMTAUDITLOG', 'AMTEVENTLOG', 'AMTPRESENCE', 'AMTWIFI', 'AMTWAKE'];
 
     // Load the action file
     var actionfile = null;
@@ -133,7 +133,6 @@ function run(argv) {
     if ((typeof args.username) == 'string') { settings.username = args.username; }
     if ((typeof args.password) == 'string') { settings.password = args.password; }
     if ((typeof args.url) == 'string') { settings.url = args.url; }
-    if ((typeof args.profile) == 'string') { settings.profile = args.profile; }
     if ((typeof args.type) == 'string') { settings.type = args.type; }
     if ((typeof args.user) == 'string') { settings.username = args.user; }
     if ((typeof args.pass) == 'string') { settings.password = args.pass; }
@@ -184,7 +183,6 @@ function run(argv) {
         console.log('  AmtVersions       - Show all Intel ME version information.');
         console.log('  AmtHashes         - Show all Intel AMT trusted activation hashes.');
         console.log('  AmtCCM            - Activate Intel AMT into Client Control Mode.');
-        console.log('  AmtACM            - Activate Intel AMT into Admin Control Mode.');
         console.log('  AmtDeactivate     - Deactivate Intel AMT if activated in Client Control mode.');
         console.log('  AmtAcmDeactivate  - Deactivate Intel AMT if activated in Admin Control mode.');
         console.log('\r\nValid local or remote actions:');
@@ -198,7 +196,6 @@ function run(argv) {
         console.log('  AmtSaveState      - Save all Intel AMT WSMAN object to file.');
         console.log('  AmtPresence       - Heartbeat a local Intel AMT watchdog agent.');
         console.log('  AmtPower          - Perform remote Intel AMT power operation.');
-        console.log('  AmtScript         - Run .mescript on Intel AMT.');
         console.log('  AmtIDER           - Mount local disk image to remote computer.');
         console.log('  AmtFeatures       - Intel AMT features & user consent.');
         console.log('  AmtNetwork        - Intel AMT network interface settings.');
@@ -242,24 +239,12 @@ function run(argv) {
             console.log('AmtCCM will attempt to activate Intel AMT on this computer into client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work and a administrator password must be provided.');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --password [password]     Admin password used to activate Intel AMT.');
-            console.log('\r\nor:\r\n');
-            console.log('  --url [wss://server]      Url to the activation server.');
-            console.log('  --tag [string]            Optional string sent to the server during activation.');
-            console.log('  --serverhttpshash [hash]  Optional TLS server certificate hash.');
-            console.log('  --profile [string]        Optional profile used for server activation.');
         } else if (action == 'amtconfig') {
             console.log('AmtConfig will attempt to activate and configure Intel AMT on this computer. The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Example usage:\r\n\r\n  meshcmd amtconfig --url [url]');
             console.log('\r\nPossible arguments:\r\n');
             console.log('  --url [wss://server]      The address of the MeshCentral server.');
             console.log('  --id [groupid]            The device group identifier.');
             console.log('  --serverhttpshash [hash]  Optional TLS server certificate hash.');
-        } else if (action == 'amtacm') {
-            console.log('AmtACM will attempt to activate Intel AMT on this computer into admin control mode (ACM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be in "pre-provisioning" state for this command to work. Example usage:\r\n\r\n  meshcmd amtacm --url [url]');
-            console.log('\r\nPossible arguments:\r\n');
-            console.log('  --url [wss://server]      The address of the Intel AMT activation server.');
-            console.log('  --tag [string]            Optional string sent to the server during activation.');
-            console.log('  --serverhttpshash [hash]  Optional TLS server certificate hash.');
-            console.log('  --profile [string]        Optional profile used for server activation.');
         } else if (action == 'amtdeactivate') {
             console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
         } else if (action == 'amtacmdeactivate') {
@@ -310,14 +295,6 @@ function run(argv) {
             console.log('  --user [username]      The Intel AMT login username, admin is default.');
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --agent [uuid]         The unique identifier of the watchdog agent.');
-        } else if (action == 'amtscript') {
-            console.log('AmtScript will run a .mescript file on the local or remote Intel AMT. Script files can be built using the MeshCommander script editor and be used to setup or perform actions on Intel AMT. Example usage:\r\n\r\n  meshcmd amtscript --script myscript.mescript --host 1.2.3.4 --user admin --pass mypassword --tls');
-            console.log('\r\nPossible arguments:\r\n');
-            console.log('  --script [filename]    The script file to run on Intel AMT.');
-            console.log('  --host [hostname]      The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
-            console.log('  --user [username]      The Intel AMT login username, admin is default.');
-            console.log('  --pass [password]      The Intel AMT login password.');
-            console.log('  --tls                  Specifies that TLS must be used.');
         } else if (action == 'amtpower') {
             console.log('AmtPower will get current pwoer state or send a reboot command to a remote Intel AMT device. Example usage:\r\n\r\n  meshcmd amtpower --reset --host 1.2.3.4 --user admin --pass mypassword --tls');
             console.log('\r\nRequired arguments:\r\n');
@@ -413,7 +390,7 @@ function run(argv) {
             console.log('     --auth                 Wifi Authentication method (4 - WPA, 6 - WPA2/RSN) - default 6');
             console.log('     --enc                  Wifi Encryption type (3 - TKIP, 4 - CCMP) - default 3');
             console.log('     --psk                  Wifi password/pre-shared key');
-            console.log('  --del [profile-name]      Delete new Wifi profile');            
+            console.log('  --del [profile-name]      Delete new Wifi profile');
         } else if (action == 'amtwake') {
             console.log('AmtWake is used to view/set/remote Intel AMT Wake Alarms. Example usage:\r\n\r\n  meshcmd amtwake --host 1.2.3.4 --user admin --pass mypassword --list');
             console.log('\r\nRequired arguments:\r\n');
@@ -622,14 +599,6 @@ function run(argv) {
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         if ((settings.agent == null) || (typeof settings.agent != 'string') || (settings.agent == '')) { console.log('No or invalid \"agent\" specified, use --agent [agent].'); exit(1); return; }
         performAmtAgentPresence();
-    } else if (settings.action == 'amtscript') {
-        // Start running a MEScript
-        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
-        if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { settings.hostname = '127.0.0.1'; }
-        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
-        //if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { if (mescriptJSON != '') { settings.scriptjson = mescriptJSON; } else { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; } }
-        if ((settings.script == null) || (typeof settings.script != 'string') || (settings.script == '')) { console.log('No or invalid \"script\" file specified, use --script [filename].'); exit(1); return; }
-        startMeScript();
     } else if (settings.action == 'amtuuid') {
         // Start running
         if (settings.hostname != null) {
@@ -648,23 +617,11 @@ function run(argv) {
         configureAmt();
     } else if (settings.action == 'amtccm') {
         // Start activation to CCM 
-        if (((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) && ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == ''))) { console.log('No or invalid parameters specified, use --password [password] or --url [url].'); exit(1); return; }
-        if ((typeof settings.profile != 'string') || (settings.profile == '')) { settings.profile = null; }
+        if (((settings.password == null) || (typeof settings.password != 'string') || (settings.password == ''))) { console.log('No or invalid parameters specified, use --password [password] or --url [url].'); exit(1); return; }
         settings.protocol = 'http:';
         settings.localport = 16992;
         debug(1, "Settings: " + JSON.stringify(settings));
-        if (settings.password != null) { activeToCCM(); } else { activeToACM(); }
-    } else if (settings.action == 'amtacm') {
-        // Start activation to ACM 
-        if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No activation server URL specified, use --url [url].'); exit(1); return; }
-        if ((typeof settings.profile != 'string') || (settings.profile == '')) { settings.profile = null; }
-        debug(1, "Settings: " + JSON.stringify(settings));
-        activeToACM();
-    } else if (settings.action == 'amtdiscover') {
-        // Intel AMT server discovery, tell the server the state of Intel AMT.
-        if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No activation server URL specified, use --url [url].'); exit(1); return; }
-        debug(1, "Settings: " + JSON.stringify(settings));
-        activeToACM();
+        activeToCCM();
     } else if (settings.action == 'amtdeactivate') {
         // Deactivate CCM
         debug(1, "Settings: " + JSON.stringify(settings));
@@ -712,7 +669,7 @@ function run(argv) {
         } else { settings.hostname = '127.0.0.1'; }
         readAmtAuditLog();
     } else if (settings.action == 'amteventlog') { // Read the Intel AMT audit log
-        if (settings.hostname != null) { 
+        if (settings.hostname != null) {
             if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
             if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         } else { settings.hostname = '127.0.0.1'; }
@@ -739,7 +696,7 @@ function run(argv) {
             if ((args.ssid == null) || (typeof args.ssid != 'string') || args.ssid == '') { console.log("Wifi SSID is required."); exit(1); return; }
             if ((args.psk == null) || (typeof args.psk != 'string') || args.psk == '') { console.log("Wifi password is required."); exit(1); return; }
         }
-        if (args.del !=null) {
+        if (args.del != null) {
             if ((settings.name == null) || (typeof settings.name != 'string') || settings.name == '') { console.log("Wifi profile name is required."); exit(1); return; }
         }
         performAmtWifiConfig(args);
@@ -938,7 +895,7 @@ function readAmtEventLogEx2(stack, messages) {
                         } exit(1);
                     });
                 }
-                else{
+                else {
                     console.log('Invalid action, usage:\r\n\r\n meshcmd help amtauditlog');
                     exit(1);
                 }
@@ -1017,7 +974,7 @@ function readAmtAuditLogEx2(stack, response, status) {
                         } exit(1);
                     });
                 }
-                else{
+                else {
                     console.log('Invalid action, usage:\r\n\r\n meshcmd help amtauditlog');
                     exit(1);
                 }
@@ -1238,7 +1195,6 @@ function activeToCCMEx3(stack, name, responses, status) {
 
 
 
-
 //
 // Deactivate Intel AMT ACM
 //
@@ -1304,229 +1260,6 @@ function getTrustedHashes(amtMei, func, tag) {
     });
 }
 
-//
-// Activate Intel AMT to with server (ACM or CCM)
-//
-
-function activeToACM() {
-    console.log('Starting Intel AMT activation attempt...');
-    settings.noconsole = true;
-
-    // Display Intel AMT version and activation state
-    mestate = {};
-    var amtMeiModule, amtMei;
-    try { amtMeiModule = require('amt-mei'); amtMei = new amtMeiModule(); } catch (ex) { console.log(ex); exit(1); return; }
-    amtMei.on('error', function (e) { console.log('ERROR: ' + e); exit(1); return; });
-    try {
-        amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
-        amtMei.getVersion(function (val) { mestate.vers = {}; if (val != null) { for (var version in val.Versions) { mestate.vers[val.Versions[version].Description] = val.Versions[version].Version; } } });
-        amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
-        amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
-        amtMei.getControlMode(function (result) { if (result != null) { mestate.controlMode = result.controlMode; } }); // controlMode: 0 = NoActivated, 1 = CCM, 2 = ACM
-        amtMei.getDnsSuffix(function (result) {
-            if ((mestate.vers == null) || (mestate.vers['AMT'] == null)) { console.log("Unable to get Intel AMT version."); exit(100); return; }
-            if (mestate.ProvisioningState == null) { console.log("Unable to read Intel AMT activation state."); exit(100); return; }
-            if ((settings.action != 'amtdiscover') && (mestate.controlMode == 2)) { console.log("Intel AMT already activation in admin control mode."); exit(100); return; }
-            if (mestate.uuid == null) { console.log("Unable to get Intel AMT UUID."); exit(100); return; }
-            var fqdn = null;
-            if ((mestate.net0 == null) && (meinfo.net0.enabled != 0)) { console.log("No Intel AMT wired interface, can't perform ACM activation."); exit(100); return; }
-            if (result) { fqdn = result; } // If Intel AMT has a trusted DNS suffix set, use that one.
-            else {
-                // Look for the DNS suffix for the Intel AMT Ethernet interface
-                var interfaces = require('os').networkInterfaces();
-                for (var i in interfaces) {
-                    for (var j in interfaces[i]) {
-                        if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { fqdn = interfaces[i][j].fqdn; }
-                    }
-                }
-            }
-            if (fqdn != null) {
-                settings.fqdn = fqdn;
-                settings.uuid = mestate.uuid;
-                getTrustedHashes(amtMei, function () { startLms(getFwNonce, amtMei); });
-            } else {
-                console.log("Trusted DNS suffix not set, can't perform ACM activation."); exit(100); return;
-            }
-        });
-    } catch (ex) { console.log("Unable to perform MEI operations, try running as administrator."); exit(1); return; }
-}
-
-// Gets the FWNonce from AMT and saves it to a file.  
-function getFwNonce() {
-    osamtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], function (stack, name, responses, status) {
-        if (status != 200) { console.log("Unable to get firmware activation nonce, status=" + status); exit(100); return; }
-        var fwNonce = responses['IPS_HostBasedSetupService'].response['ConfigurationNonce'];
-        var digestRealm = responses['AMT_GeneralSettings'].response['DigestRealm'];
-        var allowedModes = responses['IPS_HostBasedSetupService'].response['AllowedControlModes']; // 1 = CCM, 2 = ACM
-        activeToACMEx(fwNonce, settings.fqdn, digestRealm, settings.uuid, allowedModes);
-    });
-}
-
-// Connect to the activation server and perform ACM activation
-function activeToACMEx(fwNonce, dnsSuffix, digestRealm, uuid, allowedModes) {
-    console.log('FQDN:   ' + dnsSuffix);
-    console.log('UUID:   ' + uuid);
-    console.log('Realm:  ' + digestRealm);
-    console.log('Nonce:  ' + fwNonce);
-    console.log('Connecting to ' + settings.url);
-
-    // Establish WebSocket connection to activation server
-    var options = http.parseUri(settings.url);
-    options.checkServerIdentity = onVerifyServer;
-    options.rejectUnauthorized = false;
-    var connection = http.request(options);
-    connection.on('upgrade', function (response, socket) {
-        settings.xxsocket = socket;
-        if (settings.action == 'amtdiscover') { console.log('Connected, performing discovery...'); } else { console.log('Connected, requesting activation...'); }
-        socket.on('end', function () { console.log('Connection closed'); exit(0); });
-        socket.on('error', function () { console.log('Connection error'); exit(100); });
-        socket.on('data', function (data) {
-            // Parse and check the response
-            var cmd = null;
-            try { cmd = JSON.parse(data); } catch (ex) { console.log('Unable to parse server response: ' + data); exit(100); return; }
-            if (typeof cmd != 'object') { console.log('Invalid server response: ' + cmd); exit(100); return; }
-            if (typeof cmd.errorText == 'string') { console.log('Server error: ' + cmd.errorText); exit(100); return; }
-            if (typeof cmd.messageText == 'string') { console.log('Server: ' + cmd.messageText); return; }
-            switch (cmd.action) {
-                case 'acmactivate': {
-                    // Server responded with ACM activation response
-                    if (typeof cmd.signature != 'string') { console.log('Invalid server signature'); exit(100); return; }
-                    if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
-                    if (typeof cmd.nonce != 'string') { console.log('Invalid server nonce'); exit(100); return; }
-                    if (typeof cmd.certs != 'object') { console.log('Invalid server certificates'); exit(100); return; }
-                    settings.xxprofileScript = cmd.profileScript;
-                    settings.xxrawpassword = cmd.rawpassword;
-
-                    cmd.index = 0;
-                    // If we are in CCM mode, deactivate.
-                    if (mestate.controlMode == 1) {
-                        amtMei.unprovision(1, function (status) {
-                            if (status == 0) {
-                                console.log('Intel AMT CCM deactivated, holding 10 seconds...');
-                                // We are ready to go, perform ACM activation.
-                                settings.xxTimer = setTimeout(function () { performAcmActivation(cmd, AcmActivationCompleted); }, 10000);
-                            } else {
-                                console.log('Intel AMT CCM deactivation error ' + status); exit(1); return;
-                            }
-                        });
-                    } else {
-                        // We are ready to go, perform ACM activation.
-                        performAcmActivation(cmd, AcmActivationCompleted);
-                    }
-                    break;
-                }
-                case 'ccmactivate': {
-                    // Server responded with CCM activation response
-                    if (typeof cmd.password != 'string') { console.log('Invalid server password'); exit(100); return; }
-                    settings.xxprofileScript = cmd.profileScript;
-                    settings.xxrawpassword = cmd.rawpassword;
-
-                    // If we are already in CCM mode, deactivate.
-                    if (mestate.controlMode == 1) {
-                        amtMei.unprovision(1, function (status) {
-                            if (status == 0) {
-                                console.log('Intel AMT CCM deactivated, holding 10 seconds...');
-                                // We are ready to go, perform CCM activation.
-                                settings.xxTimer = setTimeout(function () { osamtstack.IPS_HostBasedSetupService_Setup(2, cmd.password, null, null, null, null, performCcmActivation); }, 10000);
-                            } else {
-                                console.log('Intel AMT CCM deactivation error ' + status); exit(1); return;
-                            }
-                        });
-                    } else {
-                        // We are ready to go, perform CCM activation.
-                        osamtstack.IPS_HostBasedSetupService_Setup(2, cmd.password, null, null, null, null, performCcmActivation);
-                    }
-                    break;
-                }
-                case 'amtdiscover': {
-                    console.log('Done.');
-                    exit(0);
-                    break;
-                }
-                default: {
-                    console.log('Invalid server response, command: ' + cmd.action); exit(100);
-                    break;
-                }
-            }
-        });
-
-        var action = 'acmactivate';
-        if (settings.action == 'amtccm') { action = 'ccmactivate'; }
-        if (settings.action == 'amtdiscover') { action = 'amtdiscover'; }
-        socket.write({ client: 'meshcmd', version: 1, action: action, fqdn: dnsSuffix, realm: digestRealm, nonce: fwNonce, uuid: uuid, profile: settings.profile, hashes: trustedHashes, tag: settings.tag, name: settings.name, ver: mestate.vers['AMT'], build: mestate.vers['Build Number'], sku: parseInt(mestate.vers['Sku']), modes: allowedModes, currentMode: mestate.controlMode, hostname: require('os').hostname() });
-    });
-    connection.end();
-}
-
-function performCcmActivation(stack, name, responses, status) {
-    if (status != 200) {
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-failed', uuid: mestate.uuid });
-        console.log('Failed to activate, status ' + status);
-    } else if (responses.Body.ReturnValue != 0) {
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-failed', uuid: mestate.uuid });
-        console.log('Intel AMT CCM activation failed: ' + responses.Body.ReturnValueStr);
-    } else {
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'ccmactivate-success', uuid: mestate.uuid });
-        if ((settings.xxprofileScript !== null) && (settings.xxrawpassword != null)) {
-            console.log("Intel AMT CCM activation success, applying profile...");
-            settings.scriptjson = settings.xxprofileScript;
-            settings.password = settings.xxrawpassword; // This is only going to work if the server sends the raw password
-            settings.username = 'admin';
-            startMeScriptEx(function () { console.log('Intel AMT profile applied.'); socket.end(); exit(0); }, stack);
-            return;
-        } else {
-            console.log('Intel AMT CCM activation success.');
-            settings.xxsocket.end();
-            exit(0);
-            return;
-        }
-    }
-    settings.xxsocket.end();
-    exit(1);
-}
-
-function AcmActivationCompleted(result) {
-    if (result == false) {
-        console.log('Intel AMT ACM activation failed.');
-        settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'acmactivate-failed', uuid: mestate.uuid });
-        settings.xxsocket.end();
-        exit(1);
-    } else {
-        if ((settings.xxprofileScript !== null) && (settings.xxrawpassword != null)) {
-            console.log('Intel AMT ACM activation success, applying profile...');
-            settings.scriptjson = settings.xxprofileScript;
-            settings.password = settings.xxrawpassword; // This is only going to work if the server sends the raw password
-            settings.username = 'admin';
-            startMeScriptEx(function () { console.log('Intel AMT profile applied.'); settings.xxsocket.end(); exit(0); }, stack);
-        } else {
-            console.log('Intel AMT ACM activation success.');
-            settings.xxsocket.write({ client: 'meshcmd', version: 1, action: 'acmactivate-success', uuid: mestate.uuid });
-            settings.xxsocket.end();
-            exit(0);
-        }
-    }
-}
-
-// Recursive function to inject the provisioning certificates into AMT in the proper order and completes ACM activation
-function performAcmActivation(acmdata, func) {
-    var leaf = (acmdata.index == 0), root = (acmdata.index == (acmdata.certs.length - 1));
-    if ((acmdata.index < acmdata.certs.length) && (acmdata.certs[acmdata.index] != null)) {
-        osamtstack.IPS_HostBasedSetupService_AddNextCertInChain(acmdata.certs[acmdata.index], leaf, root, function (stack, name, responses, status) {
-            if (status !== 200) { console.log('AddNextCertInChain error, status=' + status); exit(1); return; }
-            else if (responses['Body']['ReturnValue'] !== 0) { console.log('AddNextCertInChain error: ' + responses['Body']['ReturnValue']); exit(1); return; }
-            else { acmdata.index++; performAcmActivation(acmdata, func); }
-        });
-    } else {
-        //console.log(acmdata.password, acmdata.nonce, acmdata.signature);
-        osamtstack.IPS_HostBasedSetupService_AdminSetup(2, acmdata.password, acmdata.nonce, 2, acmdata.signature,
-            function (stack, name, responses, status) {
-                if (status !== 200) { console.log('Error, AdminSetup status: ' + status); }
-                else if (responses['Body']['ReturnValue'] != 0) { console.log('Error, AdminSetup return value: ' + responses['Body']['ReturnValue']); }
-                func((status == 200) && (responses['Body']['ReturnValue'] == 0));
-            }
-        );
-    }
-}
 
 //
 // Get AMT UUID
@@ -1558,45 +1291,6 @@ function getAmtUuidEx() {
 
 
 //
-// Run MESCRIPT
-//
-
-// Run a .mescript targeting local or remote Intel AMT.
-function startMeScript() {
-    // See if MicroLMS needs to be started
-    if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) { settings.noconsole = true; startLms(startMeScriptEx); return; } else { startMeScriptEx(); }
-}
-
-function startMeScriptEx(callback, amtstack) {
-    //console.log('Running script...');
-    var transport = require('amt-wsman-duk');
-    var wsman = require('amt-wsman');
-    var amt = require('amt');
-    if (!wsstack) { wsstack = new wsman(transport, settings.hostname, settings.tls ? 16993 : 16992, settings.username, settings.password, settings.tls); }
-    if (!amtstack) { amtstack = new amt(wsstack); }
-    //IntelAmtEntireStateProgress = 101;
-    //amtstack.onProcessChanged = onWsmanProcessChanged;
-
-    var scriptData = null;
-    if (settings.script != null) {
-        try { scriptData = fs.readFileSync(settings.script); } catch (e) { console.log('Unable to read script file (1): ' + settings.script + '.'); exit(1); return; }
-    } else {
-        scriptData = settings.scriptjson;
-    }
-    if (scriptData == null) { console.log('Unable to read script file (2): ' + settings.script + '.'); exit(1); return; }
-    try { scriptData = JSON.parse(scriptData); } catch (e) { console.log('Unable to read script file (3): ' + settings.script + '.'); exit(1); return; }
-    if (scriptData.mescript == null) { console.log('Unable to read script file (4): ' + settings.script + '.'); exit(1); return; }
-    var scriptData = Buffer.from(scriptData.mescript, 'base64');
-
-    var scriptModule = require('amt-script');
-    var script = scriptModule.setup(scriptData, {})
-    script.amtstack = amtstack;
-    script.start();
-    script.onCompleted = function () { if (callback) { callback(); } exit(1); }
-}
-
-
-//
 // FETCH ALL INTEL AMT STATE
 //
 
@@ -1616,7 +1310,6 @@ function saveEntireAmtState2() {
     amtstack.BatchEnum(null, AllWsman, saveEntireAmtStateOk2, null, true);
     amtstack.GetAuditLog(saveEntireAmtStateOk3);
     amtstack.GetMessageLog(saveEntireAmtStateOk4);
-
 }
 
 // Save the entire Intel AMT state
@@ -1625,8 +1318,7 @@ function saveEntireAmtState() {
     if ((settings.hostname == '127.0.0.1') || (settings.hostname.toLowerCase() == 'localhost')) {
         settings.noconsole = true;
         startLms().then(saveEntireAmtState2);
-    }
-    else {
+    } else {
         saveEntireAmtState2();
     }
 }
@@ -2633,31 +2325,31 @@ function performAmtWifiConfig0(state, args) {
 }
 
 function performAmtWifiConfig1(stack, name, response, status, args) {
-    if ( status == 200 ) {
-        var wifiAuthMethod = {1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768 : "WPA3 802.1x"};
-        var wifiEncMethod = {1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None"}
+    if (status == 200) {
+        var wifiAuthMethod = { 1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768: "WPA3 802.1x" };
+        var wifiEncMethod = { 1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None" }
         var wifiProfiles = {};
         for (var y in response['CIM_WiFiEndpointSettings'].responses) {
             var z = response['CIM_WiFiEndpointSettings'].responses[y];
             var n = z['ElementName'];
-            wifiProfiles[n]= {'Priority': z['Priority'], 'SSID':z['SSID'],'AuthenticationMethod': z['AuthenticationMethod'], 'EncryptionMethod': z['EncryptionMethod']};
+            wifiProfiles[n] = { 'Priority': z['Priority'], 'SSID': z['SSID'], 'AuthenticationMethod': z['AuthenticationMethod'], 'EncryptionMethod': z['EncryptionMethod'] };
         }
 
         if (args) {
             if (args.list) {
                 console.log('List of Intel AMT Wifi profiles:');
-                if (wifiProfiles.length==0) {
+                if (wifiProfiles.length == 0) {
                     console.log('No Wifi profiles is stored.');
                 }
                 for (var t in wifiProfiles) {
                     var w = wifiProfiles[t];
-                    console.log('Profile Name: '+t+'; Priority: '+w['Priority']+ '; SSID: '+w['SSID']+'; Security: '+wifiAuthMethod[w['AuthenticationMethod']]+'/'+wifiEncMethod[w['EncryptionMethod']]);
+                    console.log('Profile Name: ' + t + '; Priority: ' + w['Priority'] + '; SSID: ' + w['SSID'] + '; Security: ' + wifiAuthMethod[w['AuthenticationMethod']] + '/' + wifiEncMethod[w['EncryptionMethod']]);
                 }
                 process.exit(0);
             } else if (args.add) {
-                if (args.auth==null) {args.auth=6}//if not set, default to WPA2 PSK
-                if (args.enc==null) {args.enc=3}//if not set, default to TKIP
-                if (args.priority==null) {args.priority=0}//if not set, default to 0
+                if (args.auth == null) { args.auth = 6; } // if not set, default to WPA2 PSK
+                if (args.enc == null) { args.enc = 3; } // if not set, default to TKIP
+                if (args.priority == null) { args.priority = 0; } // if not set, default to 0
 
                 var wifiep = {
                     __parameterType: 'reference',
@@ -2670,40 +2362,40 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
                     __namespace: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings',
                     ElementName: args.name,
                     InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + args.name,
-                    AuthenticationMethod: args.auth,                        
+                    AuthenticationMethod: args.auth,
                     EncryptionMethod: args.enc,
                     SSID: args.ssid,
                     Priority: args.priority,
                     PSKPassPhrase: args.psk
-                }                
-                stack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null, 
-                    function(stck, nm, resp, sts) {
-                        if (sts==200) {
+                }
+                stack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiep, wifiepsettinginput, null, null, null,
+                    function (stck, nm, resp, sts) {
+                        if (sts == 200) {
                             console.log("Wifi profile " + args.name + " successfully added.");
                         } else {
                             console.log("Failed to add wifi profile " + args.name + ".");
                         }
                         process.exit(0);
-                    });                
+                    });
             } else if (args.del) {
-                if (wifiProfiles[args.name]==null) {
-                    console.log("Profile "+args.name+" could not be found.");
+                if (wifiProfiles[args.name] == null) {
+                    console.log("Profile " + args.name + " could not be found.");
                     process.exit(0);
                 }
-                stack.Delete('CIM_WiFiEndpointSettings', { InstanceID : 'Intel(r) AMT:WiFi Endpoint Settings ' + args.name }, 
-                    function(stck, nm, resp, sts){
-                        if (sts==200) {
+                stack.Delete('CIM_WiFiEndpointSettings', { InstanceID: 'Intel(r) AMT:WiFi Endpoint Settings ' + args.name },
+                    function (stck, nm, resp, sts) {
+                        if (sts == 200) {
                             console.log("Wifi profile " + args.name + " successfully deleted.");
                         } else {
                             console.log("Failed to delete wifi profile " + args.name + ".");
                         }
                         process.exit(0);
-                    }, 
-                0, 1);
+                    },
+                    0, 1);
             }
         } else {
             process.exit(0);
-        }         
+        }
     } else {
         console.log("Error, status " + status + ".");
         process.exit(1);
@@ -2787,7 +2479,7 @@ function performAmtWakeConfig1(stack, name, response, status, args) {
                     if (sts == 200) { console.log("Done."); } else { console.log("Failed to delete wake alarm " + args.del + "."); }
                     process.exit(0);
                 },
-            0, 1);
+                0, 1);
         } else if (args.add) {
             // Add a wake alarm
             var alarmFound = false;
