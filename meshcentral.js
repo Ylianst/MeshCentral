@@ -2782,7 +2782,11 @@ function mainStart() {
         if (config.settings.heapdump === true) { modules.push('heapdump'); }
 
         // Install any missing modules and launch the server
-        InstallModules(modules, function () { meshserver = CreateMeshCentralServer(config, args); meshserver.Start(); });
+        InstallModules(modules, function () {
+            if (require('os').platform() == 'win32') { try { require('node-windows'); } catch (ex) { console.log("Module node-windows can't be loaded. Restart MeshCentral."); process.exit(); return; } }
+            meshserver = CreateMeshCentralServer(config, args);
+            meshserver.Start();
+        });
 
         // On exit, also terminate the child process if applicable
         process.on('exit', function () { if (childProcess) { childProcess.kill(); childProcess = null; } });
