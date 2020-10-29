@@ -1281,8 +1281,7 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var amtScanResults = null;
         var debugmode = 0;
-        //var clickOnce = (((features & 256) != 0) && detectClickOnce());
-        var clickOnce = detectClickOnce();
+        var windowsBrowser = detectWindowsBrowser();
         var attemptWebRTC = ((features & 128) != 0);
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
@@ -1827,11 +1826,8 @@
             xdr.send();
         }
 
-        // Return true if this browser supports clickonce
-        function detectClickOnce() {
-            //for (var i in window.navigator.mimeTypes) { if (window.navigator.mimeTypes[i].type == 'application/x-ms-application') { return true; } }
-            //var userAgent = window.navigator.userAgent.toUpperCase();
-            //return (userAgent.indexOf('.NET CLR 3.5') >= 0) || (userAgent.indexOf('(WINDOWS NT ') >= 0);
+        // Return true if this browser is Windows based
+        function detectWindowsBrowser() {
             var userAgent = window.navigator.userAgent.toUpperCase();
             return (userAgent.indexOf('WINDOWS') >= 0) || (userAgent.indexOf('WIN32') >= 0) || (userAgent.indexOf('WIN64') >= 0);
         }
@@ -2327,19 +2323,7 @@
                     break;
                 }
                 case 'getcookie': {
-                    if (message.tag == 'clickonce') {
-                        /*
-                        if (message.trustedCert == true) {
-                            // Trusted certificate, use HTTPS port.
-                            var rdpurl = window.location.origin + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
-                            safeNewWindow(rdpurl, '_blank');
-                        } else {
-                            // Not a trusted certificate, use HTTP port.
-                            var basicPort = ('{{{serverRedirPort}}}'.toLowerCase() == '') ? '{{{serverPublicPort}}}' : '{{{serverRedirPort}}}';
-                            var rdpurl = 'http://' + window.location.hostname + ':' + basicPort  + domainUrl + 'clickonce/minirouter/MeshMiniRouter.application?WS=wss%3A%2F%2F' + window.location.hostname + '%2Fmeshrelay.ashx%3Fauth=' + message.cookie + '&CH={{{webcerthash}}}&AP=' + message.protocol + ((debugmode == 1) ? '' : '&HOL=1');
-                            safeNewWindow(rdpurl, '_blank');
-                        }
-                        */
+                    if (message.tag == 'MCRouter') {
                         var servername = serverinfo.name;
                         if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
                         var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
@@ -4824,7 +4808,7 @@
                 // Save the new RDP port to the server
                 var rdpport = ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdpport: rdpport });
-                if (currentNode != null) { p10clickOnce(currentNode._id, 'RDP2', rdpport); }
+                if (currentNode != null) { p10MCRouter(currentNode._id, 'RDP2', rdpport); }
             }, x, currentNode);
             Q('d10rdpport').focus();
             if (currentNode.rdpport != null) { Q('d10rdpport').value = currentNode.rdpport; }
@@ -5816,11 +5800,11 @@
                 if ((args.xterm === 0) && (node.agent) && ((node.agent.caps & 2) != 0) && ((meshrights & 8) != 0) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 512) == 0))) { x += '<a href=# onclick=p10openxterm(event,"' + node._id + '") title="' + "Open XTerm terminal" + '">' + "XTerm" + '</a>&nbsp;'; }
 
                 // RDP link, show this link only of the remote machine is Windows.
-                if (((connectivity & 1) != 0) && (clickOnce == true) && (node.agent) && ((meshrights & 8) != 0)) {
-                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpClickOnceLink onclick=p10clickOnce("' + node._id + '","RDP2") title="' + "Requires Microsoft ClickOnce support in your browser" + '.">' + "RDP" + '</a>&nbsp;'; }
+                if (((connectivity & 1) != 0) && (windowsBrowser == true) && (node.agent) && ((meshrights & 8) != 0)) {
+                    if ((node.agent.id > 0) && (node.agent.id < 5)) { x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '","RDP2") title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + '</a>&nbsp;'; }
                     if (node.agent.id > 4) {
-                        x += '<a href=# onclick=p10clickOnce("' + node._id + '","PSSH",22) title="' + "Requires Microsoft ClickOnce support in your browser." + '">' + "Putty" + '</a>&nbsp;';
-                        x += '<a href=# onclick=p10clickOnce("' + node._id + '","WSCP",22) title="' + "Requires Microsoft ClickOnce support in your browser." + '">' + "WinSCP" + '</a>&nbsp;';
+                        x += '<a href=# onclick=p10MCRouter("' + node._id + '","PSSH",22) title="' + "Requires installation of MeshCentral Router." + '">' + "Putty" + '</a>&nbsp;';
+                        x += '<a href=# onclick=p10MCRouter("' + node._id + '","WSCP",22) title="' + "Requires installation of MeshCentral Router." + '">' + "WinSCP" + '</a>&nbsp;';
                     }
                 }
 
@@ -6405,9 +6389,9 @@
             meshserver.send({ action: 'removedevices', nodeids: [ nodeid ] });
         }
 
-        function p10clickOnce(nodeid, protocol, port) {
+        function p10MCRouter(nodeid, protocol, port) {
             if ((protocol == 'RDP2') && (port == null)) { if (currentNode.rdpport != null) { port = currentNode.rdpport; } else { port = 3389; } }
-            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'clickonce', protocol: protocol });
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'MCRouter', protocol: protocol });
             return false;
         }
 
