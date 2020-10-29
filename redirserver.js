@@ -114,7 +114,6 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         var url = parent.config.domains[i].url;
         obj.app.get(url, performRedirection); // Root redirection
         obj.app.get(url + 'player.htm', performRedirection); // Player redirection
-        obj.app.use(url + 'clickonce', obj.express.static(obj.parent.path.join(__dirname, "public/clickonce"))); // Indicates the clickonce folder is public
 
         // Setup all of the redirections to HTTPS
         const redirections = ['terms', 'logout', 'MeshServerRootCert.cer', 'mescript.ashx', 'checkmail', 'agentinvite', 'messenger', 'meshosxagent', 'devicepowerevents.ashx', 'downloadfile.ashx', 'userfiles/*', 'webrelay.ashx', 'health.ashx', 'logo.png', 'welcome.jpg'];

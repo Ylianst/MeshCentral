@@ -29816,47 +29816,6 @@
       ]
     },
     {
-      "cs": "Vyžaduje podporu pro Microsoft ClickOnce v prohlížeči",
-      "de": "Benötigt Microsoft-ClickOnce-Unterstützung in Ihrem Browser",
-      "en": "Requires Microsoft ClickOnce support in your browser",
-      "es": "Requiere soporte de Microsoft ClickOnce en su navegador",
-      "fi": "Vaatii Microsoft ClickOnce-tuen selaimessasi",
-      "fr": "Requiert Microsoft ClickOnce dans votre navigateur",
-      "hi": "आपके ब्राउज़र में Microsoft ClickOnce समर्थन की आवश्यकता है",
-      "ja": "ブラウザでMicrosoft ClickOnceサポートが必要です",
-      "ko": "브라우저에서 Microsoft ClickOnce 지원 필요",
-      "nl": "Vereist Microsoft ClickOnce-ondersteuning in uw browser",
-      "pt": "Requer o suporte Microsoft ClickOnce no seu navegador",
-      "ru": "Требуется поддержка Microsoft ClickOnce в вашем браузере",
-      "tr": "Tarayıcınızda Microsoft ClickOnce desteği gerektirir",
-      "zh-chs": "需要浏览器中的Microsoft ClickOnce支持",
-      "zh-cht": "需要瀏覽器中的Microsoft ClickOnce支持",
-      "xloc": [
-        "default.handlebars->29->630"
-      ]
-    },
-    {
-      "cs": "Vyžaduje podporu pro Microsoft ClickOnce v prohlížeči.",
-      "de": "Benötigt Microsoft-ClickOnce-Unterstützung in Ihrem Browser.",
-      "en": "Requires Microsoft ClickOnce support in your browser.",
-      "es": "Requiere soporte de Microsoft ClickOnce en su navegador.",
-      "fi": "Vaatii Microsoft ClickOnce-tuen selaimessasi.",
-      "fr": "Requiert Microsoft ClickOnce dans votre navigateur.",
-      "hi": "आपके ब्राउज़र में Microsoft ClickOnce समर्थन की आवश्यकता है।",
-      "ja": "ブラウザでMicrosoft ClickOnceサポートが必要です。",
-      "ko": "브라우저에서 Microsoft ClickOnce 지원이 필요합니다.",
-      "nl": "Vereist Microsoft ClickOnce-ondersteuning in uw browser",
-      "pt": "Requer o suporte Microsoft ClickOnce no seu navegador.",
-      "ru": "Требуется поддержка Microsoft ClickOnce в вашем браузере.",
-      "tr": "Tarayıcınızda Microsoft ClickOnce desteği gerektirir.",
-      "zh-chs": "在浏览器中需要Microsoft ClickOnce支持。",
-      "zh-cht": "在瀏覽器中需要Microsoft ClickOnce支持。",
-      "xloc": [
-        "default.handlebars->29->632",
-        "default.handlebars->29->634"
-      ]
-    },
-    {
       "cs": "Znovu odeslat potvrzovací e-mail",
       "de": "Bestätigungsmail erneut senden",
       "en": "Resend Confirmation Email",

@@ -41,9 +41,6 @@ How to setup Intel&reg; AMT client initiated remote access (CIRA) to connect to 
 Explaining the MeshAgent  
 [![MeshCentral2 - JavaScript in the MeshAgent](https://img.youtube.com/vi/oJi0zydaeH0/mqdefault.jpg)](https://youtu.be/oJi0zydaeH0)
 
-Microsoft ClickOnce Demonstration  
-[![MeshCentral2 - Microsoft ClickOnce Demonstration](https://img.youtube.com/vi/--RCkWqJ-gI/mqdefault.jpg)](https://youtu.be/--RCkWqJ-gI)
-
 MeshCmd Router Demonstration  
 [![MeshCmd Router](https://img.youtube.com/vi/S38mg_BPe-M/mqdefault.jpg)](https://youtu.be/S38mg_BPe-M)
 
