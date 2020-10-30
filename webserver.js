@@ -345,7 +345,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     var username = xxuser['displayName'];
                     if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
                     var shortname = null;
-                    if (domain.ldapuserbinarykey) {
+                    // if we are binding to Active Directory, set our userid to the sAMAccountName
+                    if(xxuser.sAMAccountName) {
+                        shortname = xxuser.sAMAccountName
+                    } else if (domain.ldapuserbinarykey) {
                         // Use a binary key as the userid
                         if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex'); }
                     } else if (domain.ldapuserkey) {
