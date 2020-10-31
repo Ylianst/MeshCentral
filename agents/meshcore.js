@@ -2590,7 +2590,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'coreinfo, coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
                     if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
@@ -2604,6 +2604,10 @@ function createMeshCore(agent) {
                     }
                     if (f != '') { fin += f; }
                     response = "Available commands: \r\n" + fin + ".";
+                    break;
+                }
+                case 'coreinfo': {
+                    response = JSON.stringify(meshCoreObj, null, 2);
                     break;
                 }
                 case 'agentmsg': {

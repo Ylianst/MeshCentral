@@ -432,11 +432,11 @@ module.exports.CreateAmtManager = function (parent) {
                 // Connect now
                 var comm;
                 if (dev.tlsfail !== true) {
-                    parent.debug('amt', 'Relay-Connect', "TLS", dev.name, user, pass);
+                    parent.debug('amt', (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "TLS", dev.name, user, pass);
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
                     comm.xtlsFingerprint = 0; // Perform no certificate checking
                 } else {
-                    parent.debug('amt', 'Relay-Connect', "NoTLS", dev.name, user, pass);
+                    parent.debug('amt', (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "NoTLS", dev.name, user, pass);
                     comm = CreateWsmanComm(dev.nodeid, 16992, user, pass, 0, null, ciraconn); // No TLS
                 }
                 var wsstack = WsmanStackCreateService(comm);
@@ -608,7 +608,7 @@ module.exports.CreateAmtManager = function (parent) {
             if ((typeof dev.aquired.user == 'string') && (dev.aquired.user != device.intelamt.user)) { change = 1; log = 1; device.intelamt.user = dev.aquired.user; changes.push('AMT user'); }
             if ((typeof dev.aquired.pass == 'string') && (dev.aquired.pass != device.intelamt.pass)) { change = 1; log = 1; device.intelamt.pass = dev.aquired.pass; changes.push('AMT pass'); }
             if ((typeof dev.aquired.mpspass == 'string') && (dev.aquired.mpspass != device.intelamt.mpspass)) { change = 1; log = 1; device.intelamt.mpspass = dev.aquired.mpspass; changes.push('AMT MPS pass'); }
-            if ((typeof dev.aquired.host == 'string') && (dev.aquired.host != device.host)) { change = 1; log = 1; device.host = dev.aquired.host; changes.push('host'); }
+            if ((typeof dev.aquired.host == 'string') && (dev.aquired.host != device.intelamt.host)) { change = 1; log = 1; device.intelamt.host = dev.aquired.host; changes.push('AMT host'); }
             if ((typeof dev.aquired.realm == 'string') && (dev.aquired.realm != device.intelamt.realm)) { change = 1; log = 1; device.intelamt.realm = dev.aquired.realm; changes.push('AMT realm'); }
             if ((typeof dev.aquired.hash == 'string') && (dev.aquired.hash != device.intelamt.hash)) { change = 1; log = 1; device.intelamt.hash = dev.aquired.hash; changes.push('AMT hash'); }
             if ((typeof dev.aquired.tls == 'number') && (dev.aquired.tls != device.intelamt.tls)) { change = 1; log = 1; device.intelamt.tls = dev.aquired.tls; changes.push('AMT TLS'); }
