@@ -1135,6 +1135,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'coreinfo':
                     {
                         // Sent by the agent to update agent information
+                        // TODO: Check that this does not include outdates Intel AMT information
                         ChangeAgentCoreInfo(command);
                         break;
                     }
@@ -1252,34 +1253,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             parent.getCiraCleanupScript(function (script) {
                                 obj.send(JSON.stringify({ action: 'getScript', type: 2, script: script.toString() }));
                             });
-                        }
-                        break;
-                    }
-                case 'acmactivate':
-                    {
-                        if (obj.agentInfo.capabilities & 0x20) return; // If this is a temporary device, don't do ACM activation.
-
-                        // Get the current Intel AMT policy
-                        var mesh = parent.meshes[obj.dbMeshKey];
-                        if ((mesh == null) || (mesh.amt == null) || (mesh.amt.type != 3) || (domain.amtacmactivation == null) || (domain.amtacmactivation.acmmatch == null) || (mesh.amt.password == null)) break; // If this is not the right policy, ignore this.
-
-                        // Get the Intel AMT admin password, randomize if needed.
-                        var amtpassword = ((mesh.amt.password == '') ? getRandomAmtPassword() : mesh.amt.password);
-                        if (checkAmtPassword(amtpassword) == false) return; // Invalid Intel AMT password, this should never happen.
-
-                        // Agent is asking the server to sign an Intel AMT ACM activation request
-                        var signResponse = parent.parent.certificateOperations.signAcmRequest(domain, command, 'admin', amtpassword, obj.remoteaddrport, obj.dbNodeKey, obj.dbMeshKey, obj.agentInfo.computerName, obj.agentInfo.agentId); // TODO: Place account credentials!!!
-                        if ((signResponse != null) && (signResponse.error == null)) {
-                            // Log this activation event
-                            var event = { etype: 'node', action: 'amtactivate', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 58, msgArgs: [command.fqdn], msg: 'Device requested Intel(R) AMT ACM activation, FQDN: ' + command.fqdn, ip: obj.remoteaddrport };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
-
-                            // Update the device Intel AMT information
-                            ChangeAgentCoreInfo({ 'intelamt': { user: 'admin', pass: amtpassword, uuid: command.uuid, realm: command.realm } });
-
-                            // Send the activation response
-                            obj.send(JSON.stringify(signResponse));
                         }
                         break;
                     }
@@ -1482,13 +1455,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.intelamt) { device.intelamt = {}; }
                     if ((command.intelamt.ver != null) && (typeof command.intelamt.ver == 'string') && (command.intelamt.ver.length < 12) && (device.intelamt.ver != command.intelamt.ver)) { changes.push('AMT version'); device.intelamt.ver = command.intelamt.ver; change = 1; log = 1; }
                     if ((command.intelamt.sku != null) && (typeof command.intelamt.sku == 'number') && (device.intelamt.sku !== command.intelamt.sku)) { changes.push('AMT SKU'); device.intelamt.sku = command.intelamt.sku; change = 1; log = 1; }
-                    if ((command.intelamt.state != null) && (typeof command.intelamt.state == 'number') && (device.intelamt.state != command.intelamt.state)) { changes.push('AMT state'); device.intelamt.state = command.intelamt.state; change = 1; log = 1; }
+                    if ((command.intelamt.state != null) && (typeof command.intelamt.state == 'number') && (device.intelamt.state != command.intelamt.state)) { changes.push('AMT state'); console.log('agent', device.intelamt.state, command.intelamt.state); device.intelamt.state = command.intelamt.state; change = 1; log = 1; }
                     if ((command.intelamt.flags != null) && (typeof command.intelamt.flags == 'number') && (device.intelamt.flags != command.intelamt.flags)) {
                         if (device.intelamt.flags) { changes.push('AMT flags (' + device.intelamt.flags + ' --> ' + command.intelamt.flags + ')'); } else { changes.push('AMT flags (' + command.intelamt.flags + ')'); }
                         device.intelamt.flags = command.intelamt.flags; change = 1; log = 1;
                     }
                     if ((command.intelamt.realm != null) && (typeof command.intelamt.realm == 'string') && (device.intelamt.realm != command.intelamt.realm)) { changes.push('AMT realm'); device.intelamt.realm = command.intelamt.realm; change = 1; log = 1; }
-                    if ((command.intelamt.host != null) && (typeof command.intelamt.host == 'string') && (device.intelamt.host != command.intelamt.host)) { changes.push('AMT host'); device.intelamt.host = command.intelamt.host; change = 1; log = 1; }
+                    //if ((command.intelamt.host != null) && (typeof command.intelamt.host == 'string') && (device.intelamt.host != command.intelamt.host)) { changes.push('AMT host'); device.intelamt.host = command.intelamt.host; change = 1; log = 1; }
                     if ((command.intelamt.uuid != null) && (typeof command.intelamt.uuid == 'string') && (device.intelamt.uuid != command.intelamt.uuid)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.uuid; change = 1; log = 1; }
                     if ((command.intelamt.user != null) && (typeof command.intelamt.user == 'string') && (device.intelamt.user != command.intelamt.user)) { changes.push('AMT user'); device.intelamt.user = command.intelamt.user; change = 1; log = 1; }
                     if ((command.intelamt.pass != null) && (typeof command.intelamt.pass == 'string') && (device.intelamt.pass != command.intelamt.pass)) { changes.push('AMT pass'); device.intelamt.pass = command.intelamt.pass; change = 1; log = 1; }

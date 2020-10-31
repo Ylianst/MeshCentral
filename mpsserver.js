@@ -701,7 +701,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var addr = data.substring(10 + requestLen, 10 + requestLen + addrLen);
                     var port = common.ReadInt(data, 10 + requestLen + addrLen);
                     parent.debug('mpscmd', '--> GLOBAL_REQUEST', request, addr + ':' + port);
-                    ChangeHostname(socket, addr, socket.tag.SystemId);
                     if (socket.tag.boundPorts.indexOf(port) == -1) { socket.tag.boundPorts.push(port); }
                     SendTcpForwardSuccessReply(socket, port);
                     return 14 + requestLen + addrLen;
@@ -1130,44 +1129,6 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
         socket.tag.channels[cirachannel.channelid] = cirachannel;
         return cirachannel;
     };
-
-    function ChangeHostname(socket, host, systemid) {
-        if (socket.tag.host === host) return; // Nothing to change
-        socket.tag.host = host;
-
-        // Change the device
-        obj.db.Get(socket.tag.nodeid, function (err, nodes) {
-            if ((nodes == null) || (nodes.length !== 1)) return;
-            var node = nodes[0];
-
-            // See if any changes need to be made
-            if ((node.intelamt != null) && (node.intelamt.host == host) && (node.name != null) && (node.name != '') && (node.intelamt.state == 2)) return;
-
-            // Get the mesh for this device
-            obj.db.Get(node.meshid, function (err, meshes) {
-                if ((meshes == null) || (meshes.length !== 1)) return;
-                var mesh = meshes[0];
-
-                // Ready the node change event
-                var changes = ['host'], event = { etype: 'node', action: 'changenode', nodeid: node._id };
-                event.msg = +": ";
-
-                // Make the change & save
-                if (node.intelamt == null) node.intelamt = {};
-                node.intelamt.host = host;
-                node.intelamt.state = 2; // Set the state to activated, since this is pretty obvious, we have a CIRA connection.
-                if (((node.name == null) || (node.name == '')) && (host != null) && (host != '')) { node.name = host.split('.')[0]; } // If this system has no name, set it to the start of the domain name.
-                if (((node.name == null) || (node.name == '')) && (systemid != null)) { node.name = systemid; } // If this system still has no name, set it to the system GUID.
-                obj.db.Set(node);
-
-                // Event the node change
-                event.msg = 'CIRA changed device ' + node.name + ' from group ' + mesh.name + ': ' + changes.join(', ');
-                event.node = parent.webserver.CloneSafeNode(node);
-                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                obj.parent.DispatchEvent(['*', node.meshid], obj, event);
-            });
-        });
-    }
 
     // Change a node to a new meshid, this is called when a node changes groups.
     obj.changeDeviceMesh = function (nodeid, newMeshId) {

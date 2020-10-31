@@ -1795,6 +1795,7 @@
                 powerTimelineReq = null;
                 powerTimelineNode = null;
                 powerTimelineUpdate = null;
+                deviceShares = null;
                 deleteAllNotifications(); // Close and clear notifications if present
                 hideContextMenu(); // Hide the context menu if present
                 QV('verifyEmailId2', false);
@@ -2114,6 +2115,13 @@
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
                     for (var i in powerTimeline) { if (i % 2 == 1) { powerTimeline[i] = powerTimeline[i] * 1000; } } // Decompress time
                     if (currentNode._id == message.nodeid) { mainUpdate(256); }
+                    break;
+                }
+                case 'deviceShares': {
+                    if (message.nodeid != deviceSharesReq) break;
+                    deviceSharesNode = message.nodeid;
+                    deviceShares = message.deviceShares;
+                    if (currentNode._id == message.nodeid) { gotoDevice(currentNode._id, xxcurrentView, true); }
                     break;
                 }
                 case 'getsysinfo': {
@@ -2495,7 +2503,7 @@
                 }
                 case 'event': {
                     if (!message.event.nolog) {
-                        if (currentNode && (message.event.nodeid == currentNode._id)) {
+                        if (currentNode && (message.event.nodeid == currentNode._id) && (currentDeviceEvents != null)) {
                             // If this event has a nodeid and we are looking at this node, update the log in real time.
                             currentDeviceEvents.unshift(message.event);
                             var eventLimit = parseInt(p16limitdropdown.value);
@@ -2520,6 +2528,13 @@
                     if (message.event.noact) break; // Take no action on this event
 
                     switch (message.event.action) {
+                        case 'deviceShareUpdate': {
+                            if (message.event.nodeid != deviceSharesReq) break;
+                            deviceSharesNode = message.event.nodeid;
+                            deviceShares = message.event.deviceShares;
+                            if (currentNode._id == deviceSharesNode) { gotoDevice(currentNode._id, xxcurrentView, true); }
+                            break;
+                        }
                         case 'agentlog': {
                             if (message.event.msgid == 98) {
                                 // This is a agent help request, popup a notification.
@@ -5525,6 +5540,11 @@
         var powerTimelineReq = null;
         var powerTimelineUpdate = null;
         var powerTimeline = null;
+        
+        var deviceSharesNode = null;
+        var deviceSharesReq = null;
+        var deviceShares = null;
+        
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh, event) {
             // Remind the user to verify the email address
@@ -5881,6 +5901,12 @@
                     QH('p17info', '');
                 }
 
+                // Request device sharing
+                if ((deviceSharesNode != currentNode._id) && (deviceSharesReq != currentNode._id)) {
+                    deviceSharesReq = currentNode._id;
+                    meshserver.send({ action: 'deviceShares', nodeid: currentNode._id });
+                }
+
                 // Reset the desktop tools
                 QV('DeskTools', false);
                 showDeskToolsProcesses();
@@ -5957,7 +5983,22 @@
                 }
                 if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No users with special device permissions" + '</i><div></div></div></td><td></td></tr>'; }
                 x += '</tbody></table>';
+
+                // Show device shares
+                if ((deviceShares != null) && (deviceSharesNode == currentNode._id) && (deviceShares.length > 0)) {
+                    x += '<br /><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Active Device Sharing" + '</th><th scope=col style=text-align:left></th></tr>';
+                    count = 1;
+                    for (var i = 0; i < deviceShares.length; i++) {
+                        var dshare = deviceShares[i];
+                        var trash = '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> <a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        var details = printFlexDateTime(new Date(dshare.startTime)) + ' to ' + printFlexDateTime(new Date(dshare.expireTime));
+                        if (dshare.consent) { if ((dshare.consent & 8) != 0) { details += ', Prompt for consent'; } }
+                        x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + dshare.guestName + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + details + '</div></td></tr>';
+                    }
+                    x += '</tbody></table>';
+                }
                 QH('p10html4', x);
+
 
                 // Change the URL
                 var urlviewmode = '';
@@ -8415,7 +8456,12 @@
                         msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     } else {
                         msg = eventsMessageId[event.msgid];
-                        if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
+                        for (var i in event.msgArgs) {
+                            var xx = event.msgArgs[i];
+                            if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                            msg = msg.split('{' + i + '}').join(xx);
+                        }
+                        //if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
                         msg = EscapeHtml(msg).split('(R)').join('&reg;');
                     }
                     if (event.username) {
@@ -10828,7 +10874,9 @@
             97: "Removed phone number of user {0}",
             98: "Help Requested, user: {0}, details: {1}",
             99: "Running commands as user",
-            100: "Running commands as user if possible"
+            100: "Running commands as user if possible",
+            101: "Added device share {0} from {1} to {2}",
+            102: "Removed device share {0}"
         };
 
         // Highlights the device being hovered
@@ -10861,7 +10909,13 @@
                         msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     } else {
                         msg = eventsMessageId[event.msgid];
-                        if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
+                        if (event.msgArgs != null) {
+                            for (var i in event.msgArgs) {
+                                var xx = event.msgArgs[i];
+                                if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                                msg = msg.split('{' + i + '}').join(xx);
+                            }
+                        }
                         msg = EscapeHtml(msg).split('(R)').join('&reg;');
                     }
                     if (event.nodeid) {
@@ -12357,6 +12411,11 @@
             QH('p30html2', x);
         }
 
+        function p30removeDeviceSharing(event, nodeid, publicid, guestname) {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Remove Device Share", 3, function(b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, format("Confirm removal of device share \"{0}\"?", decodeURIComponent(guestname)), [ decodeURIComponent(nodeid), decodeURIComponent(publicid) ]);
+        }
+
         function p30removeNodeFromUser(event, nodeid) {
             if (xxdialogMode) return;
             var node = getNodeFromId(decodeURIComponent(nodeid));
@@ -12441,7 +12500,12 @@
                         msg = EscapeHtml(event.msg).split('(R)').join('&reg;');
                     } else {
                         msg = eventsMessageId[event.msgid];
-                        if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
+                        for (var i in event.msgArgs) {
+                            var xx = event.msgArgs[i];
+                            if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
+                            msg = msg.split('{' + i + '}').join(xx);
+                        }
+                        //if (event.msgArgs != null) { for (var i in event.msgArgs) { msg = msg.split('{' + i + '}').join(event.msgArgs[i]); } }
                         msg = EscapeHtml(msg).split('(R)').join('&reg;');
                     }
                     if (event.nodeid) {
@@ -13700,6 +13764,7 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
+        function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href="' + link + '">' + subtext + '</a>' + text.substring(i + subtext.length); }

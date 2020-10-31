@@ -851,6 +851,13 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 }
             };
+            obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
+                if (id && (id != '')) {
+                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ? AND type = ? AND domain = ? AND nodeid IN (?)', [id, type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                } else {
+                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ? AND nodeid IN (?)', [type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                }
+            };
             obj.GetAllType = function (type, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ?', [type], func); }
             obj.GetAllIdsOfType = function (ids, domain, type, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id IN (?) AND domain = ? AND type = ?', [ids, domain, type], func); }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], func); }
@@ -1010,6 +1017,11 @@ module.exports.CreateDB = function (parent, func) {
                     obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
+            obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
+                var x = { type: type, domain: domain, nodeid: { $in: nodes } };
+                if (id) { x._id = id; }
+                obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+            };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -1162,6 +1174,11 @@ module.exports.CreateDB = function (parent, func) {
                     if (id) { x._id = id; }
                     obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
+            };
+            obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
+                var x = { type: type, domain: domain, nodeid: { $in: nodes } };
+                if (id) { x._id = id; }
+                obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };

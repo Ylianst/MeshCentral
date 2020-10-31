@@ -13,7 +13,33 @@
 /*jshint esversion: 6 */
 "use strict";
 
+
+function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, func) {
+    // Check the public id
+    parent.db.GetAllTypeNodeFiltered([nodeid], domain.id, 'deviceshare', null, function (err, docs) {
+        if ((err != null) || (docs.length == 0)) { func(false); return; }
+
+        // Search for the device share public identifier
+        var found = false;
+        for (var i = 0; i < docs.length; i++) { if (docs[i].publicid == pid) { found = true; } }
+        func(found);
+    });
+}
+
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
+    if ((cookie != null) && (typeof cookie.nid == 'string') && (typeof cookie.pid == 'string')) {
+        checkDeviceSharePublicIdentifier(parent, domain, cookie.nid, cookie.pid, function (result) {
+            // If the identifier if not found, close the connection
+            if (result == false) { try { ws.close(); } catch (e) { } return; }
+            // Public device sharing identifier found, continue as normal.
+            CreateMeshRelayEx(parent, ws, req, domain, user, cookie);
+        });
+    } else {
+        CreateMeshRelayEx(parent, ws, req, domain, user, cookie);
+    }
+}
+
+function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     const currentTime = Date.now();
     if (cookie) {
         if ((typeof cookie.expire == 'number') && (cookie.expire <= currentTime)) { try { ws.close(); parent.parent.debug('relay', 'Relay: Expires cookie (' + req.clientIp + ')'); } catch (e) { console.log(e); } return; }
@@ -25,6 +51,14 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     obj.user = user;
     obj.ruserid = null;
     obj.req = req; // Used in multi-server.js
+
+    // Setup subscription for desktop sharing public identifier
+    // If the identifier is removed, drop the connection
+    if ((cookie != null) && (typeof cookie.pid == 'string')) {
+        obj.pid = cookie.pid;
+        parent.parent.AddEventDispatch([cookie.nid], obj);
+        obj.HandleEvent = function (source, event, ids, id) { if ((event.action == 'removedDeviceShare') && (obj.pid == event.publicid)) { closeBothSides(); } }
+    }
 
     // Check relay authentication
     if ((user == null) && (obj.req.query != null) && (obj.req.query.rauth != null)) {
@@ -78,6 +112,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         delete obj.ws;
         delete obj.peer;
         delete obj.expireTimer;
+
+        // Unsubscribe
+        if (obj.pid != null) { parent.parent.RemoveAllEventDispatch(obj); }
     };
 
     obj.sendAgentMessage = function (command, userid, domainid) {
@@ -465,6 +502,9 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
         delete obj.peer;
         if (obj.pingtimer != null) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer != null) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
+
+        // Unsubscribe
+        if (obj.pid != null) { parent.parent.RemoveAllEventDispatch(obj); }
     }
 
     // Record a new entry in a recording log
