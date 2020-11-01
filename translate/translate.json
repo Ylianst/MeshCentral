@@ -3048,6 +3048,7 @@
     },
     {
       "en": "Active Device Sharing",
+      "nl": "Actief delen van apparaten",
       "xloc": [
         "default.handlebars->29->661"
       ]
@@ -3706,6 +3707,7 @@
     },
     {
       "en": "Added device share {0} from {1} to {2}",
+      "nl": "Apparaat delen {0} toegevoegd van {1} tot {2}",
       "xloc": [
         "default.handlebars->29->1669"
       ]
@@ -8431,6 +8433,7 @@
     },
     {
       "en": "Confirm removal of device share \\\"{0}\\\"?",
+      "nl": "Bevestig de verwijdering van apparaatdeling \\\"{0}\\\"?",
       "xloc": [
         "default.handlebars->29->1988"
       ]
@@ -11240,6 +11243,7 @@
     },
     {
       "en": "Device Sharing Link",
+      "nl": "Apparaat deel Link",
       "xloc": [
         "default.handlebars->29->662"
       ]
@@ -29202,6 +29206,7 @@
     },
     {
       "en": "Remove Device Share",
+      "nl": "Verwijder apparaat deling",
       "xloc": [
         "default.handlebars->29->1987"
       ]
@@ -29367,6 +29372,7 @@
     },
     {
       "en": "Remove device sharing",
+      "nl": "Apparaat deling verwijderen",
       "xloc": [
         "default.handlebars->29->663"
       ]
@@ -29579,6 +29585,7 @@
     },
     {
       "en": "Removed device share {0}",
+      "nl": "Apparaatdeling {0} verwijderd",
       "xloc": [
         "default.handlebars->29->1670"
       ]
@@ -29859,12 +29866,14 @@
     },
     {
       "en": "Requires installation of MeshCentral Router",
+      "nl": "Vereist de installatie van MeshCentral Router",
       "xloc": [
         "default.handlebars->29->630"
       ]
     },
     {
       "en": "Requires installation of MeshCentral Router.",
+      "nl": "Vereist de installatie van MeshCentral Router.",
       "xloc": [
         "default.handlebars->29->632",
         "default.handlebars->29->634"
@@ -35136,6 +35145,7 @@
     },
     {
       "en": "Tagged",
+      "nl": "Getagd",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->15"
       ]
@@ -37357,6 +37367,7 @@
     },
     {
       "en": "Untagged",
+      "nl": "Niet getagd",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->17"
       ]
