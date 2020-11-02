@@ -389,9 +389,27 @@ function createMeshCore(agent) {
     // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
     var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ('MeshCore CRC-' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
 
-
     // Get the operating system description string
-    try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; }); } catch (e) { }
+    try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (e) { }
+
+    // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
+    try {
+        var userSession = require('user-sessions');
+        userSession.on('changed', function onUserSessionChanged() {
+            userSession.enumerateUsers().then(function (users) {
+                var u = [], a = users.Active;
+                for (var i = 0; i < a.length; i++) {
+                    var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
+                    if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
+                }
+                meshCoreObj.users = u;
+                meshCoreObjChanged();
+            });
+        });
+        userSession.emit('changed');
+        //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
+        //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
+    } catch (e) { }
 
     var meshServerConnectionState = 0;
     var tunnels = {};
@@ -447,17 +465,10 @@ function createMeshCore(agent) {
             // Check if this computer supports a desktop
             try
             {
-                if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support))
-                {
-                    meshCoreObj.caps |= 1;
-                }
-                else if(process.platform == 'linux' || process.platform == 'freebsd')
-                {
-                    require('monitor-info').on('kvmSupportDetected', function (value)
-                    {
-                        meshCoreObj.caps |= 1;
-                        mesh.SendCommand(meshCoreObj);
-                    });
+                if ((process.platform == 'win32') || (process.platform == 'darwin') || (require('monitor-info').kvm_x11_support)) {
+                    meshCoreObj.caps |= 1; meshCoreObjChanged();
+                } else if (process.platform == 'linux' || process.platform == 'freebsd') {
+                    require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
                 }
             } catch (e) { }
         }
@@ -498,31 +509,9 @@ function createMeshCore(agent) {
                     {
                         var amtmodule = require('amt-manage');
                         amt = new amtmodule(mesh, db, false);
-                        amt.on('portBinding_LMS', function (map)
-                        {
-                            var j = { action: 'lmsinfo', value: { ports: map.keys() } };
-                            mesh.SendCommand(j);
-                        });
-                        amt.on('stateChange_LMS', function (v)
-                        {
-                            if (!meshCoreObj.intelamt) { meshCoreObj.intelamt = {}; }
-                            switch(v)
-                            {
-                                case 0:
-                                    meshCoreObj.intelamt.microlms = 'DISABLED';
-                                    break;
-                                case 1:
-                                    meshCoreObj.intelamt.microlms = 'CONNECTING';
-                                    break;
-                                case 2:
-                                    meshCoreObj.intelamt.microlms = 'CONNECTED';
-                                    break;
-                                default:
-                                    break;
-                            }
-                            mesh.SendCommand(meshCoreObj);
-                        });
-                        amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } }
+                        amt.on('portBinding_LMS', function (map) { mesh.SendCommand({ action: 'lmsinfo', value: { ports: map.keys() } }); });
+                        amt.on('stateChange_LMS', function (v) { if (!meshCoreObj.intelamt) { meshCoreObj.intelamt = {}; } meshCoreObj.intelamt.microlms = v; meshCoreObjChanged(); }); // 0 = Disabled, 1 = Connecting, 2 = Connected
+                        amt.onStateChange = function (state) { if (state == 2) { sendPeriodicServerUpdate(1); } } // MEI State
                         amt.reset();
                     }
                 }
@@ -2590,7 +2579,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'coreinfo, coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,sendcaps,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'coreinfo, coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
                     if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
@@ -2608,6 +2597,10 @@ function createMeshCore(agent) {
                 }
                 case 'coreinfo': {
                     response = JSON.stringify(meshCoreObj, null, 2);
+                    break;
+                }
+                case 'coreinfoupdate': {
+                    sendPeriodicServerUpdate();
                     break;
                 }
                 case 'agentmsg': {
@@ -3211,26 +3204,6 @@ function createMeshCore(agent) {
                     }
                     break;
                 }
-                case 'sendcaps': { // Send capability flags to the server
-                    if (args['_'].length == 0) {
-                        response = 'Proper usage: sendcaps (number)'; // Display correct command usage
-                    } else {
-                        meshCoreObj.caps = parseInt(args['_'][0]);
-                        mesh.SendCommand(meshCoreObj);
-                        response = JSON.stringify(meshCoreObj);
-                    }
-                    break;
-                }
-                case 'sendosdesc': { // Send OS description
-                    if (args['_'].length > 0) {
-                        meshCoreObj.osdesc = args['_'][0];
-                        mesh.SendCommand(meshCoreObj);
-                        response = JSON.stringify(meshCoreObj);
-                    } else {
-                        response = 'Proper usage: sendosdesc [os description]'; // Display correct command usage
-                    }
-                    break;
-                }
                 case 'args': { // Displays parsed command arguments
                     response = 'args ' + objToString(args, 0, ' ', true);
                     break;
@@ -3669,13 +3642,10 @@ function createMeshCore(agent) {
             var oldNodeId = db.Get('OldNodeId');
             if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
 
-            // Update the server with basic info, logged in users and more.
-            mesh.SendCommand(meshCoreObj);
-
             // Send SMBios tables if present
             if (SMBiosTablesRaw != null) { mesh.SendCommand({ action: 'smbios', value: SMBiosTablesRaw }); }
 
-            // Update the server on more advanced stuff, like Intel ME and Network Settings
+            // Update the server on with basic info, logged in users and more advanced stuff, like Intel ME and Network Settings
             meInfoStr = null;
             sendPeriodicServerUpdate();
             if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); } // 20 minutes
@@ -3710,103 +3680,57 @@ function createMeshCore(agent) {
     }
 
     // Called periodically to check if we need to send updates to the server
-    function sendPeriodicServerUpdate(flags) {
+    function sendPeriodicServerUpdate(flags, force) {
         if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
         if (!flags) { flags = 0xFFFFFFFF; }
 
-        if ((flags & 1) && (amt != null)) {
-            // If we have a connected MEI, get Intel ME information
-            amt.getMeiState(11, function (meinfo) {
-                try {
-                    if (meinfo == null) return;
-                    var intelamt = {};
-                    if (amt != null)
-                    {
-                        switch(amt.lmsstate)
-                        {
-                            case 0: intelamt.microlms = 'DISABLED'; break;
-                            case 1: intelamt.microlms = 'CONNECTING'; break;
-                            case 2: intelamt.microlms = 'CONNECTED'; break;
-                            default: intelamt.microlms = 'unknown'; break;
-                        }
-                    }
-                    var p = false;
-                    if ((meinfo.Versions != null) && (meinfo.Versions.AMT != null)) { intelamt.ver = meinfo.Versions.AMT; p = true; if (meinfo.Versions.Sku != null) { intelamt.sku = parseInt(meinfo.Versions.Sku); } }
-                    if (meinfo.ProvisioningState != null) { intelamt.state = meinfo.ProvisioningState; p = true; }
-                    if (meinfo.Flags != null) { intelamt.flags = meinfo.Flags; p = true; }
-                    if (meinfo.OsHostname != null) { intelamt.host = meinfo.OsHostname; p = true; }
-                    if (meinfo.UUID != null) { intelamt.uuid = meinfo.UUID; p = true; }
-                    if ((meinfo.ProvisioningState == 0) && (meinfo.net0 != null) && (meinfo.net0.enabled == 1)) { // If not activated, look to see if we have wired net working.
-                        // Not activated and we have wired ethernet, look for the trusted DNS
-                        var dns = meinfo.DNS;
-                        if (dns == null) {
-                            // Trusted DNS not set, let's look for the OS network DNS suffix
-                            var interfaces = require('os').networkInterfaces();
-                            for (var i in interfaces) {
-                                for (var j in interfaces[i]) {
-                                    if ((interfaces[i][j].mac == mestate.net0.mac) && (interfaces[i][j].fqdn != null) && (interfaces[i][j].fqdn != '')) { dns = interfaces[i][j].fqdn; }
-                                }
-                            }
-                        }
-                        if (intelamt.dns != dns) { intelamt.dns = dns; p = true; }
-                    } else { if (intelamt.dns != null) { delete intelamt.dns; p = true; } }
-                    if (p == true) {
-                        var meInfoStr = JSON.stringify(intelamt);
-                        if (meInfoStr != lastMeInfo) {
-                            meshCoreObj.intelamt = intelamt;
-                            mesh.SendCommand(meshCoreObj);
-                            lastMeInfo = meInfoStr;
-                        }
-                    }
-                } catch (e) { }
+        // If we have a connected MEI, get Intel ME information
+        if ((flags & 1) && (amt != null) && (amt.state == 2)) {
+            delete meshCoreObj.intelamt;
+            amt.getMeiState(9, function (meinfo) {
+                meshCoreObj.intelamt = meinfo;
+                meshCoreObj.intelamt.microlms = amt.lmsstate;
+                meshCoreObjChanged();
             });
         }
 
-        if (flags & 2) {
-            // Update network information
-            sendNetworkUpdateNagle(false);
+        // Update network information
+        if (flags & 2) { sendNetworkUpdateNagle(false); }
+
+        // Update anti-virus information
+        if ((flags & 4) && (process.platform == 'win32')) {
+            // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
+            try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (e) { av = null; } // Antivirus
+            //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (e) { meshCoreObj.pr = null; } } // Pending reboot
         }
 
-        if ((flags & 4) && (process.platform == 'win32')) {
-            // Update anti-virus information
-            // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
-            var av, pr;
-            try { av = require('win-info').av(); } catch (e) { av = null; } // Antivirus
-            //if (process.platform == 'win32') { try { pr = require('win-info').pendingReboot(); } catch (e) { pr = null; } } // Pending reboot
-            if ((meshCoreObj.av == null) || (JSON.stringify(meshCoreObj.av) != JSON.stringify(av))) { meshCoreObj.av = av; mesh.SendCommand(meshCoreObj); }
+        // Send available data right now
+        if (force) {
+            meshCoreObj = sortObjRec(meshCoreObj);
+            var x = JSON.stringify(meshCoreObj);
+            if (x != LastPeriodicServerUpdate) { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); }
         }
     }
+
+    // Once we are done collecting all the data, send to server if needed
+    var LastPeriodicServerUpdate = null;
+    var PeriodicServerUpdateNagleTimer = null;
+    function meshCoreObjChanged() { if (PeriodicServerUpdateNagleTimer == null) { PeriodicServerUpdateNagleTimer = setTimeout(meshCoreObjChangedEx, 500); } }
+    function meshCoreObjChangedEx() {
+        PeriodicServerUpdateNagleTimer = null;
+        meshCoreObj = sortObjRec(meshCoreObj);
+        var x = JSON.stringify(meshCoreObj);
+        if (x != LastPeriodicServerUpdate) { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); }
+    }
+
+    function sortObjRec(o) { if (typeof o != 'object') return o; for (var i in o) { if (typeof o[i] == 'object') { o[i] = sortObjRec(o[i]); } } return sortObj(o); }
+    function sortObj(o) { return Object.keys(o).sort().reduce(function (result, key) { result[key] = o[key]; return result; }, {}); }
 
     // Starting function
     obj.start = function () {
         // Setup the mesh agent event handlers
         mesh.AddCommandHandler(handleServerCommand);
         mesh.AddConnectHandler(handleServerConnection);
-
-        // Parse input arguments
-        //var args = parseArgs(process.argv);
-        //console.log(args);
-
-        //resetMicroLms();
-
-        // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
-        try {
-            var userSession = require('user-sessions');
-            userSession.on('changed', function onUserSessionChanged() {
-                userSession.enumerateUsers().then(function (users) {
-                    var u = [], a = users.Active;
-                    for (var i = 0; i < a.length; i++) {
-                        var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
-                        if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
-                    }
-                    meshCoreObj.users = u;
-                    mesh.SendCommand(meshCoreObj);
-                });
-            });
-            userSession.emit('changed');
-            //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
-            //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
-        } catch (e) { }
     }
 
     obj.stop = function () {

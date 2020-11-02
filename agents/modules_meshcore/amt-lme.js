@@ -17,7 +17,8 @@ limitations under the License.
 var MemoryStream = require('MemoryStream');
 var lme_id = 0;             // Our next channel identifier
 var lme_port_offset = 0;    // Debug: Set this to "-100" to bind to 16892 & 16893 and IN_ADDRANY. This is for LMS debugging.
-var xmlParser = require('amt-xml');
+var xmlParser = null;
+try { xmlParser = require('amt-xml'); } catch (ex) { }
 
 // Documented in: https://software.intel.com/sites/manageability/AMT_Implementation_and_Reference_Guide/HTMLDocuments/MPSDocuments/Intel%20AMT%20Port%20Forwarding%20Protocol%20Reference%20Manual.pdf
 var APF_DISCONNECT = 1;
@@ -302,7 +303,7 @@ function lme_heci(options) {
                         if ((httpData != null) || (channel.data.length >= 8000)) {
                             // Parse the WSMAN
                             var notify = null;
-                            try { notify = xmlParser.ParseWsman(httpData); } catch (e) { }
+                            if (xmlParser != null) { try { notify = xmlParser.ParseWsman(httpData); } catch (e) { } }
 
                             // Event the http data
                             if (notify != null) { this.LMS.emit('notify', notify, channel.options, _lmsNotifyToCode(notify)); }

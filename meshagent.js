@@ -1135,7 +1135,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'coreinfo':
                     {
                         // Sent by the agent to update agent information
-                        // TODO: Check that this does not include outdates Intel AMT information
                         ChangeAgentCoreInfo(command);
                         break;
                     }
@@ -1442,8 +1441,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (device.agent) {
                 var changes = [], change = 0, log = 0;
 
-                //if (command.users) { console.log(command.users); }
-
                 // Check if anything changes
                 if (command.name && (typeof command.name == 'string') && (command.name != device.name)) { change = 1; log = 1; device.name = command.name; changes.push('name'); }
                 if ((command.caps != null) && (device.agent.core != command.value)) { if ((command.value == null) && (device.agent.core != null)) { delete device.agent.core; } else { device.agent.core = command.value; } change = 1; } // Don't save this as an event to the db.
@@ -1453,18 +1450,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (device.ip != obj.remoteaddr) { device.ip = obj.remoteaddr; change = 1; }
                 if (command.intelamt) {
                     if (!device.intelamt) { device.intelamt = {}; }
-                    if ((command.intelamt.ver != null) && (typeof command.intelamt.ver == 'string') && (command.intelamt.ver.length < 12) && (device.intelamt.ver != command.intelamt.ver)) { changes.push('AMT version'); device.intelamt.ver = command.intelamt.ver; change = 1; log = 1; }
-                    if ((command.intelamt.sku != null) && (typeof command.intelamt.sku == 'number') && (device.intelamt.sku !== command.intelamt.sku)) { changes.push('AMT SKU'); device.intelamt.sku = command.intelamt.sku; change = 1; log = 1; }
-                    if ((command.intelamt.state != null) && (typeof command.intelamt.state == 'number') && (device.intelamt.state != command.intelamt.state)) { changes.push('AMT state'); console.log('agent', device.intelamt.state, command.intelamt.state); device.intelamt.state = command.intelamt.state; change = 1; log = 1; }
-                    if ((command.intelamt.flags != null) && (typeof command.intelamt.flags == 'number') && (device.intelamt.flags != command.intelamt.flags)) {
-                        if (device.intelamt.flags) { changes.push('AMT flags (' + device.intelamt.flags + ' --> ' + command.intelamt.flags + ')'); } else { changes.push('AMT flags (' + command.intelamt.flags + ')'); }
-                        device.intelamt.flags = command.intelamt.flags; change = 1; log = 1;
+                    if ((command.intelamt.Versions != null) && (typeof command.intelamt.Versions == 'object')) {
+                        if ((command.intelamt.Versions.AMT != null) && (typeof command.intelamt.Versions.AMT == 'string') && (command.intelamt.Versions.AMT.length < 12) && (device.intelamt.ver != command.intelamt.Versions.AMT)) { changes.push('AMT version'); device.intelamt.ver = command.intelamt.Versions.AMT; change = 1; log = 1; }
+                        if ((command.intelamt.Versions.Sku != null) && (typeof command.intelamt.Versions.Sku == 'string')) { var sku = parseInt(command.intelamt.Versions.Sku); if (device.intelamt.sku !== command.intelamt.sku) { device.intelamt.sku = sku; change = 1; log = 1; } }
                     }
-                    if ((command.intelamt.realm != null) && (typeof command.intelamt.realm == 'string') && (device.intelamt.realm != command.intelamt.realm)) { changes.push('AMT realm'); device.intelamt.realm = command.intelamt.realm; change = 1; log = 1; }
-                    //if ((command.intelamt.host != null) && (typeof command.intelamt.host == 'string') && (device.intelamt.host != command.intelamt.host)) { changes.push('AMT host'); device.intelamt.host = command.intelamt.host; change = 1; log = 1; }
-                    if ((command.intelamt.uuid != null) && (typeof command.intelamt.uuid == 'string') && (device.intelamt.uuid != command.intelamt.uuid)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.uuid; change = 1; log = 1; }
-                    if ((command.intelamt.user != null) && (typeof command.intelamt.user == 'string') && (device.intelamt.user != command.intelamt.user)) { changes.push('AMT user'); device.intelamt.user = command.intelamt.user; change = 1; log = 1; }
-                    if ((command.intelamt.pass != null) && (typeof command.intelamt.pass == 'string') && (device.intelamt.pass != command.intelamt.pass)) { changes.push('AMT pass'); device.intelamt.pass = command.intelamt.pass; change = 1; log = 1; }
+                    if ((command.intelamt.ProvisioningState != null) && (typeof command.intelamt.ProvisioningState == 'number') && (device.intelamt.state != command.intelamt.ProvisioningState)) { changes.push('AMT state'); device.intelamt.state = command.intelamt.ProvisioningState; change = 1; log = 1; }
+                    if ((command.intelamt.Flags != null) && (typeof command.intelamt.Flags == 'number') && (device.intelamt.flags != command.intelamt.Flags)) {
+                        if (device.intelamt.flags) { changes.push('AMT flags (' + device.intelamt.flags + ' --> ' + command.intelamt.Flags + ')'); } else { changes.push('AMT flags (' + command.intelamt.Flags + ')'); }
+                        device.intelamt.flags = command.intelamt.Flags; change = 1; log = 1;
+                    }
+                    if ((command.intelamt.UUID != null) && (typeof command.intelamt.UUID == 'string') && (device.intelamt.uuid != command.intelamt.UUID)) { changes.push('AMT uuid'); device.intelamt.uuid = command.intelamt.UUID; change = 1; log = 1; }
                 }
                 if (command.av) {
                     if (!device.av) { device.av = []; }
