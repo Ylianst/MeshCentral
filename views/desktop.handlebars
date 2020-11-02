@@ -172,7 +172,7 @@
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var webPageFullScreen = false;
         var expire = '{{{expire}}}';
-        if (expire != '') { QH('p11power', format("Expires at {0}", printTime(new Date(parseInt(expire))))) }
+        if (expire != '') { QH('p11power', printFlexDateTime(new Date(parseInt(expire)))); }
 
         function start() {
             window.onresize = deskAdjust;
@@ -1161,6 +1161,7 @@
         function printDate(d) { return d.toLocaleDateString(urlargs.locale); }
         function printTime(d) { return d.toLocaleTimeString(urlargs.locale); }
         function printDateTime(d) { return d.toLocaleString(urlargs.locale); }
+        function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return format("Expires at {0}", printTime(d)); } else { return format("Expires {0}", printDateTime(d)); } }
 
         start();
     </script>

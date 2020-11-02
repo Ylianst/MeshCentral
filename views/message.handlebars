@@ -27,7 +27,7 @@
         <div id=page_content style=max-height:calc(100vh-138px)>
             <div id=column_l>
                 <h1 id="mainTitle"></h1>
-                <p style=margin-left:20px id="mainMessage"></p>
+                <p id="mainMessage"></p>
                 <br />
             </div>
             <div id=footer>
@@ -52,6 +52,7 @@
 
         var title = '';
         if (titleid == 1) { title = "Account Verification"; }
+        if (titleid == 2) { title = "Desktop Sharing"; }
         QH('topTitle', Q('topTitle').innerText + ' - ' + title);
         QH('mainTitle', title);
 
@@ -71,8 +72,13 @@
             }
             case 9: { msg = "ERROR: Invalid account check."; break; }
             case 10: { msg = "ERROR: Invalid account check, verification url is only valid for 30 minutes."; break; }
+            case 11: { msg = "Sharing link not valid yet."; break; }
+            case 12: { msg = "Sharing link is expired."; break; }
         }
-        QH('mainMessage', msg + ' <a href="' + domainurl + (urlargs.key ? ('?key=' + urlargs.key) : '') + '">' + "Go to login page" + '</a>.');
+
+        // Add login page link
+        if ((msgid != 11) && (msgid != 12)) { msg += ' <a href="' + domainurl + (urlargs.key ? ('?key=' + urlargs.key) : '') + '">' + "Go to login page" + '</a>.' }
+        QH('mainMessage', msg);
 
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
 

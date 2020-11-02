@@ -446,7 +446,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Build server information object
             var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((parent.parent.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now() };
-            serverinfo.maxGuestSessionSharingTime = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             if ((domain.sessionrecording) && (domain.sessionrecording.onlyselecteddevicegroups === true)) { serverinfo.devGroupSessionRecording = 1; } // Allow enabling of session recording
@@ -4676,11 +4675,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 break;
             }
             case 'createDeviceShareLink': {
-                var err = null, maxExpireMinutes = (typeof domain.maxguestsessionsharingtime == 'number') ? domain.maxguestsessionsharingtime : 60;
+                var err = null;
                 if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the nodeid
                 else if (common.validateString(command.guestname, 1, 128) == false) { err = 'Invalid guest name'; } // Check the guest name
-                else if (common.validateInt(command.expire, 1, maxExpireMinutes) == false) { err = 'Invalid expire time'; } // Check the expire time in hours
+                else if ((command.expire != null) && (typeof command.expire != 'number')) { err = 'Invalid expire time'; } // Check the expire time in hours
+                else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in seconds
+                else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in seconds
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
+                else if ((command.expire == null) && ((command.start == null) || (command.end == null) || (command.start > command.end))) { err = 'No time specified'; } // Check that a time range is present
                 else {
                     if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                     var snode = command.nodeid.split('/');
@@ -4702,10 +4704,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((rights != 0xFFFFFFFF) && ((rights & 4352) != 0)) return;
 
                     // Create cookie
-                    var publicid = getRandomPassword();
-                    var startTime = Date.now(), expireTime = Date.now() + (60000 * command.expire);
+                    var publicid = getRandomPassword(), startTime, expireTime;
+                    if (command.expire != null) {
+                        // Now until expire in hours
+                        startTime = Date.now();
+                        expireTime = Date.now() + (60000 * command.expire);
+                    } else {
+                        // Time range in seconds
+                        startTime = command.start * 1000;
+                        expireTime = command.end * 1000;
+                    }
+
                     const inviteCookie = parent.parent.encodeCookie({ a: 5, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, start: startTime, expire: expireTime, pid: publicid }, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
+                    command.start = startTime;
                     command.expire = expireTime;
 
                     // Create the server url
