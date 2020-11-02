@@ -83,12 +83,19 @@ function AmtManager(agent, db, isdebug) {
 
     // Get Intel MEI State in a flexible way
     // Flags: 1 = Versions, 2 = OsAdmin, 4 = Hashes, 8 = Network
+    var getMeiStateCache = {}; // Some MEI calls will only be made once and cached here.
     obj.getMeiState = function(flags, func) {
         if ((amtMei == null) || (amtMeiState < 2)) { if (func != null) { func(null); } return; }
         try {
             var amtMeiTmpState = { OsHostname: require('os').hostname(), Flags: 0 }; // Flags: 1=EHBC, 2=CCM, 4=ACM
-            amtMei.getProtocolVersion(function (result) { if (result != null) { amtMeiTmpState.MeiVersion = result; } });
-            if ((flags & 1) != 0) { amtMei.getVersion(function (result) { if (result) { amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } }); }
+            if (getMeiStateCache.MeiVersion != null) { amtMeiTmpState.MeiVersion = getMeiStateCache.MeiVersion; } else { amtMei.getProtocolVersion(function (result) { if (result != null) { getMeiStateCache.MeiVersion = amtMeiTmpState.MeiVersion = result; } }); }
+            if ((flags & 1) != 0) {
+                if (getMeiStateCache.Versions != null) {
+                    amtMeiTmpState.Versions = getMeiStateCache.Versions;
+                } else {
+                    amtMei.getVersion(function (result) { if (result) { getMeiStateCache.Versions = amtMeiTmpState.Versions = {}; for (var version in result.Versions) { amtMeiTmpState.Versions[result.Versions[version].Description] = result.Versions[version].Version; } } });
+                }
+            }
             amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
             amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } }); // 0: "Not Activated (Pre)", 1: "Not Activated (In)", 2: "Activated"
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
@@ -104,7 +111,7 @@ function AmtManager(agent, db, isdebug) {
                 });
                 amtMei.getLanInterfaceSettings(1, function (result) { if (result) { amtMeiTmpState.net1 = result; } });
             }
-            amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { amtMeiTmpState.UUID = result.uuid; } });
+            if (getMeiStateCache.UUID != null) { amtMeiTmpState.UUID = getMeiStateCache.UUID; } else { amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { getMeiStateCache.UUID = amtMeiTmpState.UUID = result.uuid; } }); }
             if ((flags & 2) != 0) { amtMei.getLocalSystemAccount(function (x) { if ((x != null) && x.user && x.pass) { amtMeiTmpState.OsAdmin = { user: x.user, pass: x.pass }; } }); }
             amtMei.getDnsSuffix(function (result) { if (result != null) { amtMeiTmpState.DnsSuffix = result; } if ((flags & 4) == 0) { if (func != null) { func(amtMeiTmpState); } } });
             if ((flags & 4) != 0) {
@@ -144,7 +151,10 @@ function AmtManager(agent, db, isdebug) {
             amtLms.on('connect', function () { amtLmsState = 2; obj.lmsstate = 2; debug("LMS connected"); });
             amtLms.on('bind', function (map) { obj._mapping = map; obj.emit('portBinding_LMS', map); });
             amtLms.on('notify', function (data, options, code) { handleAmtNotification(data); });
-        } catch (e) { amtLmsState = -1; obj.lmsstate = -1; amtLms = null; }
+        } catch (ex) {
+            require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "ex: " + ex });
+            amtLmsState = -1; obj.lmsstate = -1; amtLms = null;
+        }
     }
 
 }
