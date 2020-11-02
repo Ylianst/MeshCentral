@@ -12,6 +12,7 @@
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS" >
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -31,6 +32,7 @@
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/flatpickr.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
@@ -3071,6 +3073,7 @@
                     if (node == null) break;
                     x += addHtmlValue("Device", node.name);
                     x += addHtmlValue("Guest Name", message.guestname);
+                    x += addHtmlValue("Start Time", printDateTime(new Date(message.start)));
                     x += addHtmlValue("Expire Time", printDateTime(new Date(message.expire)));
                     var y = [];
                     if (message.consent & 1) { y.push("Notify"); }
@@ -6157,6 +6160,7 @@
             meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devToast').value });
         }
 
+        /*
         function showShareDevice() {
             if (xxdialogMode) return;
             var y = '', x = "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour." + '<br /><br />';
@@ -6168,9 +6172,45 @@
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
             showShareDeviceValidate();
         }
+        */
 
-        function showShareDeviceValidate() { QE('idx_dlgOkButton', Q('d2inviteName').value.trim().length > 0); }
-        function showShareDeviceEx() { meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), expire: parseInt(Q('d2inviteExpire').value), consent: parseInt(Q('d2userConsent').value) }); }
+        function showShareDevice() {
+            if (xxdialogMode) return;
+            var y = '', x = "Creates a link that allows a guest without an account to remote desktop into this device for a limited time." + '<br /><br />';
+            x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
+            var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
+            for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
+            x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
+            x += '<div id=d2modenow>';
+            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
+            x += '</div><div id=d2moderange style=display:none>';
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="Select Date & Time.." data-id="altinput">');
+            x += '</div>';
+            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=73>' + "Prompt for consent" + '</option><option value=65>' + "Notify Only" + '</option></select>');
+            setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
+            showShareDeviceValidate();
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, minDate: new Date(), defaultDate: [ new Date(), tomorrow ] });
+            xxdialogTag = rangeTime;
+        }
+
+        function showShareDeviceValidate() {
+            QV('d2modenow', Q('d2timeRange').value == 0);
+            QV('d2moderange', Q('d2timeRange').value == 1);
+            var ok = true;
+
+            if (Q('d2inviteName').value.trim().length == 0) { ok = false; }
+
+            QE('idx_dlgOkButton', ok);
+        }
+        function showShareDeviceEx(b, tag) {
+            if (Q('d2timeRange').value == 0) {
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), expire: parseInt(Q('d2inviteExpire').value), consent: parseInt(Q('d2userConsent').value) });
+            } else {
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), start: Math.floor(tag.selectedDates[0].getTime() / 1000), end: Math.floor(tag.selectedDates[1].getTime() / 1000), consent: parseInt(Q('d2userConsent').value) });
+            }
+        }
 
         function deviceActionFunction() {
             if (xxdialogMode) return;

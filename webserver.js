@@ -2922,19 +2922,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 60); // 60 minute timeout
-        if ((c == null) || (c.a !== 5) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string') || (c.expire <= Date.now())) { res.sendStatus(404); return; }
+        if ((c == null) || (c.a !== 5) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.start != 'number') || (typeof c.expire != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
 
-        // Check the start time
-        if ((c.start > Date.now()) || (c.start > c.expire)) { res.sendStatus(404); return; }
+        // Check the expired time, expire message.
+        if (c.expire <= Date.now()) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
         // Check the public id
         obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
-            if ((err != null) || (docs.length == 0)) { res.sendStatus(404); return; }
+            // Check if any desktop sharing links are present, expire message.
+            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
-            // Search for the device share public identifier
+            // Search for the device share public identifier, expire message.
             var found = false;
             for (var i = 0; i < docs.length; i++) { if (docs[i].publicid == c.pid) { found = true; } }
-            if (found == false) { res.sendStatus(404); return; }
+            if (found == false) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+
+            // Check the start time, not yet valid message.
+            if ((c.start > Date.now()) || (c.start > c.expire)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Looks good, let's create the outbound session cookies.
             // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.

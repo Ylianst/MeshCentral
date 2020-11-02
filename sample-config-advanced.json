@@ -166,7 +166,6 @@
       "_geoLocation": true,
       "_novnc": false,
       "_mstsc": true,
-      "_maxGuestSessionSharingTime": 5760,
       "_WebEmailsPath": "/myserver/email-templates",
       "_consentMessages": {
         "title": "MeshCentral",
