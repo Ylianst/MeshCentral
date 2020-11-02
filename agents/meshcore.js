@@ -3723,7 +3723,7 @@ function createMeshCore(agent) {
         if (x != LastPeriodicServerUpdate) { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); }
     }
 
-    function sortObjRec(o) { if (typeof o != 'object') return o; for (var i in o) { if (typeof o[i] == 'object') { o[i] = sortObjRec(o[i]); } } return sortObj(o); }
+    function sortObjRec(o) { if ((typeof o != 'object') || (Array.isArray(o))) return o; for (var i in o) { if (typeof o[i] == 'object') { o[i] = sortObjRec(o[i]); } } return sortObj(o); }
     function sortObj(o) { return Object.keys(o).sort().reduce(function (result, key) { result[key] = o[key]; return result; }, {}); }
 
     // Starting function

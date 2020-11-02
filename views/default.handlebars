@@ -3895,7 +3895,7 @@
         }
 
         function getUserShortStr(node) {
-            if (node == null || node.users == null || node.users.length == 0) return '';
+            if (node == null || node.users == null || (!Array.isArray(node.users)) || node.users.length == 0) return '';
             if (node.users.length > 1) { return '<span title="' + EscapeHtml(node.users.join(', ')) + '">' + nobreak(format("{0} users", node.users.length)) + '</span>'; }
             var u = node.users[0], su = u, i = u.indexOf('\\');
             if (i > 0) { su = u.substring(i + 1); }
