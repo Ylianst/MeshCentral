@@ -4177,7 +4177,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         } else if (req.query.meshaction != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
             var user = obj.users[req.session.userid];
-            if (user == null) { res.sendStatus(404); return; }
+            if (user == null) {
+                var c = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey);
+                if ((c == null) || (c.userid == null)) { res.sendStatus(404); return; }
+                user = obj.users[c.userid];
+                if (user == null) { res.sendStatus(404); return; }
+            }
             if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
                     if (nodes.length != 1) { res.sendStatus(401); return; }
@@ -4223,6 +4228,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe');
                 if (obj.fs.existsSync(p)) {
                     setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
+                    try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
+                } else { res.sendStatus(404); }
+            } else if (req.query.meshaction == 'winassistant') {
+                var p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe');
+                if (obj.fs.existsSync(p)) {
+                    setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
                     try { res.sendFile(p); } catch (e) { res.sendStatus(404); }
                 } else { res.sendStatus(404); }
             } else {
