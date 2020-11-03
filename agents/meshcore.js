@@ -2579,7 +2579,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'coreinfo, coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
                     if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
@@ -3647,7 +3647,7 @@ function createMeshCore(agent) {
 
             // Update the server on with basic info, logged in users and more advanced stuff, like Intel ME and Network Settings
             meInfoStr = null;
-            sendPeriodicServerUpdate();
+            sendPeriodicServerUpdate(null, true);
             if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); } // 20 minutes
 
             // Send any state messages
@@ -3708,7 +3708,10 @@ function createMeshCore(agent) {
         if (force) {
             meshCoreObj = sortObjRec(meshCoreObj);
             var x = JSON.stringify(meshCoreObj);
-            if (x != LastPeriodicServerUpdate) { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); }
+            if (x != LastPeriodicServerUpdate) {
+                LastPeriodicServerUpdate = x;
+                mesh.SendCommand(meshCoreObj);
+            }
         }
     }
 
@@ -3720,7 +3723,9 @@ function createMeshCore(agent) {
         PeriodicServerUpdateNagleTimer = null;
         meshCoreObj = sortObjRec(meshCoreObj);
         var x = JSON.stringify(meshCoreObj);
-        if (x != LastPeriodicServerUpdate) { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); }
+        if (x != LastPeriodicServerUpdate) {
+            try { LastPeriodicServerUpdate = x; mesh.SendCommand(meshCoreObj); } catch (ex) { }
+        }
     }
 
     function sortObjRec(o) { if ((typeof o != 'object') || (Array.isArray(o))) return o; for (var i in o) { if (typeof o[i] == 'object') { o[i] = sortObjRec(o[i]); } } return sortObj(o); }
