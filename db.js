@@ -261,6 +261,7 @@ module.exports.CreateDB = function (parent, func) {
     function performTypedRecordDecrypt(data) {
         if ((data == null) || (obj.dbRecordsDecryptKey == null) || (typeof data != 'object')) return data;
         for (var i in data) {
+            if (data[i] == null) continue;
             if (data[i].type == 'user') {
                 data[i] = performPartialRecordDecrypt(data[i]);
             } else if ((data[i].type == 'node') && (data[i].intelamt != null)) {
@@ -762,7 +763,7 @@ module.exports.CreateDB = function (parent, func) {
                         .then(function (rows) {
                             conn.release();
                             const docs = [];
-                            for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt(JSON.parse(rows[i].doc))); } }
+                            for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt((typeof rows[i].doc == 'object')? rows[i].doc : JSON.parse(rows[i].doc))); } }
                             if (func) try { func(null, docs); } catch (ex) { console.log('SQLERR1', ex); }
                         })
                         .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log('SQLERR2', ex); } });
@@ -827,16 +828,12 @@ module.exports.CreateDB = function (parent, func) {
             obj.Set = function (value, func) {
                 var extra = null, extraex = null;
                 value = common.escapeLinksFieldNameEx(value);
-                if (value.meshid) { extra = value.meshid; } else if (value.email) { extra = 'email/' + value.email; }
+                if (value.meshid) { extra = value.meshid; } else if (value.email) { extra = 'email/' + value.email; } else if (value.nodeid) { extra = value.nodeid; }
                 if ((value.type == 'node') && (value.intelamt != null) && (value.intelamt.uuid != null)) { extraex = 'uuid/' + value.intelamt.uuid; }
+                if (value._id == null) { value._id = require('crypto').randomBytes(16).toString('hex'); }
                 sqlDbQuery('REPLACE INTO meshcentral.main VALUE (?, ?, ?, ?, ?, ?)', [value._id, (value.type ? value.type : null), ((value.domain != null) ? value.domain : null), extra, extraex, JSON.stringify(performTypedRecordEncrypt(value))], func);
             }
-            obj.Get = function (_id, func) {
-                sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], function (err, docs) {
-                    if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
-                    func(err, docs);
-                });
-            }
+            obj.Get = function (_id, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [_id], function (err, docs) { if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); } func(err, docs); }); }
             obj.GetAll = function (func) { sqlDbQuery('SELECT domain, doc FROM meshcentral.main', null, func); }
             obj.GetHash = function (id, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ?', [id], func); }
             obj.GetAllTypeNoTypeField = function (type, domain, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ?', [type, domain], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); }); };
@@ -853,9 +850,9 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ? AND type = ? AND domain = ? AND nodeid IN (?)', [id, type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
                 } else {
-                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ? AND nodeid IN (?)', [type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
+                    sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ? AND domain = ? AND extra IN (?)', [type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, docs); });
                 }
             };
             obj.GetAllType = function (type, func) { sqlDbQuery('SELECT doc FROM meshcentral.main WHERE type = ?', [type], func); }

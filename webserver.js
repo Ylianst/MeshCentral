@@ -1167,7 +1167,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 } else {
                     // Check if this email was already verified
                     obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
-                        if (docs.length > 0) {
+                        if ((docs != null) && (docs.length > 0)) {
                             parent.debug('web', 'handleCreateAccountRequest: Existing account with this email address');
                             req.session.loginmode = '2';
                             req.session.messageid = 102; // Existing account with this email address.
