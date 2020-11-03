@@ -4999,6 +4999,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try { ws.send(JSON.stringify({ action: 'amtsetupbin', file: Buffer.from(bin, 'binary').toString('base64') })); } catch (ex) { }
                 break;
             }
+            case 'meshToolInfo': {
+                if (typeof command.name != 'string') break;
+                var info = parent.parent.meshToolsBinaries[command.name];
+                try { ws.send(JSON.stringify({ action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url })); } catch (ex) { }
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
