@@ -218,6 +218,9 @@ function createMeshCore(agent) {
                     case 'sessions':
                         this._send({ cmd: 'sessions', sessions: tunnelUserCount });
                         break;
+                    case 'meshToolInfo':
+                        try { mesh.SendCommand({ action: 'meshToolInfo', name: data.name, hash: data.hash, cookie: data.cookie?true:false, pipe: true }); } catch (e) { }
+                        break;
                 }
             }
             catch (e) { removeRegisteredApp(this); this.end(); return; }
@@ -1133,6 +1136,10 @@ function createMeshCore(agent) {
                         r.corehashhex = getSHA384FileHash(coreDumpPath).toString('hex'); // Hash of core dump file
                     }
                     mesh.SendCommand(JSON.stringify(r));
+                    break;
+                case 'meshToolInfo':
+                    if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'meshToolInfo'; broadcastToRegisteredApps(data); }
+                    break;
                 default:
                     // Unknown action, ignore it.
                     break;

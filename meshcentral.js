@@ -2106,6 +2106,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshToolsBinaries[this.toolname].hash = this.hash.digest('hex');
                     obj.meshToolsBinaries[this.toolname].hashx = this.hashx;
                     obj.meshToolsBinaries[this.toolname].path = this.agentpath;
+                    obj.meshToolsBinaries[this.toolname].dlname = this.dlname;
                     obj.meshToolsBinaries[this.toolname].url = ((obj.args.notls == true) ? 'http://' : 'https://') + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
