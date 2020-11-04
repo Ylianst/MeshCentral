@@ -5002,7 +5002,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'meshToolInfo': {
                 if (typeof command.name != 'string') break;
                 var info = parent.parent.meshToolsBinaries[command.name];
-                try { ws.send(JSON.stringify({ action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url })); } catch (ex) { }
+                var responseCmd = { action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url };
+                if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex'); }
+                try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
                 break;
             }
             default: {
