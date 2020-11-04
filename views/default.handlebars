@@ -13608,7 +13608,7 @@
                 if (r.rights == 0xFFFFFFFF) { return 0xFFFFFFFF; } // User has full rights thru a device group link, stop here.
                 rights = r.rights;
             }
-
+            
             // Check permissions thru user groups
             var user = null;
             if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }

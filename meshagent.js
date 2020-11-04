@@ -1397,6 +1397,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     break;
                 }
+                case 'meshToolInfo': {
+                    if (typeof command.name != 'string') break;
+                    var info = parent.parent.meshToolsBinaries[command.name];
+                    if ((command.hash != null) && (info.hash == command.hash)) return;
+                    const responseCmd = { action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url };
+                    if (command.cookie === true) { responseCmd.url += ('&auth=' + parent.parent.encodeCookie({ download: info.dlname }, parent.parent.loginCookieEncryptionKey)); }
+                    if (command.pipe === true) { responseCmd.pipe = true; }
+                    try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
+                    break;
+                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
                     parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
