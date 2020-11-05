@@ -75,7 +75,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
             parent.letsencrypt.challenge(req.url.slice(leChallengePrefix.length), getCleanHostname(req), function (response) { if (response == null) { res.sendStatus(404); } else { res.send(response); } });
         } else {
             // Everything else
-            var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host));
+            var selfurl = (' wss://' + req.headers.host);
             res.set({
                 'strict-transport-security': 'max-age=60000; includeSubDomains',
                 'Referrer-Policy': 'no-referrer',

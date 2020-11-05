@@ -457,7 +457,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 if (matchingDomains.length > 0) { serverinfo.amtAcmFqdn = matchingDomains; }
             }
-            if (args.notls == true) { serverinfo.https = false; } else { serverinfo.https = true; serverinfo.redirport = args.redirport; }
+            serverinfo.https = true;
+            serverinfo.redirport = args.redirport;
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
             if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) { serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
             if (user.siteadmin === SITERIGHT_ADMIN) {
@@ -1743,6 +1744,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         try {
                             if (parent.wssessions2[i].domainid == domain.id) {
                                 var sessionUser = parent.users[parent.wssessions2[i].userid];
+                                if ((command.userid != null) && (command.userid != sessionUser._id) && (command.userid != sessionUser._id.split('/')[2])) { continue; }
                                 if ((command.target == null) || ((sessionUser.links) != null && (sessionUser.links[command.target] != null))) {
                                     if ((user.groups == null) || (user.groups.length == 0)) {
                                         // We are part of no user groups, send to everyone.
@@ -2662,7 +2664,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                         var xdomain = (domain.dns == null) ? domain.id : '';
                         if (xdomain != '') xdomain += "/";
-                        var url = "http" + (args.notls ? '' : 's') + "://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
+                        var url = "https://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id) + "&title=" + encodeURIComponent(user.name);
 
                         // Create the notification message
                         routeCommandToNode({ 'action': 'openUrl', 'nodeid': command.nodeid, 'userid': user._id, 'username': user.name, 'url': url });
@@ -4570,7 +4572,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                 var xdomain = (domain.dns == null) ? domain.id : '';
                 if (xdomain != '') xdomain += '/';
-                var url = 'http' + (args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agentinvite?c=' + inviteCookie;
+                var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + 'agentinvite?c=' + inviteCookie;
                 if (serverName.split('.') == 1) { url = '/' + xdomain + 'agentinvite?c=' + inviteCookie; }
 
                 ws.send(JSON.stringify({ action: 'createInviteLink', meshid: command.meshid, url: url, expire: command.expire, cookie: inviteCookie, responseid: command.responseid, tag: command.tag }));
@@ -4725,7 +4727,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                     var xdomain = (domain.dns == null) ? domain.id : '';
                     if (xdomain != '') xdomain += '/';
-                    var url = 'http' + (args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'desktop?c=' + inviteCookie;
+                    var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + 'desktop?c=' + inviteCookie;
                     if (serverName.split('.') == 1) { url = '/' + xdomain + 'desktop?c=' + inviteCookie; }
                     command.url = url;
                     ws.send(JSON.stringify(command));
@@ -4819,7 +4821,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var xdomain = (domain.dns == null) ? domain.id : '';
                         if (xdomain != '') xdomain += '/';
                         var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
-                        r.wsUrl = 'ws' + (args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'mqtt.ashx';
+                        r.wsUrl = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'mqtt.ashx';
                         r.wsTrustedCert = parent.isTrustedCert(domain);
 
                         try { ws.send(JSON.stringify(r)); } catch (ex) { }

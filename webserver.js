@@ -1729,7 +1729,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
             var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
         } else if (req.query.m != null) {
             // The MeshId is specified in the query string, use that
             var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
@@ -1739,7 +1739,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (typeof installflags != 'number') { installflags = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
             var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: ((args.notls == true) ? '0' : '1'), servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
+            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags }, req, domain));
         }
     }
 
@@ -2527,7 +2527,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
     // Return true if it looks like we are using a real TLS certificate.
     obj.isTrustedCert = function (domain) {
-        if (obj.args.notls == true) return false; // We are not using TLS, so not trusted cert.
         if ((domain != null) && (typeof domain.trustedcert == 'boolean')) return domain.trustedcert; // If the status of the cert specified, use that.
         if (typeof obj.args.trustedcert == 'boolean') return obj.args.trustedcert; // If the status of the cert specified, use that.
         if (obj.args.tlsoffload != null) return true; // We are using TLS offload, a real cert is likely used.
@@ -2540,7 +2539,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Get the link to the root certificate if needed
     function getRootCertLink() {
         // Check if the HTTPS certificate is issued from MeshCentralRoot, if so, add download link to root certificate.
-        if ((obj.args.notls == null) && (obj.args.tlsoffload == null) && (obj.parent.config.letsencrypt == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName.indexOf('.') != -1)) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
+        if ((obj.args.tlsoffload == null) && (obj.parent.config.letsencrypt == null) && (obj.tlsSniCredentials == null) && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) && (obj.certificates.CommonName.indexOf('.') != -1)) { return '<a href=/MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>'; }
         return '';
     }
 
@@ -4106,7 +4105,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 var xdomain = (domain.dns == null) ? domain.id : '';
                 if (xdomain != '') xdomain += '/';
                 var meshsettings = 'MeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
-                if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
+                if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
                     meshsettings += 'MeshServer=local\r\n';
                     if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
                 }
@@ -4227,7 +4226,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                     if (user != null) { meshaction.username = user.name; }
                     if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                     var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                    if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                    if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
 
                     setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                     res.send(JSON.stringify(meshaction, null, ' '));
@@ -4243,7 +4242,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if (user != null) { meshaction.username = user.name; }
                 if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                if (obj.args.lanonly != true) { meshaction.serverUrl = ((obj.args.notls == true) ? 'ws://' : 'wss://') + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                 setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                 res.send(JSON.stringify(meshaction, null, ' '));
             } else if (req.query.meshaction == 'winrouter') {
@@ -4407,7 +4406,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
+        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
@@ -4499,7 +4498,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=ws' + (obj.args.notls ? '' : 's') + '://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
+        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
@@ -4599,7 +4598,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
         // Start the server, only after users and meshes are loaded from the database.
-        if (obj.args.notls || obj.args.tlsoffload) {
+        if (obj.args.tlsoffload) {
             // Setup the HTTP server without TLS
             obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
         } else {
@@ -4619,7 +4618,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Start a second agent-only server if needed
         if (obj.args.agentport) {
             var agentPortTls = true;
-            if ((obj.args.notls == 1) || (obj.args.notls == true)) { agentPortTls = false; }
             if (obj.args.tlsoffload != null) { agentPortTls = false; }
             if (typeof obj.args.agentporttls == 'boolean') { agentPortTls = obj.args.agentporttls; }
             if (obj.certificates.webdefault == null) { agentPortTls = false; }
@@ -4651,7 +4649,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             name: 'xid', // Recommended security practice to not use the default cookie name
             httpOnly: true,
             keys: [obj.args.sessionkey], // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-            secure: ((obj.args.notls != true) && (obj.args.tlsoffload == null)) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
+            secure: (obj.args.tlsoffload == null) // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
         }
         if (obj.args.sessionsamesite != null) { sessionOptions.sameSite = obj.args.sessionsamesite; } else { sessionOptions.sameSite = 'strict'; }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60 * 1000); }
@@ -4696,7 +4694,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 // Use default security headers
                 var geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                var selfurl = ((args.notls !== true) ? (' wss://' + req.headers.host) : (' ws://' + req.headers.host));
+                var selfurl = (' wss://' + req.headers.host);
                 var headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',

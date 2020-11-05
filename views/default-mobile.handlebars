@@ -3331,7 +3331,13 @@
                 for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
-                for (var i in p) { if (p[i].p != 0) { x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + p[i].p + '</div><a style=float:right;padding-right:5px;cursor:pointer onclick=stopProcess(' + p[i].p + ',"' + p[i].c + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? p[i].u : '') + '</div><div>' + p[i].c + '</div></div>'; } }
+                for (var i in p) {
+                    if (p[i].p != 0) {
+                        var c = p[i].c;
+                        if (c.length > 30) { c = '<span title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0, 30)) + '...</span>' } else { c = EscapeHtml(c); }
+                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a style=float:right;padding-right:5px;cursor:pointer onclick=stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
+                    }
+                }
                 QH('DeskToolsProcesses', x);
             }
         }

@@ -175,15 +175,15 @@ module.exports.CreateMeshScanner = function (parent) {
         var port = (parent.args.aliasport)?parent.args.aliasport:parent.args.port;
 
         // Build the IPv4 response
-        var url = (parent.args.notls ? 'ws' : 'wss') + '://%s:' + port + '/agent.ashx';
+        var url = 'wss://%s:' + port + '/agent.ashx';
         obj.multicastPacket4 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
-        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + port + '/agent.ashx'; }
+        if (parent.certificates.CommonName.indexOf('.') != -1) { url = 'wss://' + parent.certificates.CommonName + ':' + port + '/agent.ashx'; }
         obj.multicastPacket4x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         // Build the IPv6 response
-        url = (parent.args.notls ? 'ws' : 'wss') + '://[%s]:' + port + '/agent.ashx';
+        url = 'wss://[%s]:' + port + '/agent.ashx';
         obj.multicastPacket6 = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url, 'ascii');
-        if (parent.certificates.CommonName.indexOf('.') != -1) { url = (parent.args.notls ? 'ws' : 'wss') + '://' + parent.certificates.CommonName + ':' + port + '/agent.ashx'; }
+        if (parent.certificates.CommonName.indexOf('.') != -1) { url = 'wss://' + parent.certificates.CommonName + ':' + port + '/agent.ashx'; }
         obj.multicastPacket6x = Buffer.from("MeshCentral2|" + obj.agentCertificateHashHex + '|' + url + '|' + name + '|' + info, 'ascii');
 
         setupServers();

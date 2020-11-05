@@ -1573,8 +1573,7 @@
             if (typeof dialog.elements == 'object') {
                 for (var i in dialog.elements) {
                     var elem = dialog.elements[i];
-                    if (elem.type == 'text') { t.values[i] = Q('cui:' + i).value; }
-                    if (elem.type == 'droplist') { t.values[i] = Q('cui:' + i).value; }
+                    if ((elem.type == 'droplist') || (elem.type == 'textarea') || (elem.type == 'text')) { t.values[i] = Q('cui:' + i).value; }
                 }
             }
             meshserver.send(t);
@@ -5790,7 +5789,9 @@
                 // Custom UI
                 if ((customui != null) && (customui.devicebuttons != null)) {
                     for (var i in customui.devicebuttons) {
-                        x += '<input id="cui:' + i + '" type="button" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />';
+                        if ((customui.devicebuttons[i].showif == null) || ((mesh != null) && (customui.devicebuttons[i].showif == mesh._id)) || (customui.devicebuttons[i].showif == currentNode._id)) {
+                            x += '<input id="cui:' + i + '" type="button" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />';
+                        }
                     }
                 }
 
