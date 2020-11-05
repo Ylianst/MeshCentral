@@ -128,10 +128,10 @@ module.exports.CreateMeshMail = function (parent) {
         var httpsport = (typeof obj.parent.args.aliasport == 'number') ? obj.parent.args.aliasport : obj.parent.args.port;
         if (domain.dns == null) {
             // Default domain or subdomain of the default.
-            options.serverurl = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + obj.parent.certificates.CommonName + ':' + httpsport + domain.url;
+            options.serverurl = 'https://' + obj.parent.certificates.CommonName + ':' + httpsport + domain.url;
         } else {
             // Domain with a DNS name.
-            options.serverurl = 'http' + ((obj.parent.args.notls == null) ? 's' : '') + '://' + domain.dns + ':' + httpsport + domain.url;
+            options.serverurl = 'https://' + domain.dns + ':' + httpsport + domain.url;
         }
         if (options.serverurl.endsWith('/')) { options.serverurl = options.serverurl.substring(0, options.serverurl.length - 1); } // Remove the ending / if present
         for (var i in options) {

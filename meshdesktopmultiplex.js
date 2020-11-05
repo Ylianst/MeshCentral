@@ -984,7 +984,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         /*
         // Validate that the id is valid, we only need to do this on non-authenticated sessions.
         // TODO: Figure out when this needs to be done.
-        if ((user == null) && (!parent.args.notls)) {
+        if (user == null) {
             // Check the identifier, if running without TLS, skip this.
             var ids = obj.id.split(':');
             if (ids.length != 3) { ws.close(); delete obj.id; return null; } // Invalid ID, drop this.

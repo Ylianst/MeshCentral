@@ -64,7 +64,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 var options = { rejectUnauthorized: false };
                 if (domain.dns != null) { options.servername = domain.dns; }
                 var protocol = 'wss';
-                if (args.notls || args.tlsoffload) { protocol = 'ws'; }
+                if (args.tlsoffload) { protocol = 'ws'; }
                 var domainadd = '';
                 if ((domain.dns == null) && (domain.id != '')) { domainadd = domain.id + '/' }
                 var url = protocol + '://127.0.0.1:' + args.port + '/' + domainadd + 'meshrelay.ashx?auth=' + obj.infos.ip;

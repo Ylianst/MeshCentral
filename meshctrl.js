@@ -272,6 +272,15 @@ if (args['_'].length == 0) {
                         console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
                         break;
                     }
+                    case 'showevents': {
+                        console.log("Show the server's event stream for this user account. Example usage:\r\n");
+                        console.log("  MeshCtrl ShowEvents");
+                        console.log("  MeshCtrl ShowEvents --filter nodeconnect");
+                        console.log("  MeshCtrl ShowEvents --filter uicustomevent,changenode");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --filter [actions]    - Show only specified actions.");
+                        break;
+                    }
                     case 'serverinfo': {
                         console.log("Get information on the MeshCentral server, Example usages:\r\n");
                         console.log("  MeshCtrl ServerInfo --loginuser myaccountname --loginpass mypassword");
@@ -625,10 +634,12 @@ if (args['_'].length == 0) {
                         break;
                     }
                     case 'broadcast': {
-                        console.log("Display a message to all logged in users, Example usages:\r\n");
+                        console.log("Display a message to one or all logged in users, Example usages:\r\n");
                         console.log("  MeshCtrl Broadcast --msg \"This is a test\"");
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --msg [message]        - Message to display.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --user [userid]        - Send the message to the speficied user.");
                         break;
                     }
                     case 'deviceinfo': {
@@ -1216,6 +1227,7 @@ function serverConnect() {
             }
             case 'broadcast': {
                 var op = { action: 'userbroadcast', msg: args.msg, responseid: 'meshctrl' };
+                if (args.user) { op.userid = args.user; }
                 ws.send(JSON.stringify(op));
                 break;
             }
@@ -1269,7 +1281,21 @@ function serverConnect() {
         var data = null;
         try { data = JSON.parse(rawdata); } catch (ex) { }
         if (data == null) { console.log('Unable to parse data: ' + rawdata); }
-        if (settings.cmd == 'showevents') { console.log(JSON.stringify(data, null, 2)); return; }
+        if (settings.cmd == 'showevents') {
+            if (args.filter == null) {
+                // Display all events
+                console.log(JSON.stringify(data, null, 2));
+            } else {
+                // Display select events
+                var filters = args.filter.split(',');
+                if (typeof data.event == 'object') {
+                    if (filters.indexOf(data.event.action) >= 0) { console.log(JSON.stringify(data, null, 2) + '\r\n'); }
+                } else {
+                    if (filters.indexOf(data.action) >= 0) { console.log(JSON.stringify(data, null, 2) + '\r\n'); }
+                }
+            }
+            return;
+        }
         switch (data.action) {
             case 'serverinfo': { // SERVERINFO
                 settings.currentDomain = data.serverinfo.domain;
