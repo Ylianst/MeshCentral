@@ -2107,7 +2107,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshToolsBinaries[this.toolname].hashx = this.hashx;
                     obj.meshToolsBinaries[this.toolname].path = this.agentpath;
                     obj.meshToolsBinaries[this.toolname].dlname = this.dlname;
-                    obj.meshToolsBinaries[this.toolname].url = ('https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
+                    obj.meshToolsBinaries[this.toolname].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?meshaction=' + this.dlname;
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
                     if (stats != null) { obj.meshToolsBinaries[this.toolname].size = stats.size; }
@@ -2148,7 +2148,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.meshAgentInstallScripts[this.info.id].hash = this.hash.digest('hex');
                     obj.meshAgentInstallScripts[this.info.id].path = this.agentpath;
                     obj.meshAgentInstallScripts[this.info.id].data = this.xdata;
-                    obj.meshAgentInstallScripts[this.info.id].url = ('https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?script=' + this.info.id;
+                    obj.meshAgentInstallScripts[this.info.id].url = 'https://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?script=' + this.info.id;
                     var stats = null;
                     try { stats = obj.fs.statSync(this.agentpath); } catch (e) { }
                     if (stats != null) { obj.meshAgentInstallScripts[this.info.id].size = stats.size; }
@@ -2213,7 +2213,7 @@ function CreateMeshCentralServer(config, args) {
                 archcount++;
                 obj.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
                 obj.meshAgentBinaries[archid].path = agentpath;
-                obj.meshAgentBinaries[archid].url = ('http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
+                obj.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
                 obj.meshAgentBinaries[archid].size = stats.size;
 
                 // If this is a windows binary, pull binary information
