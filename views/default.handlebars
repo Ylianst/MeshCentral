@@ -5737,7 +5737,7 @@
                 }
 
                 // Active Users
-                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(format("Active User{0}", ((node.users.length > 1)?'s':'')), node.users.join(', ')); }
+                if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?'Active Users':'Active User'), EscapeHtml(node.users.join(', '))); }
 
                 // Display device user consent
                 if (node.agent != null) {
@@ -5772,9 +5772,9 @@
                 var groupingTags = '<i>' + "None" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class="tagSpan">' + EscapeHtml(node.tags[i]) + '</span>'; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute('Tags', '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
                 } else {
-                    x += addDeviceAttribute('Tags', groupingTags);
+                    x += addDeviceAttribute("Tags", groupingTags);
                 }
 
                 x += '</table><br />';
