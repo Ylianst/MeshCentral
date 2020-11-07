@@ -9459,7 +9459,7 @@
 
         function server_showVersionDlgEx(b, tags) {
             if (Q('d2updateCheck1').checked) { meshserver.send({ action: 'serverupdate', tag: 'stable', version: tags.stable }); }
-            if (Q('d2updateCheck2').checked) { meshserver.send({ action: 'serverupdate' }); } // , tag: 'latest', version: tags.latest
+            if (Q('d2updateCheck2').checked) { meshserver.send({ action: 'serverupdate', tag: 'latest', version: tags.latest }); }
         }
 
         function server_showErrorsDlg() {
