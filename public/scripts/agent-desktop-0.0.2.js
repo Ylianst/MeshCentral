@@ -47,7 +47,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.FirstDraw = false;
 
     obj.ScreenWidth = 960;
-    obj.ScreenHeight = 700;
+    obj.ScreenHeight = 701;
     obj.width = 960;
     obj.height = 960;
 
@@ -182,6 +182,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.ProcessScreenMsg = function (width, height) {
         if (obj.debugmode > 0) { console.log("ScreenSize: " + width + " x " + height); }
+        if ((obj.ScreenWidth == width) || (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;
