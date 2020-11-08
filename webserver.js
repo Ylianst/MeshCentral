@@ -2718,6 +2718,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, null, res, req, domain, user, meshid, nodeid);
     }
 
+    // Handle download of a server file by an agent
+    function handleAgentDownloadFile(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (req.query.c == null) { res.sendStatus(404); return; }
+
+        // Check the inbound desktop sharing cookie
+        var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 5); // 5 minute timeout
+        if ((c == null) || (c.a != 'tmpdl') || (c.d != domain.id) || (c.nid == null) || (c.f == null) || (obj.common.IsFilenameValid(c.f) == false)) { res.sendStatus(404); return; }
+
+        // Send the file back
+        try { res.sendFile(obj.path.join(obj.filespath, 'tmp', c.f)); return; } catch (ex) { res.sendStatus(404); }
+    }
+
     // Handle logo request
     function handleLogoRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3152,6 +3166,75 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
             res.send('');
         });
+    }
+
+    // Upload a file to the server and then batch upload to many agents
+    function handleUploadFileBatch(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (domain.userQuota == -1) { res.sendStatus(401); return; }
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
+        form.parse(req, function (err, fields, files) {
+            // If an authentication cookie is embedded in the form, use that.
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (obj.args.cookieipcheck !== false) && (loginCookie.ip != null) && (loginCookie.ip != req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
+            }
+            if (authUserid == null) { res.sendStatus(401); return; }
+
+            // Get the user
+            const user = obj.users[authUserid];
+            if ((user == null) || (user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
+
+            // Get fields
+            if ((fields == null) || (fields.nodeIds == null) || (fields.nodeIds.length != 1)) { res.sendStatus(404); return; }
+            var cmd = { nodeids: fields.nodeIds[0].split(','), files: [], user: user, domain: domain };
+            if ((fields.winpath != null) && (fields.winpath.length == 1)) { cmd.windowsPath = fields.winpath[0]; }
+            if ((fields.linuxpath != null) && (fields.linuxpath.length == 1)) { cmd.linuxPath = fields.linuxpath[0]; }
+            if ((fields.overwriteFiles != null) && (fields.overwriteFiles.length == 1) && (fields.overwriteFiles[0] == 'on')) { cmd.overwrite = true; }
+
+            // Get server temporary path
+            var serverpath = obj.path.join(obj.filespath, 'tmp')
+            try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
+            try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
+
+            // More typical upload method, the file data is in a multipart mime post.
+            for (var i in files.files) {
+                var file = files.files[i], ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
+                cmd.files.push({ name: file.originalFilename, target: ftarget });
+                // Rename the file
+                obj.fs.rename(file.path, fpath, function (err) {
+                    if (err && (err.code === 'EXDEV')) {
+                        // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
+                        obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { handleUploadFileBatchEx(cmd); }); });
+                    } else {
+                        handleUploadFileBatchEx(cmd);
+                    }
+                });
+            }
+
+            res.send('');
+        });
+    }
+
+    // Instruct one of more agents to download a URL to a given local drive location.
+    function handleUploadFileBatchEx(cmd) {
+        for (var i in cmd.nodeids) {
+            obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
+                if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
+                var agentPath = ((node.agent.id > 0) && (node.agent.id < 5)) ? cmd.windowsPath : cmd.linuxPath;
+                for (var f in cmd.files) {
+                    const acmd = { action: 'wget', overwrite: cmd.overwrite, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name) };
+                    var agent = obj.wsagents[node._id];
+                    if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
+                    // TODO: Add support for peer servers.
+                }
+            });
+        }
     }
 
     // Subscribe to all events we are allowed to receive
@@ -4793,6 +4876,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             obj.app.get(url + 'devicepowerevents.ashx', obj.handleDevicePowerEvents);
             obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
             obj.app.post(url + 'uploadfile.ashx', handleUploadFile);
+            obj.app.post(url + 'uploadfilebatch.ashx', handleUploadFileBatch);
             obj.app.post(url + 'uploadmeshcorefile.ashx', handleUploadMeshCoreFile);
             obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
             obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
@@ -4808,6 +4892,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             });
             obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
             obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
+            obj.app.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
             obj.app.get(url + 'logo.png', handleLogoRequest);
             obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
             obj.app.post(url + 'translations', handleTranslationsRequest);

@@ -107,6 +107,13 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../meshcentral-web/emails'); }
     }
 
+    // Clean up any temporary files
+    var removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
+    var dir = obj.fs.readdir(obj.path.join(obj.filespath, 'tmp'), function (err, files) {
+        if (err != null) return;
+        for (var i in files) { try { const filepath = obj.path.join(obj.filespath, 'tmp', files[i]); if (obj.fs.statSync(filepath).mtime.getTime() < removeTime) { obj.fs.unlink(filepath, function () { }); } } catch (ex) { } }
+    });
+
     // Look to see if data and/or file path is specified
     if (obj.config.settings && (typeof obj.config.settings.datapath == 'string')) { obj.datapath = obj.config.settings.datapath; }
     if (obj.config.settings && (typeof obj.config.settings.filespath == 'string')) { obj.filespath = obj.config.settings.filespath; }
@@ -1549,6 +1556,13 @@ function CreateMeshCentralServer(config, args) {
     obj.maintenanceActions = function () {
         // Perform database maintenance
         obj.db.maintenance();
+
+        // Clean up any temporary files
+        var removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
+        var dir = obj.fs.readdir(obj.path.join(obj.filespath, 'tmp'), function (err, files) {
+            if (err != null) return;
+            for (var i in files) { try { const filepath = obj.path.join(obj.filespath, 'tmp', files[i]); if (obj.fs.statSync(filepath).mtime.getTime() < removeTime) { obj.fs.unlink(filepath, function () { }); } } catch (ex) { } }
+        });
 
         // Check for self-update that targets a specific version
         if ((typeof obj.args.selfupdate == 'string') && (getCurrentVerion() === obj.args.selfupdate)) { obj.args.selfupdate = false; }

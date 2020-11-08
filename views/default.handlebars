@@ -4440,6 +4440,7 @@
                 if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions += '<option value=106>' + "Run commands" + '</option>'; }
                 if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions += '<option value=108>' + "Device notification" + '</option>'; }
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions += '<option value=107>' + "Edit tags" + '</option>'; }
+                if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions += '<option value=109>' + "Upload files" + '</option>'; }
                 if ((rights & 32768) && ((added & 128) == 0)) { added |= 128; addedOptions += '<option value=101>' + "Delete devices" + '</option>'; }
             }
 
@@ -4519,12 +4520,28 @@
                 x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll></textarea>';
                 setDialogMode(2, "Device Notification", 3, d2groupActionFunctionNotifyExec, x);
                 Q('d2notifyMsg').focus();
+            } else if (op == 109) {
+                // Upload files
+                var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
+                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } } }
+                var x = "Upload selected files to all selected devices" + '<br /><br />';
+                x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
+                x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
+                x += '<input type=file name=files id=d2uploadinput style=width:100% multiple=multiple onchange="d2batchUploadValidate()" /><br /><br />';
+                if (wintype) { x += addHtmlValue("Windows Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=winpath id=d2winuploadpath placeholder="C:\\temp" value="" />'); }
+                if (linuxtype) { x += addHtmlValue("Linux Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=linuxpath id=d2linuxuploadpath placeholder="/tmp" value="" />'); }
+                x += '<br /><label><input type=checkbox name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
+                setDialogMode(2, "Batch File Upload", 3, d2batchUploadValidateOk, x);
+                d2batchUploadValidate();
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
                 uncheckAllDevices();
             }
         }
+
+        function d2batchUploadValidate() { QE('idx_dlgOkButton', (Q('d2uploadinput').files.length != 0) && ((Q('d2winuploadpath') == null) || (Q('d2winuploadpath').value != '')) && ((Q('d2linuxuploadpath') == null) || (Q('d2linuxuploadpath').value != ''))); }
+        function d2batchUploadValidateOk() { Q('d2batchUploadSubmit').click(); }
 
         function d2groupActionFunctionNotifyExec() {
             var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices();
@@ -10735,10 +10752,10 @@
 
             if (overWriteCount == 0) {
                 // If no overwrite, go ahead with upload
-                p5PerformUpload(1, files);
+                p5PerformUpload(1, e.dataTransfer.files);
             } else {
                 // Otherwise, prompt for confirmation
-                setDialogMode(2, "Upload File", 3, p5PerformUpload, format((overWriteCount == 1)?"Upload will overwrite 1 file. Continue?":"Upload will overwrite {0} files. Continue?", overWriteCount), files);
+                setDialogMode(2, "Upload File", 3, p5PerformUpload, format((overWriteCount == 1)?"Upload will overwrite 1 file. Continue?":"Upload will overwrite {0} files. Continue?", overWriteCount), e.dataTransfer.files);
             }
         }
 

@@ -43,6 +43,8 @@ var MESHRIGHT_NODESKTOP = 65536;
 
 function createMeshCore(agent) {
     var obj = {};
+    var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
+
     if (process.platform == 'win32' && require('user-sessions').isRoot()) {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
         try {
@@ -1139,6 +1141,33 @@ function createMeshCore(agent) {
                     break;
                 case 'meshToolInfo':
                     if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'meshToolInfo'; broadcastToRegisteredApps(data); }
+                    break;
+                case 'wget': // Server uses this command to tell the agent to download a file using HTTPS/GET and place it in a given path. This is used for one-to-many file uploads.
+                    if ((data.overwrite !== true) && fs.existsSync(data.path)) break; // Don't overwrite an existing file.
+                    data.url = 'http' + getServerTargetUrlEx('*/').substring(2);
+                    var agentFileHttpOptions = http.parseUri(data.url);
+                    agentFileHttpOptions.path = data.urlpath;
+                    agentFileHttpOptions.rejectUnauthorized = 0; // TODO: Check TLS cert
+                    if (agentFileHttpOptions == null) break;
+                    var agentFileHttpRequest = http.request(agentFileHttpOptions,
+                        function (response) {
+                            response.xparent = this;
+                            try {
+                                response.xfile = fs.createWriteStream(this.xpath, { flags: 'wbN' })
+                                response.pipe(response.xfile);
+                                response.end = function () { delete agentFileHttpRequests[this.xparent.xurlpath]; delete this.xparent; }
+                            } catch (ex) {
+                                delete agentFileHttpRequests[this.xurlpath];
+                                delete response.xparent;
+                                return;
+                            }
+                        }
+                    );
+                    agentFileHttpRequest.on('error', function (ex) { delete agentFileHttpRequests[this.xurlpath]; });
+                    agentFileHttpRequest.end();
+                    agentFileHttpRequest.xurlpath = data.urlpath;
+                    agentFileHttpRequest.xpath = data.path;
+                    agentFileHttpRequests[data.urlpath] = agentFileHttpRequest;
                     break;
                 default:
                     // Unknown action, ignore it.
