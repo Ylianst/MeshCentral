@@ -1328,6 +1328,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (url.query.p == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
                         else if ((url.query.p == '4') || (url.query.p == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
 
+                        // Add server TLS cert hash
+                        const tlsCertHash = parent.webCertificateHashs[domain.id];
+                        if (tlsCertHash != null) { command.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+
                         // Add user consent messages
                         command.soptions = {};
                         if (typeof domain.consentmessages == 'object') {
