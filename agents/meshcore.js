@@ -776,7 +776,12 @@ function createMeshCore(agent) {
                                     var woptions = http.parseUri(xurl);
                                     woptions.perMessageDeflate = false;
                                     if (typeof data.perMessageDeflate == 'boolean') { woptions.perMessageDeflate = data.perMessageDeflate; }
+
+                                    // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                     woptions.rejectUnauthorized = 0;
+                                    woptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+                                    woptions.checkServerIdentity.servertlshash = data.servertlshash;
+
                                     //sendConsoleText(JSON.stringify(woptions));
                                     //sendConsoleText('TUNNEL: ' + JSON.stringify(data));
                                     var tunnel = http.request(woptions);
@@ -1147,7 +1152,12 @@ function createMeshCore(agent) {
                     data.url = 'http' + getServerTargetUrlEx('*/').substring(2);
                     var agentFileHttpOptions = http.parseUri(data.url);
                     agentFileHttpOptions.path = data.urlpath;
-                    agentFileHttpOptions.rejectUnauthorized = 0; // TODO: Check TLS cert
+
+                    // Perform manual server TLS certificate checking based on the certificate hash given by the server.
+                    agentFileHttpOptions.rejectUnauthorized = 0;
+                    agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+                    agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
+
                     if (agentFileHttpOptions == null) break;
                     var agentFileHttpRequest = http.request(agentFileHttpOptions,
                         function (response) {
