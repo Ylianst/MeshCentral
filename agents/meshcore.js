@@ -2641,6 +2641,22 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'find':
+                    if (args['_'].length <= 1)
+                    {
+                        response = "Proper usage:\r\n  find root criteria [criteria2] [criteria n...]";
+                    }
+                    else
+                    {
+                        var root = args['_'][0];
+                        var p = args['_'].slice(1);
+                        var r = require('file-search').find(root, p);
+                        r.sid = sessionid;
+                        r.on('result', function (str) { sendConsoleText(str, this.sid); });
+                        r.then(function () { sendConsoleText('*** End Results ***', this.sid); });
+                        response = "Find: [" + root + "] " + JSON.stringify(p);
+                    }
+                    break;
                 case 'coreinfo': {
                     response = JSON.stringify(meshCoreObj, null, 2);
                     break;
