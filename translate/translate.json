@@ -190,7 +190,7 @@
     {
       "cs": " Je možné zadat i nápovědu pro heslo, ale nedoporučuje se to.",
       "de": " Passwort-Hinweis kann verwendet werden, wird jedoch nicht empfohlen.",
-      "en": " Password hint can be used but is not recommanded.",
+      "en": " Password hint can be used but is not recommended.",
       "es": "La sugerencia de contraseña se puede usar pero no se recomienda.",
       "fi": " Salasanavihjeitä voidaan käyttää, mutta niitä ei suositella.",
       "fr": " Un indice de mot de passe peut être utilisé mais n'est pas recommandé.",
@@ -35687,7 +35687,7 @@
       "zh-cht": "這是不安全政策，因為將用代理執行啟動。"
     },
     {
-      "en": "This is the recommanded policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
+      "en": "This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
       "nl": "Dit is het aanbevolen beleid. Activering en beheer van Intel&reg; AMT is volledig geautomatiseerd en de server zal proberen om optimaal gebruik te maken van hardwarebeheer.",
       "xloc": [
         "default.handlebars->29->1400"

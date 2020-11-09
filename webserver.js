@@ -3196,6 +3196,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((fields.winpath != null) && (fields.winpath.length == 1)) { cmd.windowsPath = fields.winpath[0]; }
             if ((fields.linuxpath != null) && (fields.linuxpath.length == 1)) { cmd.linuxPath = fields.linuxpath[0]; }
             if ((fields.overwriteFiles != null) && (fields.overwriteFiles.length == 1) && (fields.overwriteFiles[0] == 'on')) { cmd.overwrite = true; }
+            if ((fields.createFolder != null) && (fields.createFolder.length == 1) && (fields.createFolder[0] == 'on')) { cmd.createFolder = true; }
 
             // Get server temporary path
             var serverpath = obj.path.join(obj.filespath, 'tmp')
@@ -3230,7 +3231,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
                 var agentPath = ((node.agent.id > 0) && (node.agent.id < 5)) ? cmd.windowsPath : cmd.linuxPath;
                 for (var f in cmd.files) {
-                    const acmd = { action: 'wget', overwrite: cmd.overwrite, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), servertlshash: tlsCertHash };
+                    const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
                     var agent = obj.wsagents[node._id];
                     if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
                     // TODO: Add support for peer servers.
