@@ -4530,7 +4530,8 @@
                 x += '<input type=file name=files id=d2uploadinput style=width:100% multiple=multiple onchange="d2batchUploadValidate()" /><br /><br />';
                 if (wintype) { x += addHtmlValue("Windows Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=winpath id=d2winuploadpath placeholder="C:\\temp" value="" />'); }
                 if (linuxtype) { x += addHtmlValue("Linux Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=linuxpath id=d2linuxuploadpath placeholder="/tmp" value="" />'); }
-                x += '<br /><label><input type=checkbox name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
+                x += '<br /><label><input type=checkbox name=createFolder />' + "Create folder if it does not exists?" + '</label></form>';
+                x += '<label><input type=checkbox name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
                 setDialogMode(2, "Batch File Upload", 3, d2batchUploadValidateOk, x);
                 d2batchUploadValidate();
             } else {
@@ -9260,7 +9261,7 @@
         function account_showChangePassword() {
             if (xxdialogMode) return false;
             var x = "Change your account password by entering the old password and new password twice in the boxes below.";
-            if (features & 0x00010000) { " Password hint can be used but is not recommanded."; }
+            if (features & 0x00010000) { " Password hint can be used but is not recommended."; }
             x += '<br /><br />';
             //x += "<form action='" + domainUrl + "changepassword' method=post>";
             x += '<table style=margin-left:60px>';
@@ -9713,7 +9714,7 @@
             }
             if (ptype == 0) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it." + '</table>'; }
             if (ptype == 1) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually." + '</table>'; }
-            if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommanded policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management." + '</table>'; }
+            if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management." + '</table>'; }
             QH('dp20amtpolicydiv', x);
             setTimeout(dp20amtValidatePolicy, 500);
         }
@@ -10720,7 +10721,7 @@
             }
             p5updateClipview();
         }
-        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confim {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0?'copy':'move'), p5clipboard.length, ((p5clipboard.length > 1)?'s':'')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confirm {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0?'copy':'move'), p5clipboard.length, ((p5clipboard.length > 1)?'s':'')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
         function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1)?'s':''), (p5clipboardCut == 0?"copy":"move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }

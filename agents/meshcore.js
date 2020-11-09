@@ -1148,7 +1148,9 @@ function createMeshCore(agent) {
                     if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'meshToolInfo'; broadcastToRegisteredApps(data); }
                     break;
                 case 'wget': // Server uses this command to tell the agent to download a file using HTTPS/GET and place it in a given path. This is used for one-to-many file uploads.
+                    sendConsoleText(JSON.stringify(data));
                     if ((data.overwrite !== true) && fs.existsSync(data.path)) break; // Don't overwrite an existing file.
+                    if (data.createFolder) { try { fs.mkdirSync(data.folder); } catch (ex) { } } // If requested, create the local folder.
                     data.url = 'http' + getServerTargetUrlEx('*/').substring(2);
                     var agentFileHttpOptions = http.parseUri(data.url);
                     agentFileHttpOptions.path = data.urlpath;
