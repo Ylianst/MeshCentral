@@ -3211,33 +3211,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.fs.rename(file.path, fpath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
                         // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                        obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { handleUploadFileBatchEx(cmd); }); });
-                    } else {
-                        handleUploadFileBatchEx(cmd);
+                        obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { }); });
+                    }
+                });
+            }
+
+            // Instruct one of more agents to download a URL to a given local drive location.
+            var tlsCertHash = obj.webCertificateHashs[cmd.domain.id];
+            if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+            for (var i in cmd.nodeids) {
+                obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
+                    if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
+                    var agentPath = ((node.agent.id > 0) && (node.agent.id < 5)) ? cmd.windowsPath : cmd.linuxPath;
+
+                    // Event that this operation is being performed.
+                    var targets = obj.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', cmd.user._id]);
+                    var msgid = 103; // "Batch upload of {0} file(s) to folder {1}"
+                    var event = { etype: 'node', userid: cmd.user._id, username: cmd.user.name, nodeid: node._id, action: 'batchupload', msg: 'Performing batch upload of ' + cmd.files.length + ' file(s) to ' + agentPath, msgid: msgid, msgArgs: [cmd.files.length, agentPath], domain: cmd.domain.id };
+                    parent.DispatchEvent(targets, obj, event);
+
+                    // Send the agent commands to perform the batch upload operation
+                    for (var f in cmd.files) {
+                        const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
+                        var agent = obj.wsagents[node._id];
+                        if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
+                        // TODO: Add support for peer servers.
                     }
                 });
             }
 
             res.send('');
         });
-    }
-
-    // Instruct one of more agents to download a URL to a given local drive location.
-    function handleUploadFileBatchEx(cmd) {
-        var tlsCertHash = obj.webCertificateHashs[cmd.domain.id];
-        if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
-        for (var i in cmd.nodeids) {
-            obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
-                if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
-                var agentPath = ((node.agent.id > 0) && (node.agent.id < 5)) ? cmd.windowsPath : cmd.linuxPath;
-                for (var f in cmd.files) {
-                    const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
-                    var agent = obj.wsagents[node._id];
-                    if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
-                    // TODO: Add support for peer servers.
-                }
-            });
-        }
     }
 
     // Subscribe to all events we are allowed to receive
