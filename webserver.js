@@ -3217,8 +3217,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             }
 
             // Instruct one of more agents to download a URL to a given local drive location.
-            var tlsCertHash = obj.webCertificateHashs[cmd.domain.id];
-            if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+            var tlsCertHash = null;
+            if (parent.args.ignoreagenthashcheck !== true) {
+                tlsCertHash = obj.webCertificateHashs[cmd.domain.id];
+                if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+            }
             for (var i in cmd.nodeids) {
                 obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
                     if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
