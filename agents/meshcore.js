@@ -44,6 +44,7 @@ var MESHRIGHT_NODESKTOP = 65536;
 function createMeshCore(agent) {
     var obj = {};
     var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
+    var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
 
     if (process.platform == 'win32' && require('user-sessions').isRoot()) {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
@@ -1148,44 +1149,47 @@ function createMeshCore(agent) {
                     if (data.pipe == true) { delete data.pipe; delete data.action; data.cmd = 'meshToolInfo'; broadcastToRegisteredApps(data); }
                     break;
                 case 'wget': // Server uses this command to tell the agent to download a file using HTTPS/GET and place it in a given path. This is used for one-to-many file uploads.
-                    sendConsoleText(JSON.stringify(data));
-                    if ((data.overwrite !== true) && fs.existsSync(data.path)) break; // Don't overwrite an existing file.
-                    if (data.createFolder) { try { fs.mkdirSync(data.folder); } catch (ex) { } } // If requested, create the local folder.
-                    data.url = 'http' + getServerTargetUrlEx('*/').substring(2);
-                    var agentFileHttpOptions = http.parseUri(data.url);
-                    agentFileHttpOptions.path = data.urlpath;
-
-                    // Perform manual server TLS certificate checking based on the certificate hash given by the server.
-                    agentFileHttpOptions.rejectUnauthorized = 0;
-                    agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
-                    agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
-
-                    if (agentFileHttpOptions == null) break;
-                    var agentFileHttpRequest = http.request(agentFileHttpOptions,
-                        function (response) {
-                            response.xparent = this;
-                            try {
-                                response.xfile = fs.createWriteStream(this.xpath, { flags: 'wbN' })
-                                response.pipe(response.xfile);
-                                response.end = function () { delete agentFileHttpRequests[this.xparent.xurlpath]; delete this.xparent; }
-                            } catch (ex) {
-                                delete agentFileHttpRequests[this.xurlpath];
-                                delete response.xparent;
-                                return;
-                            }
-                        }
-                    );
-                    agentFileHttpRequest.on('error', function (ex) { delete agentFileHttpRequests[this.xurlpath]; });
-                    agentFileHttpRequest.end();
-                    agentFileHttpRequest.xurlpath = data.urlpath;
-                    agentFileHttpRequest.xpath = data.path;
-                    agentFileHttpRequests[data.urlpath] = agentFileHttpRequest;
+                    agentFileHttpPendingRequests.push(data);
+                    serverFetchFile();
                     break;
                 default:
                     // Unknown action, ignore it.
                     break;
             }
         }
+    }
+
+    // Agent just get a file from the server and save it locally.
+    function serverFetchFile() {
+        if ((Object.keys(agentFileHttpRequests).length > 4) || (agentFileHttpPendingRequests.length == 0)) return; // No more than 4 active HTTPS requests to the server.
+        var data = agentFileHttpPendingRequests.shift();
+        if ((data.overwrite !== true) && fs.existsSync(data.path)) return; // Don't overwrite an existing file.
+        if (data.createFolder) { try { fs.mkdirSync(data.folder); } catch (ex) { } } // If requested, create the local folder.
+        data.url = 'http' + getServerTargetUrlEx('*/').substring(2);
+        var agentFileHttpOptions = http.parseUri(data.url);
+        agentFileHttpOptions.path = data.urlpath;
+
+        // Perform manual server TLS certificate checking based on the certificate hash given by the server.
+        agentFileHttpOptions.rejectUnauthorized = 0;
+        agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+        agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
+
+        if (agentFileHttpOptions == null) return;
+        var agentFileHttpRequest = http.request(agentFileHttpOptions,
+            function (response) {
+                response.xparent = this;
+                try {
+                    response.xfile = fs.createWriteStream(this.xpath, { flags: 'wbN' })
+                    response.pipe(response.xfile);
+                    response.end = function () { delete agentFileHttpRequests[this.xparent.xurlpath]; delete this.xparent; serverFetchFile(); }
+                } catch (ex) { delete agentFileHttpRequests[this.xurlpath]; delete response.xparent; serverFetchFile(); return; }
+            }
+        );
+        agentFileHttpRequest.on('error', function (ex) { delete agentFileHttpRequests[this.xurlpath]; serverFetchFile(); });
+        agentFileHttpRequest.end();
+        agentFileHttpRequest.xurlpath = data.urlpath;
+        agentFileHttpRequest.xpath = data.path;
+        agentFileHttpRequests[data.urlpath] = agentFileHttpRequest;
     }
 
     // Called when a file changed in the file system
