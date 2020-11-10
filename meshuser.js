@@ -1329,8 +1329,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((url.query.p == '4') || (url.query.p == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
 
                         // Add server TLS cert hash
-                        const tlsCertHash = parent.webCertificateHashs[domain.id];
-                        if (tlsCertHash != null) { command.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                        var tlsCertHash = null;
+                        if (parent.parent.args.ignoreagenthashcheck !== true) {
+                            tlsCertHash = parent.webCertificateHashs[domain.id];
+                            if (tlsCertHash != null) { command.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+                        }
 
                         // Add user consent messages
                         command.soptions = {};
