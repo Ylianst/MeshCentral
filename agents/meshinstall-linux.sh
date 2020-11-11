@@ -15,7 +15,7 @@ CheckStartupType() {
   # echo "Checking process autostart system..."
   starttype1=`cat /proc/1/status | grep 'Name:' | awk '{ print $2; }'`
   starttype2=`ps -p 1 -o command= | awk '{a=split($0,res," "); b=split(res[a],tp,"/"); print tp[b]; }'`
- 
+
   # Systemd
   if [[ $starttype1 == 'systemd' ]]
     then return 1;
@@ -76,7 +76,7 @@ CheckInstallAgent() {
 		  else
 			# Linux x86, 64 bit
 			bitlen=$( getconf LONG_BIT )
-			if [ $bitlen == '32' ] 
+			if [ $bitlen == '32' ]
 			then
 				# 32 bit OS
 				machineid=5
@@ -134,13 +134,13 @@ DownloadAgent() {
   mkdir -p /usr/local/mesh
   cd /usr/local/mesh
   echo "Downloading Mesh agent #$machineid..."
-  wget $url/meshagents?id=$machineid {{{wgetoptionshttps}}}-O /usr/local/mesh/meshagent || curl {{{curloptionshttps}}}--output /usr/local/mesh/meshagent $url/meshagents?id=$machineid
+  wget $url/meshagents?id=$machineid --no-check-certificate {{{wgetoptionshttps}}}-O /usr/local/mesh/meshagent || curl -k {{{curloptionshttps}}}--output /usr/local/mesh/meshagent $url/meshagents?id=$machineid
 
   # If it did not work, try again using http
   if [ $? != 0 ]
   then
     url=${url/"https://"/"http://"}
-    wget $url/meshagents?id=$machineid {{{wgetoptionshttp}}}-O /usr/local/mesh/meshagent || curl {{{curloptionshttp}}}--output /usr/local/mesh/meshagent $url/meshagents?id=$machineid
+    wget $url/meshagents?id=$machineid --no-check-certificate {{{wgetoptionshttp}}}-O /usr/local/mesh/meshagent || curl -k {{{curloptionshttps}}}--output /usr/local/mesh/meshagent $url/meshagents?id=$machineid
   fi
 
   if [ $? -eq 0 ]
@@ -148,12 +148,12 @@ DownloadAgent() {
     echo "Mesh agent downloaded."
     # TODO: We could check the meshagent sha256 hash, but best to authenticate the server.
     chmod 755 /usr/local/mesh/meshagent
-    wget $url/meshsettings?id=$meshid {{{wgetoptionshttps}}}-O /usr/local/mesh/meshagent.msh || curl {{{curloptionshttps}}}--output /usr/local/mesh/meshagent.msh $url/meshsettings?id=$meshid
+    wget $url/meshsettings?id=$meshid --no-check-certificate {{{wgetoptionshttps}}}-O /usr/local/mesh/meshagent.msh || curl -k {{{curloptionshttps}}}--output /usr/local/mesh/meshagent.msh $url/meshsettings?id=$meshid
 
     # If it did not work, try again using http
     if [ $? -ne 0 ]
     then
-      wget $url/meshsettings?id=$meshid {{{wgetoptionshttp}}}-O /usr/local/mesh/meshagent.msh || curl {{{curloptionshttp}}}--output /usr/local/mesh/meshagent.msh $url/meshsettings?id=$meshid
+      wget $url/meshsettings?id=$meshid --no-check-certificate {{{wgetoptionshttp}}}-O /usr/local/mesh/meshagent.msh || curl -k {{{curloptionshttps}}}--output /usr/local/mesh/meshagent.msh $url/meshsettings?id=$meshid
     fi
 
     if [ $? -eq 0 ]
@@ -182,7 +182,7 @@ DownloadAgent() {
       elif [ $starttype -eq 3 ]
           then
           # initd
-          wget $url/meshagents?script=2 {{{wgetoptionshttps}}}-O /etc/init.d/meshagent || curl {{{curloptionshttps}}}--output /etc/init.d/meshagent $url/meshagents?script=2
+          wget $url/meshagents?script=2 --no-check-certificate {{{wgetoptionshttps}}}-O /etc/init.d/meshagent || curl -k {{{curloptionshttps}}}--output /etc/init.d/meshagent $url/meshagents?script=2
           chmod +x /etc/init.d/meshagent
           # creates symlinks for rc.d
           update-rc.d meshagent defaults
@@ -201,7 +201,7 @@ DownloadAgent() {
 	  elif [ $starttype -eq 5 ]
           then
 		  # FreeBSD
-          wget $url/meshagents?script=5 {{{wgetoptionshttps}}}-O /usr/local/etc/rc.d/meshagent || curl {{{curloptionshttps}}}--output /usr/local/etc/rc.d/meshagent $url/meshagents?script=5
+          wget $url/meshagents?script=5 --no-check-certificate {{{wgetoptionshttps}}}-O /usr/local/etc/rc.d/meshagent || curl -k {{{curloptionshttps}}}--output /usr/local/etc/rc.d/meshagent $url/meshagents?script=5
           chmod +x /usr/local/etc/rc.d/meshagent
           service meshagent start
           echo 'meshagent installed as BSD service.'
@@ -251,9 +251,9 @@ UninstallAgent() {
         service meshagentDiagnostic stop &> /dev/null
         rm -f /etc/init.d/meshagentDiagnostic &> /dev/null
     elif [ $starttype -eq 2 ]; then
-        # upstart 
+        # upstart
         initctl stop meshagent
-        rm -f /sbin/meshcmd 
+        rm -f /sbin/meshcmd
         rm -f /etc/init/meshagent.conf
         rm -f /etc/rc2.d/S20mesh /etc/rc3.d/S20mesh /etc/rc5.d/S20mesh
         initctl stop meshagentDiagnostic &> /dev/null
