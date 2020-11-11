@@ -8001,28 +8001,7 @@
       "zh-chs": "压缩档案...",
       "zh-cht": "壓縮檔案...",
       "xloc": [
-        "default.handlebars->29->881"
-      ]
-    },
-    {
-      "cs": "Potvrdit {0} z {1} záznam{2} do tohoto umístění?",
-      "de": "Bestätigen Sie das {0} von {1} Einträgen{2} an diesen Ort?",
-      "en": "Confirm {0} of {1} entrie{2} to this location?",
-      "es": "¿Confirmar {0} de {1} entrada{2} a esta ubicación?",
-      "fi": "Haluatko varmasti {0} {1} kohdetta tänne?",
-      "fr": "Confirmer {0} de {1} entrée {2} à cet emplacement ?",
-      "hi": "{1} के {0} की पुष्टि करें {2} इस स्थान पर?",
-      "ja": "{1}エントリ{2}のうち{0}をこの場所に拘束しますか？",
-      "ko": "{2} 항목 {1}의 {0}을 이 위치로 확정하시겠습니까?",
-      "nl": "Bevestig {0} van {1} bestand {2} naar deze locatie?",
-      "pt": "Confirme {0} da {1} entrada {2} para este local?",
-      "ru": "Подтвердить {0} из {1} записей в это расположение?",
-      "tr": "Bu konuma {0} / {1} giriş {2} konulsun mu?",
-      "zh-chs": "将{1}入口{2}中的{0}限制到此位置？",
-      "zh-cht": "將{1}入口{2}中的{0}限製到此位置？",
-      "xloc": [
-        "default-mobile.handlebars->9->127",
-        "default.handlebars->29->1566"
+        "default.handlebars->29->888"
       ]
     },
     {
@@ -8415,8 +8394,8 @@
       "zh-chs": "确认删除访问权限？",
       "zh-cht": "確認刪除訪問權限？",
       "xloc": [
-         "default.handlebars->29->1999",
-         "default.handlebars->29->2002"
+        "default.handlebars->29->2007",
+        "default.handlebars->29->2010"
       ]
     },
     {
@@ -13844,21 +13823,7 @@
       ]
     },
     {
-      "cs": "E-mail je ověřen",
-      "de": "E-Mail ist bestätigt",
-      "en": "E-mail is verified",
-      "es": "Correo electrónico verificado",
-      "fi": "Sähköposti osoite on vahvistettu",
-      "fr": "E-mail vérifié",
-      "hi": "ईमेल सत्यापित है",
-      "ja": "メールが確認されました",
-      "ko": "이메일 검증",
-      "nl": "E-mail is geverifieerd",
-      "pt": "O email foi verificado",
-      "ru": "Email подтвержден",
-      "tr": "E-posta doğrulandı",
-      "zh-chs": "电邮已验证",
-      "zh-cht": "電郵已驗證",
+      "en": "Email is verified",
       "xloc": [
         "default.handlebars->29->1730",
         "default.handlebars->29->1904"
@@ -35786,8 +35751,11 @@
     },
     {
       "en": "This is the recommanded policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
-      "fr": "C'est la politique recommandée. L'activation et la gestion d'Intel&reg; AMT est complètement automatique et le serveur utilisera au mieux la gestion du matériel.", 
-      "nl": "Dit is het aanbevolen beleid. Activering en beheer van Intel&reg; AMT is volledig geautomatiseerd en de server zal proberen om optimaal gebruik te maken van hardwarebeheer.",
+      "fr": "C'est la politique recommandée. L'activation et la gestion d'Intel&reg; AMT est complètement automatique et le serveur utilisera au mieux la gestion du matériel.",
+      "nl": "Dit is het aanbevolen beleid. Activering en beheer van Intel&reg; AMT is volledig geautomatiseerd en de server zal proberen om optimaal gebruik te maken van hardwarebeheer."
+    },
+    {
+      "en": "This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.",
       "xloc": [
         "default.handlebars->29->1401"
       ]

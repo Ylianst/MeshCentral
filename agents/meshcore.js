@@ -780,11 +780,7 @@ function createMeshCore(agent) {
 
                                     // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                     woptions.rejectUnauthorized = 0;
-                                    woptions.checkServerIdentity = function checkServerIdentity(certs) {
-                                        //sendConsoleText('ca: ' + certs[0].fingerprint.split(':').join('').toLowerCase());
-                                        //sendConsoleText('cs: ' + checkServerIdentity.servertlshash);
-                                        if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
-                                    }
+                                    woptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
                                     woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                     //sendConsoleText(JSON.stringify(woptions));
