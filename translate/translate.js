@@ -557,7 +557,6 @@ function translate(lang, langFile, sources, createSubDir) {
         // Load the language file
         var langFileData = null;
         try { langFileData = JSON.parse(fs.readFileSync(langFile)); } catch (ex) { console.log(ex); }
-        console.log('langFileData', langFileData);
         if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
 
         langs = {};
