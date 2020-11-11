@@ -419,7 +419,6 @@ function createMeshCore(agent) {
 
     var meshServerConnectionState = 0;
     var tunnels = {};
-    var lastMeInfo = null;
     var lastNetworkInfo = null;
     var lastPublicLocationInfo = null;
     var selfInfoUpdateTimer = null;
@@ -3254,7 +3253,6 @@ function createMeshCore(agent) {
                     if (meshCoreObj.osdesc) { response += '\r\nOS: ' + meshCoreObj.osdesc + '.'; }
                     response += '\r\nModules: ' + addedModules.join(', ') + '.';
                     response += '\r\nServer Connection: ' + mesh.isControlChannelConnected + ', State: ' + meshServerConnectionState + '.';
-                    response += '\r\lastMeInfo: ' + lastMeInfo + '.';
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     if (process.platform == 'linux' || process.platform == 'freebsd') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
