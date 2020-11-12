@@ -251,6 +251,17 @@
               "Files": { "type": "string" }
             }
           },
+          "agentCustomization": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Use this section to customize the agent branding.",
+            "properties": {
+              "displayName": { "type": "string", "default": "MeshCentral Agent", "description": "The name of the agent as displayed to the user." },
+              "description": { "type": "string", "default": "Mesh Agent background service", "description": "The description of the agent as displayed to the user." },
+              "companyName": { "type": "string", "default": "Mesh Agent", "description": "This will be used as the path to install the agent, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's." },
+              "serviceName": { "type": "string", "default": "Mesh Agent", "description": "The name of the background service, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's but should be set to an all lower case, no space string." }
+            }
+          },
           "userAllowedIP": { "type": "string" },
           "userBlockedIP": { "type": "string" },
           "agentAllowedIP": { "type": "string" },

@@ -179,6 +179,12 @@
         "terminal": "{0} started a remote terminal session.",
         "files": "{0} started a remote files session."
       },
+      "agentCustomization": {
+        "displayName": "Compagny® Product™",
+        "description": "Compagny® Product™ agent for remote monitoring, management and assistance.",
+        "companyName": "Compagny®",
+        "serviceName": "compagnyagent"
+      },
       "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
       "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
       "_agentAllowedIP": "192.168.0.100/24",

@@ -1100,6 +1100,16 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.config.domains[i].webpublicpath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/public')))) { obj.config.domains[i].webpublicpath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/public'); }
                 if ((obj.config.domains[i].webemailspath == null) && (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web-' + i + '/emails')))) { obj.config.domains[i].webemailspath = obj.path.join(__dirname, '../meshcentral-web-' + i + '/emails'); }
             }
+
+            // Check agent customization if any
+            if (typeof obj.config.domains[i].agentcustomization == 'object') {
+                if (typeof obj.config.domains[i].agentcustomization.displayname != 'string') { delete obj.config.domains[i].agentcustomization.displayname; } else { obj.config.domains[i].agentcustomization.displayname = obj.config.domains[i].agentcustomization.displayname.split('\r').join('').split('\n').join(''); }
+                if (typeof obj.config.domains[i].agentcustomization.description != 'string') { delete obj.config.domains[i].agentcustomization.description; } else { obj.config.domains[i].agentcustomization.description = obj.config.domains[i].agentcustomization.description.split('\r').join('').split('\n').join(''); }
+                if (typeof obj.config.domains[i].agentcustomization.companyname != 'string') { delete obj.config.domains[i].agentcustomization.companyname; } else { obj.config.domains[i].agentcustomization.companyname = obj.config.domains[i].agentcustomization.companyname.split('\r').join('').split('\n').join(''); }
+                if (typeof obj.config.domains[i].agentcustomization.servicename != 'string') { delete obj.config.domains[i].agentcustomization.servicename; } else { obj.config.domains[i].agentcustomization.servicename = obj.config.domains[i].agentcustomization.servicename.split('\r').join('').split('\n').join('').split(' ').join('').split('"').join('').split('\'').join('').split('>').join('').split('<').join('').split('/').join('').split('\\').join(''); }
+            } else {
+                delete obj.config.domains[i].agentcustomization;
+            }
         }
 
         // Log passed arguments into Windows Service Log
