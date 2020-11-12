@@ -2218,6 +2218,21 @@ function createMeshCore(agent) {
                         try { fs.renameSync(oldfullpath, newfullpath); } catch (e) { console.log(e); }
                         break;
                     }
+                    case 'findfile': {
+                        // Search for files
+                        var r = require('file-search').find(cmd.path, cmd.filter);
+                        r.socket = this;
+                        r.socket.reqid = cmd.reqid; // Search request id. This is used to send responses and cancel the request.
+                        r.socket.path = cmd.path;   // Search path
+                        r.on('result', function (str) { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: str.substring(this.socket.path.length), reqid: this.socket.reqid }))); } catch (ex) { } });
+                        r.then(function () { try { this.socket.write(Buffer.from(JSON.stringify({ action: 'findfile', r: null, reqid: this.socket.reqid }))); } catch (ex) { } });
+                        break;
+                    }
+                    case 'cancelfindfile': {
+                        // TODO: Cancel a search for files
+                        // cmd.reqid <-- Cancel this reqid
+                        sendConsoleText('cancelfindfile: ' + cmd.reqid);
+                    }
                     case 'download': {
                         // Download a file
                         var sendNextBlock = 0;
