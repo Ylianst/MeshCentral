@@ -4875,7 +4875,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         }
 
         // Setup all HTTP handlers
-        if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req); }); }
+        if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
         for (var i in parent.config.domains) {
             if (parent.config.domains[i].dns != null) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
             var domain = parent.config.domains[i];
