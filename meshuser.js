@@ -1330,10 +1330,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Add server TLS cert hash
                         var tlsCertHash = null;
+                        // TODO: Once new mesh agents seem to work, re-enable this.
+                        /*
                         if (parent.parent.args.ignoreagenthashcheck !== true) {
                             tlsCertHash = parent.webCertificateFullHashs[domain.id];
                             if (tlsCertHash != null) { command.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
                         }
+                        */
 
                         // Add user consent messages
                         command.soptions = {};
