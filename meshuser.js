@@ -240,7 +240,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
-                    parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                         if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
                         if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
 
