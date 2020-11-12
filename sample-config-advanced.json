@@ -182,7 +182,7 @@
       "agentCustomization": {
         "displayName": "Compagny® Product™",
         "description": "Compagny® Product™ agent for remote monitoring, management and assistance.",
-        "companyName": "Compagny®",
+        "companyName": "Compagny",
         "serviceName": "compagnyagent"
       },
       "_userAllowedIP": "127.0.0.1,192.168.1.0/24",
