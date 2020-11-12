@@ -779,7 +779,7 @@ function createMeshCore(agent) {
 
                                     // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                     woptions.rejectUnauthorized = 0;
-                                    woptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+                                    woptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
                                     woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                     //sendConsoleText(JSON.stringify(woptions));
@@ -1170,7 +1170,7 @@ function createMeshCore(agent) {
 
         // Perform manual server TLS certificate checking based on the certificate hash given by the server.
         agentFileHttpOptions.rejectUnauthorized = 0;
-        agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].fingerprint.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+        agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
         agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
 
         if (agentFileHttpOptions == null) return;
