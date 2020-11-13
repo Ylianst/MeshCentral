@@ -237,7 +237,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
             } else {
                 // Check if a peer server is connected to this agent
-                var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
+                var routing = parent.parent.GetRoutingServerIdNotSelf(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -1112,6 +1112,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'info': {
                             var info = process.memoryUsage();
                             info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];
+                            try { if (parent.parent.multiServer != null) { info.serverId = parent.parent.multiServer.serverid; } } catch (ex) { }
                             if (parent.db.databaseType == 3) { info.dbChangeStream = parent.db.changeStream; }
                             if (parent.parent.pluginHandler != null) { info.plugins = []; for (var i in parent.parent.pluginHandler.plugins) { info.plugins.push(i); } }
                             try { info.nodeVersion = process.version; } catch (ex) { }

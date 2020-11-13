@@ -146,7 +146,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 }
             } else {
                 // Check if a peer server is connected to this agent
-                var routing = parent.parent.GetRoutingServerId(command.nodeid, 1); // 1 = MeshAgent routing type
+                var routing = parent.parent.GetRoutingServerIdNotSelf(command.nodeid, 1); // 1 = MeshAgent routing type
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     rights = parent.GetNodeRights(user, routing.meshid, command.nodeid);
