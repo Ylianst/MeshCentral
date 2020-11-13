@@ -1721,8 +1721,28 @@ function CreateMeshCentralServer(config, args) {
     obj.GetConnectivityState = function (nodeid) { return obj.connectivityByNode[nodeid]; };
 
     // Get the routing server id for a given node and connection type, can never be self.
+    obj.GetRoutingServerIdNotSelf = function (nodeid, connectType) {
+        if (obj.multiServer == null) return null;
+        for (var serverid in obj.peerConnectivityByNode) {
+            if (serverid == obj.serverId) continue;
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
+            if ((state != null) && ((state.connectivity & connectType) != 0)) { return { serverid: serverid, meshid: state.meshid }; }
+        }
+        return null;
+    };
+
+    // Get the routing server id for a given node and connection type, self first
     obj.GetRoutingServerId = function (nodeid, connectType) {
         if (obj.multiServer == null) return null;
+
+        // Look at our own server first
+        var connections = obj.peerConnectivityByNode[obj.serverId];
+        if (connections != null) {
+            var state = connections[nodeid];
+            if ((state != null) && ((state.connectivity & connectType) != 0)) { return { serverid: obj.serverId, meshid: state.meshid }; }
+        }
+
+        // Look at other servers
         for (var serverid in obj.peerConnectivityByNode) {
             if (serverid == obj.serverId) continue;
             var state = obj.peerConnectivityByNode[serverid][nodeid];
