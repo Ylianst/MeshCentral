@@ -2231,11 +2231,7 @@ function createMeshCore(agent) {
                         break;
                     }
                     case 'cancelfindfile': {
-                        if (this._search)
-                        {
-                            this._search.cancel();
-                            this._search = null;
-                        }
+                        if (this._search) { this._search.cancel(); this._search = null; }
                     }
                     case 'download': {
                         // Download a file

@@ -101,7 +101,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.send = function (x) {
-        if (obj.debugmode > 2) { console.log("KSend(" + x.length + "): " + rstr2hex(x)); }
+        if (obj.debugmode > 2) { console.log('KSend(' + x.length + '): ' + rstr2hex(x)); }
         if (obj.parent != null) { obj.parent.send(x); }
     }
 
@@ -115,7 +115,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         // String.fromCharCode.apply() can't handle very large argument count, so we have to split like this.
         while ((tdata.byteLength - ptr) > 50000) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr, ptr + 50000))); ptr += 50000; }
         if (ptr > 0) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr))); } else { strs.push(String.fromCharCode.apply(null, tdata)); }
-        tile.src = "data:image/jpeg;base64," + btoa(strs.join(''));
+        tile.src = 'data:image/jpeg;base64,' + btoa(strs.join(''));
         tile.onload = function () {
             //console.log('DecodeTile #' + this.xcount);
             if ((obj.Canvas != null) && (obj.KillDraw < r) && (obj.State != 0)) {
@@ -157,13 +157,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.SendUnPause = function () {
-        if (obj.debugmode > 1) { console.log("SendUnPause"); }
+        if (obj.debugmode > 1) { console.log('SendUnPause'); }
         //obj.xxStateChange(3);
         obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x00));
     }
 
     obj.SendPause = function () {
-        if (obj.debugmode > 1) { console.log("SendPause"); }
+        if (obj.debugmode > 1) { console.log('SendPause'); }
         //obj.xxStateChange(2);
         obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
     }
@@ -181,8 +181,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.ProcessScreenMsg = function (width, height) {
-        if (obj.debugmode > 0) { console.log("ScreenSize: " + width + " x " + height); }
-        if ((obj.ScreenWidth == width) || (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
+        if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
+        if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;
@@ -252,7 +252,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 break;
             case 17: // MNG_KVM_MESSAGE
                 var str = String.fromCharCode.apply(null, data.slice(4));
-                console.log("Got KVM Message: " + str);
+                console.log('Got KVM Message: ' + str);
                 if (obj.onMessage != null) obj.onMessage(str, obj);
                 break;
             case 65: // Alert
