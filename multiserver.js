@@ -624,12 +624,14 @@ module.exports.CreateMultiServer = function (parent, args) {
             peerTunnel.ws2.on('open', function () {
                 peerTunnel.parent.parent.debug('peer', 'FTunnel ' + peerTunnel.serverid + ': Connected');
 
-                // Get the peer server's certificate and compute the server public key hash
-                var serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(peerTunnel.ws2._socket.getPeerCertificate().raw.toString('binary')));
-                var serverCertHashHex = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                if (peerTunnel.ws2._socket.getPeerCertificate != null) {
+                    // Get the peer server's certificate and compute the server public key hash
+                    var serverCert = obj.forge.pki.certificateFromAsn1(obj.forge.asn1.fromDer(peerTunnel.ws2._socket.getPeerCertificate().raw.toString('binary')));
+                    var serverCertHashHex = Buffer.from(obj.forge.pki.getPublicKeyFingerprint(serverCert.publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() }), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
 
-                // Check if the peer certificate is the expected one for this serverid
-                if ((obj.peerServers[serverid] == null) || (obj.peerServers[serverid].serverCertHash != serverCertHashHex)) { console.log('ERROR: Outer certificate hash mismatch (1). (' + peerTunnel.url + ', ' + peerTunnel.serverid + ').'); peerTunnel.close(); return; }
+                    // Check if the peer certificate is the expected one for this serverid
+                    if ((obj.peerServers[serverid] == null) || (obj.peerServers[serverid].serverCertHash != serverCertHashHex)) { console.log('ERROR: Outer certificate hash mismatch (1). (' + peerTunnel.url + ', ' + peerTunnel.serverid + ').'); peerTunnel.close(); return; }
+                }
 
                 // Connection accepted, resume the web socket to start the data flow
                 peerTunnel.ws1._socket.resume();
