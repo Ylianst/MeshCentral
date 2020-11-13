@@ -448,7 +448,7 @@ module.exports.CreateDB = function (parent, func) {
                 } else {
                     obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user', 'ugrp'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
                     obj.fileChangeStream.on('change', function (change) {
-                        if (change.operationType == 'update') {
+                        if ((change.operationType == 'update') || (change.operationType == 'replace')) {
                             switch (change.fullDocument.type) {
                                 case 'node': { dbNodeChange(change, false); break; } // A node has changed
                                 case 'mesh': { dbMeshChange(change, false); break; } // A device group has changed
@@ -1579,7 +1579,7 @@ module.exports.CreateDB = function (parent, func) {
     // Called when a node has changed
     function dbNodeChange(nodeChange, added) {
         common.unEscapeLinksFieldName(nodeChange.fullDocument);
-        const node = nodeChange.fullDocument;
+        const node = performTypedRecordDecrypt([nodeChange.fullDocument])[0];
         if (node.intelamt != null) { // Remove the Intel AMT password and MPS password before eventing this.
             if (node.intelamt.pass != null) { node.intelamt.pass = 1; }
             if (node.intelamt.mpspass != null) { node.intelamt.mpspass = 1; }
@@ -1591,7 +1591,7 @@ module.exports.CreateDB = function (parent, func) {
     function dbMeshChange(meshChange, added) {
         if (parent.webserver == null) return;
         common.unEscapeLinksFieldName(meshChange.fullDocument);
-        const mesh = meshChange.fullDocument;
+        const mesh = performTypedRecordDecrypt([meshChange.fullDocument])[0];
 
         // Update the mesh object in memory
         const mmesh = parent.webserver.meshes[mesh._id];
@@ -1613,7 +1613,7 @@ module.exports.CreateDB = function (parent, func) {
     // Called when a user account has changed
     function dbUserChange(userChange, added) {
         if (parent.webserver == null) return;
-        const user = userChange.fullDocument;
+        const user = performTypedRecordDecrypt([userChange.fullDocument])[0];
 
         // Update the user object in memory
         const muser = parent.webserver.users[user._id];
