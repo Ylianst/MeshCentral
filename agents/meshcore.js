@@ -2221,6 +2221,8 @@ function createMeshCore(agent) {
                     case 'findfile': {
                         // Search for files
                         var r = require('file-search').find(cmd.path, cmd.filter);
+                        if (!r.cancel) { r.cancel = function cancel() { this.child.kill(); }; }
+                        this._search = r;
                         r.socket = this;
                         r.socket.reqid = cmd.reqid; // Search request id. This is used to send responses and cancel the request.
                         r.socket.path = cmd.path;   // Search path
@@ -2229,9 +2231,11 @@ function createMeshCore(agent) {
                         break;
                     }
                     case 'cancelfindfile': {
-                        // TODO: Cancel a search for files
-                        // cmd.reqid <-- Cancel this reqid
-                        sendConsoleText('cancelfindfile: ' + cmd.reqid);
+                        if (this._search)
+                        {
+                            this._search.cancel();
+                            this._search = null;
+                        }
                     }
                     case 'download': {
                         // Download a file
