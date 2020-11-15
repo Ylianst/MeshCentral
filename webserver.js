@@ -3235,14 +3235,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // Send the agent commands to perform the batch upload operation
                     for (var f in cmd.files) {
-                        if ((agentPath != null) && (cmd.files[f].name != null) {
-                            try {
+                        try {
+                            if ((agentPath != null) && (cmd.files[f].name != null)) {
                                 const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
                                 var agent = obj.wsagents[node._id];
                                 if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
                                 // TODO: Add support for peer servers.
-                            } catch (ex) { }
-                        }
+                            }
+                        } catch (ex) { }
                     }
                 });
             }
