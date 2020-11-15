@@ -3218,13 +3218,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;
-            // TODO: Once new mesh agents seem to work, re-enable this.
-            /*
             if (parent.args.ignoreagenthashcheck !== true) {
                 tlsCertHash = obj.webCertificateFullHashs[cmd.domain.id];
                 if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
             }
-            */
             for (var i in cmd.nodeids) {
                 obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
                     if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
@@ -3238,10 +3235,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // Send the agent commands to perform the batch upload operation
                     for (var f in cmd.files) {
-                        const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
-                        var agent = obj.wsagents[node._id];
-                        if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
-                        // TODO: Add support for peer servers.
+                        if ((agentPath != null) && (cmd.files[f].name != null) {
+                            try {
+                                const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
+                                var agent = obj.wsagents[node._id];
+                                if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
+                                // TODO: Add support for peer servers.
+                            } catch (ex) { }
+                        }
                     }
                 });
             }
