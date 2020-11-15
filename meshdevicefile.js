@@ -202,7 +202,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                     }
                 } else {
                     // HTTP connection, Send message to other peers that we have this connection
-                    parent.parent.multiServer.DispatchMessage(JSON.stringify({ action: 'relay', id: obj.id }));
+                    if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage(JSON.stringify({ action: 'relay', id: obj.id })); }
                     return;
                 }
             }
