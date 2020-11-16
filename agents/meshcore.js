@@ -779,7 +779,13 @@ function createMeshCore(agent) {
 
                                     // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                     woptions.rejectUnauthorized = 0;
-                                    woptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+                                    woptions.checkServerIdentity = function checkServerIdentity(certs) {
+                                        // If the tunnel certificate matches the control channel certificate, accept the connection
+                                        try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
+                                        try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
+                                        // Check that the certificate is the one expected by the server, fail if not.
+                                        if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
+                                    }
                                     woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                     //sendConsoleText(JSON.stringify(woptions));
@@ -1177,7 +1183,13 @@ function createMeshCore(agent) {
 
         // Perform manual server TLS certificate checking based on the certificate hash given by the server.
         agentFileHttpOptions.rejectUnauthorized = 0;
-        agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) { if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') } }
+        agentFileHttpOptions.checkServerIdentity = function checkServerIdentity(certs) {
+            // If the tunnel certificate matches the control channel certificate, accept the connection
+            try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
+            try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
+            // Check that the certificate is the one expected by the server, fail if not.
+            if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
+        }
         agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
 
         if (agentFileHttpOptions == null) return;

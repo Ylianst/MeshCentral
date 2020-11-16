@@ -8056,7 +8056,16 @@
 
             // Find file result
             if (data.action == 'findfile') {
-                if (xxdialogTag == data.reqid) { if (data.r == null) { QE('d2findFilter', true); QE('filefind_dlgOkButton', true); xxdialogTag = null; } else { QA('d2findResults', '<div style=white-space:nowrap>' + EscapeHtml(data.r) + '</div>'); } }
+                if (xxdialogTag == data.reqid) {
+                    if (data.r == null) {
+                        QE('d2findFilter', true);
+                        QE('filefind_dlgOkButton', true);
+                        xxdialogTag = null;
+                        if (Q('d2findResults').innerHTML == '') { QH('d2findResults', '<div style=text-align:center;margin:10px><i>' + "No files found" + '</i></div>'); }
+                    } else {
+                        QA('d2findResults', '<div style=white-space:nowrap>' + EscapeHtml(data.r) + '</div>');
+                    }
+                }
                 return;
             }
 
