@@ -2239,7 +2239,7 @@ function createMeshCore(agent) {
                     }
                     case 'findfile': {
                         // Search for files
-                        var r = require('file-search').find(cmd.path, cmd.filter);
+                        var r = require('file-search').find('"' + cmd.path + '"', cmd.filter);
                         if (!r.cancel) { r.cancel = function cancel() { this.child.kill(); }; }
                         this._search = r;
                         r.socket = this;
