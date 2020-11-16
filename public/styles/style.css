@@ -692,6 +692,10 @@ body {
     float: right;
 }
 
+#devListToolbarViewIcons3 {
+    float: right;
+}
+
 #devListToolbarSpan {
     width: 100%;
     height: 24px;
@@ -2799,6 +2803,14 @@ a {
     margin-left: 2px;
     margin-top: 2px;
     background: url(../images/views.png) -112px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector6 {
+    margin-left: 2px;
+    margin-top: 2px;
+    background: url(../images/views.png) -336px 0px;
     height: 28px;
     width: 28px;
 }
