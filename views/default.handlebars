@@ -2175,7 +2175,6 @@
                                 var now = (Date.now() / 1000), cpu = 0, memory = 0;
                                 if (typeof message.cpu.total == 'number') { cpu = message.cpu.total; }
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
-                                console.log(message.cpu);
                                 deviceDetailsStatsData.push([now, cpu, memory]);
                                 deviceDetailsStatsDraw();
                             } else if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
@@ -8667,6 +8666,7 @@
             if (window.deviceDetailsStatsChart != null) { delete window.deviceDetailsStatsChart; }
             if (deviceDetailsStatsTimer != null) { clearInterval(deviceDetailsStatsTimer); deviceDetailsStatsTimer = null; }
             deviceDetailsStatsData = [];
+            deviceDetailsStatsDraw();
         }
 
         function deviceDetailsStatsTimerFunc() {
@@ -8675,7 +8675,7 @@
 
         function deviceDetailsStatsDraw() {
             var now = Date.now() / 1000, oldLimit = (now - 100);
-            while (deviceDetailsStatsData[0][0] < (oldLimit - 5)) { deviceDetailsStatsData.shift(); }
+            while ((deviceDetailsStatsData.length > 0) && (deviceDetailsStatsData[0][0] < (oldLimit - 5))) { deviceDetailsStatsData.shift(); }
 
             var cpu = [], memory = [];
             for (var i in deviceDetailsStatsData) {
@@ -8686,7 +8686,7 @@
 
             deviceDetailsConfig.data.datasets[0].data = cpu;
             deviceDetailsConfig.data.datasets[1].data = memory;
-            window.deviceDetailsStatsChart.update();
+            if (window.deviceDetailsStatsChart) { window.deviceDetailsStatsChart.update(); }
         }
 
         var DeviceDetailsHardware = null;
@@ -13451,6 +13451,9 @@
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
             if (((x == 4) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
+
+            // Stop the list graph if active
+            if (xxcurrentView == 17) deviceDetailsStatsClear();
 
             // Edit this line when adding a new screen
             for (var i = 0; i < 53; i++) { QV('p' + i, i == x); }
