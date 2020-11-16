@@ -3899,6 +3899,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                         if ((node == null) || (((rights & MESHRIGHT_AGENTCONSOLE) == 0) && (user.siteadmin != SITERIGHT_ADMIN))) return;
 
+                        // TODO: If we have peer servers, inform...
+                        //if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'uploadagentcore', sessionid: ws.sessionId }); }
+
                         if (command.type == 'default') {
                             // Send the default core to the agent
                             parent.parent.updateMeshCore(function () { parent.sendMeshAgentCore(user, domain, node._id, 'default'); });

@@ -952,6 +952,13 @@ function createMeshCore(agent) {
                             p.then(function (u) { mesh.SendCommand({ action: 'msg', type: 'userSessions', sessionid: data.sessionid, data: u, tag: data.tag }); });
                             break;
                         }
+                        case 'cpuinfo':
+                            // CPU & memory utilization
+                            var cpuuse = require('sysinfo').cpuUtilization();
+                            cpuuse.sessionid = data.sessionid;
+                            cpuuse.tag = data.tag;
+                            cpuuse.then(function (data) { mesh.SendCommand(JSON.stringify({ action: 'msg', type: 'cpuinfo', cpu: data, memory: require('sysinfo').memUtilization(), sessionid: this.sessionid, tag: this.tag })); }, function (ex) { });
+                            break;
                         default:
                             // Unknown action, ignore it.
                             break;

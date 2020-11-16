@@ -875,9 +875,27 @@
             <div id=p17 style="display:none;margin-left:-18px">
                 <div id="p17title" style="margin-left:18px">
                     <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <div id="devListToolbarViewIcons3"><div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div></div>
                     <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
-                <div id=p17info style="overflow-y:auto"></div>
+                <div id=p17info style="overflow-y:auto">
+                    <div id=p17graph style="width:100%">
+                        <table style=width:100%>
+                            <tr>
+                                <td style=width:64px;vertical-align:top>
+                                    <img src=images/details/graph64.png border=0 width=64 />
+                                </td>
+                                <td>
+                                    <div class=DevSt style=margin-bottom:3px;margin-left:16px><b>Live Graph</b></div>
+                                    <div style="margin-bottom:10px;margin-left:16px;height:240px;width:calc(100% - 16px);position:relative">
+                                        <canvas id=deviceDetailsStats style="position:absolute;top:0;left:0;right:0;bottom:0"></canvas>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=p17info2></div>
+                </div>
             </div>
             <div id=p19 style="display:none">
                 <div id="p19title">
@@ -2153,7 +2171,14 @@
                         if (nodes != null) { for (var i in nodes) { if (nodes[i]._id == message.nodeid) { index = i; break; } } }
                         if (index != -1) {
                             // Node was found, dispatch the message
-                            if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
+                            if ((message.type == 'cpuinfo') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                                var now = (Date.now() / 1000), cpu = 0, memory = 0;
+                                if (typeof message.cpu.total == 'number') { cpu = message.cpu.total; }
+                                if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
+                                console.log(message.cpu);
+                                deviceDetailsStatsData.push([now, cpu, memory]);
+                                deviceDetailsStatsDraw();
+                            } else if (message.type == 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
                             else if (message.type == 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
@@ -5583,6 +5608,7 @@
             //disconnectAllKvmFunction();
             var node = getNodeFromId(nodeid);
             if (node == null) return;
+            if ((currentNode == null) || (currentNode._id != node._id) || ((node.conn & 1) == 0)) { deviceDetailsStatsClear(); } // Hide the list cpu/memory graph
             var mesh = meshes[node.meshid];
             var meshrights = GetNodeRights(node);
             var deviceSwitch = ((currentNode == null) || (currentNode._id != nodeid));
@@ -5921,7 +5947,7 @@
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
-                    QH('p17info', '');
+                    QH('p17info2', '');
                 }
 
                 // Request device sharing
@@ -8602,6 +8628,67 @@
         // DEVICE DETAILS
         //
 
+        var deviceDetailsStats = null;
+        var deviceDetailsStatsTimer = null;
+        var deviceDetailsStatsData = [];
+        var deviceDetailsConfig = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'CPU', backgroundColor: 'rgba(134, 16, 158, .5)', borderColor: 'rgb(134, 16, 158)', data: [], fill: true },
+                    { label: 'Memory', backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }
+                ] },
+            options: {
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                tooltips: { enabled: false },
+                elements: { line: { cubicInterpolationMode: 'monotone' } },
+                scales: {
+                    xAxes: [{ type: 'linear', display: true, scaleLabel: { display: false, labelString: '' }, ticks: { min: 0, max: 100 } }],
+                    yAxes: [{ type: 'linear', display: true, scaleLabel: { display: false, labelString: '' }, ticks: { min: 0, max: 100 } }]
+                }
+            }
+        };
+
+        function deskToggleCpuGraph() {
+            var visible = (QS('p17graph').display == 'none');
+            if (visible) {
+                QV('p17graph', true);
+                window.deviceDetailsStatsChart = new Chart(document.getElementById('deviceDetailsStats').getContext('2d'), deviceDetailsConfig);
+                deviceDetailsStatsTimer = setInterval(deviceDetailsStatsTimerFunc, 2000);
+                deviceDetailsStatsTimerFunc();
+            } else deviceDetailsStatsClear();
+        }
+
+        function deviceDetailsStatsClear() {
+            QV('p17graph', false);
+            if (window.deviceDetailsStatsChart != null) { delete window.deviceDetailsStatsChart; }
+            if (deviceDetailsStatsTimer != null) { clearInterval(deviceDetailsStatsTimer); deviceDetailsStatsTimer = null; }
+            deviceDetailsStatsData = [];
+        }
+
+        function deviceDetailsStatsTimerFunc() {
+            if (currentNode != null) { meshserver.send({ action: 'msg', type: 'cpuinfo', nodeid: currentNode._id }); }
+        }
+
+        function deviceDetailsStatsDraw() {
+            var now = Date.now() / 1000, oldLimit = (now - 100);
+            while (deviceDetailsStatsData[0][0] < (oldLimit - 5)) { deviceDetailsStatsData.shift(); }
+
+            var cpu = [], memory = [];
+            for (var i in deviceDetailsStatsData) {
+                var d = deviceDetailsStatsData[i];
+                cpu.push({ x: 100 - (d[0] - oldLimit), y: d[1] });
+                memory.push({ x: 100 - (d[0] - oldLimit), y: d[2] });
+            }
+
+            deviceDetailsConfig.data.datasets[0].data = cpu;
+            deviceDetailsConfig.data.datasets[1].data = memory;
+            window.deviceDetailsStatsChart.update();
+        }
+
         var DeviceDetailsHardware = null;
         var DeviceDetailsNetwork = null;
         var DeviceDetailsNodeId = null;
@@ -8842,9 +8929,9 @@
             }
 
             if (x == '') {
-                QH('p17info', "No information for this device.");
+                QH('p17info2', "No information for this device.");
             } else {
-                QH('p17info', x);
+                QH('p17info2', x);
             }
         }
 
@@ -8932,6 +9019,7 @@
                     QE('p15uploadCore', false);
                     QV('p15outputselecttd', false);
                 }
+                QV('devListToolbarViewIcons3', ((consoleNode.conn & 1) != 0));
             }
         }
 

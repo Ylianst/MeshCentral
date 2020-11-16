@@ -11062,7 +11062,7 @@
       "zh-chs": "细节 -",
       "zh-cht": "細節 -",
       "xloc": [
-        "default.handlebars->container->column_l->p17->p17title->3"
+        "default.handlebars->container->column_l->p17->p17title->5"
       ]
     },
     {
@@ -21112,6 +21112,12 @@
       "zh-cht": "立陶宛文",
       "xloc": [
         "default.handlebars->29->1161"
+      ]
+    },
+    {
+      "en": "Live Graph",
+      "xloc": [
+        "default.handlebars->container->column_l->p17->p17info->p17graph->1->1->0->3->1->0"
       ]
     },
     {
@@ -32943,6 +32949,12 @@
       "zh-cht": "顯示連接工具欄",
       "xloc": [
         "default.handlebars->29->1420"
+      ]
+    },
+    {
+      "en": "Show device CPU and memory usage.",
+      "xloc": [
+        "default.handlebars->container->column_l->p17->p17title->devListToolbarViewIcons3"
       ]
     },
     {
