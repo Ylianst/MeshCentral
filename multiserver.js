@@ -570,6 +570,23 @@ module.exports.CreateMultiServer = function (parent, args) {
                 }
                 break;
             }
+            case 'newIntelAmtPolicy': {
+                // See if any agents for the affected device group is connected, if so, update the Intel AMT policy
+                for (var nodeid in obj.parent.webserver.wsagents) {
+                    const agent = obj.parent.webserver.wsagents[nodeid];
+                    if (agent.dbMeshKey == msg.meshid) { agent.sendUpdatedIntelAmtPolicy(msg.amtpolicy); }
+                }
+                break;
+            }
+            case 'agentMsgByMeshId': {
+                // See if any agents for the target device group is connected, if so, send the message
+                const jsonCmd = JSON.stringify(msg.command);
+                for (var nodeid in obj.parent.webserver.wsagents) {
+                    var agent = obj.parent.webserver.wsagents[nodeid];
+                    if (agent.dbMeshKey == msg.meshid) { try { agent.send(jsonCmd); } catch (ex) { } }
+                }
+                break;
+            }
             default: {
                 // Unknown peer server command
                 console.log('Unknown action from peer server ' + peerServerId + ': ' + msg.action + '.');
@@ -651,12 +668,12 @@ module.exports.CreateMultiServer = function (parent, args) {
         peerTunnel.close = function (arg) {
             if (arg == 2) {
                 // Hard close, close the TCP socket
-                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1._socket._parent.end(); peerTunnel.parent.parent.debug('peer', 'FTunnel1: Hard disconnect'); } catch (e) { console.log(e); } }
-                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2._socket._parent.end(); peerTunnel.parent.parent.debug('peer', 'FTunnel2: Hard disconnect'); } catch (e) { console.log(e); } }
+                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1._socket._parent.end(); peerTunnel.parent.parent.debug('peer', 'FTunnel1: Hard disconnect'); } catch (e) { console.log(e); } delete peerTunnel.ws1; }
+                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2._socket._parent.end(); peerTunnel.parent.parent.debug('peer', 'FTunnel2: Hard disconnect'); } catch (e) { console.log(e); } delete peerTunnel.ws2; }
             } else {
                 // Soft close, close the websocket
-                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1.close(); peerTunnel.parent.parent.debug('peer', 'FTunnel1: Soft disconnect '); } catch (e) { console.log(e); } }
-                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2.close(); peerTunnel.parent.parent.debug('peer', 'FTunnel2: Soft disconnect '); } catch (e) { console.log(e); } }
+                if (peerTunnel.ws1 != null) { try { peerTunnel.ws1.close(); peerTunnel.parent.parent.debug('peer', 'FTunnel1: Soft disconnect '); } catch (e) { console.log(e); } delete peerTunnel.ws1; }
+                if (peerTunnel.ws2 != null) { try { peerTunnel.ws2.close(); peerTunnel.parent.parent.debug('peer', 'FTunnel2: Soft disconnect '); } catch (e) { console.log(e); } delete peerTunnel.ws2; }
             }
         };
 

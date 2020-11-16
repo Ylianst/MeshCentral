@@ -282,8 +282,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Route a command to all targets in a mesh
     function routeCommandToMesh(meshid, command) {
-        // Send the request to all peer servers
-        // TODO !!!!
+        // If we have peer servers, inform them of this command to send to all agents of this device group
+        if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'agentMsgByMeshId', meshid: meshid, command: command }); }
 
         // See if the node is connected
         for (var nodeid in parent.wsagents) {
@@ -3347,10 +3347,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
 
-                        // Send new policy to all computers on this mesh
-                        //routeCommandToMesh(command.meshid, { action: 'amtPolicy', amtPolicy: amtpolicy });
+                        // If we have peer servers, inform them of the new Intel AMT policy for this device group
+                        if (parent.parent.multiServer != null) { parent.parent.multiServer.DispatchMessage({ action: 'newIntelAmtPolicy', meshid: command.meshid, amtpolicy: amtpolicy }); }
 
-                        // See if the node is connected
+                        // See if any agents for the affected device group is connected, if so, update the Intel AMT policy
                         for (var nodeid in parent.wsagents) {
                             const agent = parent.wsagents[nodeid];
                             if (agent.dbMeshKey == command.meshid) { agent.sendUpdatedIntelAmtPolicy(amtpolicy); }
