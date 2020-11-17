@@ -753,6 +753,7 @@ function translateFromTxt(lang, file, createSubDir) {
 
 function translateFromHtml(lang, file, createSubDir) {
     var data = fs.readFileSync(file);
+    if (file.endsWith('.js')) { data = '<html><head></head><body><script>' + data + '</script></body></html>'; }
     var { JSDOM } = jsdom;
     const dom = new JSDOM(data, { includeNodeLocations: true });
     log("Translating HTML (" + lang + "): " + path.basename(file));
@@ -778,6 +779,11 @@ function translateFromHtml(lang, file, createSubDir) {
     } else if (outname.endsWith('.htm')) {
         outnamemin = (outname.substring(0, outname.length - 4) + '-min_' + lang + '.htm');
         outname = (outname.substring(0, outname.length - 4) + '_' + lang + '.htm');
+    } else if (outname.endsWith('.js')) {
+        if (out.startsWith('<html><head></head><body><script>')) { out = out.substring(33); }
+        if (out.endsWith('</script></body></html>')) { out = out.substring(0, out.length - 23); }
+        outnamemin = (outname.substring(0, outname.length - 3) + '-min_' + lang + '.js');
+        outname = (outname.substring(0, outname.length - 3) + '_' + lang + '.js');
     } else {
         outnamemin = (outname + '_' + lang + '.min');
         outname = (outname + '_' + lang);

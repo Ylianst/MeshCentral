@@ -5989,6 +5989,7 @@
     {
       "en": "Batch File Upload",
       "nl": "Batch bestand uploaden",
+      "fr": "Chargement de fichiers",
       "xloc": [
         "default.handlebars->29->480"
       ]
@@ -6016,6 +6017,7 @@
     {
       "en": "Batch upload of {0} file(s) to folder {1}",
       "nl": "Batch-upload van {0} bestand (en) naar map {1}",
+      "fr": "Chargement de {0} fichier(s) dans le dossier {1}",
       "xloc": [
         "default.handlebars->29->1690"
       ]
@@ -9606,6 +9608,7 @@
     {
       "en": "Create folder if it does not exists?",
       "nl": "Map aanmaken als deze niet bestaat?",
+      "fr": "Créer le répertoire si il n'existe pas ?",
       "xloc": [
         "default.handlebars->29->478"
       ]
@@ -15222,7 +15225,8 @@
       ]
     },
     {
-      "en": "File Files"
+      "en": "File Files",
+      "fr": "Rechercher des fichiers"
     },
     {
       "cs": "Provoz souboru",
@@ -15404,12 +15408,14 @@
     {
       "en": "Find",
       "nl": "Zoeken",
+      "fr": "Rechercher",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
     },
     {
       "en": "Find Files",
+      "fr": "Recherche des fichiers",
       "xloc": [
         "default.handlebars->29->896"
       ]
@@ -18163,6 +18169,7 @@
     {
       "en": "Intel&reg; AMT ACM",
       "nl": "Intel&reg; AMT ACM",
+      "fr": "Intel® AMT ACM",
       "xloc": [
         "default.handlebars->29->307"
       ]
@@ -20929,6 +20936,7 @@
     {
       "en": "Linux Path",
       "nl": "Linux Pad",
+      "fr": "Chemin Linux",
       "xloc": [
         "default.handlebars->29->477"
       ]
@@ -21116,6 +21124,7 @@
     },
     {
       "en": "Live Graph",
+      "fr": "Utilisation du processeur et de la mémoire",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17info->p17graph->1->1->0->3->1->0"
       ]
@@ -25012,6 +25021,7 @@
     },
     {
       "en": "No files found",
+      "fr": "Aucun fichier trouvé",
       "xloc": [
         "default.handlebars->29->887"
       ]
@@ -26367,6 +26377,7 @@
     {
       "en": "Overwrite if file exists?",
       "nl": "Overschrijven als bestand bestaat?",
+      "fr": "Ecraser les fichiers existants ?",
       "xloc": [
         "default.handlebars->29->479"
       ]
@@ -32959,6 +32970,7 @@
     },
     {
       "en": "Show device CPU and memory usage.",
+      "fr": "Afficher l'utilisation du CPU et de la mémoire",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17title->devListToolbarViewIcons3"
       ]
@@ -37733,6 +37745,7 @@
     {
       "en": "Upload files",
       "nl": "Upload bestanden",
+      "fr": "Charger les fichiers",
       "xloc": [
         "default.handlebars->29->445"
       ]
@@ -37780,6 +37793,7 @@
     {
       "en": "Upload selected files to all selected devices",
       "nl": "Upload de geselecteerde bestanden naar alle geselecteerde apparaten",
+      "fr": "Charger ces fichiers sur les appareils sélectionnés",
       "xloc": [
         "default.handlebars->29->475"
       ]
@@ -40086,6 +40100,7 @@
     {
       "en": "Windows Path",
       "nl": "Windows Pad",
+      "fr": "Chemin Windows",
       "xloc": [
         "default.handlebars->29->476"
       ]

@@ -35,6 +35,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.firstUpKeys = [];
     obj.stopInput = false;
     obj.localKeyMap = true;
+    obj.remoteKeyMap = null; // 'fr-CA'
     obj.pressedKeys = [];
 
     obj.sessionid = 0;
@@ -281,7 +282,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     // Keyboard and Mouse I/O.
     obj.MouseButton = { "NONE": 0x00, "LEFT": 0x02, "RIGHT": 0x08, "MIDDLE": 0x20 };
     obj.KeyAction = { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 };
-    obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15 };
+    obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15, "KEYWITHLAYOUT": 85 };
     obj.Alternate = 0;
 
     var convertKeyCodeTable = {
@@ -397,7 +398,14 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 var i = obj.pressedKeys.indexOf(kc);
                 if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
             }
-            obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
+
+            if ((obj.remoteKeyMap == null) || (obj.remoteKeyMap == '')) {
+                // No remote keyboard mapping
+                obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
+            } else {
+                // With remote keyboard mapping
+                obj.send(String.fromCharCode(0x00, obj.InputType.KEYWITHLAYOUT, 0x00, 0x16, (action - 1), kc) + obj.remoteKeyMap + ('\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0'.substring(0, 16 - obj.remoteKeyMap.length)));
+            }
         }
     }
 
