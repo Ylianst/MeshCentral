@@ -171,10 +171,9 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
             // Create Certificate Request (CSR)
             obj.log("Creating certificate request...");
-            acme.forge.createCsr({
-                commonName: obj.leDomains[0],
-                altNames: obj.leDomains
-            }).then(function (r) {
+            var certRequest = { commonName: obj.leDomains[0] };
+            if (obj.leDomains.length > 1) { certRequest.altNames = obj.leDomains; }
+            acme.forge.createCsr(certRequest).then(function (r) {
                 var csr = r[1];
                 obj.tempPrivateKey = r[0];
                 obj.log("Requesting certificate from Let's Encrypt...");

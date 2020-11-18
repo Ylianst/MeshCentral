@@ -3198,6 +3198,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if ((fields.overwriteFiles != null) && (fields.overwriteFiles.length == 1) && (fields.overwriteFiles[0] == 'on')) { cmd.overwrite = true; }
             if ((fields.createFolder != null) && (fields.createFolder.length == 1) && (fields.createFolder[0] == 'on')) { cmd.createFolder = true; }
 
+            // Check if we have al least one target path
+            if ((cmd.windowsPath == null) && (cmd.linuxPath == null)) {
+                parent.debug('web', 'Batch upload error, invalid fields: ' + JSON.stringify(fields));
+                res.send('');
+                return;
+            }
+
             // Get server temporary path
             var serverpath = obj.path.join(obj.filespath, 'tmp')
             try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
@@ -3226,6 +3233,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
                     if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
                     var agentPath = ((node.agent.id > 0) && (node.agent.id < 5)) ? cmd.windowsPath : cmd.linuxPath;
+                    if (agentPath == null) return;
 
                     // Event that this operation is being performed.
                     var targets = obj.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', cmd.user._id]);
@@ -3235,18 +3243,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
                     // Send the agent commands to perform the batch upload operation
                     for (var f in cmd.files) {
-                        try {
-                            //if ((agentPath != null) && (cmd.files[f].name != null)) {
-                                const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
-                                var agent = obj.wsagents[node._id];
-                                if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
-                                // TODO: Add support for peer servers.
-                            //}
-                        } catch (ex) {
-                            parent.debug('web', 'Exception: ' + ex);
-                            parent.debug('web', 'AgentPath: ' + agentPath);
-                            parent.debug('web', 'Command: ' + JSON.stringify(cmd));
-                            parent.debug('web', 'AgentId: ' + node.agent.id);
+                        if (cmd.files[f].name != null) {
+                            const acmd = { action: 'wget', overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
+                            var agent = obj.wsagents[node._id];
+                            if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
+                            // TODO: Add support for peer servers.
                         }
                     }
                 });

@@ -35,7 +35,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.firstUpKeys = [];
     obj.stopInput = false;
     obj.localKeyMap = true;
-    obj.remoteKeyMap = null; // 'fr-CA'
+    obj.remoteKeyMap = true; // If false, the remote keyboard mapping is not used, only works on Windows.
     obj.pressedKeys = [];
 
     obj.sessionid = 0;
@@ -282,7 +282,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     // Keyboard and Mouse I/O.
     obj.MouseButton = { "NONE": 0x00, "LEFT": 0x02, "RIGHT": 0x08, "MIDDLE": 0x20 };
     obj.KeyAction = { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 };
-    obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15, "KEYWITHLAYOUT": 85 };
+    obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15, "KEYUNICODE": 85 };
     obj.Alternate = 0;
 
     var convertKeyCodeTable = {
@@ -399,14 +399,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
             }
 
-            if ((obj.remoteKeyMap == null) || (obj.remoteKeyMap == '')) {
-                // No remote keyboard mapping
-                obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
-            } else {
-                // With remote keyboard mapping
-                obj.send(String.fromCharCode(0x00, obj.InputType.KEYWITHLAYOUT, 0x00, 0x16, (action - 1), kc) + obj.remoteKeyMap + ('\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0'.substring(0, 16 - obj.remoteKeyMap.length)));
-            }
+            obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, (action - 1), kc));
         }
+    }
+
+    obj.SendKeyUnicode = function (action, val) {
+        if (obj.State != 3) return;
+        obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x07, (action - 1)) + ShortToStr(val));
     }
 
     obj.sendcad = function() { obj.SendCtrlAltDelMsg(); }
@@ -528,13 +527,30 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxMouseDblClick = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DBLCLICK, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
     obj.xxDOMMouseScroll = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
     obj.xxMouseWheel = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
-    obj.xxKeyUp = function (e) { if (obj.State == 3) { obj.SendKeyMsg(obj.KeyAction.UP, e); } if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
-    obj.xxKeyDown = function (e) { if (obj.State == 3) { obj.SendKeyMsg(obj.KeyAction.DOWN, e); } if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
-    obj.xxKeyPress = function (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxKeyUp = function (e) {
+        if ((e.key != 'Dead') && (obj.State == 3)) {
+            if ((e.key.length == 1) && (obj.remoteKeyMap == false)) { obj.SendKeyUnicode(obj.KeyAction.UP, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.UP, e); }
+        }
+        if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
+    }
+    obj.xxKeyDown = function (e) {
+        if ((e.key != 'Dead') && (obj.State == 3)) {
+            if ((e.key.length == 1) && (obj.remoteKeyMap == false)) { obj.SendKeyUnicode(obj.KeyAction.DOWN, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.DOWN, e); }
+        }
+        if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
+    }
+    obj.xxKeyPress = function (e) {
+        if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
+    }
 
     // Key handlers
-    obj.handleKeys = function (e) { if (obj.stopInput == true || desktop.State != 3) return false; return obj.xxKeyPress(e); }
+    obj.handleKeys = function (e) {
+        //console.log('keypress', e.code, e.key, e.keyCode, (e.key.length == 1) ? e.key.charCodeAt(0) : 0);
+        if (obj.stopInput == true || desktop.State != 3) return false;
+        return obj.xxKeyPress(e);
+    }
     obj.handleKeyUp = function (e) {
+        //console.log('keyup', e.code, e.key, e.keyCode, (e.key.length == 1)?e.key.charCodeAt(0):0);
         if (obj.stopInput == true || desktop.State != 3) return false;
         if (obj.firstUpKeys.length < 5) {
             obj.firstUpKeys.push(e.keyCode);
@@ -543,6 +559,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         return obj.xxKeyUp(e);
     }
     obj.handleKeyDown = function (e) {
+        //console.log('keydown', e.code, e.key, e.keyCode, (e.key.length == 1) ? e.key.charCodeAt(0) : 0);
         if (obj.stopInput == true || desktop.State != 3) return false;
         return obj.xxKeyDown(e);
     }
