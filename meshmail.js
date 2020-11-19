@@ -363,6 +363,7 @@ module.exports.CreateMeshMail = function (parent) {
     // Check the email domain DNS MX record.
     obj.approvedEmailDomains = {};
     obj.checkEmail = function (email, func) {
+        if (parent.config.smtp.verifyemail === false) { func(true); return; }
         var emailSplit = email.split('@');
         if (emailSplit.length != 2) { func(false); return; }
         if (obj.approvedEmailDomains[emailSplit[1]] === true) { func(true); return; }
