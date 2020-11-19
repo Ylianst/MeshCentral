@@ -534,13 +534,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxMouseWheel = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
     obj.xxKeyUp = function (e) {
         if ((e.key != 'Dead') && (obj.State == 3)) {
-            if ((e.key.length == 1) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0))) { obj.SendKeyUnicode(obj.KeyAction.UP, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.UP, e); }
+            if ((e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0))) { obj.SendKeyUnicode(obj.KeyAction.UP, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.UP, e); }
         }
         if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
     }
     obj.xxKeyDown = function (e) {
         if ((e.key != 'Dead') && (obj.State == 3)) {
-            if ((e.key.length == 1) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0))) { obj.SendKeyUnicode(obj.KeyAction.DOWN, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.DOWN, e); }
+            if ((e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && ((obj.remoteKeyMap == false) || (obj.debugmode > 0))) { obj.SendKeyUnicode(obj.KeyAction.DOWN, e.key.charCodeAt(0)); } else { obj.SendKeyMsg(obj.KeyAction.DOWN, e); }
         }
         if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
     }
