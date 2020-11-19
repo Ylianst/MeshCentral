@@ -4011,7 +4011,6 @@
                     //desk.onConsoleMessageChange = function () { console.log('CONSOLEMSG:', desk.consoleMessage); }
                     desk.m.CompressionLevel = multidesktopsettings.quality;
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
-                    desk.m.remoteKeyMap = ((node.agent.id < 1) || (node.agent.id > 4)); // Removing remote keyboard map is only supported on windows.
                     if (multidesktopsettings.framerate) { desk.m.FrameRateTimer = multidesktopsettings.framerate; }
                     if (multidesktopsettings.swapmouse) { desk.m.SwapMouse = multidesktopsettings.swapmouse; }
                     //desk.m.onDisplayinfo = deskDisplayInfo;
@@ -6958,7 +6957,6 @@
                     if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
-                    desktop.m.remoteKeyMap = ((desktopNode.agent.id < 1) || (desktopNode.agent.id > 4)); // Removing remote keyboard map is only supported on windows.
                     desktop.Start(desktopNode._id);
                     desktop.latency.callback = function(ms) { console.log('latency', ms); updateSessionTime(); };
                     desktop.contype = 1;
