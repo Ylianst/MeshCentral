@@ -35,7 +35,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.firstUpKeys = [];
     obj.stopInput = false;
     obj.localKeyMap = true;
-    obj.remoteKeyMap = true; // If false, the remote keyboard mapping is not used, only works on Windows.
+    obj.remoteKeyMap = false; // If false, the remote keyboard mapping is not used.
     obj.pressedKeys = [];
 
     obj.sessionid = 0;
