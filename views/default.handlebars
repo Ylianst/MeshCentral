@@ -1519,7 +1519,7 @@
             }
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardInButton', navigator.clipboard.readText != null);
+            QV('DeskClipboardInButton', (navigator.clipboard != null) && (navigator.clipboard.readText != null));
 
             // Session Refresh Timer
             if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
@@ -2197,7 +2197,7 @@
                                 if ((message.tag == 1) && (xxdialogTag == 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
                                 } else if (message.tag == 2) {
-                                    navigator.clipboard.writeText(message.data).then(function() { console.log('ok'); }).catch(function(err) { console.log(err); })  // Put remote clipboard data into our clipboard
+                                    if (navigator.clipboard != null) { navigator.clipboard.writeText(message.data).then(function() { console.log('ok'); }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
                                 }
                             } else if ((message.type == 'setclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 // Display success/fail on the clipboard dialog box.
@@ -6189,7 +6189,7 @@
         }
 
         function deskClipboardOutFunction() {
-            if (navigator.clipboard.readText) { navigator.clipboard.readText().then(function(text) { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }).catch(function(err) { }); }
+            if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) { navigator.clipboard.readText().then(function(text) { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }).catch(function(err) { }); }
         }
 
         function deskRefreshFunction() {

@@ -452,15 +452,15 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
         var cmdsize = data.readUInt16BE(2);
         //console.log('ViewerData', data.length, command, cmdsize);
         switch (command) {
-            case 1:// Key Events, forward to agent
+            case 1: // Key Events, forward to agent
                 //console.log('Viewer-Keys');
                 obj.sendToAgent(data);
                 break;
-            case 2:// Mouse events, forward to agent
+            case 2: // Mouse events, forward to agent
                 //console.log('Viewer-Mouse');
                 obj.sendToAgent(data);
                 break;
-            case 5:// Compression
+            case 5: // Compression
                 if (data.length < 10) return;
                 //viewer.imageType = data[4]; // Always 1=JPEG
                 viewer.imageCompression = data[5];
@@ -493,12 +493,12 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                     obj.sendToAgent(cmd);
                 }
                 break;
-            case 6:// Refresh, handle this on the server
+            case 6: // Refresh, handle this on the server
                 //console.log('Viewer-Refresh');
                 viewer.dataPtr = obj.firstData; // Start over
                 if (viewer.sending == false) { sendViewerNext(viewer); }
                 break;
-            case 8:// Pause and unpause
+            case 8: // Pause and unpause
                 if (data.length != 5) break;
                 var pause = data[4]; // 0 = Unpause, 1 = Pause
                 if (viewer.desktopPaused == (pause == 1)) break;
@@ -513,13 +513,16 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, func) {
                     obj.sendToAgent(data);
                 }
                 break;
-            case 10:// CTRL-ALT-DEL, forward to agent
+            case 10: // CTRL-ALT-DEL, forward to agent
                 obj.sendToAgent(data);
                 break;
-            case 12:// SET DISPLAY, forward to agent
+            case 12: // SET DISPLAY, forward to agent
                 obj.sendToAgent(data);
                 break;
-            case 14:// Touch setup
+            case 14: // Touch setup
+                break;
+            case 85: // Unicode Key Events, forward to agent
+                obj.sendToAgent(data);
                 break;
             default:
                 console.log('Un-handled viewer command: ' + command);
