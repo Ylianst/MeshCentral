@@ -7383,7 +7383,7 @@
         function showDeskType() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskType').blur();
-            var x = '<div>' + "Enter text and click OK to remotely type it using a US english keyboard. Make sure to place the remote cursor at the correct position before proceeding." + '<div>';
+            var x = '<div>' + "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding." + '<div>';
             x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000></textarea>';
             setDialogMode(2, "Remote Keyboard Entry", 3, showDeskTypeEx, x);
             Q('d2typeText').focus();
@@ -7406,24 +7406,31 @@
                 }, 10);
             } else {
                 // MeshAgent
-                for (var i in txt) {
-                    var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
-                    if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
-                        if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
-                        if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
-                    } else if ((a >= 48) && (a <= 57)) {
-                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
-                    } else if (DeskTypeTranslate[a]) {
-                        if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
-                        b = DeskTypeTranslate[a];
-                    } else if (DeskTypeShiftTranslate[a]) {
-                        if (shift == false) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
-                        b = DeskTypeShiftTranslate[a];
+                var winagent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
+                if (winagent) {
+                    // New unicode typing
+                    desktop.m.SendStringUnicode(txt);
+                } else {
+                    // Old scan code typing. Remove this when non-Windows platforms support Unicode.
+                    for (var i in txt) {
+                        var a = txt.charCodeAt(i), b = ltxt.charCodeAt(i);
+                        if (((a >= 65) && (a <= 90)) || ((a >= 97) && (a <= 122))) {
+                            if ((a == b) && (shift == false)) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                            if ((a != b) && (shift == true)) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // LShift up
+                        } else if ((a >= 48) && (a <= 57)) {
+                            if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                        } else if (DeskTypeTranslate[a]) {
+                            if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                            b = DeskTypeTranslate[a];
+                        } else if (DeskTypeShiftTranslate[a]) {
+                            if (shift == false) { x.push([desktop.m.KeyAction.DOWN, 16]); shift = true; } // LShift down
+                            b = DeskTypeShiftTranslate[a];
+                        }
+                        x.push([desktop.m.KeyAction.DOWN, b], [desktop.m.KeyAction.UP, b]);
                     }
-                    x.push([desktop.m.KeyAction.DOWN, b], [desktop.m.KeyAction.UP, b]);
+                    if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
+                    desktop.m.SendKeyMsgKC(x);
                 }
-                if (shift == true) { x.push([desktop.m.KeyAction.UP, 16]); shift = false; } // Shift up
-                desktop.m.SendKeyMsgKC(x);
             }
         }
 

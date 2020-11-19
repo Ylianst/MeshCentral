@@ -14572,8 +14572,13 @@
       "zh-chs": "输入文本，然后单击“确定”以使用美式英语键盘远程输入文本。在继续操作之前，请确保将远程鼠标放置在正确的位置。",
       "zh-cht": "輸入文本，然後單擊“確定”以使用美式英語鍵盤遠程輸入文本。在繼續操作之前，請確保將遠程光標放置在正確的位置。",
       "xloc": [
-        "default.handlebars->29->848",
         "desktop.handlebars->3->21"
+      ]
+    },
+    {
+      "en": "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding.",
+      "xloc": [
+        "default.handlebars->29->848"
       ]
     },
     {
