@@ -1210,6 +1210,7 @@
                             <div>Other Settings</div>
                             <div id="d7otherset2" style="display:block">
                                 <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
+                                <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
                             </div>
                         </div>
                     </div>
@@ -1282,7 +1283,7 @@
         var stars = {}; // Devices that have been "stared" by the user.
         var nodeShortIdent = 0;
         var desktop;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000 };
         var terminal;
         var files;
@@ -4013,6 +4014,7 @@
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
                     if (multidesktopsettings.framerate) { desk.m.FrameRateTimer = multidesktopsettings.framerate; }
                     if (multidesktopsettings.swapmouse) { desk.m.SwapMouse = multidesktopsettings.swapmouse; }
+                    if (multidesktopsettings.remotekeymap) { desk.m.remoteKeyMap = multidesktopsettings.remotekeymap; }
                     //desk.m.onDisplayinfo = deskDisplayInfo;
                     //desk.m.onScreenSizeChange = deskAdjust;
                     if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
@@ -6955,6 +6957,7 @@
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
                     if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
+                    if (desktopsettings.remotekeymap) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
@@ -7109,12 +7112,14 @@
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
             desktopsettings.swapmouse = d7deskSwapMouse.checked;
+            desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
                     desktop.m.SwapMouse = desktopsettings.swapmouse;
+                    desktop.m.remoteKeyMap = desktopsettings.remotekeymap;
                     if (desktop.State != 0) {
                         desktop.m.SendCompressionLevel(1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
                     }
@@ -7138,6 +7143,7 @@
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; } else { d7framelimiter.value = 100; }
             if (desktopsettings.swapmouse != null) { d7deskSwapMouse.checked = desktopsettings.swapmouse; }
+            if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
         }

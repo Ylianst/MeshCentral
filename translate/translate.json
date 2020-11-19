@@ -37925,6 +37925,12 @@
       ]
     },
     {
+      "en": "Use Remote Keyboard Map",
+      "xloc": [
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3"
+      ]
+    },
+    {
       "cs": "Použít bezpečnostní klíč",
       "de": "Verwende Sicherheitsschlüssel",
       "en": "Use Security Key",
