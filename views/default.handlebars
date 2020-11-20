@@ -1519,7 +1519,8 @@
             }
 
             // Enable browser clipboard read if supported
-            QV('DeskClipboardInButton', (navigator.clipboard != null) && (navigator.clipboard.readText != null));
+            QV('DeskClipboardOutButton', (navigator.clipboard != null) && (navigator.clipboard.readText != null));
+            QV('DeskClipboardInButton', (navigator.clipboard != null) && (navigator.clipboard.writeText != null));
 
             // Session Refresh Timer
             if (sessionTime >= 10) { sessionRefreshTimer = setTimeout(refreshCookieSession, Math.round((sessionTime * 60000) * 0.8)); }
@@ -2197,7 +2198,7 @@
                                 if ((message.tag == 1) && (xxdialogTag == 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
                                 } else if (message.tag == 2) {
-                                    if (navigator.clipboard != null) { navigator.clipboard.writeText(message.data).then(function() { console.log('ok'); }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
+                                    if (navigator.clipboard != null) { navigator.clipboard.writeText(message.data).then(function() { }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
                                 }
                             } else if ((message.type == 'setclip') && (xxdialogTag == 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 // Display success/fail on the clipboard dialog box.
@@ -4014,7 +4015,7 @@
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
                     if (multidesktopsettings.framerate) { desk.m.FrameRateTimer = multidesktopsettings.framerate; }
                     if (multidesktopsettings.swapmouse) { desk.m.SwapMouse = multidesktopsettings.swapmouse; }
-                    if (multidesktopsettings.remotekeymap) { desk.m.remoteKeyMap = multidesktopsettings.remotekeymap; }
+                    if (multidesktopsettings.remotekeymap == true) { desk.m.remoteKeyMap = multidesktopsettings.remotekeymap; }
                     //desk.m.onDisplayinfo = deskDisplayInfo;
                     //desk.m.onScreenSizeChange = deskAdjust;
                     if (debugmode > 0) { desk.m.onScreenSizeChange = mdeskAdjust; } // Multi-Desktop Adjust
@@ -6957,7 +6958,7 @@
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     if (desktopsettings.framerate) { desktop.m.FrameRateTimer = desktopsettings.framerate; }
                     if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
-                    if (desktopsettings.remotekeymap) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
+                    if (desktopsettings.remotekeymap == true) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
@@ -7410,8 +7411,7 @@
                 }, 10);
             } else {
                 // MeshAgent
-                var winagent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5));
-                if (winagent) {
+                if (desktopsettings.remotekeymap !== true) {
                     // New unicode typing
                     desktop.m.SendStringUnicode(txt);
                 } else {
