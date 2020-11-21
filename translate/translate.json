@@ -12998,8 +12998,8 @@
       "zh-chs": "电邮“ {0} ”已在其他帐户上使用。更改电邮地址，然后重试。",
       "zh-cht": "電郵“ {0} ”已在其他帳戶上使用。更改電郵地址，然後重試。",
       "xloc": [
-        "message.handlebars->3->7",
-        "message2.handlebars->5->7"
+        "message.handlebars->3->8",
+        "message2.handlebars->5->8"
       ]
     },
     {
@@ -13019,8 +13019,8 @@
       "zh-chs": "用户“ {1} ”的电邮“ {0} ”已通过验证。",
       "zh-cht": "用戶“ {1} ”的電郵“ {0} ”已通過驗證。",
       "xloc": [
-        "message.handlebars->3->6",
-        "message2.handlebars->5->6"
+        "message.handlebars->3->7",
+        "message2.handlebars->5->7"
       ]
     },
     {
@@ -13040,8 +13040,8 @@
       "zh-chs": "未验证用户“ {1} ”的电邮“ {0} ”。",
       "zh-cht": "未驗證用戶“ {1} ”的電郵“ {0} ”。",
       "xloc": [
-        "message.handlebars->3->9",
-        "message2.handlebars->5->9"
+        "message.handlebars->3->10",
+        "message2.handlebars->5->10"
       ]
     },
     {
@@ -13098,8 +13098,8 @@
       "zh-chs": "错误：无效的帐户检查，验证网址仅在30分钟内有效。",
       "zh-cht": "錯誤：無效的帳戶檢查，驗證網址僅在30分鐘內有效。",
       "xloc": [
-        "message.handlebars->3->13",
-        "message2.handlebars->5->13"
+        "message.handlebars->3->14",
+        "message2.handlebars->5->14"
       ]
     },
     {
@@ -13119,8 +13119,8 @@
       "zh-chs": "错误：无效的帐户检查。",
       "zh-cht": "錯誤：無效的帳戶檢查。",
       "xloc": [
-        "message.handlebars->3->12",
-        "message2.handlebars->5->12"
+        "message.handlebars->3->13",
+        "message2.handlebars->5->13"
       ]
     },
     {
@@ -13140,8 +13140,8 @@
       "zh-chs": "错误：无效的域。",
       "zh-cht": "錯誤：無效的域。",
       "xloc": [
-        "message.handlebars->3->3",
-        "message2.handlebars->5->3"
+        "message.handlebars->3->4",
+        "message2.handlebars->5->4"
       ]
     },
     {
@@ -13161,8 +13161,8 @@
       "zh-chs": "错误：用户“ {1} ”的电邮“ {0} ”无效。",
       "zh-cht": "錯誤：用戶“ {1} ”的電郵“ {0} ”無效。",
       "xloc": [
-        "message.handlebars->3->5",
-        "message2.handlebars->5->5"
+        "message.handlebars->3->6",
+        "message2.handlebars->5->6"
       ]
     },
     {
@@ -13182,8 +13182,8 @@
       "zh-chs": "错误：无效的用户名“ {0} ”。",
       "zh-cht": "錯誤：無效的用戶名“ {0} ”。",
       "xloc": [
-        "message.handlebars->3->4",
-        "message2.handlebars->5->4"
+        "message.handlebars->3->5",
+        "message2.handlebars->5->5"
       ]
     },
     {
@@ -13680,11 +13680,11 @@
         "default.handlebars->29->320",
         "login-mobile.handlebars->5->42",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->tokenpanel->1->7->1->4->1->3",
-        "login.handlebars->5->43",
+        "login.handlebars->5->44",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resettokenpanel->1->5->1->2->1->3",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->tokenpanel->1->7->1->4->1->3",
-        "login2.handlebars->7->22",
-        "login2.handlebars->7->44",
+        "login2.handlebars->7->23",
+        "login2.handlebars->7->45",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->resettokenpanel->1->5->1->2farow2->1->3",
@@ -13751,8 +13751,8 @@
       "zh-cht": "電郵確認",
       "xloc": [
         "login-mobile.handlebars->5->43",
-        "login.handlebars->5->44",
-        "login2.handlebars->7->45"
+        "login.handlebars->5->45",
+        "login2.handlebars->7->46"
       ]
     },
     {
@@ -13986,7 +13986,7 @@
         "login-mobile.handlebars->5->21",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->2->1",
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->resetpanel->1->7->1->0->1",
-        "login.handlebars->5->21",
+        "login.handlebars->5->22",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->resetpanel->1->7->1->0->1",
         "login2.handlebars->centralTable->1->0->logincell->createpanel->1->9->1->2->nuEmail"
@@ -15639,8 +15639,8 @@
       "zh-cht": "忘記了密碼？",
       "xloc": [
         "login-mobile.handlebars->5->22",
-        "login.handlebars->5->22",
-        "login2.handlebars->7->23"
+        "login.handlebars->5->23",
+        "login2.handlebars->7->24"
       ]
     },
     {
@@ -16506,8 +16506,8 @@
       "zh-chs": "进入登录页面",
       "zh-cht": "進入登入頁面",
       "xloc": [
-        "message.handlebars->3->16",
-        "message2.handlebars->5->16"
+        "message.handlebars->3->18",
+        "message2.handlebars->5->18"
       ]
     },
     {
@@ -16570,10 +16570,10 @@
       "xloc": [
         "login-mobile.handlebars->5->29",
         "login-mobile.handlebars->5->33",
-        "login.handlebars->5->29",
-        "login.handlebars->5->33",
-        "login2.handlebars->7->30",
-        "login2.handlebars->7->34"
+        "login.handlebars->5->30",
+        "login.handlebars->5->34",
+        "login2.handlebars->7->31",
+        "login2.handlebars->7->35"
       ]
     },
     {
@@ -17775,6 +17775,13 @@
         "login-mobile.handlebars->5->1",
         "login.handlebars->5->1",
         "login2.handlebars->7->2"
+      ]
+    },
+    {
+      "en": "If you are an administrator, [login here].",
+      "xloc": [
+        "message.handlebars->3->17",
+        "message2.handlebars->5->17"
       ]
     },
     {
@@ -21591,8 +21598,8 @@
       "zh-chs": "登录并转到“我的帐户”选项卡以更新密码。",
       "zh-cht": "登入並進入“我的帳戶”標籤以更新密碼。",
       "xloc": [
-        "message.handlebars->3->11",
-        "message2.handlebars->5->11"
+        "message.handlebars->3->12",
+        "message2.handlebars->5->12"
       ]
     },
     {
@@ -22590,8 +22597,8 @@
       "zh-cht": "最大長度為{0}",
       "xloc": [
         "login-mobile.handlebars->5->37",
-        "login.handlebars->5->37",
-        "login2.handlebars->7->38"
+        "login.handlebars->5->38",
+        "login2.handlebars->7->39"
       ]
     },
     {
@@ -23379,8 +23386,8 @@
       "zh-cht": "最小長度為{0}",
       "xloc": [
         "login-mobile.handlebars->5->36",
-        "login.handlebars->5->36",
-        "login2.handlebars->7->37"
+        "login.handlebars->5->37",
+        "login2.handlebars->7->38"
       ]
     },
     {
@@ -26617,8 +26624,8 @@
       "zh-cht": "密碼提示",
       "xloc": [
         "login-mobile.handlebars->5->27",
-        "login.handlebars->5->27",
-        "login2.handlebars->7->28",
+        "login.handlebars->5->28",
+        "login2.handlebars->7->29",
         "login2.handlebars->centralTable->1->0->logincell->loginpanel->1->5->1->4->1"
       ]
     },
@@ -26665,12 +26672,12 @@
       "xloc": [
         "login-mobile.handlebars->5->31",
         "login-mobile.handlebars->5->35",
-        "login.handlebars->5->31",
-        "login.handlebars->5->35",
-        "login.handlebars->5->42",
-        "login2.handlebars->7->32",
-        "login2.handlebars->7->36",
-        "login2.handlebars->7->43"
+        "login.handlebars->5->32",
+        "login.handlebars->5->36",
+        "login.handlebars->5->43",
+        "login2.handlebars->7->33",
+        "login2.handlebars->7->37",
+        "login2.handlebars->7->44"
       ]
     },
     {
@@ -26712,8 +26719,8 @@
       "zh-chs": "帐户{0}的密码已重置为：",
       "zh-cht": "帳戶{0}的密碼已重置為：",
       "xloc": [
-        "message.handlebars->3->10",
-        "message2.handlebars->5->10"
+        "message.handlebars->3->11",
+        "message2.handlebars->5->11"
       ]
     },
     {
@@ -28842,8 +28849,8 @@
       "zh-cht": "記住此裝置{0}天。",
       "xloc": [
         "login-mobile.handlebars->5->20",
-        "login.handlebars->5->20",
-        "login2.handlebars->7->21"
+        "login.handlebars->5->21",
+        "login2.handlebars->7->22"
       ]
     },
     {
@@ -31249,10 +31256,10 @@
       "xloc": [
         "login-mobile.handlebars->5->23",
         "login-mobile.handlebars->5->25",
-        "login.handlebars->5->23",
-        "login.handlebars->5->25",
-        "login2.handlebars->7->24",
-        "login2.handlebars->7->26"
+        "login.handlebars->5->24",
+        "login.handlebars->5->26",
+        "login2.handlebars->7->25",
+        "login2.handlebars->7->27"
       ]
     },
     {
@@ -31890,8 +31897,8 @@
       "zh-chs": "将保安编码发送到注册的电邮地址？",
       "zh-cht": "將保安編碼發送到註冊的電郵地址？",
       "xloc": [
-        "login.handlebars->5->24",
-        "login2.handlebars->7->25"
+        "login.handlebars->5->25",
+        "login2.handlebars->7->26"
       ]
     },
     {
@@ -31911,8 +31918,8 @@
       "zh-chs": "将保安编码发送到注册电话号码？",
       "zh-cht": "將保安編碼發送到註冊電話號碼？",
       "xloc": [
-        "login.handlebars->5->26",
-        "login2.handlebars->7->27"
+        "login.handlebars->5->27",
+        "login2.handlebars->7->28"
       ]
     },
     {
@@ -32204,6 +32211,13 @@
       ]
     },
     {
+      "en": "Server Under Maintenance",
+      "xloc": [
+        "message.handlebars->3->3",
+        "message2.handlebars->5->3"
+      ]
+    },
+    {
       "cs": "Aktualizace serveru",
       "de": "Server-Aktualisierungen",
       "en": "Server Updates",
@@ -32344,6 +32358,13 @@
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->1",
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->1"
+      ]
+    },
+    {
+      "en": "Server under maintenance.",
+      "xloc": [
+        "login.handlebars->5->20",
+        "login2.handlebars->7->21"
       ]
     },
     {
@@ -32788,8 +32809,8 @@
       "nl": "link voor delen is verlopen.",
       "fr": "Le lien de partage a expiré.",
       "xloc": [
-        "message.handlebars->3->15",
-        "message2.handlebars->5->15"
+        "message.handlebars->3->16",
+        "message2.handlebars->5->16"
       ]
     },
     {
@@ -32797,8 +32818,8 @@
       "nl": "Link voor delen is niet geldig.",
       "fr": "Le lien de partage n'est pas encore valide.",
       "xloc": [
-        "message.handlebars->3->14",
-        "message2.handlebars->5->14"
+        "message.handlebars->3->15",
+        "message2.handlebars->5->15"
       ]
     },
     {
@@ -34884,10 +34905,10 @@
       "xloc": [
         "login-mobile.handlebars->5->28",
         "login-mobile.handlebars->5->32",
-        "login.handlebars->5->28",
-        "login.handlebars->5->32",
-        "login2.handlebars->7->29",
-        "login2.handlebars->7->33"
+        "login.handlebars->5->29",
+        "login.handlebars->5->33",
+        "login2.handlebars->7->30",
+        "login2.handlebars->7->34"
       ]
     },
     {
@@ -38852,8 +38873,8 @@
       "zh-chs": "用户帐户{1}的已验证电邮{0}。",
       "zh-cht": "用戶帳戶{1}的已驗證電郵{0}。",
       "xloc": [
-        "message.handlebars->3->8",
-        "message2.handlebars->5->8"
+        "message.handlebars->3->9",
+        "message2.handlebars->5->9"
       ]
     },
     {
@@ -39375,10 +39396,10 @@
       "xloc": [
         "login-mobile.handlebars->5->30",
         "login-mobile.handlebars->5->34",
-        "login.handlebars->5->30",
-        "login.handlebars->5->34",
-        "login2.handlebars->7->31",
-        "login2.handlebars->7->35"
+        "login.handlebars->5->31",
+        "login.handlebars->5->35",
+        "login2.handlebars->7->32",
+        "login2.handlebars->7->36"
       ]
     },
     {
@@ -42452,8 +42473,8 @@
       "zh-cht": "{0}小寫",
       "xloc": [
         "login-mobile.handlebars->5->39",
-        "login.handlebars->5->39",
-        "login2.handlebars->7->40"
+        "login.handlebars->5->40",
+        "login2.handlebars->7->41"
       ]
     },
     {
@@ -42554,8 +42575,8 @@
       "zh-cht": "{0}非字母數字",
       "xloc": [
         "login-mobile.handlebars->5->41",
-        "login.handlebars->5->41",
-        "login2.handlebars->7->42"
+        "login.handlebars->5->42",
+        "login2.handlebars->7->43"
       ]
     },
     {
@@ -42576,8 +42597,8 @@
       "zh-cht": "{0}數字",
       "xloc": [
         "login-mobile.handlebars->5->40",
-        "login.handlebars->5->40",
-        "login2.handlebars->7->41"
+        "login.handlebars->5->41",
+        "login2.handlebars->7->42"
       ]
     },
     {
@@ -42744,8 +42765,8 @@
       "zh-cht": "{0}大寫",
       "xloc": [
         "login-mobile.handlebars->5->38",
-        "login.handlebars->5->38",
-        "login2.handlebars->7->39"
+        "login.handlebars->5->39",
+        "login2.handlebars->7->40"
       ]
     },
     {

@@ -1109,6 +1109,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r = "Checking server update...";
                             break;
                         }
+                        case 'maintenance': {
+                            var arg = null, changed = false;
+                            if ((cmdargs['_'] != null) && (cmdargs['_'][0] != null)) { arg = cmdargs['_'][0].toLowerCase(); }
+                            if (arg == 'enabled') { parent.parent.config.settings.maintenancemode = 1; changed = true; }
+                            else if (arg == 'disabled') { delete parent.parent.config.settings.maintenancemode; changed = true; }
+                            r = 'Maintenance mode: ' + ((parent.parent.config.settings.maintenancemode == null) ? 'Disabled' : 'Enabled');
+                            if (changed == false) { r += '\r\nTo change type: maintenance [enabled|disabled]'; }
+                            break;
+                        }
                         case 'info': {
                             var info = process.memoryUsage();
                             info.dbType = ['None', 'NeDB', 'MongoJS', 'MongoDB'][parent.db.databaseType];

@@ -14,6 +14,7 @@
         "mongoDumpPath": { "type": "string" },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
+        "maintenanceMode": { "type": "boolean", "default": false, "description": "When enabled the server is in maintenance mode, only administrators can login. Use the maintenance command in server console to change." },
         "sessionTime": { "type": "integer" },
         "sessionKey": { "type": "string" },
         "sessionSameSite": { "type": "string" },
