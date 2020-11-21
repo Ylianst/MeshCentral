@@ -895,6 +895,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (userid) {
                 var user = obj.users[userid];
 
+                // Check if we are in maintenance mode
+                if ((parent.config.settings.maintenancemode != null) && (user.siteadmin != 4294967295)) {
+                    req.session.messageid = 115; // Server under maintenance
+                    req.session.loginmode = '1';
+                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                    return;
+                }
+
                 var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (parent.mailserver != null) && (user.email != null) && (user.emailVerified == true) && (user.otpekey != null));
                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
 
@@ -1102,6 +1110,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { return; }
         if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleCreateAccountRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
+
+        // Check if we are in maintenance mode
+        if (parent.config.settings.maintenancemode != null) {
+            req.session.messageid = 115; // Server under maintenance
+            req.session.loginmode = '1';
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
+        }
 
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
@@ -1653,6 +1669,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if (domain == null) { parent.debug('web', 'handleMSTSCRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
+        // Check if we are in maintenance mode
+        if ((parent.config.settings.maintenancemode != null) && (req.query.admin !== '1')) {
+            render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            return;
+        }
+
         if (req.query.ws != null) {
             // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
             var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
@@ -2092,6 +2114,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
 
+        // Check if we are in maintenance mode
+        if ((parent.config.settings.maintenancemode != null) && (req.query.admin !== '1')) {
+            parent.debug('web', 'handleLoginRequest: Server under maintenance.');
+            render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            return;
+        }
+
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
             // Login using SSPI
             domain.sspi.authenticate(req, res, function (err) {
@@ -2463,6 +2492,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         // Check if we are allowed to create new users using the login screen
         var newAccountsAllowed = true;
         if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) { for (var i in obj.users) { if (obj.users[i].domain == domain.id) { newAccountsAllowed = false; break; } } }
+        if (parent.config.settings.maintenancemode != null) { newAccountsAllowed = false; }
 
         // Encrypt the hardware key challenge state if needed
         var hwstate = null;
@@ -2639,6 +2669,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMessengerRequest: no domain'); res.sendStatus(404); return; }
         parent.debug('web', 'handleMessengerRequest()');
+
+        // Check if we are in maintenance mode
+        if (parent.config.settings.maintenancemode != null) {
+            render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            return;
+        }
 
         var webRtcConfig = null;
         if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)).replace(/'/g, '%27'); }

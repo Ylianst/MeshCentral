@@ -54,6 +54,7 @@
         var title = '';
         if (titleid == 1) { title = "Account Verification"; }
         if (titleid == 2) { title = "Desktop Sharing"; }
+        if (titleid == 3) { title = "Server Under Maintenance"; }
         QH('topTitle', Q('topTitle').innerText + ' - ' + title);
         QH('mainTitle', title);
 
@@ -75,10 +76,11 @@
             case 10: { msg = "ERROR: Invalid account check, verification url is only valid for 30 minutes."; break; }
             case 11: { msg = "Sharing link not valid yet."; break; }
             case 12: { msg = "Sharing link is expired."; break; }
+            case 13: { msg = "If you are an administrator, [login here].".replace('[', '<a href=?admin=1>').replace(']', '</a>'); break; }
         }
 
         // Add login page link
-        if ((msgid != 11) && (msgid != 12)) { msg += ' <a href="' + domainurl + (urlargs.key ? ('?key=' + urlargs.key) : '') + '">' + "Go to login page" + '</a>.' }
+        if ((msgid != 11) && (msgid != 12) && (msgid != 13)) { msg += ' <a href="' + domainurl + (urlargs.key ? ('?key=' + urlargs.key) : '') + '">' + "Go to login page" + '</a>.' }
         QH('mainMessage', msg);
 
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
