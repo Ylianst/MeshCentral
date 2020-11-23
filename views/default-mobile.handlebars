@@ -381,6 +381,30 @@
             padding-top: 3px;
             color: gray
         }
+
+        .deskButton {
+            box-shadow: 0px 0px 10px #000;
+            border-radius:20px;
+            position:absolute;
+            right:10px;
+            top:10px;
+            cursor:pointer;
+            background-color:#AAA;
+            z-index:1000;
+        }
+
+        .menuButton{
+            box-shadow: 0px 0px 10px #000;
+            border-radius:10px;
+            display:inline-block;
+            width:120px;
+            background-color:#AAA;
+            text-align:center;
+            padding:10px;
+            cursor:pointer;
+            margin:10px;
+            z-index:1000;
+        }
     </style>
 </head>
 <body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -410,11 +434,11 @@
                     </div>
                 </div>
                 <div id=p2 style="display:none;position:absolute;top:0;left:0;right:0;bottom:0">
-                    <div id=xdevices style="position:absolute;overflow-y:auto;top:0;left:0;right:0;bottom:30px" onscroll="onDevicesScroll()" ontouchstart="onDeviceTouch(true)" ontouchend="onDeviceTouch(false)"></div>
-                    <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:30px;left:0;right:0;bottom:0px;background-color:#aaa">
+                    <div id=xdevices style="position:absolute;overflow-y:auto;top:0;left:0;right:0;bottom:34px" onscroll="onDevicesScroll()" ontouchstart="onDeviceTouch(true)" ontouchend="onDeviceTouch(false)"></div>
+                    <div id=xdevicesBar style="position:absolute;overflow-y:auto;height:34px;left:0;right:0;bottom:0px;background-color:#aaa">
                         <div style="margin:4px">
-                            <span style="width:20px;display:inline-block;text-align:center;cursor:pointer" onclick=clearSearchInput()><b>X</b></span>
-                            <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off />&nbsp;
+                            <span style="width:20px;display:inline-block;text-align:center;cursor:pointer;font-size:16px" onclick=clearSearchInput()><b>X</b></span>
+                            <input id=SearchInput type=text placeholder=Filter onchange=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off style="padding:2px;margin:0;height:20px" />&nbsp;
                             <label class=noselect><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() />OS Name</label>
                             <label class=noselect><input type=checkbox id=OnlineCheckBox onclick=onOnlineCheckBox(event) />Online</label>
                         </div>
@@ -547,7 +571,7 @@
                     </div>
                 </div>
                 <div id=p10 style=display:none;position:absolute;bottom:0;top:0;width:100%;overflow:hidden>
-                    <table cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
+                    <table id=p10deskTopTable cellspacing=0 style="margin:0;padding:0;border-spacing:0;border:0;position:absolute;top:0">
                         <tr style=padding:0>
                             <td style="padding:0;color:#c8c8c8;text-align:center;cursor:pointer" width=60px valign=top onclick=goBack()>
                                 <div style="padding:0;background-color:#036;width:10px;height:10px;float:right;border:0">
@@ -578,22 +602,35 @@
                         <div id=p10html2></div>
                         <div id=p10html3></div>
                     </div>
+
+                    <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton()" />
+                    <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleKeyboard()" />
+                    <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleKeyboard()" />
+                    <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:110px;display:none" onclick="toggleMenu(false)" />
+                    <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:110px;display:none" onclick="toggleMenu(true)" />
+                    <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px"><input id="softKeyboard" type="text" style="z-index:200;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()"  onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)" /></div>
+                    <div id="buttonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000">
+                        <div class="menuButton" onclick="deskMenuButton(1)">Win</div>
+                        <div class="menuButton" onclick="deskMenuButton(2)">Ctrl-Alt-Del</div>
+                        <div class="menuButton" onclick="deskMenuButton(3)">ESC</div>
+                    </div>
+
                     <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
-                        <div id=deskarea1 style="position:absolute;top:0px;width:100%;height:25px">
-                            <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0">
+                        <div id=deskarea1 style="position:absolute;top:0px;width:100%;height:32px">
+                            <div style="padding-top:2px;padding-bottom:2px;background:#C0C0C0;height:32px">
                                 <div style="float:right;text-align:right">
                                     <span id="p14power"></span>&nbsp;
-                                    <input id=DeskSoftInput type=text style="width:25px;display:none;opacity:.2" onblur="toggleSoftKeys(0)" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)">
+                                    <input type=button id=deskFullScreen value="Full Screen" onclick=deskToggleFull(event) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px;margin-right:3px;">
                                 </div>
                                 <div style="margin-left:3px">
-                                    <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled">
-                                    <input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false">
+                                    <input type=button id=connectbutton1 value="Connect" onclick=connectDesktop(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
+                                    <input type=button id=connectbutton1h value="HW Connect" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" style="height:28px">
+                                    <input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" style="height:28px">
                                     <span id="deskstatus">Disconnected</span>
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea3 style="position:absolute;top:25px;width:100%;height:calc(100% - 50px)">
+                        <div id=deskarea3 style="position:absolute;top:32px;width:100%;height:calc(100% - 64px);background-color:#000">
                             <div id=deskarea3x style="background:black;text-align:center;height:100%;position:relative">
                                 <div id=DeskParent style="height:100%">
                                     <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
@@ -608,19 +645,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:25px">
+                        <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right>
-                                    <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>&nbsp;
+                                    <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px /></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
-                                    <input id="deskActionsBtn" type=button style="margin-left:3px" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
-                                    <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()">
-                                    <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none">
-                                    <input type="button" id="DeskSpecialKeys" value="Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()">
-                                    <input type="button" id="DeskSoftKeys" value="Keyboard" onkeypress="return false" onkeydown="return false" onclick="toggleSoftKeys(1)">
-                                    <input type="button" id="DeskScreens" value="Screens" onkeypress="return false" onkeydown="return false" onclick="deskSelectScreens()" style="display:none">
+                                    <input id="deskActionsBtn" type=button style="margin-left:3px;height:28px" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                    <input type="button" value="Settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" style="height:28px">
+                                    <input type="button" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none;height:28px">
+                                    <!--<input type="button" id="DeskSpecialKeys" value="Keys" onkeypress="return false" onkeydown="return false" onclick="sendSpecialKeys()" style="height:28px">-->
+                                    <input type="button" id="DeskScreens" value="Screens" onkeypress="return false" onkeydown="return false" onclick="deskSelectScreens()" style="display:none;height:28px">
                                     <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
                             </div>
@@ -755,51 +791,62 @@
             <div id=dialog7 style="margin:auto;margin:3px">
                 <div id="d7meshkvm">
                     <h4 style="width:100%;border-bottom:1px solid gray">Agent Remote Desktop</h4>
-                    <div style="margin:3px 0 3px 0">
-                        <select id="d7bitmapquality" style="float:right;width:200px;height:20px" dir="rtl"></select>
-                        <div style="height:20px">Quality</div>
-                    </div>
-                    <div style="margin:3px 0 3px 0">
-                        <select id="d7bitmapscaling" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected=selected value=1024>100%</option>
-                            <option value=896>87.5%</option>
-                            <option value=768>75%</option>
-                            <option value=640>62.5%</option>
-                            <option value=512>50%</option>
-                            <option value=384>37.5%</option>
-                            <option value=256>25%</option>
-                            <option value=128>12.5%</option>
-                        </select>
-                        <div style="height:20px">Scaling</div>
-                    </div>
-                    <div style="margin:3px 0 3px 0">
-                        <select id="d7framelimiter" style="float:right;width:200px;height:20px" dir="rtl">
-                            <option selected=selected value=50>Fast</option>
-                            <option value=100>Medium</option>
-                            <option value=400>Slow</option>
-                            <option value=1000>Very slow</option>
-                        </select>
-                        <div style="height:20px">Rate</div>
-                    </div>
+                    <table style="width:100%">
+                        <tr>
+                            <td>
+                                Quality
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7bitmapquality" style="float:right;width:200px" dir="rtl"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Scaling
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7bitmapscaling" style="float:right;width:200px" dir="rtl">
+                                    <option selected=selected value=1024>100%</option>
+                                    <option value=896>87.5%</option>
+                                    <option value=768>75%</option>
+                                    <option value=640>62.5%</option>
+                                    <option value=512>50%</option>
+                                    <option value=384>37.5%</option>
+                                    <option value=256>25%</option>
+                                    <option value=128>12.5%</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Rate
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7framelimiter" style="float:right;width:200px" dir="rtl">
+                                    <option selected=selected value=50>Fast</option>
+                                    <option value=100>Medium</option>
+                                    <option value=400>Slow</option>
+                                    <option value=1000>Very slow</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <div id="d7amtkvm">
                     <h4 style="width:100%;border-bottom:1px solid gray">Intel&reg; AMT Hardware KVM</h4>
-                    <div style='height:26px'>
-                        <select id="d7desktopmode" style="float:right;width:200px">
-                            <option value="1">RLE8, Fastest</option>
-                            <option value="2">RLE16, Recommended</option>
-                            <option value="3">RAW8, Slow</option>
-                            <option value="4">RAW16, Very Slow</option>
-                        </select>
-                        <div>Encoding</div>
-                    </div>
-                    <div style="height:60px">
-                        <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
-                            <label><input type="checkbox" id='d7showfocus' />Show Focus Tool</label><br />
-                            <label><input type="checkbox" id='d7showcursor' />Show Local Mouse Cursor</label><br />
-                        </div>
-                        <div>Other</div>
-                    </div>
+                    <table style="width:100%">
+                        <tr>
+                            <td>Encoding</td>
+                            <td style="width:100px">
+                                <select id="d7desktopmode" style="float:right;width:200px">
+                                    <option value="1">RLE8, Fastest</option>
+                                    <option value="2">RLE16, Recommended</option>
+                                    <option value="3">RAW8, Slow</option>
+                                    <option value="4">RAW16, Very Slow</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
@@ -2103,8 +2150,7 @@
         }
 
         function ondeskkeypress(e) {
-            toggleSoftKeys(0);
-            Q('DeskSoftInput').value = '';
+            Q('softKeyboard').value = '';
             setSessionActivity();
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
                 // Check what keys we are allows to send
@@ -2120,8 +2166,7 @@
         }
 
         function ondeskkeydown(e) {
-            toggleSoftKeys(0);
-            Q('DeskSoftInput').value = '';
+            Q('softKeyboard').value = '';
             setSessionActivity();
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
                 // Check what keys we are allows to send
@@ -2137,8 +2182,7 @@
         }
 
         function ondeskkeyup(e) {
-            toggleSoftKeys(0);
-            Q('DeskSoftInput').value = '';
+            Q('softKeyboard').value = '';
             setSessionActivity();
             if (desktop && !xxdialogMode && xxcurrentView == 10) {
                 // Check what keys we are allows to send
@@ -3004,6 +3048,7 @@
 
             // Show the right buttons
             QV('disconnectbutton1', (deskState != 0));
+            QE('deskFullScreen', (deskState != 0));
             QV('connectbutton1', (deskState == 0) && ((meshrights & 8) || (meshrights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
             QV('connectbutton1h',
                 (deskState == 0) &&
@@ -3054,7 +3099,7 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
-                    desktop.m.showmouse = desktopsettings.showmouse;
+                    desktop.m.showmouse = true;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
@@ -3115,8 +3160,6 @@
 
         function showDesktopSettingsChanged() {
             desktopsettings.encoding = d7desktopmode.value;
-            desktopsettings.showfocus = d7showfocus.checked;
-            desktopsettings.showmouse = d7showcursor.checked;
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
@@ -3137,16 +3180,65 @@
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
-            d7showfocus.checked = desktopsettings.showfocus;
-            d7showcursor.checked = desktopsettings.showmouse;
             d7bitmapquality.value = 40; // Default value
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
         }
 
+
+        var keyboardShown = false;
+        var keyboardShownTimer = null;
+        var fullScreenMode = false;
+        function toggleKeyboard() {
+            if (keyboardShownTimer != null) { clearTimeout(keyboardShownTimer); }
+            if (keyboardShown) { Q('softKeyboard').blur(); keyboardShown = false; } else { Q('softKeyboard').focus(); keyboardShown = true; }
+            QV('deskkeybutton2a', fullscreen && !keyboardShown);
+            QV('deskkeybutton2b', fullscreen && keyboardShown);
+        }
+
+        function keyboardFocusChange() {
+            keyboardShownTimer = setTimeout(function () {
+                keyboardShownTimer = null;
+                keyboardShown = (Q('softKeyboard') == document.activeElement);
+                QV('deskkeybutton2a', fullscreen && !keyboardShown);
+                QV('deskkeybutton2b', fullscreen && keyboardShown);
+            }, 10);
+        }
+
+        function openFullscreen() {
+            var elem = Q('p10');
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); } // IE11
+            fullScreenMode = true;
+        }
+
+        function exitButton() {
+            deskToggleFull();
+        }
+
+        function closeFullscreen() {
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } // Safari
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); } // IE11
+            fullScreenMode = false;
+        }
+
+        function deskMenuButton(x) {
+            toggleMenu(true);
+            if (x == 1) { deskSendKeys(5); } // Win
+            if (x == 2) { deskSendKeys(10); } // CTRL-ALT-DEL
+            if (x == 3) { deskSendKeys(13); } // ESC
+        }
+
+        function toggleMenu(x) {
+            QV('buttonMenu', fullscreen && !x);
+            QV('deskkeybutton3a', fullscreen && x);
+            QV('deskkeybutton3b', fullscreen && !x);
+        }
+
         var fullscreen = false;
-        /*
         function deskToggleFull() {
             fullscreen = !fullscreen;
             QV('mastheadx', !fullscreen);
@@ -3157,44 +3249,72 @@
             QV('column_l_bottomgap', !fullscreen);
             QV('idx_deskFullBtn2', fullscreen);
             QV('deskFullBtn', !fullscreen);
+            QV('p10deskTopTable', !fullscreen);
+            QV('deskarea1', !fullscreen);
+            QV('deskarea4', !fullscreen);
+            QV('deskkeybutton1', fullscreen);
+            QV('deskkeybutton2a', fullscreen);
+            QV('deskkeybutton2b', false);
+            QV('deskkeybutton3a', fullscreen);
+            QV('deskkeybutton3b', false);
             if (fullscreen) {
-                QS('container').width = '100%';
-                QS('container')['border-right'] = '0';
-                QS('container')['border-left'] = '0';
-                QS('column_l').padding = '0';
-                QS('column_l').width = '100%';
+                QS('page_content').top = '0px';
+                QS('page_content').bottom = '0px';
+                QS('p10desktop').top = '0px';
+                QS('p10desktop').overflow = 'scroll';
+                QS('deskarea3').top = '0px';
+                QS('deskarea3').width = '1920px';
+                QS('deskarea3').height = '1080px';
+                QS('deskarea3')['padding-right'] = '55px';
+                openFullscreen();
             } else {
-                QS('container').width = '960px';
-                QS('container')['border-right'] = '1px solid #b7b7b7';
-                QS('container')['border-left'] = '1px solid #b7b7b7';
-                QS('column_l').padding = '0 15px';
-                QS('column_l').width = '930px';
-                toggleFullScreen();
+                QS('page_content').top = '50px';
+                QS('page_content').bottom = '32px';
+                QS('p10desktop').top = '55px';
+                QS('p10desktop').overflow = 'hidden';
+                QS('deskarea3').top = '32px';
+                QS('deskarea3').width = '100%';
+                QS('deskarea3').height = 'calc(100% - 64px)';
+                QS('deskarea3')['padding-right'] = '';
+                closeFullscreen();
             }
             deskAdjust();
         }
-        */
 
         function deskAdjust() {
-            var x = (Q('DeskParent').clientHeight - Q('Desk').clientHeight) / 2;
-            if (x < 0) {
-                var mh = Q('DeskParent').clientHeight, mw = 9999;
-                if (desktop) { mw = (desktop.m.width / desktop.m.height) * mh; }
-                QS('Desk')['max-height'] = mh + 'px';
-                QS('Desk')['max-width'] = mw + 'px';
-                x = 0;
+            if (fullscreen) {
+                QS('Desk')['margin-top'] = null;
+                QS('Desk')['margin-bottom'] = null;
+                QS('Desk').width = '100%';
+                QS('Desk').height = '100%';
             } else {
-                QS('Desk')['max-height'] = null;
-                QS('Desk')['max-width'] = null;
+                var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
+                var deskH = Q('Desk').height, deskW = Q('Desk').width;
+                var webPageFullScreen = false;
+
+                // Fixed aspect ratio
+                if ((parentH / parentW) > (deskH / deskW)) {
+                    var hNew = ((deskH * parentW) / deskW) + 'px';
+                    QS('Desk').height = hNew;
+                    QS('Desk').width = '100%';
+                } else {
+                    var wNew = ((deskW * parentH) / deskH) + 'px';
+                    QS('Desk').width = wNew;
+                    QS('Desk').height = '100%';
+                }
+                QS('DeskParent').overflow = 'hidden';
+
+                // Adjust top/bottom margins
+                var x = (Q('DeskParent').clientHeight - Q('Desk').clientHeight) / 2;
+                QS('Desk')['margin-top'] = x + 'px';
+                QS('Desk')['margin-bottom'] = x + 'px';
             }
-            QS('Desk')['margin-top'] = x + 'px';
-            QS('Desk')['margin-bottom'] = x + 'px';
         }
 
         // Remote desktop special key combos for Windows
-        function deskSendKeys() {
+        function deskSendKeys(key) {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            var ks = Q('deskkeys').value;
+            var ks = key ? key : Q('deskkeys').value;
             if (ks == 0) { // WIN+Down arrow
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7, 1], [0xff54, 1], [0xff54, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Down arrow press, Down arrow release, Meta-left release
@@ -3274,26 +3394,18 @@
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 16], [desktop.m.KeyAction.DOWN, 121], [desktop.m.KeyAction.UP, 121], [desktop.m.KeyAction.UP, 16]]); // MeshAgent: Left-Shift Down, F10 down, F10 up, Left-Shift Up
                 }
+            } else if (ks == 13) { // ESC
+                if (desktop.contype == 2) {
+                    desktop.m.sendkey([[27, 1], [27, 0]]); // Intel AMT: ESC press, ESC release
+                } else {
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 27], [desktop.m.KeyAction.UP, 27]]); // MeshAgent: ESC press, ESC release
+                }
             }
         }
 
         function sendSpecialKeys() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             setDialogMode(3, "Special Keys", 3, deskSendKeys);
-        }
-
-        // Send CTRL-ALT-DEL
-        /*
-        function sendCAD() {
-            if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            desktop.m.sendcad();
-        }
-        */
-
-        // Toggle soft keyboard
-        function toggleSoftKeys(x) {
-            QV('DeskSoftInput', x == 1);
-            if (x == 1) { Q('DeskSoftInput').focus(); }
         }
 
         // Show process dialogs
@@ -3369,11 +3481,11 @@
             QV('DeskScreens', displayCount > 1);
         }
 
-        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousedown(e) }
-        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mouseup(e) }
-        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) desktop.m.mousemove(e) }
-        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
-        function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
+        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mousedown(e); } }
+        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mouseup(e); } }
+        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mousemove(e); } }
+        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); } }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
@@ -4493,7 +4605,7 @@
 
         function putstore(name, val) { try { if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return; if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); } } catch (e) { } if (name[0] != '_') { var s = {}; for (var i = 0, len = localStorage.length; i < len; ++i) { var k = localStorage.key(i); if (k[0] != '_') { s[k] = localStorage.getItem(k); } } meshserver.send({ action: 'userWebState', state: JSON.stringify(s) }); } }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); deskAdjust(); if (currentNode != null) { drawDeviceTimeline(); } }
+        function center() { onDevicesScroll(); QS('dialog').left = ((((getDocWidth() - 300) / 2)) + 'px'); deskAdjust(); if (currentNode != null) { drawDeviceTimeline(); } }
         function messagebox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { QH('id_dialogMessage', m); setDialogMode(1, t); }
         function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
