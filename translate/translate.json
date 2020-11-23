@@ -1235,7 +1235,7 @@
       "zh-chs": "100％",
       "zh-cht": "100％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->1",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->1"
       ]
@@ -1305,7 +1305,7 @@
       "zh-chs": "12.5%",
       "zh-cht": "12.5％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->15",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->15",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->15"
       ]
@@ -1463,7 +1463,7 @@
       "zh-chs": "25%",
       "zh-cht": "25％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->13",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->13",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->13"
       ]
@@ -1686,7 +1686,7 @@
       "zh-chs": "37.5%",
       "zh-cht": "37.5％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->11",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->11",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->11"
       ]
@@ -1889,7 +1889,7 @@
       "zh-chs": "50%",
       "zh-cht": "50％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->9",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->9",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->9"
       ]
@@ -1961,7 +1961,7 @@
       "zh-chs": "62.5%",
       "zh-cht": "62.5％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->7",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->7"
       ]
@@ -2102,7 +2102,7 @@
       "zh-chs": "75%",
       "zh-cht": "75％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->5",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->5"
       ]
@@ -2166,7 +2166,7 @@
       "zh-chs": "87.5%",
       "zh-cht": "87.5％",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->d7bitmapscaling->3",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->3->d7bitmapscaling->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->d7bitmapscaling->3"
       ]
@@ -9946,6 +9946,12 @@
       ]
     },
     {
+      "en": "Ctrl-Alt-Del",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->buttonMenu->3"
+      ]
+    },
+    {
       "cs": "Ctrl-W",
       "de": "Strg+W",
       "en": "Ctrl-W",
@@ -13223,6 +13229,7 @@
       "zh-chs": "ESC",
       "zh-cht": "ESC",
       "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->buttonMenu->5",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
       ]
@@ -14130,7 +14137,7 @@
       "zh-chs": "编码",
       "zh-cht": "編碼",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->3"
+        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->1"
       ]
     },
     {
@@ -15142,7 +15149,7 @@
       "zh-chs": "快速",
       "zh-cht": "快速",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->1",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
       ]
@@ -16048,6 +16055,12 @@
       "zh-cht": "全部權限",
       "xloc": [
         "default.handlebars->29->691"
+      ]
+    },
+    {
+      "en": "Full Screen",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->1"
       ]
     },
     {
@@ -17967,7 +17980,7 @@
       "zh-chs": "输入",
       "zh-cht": "輸入",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->13->DeskControlSpan",
+        "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3->11->DeskControlSpan",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->11->DeskControlSpan",
         "desktop.handlebars->p11->deskarea0->deskarea4->3->9->DeskControlSpan"
       ]
@@ -19693,10 +19706,7 @@
       "ru": "Клавиатура",
       "tr": "Tuş takımı",
       "zh-chs": "键盘",
-      "zh-cht": "鍵盤",
-      "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
-      ]
+      "zh-cht": "鍵盤"
     },
     {
       "cs": "Klíče",
@@ -19713,10 +19723,7 @@
       "ru": "Ключи",
       "tr": "Anahtarlar",
       "zh-chs": "键",
-      "zh-cht": "鍵",
-      "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3"
-      ]
+      "zh-cht": "鍵"
     },
     {
       "cs": "khmerština",
@@ -22618,7 +22625,7 @@
       "zh-chs": "中",
       "zh-cht": "中",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->3",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3"
@@ -26339,10 +26346,7 @@
       "ru": "Другие",
       "tr": "Diğer",
       "zh-chs": "其他",
-      "zh-cht": "其他",
-      "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->5->3"
-      ]
+      "zh-cht": "其他"
     },
     {
       "cs": "Ostatní nastavení",
@@ -28199,7 +28203,7 @@
       "zh-chs": "质量",
       "zh-cht": "品質",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->3",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->0->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->3->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->3->1"
       ]
@@ -28241,7 +28245,7 @@
       "zh-chs": "RAW16，非常慢",
       "zh-cht": "RAW16，非常慢",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->7",
+        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->3->d7desktopmode->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->7",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->7"
       ]
@@ -28263,7 +28267,7 @@
       "zh-chs": "RAW8，慢",
       "zh-cht": "RAW8，慢",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->5",
+        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->3->d7desktopmode->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->5",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->5"
       ]
@@ -28362,7 +28366,7 @@
       "zh-chs": "RLE16，推荐",
       "zh-cht": "RLE16，推薦",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->3",
+        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->3->d7desktopmode->3",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->3",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->3"
       ]
@@ -28384,7 +28388,7 @@
       "zh-chs": "RLE8，最快",
       "zh-cht": "RLE8，最快",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->d7desktopmode->1",
+        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->3->d7desktopmode->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->3->d7desktopmode->1"
       ]
@@ -28454,7 +28458,7 @@
       "zh-chs": "率",
       "zh-cht": "率",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->3"
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->1"
       ]
     },
     {
@@ -31009,7 +31013,7 @@
       "zh-chs": "缩放比例",
       "zh-cht": "縮放比例",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->5->3",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->2->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->5->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->5->1"
       ]
@@ -32904,7 +32908,6 @@
       "zh-chs": "显示焦点工具",
       "zh-cht": "顯示焦點工具",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->5->1->1",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->1",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->1"
       ]
@@ -32948,7 +32951,6 @@
       "zh-chs": "显示本地鼠标光标",
       "zh-cht": "顯示本地鼠標光標",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->5->1->4",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->3",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7amtkvm->5->d7otherset->3"
       ]
@@ -33652,7 +33654,7 @@
       "zh-chs": "慢",
       "zh-cht": "慢",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->5",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
       ]
@@ -39025,7 +39027,7 @@
       "zh-chs": "非常慢",
       "zh-cht": "非常慢",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->7->d7framelimiter->7",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
         "desktop.handlebars->p11->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
       ]
@@ -39644,6 +39646,7 @@
       "zh-chs": "Win",
       "zh-cht": "Win",
       "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->buttonMenu->1",
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->5",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->3",
         "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->3"
@@ -42974,7 +42977,7 @@
       "pt": "◀",
       "ru": "◀",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->1->1->0->1->3",
+        "default-mobile.handlebars->container->page_content->column_l->p10->p10deskTopTable->1->0->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p20->1->1->0->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p3->1->1->0->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p5->1->1->0->1->3"
