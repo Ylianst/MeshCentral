@@ -46,6 +46,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.holding = false;
     obj.lastKeepAlive = Date.now();
     // ###END###{DesktopInband}
+    obj.SwapMouse = false;
 
     obj.mNagleTimer = null; // Mouse motion slowdown timer
     obj.mx = 0; // Last mouse x position
@@ -823,8 +824,16 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
 
     // RFB "PointerEvent" and mouse handlers
     obj.mousedblclick = function (e) { }
-    obj.mousedown = function (e) { obj.buttonmask |= (1 << e.button); return obj.mousemove(e, 1); }
-    obj.mouseup = function (e) { obj.buttonmask &= (0xFFFF - (1 << e.button)); return obj.mousemove(e, 1); }
+    obj.mousedown = function (e) {
+        var b = e.button;
+        if (obj.SwapMouse) { if (b == 0) { b = 2; } else if (b == 2) { b = 0; } }
+        obj.buttonmask |= (1 << b); return obj.mousemove(e, 1);
+    }
+    obj.mouseup = function (e) {
+        var b = e.button;
+        if (obj.SwapMouse) { if (b == 0) { b = 2; } else if (b == 2) { b = 0; } }
+        obj.buttonmask &= (0xFFFF - (1 << b)); return obj.mousemove(e, 1);
+    }
     obj.mousemove = function (e, force) {
         if (obj.state < 4) return true;
         var ScaleFactorHeight = (obj.canvas.canvas.height / Q(obj.canvasid).offsetHeight);

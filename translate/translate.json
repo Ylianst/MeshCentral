@@ -2349,6 +2349,18 @@
       ]
     },
     {
+      "en": "ALT + F4",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->19"
+      ]
+    },
+    {
+      "en": "ALT + TAB",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->23"
+      ]
+    },
+    {
       "cs": "AMT",
       "de": "AMT",
       "en": "AMT",
@@ -6483,6 +6495,12 @@
       ]
     },
     {
+      "en": "CTRL + W",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->21"
+      ]
+    },
+    {
       "cs": "Chyba volání",
       "de": "Aufruf-Fehler",
       "en": "Call Error",
@@ -9948,7 +9966,7 @@
     {
       "en": "Ctrl-Alt-Del",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->buttonMenu->3"
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->3"
       ]
     },
     {
@@ -13229,7 +13247,7 @@
       "zh-chs": "ESC",
       "zh-cht": "ESC",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->buttonMenu->5",
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->5",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
       ]
@@ -32827,6 +32845,18 @@
       ]
     },
     {
+      "en": "Shift + F10",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->27"
+      ]
+    },
+    {
+      "en": "Shift + WIN + M",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->15"
+      ]
+    },
+    {
       "cs": "Shift+Win+M",
       "de": "Umschalten+Win+M",
       "en": "Shift+Win+M",
@@ -35167,6 +35197,12 @@
       "zh-cht": "系統類型",
       "xloc": [
         "default.handlebars->29->362"
+      ]
+    },
+    {
+      "en": "TAB",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->25"
       ]
     },
     {
@@ -39214,6 +39250,36 @@
       ]
     },
     {
+      "en": "WIN + Down",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->7"
+      ]
+    },
+    {
+      "en": "WIN + L",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->11"
+      ]
+    },
+    {
+      "en": "WIN + M",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->13"
+      ]
+    },
+    {
+      "en": "WIN + R",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->17"
+      ]
+    },
+    {
+      "en": "WIN + Up",
+      "xloc": [
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->9"
+      ]
+    },
+    {
       "cs": "Čeká se na druhého uživatele…",
       "de": "Warte auf anderen Benutzer...",
       "en": "Waiting for other user...",
@@ -39646,7 +39712,7 @@
       "zh-chs": "Win",
       "zh-cht": "Win",
       "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p10->buttonMenu->1",
+        "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->1",
         "default-mobile.handlebars->dialog->3->dialog3->deskkeys->5",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3->deskkeys->3",
         "desktop.handlebars->p11->deskarea0->deskarea4->3->deskkeys->3"

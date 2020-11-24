@@ -5029,6 +5029,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
                 break;
             }
+            case 'print': {
+                console.log(command.value);
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');
