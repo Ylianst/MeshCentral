@@ -604,15 +604,30 @@
                     </div>
 
                     <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton()" />
-                    <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleKeyboard()" />
-                    <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleKeyboard()" />
-                    <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:110px;display:none" onclick="toggleMenu(false)" />
-                    <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:110px;display:none" onclick="toggleMenu(true)" />
-                    <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px"><input id="softKeyboard" type="text" style="z-index:200;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()"  onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)" /></div>
-                    <div id="buttonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000">
-                        <div class="menuButton" onclick="deskMenuButton(1)">Win</div>
-                        <div class="menuButton" onclick="deskMenuButton(2)">Ctrl-Alt-Del</div>
-                        <div class="menuButton" onclick="deskMenuButton(3)">ESC</div>
+                    <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(false)" />
+                    <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(true)" />
+                    <img id="deskkeybutton4a" src="images/mobile-desk-mouse-left.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(0)" />
+                    <img id="deskkeybutton4b" src="images/mobile-desk-mouse-right.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(1)" />
+                    <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:160px;display:none" onclick="toggleKeyboard()" />
+                    <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:160px;display:none" onclick="toggleKeyboard()" />
+                    <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
+                        <input id="softKeyboard" autocomplete="off" type="password" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)" />
+                    </div>
+                    <div id="deskButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000">
+                        <div class="menuButton" onclick="deskMenuButton(5)">Win</div>
+                        <div class="menuButton" onclick="deskMenuButton(10)">Ctrl-Alt-Del</div>
+                        <div class="menuButton" onclick="deskMenuButton(13)">ESC</div>
+                        <div class="menuButton" onclick="deskMenuButton(0)">WIN + Down</div>
+                        <div class="menuButton" onclick="deskMenuButton(1)">WIN + Up</div>
+                        <div class="menuButton" onclick="deskMenuButton(2)">WIN + L</div>
+                        <div class="menuButton" onclick="deskMenuButton(3)">WIN + M</div>
+                        <div class="menuButton" onclick="deskMenuButton(4)">Shift + WIN + M</div>
+                        <div class="menuButton" onclick="deskMenuButton(6)">WIN + R</div>
+                        <div class="menuButton" onclick="deskMenuButton(7)">ALT + F4</div>
+                        <div class="menuButton" onclick="deskMenuButton(8)">CTRL + W</div>
+                        <div class="menuButton" onclick="deskMenuButton(9)">ALT + TAB</div>
+                        <div class="menuButton" onclick="deskMenuButton(11)">TAB</div>
+                        <div class="menuButton" onclick="deskMenuButton(12)">Shift + F10</div>
                     </div>
 
                     <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
@@ -921,6 +936,11 @@
             QV('changeEmailId', (features & 0x200000) == 0);
             QH('p1message', "Connecting...");
             go(1);
+
+            // Document keys
+            document.onkeypress = ondeskkeypress;
+            document.onkeydown = ondeskkeydown;
+            document.onkeyup = ondeskkeyup;
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl, authCookie);
@@ -1711,7 +1731,6 @@
             Q('apassword1').focus();
         }
 
-
         function account_showChangePassword() {
             if (xxdialogMode) return false;
             var x = '<table style=margin-left:10px>';
@@ -2149,10 +2168,12 @@
             updateDevices();
         }
 
+        var gotKeyPressEvent = false;
         function ondeskkeypress(e) {
-            Q('softKeyboard').value = '';
             setSessionActivity();
-            if (desktop && !xxdialogMode && xxcurrentView == 10) {
+            if (desktop && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 1)) {
+                gotKeyPressEvent = true;
+                Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetMeshRights(currentNode.meshid);
@@ -2166,9 +2187,10 @@
         }
 
         function ondeskkeydown(e) {
-            Q('softKeyboard').value = '';
             setSessionActivity();
-            if (desktop && !xxdialogMode && xxcurrentView == 10) {
+            if (desktop && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 1)) {
+                gotKeyPressEvent = false;
+                Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetMeshRights(currentNode.meshid);
@@ -2182,9 +2204,10 @@
         }
 
         function ondeskkeyup(e) {
-            Q('softKeyboard').value = '';
             setSessionActivity();
-            if (desktop && !xxdialogMode && xxcurrentView == 10) {
+            if (desktop && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 1)) {
+                var inputStr = Q('softKeyboard').value;
+                Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
                 if (currentNode != null) {
                     var meshrights = GetMeshRights(currentNode.meshid);
@@ -2193,7 +2216,14 @@
                     var limitedInputAllowed = ((meshrights != 0xFFFFFFFF) && (((meshrights & 8) != 0) && ((meshrights & 256) == 0) && ((meshrights & 4096) != 0)));
                     if (limitedInputAllowed == true) { if ((e.altKey == true) || (e.ctrlKey == true) || ((e.keyCode < 32) && (e.keyCode != 8) && (e.keyCode != 13)) || (e.keyCode > 90)) return false; }
                 }
-                return desktop.m.handleKeyUp(e);
+                if ((gotKeyPressEvent == false) && (inputStr.length > 0) && desktop.m.SendKeyUnicode) {
+                    // This is a mobile keyboard, we need to send that is in the input control.
+                    var inputchar = inputStr[inputStr.length - 1].charCodeAt(0);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.DOWN, inputchar);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.UP, inputchar);
+                } else {
+                    return desktop.m.handleKeyUp(e);
+                }
             }
         }
 
@@ -3215,27 +3245,31 @@
         }
 
         function exitButton() {
+            QV('deskButtonMenu', false);
             deskToggleFull();
         }
 
         function closeFullscreen() {
+            if (fullScreenMode = false) return;
             if (document.exitFullscreen) { document.exitFullscreen(); }
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } // Safari
             else if (document.msExitFullscreen) { document.msExitFullscreen(); } // IE11
             fullScreenMode = false;
         }
 
-        function deskMenuButton(x) {
-            toggleMenu(true);
-            if (x == 1) { deskSendKeys(5); } // Win
-            if (x == 2) { deskSendKeys(10); } // CTRL-ALT-DEL
-            if (x == 3) { deskSendKeys(13); } // ESC
-        }
+        function deskMenuButton(x) { toggleMenu(true); deskSendKeys(x); }
 
         function toggleMenu(x) {
-            QV('buttonMenu', fullscreen && !x);
+            QV('deskButtonMenu', fullscreen && !x);
             QV('deskkeybutton3a', fullscreen && x);
             QV('deskkeybutton3b', fullscreen && !x);
+        }
+
+        function deskChangeMouseButton(x) {
+            if (desktop == null) return;
+            desktop.m.SwapMouse = !desktop.m.SwapMouse;
+            QV('deskkeybutton4a', fullscreen && (!desktop.m.SwapMouse));
+            QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
         }
 
         var fullscreen = false;
@@ -3257,6 +3291,8 @@
             QV('deskkeybutton2b', false);
             QV('deskkeybutton3a', fullscreen);
             QV('deskkeybutton3b', false);
+            QV('deskkeybutton4a', fullscreen && (!desktop.m.SwapMouse));
+            QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
             if (fullscreen) {
                 QS('page_content').top = '0px';
                 QS('page_content').bottom = '0px';
@@ -3315,19 +3351,19 @@
         function deskSendKeys(key) {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var ks = key ? key : Q('deskkeys').value;
-            if (ks == 0) { // WIN+Down arrow
+            if (ks == 0) { // WIN + Down arrow
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7, 1], [0xff54, 1], [0xff54, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Down arrow press, Down arrow release, Meta-left release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 40], [desktop.m.KeyAction.UP, 40], [desktop.m.KeyAction.EXUP, 0x5B]]); // Agent: L-Winkey press, Down arrow press, Down arrow release, L-Winkey release
                 }
-            } else if (ks == 1) { // WIN+Up arrow
+            } else if (ks == 1) { // WIN + Up arrow
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7, 1], [0xff52, 1], [0xff52, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, Up arrow press, Up arrow release, Meta-left release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 38], [desktop.m.KeyAction.UP, 38], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, Up arrow press, Up arrow release, L-Winkey release
                 }
-            } else if (ks == 2) { // WIN+L arrow
+            } else if (ks == 2) { // WIN + L
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7, 1], [0x6c, 1], [0x6c, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'l' press, 'l' release, Meta-left release
                 } else {
@@ -3338,13 +3374,13 @@
                     //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.UP, 76);
                     //desktop.m.SendKeyMsgKC(desktop.m.KeyAction.EXUP, 0x5B);
                 }
-            } else if (ks == 3) { // WIN+M arrow
+            } else if (ks == 3) { // WIN + M
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7, 1], [0x6d, 1], [0x6d, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'm' press, 'm' release, Meta-left release
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.DOWN, 77], [desktop.m.KeyAction.UP, 77], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, 'M' press, 'M' release, L-Winkey release
                 }
-            } else if (ks == 4) { // Shift+WIN+M arrow
+            } else if (ks == 4) { // Shift + WIN + M
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe1, 1], [0xffe7, 1], [0x6d, 1], [0x6d, 0], [0xffe7, 0], [0xffe1, 0]]); // Intel AMT: Shift-left down, Meta-left down, 'm' press, 'm' release, Meta-left release, Shift-left release
                 } else {
@@ -3356,7 +3392,7 @@
                 } else {
                     desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 0x5B], [desktop.m.KeyAction.EXUP, 0x5B]]); // MeshAgent: L-Winkey press, L-Winkey release
                 }
-            } else if (ks == 6) { // WIN+R
+            } else if (ks == 6) { // WIN + R
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe7, 1], [0x72, 1], [0x72, 0], [0xffe7, 0]]); // Intel AMT: Meta-left down, 'r' press, 'r' release, Meta-left release
                 } else {
