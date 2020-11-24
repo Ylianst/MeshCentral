@@ -162,6 +162,10 @@ module.exports.CreateLetsEncrypt = function (parent) {
         // Create a private key
         obj.log("Generating private key...");
         acme.forge.createPrivateKey().then(function (accountKey) {
+
+            // TODO: ZeroSSL
+            // https://acme.zerossl.com/v2/DV90
+
             // Create the ACME client
             obj.log("Setting up ACME client...");
             obj.client = new acme.Client({
