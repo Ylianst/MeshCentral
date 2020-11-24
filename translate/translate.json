@@ -2350,12 +2350,14 @@
     },
     {
       "en": "ALT + F4",
+      "nl": "ALT + F4",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->19"
       ]
     },
     {
       "en": "ALT + TAB",
+      "nl": "ALT + TAB",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->23"
       ]
@@ -6496,6 +6498,7 @@
     },
     {
       "en": "CTRL + W",
+      "nl": "CTRL + W",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->21"
       ]
@@ -32868,12 +32871,14 @@
     },
     {
       "en": "Shift + F10",
+      "nl": "Shift + F10",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->27"
       ]
     },
     {
       "en": "Shift + WIN + M",
+      "nl": "Shift + WIN + M",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->15"
       ]
@@ -35224,6 +35229,20 @@
     },
     {
       "en": "TAB",
+      "nl": "TAB",
+      "cs": "TAB",
+      "de": "TAB",
+      "es": "Tab",
+      "fi": "Välilehti",
+      "fr": "TAB",
+      "hi": "टैब",
+      "ja": "タブ",
+      "ko": "TAB",
+      "pt": "TAB",
+      "ru": "TAB",
+      "tr": "Sekme",
+      "zh-chs": "标签",
+      "zh-cht": "標籤",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->25"
       ]
@@ -39275,30 +39294,35 @@
     },
     {
       "en": "WIN + Down",
+      "nl": "WIN + Omlaag",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->7"
       ]
     },
     {
       "en": "WIN + L",
+      "nl": "WIN + L",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->11"
       ]
     },
     {
       "en": "WIN + M",
+      "nl": "WIN + M",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->13"
       ]
     },
     {
       "en": "WIN + R",
+      "nl": "WIN + R",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->17"
       ]
     },
     {
       "en": "WIN + Up",
+      "nl": "WIN + Omhoog",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->9"
       ]
