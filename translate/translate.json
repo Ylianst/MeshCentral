@@ -2351,6 +2351,7 @@
     {
       "en": "ALT + F4",
       "nl": "ALT + F4",
+      "fr": "ALT + F4",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->19"
       ]
@@ -2358,6 +2359,7 @@
     {
       "en": "ALT + TAB",
       "nl": "ALT + TAB",
+      "fr": "ALT + TAB",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->23"
       ]
@@ -6499,6 +6501,7 @@
     {
       "en": "CTRL + W",
       "nl": "CTRL + W",
+      "fr": "CTRL + W",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->21"
       ]
@@ -14620,6 +14623,7 @@
     {
       "en": "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding.",
       "nl": "Voer tekst in en klik op OK om deze op afstand te typen. Zorg ervoor dat u de externe cursor op de juiste positie plaatst voordat u verder gaat.",
+      "fr": "Saisissez le texte puis cliquez sur OK pour le taper à distance. Vérifiez préalablement que le curseur distant est positionné correctement.",
       "xloc": [
         "default.handlebars->29->848"
       ]
@@ -16097,6 +16101,7 @@
     {
       "en": "Full Screen",
       "nl": "Volledig scherm",
+      "fr": "Plein écran",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->1"
       ]
@@ -17831,6 +17836,7 @@
     {
       "en": "If you are an administrator, [login here].",
       "nl": "Als je een administrator bent, [hier inloggen].",
+      "fr": "Si vous êtes un administrateur, [connectez vous ici].",
       "xloc": [
         "message.handlebars->3->17",
         "message2.handlebars->5->17"
@@ -30477,7 +30483,7 @@
       "en": "Root Shell",
       "es": "Shell Root",
       "fi": "Juuren kuori",
-      "fr": "Coquille de racine",
+      "fr": "Invite de commande administrateur",
       "hi": "जड़ शैल",
       "ja": "ルートシェル",
       "ko": "루트 쉘",
@@ -32253,6 +32259,7 @@
     {
       "en": "Server Under Maintenance",
       "nl": "Onderhoud aan de server",
+      "fr": "Serveur en maintenance",
       "xloc": [
         "message.handlebars->3->3",
         "message2.handlebars->5->3"
@@ -32404,6 +32411,7 @@
     {
       "en": "Server under maintenance.",
       "nl": "Onderhoud aan de server.",
+      "fr": "Serveur en maintenance.",
       "xloc": [
         "login.handlebars->5->20",
         "login2.handlebars->7->21"
@@ -32867,6 +32875,7 @@
     {
       "en": "Shift + F10",
       "nl": "Shift + F10",
+      "fr": "Shift + F10",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->27"
       ]
@@ -32874,6 +32883,7 @@
     {
       "en": "Shift + WIN + M",
       "nl": "Shift + WIN + M",
+      "fr": "Shift + WIN + M",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->15"
       ]
@@ -38022,6 +38032,7 @@
     {
       "en": "Use Remote Keyboard Map",
       "nl": "Gebruik de externe toetsenbord instelling",
+      "fr": "Utiliser la configuration du clavier distant",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3"
       ]
@@ -39289,6 +39300,7 @@
     {
       "en": "WIN + Down",
       "nl": "WIN + Omlaag",
+      "fr": "WIN + Bas",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->7"
       ]
@@ -39296,6 +39308,7 @@
     {
       "en": "WIN + L",
       "nl": "WIN + L",
+      "fr": "WIN + L",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->11"
       ]
@@ -39303,6 +39316,7 @@
     {
       "en": "WIN + M",
       "nl": "WIN + M",
+      "fr": "WIN + M",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->13"
       ]
@@ -39310,6 +39324,7 @@
     {
       "en": "WIN + R",
       "nl": "WIN + R",
+      "fr": "WIN + R",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->17"
       ]
@@ -39317,6 +39332,7 @@
     {
       "en": "WIN + Up",
       "nl": "WIN + Omhoog",
+      "fr": "WIN + Haut",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->9"
       ]
