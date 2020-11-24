@@ -9965,6 +9965,20 @@
     },
     {
       "en": "Ctrl-Alt-Del",
+      "nl": "Ctrl-Alt-Del",
+      "cs": "Ctrl-Alt-Del",
+      "de": "Strg-Alt-Entf",
+      "es": "Ctrl-Alt-Del",
+      "fi": "Ctrl-Alt-Del",
+      "fr": "Ctrl-Alt-Del",
+      "hi": "Ctrl-Alt-Del",
+      "ja": "Ctrl-Alt-Del",
+      "ko": "Ctrl-Alt-Del",
+      "pt": "Ctrl-Alt-Del",
+      "ru": "Ctrl-Alt-Del",
+      "tr": "Ctrl-Alt-Del",
+      "zh-chs": "Ctrl-Alt-Del",
+      "zh-cht": "Ctrl-Alt-Del",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->3"
       ]
@@ -14602,6 +14616,7 @@
     },
     {
       "en": "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding.",
+      "nl": "Voer tekst in en klik op OK om deze op afstand te typen. Zorg ervoor dat u de externe cursor op de juiste positie plaatst voordat u verder gaat.",
       "xloc": [
         "default.handlebars->29->848"
       ]
@@ -15445,6 +15460,7 @@
     },
     {
       "en": "Find Files",
+      "nl": "Zoek bestanden",
       "fr": "Recherche des fichiers",
       "xloc": [
         "default.handlebars->29->896"
@@ -16077,6 +16093,7 @@
     },
     {
       "en": "Full Screen",
+      "nl": "Volledig scherm",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->1"
       ]
@@ -17810,6 +17827,7 @@
     },
     {
       "en": "If you are an administrator, [login here].",
+      "nl": "Als je een administrator bent, [hier inloggen].",
       "xloc": [
         "message.handlebars->3->17",
         "message2.handlebars->5->17"
@@ -21161,6 +21179,7 @@
     },
     {
       "en": "Live Graph",
+      "nl": "Live weergave",
       "fr": "Utilisation du processeur et de la mémoire",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17info->p17graph->1->1->0->3->1->0"
@@ -25058,6 +25077,7 @@
     },
     {
       "en": "No files found",
+      "nl": "Geen bestanden gevonden",
       "fr": "Aucun fichier trouvé",
       "xloc": [
         "default.handlebars->29->887"
@@ -32234,6 +32254,7 @@
     },
     {
       "en": "Server Under Maintenance",
+      "nl": "Onderhoud aan de server",
       "xloc": [
         "message.handlebars->3->3",
         "message2.handlebars->5->3"
@@ -32384,6 +32405,7 @@
     },
     {
       "en": "Server under maintenance.",
+      "nl": "Onderhoud aan de server.",
       "xloc": [
         "login.handlebars->5->20",
         "login2.handlebars->7->21"
@@ -33028,6 +33050,7 @@
     },
     {
       "en": "Show device CPU and memory usage.",
+      "nl": "Toon processor en geheugengebruik van dit apparaat.",
       "fr": "Afficher l'utilisation du CPU et de la mémoire",
       "xloc": [
         "default.handlebars->container->column_l->p17->p17title->devListToolbarViewIcons3"
@@ -37985,6 +38008,7 @@
     },
     {
       "en": "Use Remote Keyboard Map",
+      "nl": "Gebruik de externe toetsenbord instelling",
       "xloc": [
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->3"
       ]
