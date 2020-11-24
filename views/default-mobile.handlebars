@@ -407,7 +407,7 @@
         }
     </style>
 </head>
-<body onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
+<body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;color:black;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
     <div id=container>
         <div id=mastheadx></div>
         <div id=masthead style="background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
@@ -608,8 +608,10 @@
                     <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(true)" />
                     <img id="deskkeybutton4a" src="images/mobile-desk-mouse-left.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(0)" />
                     <img id="deskkeybutton4b" src="images/mobile-desk-mouse-right.png" class="deskButton" style="top:110px;display:none" onclick="deskChangeMouseButton(1)" />
-                    <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:160px;display:none" onclick="toggleKeyboard()" />
-                    <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:160px;display:none" onclick="toggleKeyboard()" />
+                    <img id="deskkeybutton5a" src="images/mobile-desk-scale-out.png" class="deskButton" style="top:160px;display:none" onclick="deskChangeFullscreenZoom()" />
+                    <img id="deskkeybutton5b" src="images/mobile-desk-scale-in.png" class="deskButton" style="top:160px;display:none" onclick="deskChangeFullscreenZoom()" />
+                    <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
+                    <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
                         <input id="softKeyboard" autocomplete="off" type="password" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" onkeypress="return ondeskkeypress(event)" onkeydown="return ondeskkeydown(event)" onkeyup="return ondeskkeyup(event)" />
                     </div>
@@ -645,19 +647,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div id=deskarea3 style="position:absolute;top:32px;width:100%;height:calc(100% - 64px);background-color:#000">
-                            <div id=deskarea3x style="background:black;text-align:center;height:100%;position:relative">
-                                <div id=DeskParent style="height:100%">
-                                    <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
-                                </div>
-                                <div id=DeskTools style="position:absolute;width:400px;height:100%;background-color:gray;top:0;right:0;border-left:2px solid lightgray;display:none">
-                                    <a id=DeskToolsRefreshButton style="float:right;padding:3px;cursor:pointer" onclick="refreshDeskTools()">Refresh</a>
-                                    <div id=DeskToolsBar style="position:absolute;padding:3px;border-radius: 3px 3px 0px 0px;top:5px;left:4px;bottom:26px;background-color:lightgray;cursor:pointer">Processes</div>
-                                    <div style="position:absolute;top:26px;left:4px;right:4px;bottom:4px;background-color:lightgray;text-align:left">
-                                        <div style="border-bottom:1px solid darkgray;padding:3px"><a style=width:50px;padding-right:5px;float:left;cursor:pointer onclick=sortProcess(0)>PID</a><a style=cursor:pointer onclick=sortProcess(1)>Name</a></div>
-                                        <div id="DeskToolsProcesses" style="overflow-y:scroll;position:absolute;top:24px;bottom:0px;width:100%"></div>
-                                    </div>
-                                </div>
+                        <div id=deskarea3 style="position:absolute;top:32px;width:100%;height:calc(100% - 64px);background-color:#000;text-align:center">
+                            <div id=DeskParent style="height:100%">
+                                <canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
                             </div>
                         </div>
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
@@ -920,6 +912,7 @@
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var sessionActivity = Date.now();
+        var deskPinchZoom;
 
         function startup() {
             if ((features & 32) == 0) {
@@ -2299,7 +2292,7 @@
                 }
 
                 count++;
-                r += '<div name=xxdevice class=devList1 id=\'' + nodes[i]._id + '\'></div>'; // This is a standin for the device, it gets rendered only if visible.
+                r += '<div name=xxdevice onclick=goForward(\'' + nodes[i]._id + '\') class=devList1 id=\'' + nodes[i]._id + '\'></div>'; // This is a standin for the device, it gets rendered only if visible.
 
                 // If we are displaying devices by group, put the device in the right group.
                 /*
@@ -2441,7 +2434,7 @@
                     // Node
                     var icon = node.icon, nodestate = NodeStateStr(node);
                     if ((!node.conn) || (node.conn == 0)) { icon += ' gray'; }
-                    devdivs[i].innerHTML = '<div onclick=goForward(\'' + node._id + '\')>' + devNotify + '<div class="i' + icon + ' devList2"></div><div class=devList3><div class=devList4><b>' + name + '</b></div><div class=devList5>' + nodestate + '</div></div></div>';
+                    devdivs[i].innerHTML = '<div>' + devNotify + '<div class="i' + icon + ' devList2"></div><div class=devList3><div class=devList4><b>' + name + '</b></div><div class=devList5>' + nodestate + '</div></div></div>';
                 } else {
                     devdivs[i].innerHTML = ''; // Hide
                 }
@@ -3056,7 +3049,7 @@
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
                 // Device is not already connected, just setup a blank canvas
-                QH('DeskParent', '<canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                //QH('DeskParent', '<canvas id=Desk width=640 height=200 style="width:100%;-ms-touch-action:none;margin-left:0px" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
                 desktopNode = currentNode;
                 // Setup the mouse wheel
                 Q('Desk').addEventListener('DOMMouseScroll', function (e) { return dmousewheel(e); });
@@ -3130,7 +3123,7 @@
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.showmouse = true;
-                    desktop.m.onScreenSizeChange = deskAdjust;
+                    desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
                     desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     desktop.contype = 2;
                 } else {
@@ -3144,7 +3137,7 @@
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     desktop.m.FrameRateTimer = desktopsettings.framerate;
                     desktop.m.onDisplayinfo = deskDisplayInfo;
-                    desktop.m.onScreenSizeChange = deskAdjust;
+                    desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
                     desktop.Start(desktopNode._id);
                     desktop.contype = 1;
                 }
@@ -3272,7 +3265,18 @@
             QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
         }
 
+        function deskChangeFullscreenZoom() {
+            if (desktop == null) return;
+            if (fullscreenzoom == 1) { fullscreenzoom = 0.5; } else { fullscreenzoom = 1; }
+            QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+            QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
+            QS('deskarea3').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+            QS('deskarea3').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
+            deskAdjust();
+        }
+
         var fullscreen = false;
+        var fullscreenzoom = 1;
         function deskToggleFull() {
             fullscreen = !fullscreen;
             QV('mastheadx', !fullscreen);
@@ -3293,25 +3297,36 @@
             QV('deskkeybutton3b', false);
             QV('deskkeybutton4a', fullscreen && (!desktop.m.SwapMouse));
             QV('deskkeybutton4b', fullscreen && (desktop.m.SwapMouse));
+            QV('deskkeybutton5a', fullscreen && (fullscreenzoom == 1));
+            QV('deskkeybutton5b', fullscreen && (fullscreenzoom != 1));
             if (fullscreen) {
+                QS('DeskParent').height = null;
                 QS('page_content').top = '0px';
                 QS('page_content').bottom = '0px';
                 QS('p10desktop').top = '0px';
                 QS('p10desktop').overflow = 'scroll';
                 QS('deskarea3').top = '0px';
-                QS('deskarea3').width = '1920px';
-                QS('deskarea3').height = '1080px';
+                QS('deskarea3').width = (desktop.m.ScreenWidth * fullscreenzoom) + 'px';
+                QS('deskarea3').height = (desktop.m.ScreenHeight * fullscreenzoom) + 'px';
                 QS('deskarea3')['padding-right'] = '55px';
+                QS('body')['background-color'] = '#000';
+                QS('p10')['background-color'] = '#000';
                 openFullscreen();
             } else {
+                QS('DeskParent').height = '100%';
                 QS('page_content').top = '50px';
                 QS('page_content').bottom = '32px';
                 QS('p10desktop').top = '55px';
                 QS('p10desktop').overflow = 'hidden';
                 QS('deskarea3').top = '32px';
+                QS('deskarea3').left = null;
                 QS('deskarea3').width = '100%';
                 QS('deskarea3').height = 'calc(100% - 64px)';
                 QS('deskarea3')['padding-right'] = '';
+                QS('DeskParent')['margin-top'] = null;
+                QS('DeskParent')['margin-left'] = null;
+                QS('body')['background-color'] = null;
+                QS('p10')['background-color'] = null;
                 closeFullscreen();
             }
             deskAdjust();
@@ -3323,6 +3338,10 @@
                 QS('Desk')['margin-bottom'] = null;
                 QS('Desk').width = '100%';
                 QS('Desk').height = '100%';
+                var parentH = Q('p10desktop').clientHeight, parentW = Q('p10desktop').clientWidth;
+                var deskH = Q('deskarea3').clientHeight, deskW = Q('deskarea3').clientWidth - 55;
+                if (parentH > deskH) { QS('deskarea3').top = ((parentH - deskH) / 2) + 'px'; } else { QS('deskarea3').top = null; }
+                if (parentW > deskW) { QS('deskarea3').left = ((parentW - deskW) / 2) + 'px'; } else { QS('deskarea3').left = null; }
             } else {
                 var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
                 var deskH = Q('Desk').height, deskW = Q('Desk').width;
@@ -3444,52 +3463,6 @@
             setDialogMode(3, "Special Keys", 3, deskSendKeys);
         }
 
-        // Show process dialogs
-        function toggleDeskTools() {
-            setSessionActivity();
-            if (xxdialogMode) return;
-            if (QS('DeskTools').display == 'none') {
-                QV('DeskTools', true);
-                Q('DeskTools').nodeid = currentNode._id;
-                refreshDeskTools();
-            } else {
-                QV('DeskTools', false);
-            }
-        }
-
-        // Refresh all of the desktop tool panels
-        function refreshDeskTools() {
-            setSessionActivity();
-            QV('DeskToolsRefreshButton', false);
-            setTimeout(refreshDeskToolsEx, 500);
-            meshserver.send({ action: 'msg', type: 'ps', nodeid: currentNode._id });
-        }
-        function refreshDeskToolsEx() { QV('DeskToolsRefreshButton', true); }
-        var deskTools = { sort: 1, msg: null };
-        function sortProcess(sort) { deskTools.sort = sort; showDeskToolsProcesses(deskTools.msg); }
-        function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return 0; }
-        function sortProcessName(a, b) { if (a.d > b.d) return 1; if (a.d < b.d) return (-1); return 0; }
-        function showDeskToolsProcesses(message) {
-            deskTools.msg = message;
-            if (message == null) { QH('DeskToolsProcesses', ''); return; }
-            if (Q('DeskTools').nodeid != message.nodeid) return;
-            var p = [], processes = null;
-            try { processes = JSON.parse(message.value); } catch (e) { }
-            if (processes != null) {
-                for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
-                if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
-                var x = '';
-                for (var i in p) {
-                    if (p[i].p != 0) {
-                        var c = p[i].c;
-                        if (c.length > 30) { c = '<span title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0, 30)) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a style=float:right;padding-right:5px;cursor:pointer onclick=stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
-                    }
-                }
-                QH('DeskToolsProcesses', x);
-            }
-        }
-
         // Save the desktop image to file
         function deskSaveImage() {
             setSessionActivity();
@@ -3517,13 +3490,11 @@
             QV('DeskScreens', displayCount > 1);
         }
 
-        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mousedown(e); } }
-        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mouseup(e); } }
-        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mousemove(e); } }
-        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft; e.addy = Q('p10desktop').scrollTop; } desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
+        function dmousedown(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft * (1 / fullscreenzoom); e.addy = Q('p10desktop').scrollTop * (1 / fullscreenzoom); } desktop.m.mousedown(e); } }
+        function dmouseup(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft * (1 / fullscreenzoom); e.addy = Q('p10desktop').scrollTop * (1 / fullscreenzoom); } desktop.m.mouseup(e); } }
+        function dmousemove(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null)) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft * (1 / fullscreenzoom); e.addy = Q('p10desktop').scrollTop * (1 / fullscreenzoom); } desktop.m.mousemove(e); } }
+        function dmousewheel(e) { setSessionActivity(); if ((!xxdialogMode && desktop != null) && desktop.m.mousewheel) { if (fullscreen) { e.addx = Q('p10desktop').scrollLeft * (1 / fullscreenzoom); e.addy = Q('p10desktop').scrollTop * (1 / fullscreenzoom); } desktop.m.mousewheel(e); haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
-        function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
         // FILES
