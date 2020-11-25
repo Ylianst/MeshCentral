@@ -1604,8 +1604,9 @@ module.exports.CreateDB = function (parent, func) {
         mesh.nolog = 1;
         delete mesh.type;
         delete mesh._id;
-        if (mesh.amt != null) {
-            if (delete mesh.amt.password != null) { mesh.amt.password = 1; } // Remove the Intel AMT password if present
+        if ((mesh.amt != null) && (mesh.amt.password != null)) {
+            mesh.amt = Object.assign({}, mesh.amt); // Shallow clone
+            if (mesh.amt.password != null) { mesh.amt.password = 1; } // Remove the Intel AMT password if present
         }
         parent.DispatchEvent(['*', mesh.meshid], obj, mesh);
     }

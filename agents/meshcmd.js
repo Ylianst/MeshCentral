@@ -498,7 +498,10 @@ function run(argv) {
             exitOnCount = handles.length;
             for (var i = 0; i < handles.length; ++i) {
                 this.getCertHashEntry(handles[i], function (result) {
-                    console.log(result.name + ', (' + (result.isDefault ? 'Default' : '') + (result.isActive ? ', Active' : ', Disabled') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash);
+                    var certState = [];
+                    if (result.isDefault) { certState.push('Default'); }
+                    if (result.isActive) { certState.push('Active'); } else { certState.push('Disabled'); }
+                    console.log(result.name + ', (' + certState.join(', ') + ')\r\n  ' + result.hashAlgorithmStr + ': ' + result.certificateHash);
                     if (--exitOnCount == 0) { exit(1); }
                 });
             }
