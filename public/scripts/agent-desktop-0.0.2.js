@@ -410,6 +410,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.SendKeyUnicode = function (action, val) {
         if (obj.State != 3) return;
+        if (obj.debugmode > 0) { console.log('Sending UnicodeKey ' + val); }
         obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x07, (action - 1)) + ShortToStr(val));
     }
 
