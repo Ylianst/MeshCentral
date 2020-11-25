@@ -390,7 +390,7 @@ function amt_heci() {
         for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
         this.sendCommand(0x46, null, function (header, fn, opt) {
             if (header.Status == 0) {
-                var hostname = v.slice(14, header.Data.readUInt16LE(12) + 14).toString()
+                var hostname = header.Data.slice(14, header.Data.readUInt16LE(12) + 14).toString()
                 opt.unshift({ status: header.Status, networkStatus: header.Data.readUInt32LE(0), remoteAccessStatus: header.Data.readUInt32LE(4), remoteAccessTrigger: header.Data.readUInt32LE(8), mpsHostname: hostname, raw: header.Data });
             } else {
                 opt.unshift({ status: header.Status });

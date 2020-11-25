@@ -9838,6 +9838,7 @@
                 Q('dp20amtpolicypass').value = currentMesh.amt.password;
                 if ((currentMesh.amt.type == 2) || (currentMesh.amt.type == 3)) {
                     if (currentMesh.amt.badpass != null) { Q('dp20amtbadpass').value = currentMesh.amt.badpass; }
+                    if ((currentMesh.amt.type == 3) && (currentMesh.amt.ccm != null)) { Q('dp20amtccmmode').value = currentMesh.amt.ccm; }
                 }
                 if ((features & 0x400) == 0) { Q('dp20amtcira').value = currentMesh.amt.cirasetup; }
             }
@@ -9854,7 +9855,10 @@
                 x += addHtmlValue("New password*", '<input id=dp20amtpolicypass type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += addHtmlValue("New password*", '<input id=dp20amtpolicypass2 type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += '</div>';
+                if (ptype == 3) { x += addHtmlValue("CCM mode", '<select id=dp20amtccmmode style=width:230px onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy()><option value=0>' + "Don't change, keep CCM if setup" + '</option><option value=1>' + "Deactivate CCM if setup" + '</option><option value=2>' + "Activate to CCM, if ACM fails" + '</option></select>'); }
+                x += '<div id=dp20amtbadpassdiv style=display:none>';
                 x += addHtmlValue("Unknown password", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "If in CCM, reactivate Intel&reg; AMT" + '</option></select>');
+                x += '</div>';
                 if ((features & 0x400) == 0) { x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA setup" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "Don't connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>'); }
                 x += '<span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span>';
                 if ((currentMesh.mtype == 2) && (ptype == 2)) { x += '<span style="font-size:10px"> ' + "This policy will not impact devices with Intel&reg; AMT in ACM mode." + '</span>'; }
@@ -9875,6 +9879,7 @@
             QE('idx_dlgOkButton', ok);
             if ((ptype == 2) || (ptype == 3)) { QV('dp20amtpassdiv', Q('dp20amtpass').value == 2); }
             QV('dp10passNotify', ((ptype == 2) || (ptype == 3)) && (Q('dp20amtpass').value == 2));
+            QV('dp20amtbadpassdiv', (ptype == 2) || ((ptype == 3) && (Q('dp20amtccmmode').value != 1)));
         }
 
         function p20editMeshAmtEx() {
@@ -9889,7 +9894,7 @@
                 amtpolicy = { type: ptype, password: password, badpass: parseInt(Q('dp20amtbadpass').value) };
                 if ((features & 0x400) == 0) { amtpolicy.cirasetup = parseInt(Q('dp20amtcira').value); } else { amtpolicy.cirasetup = 1; }
             } else if (ptype == 3) { // ACM policy
-                amtpolicy = { type: ptype, password: password, badpass: parseInt(Q('dp20amtbadpass').value) };
+                amtpolicy = { type: ptype, password: password, badpass: parseInt(Q('dp20amtbadpass').value), ccm: parseInt(Q('dp20amtccmmode').value) };
                 if ((features & 0x400) == 0) { amtpolicy.cirasetup = parseInt(Q('dp20amtcira').value); } else { amtpolicy.cirasetup = 1; }
             } else if (ptype == 4) { // Fully automatic policy
                 amtpolicy = { type: ptype };

@@ -1619,17 +1619,23 @@ module.exports.CreateAmtManager = function (parent) {
         const mesh = parent.webserver.meshes[dev.meshid];
         if (mesh == null) { dev.consoleMsg("Unable to find device group."); removeAmtDevice(dev); return false; }
         var amtPolicy = 0; // 0 = Do nothing, 1 = Deactivate CCM, 2 = CCM, 3 = ACM
-        if (mesh.amt != null) { if (mesh.amt.type) { amtPolicy = mesh.amt.type; } }
+        var ccmPolicy = 0; // Only used when in ACM policy: 0 = Do nothing, 1 = Deactivate CCM, 2 = CCM is ACM fails
+        if (mesh.amt != null) { if (typeof mesh.amt.type == 'number') { amtPolicy = mesh.amt.type; } if (typeof mesh.amt.ccm == 'number') { ccmPolicy = mesh.amt.ccm; } }
         if ((typeof dev.mpsConnection.tag.meiState.OsAdmin != 'object') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.user != 'string') || (typeof dev.mpsConnection.tag.meiState.OsAdmin.pass != 'string')) { amtPolicy = 0; }
         if (amtPolicy == 0) { removeAmtDevice(dev); return false; } // Do nothing, we should not have gotten this CIRA-LMS connection.
         if (amtPolicy == 2) { activateIntelAmtCcm(dev, mesh.amt.password); } // Activate to CCM policy
         if ((amtPolicy == 3) || (amtPolicy == 4)) { // Activate to ACM policy
             var acminfo = checkAcmActivation(dev);
             if (acminfo == null) {
-                // No opportunity to activate to ACM, check if we are already in CCM
-                if ((dev.mpsConnection.tag.meiState.Flags & 2) != 0) return true; // We are in CCM, keep going
-                // We are not already in CCM, go to CCM now
-                activateIntelAmtCcm(dev, mesh.amt.password);
+                // No opportunity to activate to ACM, check if we are in CCM
+                if ((dev.mpsConnection.tag.meiState.Flags & 2) != 0) {
+                    if ((amtPolicy == 3) && (ccmPolicy == 1)) { deactivateIntelAmtCCM(dev); } // If we are in ACM policy and CCM is not allowed, deactivate it now.
+                    else { return true; } // We are in CCM, keep going
+                } else {
+                    // We are not in CCM, go to CCM now
+                    if ((amtPolicy == 4) || ((amtPolicy == 3) && (ccmPolicy == 2))) { activateIntelAmtCcm(dev, mesh.amt.password); } // If we are in full automatic or ACM with CCM allowed, setup CCM.
+                    else { removeAmtDevice(dev); return false; } // We are not in CCM and policy restricts use of CCM, so exit now.
+                }
             } else {
                 // Found a certificate to activate to ACM.
                 if ((dev.mpsConnection.tag.meiState.Flags & 2) != 0) {

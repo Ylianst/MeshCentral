@@ -3329,8 +3329,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else if (command.amtpolicy.type === 3) {
                         if ((command.amtpolicy.password != null) && (common.validateString(command.amtpolicy.password, 0, 32) == false)) break; // Check the amtpolicy.password
                         if ((command.amtpolicy.badpass != null) && common.validateInt(command.amtpolicy.badpass, 0, 1) == false) break; // Check the amtpolicy.badpass
+                        if ((command.amtpolicy.ccm != null) && common.validateInt(command.amtpolicy.ccm, 0, 2) == false) break; // Check the amtpolicy.ccm
                         if (common.validateInt(command.amtpolicy.cirasetup, 0, 2) == false) break; // Check the amtpolicy.cirasetup
                     }
+
                     mesh = parent.meshes[command.meshid];
                     change = '';
                     if (mesh) {
@@ -3345,6 +3347,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var amtpolicy = { type: command.amtpolicy.type };
                         if ((command.amtpolicy.type === 2) || (command.amtpolicy.type === 3)) {
                             amtpolicy = { type: command.amtpolicy.type, badpass: command.amtpolicy.badpass, cirasetup: command.amtpolicy.cirasetup };
+                            if (command.amtpolicy.type === 3) { amtpolicy.ccm = command.amtpolicy.ccm; }
                             if ((command.amtpolicy.password == null) && (mesh.amt != null) && (typeof mesh.amt.password == 'string')) { amtpolicy.password = mesh.amt.password; } // Keep the last password
                             if ((typeof command.amtpolicy.password == 'string') && (command.amtpolicy.password.length >= 8)) { amtpolicy.password = command.amtpolicy.password; } // Set a new password
                         }
