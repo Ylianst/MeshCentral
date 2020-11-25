@@ -251,6 +251,16 @@ module.exports.CertificateOperations = function (parent) {
         v.value = 'rootcert.meshcentral.com';
         setupbin.records[0].variables.push(v);
 
+        /*
+        // Create "ME Provision Halt Active" variable
+        v = {};
+        v.moduleid = 2;
+        v.varid = 28;
+        v.length = -1;
+        v.value = 1;
+        setupbin.records[0].variables.push(v);
+        */
+
         // Write to log file
         obj.logAmtActivation(domain, { time: new Date(), action: 'setupbin', domain: domain.id, userid: user._id, oldmebx: oldmebxpass, newmebx: newmebxpass, rootname: certRootName, hash: wildcardCertSha256, dns: 'rootcert.meshcentral.com' });
 

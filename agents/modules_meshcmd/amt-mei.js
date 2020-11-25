@@ -365,30 +365,30 @@ function amt_heci() {
             fn.apply(this, opt);
         }, callback, optional);
     }
-    this.startConfiguration = function startConfiguration() {
+    this.startConfiguration = function startConfiguration(callback) {
         var optional = [];
-        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x29, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x29, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.stopConfiguration = function stopConfiguration() {
+    this.stopConfiguration = function stopConfiguration(callback) {
         var optional = [];
-        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x5E, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x5E, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.openUserInitiatedConnection = function openUserInitiatedConnection() {
+    this.openUserInitiatedConnection = function openUserInitiatedConnection(callback) {
         var optional = [];
-        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x44, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x44, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.closeUserInitiatedConnection = function closeUnserInitiatedConnected() {
+    this.closeUserInitiatedConnection = function closeUnserInitiatedConnected(callback) {
         var optional = [];
-        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x45, data, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x45, null, function (header, fn, opt) { opt.unshift(header.Status); fn.apply(this, opt); }, callback, optional);
     }
-    this.getRemoteAccessConnectionStatus = function getRemoteAccessConnectionStatus() {
+    this.getRemoteAccessConnectionStatus = function getRemoteAccessConnectionStatus(callback) {
         var optional = [];
-        for (var i = 2; i < arguments.length; ++i) { optional.push(arguments[i]); }
-        this.sendCommand(0x46, data, function (header, fn, opt) {
+        for (var i = 1; i < arguments.length; ++i) { optional.push(arguments[i]); }
+        this.sendCommand(0x46, null, function (header, fn, opt) {
             if (header.Status == 0) {
                 var hostname = v.slice(14, header.Data.readUInt16LE(12) + 14).toString()
                 opt.unshift({ status: header.Status, networkStatus: header.Data.readUInt32LE(0), remoteAccessStatus: header.Data.readUInt32LE(4), remoteAccessTrigger: header.Data.readUInt32LE(8), mpsHostname: hostname, raw: header.Data });

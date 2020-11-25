@@ -97,7 +97,7 @@ function AmtManager(agent, db, isdebug) {
                 }
             }
             amtMei.getProvisioningMode(function (result) { if (result) { amtMeiTmpState.ProvisioningMode = result.mode; } });
-            amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; } }); // 0: "Not Activated (Pre)", 1: "Not Activated (In)", 2: "Activated"
+            amtMei.getProvisioningState(function (result) { if (result) { amtMeiTmpState.ProvisioningState = result.state; if (result.state != 2) { amtMei.stopConfiguration(function () { }); } } }); // 0: "Not Activated (Pre)", 1: "Not Activated (In)", 2: "Activated". Make sure to stop remote configuration if needed.
             amtMei.getEHBCState(function (result) { if ((result != null) && (result.EHBC == true)) { amtMeiTmpState.Flags += 1; } });
             amtMei.getControlMode(function (result) { if (result != null) { if (result.controlMode == 1) { amtMeiTmpState.Flags += 2; } if (result.controlMode == 2) { amtMeiTmpState.Flags += 4; } } }); // Flag 2 = CCM, 4 = ACM
             //amtMei.getMACAddresses(function (result) { if (result) { amtMeiTmpState.mac = result; } });
