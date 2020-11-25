@@ -534,6 +534,7 @@ function run(argv) {
             amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
             amtMei.getLanInterfaceSettings(1, function (result) { if (result) { mestate.net1 = result; } });
             amtMei.getUuid(function (result) { if ((result != null) && (result.uuid != null)) { mestate.uuid = result.uuid; } });
+            amtMei.getRemoteAccessConnectionStatus(function (result) { if ((result != null) && (result.status == 0)) { mestate.networkStatus = result.networkStatus; mestate.remoteAccessStatus = result.remoteAccessStatus; mestate.remoteAccessTrigger = result.remoteAccessTrigger; mestate.mpsHostname = result.mpsHostname; } });
             amtMei.getDnsSuffix(function (result) {
                 if (result) { mestate.dns = result; }
                 if (mestate.ver && mestate.ProvisioningState && mestate.ProvisioningMode) {
@@ -568,6 +569,13 @@ function run(argv) {
                                 }
                             }
                             if (fqdn != null) { str += '\r\nDNS suffix: ' + fqdn; }
+                        }
+                    }
+                    if (typeof mestate.networkStatus == 'number') {
+                        str += '\r\nConnection Status: ' + ['Direct', 'VPN', 'Outside'][mestate.networkStatus];
+                        str += ', CIRA: ' + ['Disconnected', 'Connecting', 'Connected'][mestate.remoteAccessStatus];
+                        if ((mestate.remoteAccessStatus > 0) && (mestate.mpsHostname != null) && (mestate.mpsHostname.length > 0)) {
+                            str += ' to ' + mestate.mpsHostname + ', ' + ['User initiated', 'Alert', 'Periodic', 'Provisioning'][mestate.remoteAccessTrigger];
                         }
                     }
                     console.log(str + '.');
