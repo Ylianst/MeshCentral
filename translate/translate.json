@@ -590,6 +590,7 @@
         "default.handlebars->29->882",
         "default.handlebars->29->894",
         "desktop.handlebars->3->19",
+        "terminal.handlebars->3->9",
         "xterm.handlebars->9->6"
       ]
     },
@@ -611,7 +612,8 @@
       "zh-cht": "，請點擊此處啟用它。",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3->p11warninga",
-        "default.handlebars->container->column_l->p12->p12warning->3->p12warninga"
+        "default.handlebars->container->column_l->p12->p12warning->3->p12warninga",
+        "terminal.handlebars->p12->p12warning->3->p12warninga"
       ]
     },
     {
@@ -1263,7 +1265,8 @@
       "zh-chs": "100x30",
       "zh-cht": "100x30",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->1"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->1",
+        "terminal.handlebars->p12->9->1->terminalSizeDropDown->termSizeList->1"
       ]
     },
     {
@@ -2152,7 +2155,8 @@
       "zh-chs": "80x25",
       "zh-cht": "80x25",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->0"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSizeDropDown->termSizeList->0",
+        "terminal.handlebars->p12->9->1->terminalSizeDropDown->termSizeList->0"
       ]
     },
     {
@@ -4645,7 +4649,8 @@
       "zh-chs": "备用（F10 = ESC + 0）",
       "zh-cht": "備用（F10 = ESC + 0）",
       "xloc": [
-        "default.handlebars->29->887"
+        "default.handlebars->29->887",
+        "terminal.handlebars->3->19"
       ]
     },
     {
@@ -5931,7 +5936,8 @@
       "zh-chs": "退格键",
       "zh-cht": "退格鍵",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
+        "terminal.handlebars->p12->9->3"
       ]
     },
     {
@@ -6471,7 +6477,10 @@
       "xloc": [
         "default.handlebars->29->880",
         "default.handlebars->29->889",
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons",
+        "terminal.handlebars->3->21",
+        "terminal.handlebars->3->7",
+        "terminal.handlebars->p12->9->1->terminalSettingsButtons"
       ]
     },
     {
@@ -6570,6 +6579,7 @@
         "login.handlebars->dialog->idx_dlgButtonBar",
         "login2.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
+        "terminal.handlebars->p12->dialog->idx_dlgButtonBar",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar"
       ]
     },
@@ -8652,6 +8662,7 @@
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3",
         "desktop.handlebars->p11->deskarea0->deskarea1->3->connectbutton1span",
         "mstsc.handlebars->main->1->3->1->8->1->0",
+        "terminal.handlebars->p12->5->3->connectbutton2span",
         "xterm.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -8794,6 +8805,7 @@
         "default-mobile.handlebars->9->4",
         "default.handlebars->29->11",
         "desktop.handlebars->3->4",
+        "terminal.handlebars->3->4",
         "xterm.handlebars->9->4"
       ]
     },
@@ -8904,6 +8916,7 @@
         "default.handlebars->29->9",
         "default.handlebars->29->943",
         "desktop.handlebars->3->2",
+        "terminal.handlebars->3->2",
         "xterm.handlebars->9->2"
       ]
     },
@@ -9925,7 +9938,8 @@
       "zh-chs": "Ctl-C",
       "zh-cht": "Ctl-C",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
+        "terminal.handlebars->p12->9->3"
       ]
     },
     {
@@ -9945,7 +9959,8 @@
       "zh-chs": "Ctl-X",
       "zh-cht": "Ctl-X",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
+        "terminal.handlebars->p12->9->3"
       ]
     },
     {
@@ -9965,7 +9980,8 @@
       "zh-chs": "Ctrl",
       "zh-cht": "Ctrl",
       "xloc": [
-        "default.handlebars->29->46"
+        "default.handlebars->29->46",
+        "terminal.handlebars->3->6"
       ]
     },
     {
@@ -10302,6 +10318,7 @@
         "default.handlebars->filesContextMenu->5",
         "desktop.handlebars->p11->dialog->idx_dlgButtonBar->5",
         "player.handlebars->p11->dialog->idx_dlgButtonBar->5",
+        "terminal.handlebars->p12->dialog->idx_dlgButtonBar->5",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar->5"
       ]
     },
@@ -10758,7 +10775,8 @@
       "zh-cht": "被拒絕",
       "xloc": [
         "default.handlebars->29->837",
-        "desktop.handlebars->3->7"
+        "desktop.handlebars->3->7",
+        "terminal.handlebars->3->11"
       ]
     },
     {
@@ -12060,6 +12078,7 @@
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->disconnectbutton1span",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->3->disconnectbutton2span",
         "desktop.handlebars->p11->deskarea0->deskarea1->3->disconnectbutton1span",
+        "terminal.handlebars->p12->5->3->disconnectbutton2span",
         "xterm.handlebars->p11->deskarea0->deskarea1->3"
       ]
     },
@@ -12113,6 +12132,8 @@
         "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->3->p13Status",
         "desktop.handlebars->3->1",
         "desktop.handlebars->p11->deskarea0->deskarea1->3->deskstatus",
+        "terminal.handlebars->3->1",
+        "terminal.handlebars->p12->5->3->termstatus",
         "xterm.handlebars->9->1"
       ]
     },
@@ -13307,7 +13328,8 @@
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->deskButtonMenu->5",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
+        "terminal.handlebars->p12->9->3"
       ]
     },
     {
@@ -14959,14 +14981,16 @@
       "zh-chs": "于{0}到期",
       "zh-cht": "於{0}到期",
       "xloc": [
-        "desktop.handlebars->3->26"
+        "desktop.handlebars->3->26",
+        "terminal.handlebars->3->24"
       ]
     },
     {
       "en": "Expires {0}",
       "nl": "vervalt op {0}",
       "xloc": [
-        "desktop.handlebars->3->27"
+        "desktop.handlebars->3->27",
+        "terminal.handlebars->3->25"
       ]
     },
     {
@@ -15006,7 +15030,8 @@
       "zh-chs": "扩充式ASCII",
       "zh-cht": "擴充式ASCII",
       "xloc": [
-        "default.handlebars->29->884"
+        "default.handlebars->29->884",
+        "terminal.handlebars->3->16"
       ]
     },
     {
@@ -15026,7 +15051,8 @@
       "zh-chs": "扩充式ASCII",
       "zh-cht": "擴充式ASCII",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons",
+        "terminal.handlebars->p12->9->1->terminalSettingsButtons"
       ]
     },
     {
@@ -15187,7 +15213,8 @@
       "zh-cht": "無法啟動遠程終端接合{0}（{1}）",
       "xloc": [
         "default.handlebars->29->838",
-        "desktop.handlebars->3->8"
+        "desktop.handlebars->3->8",
+        "terminal.handlebars->3->12"
       ]
     },
     {
@@ -18201,7 +18228,9 @@
       "zh-cht": "Intel（F10 = ESC + [OM）",
       "xloc": [
         "default.handlebars->29->886",
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons",
+        "terminal.handlebars->3->18",
+        "terminal.handlebars->p12->9->1->terminalSettingsButtons"
       ]
     },
     {
@@ -18241,7 +18270,8 @@
       "zh-chs": "英特尔ASCII",
       "zh-cht": "Intel ASCII",
       "xloc": [
-        "default.handlebars->29->885"
+        "default.handlebars->29->885",
+        "terminal.handlebars->3->17"
       ]
     },
     {
@@ -18385,6 +18415,7 @@
         "default-mobile.handlebars->9->5",
         "default.handlebars->29->12",
         "desktop.handlebars->3->5",
+        "terminal.handlebars->3->5",
         "xterm.handlebars->9->5"
       ]
     },
@@ -18965,7 +18996,8 @@
       "zh-cht": "Intel® AMT重定向端口或KVM功能已禁用",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning->3",
-        "default.handlebars->container->column_l->p12->p12warning->3"
+        "default.handlebars->container->column_l->p12->p12warning->3",
+        "terminal.handlebars->p12->p12warning->3"
       ]
     },
     {
@@ -19987,7 +20019,9 @@
       "zh-cht": "如果",
       "xloc": [
         "default.handlebars->29->881",
-        "default.handlebars->29->890"
+        "default.handlebars->29->890",
+        "terminal.handlebars->3->22",
+        "terminal.handlebars->3->8"
       ]
     },
     {
@@ -25919,6 +25953,7 @@
         "login.handlebars->dialog->idx_dlgButtonBar",
         "login2.handlebars->dialog->idx_dlgButtonBar",
         "player.handlebars->p11->dialog->idx_dlgButtonBar",
+        "terminal.handlebars->p12->dialog->idx_dlgButtonBar",
         "xterm.handlebars->p11->dialog->idx_dlgButtonBar"
       ]
     },
@@ -26971,7 +27006,9 @@
         "default.handlebars->29->923",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
-        "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3"
+        "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
+        "terminal.handlebars->3->23",
+        "terminal.handlebars->p12->9->3"
       ]
     },
     {
@@ -26991,7 +27028,8 @@
       "zh-chs": "将文本粘贴到终端中",
       "zh-cht": "將文本黏貼到終端中",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->3",
+        "terminal.handlebars->p12->9->3"
       ]
     },
     {
@@ -28619,7 +28657,8 @@
       "zh-cht": "收到無效的網絡數據",
       "xloc": [
         "default.handlebars->29->840",
-        "desktop.handlebars->3->10"
+        "desktop.handlebars->3->10",
+        "terminal.handlebars->3->14"
       ]
     },
     {
@@ -29324,7 +29363,8 @@
       "zh-cht": "遠程電腦未打開電源，請單擊此處以發出電源命令。",
       "xloc": [
         "default.handlebars->container->column_l->p11->p11warning2->3",
-        "default.handlebars->container->column_l->p12->p12warning2->3"
+        "default.handlebars->container->column_l->p12->p12warning2->3",
+        "terminal.handlebars->p12->p12warning2->3"
       ]
     },
     {
@@ -31686,7 +31726,8 @@
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->3",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->specialKeyDropDown",
         "desktop.handlebars->p11->deskarea0->deskarea4->3",
-        "messenger.handlebars->xbottom"
+        "messenger.handlebars->xbottom",
+        "terminal.handlebars->p12->9->1->specialKeyDropDown"
       ]
     },
     {
@@ -31927,7 +31968,8 @@
       "zh-chs": "发送选定的特殊键",
       "zh-cht": "發送選擇的特殊鍵",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->specialKeyDropDown"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->specialKeyDropDown",
+        "terminal.handlebars->p12->9->1->specialKeyDropDown"
       ]
     },
     {
@@ -32449,7 +32491,8 @@
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->1",
         "default.handlebars->container->column_l->p12->termTable->1->1->0->1->1",
-        "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->1"
+        "default.handlebars->container->column_l->p13->p13toolbar->1->0->1->1",
+        "terminal.handlebars->p12->5->1"
       ]
     },
     {
@@ -32581,7 +32624,8 @@
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
         "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1",
-        "desktop.handlebars->p11->deskarea0->deskarea4->1"
+        "desktop.handlebars->p11->deskarea0->deskarea4->1",
+        "terminal.handlebars->p12->9->1"
       ]
     },
     {
@@ -32814,6 +32858,7 @@
         "default.handlebars->29->249",
         "default.handlebars->29->276",
         "desktop.handlebars->3->3",
+        "terminal.handlebars->3->3",
         "xterm.handlebars->9->3"
       ]
     },
@@ -35678,6 +35723,12 @@
       ]
     },
     {
+      "en": "Terminal Session Latency",
+      "xloc": [
+        "terminal.handlebars->p12->9->1"
+      ]
+    },
+    {
       "en": "Terminal Sharing",
       "xloc": [
         "message.handlebars->3->4",
@@ -36272,7 +36323,8 @@
       "zh-cht": "超時",
       "xloc": [
         "default.handlebars->29->839",
-        "desktop.handlebars->3->9"
+        "desktop.handlebars->3->9",
+        "terminal.handlebars->3->13"
       ]
     },
     {
@@ -36603,7 +36655,8 @@
       "zh-chs": "切换F1至F10键仿真类型",
       "zh-cht": "切換F1至F10鍵仿真類型",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons",
+        "terminal.handlebars->p12->9->1->terminalSettingsButtons"
       ]
     },
     {
@@ -36771,7 +36824,8 @@
       "zh-chs": "切换终端仿真类型",
       "zh-cht": "切換終端仿真類型",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons",
+        "terminal.handlebars->p12->9->1->terminalSettingsButtons"
       ]
     },
     {
@@ -36811,7 +36865,8 @@
       "zh-chs": "切换返回键将发送的内容",
       "zh-cht": "切換返回鍵將發送的內容",
       "xloc": [
-        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons"
+        "default.handlebars->container->column_l->p12->termTable->1->1->6->1->1->terminalSettingsButtons",
+        "terminal.handlebars->p12->9->1->terminalSettingsButtons"
       ]
     },
     {
@@ -37188,7 +37243,8 @@
       "zh-chs": "UTF8终端",
       "zh-cht": "UTF8終端",
       "xloc": [
-        "default.handlebars->29->883"
+        "default.handlebars->29->883",
+        "terminal.handlebars->3->15"
       ]
     },
     {
@@ -38881,7 +38937,8 @@
       "zh-chs": "VT100 +（F10 = ESC + [OY）",
       "zh-cht": "VT100 +（F10 = ESC + [OY）",
       "xloc": [
-        "default.handlebars->29->888"
+        "default.handlebars->29->888",
+        "terminal.handlebars->3->20"
       ]
     },
     {
@@ -39429,7 +39486,8 @@
       "zh-cht": "正在等待用戶授予訪問權限...",
       "xloc": [
         "default.handlebars->29->836",
-        "desktop.handlebars->3->6"
+        "desktop.handlebars->3->6",
+        "terminal.handlebars->3->10"
       ]
     },
     {
@@ -43240,6 +43298,8 @@
         "desktop.handlebars->p11->deskarea0->deskarea1->3->idx_deskFullBtn2",
         "desktop.handlebars->p11->dialog->dialogHeader->id_dialogclose",
         "player.handlebars->p11->dialog->dialogHeader->id_dialogclose",
+        "terminal.handlebars->p12->5->3->idx_termFullBtn2",
+        "terminal.handlebars->p12->dialog->dialogHeader->id_dialogclose",
         "xterm.handlebars->p11->dialog->dialogHeader->id_dialogclose"
       ]
     },
