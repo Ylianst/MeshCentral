@@ -192,8 +192,15 @@
       "_orphanAgentUser": "admin",
       "___userSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
       "_userSessionIdleTimeout": 30,
-      "__userConsentFlags__": "Set to: 1 for desktop, 2 for terminal, 3 for files, 7 for all",
-      "_userConsentFlags": 7,
+      "userConsentFlags": {
+        "desktopnotify": true,
+        "terminalnotify": true,
+        "filenotify": true,
+        "desktopprompt": true,
+        "terminalprompt": true,
+        "fileprompt": true,
+        "desktopprivacybar": true
+      },
       "_urlSwitching": false,
       "_desktopPrivacyBarText": "Your privacy bar message",
       "_limits": {
