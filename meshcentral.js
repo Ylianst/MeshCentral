@@ -1110,6 +1110,19 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 delete obj.config.domains[i].agentcustomization;
             }
+
+            // Convert user consent flags
+            if (typeof obj.config.domains[i].userconsentflags == 'object') {
+                var flags = 0;
+                if (obj.config.domains[i].userconsentflags.desktopnotify == true) { flags |= 1; }
+                if (obj.config.domains[i].userconsentflags.terminalnotify == true) { flags |= 2; }
+                if (obj.config.domains[i].userconsentflags.filenotify == true) { flags |= 4; }
+                if (obj.config.domains[i].userconsentflags.desktopprompt == true) { flags |= 8; }
+                if (obj.config.domains[i].userconsentflags.terminalprompt == true) { flags |= 16; }
+                if (obj.config.domains[i].userconsentflags.fileprompt == true) { flags |= 32; }
+                if (obj.config.domains[i].userconsentflags.desktopprivacybar == true) { flags |= 64; }
+                obj.config.domains[i].userconsentflags = flags;
+            }
         }
 
         // Log passed arguments into Windows Service Log

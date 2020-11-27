@@ -268,7 +268,20 @@
           "agentAllowedIP": { "type": "string" },
           "agentBlockedIP": { "type": "string" },
           "userSessionIdleTimeout": { "type": "integer" },
-          "userConsentFlags": { "type": "integer" },
+          "userConsentFlags": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Use this section to require user consent for this domain.",
+            "properties": {
+              "desktopnotify": { "type": "boolean", "default": false, "description": "Enable desktop notification for this domain." },
+              "terminalnotify": { "type": "boolean", "default": false, "description": "Enable terminal notification for this domain." },
+              "filenotify": { "type": "boolean", "default": false, "description": "Enable files notification for this domain." },
+              "desktopprompt": { "type": "boolean", "default": false, "description": "Enable desktop prompt for this domain." },
+              "terminalprompt": { "type": "boolean", "default": false, "description": "Enable terminal user prompt for this domain." },
+              "fileprompt": { "type": "boolean", "default": false, "description": "Enable files prompt for this domain." },
+              "desktopprivacybar": { "type": "boolean", "default": false, "description": "Enable remote desktop privacy bar for this domain." }
+            }
+          },
           "urlSwitching": { "type": "boolean" },
           "desktopPrivacyBarText": { "type": "string" },
           "limits": {
