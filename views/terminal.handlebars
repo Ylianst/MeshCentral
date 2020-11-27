@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="robots" content="noindex,nofollow">
+    <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-redir-ws-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-wsman-ws-0.2.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-ws-0.1.1{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/amt-terminal-0.0.2{{min}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    <title>{{{title}}}</title>
+</head>
+<body style="overflow:hidden;background-color:black">
+    <div id=p12 style="overflow:hidden">
+        <div id="p12warning" onclick=showFeaturesDlg()>
+            <div class="icon2"></div>
+            <div class="warningbox">Intel&reg; AMT Redirection port or KVM feature is disabled<span id="p12warninga">, click here to enable it.</span></div>
+        </div>
+        <div id="p12warning2" onclick=showPowerActionDlg()>
+            <div class="icon2"></div>
+            <div class="warningbox">Remote computer is not powered on, click here to issue a power command.</div>
+        </div>
+        <div class="areaHead" style="position:absolute;top:0;left:0;right:0;height:24px">
+            <div class="toright2">
+                <div id="p11power" style="margin-top:3px;margin-right:4px"></div>
+                <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                <div id="terminalCustomUiButtons" style="float:left"></div>
+            </div>
+            <div>
+                <div id="idx_termFullBtn2" onclick=deskToggleFull(event)>&nbsp;&#x2716;</div>
+                <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
+                &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span>
+            </div>
+        </div>
+        <div id="termarea3xdiv" style="position:absolute;top:28px;bottom:28px;left:0;right:0"></div>
+        <div class="areaFoot" style="position:absolute;bottom:0;left:0;right:0;height:24px">
+            <div class="toright2">
+                <span id="TermLatency" title="Terminal Session Latency"></span>
+                <span id="TermTimer" title="Session time"></span>&nbsp;
+                <span id="terminalSettingsButtons" style="display:none">
+                    <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()" />
+                    <input id="id_tfxkeysbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)" title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
+                    <input id="id_ttypebutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="Extended Ascii" title="Toggle terminal emulation type" onclick="termToggleType()" />
+                </span>
+                <span id="terminalSizeDropDown" style="display:none">
+                    <select id="termSizeList" onkeypress="return false"><option value="1">80x25</option><option value="2">100x30</option></select>
+                </span>
+                <span id="specialKeyDropDown">
+                    <select id="specialkeylist" onkeypress="return false"></select>
+                    <input id="specialkeylistinput" type="button" onkeypress="return false" class="bottombutton" value="Send" title="Send the selected special key" onclick="sendSpecialKey()" />
+                </span>
+            </div>
+            <div>
+                &nbsp;
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlcbutton" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="ctrlxbutton" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="escbutton" value="ESC" onclick="termSendKey(27,'escbutton')" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="bsbutton" value="Backspace" onclick="termSendKey(8,'bsbutton')" style="display:none" />
+                <input type=button onkeypress="return false" onkeydown="return false" class="bottombutton" id="pastebutton" value="Paste" title="Paste text into the terminal" onclick="showTermPasteDialog()" style="display:none" />
+            </div>
+        </div>
+        <div id=p12TermConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p12clearConsoleMsg()></div>
+        <div id=dialog class="noselect" style="display:none">
+            <div id=dialogHeader>
+                <div tabindex=0 id=id_dialogclose onclick=setDialogMode() onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
+                <div id=id_dialogtitle></div>
+            </div>
+            <div id=dialogBody>
+                <div id=dialog1>
+                    <div id=id_dialogMessage style=""></div>
+                </div>
+                <div id=dialog2 style="">
+                    <div id=id_dialogOptions></div>
+                </div>
+            </div>
+            <div id="idx_dlgButtonBar">
+                <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)">
+                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)">
+                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none" onclick="dialogclose(2)"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var sessionActivity = null;
+        var desktop = null;
+        var agentPresent = true;
+        var intelAmtPresent = false;
+        var p11DeskConsoleMsgTimer = null;
+        var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
+        var domain = '{{{domain}}}';
+        var domainUrl = '{{{domainurl}}}';
+        var authCookie = '{{{authCookie}}}';
+        var urlargs = parseUriArgs();
+        var debugmode = urlargs.debug;
+        var attemptWebRTC = false;
+        var updateSessionTimer = null;
+        var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
+        var webPageFullScreen = false;
+        var terminal = null;
+        var p12TermConsoleMsgTimer = null;
+        var xterm = null;
+        var xtermfit = null;
+        var xtermResizeTimer = null;
+        var expire = '{{{expire}}}';
+        if (expire != '') { QH('p11power', printFlexDateTime(new Date(parseInt(expire)))); }
+
+        function start() {
+            //window.onresize = deskAdjust;
+            //document.onkeypress = ondockeypress;
+            //document.onkeydown = ondockeydown;
+            //document.onkeyup = ondockeyup;
+            updateTerminalButtons();
+
+            window.onresize = function () { if (xtermfit != null) { xtermfit.fit(); } }
+
+            // Terminal special keys
+            var x = '';
+            for (var c = 1; c < 27; c++) x += '<option value=\'' + c + '\'>' + "Ctrl" + '-' + String.fromCharCode(64 + c) + ' (' + c + ')</option>';
+            QH('specialkeylist', x);
+        }
+
+
+
+        var terminalNode;
+        function setupTerminal() {
+            // Setup the terminal
+            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
+            terminalNode = currentNode;
+            updateTerminalButtons();
+        }
+
+        // Show and enable the right buttons
+        function updateTerminalButtons() {
+            var termState = ((terminal != null) && (terminal.state != 0));
+
+            // Show the right buttons
+            QV('disconnectbutton2span', termState == true);
+            QV('connectbutton2span', termState == false);
+            //QV('terminalSizeDropDown', termState == false);
+
+            // Enable buttons
+            QE('connectbutton2', true);
+
+            // Key buttons
+            QE('ctrlcbutton', termState);
+            QE('ctrlxbutton', termState);
+            QE('escbutton', termState);
+            QE('bsbutton', termState);
+            QE('pastebutton', termState);
+            QE('specialkeylist', termState);
+            QE('specialkeylistinput', termState);
+
+            // Terminal settings
+            QV('terminalSettingsButtons', (terminal) && (terminal.contype == 2));
+            if (terminal) {
+                Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+                Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
+                Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n') ? "CR+LF" : "LF";
+            }
+
+            // Display extra buttons on legacy terminal
+            var xtermActive = true;
+            QV('termarea3xdiv', xtermActive);
+            QV('bsbutton', !xtermActive);
+            QV('pastebutton', !xtermActive);
+            QV('devListToolbarViewIcons2', xtermActive);
+            QE('termSizeList', terminal == null);
+        }
+
+        // Called when the terminal state changes
+        function onTerminalStateChange(xterminal, state) {
+            var xstate = state;
+            if ((xstate == 3) && (xterminal.contype == 2)) { xstate++; }
+            var str = StatusStrs[xstate];
+            if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+            QH('termstatus', str);
+            switch (state) {
+                case 0:
+                    // Disconnected, clear the terminal
+                    QH('termtitle', '');
+                    QV('termRecordIcon', false);
+                    if (xterm == null) {
+                        xterminal.m.TermResetScreen();
+                        xterminal.m.TermDraw();
+                    } else {
+                        xterm.dispose();
+                        xterm = xtermfit = null;
+                    }
+                    if (terminal != null) { terminal.Stop(); terminal = null; }
+                    break;
+                case 3:
+                    if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
+                    terminal.startTime = new Date();
+                    if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
+                    if (xterm != null) { xterm.focus(); }
+                    break;
+                default:
+                    //console.log('Unhandled onTerminalStateChange state', state);
+                    break;
+            }
+            updateTerminalButtons();
+        }
+
+        function updateSessionTime() {
+            // Terminal
+            var latencyStr = '', seconds = 0;
+            if (terminal && terminal.startTime) {
+                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
+                seconds = Math.floor((new Date() - terminal.startTime) / 1000);
+                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+            } else {
+                QH('TermTimer', '');
+            }
+
+            if (terminal == null) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
+        }
+
+        // DEBUG
+        var autoConnectTerminalTimer = null;
+        function autoConnectTerminal(e) { if (autoConnectTerminalTimer == null) { autoConnectTerminalTimer = setInterval(connectTerminal, 100); } else { clearInterval(autoConnectTerminalTimer); autoConnectTerminalTimer = null; } }
+
+        // Handles a tunnel to a remote shell
+        function CreateRemoteTunnel(onTunnelUpdate, options) {
+            var obj = { protocol: 1 };
+            if ((options != null) && (typeof options.protocol == 'number')) { obj.protocol = options.protocol; }
+            obj.onTunnelUpdate = onTunnelUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessBinaryData = function (data) { obj.onTunnelUpdate(data); }
+            obj.ProcessData = function (data) { obj.onTunnelUpdate(data); }
+            obj.terminalEmulation = 1;
+            obj.fxEmulation = 0;
+            obj.lineFeed = '\r\n';
+            return obj;
+        }
+
+        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+
+        // Send the new terminal size to the agent
+        function xTermSendResize() {
+            xtermResizeTimer = null;
+            if ((xterm != null) && (terminal != null) && (terminal.sendCtrlMsg != null)) { terminal.sendCtrlMsg(JSON.stringify({ ctrlChannel: '102938', type: 'termsize', cols: xterm.cols, rows: xterm.rows })); }
+        }
+
+        // Used to translate incoming agent console messages
+        var agentConsoleMessages = ['', "Waiting for user to grant access...", "Denied", "Failed to start remote terminal session, {0} ({1})", "Timeout", "Received invalid network data"];
+        function formatAgentConsoleMessage(msg, msgid, msgargs) {
+            var r;
+            if (msgargs == null) { msgargs = []; }
+            while (msgargs.length < 3) { msgargs.push(''); } // We need to call the format function in a way that works with older browsers and minifier, can't use apply() or ...
+            if (msgid && (msgid < agentConsoleMessages.length)) { r = EscapeHtml(format(agentConsoleMessages[msgid], (msgargs[0]), (msgargs[1]), (msgargs[2]))); } else { r = EscapeHtml(msg); }
+            return r.split('\n').join('<br />') + '<br /><br />';
+        }
+
+        function connectTerminal(e, contype, options) {
+            p12clearConsoleMsg();
+            if (!terminal) {
+                // Terminal setup
+                var termoptions = { protocol: ((options != null) && (typeof options.protocol == 'number')) ? options.protocol : 1 };
+                if (options && options.requireLogin) { termoptions.requireLogin = true; }
+                /*
+                if ([1, 2, 3, 4, 21, 22].indexOf(currentNode.agent.id) == -1) {
+                    if (Q('termSizeList').value == 1) { termoptions.cols = 80; termoptions.rows = 25; termoptions.xterm = true; }
+                    else if (Q('termSizeList').value == 2) { termoptions.cols = 100; termoptions.rows = 30; termoptions.xterm = true; }
+                    else if (Q('termSizeList').value == 3) {
+                        // TODO: Try to improve terminal auto-size.
+                        termoptions.cols = Math.floor((Q('column_l').clientWidth - 60) / 10);
+                        termoptions.rows = Math.floor((Q('column_l').clientHeight - 120) / 20);
+                        termoptions.xterm = true;
+                    }
+                }
+                */
+
+                // If shift is pressed
+                if ((e && (e.shiftKey == true))) {
+                    if (currentNode.agent.id > 4) {
+                        if (termoptions.protocol == 1) { termoptions.protocol = 7; } // Switch to user shell
+                    } else {
+                        if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
+                    }
+                }
+
+                // Setup a mesh agent xterm terminal
+                QV('termarea3xdiv', true);
+
+                // Setup the terminal with auto-fit
+                if (xterm != null) { xterm.dispose(); }
+                xtermfit = new FitAddon.FitAddon();
+                xterm = new Terminal();
+                if (xtermfit) { xterm.loadAddon(xtermfit); }
+                xterm.open(Q('termarea3xdiv')); // termarea3x
+                xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
+                if (xtermfit) { xtermfit.fit(); }
+                xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
+                xterm.onResize(function (size) {
+                    // Despam resize
+                    if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
+                    xtermResizeTimer = setTimeout(xTermSendResize, 200);
+                });
+
+                // Setup a terminal tunnel to the agent
+                terminal = CreateAgentRedirect(null, CreateRemoteTunnel(tunnelUpdate, options), serverPublicNamePort, authCookie, null, domainUrl);
+                terminal.debugmode = debugmode;
+                terminal.m.debugmode = debugmode;
+                terminal.options = { cols: xterm.cols, rows: xterm.rows };
+                if (options && options.requireLogin) { terminal.options.requireLogin = true; }
+                terminal.Start(null);
+                terminal.onStateChanged = onTerminalStateChange;
+                terminal.contype = 1;
+                terminal.attemptWebRTC = false; // Never do WebRTC on terminal, because of a race condition we can't do it.
+                terminal.onConsoleMessageChange = function (server, msg) {
+                    if (terminal.consoleMessage) {
+                        Q('p12TermConsoleMsg').innerHTML += formatAgentConsoleMessage(terminal.consoleMessage, terminal.consoleMessageId, terminal.consoleMessageArgs);
+                        QV('p12TermConsoleMsg', true);
+                        if (p12TermConsoleMsgTimer != null) { clearTimeout(p12TermConsoleMsgTimer); }
+                        if (terminal.consoleMessageTimeout) { p12TermConsoleMsgTimer = setTimeout(p12clearConsoleMsg, terminal.consoleMessageTimeout * 1000); }
+                    } else {
+                        p12clearConsoleMsg();
+                    }
+                };
+            } else {
+                terminal.Stop();
+                terminal = null;
+            }
+            Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        var terminalEmulations = ["UTF8 Terminal", "Extended ASCII", "Intel ASCII"];
+        function termToggleType() {
+            if (!terminal || xxdialogMode) return;
+            terminal.m.terminalEmulation = (terminal.m.terminalEmulation + 1) % 3;
+            Q('id_ttypebutton').value = terminalEmulations[terminal.m.terminalEmulation];
+            Q('id_ttypebutton').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        var fxEmulations = ["Intel (F10 = ESC+[OM)", "Alternate (F10 = ESC+0)", "VT100+ (F10 = ESC+[OY)"];
+        function termToggleFx() {
+            if (!terminal || xxdialogMode) return;
+            terminal.m.fxEmulation = (terminal.m.fxEmulation + 1) % 3;
+            Q('id_tfxkeysbutton').value = fxEmulations[terminal.m.fxEmulation];
+            Q('id_tfxkeysbutton').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        function termToggleCr() {
+            if (!terminal || xxdialogMode) return;
+            if (terminal.m.lineFeed == '\n') { terminal.m.lineFeed = '\r\n'; } else { terminal.m.lineFeed = '\n'; }
+            Q('id_tcrbutton').value = (terminal.m.lineFeed == '\r\n') ? "CR+LF" : "LF";
+        }
+
+        function termSendKey(key, id) {
+            if (!terminal || xxdialogMode) return;
+            if (xterm != null) {
+                if (terminal.sendText) {
+                    // MeshAgent
+                    terminal.sendText(String.fromCharCode(key));
+                } else {
+                    // CIRA
+                    terminal.send(String.fromCharCode(key));
+                }
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(key);
+                Q(id).blur(); // Deselect the connect button so the button does not get key presses.
+            }
+        }
+
+        function showTermPasteDialog() {
+            if (!terminal || xxdialogMode) return;
+            Q('pastebutton').blur();
+            setDialogMode(2, "Paste", 3, showTermPasteDialogEx, '<textarea id=d2pasteText style="width:100%;height:184px;resize:none"></textarea>');
+            Q('d2pasteText').focus();
+        }
+
+        function showTermPasteDialogEx() {
+            if (!terminal) return;
+            terminal.m.TermSendKeys(Q('d2pasteText').value);
+        }
+
+        // Send special key
+        function sendSpecialKey() {
+            if (xterm != null) {
+                terminal.sendText(String.fromCharCode(Q('specialkeylist').value));
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(Q('specialkeylist').value);
+                Q('specialkeylist').blur();
+                Q('specialkeylistinput').blur();
+            }
+        }
+
+        function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
+
+        //
+        // POPUP DIALOG
+        //
+
+        // null = Hidden, 1 = Generic Message
+        var xxdialogMode;
+        var xxdialogFunc;
+        var xxdialogButtons;
+        var xxdialogTag;
+        var xxcurrentView = -1;
+
+        // Display a dialog box
+        // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
+        function setDialogMode(x, y, b, f, c, tag) {
+            xxdialogMode = x;
+            xxdialogFunc = f;
+            xxdialogButtons = b;
+            xxdialogTag = tag;
+            QE('idx_dlgOkButton', true);
+            QV('idx_dlgOkButton', b & 1);
+            QV('idx_dlgCancelButton', b & 2);
+            QV('id_dialogclose', (b & 2) || (b & 8));
+            QV('idx_dlgDeleteButton', b & 4);
+            QV('idx_dlgButtonBar', b & 7);
+            if (y) QH('id_dialogtitle', y);
+            for (var i = 1; i < 8; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
+            QV('dialog', x);
+            if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+        }
+
+        function dialogclose(x) {
+            var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
+            setDialogMode();
+            if (((b & 8) || x) && f) f(x, t);
+        }
+
+        function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
+        function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
+        function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+        function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function setSessionActivity() { sessionActivity = Date.now(); /*QH('idleTimeoutNotify', '');*/ }
+        function printDate(d) { return d.toLocaleDateString(urlargs.locale); }
+        function printTime(d) { return d.toLocaleTimeString(urlargs.locale); }
+        function printDateTime(d) { return d.toLocaleString(urlargs.locale); }
+        function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return format("Expires at {0}", printTime(d)); } else { return format("Expires {0}", printDateTime(d)); } }
+
+        start();
+    </script>
+</body>
+</html>

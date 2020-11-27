@@ -4707,6 +4707,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in seconds
                 else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in seconds
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
+                else if (common.validateInt(command.p, 1, 2) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop
                 else if ((command.expire == null) && ((command.start == null) || (command.end == null) || (command.start > command.end))) { err = 'No time specified'; } // Check that a time range is present
                 else {
                     if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
@@ -4740,7 +4741,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         expireTime = command.end * 1000;
                     }
 
-                    const inviteCookie = parent.parent.encodeCookie({ a: 5, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, start: startTime, expire: expireTime, pid: publicid }, parent.parent.invitationLinkEncryptionKey);
+                    const inviteCookie = parent.parent.encodeCookie({ a: 5, p: command.p, uid: user._id, gn: command.guestname, nid: node._id, cf: command.consent, start: startTime, expire: expireTime, pid: publicid }, parent.parent.invitationLinkEncryptionKey);
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
                     command.start = startTime;
                     command.expire = expireTime;
@@ -4750,13 +4751,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                     var xdomain = (domain.dns == null) ? domain.id : '';
                     if (xdomain != '') xdomain += '/';
-                    var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + 'desktop?c=' + inviteCookie;
-                    if (serverName.split('.') == 1) { url = '/' + xdomain + 'desktop?c=' + inviteCookie; }
+                    var page = (command.p == 1) ? 'terminal' : 'desktop';
+                    var url = 'https://' + serverName + ':' + httpsPort + '/' + xdomain + page + '?c=' + inviteCookie;
+                    if (serverName.split('.') == 1) { url = '/' + xdomain + page + '?c=' + inviteCookie; }
                     command.url = url;
                     ws.send(JSON.stringify(command));
 
                     // Create a device sharing database entry
-                    parent.db.Set({ type: 'deviceshare', nodeid: node._id, domain: node.domain, publicid: publicid, startTime: startTime, expireTime: expireTime, userid: user._id, guestName: command.guestname, consent: command.consent, url: url });
+                    parent.db.Set({ _id: 'deviceshare-' + publicid, type: 'deviceshare', nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, startTime: startTime, expireTime: expireTime, userid: user._id, guestName: command.guestname, consent: command.consent, url: url });
 
                     // Send out an event that we added a device share
                     var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);

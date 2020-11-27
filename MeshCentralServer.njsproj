@@ -564,6 +564,7 @@
     <Content Include="views\messenger.handlebars" />
     <Content Include="views\mstsc.handlebars" />
     <Content Include="views\player.handlebars" />
+    <Content Include="views\terminal.handlebars" />
     <Content Include="views\terms-mobile.handlebars" />
     <Content Include="views\terms.handlebars" />
     <Content Include="views\xterm.handlebars" />

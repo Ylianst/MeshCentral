@@ -3107,7 +3107,7 @@
                     if (message.consent & 64) { y.push("Privacy bar"); }
                     if (y.length == 0) { y.push("None"); }
                     x += addHtmlValue("User Consent", y.join(', '));
-                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + "Remote Desktop Link" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + ((message.p == 1)?"Remote Terminal Link":"Remote Desktop Link") + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
                 }
@@ -6042,14 +6042,13 @@
                     for (var i = 0; i < deviceShares.length; i++) {
                         var dshare = deviceShares[i];
                         var trash = '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> <a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        var details = printFlexDateTime(new Date(dshare.startTime)) + ' to ' + printFlexDateTime(new Date(dshare.expireTime));
-                        if (dshare.consent) { if ((dshare.consent & 8) != 0) { details += ', Prompt for consent'; } }
+                        var details = format("{0}, {1} to {2}", ((dshare.p == 1)?"Terminal":"Desktop"), printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime)));
+                        if (dshare.consent) { if (((dshare.consent & 8) != 0) || ((dshare.consent & 16) != 0)) { details += ", Prompt for consent"; } }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + dshare.guestName + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + details + '</div></td></tr>';
                     }
                     x += '</tbody></table>';
                 }
                 QH('p10html4', x);
-
 
                 // Change the URL
                 var urlviewmode = '';
@@ -6208,24 +6207,11 @@
             meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devToast').value });
         }
 
-        /*
         function showShareDevice() {
             if (xxdialogMode) return;
-            var y = '', x = "Creates a link that allows a guest without an account to remote desktop into this device for up to 1 hour." + '<br /><br />';
+            var y = '', x = "Creates a link that allows a guest without an account to remote control this device for a limited time." + '<br /><br />';
             x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
-            var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
-            for (var i in options) { if (serverinfo.maxGuestSessionSharingTime >= i) { y += '<option value=' + i + '>' + options[i] + '</option>'; } }
-            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
-            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=73>' + "Prompt for consent" + '</option><option value=65>' + "Notify Only" + '</option></select>');
-            setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
-            showShareDeviceValidate();
-        }
-        */
-
-        function showShareDevice() {
-            if (xxdialogMode) return;
-            var y = '', x = "Creates a link that allows a guest without an account to remote desktop into this device for a limited time." + '<br /><br />';
-            x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
+            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()><option value=2>' + "Desktop" + '</option><option value=1>' + "Terminal" + '</option></select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
@@ -6234,7 +6220,7 @@
             x += '</div><div id=d2moderange style=display:none>';
             x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="Select Date & Time.." data-id="altinput">');
             x += '</div>';
-            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=73>' + "Prompt for consent" + '</option><option value=65>' + "Notify Only" + '</option></select>');
+            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>');
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
             showShareDeviceValidate();
             var tomorrow = new Date();
@@ -6253,10 +6239,13 @@
             QE('idx_dlgOkButton', ok);
         }
         function showShareDeviceEx(b, tag) {
+            var consent = 0;
+            if (Q('d2shareType').value == 1) { if (Q('d2userConsent').value == 1) { consent = 18; } else { consent = 2; } }  // Terminal Consent: 2 = Notify, 16 = Prompt
+            if (Q('d2shareType').value == 2) { if (Q('d2userConsent').value == 1) { consent = 73; } else { consent = 65; } } // Desktop Consent: 1 = Notify, 8 = Prompt, 64 = Privacy bar
             if (Q('d2timeRange').value == 0) {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), expire: parseInt(Q('d2inviteExpire').value), consent: parseInt(Q('d2userConsent').value) });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: parseInt(Q('d2shareType').value), expire: parseInt(Q('d2inviteExpire').value), consent: consent });
             } else {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), start: Math.floor(tag.selectedDates[0].getTime() / 1000), end: Math.floor(tag.selectedDates[1].getTime() / 1000), consent: parseInt(Q('d2userConsent').value) });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: parseInt(Q('d2shareType').value), start: Math.floor(tag.selectedDates[0].getTime() / 1000), end: Math.floor(tag.selectedDates[1].getTime() / 1000), consent: consent });
             }
         }
 
