@@ -463,6 +463,7 @@ module.exports.CreateDB = function (parent, func) {
                                 case 'ugrp': { dbUGrpChange(change, true); break; } // A user account has created
                             }
                         } else if (change.operationType == 'delete') {
+                            if ((change.documentKey == null) || (change.documentKey._id == null)) return;
                             var splitId = change.documentKey._id.split('/');
                             switch (splitId[0]) {
                                 case 'node': {

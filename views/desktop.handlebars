@@ -397,8 +397,7 @@
                     desktop.contype = 2;
                 } else if ((contype == null) || (contype == 1) || (contype == 3)) {
                     // Setup the Mesh Agent remote desktop
-                    var meshserver = null;
-                    desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
+                    desktop = CreateAgentRedirect(null, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
                     desktop.m.mouseCursorActive(true);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
