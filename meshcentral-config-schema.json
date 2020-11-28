@@ -157,7 +157,7 @@
       "items": {
         "type": "object",
         "properties": {
-          "siteStyle": { "type": "integer", "default": 1, "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages." },
+          "siteStyle": { "type": "integer", "default": 2, "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages." },
           "title": { "type": "string", "default": "MeshCentral", "description": "The title of this web site. All web pages will have this title." },
           "title2": { "type": "string", "default": null, "description": "Secondary title text that is placed on the upper right on the title on many web pages." },
           "titlePicture": { "type": "string", "default": null, "description": "Web site .png logo file that is 450x66 in size placed in meshcentral-data that is used on the top of many pages." },
