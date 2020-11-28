@@ -241,6 +241,12 @@ function createMeshCore(agent) {
         for (var i in obj.DAIPC._daipc) { if (obj.DAIPC._daipc[i]._registered != null) { obj.DAIPC._daipc[i]._send(x); } }
     }
 
+    // Send this object to a specific registered local applications
+    function sendToRegisteredApp(appid, x) {
+        if ((obj.DAIPC == null) || (obj.DAIPC._daipc == null)) return;
+        for (var i in obj.DAIPC._daipc) { if (obj.DAIPC._daipc[i]._registered == appid) { obj.DAIPC._daipc[i]._send(x); } }
+    }
+
     // Send list of registered apps to the server
     function updateRegisteredAppsToServer() {
         if ((obj.DAIPC == null) || (obj.DAIPC._daipc == null)) return;
@@ -964,6 +970,11 @@ function createMeshCore(agent) {
                             cpuuse.sessionid = data.sessionid;
                             cpuuse.tag = data.tag;
                             cpuuse.then(function (data) { mesh.SendCommand(JSON.stringify({ action: 'msg', type: 'cpuinfo', cpu: data, memory: require('sysinfo').memUtilization(), sessionid: this.sessionid, tag: this.tag })); }, function (ex) { });
+                            break;
+                        case 'localapp':
+                            // Send a message to a local application
+                            sendConsoleText('localappMsg: ' + data.appid + ', ' + JSON.stringify(data.value));
+                            if (data.appid != null) { sendToRegisteredApp(data.appid, data.value); } else { broadcastToRegisteredApps(data.value); }
                             break;
                         default:
                             // Unknown action, ignore it.
