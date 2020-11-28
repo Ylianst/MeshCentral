@@ -99,8 +99,10 @@
         "syslogjson": { "type": "string" },
         "webrtcConfig": {
           "type": "object",
+          "additionalProperties": false,
+          "description": "The STUN servers used for WebRTC, if not specified the Google and Mozilla servers and used when the server is not in LAN mode.",
           "properties": {
-            "iceServers": { "type": "array", "uniqueItems": true, "items": { "type": "object", "properties": { "urls": { "type": "string" } }, "required": [ "urls" ] } }
+            "iceServers": { "type": "array", "uniqueItems": true, "items": { "type": "object", "additionalProperties": false, "properties": { "urls": { "type": "string" } }, "required": [ "urls" ] } }
           },
           "required": [ "iceServers" ]
         },
