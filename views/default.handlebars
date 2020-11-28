@@ -3837,9 +3837,14 @@
             var node = null, x = '';
             if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
             if ((node == null) || (node.sessions == null)) { setDialogMode(0); return false; }
-            if (node.sessions.help != null) { for (var j in node.sessions.help) { x += '<div style=margin-bottom:6px><b>' + EscapeHtml(j) + '</b></div><div style=margin-bottom:6px>' + EscapeHtml(node.sessions.help[j]) + '</div>'; } }
+            if (node.sessions.help != null) { for (var j in node.sessions.help) { x += '<div style="background-color:#CCC;padding:6px;border-radius:6px"><a style="float:right" onclick=closeDeviceHelpRequest("' + encodeURIComponentEx(j) + '","' + encodeURIComponentEx(node._id) + '")>' + "Dismiss" + '</a><div style=margin-bottom:6px><b>' + EscapeHtml(j) + '</b></div><div style=margin-bottom:6px>' + EscapeHtml(node.sessions.help[j]) + '</div></div>'; } }
             if (x != '') { setDialogMode(2, "Help Requests" + ' - ' + EscapeHtml(node.name), 1, null, x, 'HELPREQ-' + node._id); } else { setDialogMode(0); }
             return false;
+        }
+
+        function closeDeviceHelpRequest(appid, nodeid) {
+            setDialogMode(0);
+            meshserver.send({ action: 'msg', type: 'localapp', nodeid: decodeURIComponent(nodeid), appid: decodeURIComponent(appid), value: { cmd: "cancelhelp" } });
         }
 
         // Show currently active sessions on this device

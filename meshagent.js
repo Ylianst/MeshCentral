@@ -1336,6 +1336,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         else if (command.type == 'msg') { obj.sessions.msg = command.value; }
                         else if (command.type == 'app') { obj.sessions.app = command.value; }
                     }
+
+                    // Any "help" session must have an associated app, if not, remove it.
+                    if (obj.sessions.help != null) {
+                        for (var i in obj.sessions.help) { if (obj.sessions.app[i] == null) { delete obj.sessions.help[i]; } }
+                        if (Object.keys(obj.sessions.help).length == 0) { delete obj.sessions.help; }
+                    }
+
+                    // Inform everyone of updated sessions
                     obj.updateSessions();
                     break;
                 }
