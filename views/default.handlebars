@@ -5836,7 +5836,7 @@
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((connectivity & 1) && (meshrights & 8)) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                 //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
-                if ((node.agent!=null) && (node.agent.caps & 1) && (connectivity & 1) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4352) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
+                if ((node.agent!=null) && (node.agent.caps & 3) && (connectivity & 1) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4352) == 0))) { x += '<input type=button value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />'; }
 
                 // Custom UI
                 if ((customui != null) && (customui.devicebuttons != null)) {
@@ -6216,7 +6216,8 @@
             if (xxdialogMode) return;
             var y = '', x = "Creates a link that allows a guest without an account to remote control this device for a limited time." + '<br /><br />';
             x += addHtmlValue("Guest Name", '<input id=d2inviteName style=width:250px maxlength=128 type=text onkeyup=showShareDeviceValidate() />');
-            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()><option value=2>' + "Desktop" + '</option><option value=1>' + "Terminal" + '</option></select>');
+            x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + ((currentNode.agent.caps & 1)?('<option value=2>' + "Desktop" + '</option>'):'') + ((currentNode.agent.caps & 2)?('<option value=1>' + "Terminal" + '</option>'):'') + '</select>');
+
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option></select>');
@@ -6225,7 +6226,7 @@
             x += '</div><div id=d2moderange style=display:none>';
             x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="Select Date & Time.." data-id="altinput">');
             x += '</div>';
-            x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>');
+            if (currentNode.agent.caps & 1) { x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>'); }
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
             showShareDeviceValidate();
             var tomorrow = new Date();
@@ -6245,8 +6246,10 @@
         }
         function showShareDeviceEx(b, tag) {
             var consent = 0;
-            if (Q('d2shareType').value == 1) { if (Q('d2userConsent').value == 1) { consent = 18; } else { consent = 2; } }  // Terminal Consent: 2 = Notify, 16 = Prompt
-            if (Q('d2shareType').value == 2) { if (Q('d2userConsent').value == 1) { consent = 73; } else { consent = 65; } } // Desktop Consent: 1 = Notify, 8 = Prompt, 64 = Privacy bar
+            if (currentNode.agent.caps & 1) {
+                if (Q('d2shareType').value == 1) { if (Q('d2userConsent').value == 1) { consent = 18; } else { consent = 2; } }  // Terminal Consent: 2 = Notify, 16 = Prompt
+                if (Q('d2shareType').value == 2) { if (Q('d2userConsent').value == 1) { consent = 73; } else { consent = 65; } } // Desktop Consent: 1 = Notify, 8 = Prompt, 64 = Privacy bar
+            }
             if (Q('d2timeRange').value == 0) {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: parseInt(Q('d2shareType').value), expire: parseInt(Q('d2inviteExpire').value), consent: consent });
             } else {
