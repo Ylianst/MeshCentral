@@ -1104,6 +1104,7 @@ function CreateMeshCentralServer(config, args) {
                 return;
             }
             if ((obj.config.domains[i].auth == 'ldap') || (obj.config.domains[i].auth == 'sspi')) { obj.config.domains[i].newaccounts = 0; } // No new accounts allowed in SSPI/LDAP authentication modes.
+            if (obj.config.domains[i].sitestyle == null) { obj.config.domains[i].sitestyle = 2; } // Default to site style #2
 
             // Convert newAccountsRights from a array of strings to flags number.
             obj.config.domains[i].newaccountsrights = obj.common.meshServerRightsArrayToNumber(obj.config.domains[i].newaccountsrights);
