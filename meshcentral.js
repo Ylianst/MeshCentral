@@ -339,11 +339,23 @@ function CreateMeshCentralServer(config, args) {
 
         // Windows background service handling
         if ((obj.platform == 'win32') && (obj.service != null)) {
+            // Build MeshCentral parent path and Windows Service path
+            var mcpath = __dirname;
+            if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
+            var servicepath = obj.path.join(mcpath, 'WinService');
+
             // Check if we need to install, start, stop, remove ourself as a background service
             if (((obj.args.xinstall == true) || (obj.args.xuninstall == true) || (obj.args.start == true) || (obj.args.stop == true) || (obj.args.restart == true))) {
                 var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'rediraliasport', 'debug'];
                 for (i in xenv) { if (obj.args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: obj.args[xenv[i]] }); } } // Set some args as service environement variables.
-                var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: obj.path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
+
+                var serviceFilePath = null;
+                if (obj.fs.existsSync(obj.path.join(servicepath, 'winservice.js'))) { serviceFilePath = obj.path.join(servicepath, 'winservice.js'); }
+                else if (obj.fs.existsSync(obj.path.join(__dirname, '../WinService/winservice.js'))) { serviceFilePath = obj.path.join(__dirname, '../WinService/winservice.js'); }
+                else if (obj.fs.existsSync(obj.path.join(__dirname, 'winservice.js'))) { serviceFilePath = obj.path.join(__dirname, 'winservice.js'); }
+                if (serviceFilePath == null) { console.log('Unable to find winservice.js'); return; }
+
+                var svc = new obj.service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: servicepath, env: env, wait: 2, grow: 0.5 });
                 svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
                 svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
                 svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
@@ -353,7 +365,7 @@ function CreateMeshCentralServer(config, args) {
 
                 if (obj.args.xinstall == true) { try { svc.install(); } catch (e) { logException(e); } }
                 if (obj.args.stop == true || obj.args.restart == true) { try { svc.stop(); } catch (e) { logException(e); } }
-                if (obj.args.start == true || obj.args.restart == true) { try { svc.start(); } catch (e) { logException(e); } }
+                if (obj.args.start == true) { try { svc.start(); } catch (e) { logException(e); } }
                 if (obj.args.xuninstall == true) { try { svc.uninstall(); } catch (e) { logException(e); } }
                 return;
             }
@@ -361,16 +373,23 @@ function CreateMeshCentralServer(config, args) {
             // Windows service install using the external winservice.js
             if (obj.args.install == true) {
                 console.log('Installing MeshCentral as Windows Service...');
-                if (obj.fs.existsSync(obj.path.join(__dirname, '../WinService')) == false) { try { obj.fs.mkdirSync(obj.path.join(__dirname, '../WinService')); } catch (ex) { console.log('ERROR: Unable to create WinService folder: ' + ex); process.exit(); return; } }
-                try { obj.fs.createReadStream(obj.path.join(__dirname, 'winservice.js')).pipe(obj.fs.createWriteStream(obj.path.join(__dirname, '../WinService/winservice.js'))); } catch (ex) { console.log('ERROR: Unable to copy winservice.js: ' + ex); process.exit(); return; }
-                require('child_process').exec('node winservice.js --install', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, '../WinService') }, function (error, stdout, stderr) {
+                if (obj.fs.existsSync(servicepath) == false) { try { obj.fs.mkdirSync(servicepath); } catch (ex) { console.log('ERROR: Unable to create WinService folder: ' + ex); process.exit(); return; } }
+                try { obj.fs.createReadStream(obj.path.join(__dirname, 'winservice.js')).pipe(obj.fs.createWriteStream(obj.path.join(servicepath, 'winservice.js'))); } catch (ex) { console.log('ERROR: Unable to copy winservice.js: ' + ex); process.exit(); return; }
+                require('child_process').exec('node winservice.js --install', { maxBuffer: 512000, timeout: 120000, cwd: servicepath }, function (error, stdout, stderr) {
                     if ((error != null) && (error != '')) { console.log('ERROR: Unable to install MeshCentral as a service: ' + error); process.exit(); return; }
                     console.log(stdout);
                 });
                 return;
             } else if (obj.args.uninstall == true) {
                 console.log('Uninstalling MeshCentral Windows Service...');
-                if (obj.fs.existsSync(obj.path.join(__dirname, '../WinService')) == true) {
+                if (obj.fs.existsSync(servicepath) == true) {
+                    require('child_process').exec('node winservice.js --uninstall', { maxBuffer: 512000, timeout: 120000, cwd: servicepath }, function (error, stdout, stderr) {
+                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to uninstall MeshCentral service: ' + error); process.exit(); return; }
+                        console.log(stdout);
+                        try { obj.fs.unlinkSync(obj.path.join(servicepath, 'winservice.js')); } catch (ex) { }
+                        try { obj.fs.rmdirSync(servicepath); } catch (ex) { }
+                    });
+                } else if (obj.fs.existsSync(obj.path.join(__dirname, '../WinService')) == true) {
                     require('child_process').exec('node winservice.js --uninstall', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, '../WinService') }, function (error, stdout, stderr) {
                         if ((error != null) && (error != '')) { console.log('ERROR: Unable to uninstall MeshCentral service: ' + error); process.exit(); return; }
                         console.log(stdout);
@@ -2724,7 +2743,9 @@ function InstallModule(modulename, func, tag1, tag2) {
 
     child_process.exec(npmpath + ` install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
-            console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
+            var mcpath = __dirname;
+            if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
+            console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install ' + modulename + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
             process.exit();
             return;
         }
