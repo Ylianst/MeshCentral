@@ -32,6 +32,9 @@ function start() {
         } else if (fs.existsSync(path.join(__dirname, '../meshcentral/meshcentral.js'))) {
             runarg = path.join(__dirname, '../meshcentral/meshcentral.js');
             cwd = path.join(__dirname, '../meshcentral');
+        } else if (fs.existsSync(path.join(__dirname, '../meshcentral.js'))) {
+            runarg = path.join(__dirname, '../meshcentral.js');
+            cwd = path.join(__dirname, '..');
         }
         if (runarg == null) { console.log('ERROR: Unable to find MeshCentral.js'); process.exit(255); return; }
 
