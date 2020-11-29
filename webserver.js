@@ -4853,13 +4853,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.use(function (req, res, next) {
             // Set the real IP address of the request
             // If a trusted reverse-proxy is sending us the remote IP address, use it.
-            var ipex = '0.0.0.0';
-            if (typeof req.ip == 'string') { ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip; }
+            var ipex = '0.0.0.0', serverHost = req.headers.host;
+            if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
             if (
                 (obj.args.trustedproxy === true) ||
                 ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
                 ((typeof obj.args.tlsoffload == 'object') && (obj.args.tlsoffload.indexOf(ipex) >= 0))
             ) {
+                // Get client IP
                 if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
                     req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
                 } else if (req.headers['x-forwarded-for']) {
@@ -4869,6 +4870,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 } else {
                     req.clientIp = ipex;
                 }
+
+                // Get server host
+                if (req.headers['x-forwarded-host']) { serverHost = req.headers['x-forwarded-host']; }
             } else {
                 req.clientIp = ipex;
             }
@@ -4887,9 +4891,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 res.set(domain.httpheaders);
             } else {
                 // Use default security headers
-                var geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                var selfurl = req.headers['x-forwarded-host'] ? (' wss://' + req.headers['x-forwarded-host']) : (' wss://' + req.headers.host);
-                var headers = {
+                const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
+                const selfurl = ' wss://' + serverHost;
+                const headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
                     'X-Content-Type-Options': 'nosniff',
@@ -4928,7 +4932,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 // Set the real IP address of the request
                 // If a trusted reverse-proxy is sending us the remote IP address, use it.
                 var ipex = '0.0.0.0';
-                if (typeof req.ip == 'string') { ipex = (req.ip.startsWith('::ffff:')) ? req.ip.substring(7) : req.ip; }
+                if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
                 if (
                     (obj.args.trustedproxy === true) ||
                     ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
