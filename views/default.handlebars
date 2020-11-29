@@ -11697,7 +11697,7 @@
             if (xxdialogMode) return;
             haltEvent(e);
             userid = decodeURIComponent(userid);
-            var user = users[userid.toLowerCase()];
+            var user = users[userid];
             if (user == null) return;
             var uself = (userinfo._id == user._id);
             var x = '';
