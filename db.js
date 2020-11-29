@@ -1615,6 +1615,7 @@ module.exports.CreateDB = function (parent, func) {
     // Called when a user account has changed
     function dbUserChange(userChange, added) {
         if (parent.webserver == null) return;
+        common.unEscapeLinksFieldName(userChange.fullDocument);
         const user = performTypedRecordDecrypt([userChange.fullDocument])[0];
 
         // Update the user object in memory
@@ -1635,7 +1636,7 @@ module.exports.CreateDB = function (parent, func) {
         const usergroup = ugrpChange.fullDocument;
 
         // Update the user group object in memory
-        const uusergroup = parent.webserver.usergroups[usergroup._id];
+        const uusergroup = parent.webserver.userGroups[usergroup._id];
         for (var i in usergroup) { uusergroup[i] = usergroup[i]; }
         for (var i in uusergroup) { if (usergroup[i] == null) { delete uusergroup[i]; } }
 
