@@ -1380,7 +1380,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // User filtered events
                     if ((command.user != null) && ((user.siteadmin & 2) != 0)) { // SITERIGHT_MANAGEUSERS
                         // TODO: Add the meshes command.user has access to (???)
-                        var filter = ['user/' + domain.id + '/' + command.user.toLowerCase()];
+                        var filter = ['user/' + domain.id + '/' + command.user];
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
                             db.GetUserEvents(filter, domain.id, command.user, function (err, docs) {
@@ -1501,10 +1501,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if (common.validateString(command.lang, 1, 6) == false) return;
 
-                    // Always lowercase the email address
+                    // Always lowercase the language
                     command.lang = command.lang.toLowerCase();
 
-                    // Update the user's email
+                    // Update the user's language
                     var oldlang = user.lang;
                     if (command.lang == '*') { delete user.lang; } else { user.lang = command.lang; }
                     parent.db.SetUser(user);
@@ -1824,7 +1824,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else {
                             for (var i in command.users) {
                                 // Check if this is an existing user
-                                var newuserid = 'user/' + domain.id + '/' + command.users[i].user.toLowerCase();
+                                var newuserid = 'user/' + domain.id + '/' + command.users[i].user;
                                 var newuser = { type: 'user', _id: newuserid, name: command.users[i].user, creation: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { newuser.siteadmin = domain.newaccountsrights; }
                                 if (command.users[i].email != null) { newuser.email = command.users[i].email.toLowerCase(); if (command.users[i].emailVerified === true) { newuser.emailVerified = true; } } // Email, always lowercase
@@ -2347,7 +2347,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var unknownUsers = [], addedCount = 0, failCount = 0;
                         for (var i in command.usernames) {
                             // Check if the user exists
-                            var chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i].toLowerCase(), chguser = parent.users[chguserid];
+                            var chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i].toLowerCase();
+                            var chguser = parent.users[chguserid];
+                            if (chguser == null) { chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i]; chguser = parent.users[chguserid]; }
                             if (chguser != null) {
                                 // Add mesh to user
                                 if (chguser.links == null) { chguser.links = {}; }
@@ -2362,7 +2364,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 parent.parent.DispatchEvent(targets, obj, event);
 
                                 // Add a user to the user group
-                                group.links[chguserid] = { userid: chguser.id, name: chguser.name, rights: 1 };
+                                group.links[chguserid] = { userid: chguser._id, name: chguser.name, rights: 1 };
                                 addedCount++;
                             } else {
                                 unknownUsers.push(command.usernames[i]);
@@ -2415,7 +2417,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Check if the user exists
-                    if (command.userid.startsWith('user/') == false) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid.toLowerCase(); }
+                    if (command.userid.startsWith('user/') == false) {
+                        if (parent.users['user/' + removeUserDomain.id + '/' + command.userid.toLowerCase()] != null) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid.toLowerCase(); }
+                        else if (parent.users['user/' + removeUserDomain.id + '/' + command.userid] != null) { command.userid = 'user/' + removeUserDomain.id + '/' + command.userid; }
+                    }
+
                     var chguser = parent.users[command.userid];
                     if (chguser != null) {
                         var change = false;
@@ -2993,7 +2999,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Convert user names to userid's
                     if (command.userids == null) {
                         command.userids = [];
-                        for (var i in command.usernames) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                        for (var i in command.usernames) {
+                            if (parent.users['user/' + domain.id + '/' + command.usernames[i].toLowerCase()] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                            else if (parent.users['user/' + domain.id + '/' + command.usernames[i]] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i]); }
+                        }
                     }
                     var unknownUsers = [], successCount = 0, failCount = 0, msgs = [];
                     for (var i in command.userids) {
@@ -3108,7 +3117,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (command.userids == null) {
                     command.userids = [];
                     for (var i in command.usernames) {
-                        if (command.usernames[i] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                        if (command.usernames[i] != null) {
+                            if (parent.users['user/' + domain.id + '/' + command.usernames[i].toLowerCase()] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i].toLowerCase()); }
+                            else if (parent.users['user/' + domain.id + '/' + command.usernames[i]] != null) { command.userids.push('user/' + domain.id + '/' + command.usernames[i]); }
+                        }
                     }
                 }
 
