@@ -4392,7 +4392,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
                 if (parent.parent.smsserver == null) return;
                 if (common.validateString(command.phone, 1, 18) == false) break; // Check phone length
-                if (command.phone.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) == false) break; // Check phone
+                if (isPhoneNumber(command.phone) == false) break; // Check phone
+
                 const code = common.zeroPad(getRandomSixDigitInteger(), 6)
                 const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
                 parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
@@ -5143,7 +5144,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Split a string taking into account the quoats. Used for command line parsing
     function splitArgs(str) { var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi; do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null); return myArray; }
     function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
-    function isPhoneNumber(x) { return x.match(/^\(?([0-9]{3,4})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) }
+    function isPhoneNumber(x) { return x.match(/^\d{10}$/) || x.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) || x.match(/^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/); }
 
     function removeAllUnderScore(obj) {
         if (typeof obj != 'object') return obj;
