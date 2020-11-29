@@ -4888,7 +4888,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 // Use default security headers
                 var geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                var selfurl = (' wss://' + req.headers.host);
+                var selfurl = req.headers['x-forwarded-host'] ? (' wss://' + req.headers['x-forwarded-host']) : (' wss://' + req.headers.host);
                 var headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
