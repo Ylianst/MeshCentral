@@ -2274,7 +2274,7 @@ function createMeshCore(agent) {
                                     if ((process.cwd() != '//') && fs.existsSync(process.cwd() + 'core')) { cmd.path = process.cwd() + 'core'; }
                                 }
                             }
-                            MeshServerLogEx(49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
+                            MeshServerLogEx((cmd.ask == 'coredump')?104:49, [cmd.path], 'Download: \"' + cmd.path + '\"', this.httprequest);
                             if ((cmd.path == null) || (this.filedownload != null)) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }
                             this.filedownload = { id: cmd.id, path: cmd.path, ptr: 0 }
                             try { this.filedownload.f = fs.openSync(this.filedownload.path, 'rbN'); } catch (e) { this.write({ action: 'download', sub: 'cancel', id: this.filedownload.id }); delete this.filedownload; }

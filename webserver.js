@@ -3928,7 +3928,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (obj.fs.existsSync(coreDumpPath) == false) { try { obj.fs.mkdirSync(coreDumpPath); } catch (ex) { } }
             ws.xfilepath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', ws.xarg);
             ws.xid = 'coredump';
-            ws.send(JSON.stringify({ action: 'download', sub: 'start', ask: 'coredump', id: 'coredump' })); // Ask for a directory (test)
+            ws.send(JSON.stringify({ action: 'download', sub: 'start', ask: 'coredump', id: 'coredump' })); // Ask for a core dump file
         }
 
         // When data is received from the web socket, echo it back
@@ -4853,7 +4853,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         obj.app.use(function (req, res, next) {
             // Set the real IP address of the request
             // If a trusted reverse-proxy is sending us the remote IP address, use it.
-            var ipex = '0.0.0.0', serverHost = req.headers.host;
+            var ipex = '0.0.0.0', xforwardedhost = req.headers.host;
             if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
             if (
                 (obj.args.trustedproxy === true) ||
@@ -4872,7 +4872,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 }
 
                 // Get server host
-                if (req.headers['x-forwarded-host']) { serverHost = req.headers['x-forwarded-host']; }
+                if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host']; }
             } else {
                 req.clientIp = ipex;
             }
@@ -4892,7 +4892,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             } else {
                 // Use default security headers
                 const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-                const selfurl = ' wss://' + serverHost;
+                var selfurl = ' wss://' + req.headers.host;
+                if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
                 const headers = {
                     'Referrer-Policy': 'no-referrer',
                     'X-XSS-Protection': '1; mode=block',
