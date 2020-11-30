@@ -5144,7 +5144,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Split a string taking into account the quoats. Used for command line parsing
     function splitArgs(str) { var myArray = [], myRegexp = /[^\s"]+|"([^"]*)"/gi; do { var match = myRegexp.exec(str); if (match != null) { myArray.push(match[1] ? match[1] : match[0]); } } while (match != null); return myArray; }
     function toNumberIfNumber(x) { if ((typeof x == 'string') && (+parseInt(x) === x)) { x = parseInt(x); } return x; }
-    function isPhoneNumber(x) { return x.match(/^\d{10}$/) || x.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/) || x.match(/^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/); }
+
+    function isPhoneNumber(x) {
+        var ok = true;
+        if (x.startsWith('+')) { x = x.substring(1); }
+        for (var i = 0; i < x.length; i++) { var c = x.charCodeAt(i); if (((c < 48) || (c > 57)) && (c != 32) && (c != 45) && (c != 46)) { ok = false; } }
+        return ok && (x.length >= 10);
+    }
 
     function removeAllUnderScore(obj) {
         if (typeof obj != 'object') return obj;
