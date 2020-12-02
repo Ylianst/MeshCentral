@@ -85,6 +85,30 @@ if (process.argv.includes('-mesh'))
     process.exit();
 }
 
+if (process.argv.includes('-help'))
+{
+    console.log("\nYou can run the text version from the command line with the following command(s): ");
+    if ((msh.InstallFlags & 1) == 1)
+    {
+        console.log('./' + process.execPath.split('/').pop() + ' -connect');
+    }
+    if ((msh.InstallFlags & 2) == 2)
+    {
+        if (s)
+        {
+            console.log('./' + process.execPath.split('/').pop() + ' -update');
+            console.log('./' + process.execPath.split('/').pop() + ' -uninstall');
+        }
+        else
+        {
+            console.log('./' + process.execPath.split('/').pop() + ' -install');
+            console.log('./' + process.execPath.split('/').pop() + ' -install --installPath="/alternate/path"');
+        }
+    }
+    console.log('');
+    process.exit();
+}
+
 if ((msh.InstallFlags & 1) == 1)
 {
     buttons.unshift('Connect');
