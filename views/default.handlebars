@@ -7297,6 +7297,7 @@
 
         // Remote desktop special key combos for Windows
         function deskSendKeys() {
+            Q('DeskWD').blur();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var ks = Q('deskkeys').value;
             if (ks == 0) { // WIN+Down arrow
@@ -7468,6 +7469,7 @@
 
         // Show process dialogs
         function toggleDeskTools() {
+            Q('DeskToolsButton').blur();
             if (xxdialogMode) return;
             if (QS('DeskTools').display == 'none') {
                 QV('DeskTools', true);
@@ -7595,7 +7597,7 @@
         }
 
         // Toggle mouse and keyboard input
-        function toggleKvmControl() { putstore('DeskControl', (Q('DeskControl').checked?1:0)); QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red'; }
+        function toggleKvmControl() { Q('DeskControl').blur(); putstore('DeskControl', (Q('DeskControl').checked?1:0)); QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red'; }
 
         // Toggle desktop session recording
         function deskRecordSession() {
