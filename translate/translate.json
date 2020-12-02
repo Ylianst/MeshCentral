@@ -213,7 +213,7 @@
       "en": " Users need to login to this server once before they can be added to a device group.",
       "es": "Los usuarios deben iniciar sesión en este servidor una vez antes de poder agregarlos a un grupo de dispositivos.",
       "fi": " Käyttäjien on kirjauduttava sisään tähän palvelimeen kerran, ennen kuin heidät voidaan lisätä laiteryhmään.",
-      "fr": " Les utilisateurs doivent se connecter une fois sur ce serveur avant de pouvoir être ajoutés à un groupe de périphériques..",
+      "fr": " Les utilisateurs doivent se connecter une première fois sur ce serveur avant de pouvoir être ajoutés à un groupe de périphériques..",
       "hi": " डिवाइस समूह में जोड़े जाने से पहले उपयोगकर्ताओं को एक बार इस सर्वर में प्रवेश करना होगा।",
       "ja": " ユーザーは、デバイスグループに追加する前にこのサーバーに1回ログインする必要があります。",
       "ko": " 장치 그룹에 추가하려면 이 서버에 한 번 로그인 해야합니다.",
@@ -542,6 +542,7 @@
     },
     {
       "en": ", Prompt for consent",
+      "fr": ", demander le consentement",
       "xloc": [
         "default.handlebars->29->679"
       ]
@@ -680,7 +681,7 @@
       "en": ", you can access it now with:",
       "es": ", ahora puede acceder con:",
       "fi": ", voit käyttää sitä nyt:",
-      "fr": ", vous pouvez y accéder maintenant avec:",
+      "fr": ", vous pouvez y accéder maintenant avec :",
       "hi": ", आप इसे अभी एक्सेस कर सकते हैं:",
       "ja": "、あなたは今それを使ってそれにアクセスできます：",
       "ko": "이제 당신은 다음으로 접근 가능합니다:",
@@ -3003,7 +3004,7 @@
       "en": "Activate camera & microphone",
       "es": "Activar cámara y micrófono",
       "fi": "Aktivoi kamera ja mikrofoni",
-      "fr": "Activer caméra et microphone",
+      "fr": "Activer la caméra et le microphone",
       "hi": "कैमरा और माइक्रोफोन सक्रिय करें",
       "ja": "カメラとマイクを有効にする",
       "ko": "카메라 및 마이크 활성화",
@@ -3039,6 +3040,7 @@
     },
     {
       "en": "Activate to CCM, if ACM fails",
+      "fr": "Activer CCM, si ACM échoue",
       "xloc": [
         "default.handlebars->29->1408"
       ]
@@ -3683,7 +3685,7 @@
       "en": "Add a new computer to this device group by installing the mesh agent.",
       "es": "Agregue una nueva computadora a este grupo de dispositivos instalando el Agente Mesh.",
       "fi": "Lisää uusi tietokone tähän laiteryhmään asentamalla MeshAgent.",
-      "fr": "Ajoutez un nouvel ordinateur à ce groupe de périphériques en installant l'agent de maillage.",
+      "fr": "Ajouter un nouvel ordinateur à ce groupe de périphériques en installant l'agent de maillage.",
       "hi": "मेष एजेंट को स्थापित करके इस उपकरण समूह में एक नया कंप्यूटर जोड़ें।",
       "ja": "メッシュエージェントをインストールして、このデバイスグループに新しいコンピューターを追加します。",
       "ko": "MeshAgent(매시 에이전트)를 설치하여 새로운 컴퓨터를 이 장치 그룹에 추가하십시오.",
@@ -6283,6 +6285,7 @@
     },
     {
       "en": "CCM mode",
+      "fr": "mode CCM",
       "xloc": [
         "default.handlebars->29->1405"
       ]
@@ -9752,6 +9755,7 @@
     },
     {
       "en": "Creates a link that allows a guest without an account to remote control this device for a limited time.",
+      "fr": "Création d'un accès à distance temporaire pour un tiers (sous forme de lien)",
       "xloc": [
         "default.handlebars->29->727"
       ]
@@ -10223,6 +10227,7 @@
     },
     {
       "en": "Deactivate CCM if setup",
+      "fr": "Désactiver CCM si il est configuré",
       "xloc": [
         "default.handlebars->29->1407"
       ]
@@ -11391,7 +11396,8 @@
       ]
     },
     {
-      "en": "Device Sharing"
+      "en": "Device Sharing",
+      "fr": "Partage de l'appareil"
     },
     {
       "en": "Device Sharing Link",
@@ -12139,6 +12145,7 @@
     },
     {
       "en": "Dismiss",
+      "fr": "Ignorer",
       "xloc": [
         "default.handlebars->29->250"
       ]
@@ -12351,6 +12358,7 @@
     },
     {
       "en": "Don't change, keep CCM if setup",
+      "fr": "Aucun changement, conserver CCM si il est configuré",
       "xloc": [
         "default.handlebars->29->1406"
       ]
@@ -29287,6 +29295,7 @@
     },
     {
       "en": "Remote Terminal Link",
+      "fr": "Lien du terminal distant",
       "xloc": [
         "default.handlebars->29->195"
       ]
@@ -35730,12 +35739,14 @@
     },
     {
       "en": "Terminal Session Latency",
+      "fr": "Latence de la session du terminal",
       "xloc": [
         "terminal.handlebars->p12->9->1"
       ]
     },
     {
       "en": "Terminal Sharing",
+      "fr": "Partage du terminal",
       "xloc": [
         "message.handlebars->3->4",
         "message2.handlebars->5->4"
@@ -41280,6 +41291,7 @@
     },
     {
       "en": "cancelhelp",
+      "fr": "Annuler la demande d'assistance",
       "xloc": [
         "default.handlebars->29->252"
       ]
@@ -43042,6 +43054,7 @@
     },
     {
       "en": "{0}, {1} to {2}",
+      "fr": "{0}, {1} à {2}",
       "xloc": [
         "default.handlebars->29->676"
       ]
