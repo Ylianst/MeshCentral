@@ -617,13 +617,13 @@ body {
     overflow: auto;
 }
 
-#idx_dlgCancelButton {
+#idx_dlgCancelButton, #idx_dlgCancelButton2 {
     float: right;
     min-width: 80px;
     margin-left: 5px;
 }
 
-#idx_dlgOkButton {
+#idx_dlgOkButton, #idx_dlgOkButton2 {
     float: right;
     min-width: 80px;
     margin-left: 5px;
