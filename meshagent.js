@@ -261,6 +261,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     obj.agentUpdate.buf[2] = 0;
                                     obj.agentUpdate.buf[3] = 1;
                                     parent.fs.read(obj.agentUpdate.fd, obj.agentUpdate.buf, 4, parent.parent.agentUpdateBlockSize, obj.agentUpdate.ptr, function (err, bytesRead, buffer) {
+                                        if (obj.agentUpdate == null) return;
                                         if ((err != null) || (bytesRead == 0)) {
                                             // Error reading the agent file, stop here.
                                             try { parent.fs.close(obj.agentUpdate.fd); } catch (ex) { }
