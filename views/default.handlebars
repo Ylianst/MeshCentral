@@ -4370,7 +4370,7 @@
 
             // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "64bit version of macOS Mesh Agent" + '">macOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
+            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "64bit version of macOS Mesh Agent" + '">macOS Agent (64bit)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
             // Windows agent uninstall
@@ -6721,8 +6721,10 @@
             y += '<option value=4>' + "Windows (64bit)" + '</option>';
             y += '<option value=5>' + "Linux x86 (32bit)" + '</option>';
             y += '<option value=6>' + "Linux x86 (64bit)" + '</option>';
-            y += '<option value=16>' + "macOS (64bit)" + '</option>';
+            y += '<option value=16>' + "macOS x86 (64bit)" + '</option>';
+            y += '<option value=29>' + "macOS ARM (64bit)" + '</option>';
             y += '<option value=25>' + "Linux ARM, Raspberry Pi (32bit)" + '</option>';
+            y += '<option value=26>' + "Linux ARM, Raspberry Pi (64bit)" + '</option>';
             y += '</select>';
 
             var x = '';
@@ -6744,8 +6746,10 @@
             if (os == 4) { osn = "MeshCmd (Win64 executable)"; }
             if (os == 5) { osn = "MeshCmd (Linux x86, 32bit)"; }
             if (os == 6) { osn = "MeshCmd (Linux x86, 64bit)"; }
-            if (os == 16) { osn = "MeshCmd (macOS, 64bit)"; }
+            if (os == 16) { osn = "MeshCmd (macOS, x86-64bit)"; }
+            if (os == 29) { osn = "MeshCmd (macOS, ARM-64bit)"; }
             if (os == 25) { osn = "MeshCmd (Linux ARM, 32bit)"; }
+            if (os == 26) { osn = "MeshCmd (Linux ARM, 64bit)"; }
             QH('meshcmddownloadid', osn);
             Q('meshcmddownloadid').onclick = function() { downloadFile('meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):'')); }
         }
