@@ -2392,7 +2392,7 @@
       "zh-chs": "AMT",
       "zh-cht": "AMT",
       "xloc": [
-        "default.handlebars->29->219",
+        "default.handlebars->29->244",
         "default.handlebars->29->430"
       ]
     },
@@ -3214,7 +3214,7 @@
         "default.handlebars->29->1482",
         "default.handlebars->29->1886",
         "default.handlebars->29->2004",
-        "default.handlebars->29->239"
+        "default.handlebars->29->224"
       ]
     },
     {
@@ -3855,7 +3855,7 @@
       "zh-chs": "地址",
       "zh-cht": "地址",
       "xloc": [
-        "default.handlebars->29->235"
+        "default.handlebars->29->220"
       ]
     },
     {
@@ -4064,7 +4064,7 @@
         "default-mobile.handlebars->9->250",
         "default.handlebars->29->1545",
         "default.handlebars->29->1553",
-        "default.handlebars->29->215",
+        "default.handlebars->29->240",
         "default.handlebars->29->426",
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->1"
       ]
@@ -6314,7 +6314,7 @@
       "zh-cht": "CIRA",
       "xloc": [
         "default-mobile.handlebars->9->204",
-        "default.handlebars->29->217",
+        "default.handlebars->29->242",
         "default.handlebars->29->428"
       ]
     },
@@ -7530,7 +7530,7 @@
       "nl": "Wis zoekfilter",
       "xloc": [
         "default-mobile.handlebars->9->154",
-        "default.handlebars->29->229"
+        "default.handlebars->29->214"
       ]
     },
     {
@@ -8919,8 +8919,8 @@
         "default-mobile.handlebars->9->2",
         "default-mobile.handlebars->9->337",
         "default-mobile.handlebars->9->37",
-        "default.handlebars->29->245",
-        "default.handlebars->29->248",
+        "default.handlebars->29->230",
+        "default.handlebars->29->233",
         "default.handlebars->29->277",
         "default.handlebars->29->9",
         "default.handlebars->29->945",
@@ -9028,7 +9028,7 @@
       "xloc": [
         "default-mobile.handlebars->9->255",
         "default.handlebars->29->1556",
-        "default.handlebars->29->236",
+        "default.handlebars->29->221",
         "default.handlebars->29->616",
         "default.handlebars->container->column_l->p21->3->1->meshConnChartDiv->1"
       ]
@@ -9666,7 +9666,7 @@
       "zh-chs": "创建一个新的设备组。",
       "zh-cht": "創建一個新的裝置群。",
       "xloc": [
-        "default.handlebars->29->238"
+        "default.handlebars->29->223"
       ]
     },
     {
@@ -11614,7 +11614,7 @@
       "xloc": [
         "default-mobile.handlebars->9->160",
         "default-mobile.handlebars->9->216",
-        "default.handlebars->29->213",
+        "default.handlebars->29->238",
         "default.handlebars->29->545"
       ]
     },
@@ -11862,7 +11862,7 @@
       "xloc": [
         "default-mobile.handlebars->9->159",
         "default-mobile.handlebars->9->215",
-        "default.handlebars->29->212",
+        "default.handlebars->29->237",
         "default.handlebars->29->544"
       ]
     },
@@ -12134,9 +12134,9 @@
         "default-mobile.handlebars->9->1",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3->deskstatus",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3->p13Status",
-        "default.handlebars->29->224",
-        "default.handlebars->29->244",
-        "default.handlebars->29->247",
+        "default.handlebars->29->229",
+        "default.handlebars->29->232",
+        "default.handlebars->29->249",
         "default.handlebars->29->276",
         "default.handlebars->29->8",
         "default.handlebars->container->column_l->p11->deskarea0->deskarea1->3->deskstatus",
@@ -12543,7 +12543,7 @@
       "zh-chs": "下载MeshCentral Router，一个TCP端口映射工具。",
       "zh-cht": "下載MeshCentral Router，一個TCP端口映射工具。",
       "xloc": [
-        "default.handlebars->29->242"
+        "default.handlebars->29->227"
       ]
     },
     {
@@ -12583,7 +12583,7 @@
       "zh-chs": "下载MeshCmd，这是一个多功能的指令执行工具。",
       "zh-cht": "下載MeshCmd，這是一個多功能的指令執行工具。",
       "xloc": [
-        "default.handlebars->29->240"
+        "default.handlebars->29->225"
       ]
     },
     {
@@ -18029,8 +18029,8 @@
       "xloc": [
         "default-mobile.handlebars->9->148",
         "default.handlebars->29->209",
-        "default.handlebars->29->225",
-        "default.handlebars->29->226"
+        "default.handlebars->29->210",
+        "default.handlebars->29->211"
       ]
     },
     {
@@ -18410,7 +18410,7 @@
       "zh-chs": "英特尔&reg;AMT CIRA已连接并可以使用。",
       "zh-cht": "Intel&reg; AMT CIRA已連接並可以使用。",
       "xloc": [
-        "default.handlebars->29->216",
+        "default.handlebars->29->241",
         "default.handlebars->29->427",
         "default.handlebars->29->608"
       ]
@@ -18701,7 +18701,7 @@
       "zh-chs": "英特尔&reg;AMT是可路由的。",
       "zh-cht": "Intel&reg; AMT是可路由的。",
       "xloc": [
-        "default.handlebars->29->218",
+        "default.handlebars->29->243",
         "default.handlebars->29->429"
       ]
     },
@@ -22004,7 +22004,7 @@
         "default-mobile.handlebars->9->254",
         "default.handlebars->29->1028",
         "default.handlebars->29->1029",
-        "default.handlebars->29->223",
+        "default.handlebars->29->248",
         "default.handlebars->29->434",
         "default.handlebars->29->615",
         "default.handlebars->container->column_l->p15->consoleTable->1->6->1->1->1->0->p15outputselecttd->p15outputselect->3"
@@ -22109,7 +22109,7 @@
       "zh-chs": "与设备的MQTT连接已激活。",
       "zh-cht": "與裝置的MQTT連接已啟動。",
       "xloc": [
-        "default.handlebars->29->222",
+        "default.handlebars->29->247",
         "default.handlebars->29->433",
         "default.handlebars->29->614"
       ]
@@ -22902,7 +22902,7 @@
       "zh-chs": "已连接网状代理并准备使用。",
       "zh-cht": "已連接Mesh Agent並準備使用。",
       "xloc": [
-        "default.handlebars->29->214",
+        "default.handlebars->29->239",
         "default.handlebars->29->425",
         "default.handlebars->29->606"
       ]
@@ -22924,7 +22924,7 @@
       "zh-chs": "网格代理可以经过其他代理作为中继访问得到。",
       "zh-cht": "Mesh Agent可以經過其他代理作為中繼訪問得到。",
       "xloc": [
-        "default.handlebars->29->220",
+        "default.handlebars->29->245",
         "default.handlebars->29->431",
         "default.handlebars->29->612"
       ]
@@ -23170,7 +23170,7 @@
       "zh-chs": "MeshCmd",
       "zh-cht": "MeshCmd",
       "xloc": [
-        "default.handlebars->29->241",
+        "default.handlebars->29->226",
         "default.handlebars->29->639",
         "default.handlebars->29->819"
       ]
@@ -24745,7 +24745,7 @@
       "zh-chs": "此网格中没有英特尔&reg;AMT设备",
       "zh-cht": "此網格中沒有Intel&reg; AMT裝置",
       "xloc": [
-        "default.handlebars->29->230"
+        "default.handlebars->29->215"
       ]
     },
     {
@@ -25031,7 +25031,7 @@
       "zh-chs": "没有一个设备被加入任何一组，请单击一个设备的“组”以添加到一个组中。",
       "zh-cht": "沒有一個裝置被加入任何一群，請單擊一個裝置的“群”以新增到一個群中。",
       "xloc": [
-        "default.handlebars->29->227"
+        "default.handlebars->29->212"
       ]
     },
     {
@@ -25130,7 +25130,7 @@
       "zh-cht": "該群中沒有裝置",
       "xloc": [
         "default-mobile.handlebars->9->151",
-        "default.handlebars->29->232"
+        "default.handlebars->29->217"
       ]
     },
     {
@@ -25152,7 +25152,7 @@
       "xloc": [
         "default-mobile.handlebars->9->149",
         "default-mobile.handlebars->9->153",
-        "default.handlebars->29->228"
+        "default.handlebars->29->213"
       ]
     },
     {
@@ -25172,7 +25172,7 @@
       "zh-chs": "找不到带有标签的设备。",
       "zh-cht": "找不到帶有標籤的裝置。",
       "xloc": [
-        "default.handlebars->29->237"
+        "default.handlebars->29->222"
       ]
     },
     {
@@ -25490,8 +25490,8 @@
         "default.handlebars->29->1945",
         "default.handlebars->29->1949",
         "default.handlebars->29->1961",
-        "default.handlebars->29->210",
-        "default.handlebars->29->211",
+        "default.handlebars->29->235",
+        "default.handlebars->29->236",
         "default.handlebars->29->546",
         "default.handlebars->29->557",
         "default.handlebars->29->558",
@@ -28875,7 +28875,7 @@
       "zh-cht": "中繼",
       "xloc": [
         "default-mobile.handlebars->9->206",
-        "default.handlebars->29->221",
+        "default.handlebars->29->246",
         "default.handlebars->29->432"
       ]
     },
@@ -30662,7 +30662,7 @@
       "zh-chs": "路由器",
       "zh-cht": "路由器",
       "xloc": [
-        "default.handlebars->29->243"
+        "default.handlebars->29->228"
       ]
     },
     {
@@ -32875,8 +32875,8 @@
       "xloc": [
         "default-mobile.handlebars->9->3",
         "default.handlebars->29->10",
-        "default.handlebars->29->246",
-        "default.handlebars->29->249",
+        "default.handlebars->29->231",
+        "default.handlebars->29->234",
         "default.handlebars->29->278",
         "desktop.handlebars->3->3",
         "terminal.handlebars->3->3",
@@ -38257,7 +38257,7 @@
         "default.handlebars->29->1745",
         "default.handlebars->29->1884",
         "default.handlebars->29->2067",
-        "default.handlebars->29->234",
+        "default.handlebars->29->219",
         "default.handlebars->29->671"
       ]
     },
@@ -41188,8 +41188,8 @@
       "zh-chs": "加一",
       "zh-cht": "加一",
       "xloc": [
-        "default.handlebars->29->231",
-        "default.handlebars->29->233"
+        "default.handlebars->29->216",
+        "default.handlebars->29->218"
       ]
     },
     {

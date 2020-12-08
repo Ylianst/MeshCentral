@@ -3526,7 +3526,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Event the node change
                             var newMesh = parent.meshes[command.meshid];
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msgid: 85, msgArgs: [node.name, newMesh.name], msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
-                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
+                            // Even if change stream is enabled on this server, we still make the nodemeshchange actionable. This is because the DB can't send out a change event that will match this.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
 
                             // Send response if required

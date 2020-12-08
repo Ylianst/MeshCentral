@@ -858,17 +858,17 @@ NoMeshesPanel img {
     box-shadow:none;
 }
 
-.deviceBatterySmall1 { background: url(../images/batteries24.png) 0px 0px; }
-.deviceBatterySmall2 { background: url(../images/batteries24.png) -14px 0px; }
-.deviceBatterySmall3 { background: url(../images/batteries24.png) -28px 0px; }
-.deviceBatterySmall4 { background: url(../images/batteries24.png) -42px 0px; }
-.deviceBatterySmall5 { background: url(../images/batteries24.png) -56px 0px; }
-.deviceBatterySmall6 { background: url(../images/batteries24.png) -70px 0px; }
-.deviceBatterySmall7 { background: url(../images/batteries24.png) -84px 0px; }
-.deviceBatterySmall8 { background: url(../images/batteries24.png) -98px 0px; }
-.deviceBatterySmall9 { background: url(../images/batteries24.png) -112px 0px; }
-.deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; }
-.deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; }
+.deviceBatterySmall1 { background: url(../images/batteries24.png) 0px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall2 { background: url(../images/batteries24.png) -14px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall3 { background: url(../images/batteries24.png) -28px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall4 { background: url(../images/batteries24.png) -42px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall5 { background: url(../images/batteries24.png) -56px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall6 { background: url(../images/batteries24.png) -70px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall7 { background: url(../images/batteries24.png) -84px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall8 { background: url(../images/batteries24.png) -98px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall9 { background: url(../images/batteries24.png) -112px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; background-image: -webkit-image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
 
 .deviceNotifyLargeDot {
     position:absolute;
@@ -1303,6 +1303,7 @@ a {
 
 .i1 {
     background: url(../images/icons50.png) 0px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1311,6 +1312,7 @@ a {
 
 .i2 {
     background: url(../images/icons50.png) -50px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1319,6 +1321,7 @@ a {
 
 .i3 {
     background: url(../images/icons50.png) -100px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1327,6 +1330,7 @@ a {
 
 .i4 {
     background: url(../images/icons50.png) -150px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1335,6 +1339,7 @@ a {
 
 .i5 {
     background: url(../images/icons50.png) -200px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1343,6 +1348,7 @@ a {
 
 .i6 {
     background: url(../images/icons50.png) -250px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1351,6 +1357,7 @@ a {
 
 .i7 {
     background: url(../images/icons50.png) -300px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons50.webp) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1359,6 +1366,7 @@ a {
 
 .i8 {
     background: url(../images/icons50.png) -350px 0px;
+    background-image: -webkit-image-set(url(../images/icons50.png) 1x, url(../images/webp/icons100.webp) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
@@ -1367,6 +1375,7 @@ a {
 
 .j1 {
     background: url(../images/icons16.png) 0px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1375,6 +1384,7 @@ a {
 
 .j2 {
     background: url(../images/icons16.png) -16px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1383,6 +1393,7 @@ a {
 
 .j3 {
     background: url(../images/icons16.png) -32px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1391,6 +1402,7 @@ a {
 
 .j4 {
     background: url(../images/icons16.png) -48px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1399,6 +1411,7 @@ a {
 
 .j5 {
     background: url(../images/icons16.png) -64px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1407,6 +1420,7 @@ a {
 
 .j6 {
     background: url(../images/icons16.png) -80px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1415,6 +1429,7 @@ a {
 
 .j7 {
     background: url(../images/icons16.png) -96px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1423,6 +1438,7 @@ a {
 
 .j8 {
     background: url(../images/icons16.png) -112px 0px;
+    background-image: -webkit-image-set(url(../images/webp/icons16.webp) 1x, url(../images/webp/icons32.webp) 2x);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -1469,6 +1485,7 @@ a {
 
 .lb1 {
     background: url(../images/leftbar-64.png) -1px -2px;
+    background-image: -webkit-image-set(url(../images/webp/leftbar-64.webp) 1x, url(../images/webp/leftbar-128.webp) 2x);
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1480,6 +1497,7 @@ a {
 
 .lb2 {
     background: url(../images/leftbar-64.png) -66px -2px;
+    background-image: -webkit-image-set(url(../images/webp/leftbar-64.webp) 1x, url(../images/webp/leftbar-128.webp) 2x);
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1491,6 +1509,7 @@ a {
 
 .lb3 {
     background: url(../images/leftbar-64.png) -130px -2px;
+    background-image: -webkit-image-set(url(../images/webp/leftbar-64.webp) 1x, url(../images/webp/leftbar-128.webp) 2x);
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1502,6 +1521,7 @@ a {
 
 .lb4 {
     background: url(../images/leftbar-64.png) -194px -2px;
+    background-image: -webkit-image-set(url(../images/webp/leftbar-64.webp) 1x, url(../images/webp/leftbar-128.webp) 2x);
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1513,6 +1533,7 @@ a {
 
 .lb5 {
     background: url(../images/leftbar-64.png) -257px -2px;
+    background-image: -webkit-image-set(url(../images/webp/leftbar-64.webp) 1x, url(../images/webp/leftbar-128.webp) 2x);
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1524,6 +1545,7 @@ a {
 
 .lb6 {
     background: url(../images/leftbar-64.png) -318px -2px;
+    background-image: -webkit-image-set(url(../images/webp/leftbar-64.webp) 1x, url(../images/webp/leftbar-128.webp) 2x);
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1583,6 +1605,7 @@ a {
 
 .si1 {
     background: url(../images/icons16.png) 0px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1591,6 +1614,7 @@ a {
 
 .si2 {
     background: url(../images/icons16.png) -16px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1599,6 +1623,7 @@ a {
 
 .si3 {
     background: url(../images/icons16.png) -32px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1607,6 +1632,7 @@ a {
 
 .si4 {
     background: url(../images/icons16.png) -48px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1615,6 +1641,7 @@ a {
 
 .si5 {
     background: url(../images/icons16.png) -64px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1623,6 +1650,7 @@ a {
 
 .si6 {
     background: url(../images/icons16.png) -80px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1631,6 +1659,7 @@ a {
 
 .si7 {
     background: url(../images/icons16.png) -96px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1639,6 +1668,7 @@ a {
 
 .si8 {
     background: url(../images/icons16.png) -112px 0px;
+    background-image: -webkit-image-set(url(../images/icons16.png) 1x, url(../images/icons32.png) 2x);
     height: 16px;
     width: 16px;
     border: none;
@@ -1647,6 +1677,7 @@ a {
 
 .mi {
     background: url(../images/meshicon50.png) 0px 0px;
+    background-image: -webkit-image-set(url(../images/meshicon50.png) 1x, url(../images/meshicon100.png) 2x);
     height: 50px;
     width: 50px;
     cursor: pointer;
