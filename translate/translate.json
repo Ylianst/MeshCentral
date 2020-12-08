@@ -4866,6 +4866,12 @@
       ]
     },
     {
+      "en": "Apple Silicon",
+      "xloc": [
+        "default.handlebars->29->42"
+      ]
+    },
+    {
       "cs": "Apple macOS",
       "de": "Apple macOS",
       "en": "Apple macOS",
@@ -37619,7 +37625,6 @@
         "default.handlebars->29->2036",
         "default.handlebars->29->2051",
         "default.handlebars->29->2052",
-        "default.handlebars->29->42",
         "default.handlebars->29->435",
         "default.handlebars->29->989",
         "default.handlebars->29->996"
@@ -41998,10 +42003,7 @@
       "ru": "macOS 32bit",
       "tr": "macOS 32bit",
       "zh-chs": "macOS 32位",
-      "zh-cht": "macOS 32位",
-      "xloc": [
-        "default.handlebars->29->24"
-      ]
+      "zh-cht": "macOS 32位"
     },
     {
       "cs": "macOS 64bit",
@@ -42018,10 +42020,7 @@
       "ru": "macOS 64bit",
       "tr": "macOS 64bit",
       "zh-chs": "macOS 64位",
-      "zh-cht": "macOS 64位",
-      "xloc": [
-        "default.handlebars->29->29"
-      ]
+      "zh-cht": "macOS 64位"
     },
     {
       "en": "macOS ARM (64bit)",
@@ -42033,6 +42032,18 @@
       "en": "macOS x86 (64bit)",
       "xloc": [
         "default.handlebars->29->814"
+      ]
+    },
+    {
+      "en": "macOS x86-32bit",
+      "xloc": [
+        "default.handlebars->29->24"
+      ]
+    },
+    {
+      "en": "macOS x86-64bit",
+      "xloc": [
+        "default.handlebars->29->29"
       ]
     },
     {
