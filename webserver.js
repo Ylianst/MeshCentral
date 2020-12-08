@@ -4523,7 +4523,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             response += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th><th>MeshCmd</th></tr>';
             var originalUrl = req.originalUrl.split('?')[0];
             for (var agentid in obj.parent.meshAgentBinaries) {
-                if (agentid >= 10000) continue;
+                if ((agentid >= 10000) && (agentid != 10005)) continue;
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
                 response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname + '</a>';
