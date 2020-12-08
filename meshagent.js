@@ -234,7 +234,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             else if (cmdid == 12) { // MeshCommand_AgentHash
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     const agenthash = msg.substring(4);
-                    if ((agenthash != obj.agentExeInfo.hash) && (agenthash != '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) {
+                    if (compareAgentBinaryHash(obj.agentExeInfo, agenthash)) {
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
                             if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
@@ -1653,6 +1653,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Done changing the device
             delete obj.deviceChanging;
         });
+    }
+
+    // Check if we need to update this agent, return true if agent binary update required.
+    function compareAgentBinaryHash(agentExeInfo, agentHash) {
+        // If the hash matches or is null, no update required.
+        if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return false;
+        // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
+        if (((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return false;
+        // No match, update the agent.
+        return true;
     }
 
     // Request that the core dump file on this agent be uploaded to the server
