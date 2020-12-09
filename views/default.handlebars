@@ -4532,7 +4532,8 @@
         }
 
         function p1updateInfo() {
-            if (Object.keys(checkedNodeids).length > 0) {
+            var checkcount = Object.keys(checkedNodeids).length;
+            if (checkcount > 0) {
                 QE('GroupActionButton', true);
                 Q('SelectAllButton').value = "Select None";
                 QV('cxmdesktop', true);
