@@ -2964,8 +2964,15 @@
                                 if ((node.conn & 1) == 0) { delete node.sessions; }
 
                                 // Web page update
-                                updateDeviceViewDevice(node);
-                                mainUpdate(1 | 16);
+                                var filter = Q('DevFilterSelect').value;
+                                if ((filter == 1) || (filter == 5)) {
+                                    // We are looking at online or offline devices. This may change that state.
+                                    mainUpdate(1 | 4 | 16);
+                                } else {
+                                    // We are looking at a different filter, just update that specific device.
+                                    updateDeviceViewDevice(node);
+                                    mainUpdate(1 | 16);
+                                }
                                 refreshDevice(node._id);
                             }
                             break;
