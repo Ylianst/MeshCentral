@@ -284,6 +284,26 @@ module.exports.CertificateOperations = function (parent) {
         return r;
     }
 
+    // Return a text file from a remote HTTPS server
+    obj.loadTextFile = function (url, tag, func) {
+        const u = require('url').parse(url);
+        if (u.protocol == 'https:') {
+            // Read from HTTPS
+            const https = require('https');
+            https.get(url, function(resp) {
+                var data = '';
+                resp.on('data', function(chunk) { data += chunk; });
+                resp.on('end', function () { func(url, data, tag); });
+                resp.on('error', function (chunk) { func(url, null, tag); });
+            }).on('error', function (err) { func(url, null, tag); });
+        } else if (u.protocol == 'file:') {
+            // Read a file
+            obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
+                func(url, err ? null : data, tag);
+            });
+        } else { func(url, null, tag); }
+    };
+
     // Return the certificate of the remote HTTPS server
     obj.loadCertificate = function (url, hostname, tag, func) {
         const u = require('url').parse(url);
@@ -304,7 +324,7 @@ module.exports.CertificateOperations = function (parent) {
         } else if (u.protocol == 'file:') {
             // Read the certificate from a file
             obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
-                if (err) { func(url, null, tag); return; }
+                if (err) { func(url, null, hostname, tag); return; }
                 var x1 = data.indexOf('-----BEGIN CERTIFICATE-----'), x2 = data.indexOf('-----END CERTIFICATE-----');
                 if ((x1 >= 0) && (x2 > x1)) {
                     func(url, Buffer.from(data.substring(x1 + 27, x2), 'base64').toString('binary'), hostname, tag);

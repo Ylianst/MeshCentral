@@ -1325,8 +1325,36 @@ function CreateMeshCentralServer(config, args) {
             }
         }
 
+        // Update proxy certificates
         if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
-        obj.StartEx4(); // Keep going
+
+        // Load CloudFlare trusted proxies list if needed
+        if ((obj.config.settings.trustedproxy != null) && (obj.config.settings.trustedproxy.toLowerCase() == 'cloudflare')) {
+            delete obj.args.trustedproxy;
+            delete obj.config.settings.trustedproxy;
+            obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v4', null, function (url, data, tag) {
+                if (data != null) {
+                    if (Array.isArray(obj.args.trustedproxy) == false) { obj.args.trustedproxy = []; }
+                    var ipranges = data.split('\n');
+                    for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
+                    obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v6', null, function (url, data, tag) {
+                        if (data != null) {
+                            var ipranges = data.split('\n');
+                            for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
+                            obj.config.settings.trustedproxy = obj.args.trustedproxy;
+                        } else {
+                            addServerWarning("Unable to load CloudFlare trusted proxy IPv6 address list.");
+                        }
+                        obj.StartEx4(); // Keep going
+                    });
+                } else {
+                    addServerWarning("Unable to load CloudFlare trusted proxy IPv4 address list.");
+                    obj.StartEx4(); // Keep going
+                }
+            });
+        } else {
+            obj.StartEx4(); // Keep going
+        }
     }
 
     // Start the server with the given certificates
