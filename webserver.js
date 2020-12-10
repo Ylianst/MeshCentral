@@ -942,7 +942,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                 req.session.messageid = 108; // Invalid token, try again.
                                 if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.clientIp) + ' port ' + req.port); }
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
-                                obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp });
+                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp });
                                 obj.setbadLogin(req);
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
@@ -1389,6 +1389,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
         } else {
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
+                // Remove all accounts that start with ~ since they are special accounts.
+                var cleanDocs = [];
+                if ((err == null) && (docs.length > 0)) {
+                    for (var i in docs) {
+                        const user = docs[i];
+                        const locked = ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)); // No password recovery for locked accounts
+                        const specialAccount = (user._id.split('/')[2].startsWith('~')); // No password recovery for special accounts
+                        if ((specialAccount == false) && (locked == false)) { cleanDocs.push(user); }
+                    }
+                }
+                docs = cleanDocs;
+
+                // Check if we have any account that match this email address
                 if ((err != null) || (docs.length == 0)) {
                     parent.debug('web', 'handleResetAccountRequest: Account not found');
                     req.session.loginmode = '3';
@@ -1407,11 +1420,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         // 2-step auth is required, but the token is not present or not valid.
                                         parent.debug('web', 'handleResetAccountRequest: Invalid 2FA token, try again');
                                         if ((req.body.token != null) || (req.body.hwtoken != null)) {
-                                            req.session.messageid = 108; // Invalid token, try again.
-                                            obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + user.name], obj, { action: 'authfail', username: user.name, userid: 'user/' + domain.id + '/' + user.name, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp });
-                                            obj.setbadLogin(req);
+                                            var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
+                                            if ((req.body.hwtoken == '**sms**') && sms2fa) {
+                                                // Cause a token to be sent to the user's phone number
+                                                user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
+                                                obj.db.SetUser(user);
+                                                parent.debug('web', 'Sending 2FA SMS for password recovery to: ' + user.phone);
+                                                parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
+                                                req.session.messageid = 4; // SMS sent.
+                                            } else {
+                                                req.session.messageid = 108; // Invalid token, try again.
+                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp });
+                                                obj.setbadLogin(req);
+                                            }
                                         }
                                         req.session.loginmode = '5';
+                                        delete req.session.tokenemail;
                                         req.session.tokenemail = email;
                                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                     }
@@ -1419,7 +1443,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                     // Send email to perform recovery.
                                     delete req.session.tokenemail;
                                     if (obj.parent.mailserver != null) {
-                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req), req.query.key);
+                                        obj.parent.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
                                         if (i == 0) {
                                             parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                             req.session.loginmode = '1';
@@ -1439,7 +1463,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                         } else {
                             // No second factor, send email to perform recovery.
                             if (obj.parent.mailserver != null) {
-                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user.email, obj.getLanguageCodes(req), req.query.key);
+                                obj.parent.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
                                 if (i == 0) {
                                     parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
                                     req.session.loginmode = '1';
@@ -1544,13 +1568,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
 
         if (req.query.c != null) {
             var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.mailserver.mailCookieEncryptionKey, 30);
-            if ((cookie != null) && (cookie.u != null) && (cookie.e != null)) {
+            if ((cookie != null) && (cookie.u != null) && (cookie.u.startsWith('user/')) && (cookie.e != null)) {
                 var idsplit = cookie.u.split('/');
-                if ((idsplit.length != 2) || (idsplit[0] != domain.id)) {
+                if ((idsplit.length != 3) || (idsplit[1] != domain.id)) {
                     parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
                     render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
                 } else {
-                    obj.db.Get('user/' + cookie.u.toLowerCase(), function (err, docs) {
+                    obj.db.Get(cookie.u, function (err, docs) {
                         if (docs.length == 0) {
                             parent.debug('web', 'handleCheckMailRequest: Invalid username.');
                             render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(idsplit[1]).replace(/'/g, '%27') }, req, domain));
@@ -1600,36 +1624,40 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                                         parent.debug('web', 'handleCheckMailRequest: email not verified.');
                                         render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 7, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.email), arg2: EscapeHtml(user.name) }, req, domain));
                                     } else {
-                                        // Set a temporary password
-                                        obj.crypto.randomBytes(16, function (err, buf) {
-                                            var newpass = buf.toString('base64').split('=').join('').split('/').join('');
-                                            require('./pass').hash(newpass, function (err, salt, hash, tag) {
-                                                var userinfo = null;
-                                                if (err) throw err;
+                                        if (req.query.confirm == 1) {
+                                            // Set a temporary password
+                                            obj.crypto.randomBytes(16, function (err, buf) {
+                                                var newpass = buf.toString('base64').split('=').join('').split('/').join('').split('+').join('');
+                                                require('./pass').hash(newpass, function (err, salt, hash, tag) {
+                                                    if (err) throw err;
 
-                                                // Change the password
-                                                userinfo = obj.users[user._id];
-                                                userinfo.salt = salt;
-                                                userinfo.hash = hash;
-                                                delete userinfo.passtype;
-                                                userinfo.passchange = Math.floor(Date.now() / 1000);
-                                                delete userinfo.passhint;
-                                                //delete userinfo.otpsecret; // Currently a email password reset will turn off 2-step login.
-                                                obj.db.SetUser(userinfo);
+                                                    // Change the password
+                                                    var userinfo = obj.users[user._id];
+                                                    userinfo.salt = salt;
+                                                    userinfo.hash = hash;
+                                                    delete userinfo.passtype;
+                                                    userinfo.passchange = Math.floor(Date.now() / 1000);
+                                                    delete userinfo.passhint;
+                                                    obj.db.SetUser(userinfo);
 
-                                                // Event the change
-                                                var event = { etype: 'user', userid: user._id, username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id };
-                                                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+                                                    // Event the change
+                                                    var event = { etype: 'user', userid: user._id, username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id };
+                                                    if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                                    obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
-                                                // Send the new password
-                                                render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
-                                                parent.debug('web', 'handleCheckMailRequest: send temporary password.');
+                                                    // Send the new password
+                                                    render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
+                                                    parent.debug('web', 'handleCheckMailRequest: send temporary password.');
 
-                                                // Send to authlog
-                                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Performed account reset for user ' + user.name); }
-                                            }, 0);
-                                        });
+                                                    // Send to authlog
+                                                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Performed account reset for user ' + user.name); }
+                                                }, 0);
+                                            });
+                                        } else {
+                                            // Display a link for the user to confirm password reset
+                                            // We must do this because GMail will also load this URL a few seconds after the user does and we don't want to cause two password resets.
+                                            render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 14, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                        }
                                     }
                                 } else {
                                     render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
@@ -2498,8 +2526,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
         var hwstate = null;
         if (hardwareKeyChallenge) { hwstate = obj.parent.encodeCookie({ u: req.session.tokenusername, p: req.session.tokenpassword, c: req.session.u2fchallenge }, obj.parent.loginCookieEncryptionKey) }
 
-        // Check if we can use OTP tokens with email
-        var otpemail = (parent.mailserver != null) && (req.session != null) && ((req.session.tokenemail == true) || (typeof req.session.tokenemail == 'string'));
+        // Check if we can use OTP tokens with email. We can't use email for 2FA password recovery (loginmode 5).
+        var otpemail = (loginmode != 5) && (parent.mailserver != null) && (req.session != null) && ((req.session.tokenemail == true) || (typeof req.session.tokenemail == 'string'));
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
         var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tokensms == true);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
