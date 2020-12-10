@@ -1329,7 +1329,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.supportsProxyCertificatesRequest == true) { obj.updateProxyCertificates(true); }
 
         // Load CloudFlare trusted proxies list if needed
-        if ((obj.config.settings.trustedproxy != null) && (obj.config.settings.trustedproxy.toLowerCase() == 'cloudflare')) {
+        if ((obj.config.settings.trustedproxy != null) && (typeof obj.config.settings.trustedproxy == 'string') && (obj.config.settings.trustedproxy.toLowerCase() == 'cloudflare')) {
             delete obj.args.trustedproxy;
             delete obj.config.settings.trustedproxy;
             obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v4', null, function (url, data, tag) {
