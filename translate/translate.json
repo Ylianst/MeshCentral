@@ -542,6 +542,7 @@
     },
     {
       "en": ", Prompt for consent",
+      "nl": ", vraag om toestemming",
       "fr": ", demander le consentement",
       "xloc": [
         "default.handlebars->29->679"
@@ -3040,6 +3041,7 @@
     },
     {
       "en": "Activate to CCM, if ACM fails",
+      "nl": "Activeer naar CCM, als ACM faalt",
       "fr": "Activer CCM, si ACM échoue",
       "xloc": [
         "default.handlebars->29->1412"
@@ -4867,6 +4869,18 @@
     },
     {
       "en": "Apple Silicon",
+      "cs": "Apple Silicon",
+      "de": "Apple Silicon",
+      "es": "Apple Silicon",
+      "fi": "Apple Silicon",
+      "fr": "Apple Silicon",
+      "hi": "Apple Silicon",
+      "ja": "Apple Silicon",
+      "ko": "Apple Silicon",
+      "nl": "Apple Silicon",
+      "pt": "Apple Silicon",
+      "ru": "Apple Silicon",
+      "tr": "Apple Silicon",
       "xloc": [
         "default.handlebars->29->42"
       ]
@@ -5706,6 +5720,7 @@
     },
     {
       "en": "Automated download of agent core dump file: \\\"{0}\\\"",
+      "nl": "Geautomatiseerde download van agent core dumpbestand: \\\"{0}\\\"",
       "xloc": [
         "default.handlebars->29->1709"
       ]
@@ -6297,6 +6312,7 @@
     },
     {
       "en": "CCM mode",
+      "nl": "CCM modus",
       "fr": "mode CCM",
       "xloc": [
         "default.handlebars->29->1409"
@@ -9767,6 +9783,7 @@
     },
     {
       "en": "Creates a link that allows a guest without an account to remote control this device for a limited time.",
+      "nl": "Creëert een link waarmee een gast zonder account dit apparaat voor een beperkte tijd op afstand kan bedienen.",
       "fr": "Création d'un accès à distance temporaire pour un tiers (sous forme de lien)",
       "xloc": [
         "default.handlebars->29->727"
@@ -10239,6 +10256,7 @@
     },
     {
       "en": "Deactivate CCM if setup",
+      "nl": "Deactiveer CCM indien ingesteld",
       "fr": "Désactiver CCM si il est configuré",
       "xloc": [
         "default.handlebars->29->1411"
@@ -11409,6 +11427,7 @@
     },
     {
       "en": "Device Sharing",
+      "nl": "Apparaat delen",
       "fr": "Partage de l'appareil"
     },
     {
@@ -12157,6 +12176,7 @@
     },
     {
       "en": "Dismiss",
+      "nl": "Afwijzen",
       "fr": "Ignorer",
       "xloc": [
         "default.handlebars->29->250"
@@ -12370,6 +12390,7 @@
     },
     {
       "en": "Don't change, keep CCM if setup",
+      "nl": "Verander niets, behoud CCM indien ingesteld",
       "fr": "Aucun changement, conserver CCM si il est configuré",
       "xloc": [
         "default.handlebars->29->1410"
@@ -21055,6 +21076,19 @@
     },
     {
       "en": "Linux ARM, Raspberry Pi (64bit)",
+      "nl": "Linux ARM, Raspberry Pi (64bit)",
+      "cs": "Linux ARM, Raspberry Pi (64bit)",
+      "de": "Linux ARM, Raspberry Pi (64bit)",
+      "es": "Linux ARM, Raspberry Pi (64bit)",
+      "fi": "Linux ARM, Raspberry Pi (64bit)",
+      "fr": "Linux ARM, Raspberry Pi (64bit)",
+      "ja": "Linux ARM, Raspberry Pi (64ビット)",
+      "ko": "Linux ARM, Raspberry Pi (64비트)",
+      "pt": "Linux ARM, Raspberry Pi (64bit)",
+      "ru": "Linux ARM, Raspberry Pi (64bit)",
+      "tr": "Linux ARM, Raspberry Pi (64bit)",
+      "zh-cht": "Linux ARM, Raspberry Pi (64位)",
+      "zh-chs": "Linux ARM, Raspberry Pi (64位)",
       "xloc": [
         "default.handlebars->29->817"
       ]
@@ -23209,6 +23243,20 @@
     },
     {
       "en": "MeshCmd (Linux ARM, 64bit)",
+      "cs": "MeshCmd (Linux ARM, 64bit)",
+      "de": "MeshCmd (Linux ARM, 64bit)",
+      "es": "MeshCmd (Linux ARM, 64bit)",
+      "fi": "MeshCmd (Linux ARM, 64bit)",
+      "fr": "MeshCmd (Linux ARM, 64bit)",
+      "hi": "MeshCmd (लिनक्स एआरएम, 64 बिट)",
+      "ja": "MeshCmd（Linux ARM、64ビット）",
+      "ko": "MeshCmd (Linux ARM, 64비트)",
+      "nl": "MeshCmd (Linux ARM, 64bit)",
+      "pt": "MeshCmd (Linux ARM, 64 bits)",
+      "ru": "MeshCmd (Linux ARM, 64bit)",
+      "tr": "MeshCmd (Linux ARM, 64bit)",
+      "zh-chs": "MeshCmd（Linux ARM，64位）",
+      "zh-cht": "MeshCmd（Linux ARM，64位）",
       "xloc": [
         "default.handlebars->29->834"
       ]
@@ -23312,12 +23360,40 @@
     },
     {
       "en": "MeshCmd (macOS, ARM-64bit)",
+      "cs": "MeshCmd (macOS, ARM-64bit)",
+      "de": "MeshCmd (macOS, ARM-64bit)",
+      "es": "MeshCmd (macOS, ARM-64bit)",
+      "fi": "MeshCmd (macOS, ARM-64-bittinen)",
+      "fr": "MeshCmd (macOS, ARM-64bit)",
+      "hi": "MeshCmd (मैकओएस, ARM-64 बिट)",
+      "ja": "MeshCmd（macOS、ARM-64ビット）",
+      "ko": "MeshCmd (macOS, ARM-64비트)",
+      "nl": "MeshCmd (macOS, ARM-64bit)",
+      "pt": "MeshCmd (macOS, ARM-64bit)",
+      "ru": "MeshCmd (macOS, ARM-64bit)",
+      "tr": "MeshCmd (macOS, ARM-64bit)",
+      "zh-chs": "MeshCmd（macOS，ARM-64位）",
+      "zh-cht": "MeshCmd（macOS，ARM-64位）",
       "xloc": [
         "default.handlebars->29->832"
       ]
     },
     {
       "en": "MeshCmd (macOS, x86-64bit)",
+      "cs": "MeshCmd (macOS,x86-64bit)",
+      "de": "MeshCmd (macOS, x86-64bit)",
+      "es": "MeshCmd (macOS, x86-64bit)",
+      "fi": "MeshCmd (macOS, x86-64-bittinen)",
+      "fr": "MeshCmd (macOS, x86-64bit)",
+      "hi": "MeshCmd (मैकओएस, x86-64 बिट)",
+      "ja": "MeshCmd（macOS、x86-64ビット）",
+      "ko": "MeshCmd (macOS, x86-64비트)",
+      "nl": "MeshCmd (macOS, x86-64bit)",
+      "pt": "MeshCmd (macOS, x86-64bit)",
+      "ru": "MeshCmd (macOS, x86-64bit)",
+      "tr": "MeshCmd (macOS, x86-64bit)",
+      "zh-chs": "MeshCmd（macOS，x86-ARM-64位）",
+      "zh-cht": "MeshCmd（macOS，x86-ARM-64位）",
       "xloc": [
         "default.handlebars->29->831"
       ]
@@ -29328,6 +29404,7 @@
     },
     {
       "en": "Remote Terminal Link",
+      "nl": "Externe terminal link",
       "fr": "Lien du terminal distant",
       "xloc": [
         "default.handlebars->29->195"
@@ -35772,6 +35849,7 @@
     },
     {
       "en": "Terminal Session Latency",
+      "nl": "Latentie van terminalsessie",
       "fr": "Latence de la session du terminal",
       "xloc": [
         "terminal.handlebars->p12->9->1"
@@ -35779,6 +35857,7 @@
     },
     {
       "en": "Terminal Sharing",
+      "nl": "Terminal delen",
       "fr": "Partage du terminal",
       "xloc": [
         "message.handlebars->3->4",
@@ -41323,6 +41402,7 @@
     },
     {
       "en": "cancelhelp",
+      "nl": "annuleer hulpvraag",
       "fr": "Annuler la demande d'assistance",
       "xloc": [
         "default.handlebars->29->252"
@@ -42024,24 +42104,80 @@
     },
     {
       "en": "macOS ARM (64bit)",
+      "cs": "macOS ARM (64bit)",
+      "de": "macOS ARM (64bit)",
+      "es": "macOS ARM (64bit)",
+      "fi": "macOS ARM (64-bittinen)",
+      "fr": "macOS ARM (64bit)",
+      "ja": "macOS ARM (64ビット)",
+      "ko": "macOS ARM (64비트)",
+      "nl": "macOS ARM (64bit)",
+      "pt": "macOS ARM (64 bits)",
+      "ru": "macOS ARM (64bit)",
+      "tr": "macOS ARM (64bit)",
+      "zh-chs": "macOS ARM (64位)",
+      "zh-cht": "macOS ARM (64位)"
       "xloc": [
         "default.handlebars->29->815"
       ]
     },
     {
       "en": "macOS x86 (64bit)",
+      "cs": "macOS x86 (64bit)",
+      "de": "macOS x86 (64bit)",
+      "en": "macOS x86 (64bit)",
+      "es": "macOS x86 (64bit)",
+      "fi": "macOS x86 (64-bittinen)",
+      "fr": "macOS x86 (64bit)",
+      "hi": "मैकओएस x86 (64 बिट)",
+      "ja": "macOS x86 (64ビット)",
+      "ko": "macOS x86 (64비트)",
+      "nl": "macOS x86 (64bit)",
+      "pt": "macOS x86 (64 bits)",
+      "ru": "macOS x86 (64bit)",
+      "tr": "macOS x86 (64bit)",
+      "zh-chs": "macOS x86 (64位)",
+      "zh-cht": "macOS x86 (64位)"
       "xloc": [
         "default.handlebars->29->814"
       ]
     },
     {
       "en": "macOS x86-32bit",
+      "cs": "macOS x86-32bit",
+      "de": "macOS x86-32bit",
+      "es": "macOS x86-32bit",
+      "fi": "macOS x86-32-bittinen",
+      "fr": "macOS x86-32bit",
+      "hi": "macOS x86-32 बिट",
+      "ja": "macOS x86-32ビット",
+      "ko": "macOS x86-32비트",
+      "nl": "macOS x86-32bit",
+      "pt": "macOS x86-32 bits",
+      "ru": "macOS x86-32bit",
+      "tr": "macOS x86-32bit",
+      "zh-chs": "macOS x86-32位",
+      "zh-cht": "macOS x86-32位"
       "xloc": [
         "default.handlebars->29->24"
       ]
     },
     {
       "en": "macOS x86-64bit",
+      "cs": "macOS x86-64bit",
+      "de": "macOS x86-64bit",
+      "es": "macOS x86-64bit",
+      "fi": "macOS x86-64-bittinen",
+      "fr": "macOS x86-64bit",
+      "hi": "मैकओएस x86-64 बिट",
+      "ja": "macOS x86-64ビット",
+      "ko": "macOS x86-64비트",
+      "nl": "macOS x86-64bit",
+      "pt": "macOS x86-64 bits",
+      "ru": "macOS x86-64bit",
+      "tr": "macOS x86-64bit",
+      "zh-chs": "macOS x86-64位",
+      "zh-cht": "macOS x86-64位"
       "xloc": [
         "default.handlebars->29->29"
       ]
@@ -43101,6 +43237,7 @@
     },
     {
       "en": "{0}, {1} to {2}",
+      "nl": "{0}, {1} tot {2}",
       "fr": "{0}, {1} à {2}",
       "xloc": [
         "default.handlebars->29->676"
