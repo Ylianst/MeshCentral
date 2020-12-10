@@ -4885,8 +4885,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
             if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
             if (
                 (obj.args.trustedproxy === true) ||
-                ((typeof obj.args.trustedproxy == 'object') && (obj.args.trustedproxy.indexOf(ipex) >= 0)) ||
-                ((typeof obj.args.tlsoffload == 'object') && (obj.args.tlsoffload.indexOf(ipex) >= 0))
+                ((typeof obj.args.trustedproxy == 'object') && (isIPMatch(ipex, obj.args.trustedproxy))) ||
+                ((typeof obj.args.tlsoffload == 'object') && (isIPMatch(ipex, obj.args.tlsoffload)))
             ) {
                 // Get client IP
                 if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
@@ -6604,6 +6604,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates) {
                 obj.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
             }
         } catch (ex) { console.log(ex); func(fd, tag); }
+    }
+
+    // Perform a IP match against a list
+    function isIPMatch(ip, matchList) {
+        const ipcheck = require('ipcheck');
+        for (var i in matchList) { if (ipcheck.match(ip, matchList[i]) == true) return true; }
+        return false;
     }
 
     // This is the invalid login throttling code
