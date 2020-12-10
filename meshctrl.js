@@ -7,7 +7,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
-const possibleCommands = ['listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -27,6 +27,7 @@ if (args['_'].length == 0) {
     console.log("  DeviceInfo                  - Show information about a device.");
     console.log("  Config                      - Perform operation on config.json file.");
     console.log("  AddUser                     - Create a new user account.");
+    console.log("  EditUser                    - Change a user account.");
     console.log("  RemoveUser                  - Delete a user account.");
     console.log("  AddUserGroup                - Create a new user group.");
     console.log("  RemoveUserGroup             - Delete a user group.");
@@ -61,7 +62,7 @@ if (args['_'].length == 0) {
     console.log("  --loginkey [hex]            - Server login key in hex.");
     console.log("  --loginkeyfile [file]       - File containing server login key in hex.");
     console.log("  --logindomain [domainid]    - Domain id, default is empty, only used with loginkey.");
-    console.log("  --proxy [http://proxy:1]    - Specify an HTTP proxy.");
+    console.log("  --proxy [http://proxy:123]  - Specify an HTTP proxy.");
     return;
 } else {
     settings.cmd = args['_'][0].toLowerCase();
@@ -141,6 +142,11 @@ if (args['_'].length == 0) {
         case 'adduser': {
             if (args.user == null) { console.log("New account name missing, use --user [name]"); }
             else if ((args.pass == null) && (args.randompass == null)) { console.log("New account password missing, use --pass [password] or --randompass"); }
+            else { ok = true; }
+            break;
+        }
+        case 'edituser': {
+            if (args.userid == null) { console.log("Edit account user missing, use --userid [id]"); }
             else { ok = true; }
             break;
         }
@@ -366,22 +372,37 @@ if (args['_'].length == 0) {
                     case 'adduser': {
                         console.log("Add a new user account, Example usages:\r\n");
                         console.log("  MeshCtrl AddUser --user newaccountname --pass newpassword");
+                        console.log("  MeshCtrl AddUser --user newaccountname --randompass --rights full");
                         console.log("\r\nRequired arguments:\r\n");
-                        console.log("  --user [name]          - New account name.");
-                        console.log("  --pass [password]      - New account password.");
-                        console.log("  --randompass           - Create account with a random password.");
+                        console.log("  --user [name]               - New account name.");
+                        console.log("  --pass [password]           - New account password.");
+                        console.log("  --randompass                - Create account with a random password.");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --email [email]        - New account email address.");
-                        console.log("  --emailverified        - New account email is verified.");
-                        console.log("  --resetpass            - Request password reset on next login.");
-                        console.log("  --siteadmin            - Create the account as full site administrator.");
-                        console.log("  --manageusers          - Allow this account to manage server users.");
-                        console.log("  --fileaccess           - Allow this account to store server files.");
-                        console.log("  --serverupdate         - Allow this account to update the server.");
-                        console.log("  --locked               - This account will be locked.");
-                        console.log("  --nonewgroups          - Account will not be allowed to create device groups.");
-                        console.log("  --notools              - Account not see MeshCMD download links.");
-                        console.log("  --domain [domain]      - Account domain, only for cross-domain admins.");
+                        console.log("  --domain [domain]           - Account domain, only for cross-domain admins.");
+                        console.log("  --email [email]             - New account email address.");
+                        console.log("  --emailverified             - New account email is verified.");
+                        console.log("  --resetpass                 - Request password reset on next login.");
+                        console.log("  --realname [name]           - Set the real name for this account.");
+                        console.log("  --phone [number]            - Set the account phone number.");
+                        console.log("  --rights [none|full|a,b,c]  - Comma seperated list of server permissions. Possible values:");
+                        console.log("     manageusers,backup,restore,update,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents");
+                        break;
+                    }
+                    case 'edituser': {
+                        console.log("Edit a user account, Example usages:\r\n");
+                        console.log("  MeshCtrl EditUser --userid user --rights locked,locksettings");
+                        console.log("  MeshCtrl EditUser --userid user --realname Jones");
+                        console.log("\r\nRequired arguments:\r\n");
+                        console.log("  --userid [name]             - User account identifier.");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --domain [domain]           - Account domain, only for cross-domain admins.");
+                        console.log("  --email [email]             - Account email address.");
+                        console.log("  --emailverified             - Account email is verified.");
+                        console.log("  --resetpass                 - Request password reset on next login.");
+                        console.log("  --realname [name]           - Set the real name for this account.");
+                        console.log("  --phone [number]            - Set the account phone number.");
+                        console.log("  --rights [none|full|a,b,c]  - Comma seperated list of server permissions. Possible values:");
+                        console.log("     manageusers,backup,restore,update,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents");
                         break;
                     }
                     case 'removeuser': {
@@ -982,20 +1003,32 @@ function serverConnect() {
                 break;
             }
             case 'adduser': {
-                var siteadmin = 0;
-                if (args.siteadmin) { siteadmin = 0xFFFFFFFF; }
-                if (args.manageusers) { siteadmin |= 2; }
-                if (args.fileaccess) { siteadmin |= 8; }
-                if (args.serverupdate) { siteadmin |= 16; }
-                if (args.locked) { siteadmin |= 32; }
-                if (args.nonewgroups) { siteadmin |= 64; }
-                if (args.notools) { siteadmin |= 128; }
+                var siteadmin = getSiteAdminRights(args);
                 if (args.randompass) { args.pass = getRandomAmtPassword(); }
                 var op = { action: 'adduser', username: args.user, pass: args.pass, responseid: 'meshctrl' };
                 if (args.email) { op.email = args.email; if (args.emailverified) { op.emailVerified = true; } }
                 if (args.resetpass) { op.resetNextLogin = true; }
-                if (siteadmin != 0) { op.siteadmin = siteadmin; }
+                if (siteadmin != -1) { op.siteadmin = siteadmin; }
                 if (args.domain) { op.domain = args.domain; }
+                if (args.phone === true) { op.phone = ''; }
+                if (typeof args.phone == 'string') { op.phone = args.phone; }
+                if (typeof args.realname == 'string') { op.realname = args.realname; }
+                ws.send(JSON.stringify(op));
+                break;
+            }
+            case 'edituser': {
+                var userid = args.userid;
+                if ((args.domain != null) && (userid.indexOf('/') < 0)) { userid = 'user/' + args.domain + '/' + userid; }
+                var siteadmin = getSiteAdminRights(args);
+                var op = { action: 'edituser', userid: userid, responseid: 'meshctrl' };
+                if (args.email) { op.email = args.email; if (args.emailverified) { op.emailVerified = true; } }
+                if (args.resetpass) { op.resetNextLogin = true; }
+                if (siteadmin != -1) { op.siteadmin = siteadmin; }
+                if (args.domain) { op.domain = args.domain; }
+                if (args.phone === true) { op.phone = ''; }
+                if (typeof args.phone == 'string') { op.phone = args.phone; }
+                if (typeof args.realname == 'string') { op.realname = args.realname; }
+                if (args.realname === true) { op.realname = ''; }
                 ws.send(JSON.stringify(op));
                 break;
             }
@@ -1269,6 +1302,39 @@ function serverConnect() {
         }
     });
 
+    function getSiteAdminRights(args) {
+        var siteadmin = -1;
+        if (typeof args.rights == 'number') {
+            siteadmin = args.rights;
+        } else if (typeof args.rights == 'string') {
+            siteadmin = 0;
+            var srights = args.rights.toLowerCase().split(',');
+            if (srights.indexOf('full') != -1) { siteadmin = 0xFFFFFFFF; }
+            if (srights.indexOf('none') != -1) { siteadmin = 0x00000000; }
+            if (srights.indexOf('backup') != -1) { siteadmin |= 0x00000001; }
+            if (srights.indexOf('manageusers') != -1) { siteadmin |= 0x00000002; }
+            if (srights.indexOf('restore') != -1) { siteadmin |= 0x00000004; }
+            if (srights.indexOf('fileaccess') != -1) { siteadmin |= 0x00000008; }
+            if (srights.indexOf('update') != -1) { siteadmin |= 0x00000010; }
+            if (srights.indexOf('locked') != -1) { siteadmin |= 0x00000020; }
+            if (srights.indexOf('nonewgroups') != -1) { siteadmin |= 0x00000040; }
+            if (srights.indexOf('notools') != -1) { siteadmin |= 0x00000080; }
+            if (srights.indexOf('usergroups') != -1) { siteadmin |= 0x00000100; }
+            if (srights.indexOf('recordings') != -1) { siteadmin |= 0x00000200; }
+            if (srights.indexOf('locksettings') != -1) { siteadmin |= 0x00000400; }
+            if (srights.indexOf('allevents') != -1) { siteadmin |= 0x00000800; }
+        }
+
+        if (args.siteadmin) { siteadmin = 0xFFFFFFFF; }
+        if (args.manageusers) { if (siteadmin == -1) { siteadmin = 0; } siteadmin |= 2; }
+        if (args.fileaccess) { if (siteadmin == -1) { siteadmin = 0; } siteadmin |= 8; }
+        if (args.serverupdate) { if (siteadmin == -1) { siteadmin = 0; } siteadmin |= 16; }
+        if (args.locked) { if (siteadmin == -1) { siteadmin = 0; } siteadmin |= 32; }
+        if (args.nonewgroups) { if (siteadmin == -1) { siteadmin = 0; } siteadmin |= 64; }
+        if (args.notools) { if (siteadmin == -1) { siteadmin = 0; } siteadmin |= 128; }
+        return siteadmin;
+    }
+
     ws.on('close', function() { process.exit(); });
     ws.on('error', function (err) {
         if (err.code == 'ENOTFOUND') { console.log('Unable to resolve ' + url); }
@@ -1360,6 +1426,7 @@ function serverConnect() {
             case 'msg': // SHELL
             case 'toast': // TOAST
             case 'adduser': // ADDUSER
+            case 'edituser': // EDITUSER
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
             case 'deletemesh': // REMOVEDEVICEGROUP
