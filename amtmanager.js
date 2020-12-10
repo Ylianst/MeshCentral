@@ -1187,7 +1187,7 @@ module.exports.CreateAmtManager = function (parent) {
             if ((serverNameSplit.length == 4) && (parseInt(serverNameSplit[0]) == serverNameSplit[0]) && (parseInt(serverNameSplit[1]) == serverNameSplit[1]) && (parseInt(serverNameSplit[2]) == serverNameSplit[2]) && (parseInt(serverNameSplit[3]) == serverNameSplit[3])) { dev.cira.mpsAddressFormat = 3; }
 
             // Check if our server is already present
-            if (dev.cira.xxCiraServers.length > 0) {
+            if ((dev.cira.xxCiraServers != null) && (dev.cira.xxCiraServers.length > 0)) {
                 for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
                     var mpsServer = dev.cira.xxCiraServers[i];
                     if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPresent = mpsServer['Name']; }
@@ -1195,19 +1195,21 @@ module.exports.CreateAmtManager = function (parent) {
             }
 
             // Check if our server is already present
-            if (dev.cira.xxPolicies['Periodic'].length > 0) {
+            if ((dev.cira.xxPolicies != null) && (dev.cira.xxPolicies['Periodic'].length > 0)) {
                 var mpsServer = dev.cira.xxPolicies['Periodic'][0];
                 if ((mpsServer.AccessInfo == dev.cira.mpsName) && (mpsServer.Port == dev.cira.mpsPort) && (mpsServer.InfoFormat == dev.cira.mpsAddressFormat)) { dev.cira.mpsPolicy = true; }
             }
         }
 
         // Remove all MPS policies that are not ours
-        if ((dev.cira.xxPolicies['User'] != null) && (dev.cira.xxPolicies['User'].length > 0)) { dev.consoleMsg("Removing CIRA user trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'User Initiated' }, function (stack, name, responses, status) { }); }
-        if ((dev.cira.xxPolicies['Alert'] != null) && (dev.cira.xxPolicies['Alert'].length > 0)) { dev.consoleMsg("Removing CIRA alert trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Alert' }, function (stack, name, responses, status) { }); }
-        if ((dev.cira.xxPolicies['Periodic'] != null) && (dev.cira.xxPolicies['Periodic'].length > 0) && (dev.cira.mpsPolicy == false)) { dev.consoleMsg("Removing CIRA periodic trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Periodic' }, function (stack, name, responses, status) { }); }
+        if (dev.cira.xxPolicies != null) {
+            if ((dev.cira.xxPolicies['User'] != null) && (dev.cira.xxPolicies['User'].length > 0)) { dev.consoleMsg("Removing CIRA user trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'User Initiated' }, function (stack, name, responses, status) { }); }
+            if ((dev.cira.xxPolicies['Alert'] != null) && (dev.cira.xxPolicies['Alert'].length > 0)) { dev.consoleMsg("Removing CIRA alert trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Alert' }, function (stack, name, responses, status) { }); }
+            if ((dev.cira.xxPolicies['Periodic'] != null) && (dev.cira.xxPolicies['Periodic'].length > 0) && (dev.cira.mpsPolicy == false)) { dev.consoleMsg("Removing CIRA periodic trigger."); dev.amtstack.Delete('AMT_RemoteAccessPolicyRule', { 'PolicyRuleName': 'Periodic' }, function (stack, name, responses, status) { }); }
+        }
 
         // Remove all MPS servers that are not ours
-        if (dev.cira.xxCiraServers.length > 0) {
+        if ((dev.cira.xxCiraServers != null) && (dev.cira.xxCiraServers.length > 0)) {
             for (var i = 0; i < dev.cira.xxCiraServers.length; i++) {
                 var mpsServer = dev.cira.xxCiraServers[i];
                 if ((mpsServer.AccessInfo != dev.cira.mpsName) || (mpsServer.Port != dev.cira.mpsPort) || (mpsServer.InfoFormat != dev.cira.mpsAddressFormat)) {

@@ -61,7 +61,7 @@
         var msg = '';
         switch (msgid) {
             case 1: { msg = "ERROR: Invalid domain."; break; }
-            case 2: { msg = "ERROR: Invalid username \"{0}\"."; break; }
+            case 2: { msg = format("ERROR: Invalid username \"{0}\".", arg1); break; }
             case 3: { msg = format("ERROR: Invalid e-mail \"{0}\" for user \"{1}\".", arg1, arg2); break; }
             case 4: { msg = format("E-mail \"{0}\" for user \"{1}\" already verified.", arg1, arg2); break; }
             case 5: { msg = format("E-mail \"{0}\" already in use on a different account. Change the email address and try again.", arg1); break; }
