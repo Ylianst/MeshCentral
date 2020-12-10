@@ -21224,7 +21224,7 @@
       "zh-chs": "Linux x86（32位）",
       "zh-cht": "Linux x86（32位）",
       "xloc": [
-        "default.handlebars->29->812"
+        "default.handlebars->29->813"
       ]
     },
     {
@@ -21244,7 +21244,7 @@
       "zh-chs": "Linux x86（64位）",
       "zh-cht": "Linux x86（64位）",
       "xloc": [
-        "default.handlebars->29->813"
+        "default.handlebars->29->812"
       ]
     },
     {
@@ -40268,7 +40268,7 @@
       "zh-chs": "Windows（32位）",
       "zh-cht": "Windows（32位）",
       "xloc": [
-        "default.handlebars->29->810"
+        "default.handlebars->29->811"
       ]
     },
     {
@@ -40288,7 +40288,7 @@
       "zh-chs": "Windows（64位）",
       "zh-cht": "Windows（64位）",
       "xloc": [
-        "default.handlebars->29->811"
+        "default.handlebars->29->810"
       ]
     },
     {

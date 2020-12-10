@@ -442,7 +442,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                         } else {
                                             // We are under the limit, create the new device.
                                             // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                            var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                            if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
                                             obj.db.Set(device);
 
                                             // Event the new node
@@ -457,7 +458,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                     return;
                                 } else {
                                     // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: domainid, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                    var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: domainid, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                    if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
                                     obj.db.Set(device);
 
                                     // Event the new node
@@ -578,7 +580,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     var domain = obj.parent.config.domains[mesh.domain];
                     socket.tag.domain = domain;
                     socket.tag.domainid = mesh.domain;
-                    socket.tag.name = '';
+                    if (socket.tag.name == null) { socket.tag.name = ''; }
                     socket.tag.nodeid = 'node/' + mesh.domain + '/' + nodeid; // Turn 16bit systemid guid into 48bit nodeid that is base64 encoded
                     socket.tag.meshid = mesh._id;
                     socket.tag.connectTime = Date.now();
@@ -596,7 +598,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                     } else {
                                         // We are under the limit, create the new device.
                                         // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                        var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: mesh.domain, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                        if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
                                         obj.db.Set(device);
 
                                         // Event the new node
@@ -612,7 +615,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 return;
                             } else {
                                 // Node is not in the database, add it. Credentials will be empty until added by the user.
-                                var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, host: null, domain: mesh.domain, intelamt: { user: '', pass: '', tls: 0, state: 2 } };
+                                var device = { type: 'node', mtype: 1, _id: socket.tag.nodeid, meshid: socket.tag.meshid, name: socket.tag.name, icon: (socket.tag.meiState.isBatteryPowered) ? 2 : 1, host: socket.remoteAddr, domain: mesh.domain, intelamt: { user: (typeof socket.tag.meiState.amtuser == 'string') ? socket.tag.meiState.amtuser : '', pass: (typeof socket.tag.meiState.amtpass == 'string') ? socket.tag.meiState.amtpass : '', tls: 0, state: 2 } };
+                                if ((typeof socket.tag.meiState.desc == 'string') && (socket.tag.meiState.desc.length > 0) && (socket.tag.meiState.desc.length < 1024)) { device.desc = socket.tag.meiState.desc; }
                                 obj.db.Set(device);
 
                                 // Event the new node
@@ -919,6 +923,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         case 'meiState':
                             if (socket.tag.connType != 2) break; // Only accept MEI state on CIRA-LMS connection
                             socket.tag.meiState = jsondata.value;
+                            if (((socket.tag.name == '') || (socket.tag.name == null)) && (typeof jsondata.value.OsHostname == 'string')) { socket.tag.name = jsondata.value.OsHostname; }
                             if (obj.parent.amtManager != null) { obj.parent.amtManager.mpsControlMessage(socket.tag.nodeid, socket, socket.tag.connType, jsondata); }
                             break;
                         case 'deactivate':
