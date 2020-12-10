@@ -157,6 +157,7 @@ function run(argv) {
     if ((typeof args.token) == 'string') { settings.token = args.token; }
     if ((typeof args.timeout) == 'string') { settings.timeout = parseInt(args.timeout); }
     if ((typeof args.uuidoutput) == 'string' || args.uuidoutput) { settings.uuidoutput = args.uuidoutput; }
+    if ((typeof args.desc) == 'string') { settings.desc = args.desc; }
     if (args.emailtoken) { settings.emailtoken = true; }
     if (args.debug === true) { settings.debuglevel = 1; }
     if (args.debug) { try { waitForDebugger(); } catch (e) { } }
@@ -245,6 +246,9 @@ function run(argv) {
             console.log('  --url [wss://server]      The address of the MeshCentral server.');
             console.log('  --id [groupid]            The device group identifier.');
             console.log('  --serverhttpshash [hash]  Optional TLS server certificate hash.');
+            console.log('  --user [username]         The Intel AMT admin username, admin is default.');
+            console.log('  --pass [password]         The Intel AMT admin password.');
+            console.log('  --desc [description]      Description of the device, used when first added to server.');
         } else if (action == 'amtdeactivate') {
             console.log('AmtDeactivate will attempt to deactivate Intel AMT on this computer when in client control mode (CCM). The command must be run on a computer with Intel AMT, must run as administrator and the Intel management driver must be installed. Intel AMT must be activated in client control mode for this command to work. Example usage:\r\n\r\n  meshcmd amtdeactivate');
         } else if (action == 'amtacmdeactivate') {
@@ -1112,6 +1116,19 @@ function configureAmt2() {
         if (state == null) { console.log('Unable to get Intel AMT state, try running as administrator.'); exit(1); return; }
         if (state.ProvisioningState == null) { console.log('Intel AMT not ready for configuration.'); exit(1); return; }
         console.log('Starting Intel AMT configuration...');
+
+        // Add indication if the device is battery powered, this is used to show a mobile icon when adding the device
+        state.isBatteryPowered = (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered());
+
+        // Add Intel AMT credentials if provided
+        if ((typeof settings.password == 'string') && (settings.password != '')) {
+            state.amtpass = settings.password;
+            state.amtuser = 'admin';
+            if ((typeof settings.username == 'string') && (settings.username != '')) { state.amtuser = settings.username; }
+        }
+
+        // If a description is provided, send it to the server
+        if ((typeof settings.desc == 'string') && (settings.desc != '')) { state.desc = settings.desc; }
 
         // Connect to MPS and start APF relay
         var apfarg = {
