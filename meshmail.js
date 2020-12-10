@@ -204,7 +204,7 @@ module.exports.CreateMeshMail = function (parent) {
     };
 
     // Send account check mail
-    obj.sendAccountCheckMail = function (domain, username, email, language, loginkey) {
+    obj.sendAccountCheckMail = function (domain, username, userid, email, language, loginkey) {
         obj.checkEmail(email, function (checked) {
             if (checked) {
                 parent.debug('email', "Sending email verification to " + email);
@@ -223,7 +223,7 @@ module.exports.CreateMeshMail = function (parent) {
                 // Set all the options.
                 var options = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral' };
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
-                options.cookie = obj.parent.encodeCookie({ u: domain.id + '/' + username.toLowerCase(), e: email, a: 1 }, obj.mailCookieEncryptionKey);
+                options.cookie = obj.parent.encodeCookie({ u: userid, e: email, a: 1 }, obj.mailCookieEncryptionKey);
 
                 // Send the email
                 obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });

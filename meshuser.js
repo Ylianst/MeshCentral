@@ -1565,7 +1565,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' changed email from ' + oldemail + ' to ' + user.email); }
 
                                 // Send the verification email
-                                if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, parent.getLanguageCodes(req)); }
+                                if (parent.parent.mailserver != null) { parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req)); }
                             }
                         });
                     }
@@ -1585,7 +1585,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     if ((parent.parent.mailserver != null) && (obj.user.email.toLowerCase() == command.email)) {
                         // Send the verification email
-                        parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user.email, parent.getLanguageCodes(req));
+                        parent.parent.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, parent.getLanguageCodes(req));
                     }
                     break;
                 }
