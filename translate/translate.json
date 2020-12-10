@@ -7733,7 +7733,9 @@
       "zh-chs": "单击此处重置您的帐户密码。",
       "zh-cht": "單擊此處重置你的帳戶密碼。",
       "xloc": [
-        "account-reset.html->2->5->1"
+        "account-reset.html->2->5->1",
+        "message.handlebars->3->19",
+        "message2.handlebars->5->19"
       ]
     },
     {
@@ -16674,8 +16676,8 @@
       "zh-chs": "进入登录页面",
       "zh-cht": "進入登入頁面",
       "xloc": [
-        "message.handlebars->3->19",
-        "message2.handlebars->5->19"
+        "message.handlebars->3->20",
+        "message2.handlebars->5->20"
       ]
     },
     {
@@ -42116,7 +42118,7 @@
       "ru": "macOS ARM (64bit)",
       "tr": "macOS ARM (64bit)",
       "zh-chs": "macOS ARM (64位)",
-      "zh-cht": "macOS ARM (64位)"
+      "zh-cht": "macOS ARM (64位)",
       "xloc": [
         "default.handlebars->29->815"
       ]
@@ -42125,7 +42127,6 @@
       "en": "macOS x86 (64bit)",
       "cs": "macOS x86 (64bit)",
       "de": "macOS x86 (64bit)",
-      "en": "macOS x86 (64bit)",
       "es": "macOS x86 (64bit)",
       "fi": "macOS x86 (64-bittinen)",
       "fr": "macOS x86 (64bit)",
@@ -42137,7 +42138,7 @@
       "ru": "macOS x86 (64bit)",
       "tr": "macOS x86 (64bit)",
       "zh-chs": "macOS x86 (64位)",
-      "zh-cht": "macOS x86 (64位)"
+      "zh-cht": "macOS x86 (64位)",
       "xloc": [
         "default.handlebars->29->814"
       ]
@@ -42157,7 +42158,7 @@
       "ru": "macOS x86-32bit",
       "tr": "macOS x86-32bit",
       "zh-chs": "macOS x86-32位",
-      "zh-cht": "macOS x86-32位"
+      "zh-cht": "macOS x86-32位",
       "xloc": [
         "default.handlebars->29->24"
       ]
@@ -42177,7 +42178,7 @@
       "ru": "macOS x86-64bit",
       "tr": "macOS x86-64bit",
       "zh-chs": "macOS x86-64位",
-      "zh-cht": "macOS x86-64位"
+      "zh-cht": "macOS x86-64位",
       "xloc": [
         "default.handlebars->29->29"
       ]

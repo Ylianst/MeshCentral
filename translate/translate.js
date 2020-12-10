@@ -68,6 +68,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/terms-mobile.handlebars",
     "../views/xterm.handlebars",
     "../views/message.handlebars",
+    "../views/message2.handlebars",
     "../views/messenger.handlebars",
     "../views/player.handlebars",
     "../views/desktop.handlebars",
