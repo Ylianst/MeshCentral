@@ -3767,7 +3767,11 @@ function createMeshCore(agent) {
             // Update the server on with basic info, logged in users and more advanced stuff, like Intel ME and Network Settings
             meInfoStr = null;
             sendPeriodicServerUpdate(null, true);
-            if (selfInfoUpdateTimer == null) { selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); } // 20 minutes
+            if (selfInfoUpdateTimer == null)
+            {
+                selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); // 20 minutes
+                selfInfoUpdateTimer.metadata = 'meshcore (InfoUpdate Timer)';
+            } 
 
             // Send any state messages
             if (Object.keys(tunnelUserCount.msg).length > 0) {
