@@ -1931,6 +1931,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.email != null) { newuser.email = command.email.toLowerCase(); if (command.emailVerified === true) { newuser.emailVerified = true; } } // Email
                             if (command.resetNextLogin === true) { newuser.passchange = -1; } else { newuser.passchange = Math.floor(Date.now() / 1000); }
                             if (user.groups) { newuser.groups = user.groups; } // New accounts are automatically part of our groups (Realms).
+                            if (common.validateString(command.realname, 1, 256)) { newuser.realname = command.realname; }
+                            if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { newuser.consent = command.consent; } change = 1; }
+                            if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete newuser.phone; } else { newuser.phone = command.phone; } change = 1; }
 
                             // Auto-join any user groups
                             if (typeof newuserdomain.newaccountsusergroups == 'object') {
@@ -1997,8 +2000,37 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Must be user administrator or edit self.
                     if (((user.siteadmin & 2) == 0) && (user._id != command.id)) break;
 
+                    // User the username as userid if needed
+                    if ((typeof command.username == 'string') && (command.userid == null)) { command.userid = command.username; }
+                    if ((typeof command.id == 'string') && (command.userid == null)) { command.userid = command.id; }
+
+                    // Edit a user account
+                    var err = null, editusersplit, edituserid, edituser, edituserdomain;
+                    try {
+                        if ((user.siteadmin & 2) == 0) { err = 'Permission denied'; }
+                        else if (common.validateString(command.userid, 1, 2048) == false) { err = 'Invalid userid'; }
+                        else {
+                            if (command.userid.indexOf('/') < 0) { command.userid = 'user/' + domain.id + '/' + command.userid; }
+                            editusersplit = command.userid.split('/');
+                            edituserid = command.userid;
+                            edituser = parent.users[edituserid];
+                            if (edituser == null) { err = 'User does not exists'; }
+                            else if ((obj.crossDomain !== true) && ((editusersplit.length != 3) || (editusersplit[1] != domain.id))) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                            else if ((edituser.siteadmin === SITERIGHT_ADMIN) && (user.siteadmin != SITERIGHT_ADMIN)) { err = 'Permission denied'; } // Need full admin to remote another administrator
+                            else if ((obj.crossDomain !== true) && (user.groups != null) && (user.groups.length > 0) && ((edituser.groups == null) || (findOne(edituser.groups, user.groups) == false))) { err = 'Invalid user group'; } // Can only perform this operation on other users of our group.
+                        }
+                    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) {
+                            try { ws.send(JSON.stringify({ action: 'edituser', responseid: command.responseid, result: err })); } catch (ex) { }
+                        }
+                        break;
+                    }
+
                     // Edit a user account, may involve changing email or administrator permissions
-                    var chguser = parent.users[command.id];
+                    var chguser = parent.users[edituserid];
                     change = 0;
                     if (chguser) {
                         // If the target user is admin and we are not admin, no changes can be made.
@@ -2010,7 +2042,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
 
                         // Fetch and validate the user domain
-                        var edituserdomainid = command.id.split('/')[1];
+                        var edituserdomainid = edituserid.split('/')[1];
                         if ((obj.crossDomain !== true) && (edituserdomainid != domain.id)) break;
                         var edituserdomain = parent.parent.config.domains[edituserdomainid];
                         if (edituserdomain == null) break;
@@ -2023,7 +2055,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
 
-                        // Validate and change realm name
+                        // Validate and change real name
                         if (common.validateString(command.realname, 0, 256) && (chguser.realname != command.realname)) {
                             if (command.realname == '') { delete chguser.realname; } else { chguser.realname = command.realname; }
                             change = 1;
@@ -2032,6 +2064,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Make changes
                         if ((command.emailVerified === true || command.emailVerified === false) && (chguser.emailVerified != command.emailVerified)) { chguser.emailVerified = command.emailVerified; change = 1; }
                         if ((common.validateInt(command.quota, 0) || command.quota == null) && (command.quota != chguser.quota)) { chguser.quota = command.quota; if (chguser.quota == null) { delete chguser.quota; } change = 1; }
+                        if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
 
@@ -2089,6 +2122,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.parent.DispatchEvent([chguser._id], obj, 'close'); // Disconnect all this user's sessions
                         }
                     }
+
+                    // OK Response
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'edituser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
             case 'usergroups':
