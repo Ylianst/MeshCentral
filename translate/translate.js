@@ -49,7 +49,8 @@ var meshCentralSourceFiles = [
     "../emails/account-login.txt",
     "../emails/account-reset.txt",
     "../emails/mesh-invite.txt",
-    "../emails/sms-messages.txt"
+    "../emails/sms-messages.txt",
+    '../agents/agent-translations.json'
 ];
 
 var minifyMeshCentralSourceFiles = [
@@ -577,6 +578,9 @@ function translate(lang, langFile, sources, createSubDir) {
         // Single threaded translation
         translateSingleThreaded(lang, langFile, sources, createSubDir);
     }
+
+    // Translate any JSON files
+    for (var i = 0; i < sources.length; i++) { if (sources[i].endsWith('.json')) { translateAllInJson(lang, langFile, sources[i]); } }
 }
 
 function translateSingleThreaded(lang, langFile, sources, createSubDir) {
@@ -627,6 +631,7 @@ function extract(langFile, sources) {
     for (var i = 0; i < sources.length; i++) {
         if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars')) { extractFromHtml(sources[i]); } 
         else if (sources[i].endsWith('.txt')) { extractFromTxt(sources[i]); }
+        else if (sources[i].endsWith('.json')) { extractFromJson(sources[i]); }
     }
     var count = 0, output = [];
     for (var i in sourceStrings) {
@@ -649,6 +654,28 @@ function extractFromTxt(file) {
         var line = lines[i];
         if ((line.length > 1) && (line[0] != '~')) {
             if (sourceStrings[line] == null) { sourceStrings[line] = { en: line, xloc: [name] }; } else { if (sourceStrings[line].xloc == null) { sourceStrings[line].xloc = []; } sourceStrings[line].xloc.push(name); }
+        }
+    }
+}
+
+function extractFromJson(file) {
+    log("Processing JSON: " + path.basename(file));
+    var json = JSON.parse(fs.readFileSync(file).toString());
+    var name = path.basename(file);
+    if (json.en == null) return;
+    for (var i in json.en) {
+        if (typeof json.en[i] == 'string') {
+            const str = json.en[i]
+            if (sourceStrings[str] == null) {
+                sourceStrings[str] = { en: str, xloc: [name] };
+            } else { if (sourceStrings[str].xloc == null) { sourceStrings[str].xloc = []; } sourceStrings[str].xloc.push(name); }
+        } else if (Array.isArray(json.en[i])) {
+            for (var k in json.en[i]) {
+                if (typeof json.en[i][k] == 'string') {
+                    const str = json.en[i][k];
+                    if (sourceStrings[str] == null) { sourceStrings[str] = { en: str, xloc: [name] }; } else { if (sourceStrings[str].xloc == null) { sourceStrings[str].xloc = []; } sourceStrings[str].xloc.push(name); }
+                }
+            }
         }
     }
 }
@@ -753,7 +780,53 @@ function translateFromTxt(lang, file, createSubDir) {
     fs.writeFileSync(outname, out, { flag: 'w+' });
 }
 
+function translateAllInJson(xlang, langFile, file) {
+    log("Translating JSON (" + ((xlang == null)?'All':xlang) + "): " + path.basename(file));
 
+    // Load the language file
+    var langFileData = null;
+    try { langFileData = JSON.parse(fs.readFileSync(langFile)); } catch (ex) { console.log(ex); }
+    if ((langFileData == null) || (langFileData.strings == null)) { log("Invalid language file."); process.exit(); return; }
+    var languages = [];
+
+    // Build translation table, simple source->target for the given language.
+    var xtranslationTable = {};
+    for (var i in langFileData.strings) {
+        var entry = langFileData.strings[i];
+        for (var lang in entry) {
+            if (lang == 'en') continue;
+            if ((xlang != null) && (lang != xlang)) continue;
+            if (languages.indexOf(lang) == -1) { languages.push(lang); xtranslationTable[lang] = {}; }
+            if ((entry['en'] != null) && (entry[lang] != null)) { xtranslationTable[lang][entry['en']] = entry[lang]; }
+        }
+    }
+
+    // Load and translate
+    var json = JSON.parse(fs.readFileSync(file).toString());
+    if (json.en != null) {
+        for (var j in languages) {
+            var lang = languages[j];
+            for (var i in json.en) {
+                if ((typeof json.en[i] == 'string') && (xtranslationTable[lang][json.en[i]] != null)) {
+                    // Translate a string
+                    if (json[lang] == null) { json[lang] = {}; }
+                    json[lang][i] = xtranslationTable[lang][json.en[i]];
+                } else if (Array.isArray(json.en[i])) {
+                    // Translate an array of strings
+                    var r = [], translateCount = 0;
+                    for (var k in json.en[i]) {
+                        var str = json.en[i][k];
+                        if (xtranslationTable[lang][str] != null) { r.push(xtranslationTable[lang][str]); translateCount++; } else { r.push(str); }
+                    }
+                    if (translateCount > 0) { json[lang][i] = r; }
+                }
+            }
+        }
+    }
+
+    // Save the results
+    fs.writeFileSync(file, JSON.stringify(json, null, 2), { flag: 'w+' });
+}
 
 function translateFromHtml(lang, file, createSubDir) {
     var data = fs.readFileSync(file);

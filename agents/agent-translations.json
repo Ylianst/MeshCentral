@@ -1,0 +1,263 @@
+{
+  "en": {
+    "agent": "Agent",
+    "agentVersion": "New Agent Version",
+    "group": "Device Group",
+    "url": "Server URL",
+    "meshName": "Mesh Name",
+    "meshId": "Mesh Identifier",
+    "serverId": "Server Identifier",
+    "setup": "Setup",
+    "update": "Update",
+    "install": "Install",
+    "uninstall": "Uninstall",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "cancel": "Cancel",
+    "pressok": "Press OK to disconnect",
+    "elevation": "Elevated permissions is required to install/uninstall the agent.",
+    "sudo": "Please try again with sudo.",
+    "ctrlc": "Press Ctrl-C to exit.",
+    "commands": "You can run the text version from the command line with the following command(s)",
+    "graphicalerror": "The graphical version of this installer canot run on this system",
+    "zenity": "Try installing/updating Zenity, and run again",
+    "status": [
+      "NOT INSTALLED",
+      "RUNNING",
+      "NOT RUNNING"
+    ],
+    "statusDescription": "Current Agent Status",
+    "description": "Click the buttons below to install or uninstall the mesh agent. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator."
+  },
+  "cs": {
+    "agent": "Agent",
+    "group": "Skupina zařízení",
+    "install": "Instalace",
+    "uninstall": "Odinstalace",
+    "connect": "Připojit",
+    "disconnect": "Odpojit",
+    "cancel": "Storno"
+  },
+  "de": {
+    "agent": "Agent",
+    "group": "Gerätegruppe",
+    "install": "Installieren",
+    "uninstall": "Deinstallation",
+    "connect": "Verbinden",
+    "disconnect": "Trennen",
+    "cancel": "Abbrechen"
+  },
+  "es": {
+    "agent": "Agente",
+    "group": "Grupo de Dispositivos",
+    "install": "Instalar",
+    "uninstall": "Desinstalar",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "cancel": "Cancelar"
+  },
+  "fi": {
+    "agent": "Agentti",
+    "group": "Laiteryhmä",
+    "install": "Asenna",
+    "uninstall": "Asennuksen poistaminen",
+    "connect": "Yhdistä",
+    "disconnect": "Katkaise yhteys",
+    "cancel": "Peruuta"
+  },
+  "fr": {
+    "agent": "Agent",
+    "group": "Groupe d'appareils",
+    "setup": "Configuration",
+    "install": "Installer",
+    "uninstall": "Désinstaller",
+    "connect": "Se connecter",
+    "disconnect": "Déconnecter",
+    "cancel": "Annuler"
+  },
+  "hi": {
+    "agent": "एजेंट",
+    "group": "डिवाइस समूह",
+    "install": "इंस्टॉल",
+    "uninstall": "स्थापना रद्द करें",
+    "connect": "जुडिये",
+    "disconnect": "डिस्कनेक्ट",
+    "cancel": "रद्द करना"
+  },
+  "ja": {
+    "agent": "エージェント",
+    "group": "デバイスグループ",
+    "install": "インストール",
+    "uninstall": "アンインストール",
+    "connect": "つなぐ",
+    "disconnect": "切断する",
+    "cancel": "キャンセル"
+  },
+  "ko": {
+    "agent": "에이전트",
+    "agentVersion": "새에이전트 버전",
+    "group": "장치 그룹",
+    "url": "서버의 위치",
+    "meshName": "메시의 이름",
+    "meshId": "메시의 식별자",
+    "serverId": "서버의 식별자",
+    "setup": "설정하다",
+    "update": "개조하다",
+    "install": "설치",
+    "uninstall": "설치 제거",
+    "connect": "연결",
+    "disconnect": "연결 해제",
+    "cancel": "취소",
+    "pressok": "연결을 끊으려면 \"OK\"를 누르십시오",
+    "elevation": "관리자 권한은 에이전트 제거 / 설치하는 데 필요",
+    "sudo": "\"sudo\"로 다시 시도하십시오",
+    "ctrlc": "종료하려면 \"Ctrl-C\"를 누르십시오.",
+    "commands": "다음 명령을 사용하여 콘솔에서 텍스트 버전을 실행할 수 있습니다",
+    "graphicalerror": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다",
+    "zenity": "\"Zenity\"를 설치 또는 업데이트하고 다시 시도하십시오",
+    "status": [
+      "없다",
+      "운영",
+      "중지됨"
+    ],
+    "statusDescription": "에이전트 상태",
+    "description": "메시 에이전트를 설치 또는 제거하려면 아래 버튼을 클릭하십시오. 이 프로그램은 설치하면 백그라운드에서 실행되므로 원격 관리자가이 컴퓨터를 관리하고 제어 할 수 있습니다."
+  },
+  "nl": {
+    "agent": "Agent",
+    "group": "Apparaat groep",
+    "setup": "Setup",
+    "install": "Installeren",
+    "uninstall": "Deïnstallatie",
+    "connect": "Verbinden",
+    "disconnect": "Verbreken",
+    "cancel": "Annuleren"
+  },
+  "pt": {
+    "agent": "Agente",
+    "group": "Grupo de dispositivos",
+    "install": "Instalar",
+    "uninstall": "Desinstalar",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "cancel": "Cancelar"
+  },
+  "ru": {
+    "agent": "Агент",
+    "group": "Группа устройства",
+    "install": "Установка",
+    "uninstall": "Удаление",
+    "connect": "Подключиться",
+    "disconnect": "Разъединить",
+    "cancel": "Отмена"
+  },
+  "tr": {
+    "agent": "Ajan",
+    "group": "Cihaz Grubu",
+    "install": "Yüklemek",
+    "uninstall": "Kaldır",
+    "connect": "Bağlan",
+    "disconnect": "Bağlantıyı kes",
+    "cancel": "İptal etmek"
+  },
+  "zh-chs": {
+    "agent": "代理",
+    "group": "设备组",
+    "install": "安装",
+    "uninstall": "卸载",
+    "connect": "连接",
+    "disconnect": "断线",
+    "cancel": "取消"
+  },
+  "zh-cht": {
+    "agent": "代理",
+    "group": "裝置群",
+    "install": "安裝",
+    "uninstall": "卸載",
+    "connect": "連接",
+    "disconnect": "斷線",
+    "cancel": "取消"
+  },
+  "xloc": {
+    "agent": [
+      "agent-translations.json"
+    ],
+    "agentVersion": [
+      "agent-translations.json"
+    ],
+    "group": [
+      "agent-translations.json"
+    ],
+    "url": [
+      "agent-translations.json"
+    ],
+    "meshName": [
+      "agent-translations.json"
+    ],
+    "meshId": [
+      "agent-translations.json"
+    ],
+    "serverId": [
+      "agent-translations.json"
+    ],
+    "setup": [
+      "agent-translations.json"
+    ],
+    "update": [
+      "agent-translations.json"
+    ],
+    "install": [
+      "agent-translations.json"
+    ],
+    "uninstall": [
+      "agent-translations.json"
+    ],
+    "connect": [
+      "agent-translations.json"
+    ],
+    "disconnect": [
+      "agent-translations.json"
+    ],
+    "cancel": [
+      "agent-translations.json"
+    ],
+    "pressok": [
+      "agent-translations.json"
+    ],
+    "elevation": [
+      "agent-translations.json"
+    ],
+    "sudo": [
+      "agent-translations.json"
+    ],
+    "ctrlc": [
+      "agent-translations.json"
+    ],
+    "commands": [
+      "agent-translations.json"
+    ],
+    "graphicalerror": [
+      "agent-translations.json"
+    ],
+    "zenity": [
+      "agent-translations.json"
+    ],
+    "status": [
+      [
+        "agent-translations.json"
+      ],
+      [
+        "agent-translations.json"
+      ],
+      [
+        "agent-translations.json"
+      ]
+    ],
+    "statusDescription": [
+      "agent-translations.json"
+    ],
+    "description": [
+      "agent-translations.json"
+    ]
+  }
+}
