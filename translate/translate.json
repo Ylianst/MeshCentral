@@ -4062,6 +4062,7 @@
       "zh-chs": "代理",
       "zh-cht": "代理",
       "xloc": [
+        "agent-translations.json",
         "default-mobile.handlebars->9->203",
         "default-mobile.handlebars->9->228",
         "default-mobile.handlebars->9->250",
@@ -6602,6 +6603,7 @@
       "zh-chs": "取消",
       "zh-cht": "取消",
       "xloc": [
+        "agent-translations.json",
         "default-mobile.handlebars->9->82",
         "default-mobile.handlebars->dialog->idx_dlgButtonBar",
         "default.handlebars->29->1327",
@@ -7781,6 +7783,13 @@
       ]
     },
     {
+      "en": "Click the buttons below to install or uninstall the mesh agent. When installed, this software runs in the background allowing this computer to be managed and controlled by a remote administrator.",
+      "ko": "메시 에이전트를 설치 또는 제거하려면 아래 버튼을 클릭하십시오. 이 프로그램은 설치하면 백그라운드에서 실행되므로 원격 관리자가이 컴퓨터를 관리하고 제어 할 수 있습니다.",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Klikněte pro zobrazení aktuálních upozornění",
       "de": "Hier klicken, um aktuelle Benachrichtigungen anzuzeigen",
       "en": "Click to view current notifications",
@@ -8686,6 +8695,7 @@
       "zh-chs": "连接",
       "zh-cht": "連接",
       "xloc": [
+        "agent-translations.json",
         "default-mobile.handlebars->9->301",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->0->1->3",
@@ -10085,6 +10095,13 @@
       ]
     },
     {
+      "en": "Current Agent Status",
+      "ko": "에이전트 상태",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Nainstalovaná verze",
       "de": "Aktuelle Version",
       "en": "Current Version",
@@ -11266,6 +11283,7 @@
       "zh-chs": "设备组",
       "zh-cht": "裝置群",
       "xloc": [
+        "agent-translations.json",
         "default.handlebars->29->1454",
         "default.handlebars->29->1457",
         "default.handlebars->29->1458",
@@ -12111,6 +12129,7 @@
       "zh-chs": "断线",
       "zh-cht": "斷線",
       "xloc": [
+        "agent-translations.json",
         "default-mobile.handlebars->9->302",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea1->1->3",
         "default.handlebars->29->1367",
@@ -13807,6 +13826,13 @@
       "zh-cht": "編輯標籤",
       "xloc": [
         "default.handlebars->29->447"
+      ]
+    },
+    {
+      "en": "Elevated permissions is required to install/uninstall the agent.",
+      "ko": "관리자 권한은 에이전트 제거 / 설치하는 데 필요",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -18160,7 +18186,10 @@
       "ru": "Установка",
       "tr": "Yüklemek",
       "zh-chs": "安装",
-      "zh-cht": "安裝"
+      "zh-cht": "安裝",
+      "xloc": [
+        "agent-translations.json"
+      ]
     },
     {
       "cs": "Nainstalujte si <a href=\\\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\\\" rel=\\\"noreferrer noopener\\\" target=_blank>Google Authenticator</a> nebo kompatibilní aplikaci a naskenujte kód, použijte <a href=\\\"{0}\\\" rel=\\\"noreferrer noopener\\\" target=_blank> tento odkaz</a> nebo vložte tajemství. Pak vložte aktuální 6 číselný token pro aktivaci 2-faktorového přihlašování.",
@@ -22915,6 +22944,20 @@
       ]
     },
     {
+      "en": "Mesh Identifier",
+      "ko": "메시의 식별자",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
+      "en": "Mesh Name",
+      "ko": "메시의 이름",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Mesh předávání (relay)",
       "de": "Netzrelais",
       "en": "Mesh Relay",
@@ -24169,6 +24212,20 @@
       ]
     },
     {
+      "en": "NOT INSTALLED",
+      "ko": "없다",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
+      "en": "NOT RUNNING",
+      "ko": "중지됨",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Přejděte na níže uvedenou adresu URL, udělejte přístup a zkopírujte kód tokenu zpět.",
       "de": "Nagivieren Sie auf die unten stehende URL, gewähren Sie Zugriff und kopieren Sie den Token-Code zurück.",
       "en": "Nagivate to the URL below, grant access and copy the token code back.",
@@ -24449,6 +24506,13 @@
       "zh-cht": "新賬戶...",
       "xloc": [
         "default.handlebars->container->column_l->p4->3->1->0->3->3"
+      ]
+    },
+    {
+      "en": "New Agent Version",
+      "ko": "새에이전트 버전",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -27621,6 +27685,13 @@
       ]
     },
     {
+      "en": "Please try again with sudo.",
+      "ko": "\"sudo\"로 다시 시도하십시오",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Počkejte pár minut než dojde k ověření.",
       "de": "Bitte warten Sie einige Minuten, um die Bestätigung zu erhalten.",
       "en": "Please wait a few minute to receive the verification.",
@@ -28063,6 +28134,20 @@
       "zh-cht": "存在於伺服器上",
       "xloc": [
         "default.handlebars->29->2060"
+      ]
+    },
+    {
+      "en": "Press Ctrl-C to exit.",
+      "ko": "종료하려면 \"Ctrl-C\"를 누르십시오.",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
+      "en": "Press OK to disconnect",
+      "ko": "연결을 끊으려면 \"OK\"를 누르십시오",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -28656,6 +28741,13 @@
       "zh-cht": "RSS",
       "xloc": [
         "default.handlebars->29->2124"
+      ]
+    },
+    {
+      "en": "RUNNING",
+      "ko": "운영",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -32330,6 +32422,13 @@
       ]
     },
     {
+      "en": "Server Identifier",
+      "ko": "서버의 식별자",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Oprávnění serveru",
       "de": "Server-Berechtigungen",
       "en": "Server Permissions",
@@ -32468,6 +32567,13 @@
       "zh-cht": "伺服器追蹤",
       "xloc": [
         "default.handlebars->29->2145"
+      ]
+    },
+    {
+      "en": "Server URL",
+      "ko": "서버의 위치",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -32904,7 +33010,9 @@
       "en": "Setup",
       "nl": "Setup",
       "fr": "Configuration",
+      "ko": "설정하다",
       "xloc": [
+        "agent-translations.json",
         "default.handlebars->29->1385",
         "default.handlebars->29->285"
       ]
@@ -35957,6 +36065,13 @@
       ]
     },
     {
+      "en": "The graphical version of this installer canot run on this system",
+      "ko": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Název skupiny zařízení, do které tento počítač patří",
       "de": "Der Name der Gerätegruppe zu der dieser Rechner gehört",
       "en": "The name of the device group this computer belong to",
@@ -37170,6 +37285,13 @@
       ]
     },
     {
+      "en": "Try installing/updating Zenity, and run again",
+      "ko": "\"Zenity\"를 설치 또는 업데이트하고 다시 시도하십시오",
+      "xloc": [
+        "agent-translations.json"
+      ]
+    },
+    {
       "cs": "Tsonga",
       "de": "Tsonga",
       "en": "Tsonga",
@@ -37613,6 +37735,7 @@
       "zh-chs": "卸载",
       "zh-cht": "卸載",
       "xloc": [
+        "agent-translations.json",
         "default-mobile.handlebars->9->458",
         "default.handlebars->29->1515",
         "default.handlebars->29->694",
@@ -37985,6 +38108,13 @@
       "zh-cht": "最新",
       "xloc": [
         "default.handlebars->29->2154"
+      ]
+    },
+    {
+      "en": "Update",
+      "ko": "개조하다",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
@@ -40775,6 +40905,13 @@
       "zh-cht": "你可以隨時重新啟動此功能。",
       "xloc": [
         "default.handlebars->29->132"
+      ]
+    },
+    {
+      "en": "You can run the text version from the command line with the following command(s)",
+      "ko": "다음 명령을 사용하여 콘솔에서 텍스트 버전을 실행할 수 있습니다",
+      "xloc": [
+        "agent-translations.json"
       ]
     },
     {
