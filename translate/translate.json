@@ -2631,6 +2631,7 @@
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->1->p3AccountActions->p2AccountSecurity->1->0",
         "default.handlebars->29->1297",
         "default.handlebars->29->1299",
+        "default.handlebars->29->2148",
         "default.handlebars->29->540",
         "default.handlebars->29->542"
       ]
@@ -5444,7 +5445,7 @@
       "zh-chs": "您确定要{0}插件吗：{1}",
       "zh-cht": "你確定要{0}外掛嗎：{1}",
       "xloc": [
-        "default.handlebars->29->2155"
+        "default.handlebars->29->2157"
       ]
     },
     {
@@ -6581,7 +6582,7 @@
       "zh-chs": "呼叫错误",
       "zh-cht": "呼叫錯誤",
       "xloc": [
-        "default.handlebars->29->2156"
+        "default.handlebars->29->2158"
       ]
     },
     {
@@ -7272,7 +7273,7 @@
       "zh-cht": "檢查...",
       "xloc": [
         "default.handlebars->29->1066",
-        "default.handlebars->29->2150"
+        "default.handlebars->29->2152"
       ]
     },
     {
@@ -20761,7 +20762,7 @@
       "zh-chs": "减",
       "zh-cht": "減",
       "xloc": [
-        "default.handlebars->29->2158"
+        "default.handlebars->29->2160"
       ]
     },
     {
@@ -23718,7 +23719,7 @@
       "zh-chs": "更多",
       "zh-cht": "更多",
       "xloc": [
-        "default.handlebars->29->2157"
+        "default.handlebars->29->2159"
       ]
     },
     {
@@ -27658,7 +27659,7 @@
       "zh-cht": "外掛指令",
       "xloc": [
         "default.handlebars->29->201",
-        "default.handlebars->29->2154"
+        "default.handlebars->29->2156"
       ]
     },
     {
@@ -37413,11 +37414,7 @@
       "ru": "Невозможно получить доступ к устройству, пока адрес email не подтвержден. Это необходимо для восстановления пароля. Перейдите на вкладку \\\"Моя учетная запись\\\", чтобы изменить и подтвердить адрес email.",
       "tr": "Bir e-posta adresi doğrulanana kadar bir cihaza erişilemiyor. Bu, şifre kurtarma için gereklidir. Bir e-posta adresini değiştirmek ve doğrulamak için \\\"Hesabım\\\" sekmesine gidin.",
       "zh-chs": "在验证电邮地址之前，无法访问设备。这是密码恢复所必需的。转到“我的帐户”标签以更改和验证电邮地址。",
-      "zh-cht": "在驗證電郵地址之前，無法訪問裝置。這是密碼恢復所必需的。轉到“我的帳戶”標籤以更改和驗證電郵地址。",
-      "xloc": [
-        "default.handlebars->29->1298",
-        "default.handlebars->29->541"
-      ]
+      "zh-cht": "在驗證電郵地址之前，無法訪問裝置。這是密碼恢復所必需的。轉到“我的帳戶”標籤以更改和驗證電郵地址。"
     },
     {
       "cs": "Nedaří se získat přístup k zařízení, dokud nebude ověřena e-mailová adresa. To je vyžadováno pro obnovení hesla. Přejděte do „Můj účet“ a změňte si a ověřte e-mailovou adresu.",
@@ -37476,9 +37473,20 @@
       "ru": "Невозможно получить доступ к устройству, пока не включена двухфакторная аутентификация. Это требуется для дополнительной безопасности. Перейдите на вкладку \\\"Моя учетная запись\\\" и посмотрите \\\"Безопасность учетной записи\\\".",
       "tr": "İki faktörlü kimlik doğrulama etkinleştirilene kadar bir cihaza erişilemez. Bu, ekstra güvenlik için gereklidir. \\\"Hesabım\\\" sekmesine gidin ve \\\"Hesap Güvenliği\\\" bölümüne bakın.",
       "zh-chs": "在启用两因素身份验证之前，无法访问设备。这是额外的安全性所必需的。转到“我的帐户”标签，然后查看“帐户安全性”部分。",
-      "zh-cht": "在啟用二因子身份驗證之前，無法訪問裝置。這是額外的安全性所必需的。轉到“我的帳戶”標籤，然後查看“帳戶安全性”部分。",
+      "zh-cht": "在啟用二因子身份驗證之前，無法訪問裝置。這是額外的安全性所必需的。轉到“我的帳戶”標籤，然後查看“帳戶安全性”部分。"
+    },
+    {
+      "en": "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" tab to change and verify an email address.",
+      "xloc": [
+        "default.handlebars->29->1298",
+        "default.handlebars->29->541"
+      ]
+    },
+    {
+      "en": "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" tab and look at the \\\"Account Security\\\" section.",
       "xloc": [
         "default.handlebars->29->1300",
+        "default.handlebars->29->2149",
         "default.handlebars->29->543"
       ]
     },
@@ -37976,7 +37984,7 @@
       "zh-chs": "最新",
       "zh-cht": "最新",
       "xloc": [
-        "default.handlebars->29->2152"
+        "default.handlebars->29->2154"
       ]
     },
     {
@@ -39332,7 +39340,7 @@
       "zh-chs": "版本不兼容，请先升级您的MeshCentral",
       "zh-cht": "版本不兼容，請先升級你的MeshCentral",
       "xloc": [
-        "default.handlebars->29->2148"
+        "default.handlebars->29->2150"
       ]
     },
     {
@@ -39434,8 +39442,8 @@
       "zh-chs": "查看变更日志",
       "zh-cht": "查看變更日誌",
       "xloc": [
-        "default.handlebars->29->2151",
-        "default.handlebars->29->2153"
+        "default.handlebars->29->2153",
+        "default.handlebars->29->2155"
       ]
     },
     {
@@ -41254,7 +41262,7 @@
       "zh-chs": "\\\\'",
       "zh-cht": "\\\\'",
       "xloc": [
-        "default.handlebars->29->2149"
+        "default.handlebars->29->2151"
       ]
     },
     {
