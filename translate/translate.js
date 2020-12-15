@@ -668,7 +668,9 @@ function extractFromJson(file) {
             const str = json.en[i]
             if (sourceStrings[str] == null) {
                 sourceStrings[str] = { en: str, xloc: [name] };
-            } else { if (sourceStrings[str].xloc == null) { sourceStrings[str].xloc = []; } sourceStrings[str].xloc.push(name); }
+            } else {
+                if (sourceStrings[str].xloc == null) { sourceStrings[str].xloc = []; } sourceStrings[str].xloc.push(name);
+            }
         } else if (Array.isArray(json.en[i])) {
             for (var k in json.en[i]) {
                 if (typeof json.en[i][k] == 'string') {
@@ -794,7 +796,7 @@ function translateAllInJson(xlang, langFile, file) {
     for (var i in langFileData.strings) {
         var entry = langFileData.strings[i];
         for (var lang in entry) {
-            if (lang == 'en') continue;
+            if ((lang == 'en') || (lang == 'xloc')) continue;
             if ((xlang != null) && (lang != xlang)) continue;
             if (languages.indexOf(lang) == -1) { languages.push(lang); xtranslationTable[lang] = {}; }
             if ((entry['en'] != null) && (entry[lang] != null)) { xtranslationTable[lang][entry['en']] = entry[lang]; }
