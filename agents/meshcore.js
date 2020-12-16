@@ -45,6 +45,7 @@ function createMeshCore(agent) {
     var obj = {};
     var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
     var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
+    var debugConsole = (_MSH().debugConsole == 1);
 
     if (process.platform == 'win32' && require('user-sessions').isRoot()) {
         // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
@@ -228,6 +229,12 @@ function createMeshCore(agent) {
                         break;
                     case 'meshToolInfo':
                         try { mesh.SendCommand({ action: 'meshToolInfo', name: data.name, hash: data.hash, cookie: data.cookie?true:false, pipe: true }); } catch (e) { }
+                        break;
+                    case 'console':
+                        if (debugConsole) {
+                            var args = splitArgs(data.value);
+                            processConsoleCommand(args[0].toLowerCase(), parseArgs(args), 0, 'pipe');
+                        }
                         break;
                 }
             }
@@ -2680,7 +2687,7 @@ function createMeshCore(agent) {
             var response = null;
             switch (cmd) {
                 case 'help': { // Displays available commands
-                    var fin = '', f = '', availcommands = 'timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
+                    var fin = '', f = '', availcommands = 'msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,nwslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg';
                     if (process.platform == 'win32') { availcommands += ',safemode,wpfhwacceleration,uac'; }
                     if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
 		            if (process.platform != 'freebsd') { availcommands += ',vm';}                    
@@ -2696,6 +2703,9 @@ function createMeshCore(agent) {
                     response = "Available commands: \r\n" + fin + ".";
                     break;
                 }
+                case 'msh':
+                    response = JSON.stringify(_MSH(), null, 2);
+                    break;
                 case 'timerinfo':
                     response = require('ChainViewer').getTimerInfo();
                     break;
@@ -3309,6 +3319,7 @@ function createMeshCore(agent) {
                     var oldNodeId = db.Get('OldNodeId');
                     if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                     if (process.platform == 'linux' || process.platform == 'freebsd') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
+                    //response += '\r\Debug Console: ' + debugConsole + '.';
                     break;
                 }
                 case 'osinfo': { // Return the operating system information
@@ -3743,7 +3754,8 @@ function createMeshCore(agent) {
     // Send a mesh agent console command
     function sendConsoleText(text, sessionid) {
         if (typeof text == 'object') { text = JSON.stringify(text); }
-        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: text, sessionid: sessionid });
+        if (debugConsole && ((sessionid == null) || (sessionid == 'pipe'))) { broadcastToRegisteredApps({ cmd: 'console', value: text }); }
+        if (sessionid != 'pipe') { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: text, sessionid: sessionid }); }
     }
 
     // Called before the process exits
