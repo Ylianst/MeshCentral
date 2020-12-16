@@ -87,6 +87,7 @@ module.exports.streamExeWithMeshPolicy = function (options) {
     if (!options.destinationStream) { throw ('destination stream was not specified'); }
     if (!options.sourceFileName) { throw ('source file not specified'); }
     if (!options.msh) { throw ('msh content not specified'); }
+    options.mshbuf = Buffer.from(options.msh, 'utf8');
 
     // If a Windows binary, parse it if not already parsed
     if ((options.platform == 'win32') && (!options.peinfo)) { options.peinfo = module.exports.parseWindowsExecutable(options.sourceFileName); }
@@ -98,9 +99,9 @@ module.exports.streamExeWithMeshPolicy = function (options) {
         options.destinationStream.sourceStream.options = options;
         options.destinationStream.sourceStream.on('end', function () {
             // Once the binary is streamed, write the msh + length + guid in that order.
-            this.options.destinationStream.write(this.options.msh); // MSH
+            this.options.destinationStream.write(this.options.mshbuf); // MSH
             var sz = Buffer.alloc(4);
-            sz.writeUInt32BE(this.options.msh.length, 0);
+            sz.writeUInt32BE(this.options.mshbuf.length, 0);
             this.options.destinationStream.write(sz); // Length in small endian
             this.options.destinationStream.end(Buffer.from((this.options.randomPolicy === true) ? exeNullPolicyGuid : exeMeshPolicyGuid, 'hex'));  // Guid
         });
@@ -109,9 +110,9 @@ module.exports.streamExeWithMeshPolicy = function (options) {
     } else if (options.platform == 'win32' && options.peinfo.CertificateTableAddress != 0) {
         // Read up to the certificate table size and stream that out
         options.destinationStream.sourceStream = require('fs').createReadStream(options.sourceFileName, { flags: 'r', start: 0, end: options.peinfo.CertificateTableSizePos - 1 });
-        options.destinationStream.sourceStream.mshPadding = (8 - ((options.peinfo.certificateDwLength + options.msh.length + 20) % 8)) % 8; // Compute the padding with quad-align
-        options.destinationStream.sourceStream.CertificateTableSize = (options.peinfo.CertificateTableSize + options.msh.length + 20 + options.destinationStream.sourceStream.mshPadding); // Add to the certificate table size
-        options.destinationStream.sourceStream.certificateDwLength = (options.peinfo.certificateDwLength + options.msh.length + 20 + options.destinationStream.sourceStream.mshPadding); // Add to the certificate size
+        options.destinationStream.sourceStream.mshPadding = (8 - ((options.peinfo.certificateDwLength + options.mshbuf.length + 20) % 8)) % 8; // Compute the padding with quad-align
+        options.destinationStream.sourceStream.CertificateTableSize = (options.peinfo.CertificateTableSize + options.mshbuf.length + 20 + options.destinationStream.sourceStream.mshPadding); // Add to the certificate table size
+        options.destinationStream.sourceStream.certificateDwLength = (options.peinfo.certificateDwLength + options.mshbuf.length + 20 + options.destinationStream.sourceStream.mshPadding); // Add to the certificate size
         options.destinationStream.sourceStream.options = options;
 
         options.destinationStream.sourceStream.on('end', function () {
@@ -138,9 +139,9 @@ module.exports.streamExeWithMeshPolicy = function (options) {
                 source3.on('end', function () {
                     // We've sent the entire binary... Now send: Padding + MSH + MSHLength + GUID
                     if (this.mshPadding > 0) { this.options.destinationStream.write(Buffer.alloc(this.mshPadding)); } // Padding
-                    this.options.destinationStream.write(this.options.msh); // MSH content
+                    this.options.destinationStream.write(this.options.mshbuf); // MSH content
                     var sz = Buffer.alloc(4);
-                    sz.writeUInt32BE(this.options.msh.length, 0);
+                    sz.writeUInt32BE(this.options.mshbuf.length, 0);
                     this.options.destinationStream.write(sz); // MSH Length, small-endian
                     this.options.destinationStream.end(Buffer.from((this.options.randomPolicy === true) ? exeNullPolicyGuid : exeMeshPolicyGuid, 'hex')); // Guid
                 });
