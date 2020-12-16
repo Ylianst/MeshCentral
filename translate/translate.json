@@ -10097,7 +10097,7 @@
     },
     {
       "en": "Current Agent Status",
-      "nl": "Huidige agent status"
+      "nl": "Huidige agent status",
       "ko": "에이전트 상태",
       "xloc": [
         "agent-translations.json"
@@ -36081,7 +36081,10 @@
     {
       "en": "The graphical version of this installer can not run on this system",
       "nl": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd",
-      "ko": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다",
+      "ko": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다"
+    },
+    {
+      "en": "The graphical version of this installer canot run on this system",
       "xloc": [
         "agent-translations.json"
       ]
@@ -37615,7 +37618,7 @@
     },
     {
       "en": "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \\\"My Account\\\" tab to change and verify an email address.",
-      "nl": "Geen toegang tot deze functie totdat een e-mailadres is geverifieerd. Dit is vereist voor wachtwoordherstel. Ga naar het tabblad \\ "Mijn account \\" om een e-mailadres te wijzigen en te verifiëren.",
+      "nl": "Geen toegang tot deze functie totdat een e-mailadres is geverifieerd. Dit is vereist voor wachtwoordherstel. Ga naar het tabblad \\\"Mijn account\\\" om een e-mailadres te wijzigen en te verifiëren.",
       "xloc": [
         "default.handlebars->29->1298",
         "default.handlebars->29->541"
@@ -37623,7 +37626,7 @@
     },
     {
       "en": "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \\\"My Account\\\" tab and look at the \\\"Account Security\\\" section.",
-      "nl": "Geen toegang tot deze functie totdat tweefactorauthenticatie is ingeschakeld. Dit is nodig voor extra veiligheid. Ga naar het tabblad \\\ "Mijn account \\\" en kijk naar het gedeelte \\\ "Accountbeveiliging \\\".",
+      "nl": "Geen toegang tot deze functie totdat tweefactorauthenticatie is ingeschakeld. Dit is nodig voor extra veiligheid. Ga naar het tabblad \\\"Mijn account\\\" en kijk naar het gedeelte \\\"Accountbeveiliging\\\".",
       "xloc": [
         "default.handlebars->29->1300",
         "default.handlebars->29->2149",
