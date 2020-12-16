@@ -24226,7 +24226,7 @@
     },
     {
       "en": "NOT RUNNING",
-      "nL": "NIET ACTIEF",
+      "nl": "NIET ACTIEF",
       "ko": "중지됨",
       "xloc": [
         "agent-translations.json"
@@ -27694,7 +27694,7 @@
     },
     {
       "en": "Please try again with sudo.",
-      "nL": "Probeer het opnieuw met sudo.",
+      "nl": "Probeer het opnieuw met sudo.",
       "ko": "\"sudo\"로 다시 시도하십시오",
       "xloc": [
         "agent-translations.json"
