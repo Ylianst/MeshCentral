@@ -26,19 +26,25 @@ module.exports.CreateMeshMail = function (parent) {
     obj.mailCookieEncryptionKey = null;
     //obj.mailTemplates = {};
     const constants = (obj.parent.crypto.constants ? obj.parent.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
-    const nodemailer = require('nodemailer');
 
     function EscapeHtml(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
-    // Setup mail server
-    var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: { } };
-    //var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
-    if (parent.config.smtp.port != null) { options.port = parent.config.smtp.port; }
-    if (parent.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
-    if (parent.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
-    if ((parent.config.smtp.user != null) && (parent.config.smtp.pass != null)) { options.auth = { user: parent.config.smtp.user, pass: parent.config.smtp.pass }; }
-    obj.smtpServer = nodemailer.createTransport(options);
+    if (parent.config.sendgrid != null) {
+        // Setup SendGrid mail server
+        obj.sendGridServer = require('@sendgrid/mail');
+        obj.sendGridServer.setApiKey(parent.config.sendgrid.apikey);
+    } else if (parent.config.smtp != null) {
+        // Setup SMTP mail server
+        const nodemailer = require('nodemailer');
+        var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: {} };
+        //var options = { host: parent.config.smtp.host, secure: (parent.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
+        if (parent.config.smtp.port != null) { options.port = parent.config.smtp.port; }
+        if (parent.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
+        if (parent.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
+        if ((parent.config.smtp.user != null) && (parent.config.smtp.pass != null)) { options.auth = { user: parent.config.smtp.user, pass: parent.config.smtp.pass }; }
+        obj.smtpServer = nodemailer.createTransport(options);
+    }
 
     // Get the correct mail template object
     function getTemplate(name, domain, lang) {
@@ -143,7 +149,11 @@ module.exports.CreateMeshMail = function (parent) {
 
     // Send a generic email
     obj.sendMail = function (to, subject, text, html) {
-        obj.pendingMails.push({ to: to, from: parent.config.smtp.from, subject: subject, text: text, html: html });
+        if (parent.config.sendgrid != null) {
+            obj.pendingMails.push({ to: to, from: parent.config.sendgrid.from, subject: subject, text: text, html: html });
+        } else if (parent.config.smtp != null) {
+            obj.pendingMails.push({ to: to, from: parent.config.smtp.from, subject: subject, text: text, html: html });
+        }
         sendNextMail();
     };
 
@@ -300,36 +310,51 @@ module.exports.CreateMeshMail = function (parent) {
 
         var mailToSend = obj.pendingMails[0];
         obj.sendingMail = true;
-        parent.debug('email', 'SMTP sending mail to ' + mailToSend.to + '.');
-        obj.smtpServer.sendMail(mailToSend, function (err, info) {
-            parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
-            obj.sendingMail = false;
-            if (err == null) {
-                // Send the next mail
-                obj.pendingMails.shift();
-                obj.retry = 0;
-                sendNextMail();
-            } else {
-                obj.retry++;
-                parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + JSON.stringify(err));
-                console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + JSON.stringify(err));
-                // Wait and try again
-                if (obj.retry < 3) {
-                    setTimeout(sendNextMail, 10000);
-                } else {
-                    // Failed, send the next mail
-                    parent.debug('email', 'SMTP server failed (Skipping): ' + JSON.stringify(err));
-                    console.log('SMTP server failed (Skipping): ' + JSON.stringify(err));
+
+        if (obj.sendGridServer != null) {
+            // SendGrid send
+            parent.debug('email', 'SendGrid sending mail to ' + mailToSend.to + '.');
+            obj.sendGridServer
+                .send(mailToSend)
+                .then(function () {
+                    parent.debug('email', 'SendGrid sending success.');
+                }, function (error) {
+                    parent.debug('email', 'SendGrid sending error: ' + JSON.stringify(error));
+                });
+        } else if (obj.smtpServer != null) {
+            // SMTP send
+            parent.debug('email', 'SMTP sending mail to ' + mailToSend.to + '.');
+            obj.smtpServer.sendMail(mailToSend, function (err, info) {
+                parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
+                obj.sendingMail = false;
+                if (err == null) {
+                    // Send the next mail
                     obj.pendingMails.shift();
                     obj.retry = 0;
                     sendNextMail();
+                } else {
+                    obj.retry++;
+                    parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + JSON.stringify(err));
+                    console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + JSON.stringify(err));
+                    // Wait and try again
+                    if (obj.retry < 3) {
+                        setTimeout(sendNextMail, 10000);
+                    } else {
+                        // Failed, send the next mail
+                        parent.debug('email', 'SMTP server failed (Skipping): ' + JSON.stringify(err));
+                        console.log('SMTP server failed (Skipping): ' + JSON.stringify(err));
+                        obj.pendingMails.shift();
+                        obj.retry = 0;
+                        sendNextMail();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     // Send out the next mail in the pending list
     obj.verify = function () {
+        if (obj.smtpServer == null) return;
         obj.smtpServer.verify(function (err, info) {
             if (err == null) {
                 console.log('SMTP mail server ' + parent.config.smtp.host + ' working as expected.');

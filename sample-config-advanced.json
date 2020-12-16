@@ -385,6 +385,10 @@
     "__tlsstrict__": "When set to true, TLS cypher setup is more limited, SSLv2 and SSLv3 are not allowed.",
     "_tlsstrict": true
   },
+  "_sendgrid": {
+    "from": "myemail@myserver.com",
+    "apikey": "***********"
+  },
   "_sms": {
     "provider": "twilio",
     "sid": "ACxxxxxxxxx",

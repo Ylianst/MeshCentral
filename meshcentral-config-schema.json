@@ -545,14 +545,24 @@
       },
       "required": [ "serverId", "servers" ]
     },
+    "sendgrid": {
+      "title" : "SendGrid.com Email server",
+      "description": "Connects MeshCentral to the SendGrid email server, allows MeshCentral to send email messages for 2FA or user notification.",
+      "type": "object",
+      "properties": {
+        "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
+        "apikey": { "type": "string", "description": "The SendGrid API key." }
+      },
+      "required": [ "from", "apikey" ]
+    },
     "smtp": {
-      "title" : "Email server",
-      "description": "Connects MeshCentral to a email server, allows MeshCentral to send email messages for 2FA or user notification.",
+      "title" : "SMTP email server",
+      "description": "Connects MeshCentral to a SMTP email server, allows MeshCentral to send email messages for 2FA or user notification.",
       "type": "object",
       "properties": {
         "host": { "type": "string", "format": "hostname" },
         "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
-        "from": { "type": "string", "format": "email" },
+        "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
         "tls": { "type": "boolean" },
         "tlscertcheck": { "type": "boolean" },
         "tlsstrict": { "type": "boolean" },

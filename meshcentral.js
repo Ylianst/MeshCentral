@@ -678,7 +678,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unreconized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".'); } } }
 
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(','); } }
@@ -1440,7 +1440,13 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Setup email server
-                if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
+                if (obj.config.sendgrid != null) {
+                    // Sendgrid server
+                    obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
+                    obj.mailserver.verify();
+                    if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode."); }
+                } else if ((obj.config.smtp != null) && (obj.config.smtp.host != null) && (obj.config.smtp.from != null)) {
+                    // SMTP server
                     obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                     obj.mailserver.verify();
                     if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode."); }
@@ -2751,6 +2757,7 @@ function InstallModules(modules, func) {
             var moduleInfo = moduleNameAndVersion.split('@', 2);
             var moduleName = moduleInfo[0];
             var moduleVersion = moduleInfo[1];
+            if (moduleName == '') { moduleName = moduleNameAndVersion; moduleVersion = undefined; } // If the module name starts with @, don't use @ as a version seperator.
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {
@@ -2888,6 +2895,7 @@ function mainStart() {
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
         if (config.smtp != null) { modules.push('nodemailer'); } // Add SMTP support
+        if (config.sendgrid != null) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
 
         // If running NodeJS < 8, install "util.promisify"
