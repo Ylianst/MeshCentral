@@ -1380,7 +1380,12 @@ function CreateMeshCentralServer(config, args) {
         obj.updateMeshTools();
 
         // Load MeshAgent translation strings
-        try { obj.agentTranslations = JSON.stringify(JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agent-translations.json')).toString())); } catch (ex) { }
+        try {
+            var translations = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'agent-translations.json')).toString());
+            if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
+            if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
+            obj.agentTranslations = JSON.stringify(translations);
+        } catch (ex) { }
 
         // Load the list of mesh agents and install scripts
         if (obj.args.noagentupdate == 1) { for (i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
