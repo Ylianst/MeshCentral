@@ -125,7 +125,7 @@
   },
   "nl": {
     "agent": "Agent",
-    "group": "groep",
+    "group": "Apparaat groep",
     "setup": "Setup",
     "install": "Installeren",
     "uninstall": "Deïnstallatie",
@@ -133,13 +133,12 @@
     "disconnect": "Verbreken",
     "cancel": "Annuleren",
     "agentVersion": "Nieuwe agent versie",
-    "group": "Apparaat groep",
     "url": "Server URL",
-    "meshName": "Mesh Naam",
-    "meshId": "Mesh Identificatie",
-    "serverId": "Server Identificatie",
+    "meshName": "Mesh naam",
+    "meshId": "Mesh identificatie",
+    "serverId": "Server identificatie",
     "update": "Bijwerken",
-    "pressok": "Klik op OK om de verbinding te verbreken",
+    "pressok": "Druk op OK om de verbinding te verbreken",
     "elevation": "Verhoogde machtigingen zijn vereist om de agent te installeren / verwijderen.",
     "sudo": "Probeer het opnieuw met sudo.",
     "ctrlc": "Druk op Ctrl-C om af te sluiten.",
@@ -147,11 +146,11 @@
     "graphicalerror": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd",
     "zenity": "Probeer Zenity te installeren / bij te werken en voer het opnieuw uit",
     "status": [
-      "Niet geïnstalleerd",
+      "NIET GEÏNSTALLEERD",
       "ACTIEF",
-      "NIET ACTIEF"
+      "NOT RUNNING"
     ],
-    "statusDescription": "Huidige status agent",
+    "statusDescription": "Huidige agent status",
     "description": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder."
   },
   "pt": {
@@ -198,5 +197,13 @@
     "connect": "連接",
     "disconnect": "斷線",
     "cancel": "取消"
+  },
+  "nL": {
+    "sudo": "Probeer het opnieuw met sudo.",
+    "status": [
+      "NOT INSTALLED",
+      "RUNNING",
+      "NIET ACTIEF"
+    ]
   }
 }
