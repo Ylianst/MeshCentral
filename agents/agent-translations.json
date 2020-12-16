@@ -113,7 +113,6 @@
     "sudo": "\"sudo\"로 다시 시도하십시오",
     "ctrlc": "종료하려면 \"Ctrl-C\"를 누르십시오.",
     "commands": "다음 명령을 사용하여 콘솔에서 텍스트 버전을 실행할 수 있습니다",
-    "graphicalerror": "이 프로그램의 그래픽 버전이 시스템에서 실행할 수 없습니다",
     "zenity": "\"Zenity\"를 설치 또는 업데이트하고 다시 시도하십시오",
     "status": [
       "없다",
@@ -125,30 +124,29 @@
   },
   "nl": {
     "agent": "Agent",
+    "agentVersion": "Nieuwe agent versie",
     "group": "Apparaat groep",
+    "url": "Server URL",
+    "meshName": "Mesh naam",
+    "meshId": "Mesh identificatie",
+    "serverId": "Server identificatie",
     "setup": "Setup",
+    "update": "Bijwerken",
     "install": "Installeren",
     "uninstall": "Deïnstallatie",
     "connect": "Verbinden",
     "disconnect": "Verbreken",
     "cancel": "Annuleren",
-    "agentVersion": "Nieuwe agent versie",
-    "url": "Server URL",
-    "meshName": "Mesh naam",
-    "meshId": "Mesh identificatie",
-    "serverId": "Server identificatie",
-    "update": "Bijwerken",
     "pressok": "Druk op OK om de verbinding te verbreken",
     "elevation": "Verhoogde machtigingen zijn vereist om de agent te installeren / verwijderen.",
     "sudo": "Probeer het opnieuw met sudo.",
     "ctrlc": "Druk op Ctrl-C om af te sluiten.",
     "commands": "U kunt de tekstversie vanaf de opdrachtregel uitvoeren met de volgende opdracht(en)",
-    "graphicalerror": "De grafische versie van dit installatieprogramma kan niet op dit systeem worden uitgevoerd",
     "zenity": "Probeer Zenity te installeren / bij te werken en voer het opnieuw uit",
     "status": [
       "NIET GEÏNSTALLEERD",
       "ACTIEF",
-      "NOT RUNNING"
+      "NIET ACTIEF"
     ],
     "statusDescription": "Huidige agent status",
     "description": "Klik op de onderstaande knoppen om de mesh-agent te installeren of te verwijderen. Na installatie wordt deze software op de achtergrond uitgevoerd, zodat deze computer kan worden beheerd en bestuurd door een externe beheerder."
@@ -197,13 +195,5 @@
     "connect": "連接",
     "disconnect": "斷線",
     "cancel": "取消"
-  },
-  "nL": {
-    "sudo": "Probeer het opnieuw met sudo.",
-    "status": [
-      "NOT INSTALLED",
-      "RUNNING",
-      "NIET ACTIEF"
-    ]
   }
 }
