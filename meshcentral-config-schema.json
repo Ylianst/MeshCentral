@@ -551,7 +551,8 @@
       "type": "object",
       "properties": {
         "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
-        "apikey": { "type": "string", "description": "The SendGrid API key." }
+        "apikey": { "type": "string", "description": "The SendGrid API key." },
+        "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." }
       },
       "required": [ "from", "apikey" ]
     },
