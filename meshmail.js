@@ -178,8 +178,13 @@ module.exports.CreateMeshMail = function (parent) {
                 var options = { email: email, servername: domain.title ? domain.title : 'MeshCentral', token: token };
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
 
+                // Get from field
+                var from = null;
+                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
+                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+
                 // Send the email
-                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
                 sendNextMail();
             }
         });
@@ -206,8 +211,13 @@ module.exports.CreateMeshMail = function (parent) {
                 var options = { username: username, accountname: accountname, email: email, servername: domain.title ? domain.title : 'MeshCentral', password: password };
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
 
+                // Get from field
+                var from = null;
+                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
+                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+
                 // Send the email
-                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
                 sendNextMail();
             }
         });
@@ -235,8 +245,13 @@ module.exports.CreateMeshMail = function (parent) {
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.cookie = obj.parent.encodeCookie({ u: userid, e: email, a: 1 }, obj.mailCookieEncryptionKey);
 
+                // Get from field
+                var from = null;
+                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
+                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+
                 // Send the email
-                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
                 sendNextMail();
             }
         });
@@ -264,8 +279,13 @@ module.exports.CreateMeshMail = function (parent) {
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.cookie = obj.parent.encodeCookie({ u: userid, e: email, a: 2 }, obj.mailCookieEncryptionKey);
 
+                // Get from field
+                var from = null;
+                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
+                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+
                 // Send the email
-                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
                 sendNextMail();
             }
         });
@@ -297,8 +317,13 @@ module.exports.CreateMeshMail = function (parent) {
                 options.link = (os == 4) ? 1 : 0;
                 options.linkurl = createInviteLink(domain, meshid, flags, expirehours);
 
+                // Get from field
+                var from = null;
+                if (parent.config.sendgrid && (typeof parent.config.sendgrid.from == 'string')) { from = parent.config.sendgrid.from; }
+                else if (parent.config.smtp && (typeof parent.config.smtp.from == 'string')) { from = parent.config.smtp.from; }
+
                 // Send the email
-                obj.pendingMails.push({ to: email, from: parent.config.smtp.from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
+                obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, options), text: mailReplacements(template.txt, domain, options), html: mailReplacements(template.html, domain, options) });
                 sendNextMail();
             }
         });
@@ -388,7 +413,8 @@ module.exports.CreateMeshMail = function (parent) {
     // Check the email domain DNS MX record.
     obj.approvedEmailDomains = {};
     obj.checkEmail = function (email, func) {
-        if (parent.config.smtp.verifyemail === false) { func(true); return; }
+        if ((parent.config.smtp) && (parent.config.smtp.verifyemail === false)) { func(true); return; }
+        if ((parent.config.sendgrid) && (parent.config.sendgrid.verifyemail === false)) { func(true); return; }
         var emailSplit = email.split('@');
         if (emailSplit.length != 2) { func(false); return; }
         if (obj.approvedEmailDomains[emailSplit[1]] === true) { func(true); return; }
