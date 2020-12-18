@@ -2811,7 +2811,15 @@ function createMeshCore(agent) {
                     }
                     else
                     {
-                        var s = require('service-manager').manager.getService(process.platform == 'win32' ? 'Mesh Agent' : 'meshagent');
+                        var svcname = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                        try
+                        {
+                            svcname = require('MeshAgent').serviceName;
+                        }
+                        catch(x)
+                        {
+                        }
+                        var s = require('service-manager').manager.getService(svcname);
                         switch(args['_'][0].toLowerCase())
                         {
                             case 'status':
